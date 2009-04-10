@@ -53,7 +53,41 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
     private final Object value;
     private int hash;
 
-    public static CharSequence create(CharSequence s){
+    public static CharSequence create(char buf[], int start, int count) {
+        if (start < 0) {
+            throw new StringIndexOutOfBoundsException(start);
+        }
+        if (count < 0) {
+            throw new StringIndexOutOfBoundsException(count);
+        }
+        // Note: offset or count might be near -1>>>1.
+        if (start > buf.length - count) {
+            throw new StringIndexOutOfBoundsException(start + count);
+        }
+        int n = count;
+        if (n == 0) {
+            return EMPTY;
+        }
+        byte[] b = new byte[n];
+        boolean bytes = true;
+        int o;
+        for (int i = 0; i < n; i++) {
+            o = buf[start + i];
+            if ((o & 0xFF) != o) {
+                bytes = false;
+                break;
+            }
+            b[i] = (byte) o;
+        }
+        if (bytes) {
+            return createFromBytes(b, n);
+        }
+        char[] v = new char[count];
+        System.arraycopy(buf, start, v, 0, count);
+        return new CharSequenceKey(v);
+    }
+
+    public static CharSequence create(CharSequence s) {
         if (s == null) {
             return null;
         }
@@ -77,12 +111,7 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
             b[i] = (byte)o;
         }
         if (bytes) {
-            if (n < 8) {
-                return new Fixed7CharSequenceKey(b,n);
-            } else if (n < 16) {
-                return new Fixed15CharSequenceKey(b,n);
-            }
-            return new CharSequenceKey(b);
+            return createFromBytes(b, n);
         }
         char[] v = new char[n];
         for(int i = 0; i < n; i++){
@@ -140,7 +169,17 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
         }
         return -1;
     }
-    
+
+    private static TinyCharSequence createFromBytes(byte[] b, int n) {
+        assert b != null;
+        if (n < 8) {
+            return new Fixed7CharSequenceKey(b, n);
+        } else if (n < 16) {
+            return new Fixed15CharSequenceKey(b, n);
+        }
+        return new CharSequenceKey(b);
+    }
+
     private CharSequenceKey(byte[] b) {
         value = b;
     }

@@ -56,8 +56,9 @@ public abstract class ConfigurationDescriptor {
         if (this.confs == null) {
             this.confs = new Configurations();
         }
-        if (defaultConf < 0)
+        if (defaultConf < 0) {
             defaultConf = 0;
+        }
         this.confs.init(confs, defaultConf);
     }
 

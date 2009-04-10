@@ -44,8 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
@@ -67,14 +66,13 @@ public final class BugtrackingManager implements LookupListener {
     private static final BugtrackingManager instance = new BugtrackingManager();
 
     private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
-    public final static String EVENT_REPOSITORIES_CHANGED = "bugtracking.repositories.changed";
+    public final static String EVENT_REPOSITORIES_CHANGED = "bugtracking.repositories.changed"; // NOI18N
 
     private boolean                 initialized;
-    private Set<Repository>         repos;
 
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager");
+    public static Logger LOG = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager"); // NOI18N
 
-    private RequestProcessor rp = new RequestProcessor("Bugtracking manager", 1);
+    private RequestProcessor rp = new RequestProcessor("Bugtracking manager", 1); // NOI18N
 
     /**
      * Holds all registered connectors.
@@ -115,16 +113,17 @@ public final class BugtrackingManager implements LookupListener {
      * @return
      */
     public Repository[] getRepositories() {
-        // XXX do we need to cache this?
-        Set<Repository> s = getRepositoriesIntern();
-        return s.toArray(new Repository[s.size()]);
-    }
-
-    private Set<Repository> getRepositoriesIntern() { // XXX get rid of this
-        if(repos == null) {
-            initRepos();
+        List<Repository> repos = new ArrayList<Repository>(10);
+        BugtrackingConnector[] conns = getConnectors();
+        for (BugtrackingConnector bc : conns) {
+            Repository[] rs = bc.getRepositories();
+            if(rs != null) {
+                for (Repository r : rs) {
+                    repos.add(r);
+                }
+            }
         }
-        return repos;
+        return repos.toArray(new Repository[repos.size()]);
     }
 
     public RequestProcessor getRequestProcessor() {
@@ -138,19 +137,8 @@ public final class BugtrackingManager implements LookupListener {
         refreshConnectors();
 
         BugtrackingRuntime.getInstance().init();
-        LOG.fine("Bugtracking manager initialized");
+        LOG.fine("Bugtracking manager initialized"); // NOI18N
         initialized = true;
-    }
-
-    public void addRepository(Repository repo) {
-        getRepositoriesIntern().add(repo);
-        fireRepositoriesChanged();
-    }
-    
-    public void removeRepository(Repository repo) {
-        getRepositoriesIntern().remove(repo);
-        repo.remove();
-        fireRepositoriesChanged();
     }
 
     public BugtrackingConnector[] getConnectors() {
@@ -161,22 +149,6 @@ public final class BugtrackingManager implements LookupListener {
 
     public void resultChanged(LookupEvent ev) {
         refreshConnectors();
-    }
-
-    /**
-     * Read stored repositories
-     */
-    private void initRepos() {
-        repos = new HashSet<Repository>(10); 
-        BugtrackingConnector[] conns = getConnectors();
-        for (BugtrackingConnector bc : conns) {
-            Repository[] rs = bc.getRepositories();
-            if(rs != null) {
-                for (Repository r : rs) {
-                    repos.add(r);
-                }
-            }
-        }
     }
 
     private void refreshConnectors() {

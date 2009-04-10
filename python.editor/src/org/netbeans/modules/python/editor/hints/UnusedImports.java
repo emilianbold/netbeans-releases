@@ -60,6 +60,7 @@ import org.netbeans.modules.python.editor.imports.ImportEntry;
 import org.netbeans.modules.python.editor.imports.ImportManager;
 import org.netbeans.modules.python.editor.lexer.PythonLexerUtils;
 import org.netbeans.modules.python.editor.scopes.SymbolTable;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.Import;
@@ -77,7 +78,8 @@ public class UnusedImports extends PythonAstRule {
     }
 
     public boolean appliesTo(RuleContext context) {
-        return true;
+        FileObject fo = context.compilationInfo.getFileObject();
+        return fo == null || !fo.getName().equals("__init__"); // NOI18N
     }
 
     public Set<Class> getKinds() {

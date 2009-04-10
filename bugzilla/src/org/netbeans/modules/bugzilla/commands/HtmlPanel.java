@@ -39,6 +39,14 @@
 
 package org.netbeans.modules.bugzilla.commands;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import org.netbeans.modules.bugzilla.Bugzilla;
+import org.openide.awt.HtmlBrowser;
+
 /**
  *
  * @author tomas
@@ -50,8 +58,29 @@ public class HtmlPanel extends javax.swing.JPanel {
         initComponents();
     }
 
-    void setHtml(String html) {
+    void setHtml(final String baseUrl, String html, String label) {
         pane.setText(html);
+        pane.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) return;
+                String desc = e.getDescription();
+                URL url = null;
+                try {
+                    url = new URL(baseUrl + "/" + desc);
+                } catch (MalformedURLException mue) {
+                    Bugzilla.LOG.log(Level.WARNING, null, mue);
+                    return;
+                }
+                HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
+                assert displayer != null : "HtmlBrowser.URLDisplayer found.";
+                if (displayer != null) {
+                    displayer.showURL(url);
+                } else {
+                    Bugzilla.LOG.info("No URLDisplayer found.");
+                }
+            }
+        });
+        this.label.setText(label);
     }
 
     /** This method is called from within the constructor to
@@ -65,25 +94,39 @@ public class HtmlPanel extends javax.swing.JPanel {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         pane = new javax.swing.JTextPane();
+        label = new javax.swing.JLabel();
 
         pane.setContentType(org.openide.util.NbBundle.getMessage(HtmlPanel.class, "HtmlPanel.pane.contentType")); // NOI18N
+        pane.setEditable(false);
         jScrollPane1.setViewportView(pane);
+
+        label.setText(org.openide.util.NbBundle.getMessage(HtmlPanel.class, "MSG_ServerResponse")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
+                    .add(label))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(label)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 15, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 374, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel label;
     private javax.swing.JTextPane pane;
     // End of variables declaration//GEN-END:variables
 

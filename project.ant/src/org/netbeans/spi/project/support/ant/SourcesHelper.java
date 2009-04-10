@@ -67,13 +67,15 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
-import org.netbeans.modules.project.ant.FileChangeSupport;
-import org.netbeans.modules.project.ant.FileChangeSupportEvent;
-import org.netbeans.modules.project.ant.FileChangeSupportListener;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 // XXX should perhaps be legal to call add* methods at any time (should update things)
@@ -98,7 +100,7 @@ public final class SourcesHelper {
             if (val == null) {
                 return null;
             }
-            return project.resolveFile(val);
+            return aph.resolveFile(val);
         }
         public Collection<FileObject> getIncludeRoots(boolean minimalSubfolders) {
             File loc = getActualLocation();
@@ -292,7 +294,8 @@ public final class SourcesHelper {
         }
     }
     
-    private final AntProjectHelper project;
+    private final AntProjectHelper aph;
+    private final Project project;
     private final PropertyEvaluator evaluator;
     private final List<SourceRoot> principalSourceRoots = new ArrayList<SourceRoot>();
     private final List<Root> nonSourceRoots = new ArrayList<Root>();
@@ -312,11 +315,29 @@ public final class SourcesHelper {
     /**
      * Create the helper object, initially configured to recognize only sources
      * contained inside the project directory.
-     * @param project an Ant project helper
+     * @param aph an Ant project helper
      * @param evaluator a way to evaluate Ant properties used to define source locations
+     * @deprecated Rather use {@link #SourcesHelper(Project, AntProjectHelper, PropertyEvaluator)}.
      */
-    public SourcesHelper(AntProjectHelper project, PropertyEvaluator evaluator) {
+    @Deprecated
+    public SourcesHelper(AntProjectHelper aph, PropertyEvaluator evaluator) {
+        this.project = null;
+        this.aph = aph;
+        this.evaluator = evaluator;
+    }
+    
+    /**
+     * Create the helper object, initially configured to recognize only sources
+     * contained inside the project directory.
+     * @param project the project object (need not yet be registered in {@link ProjectManager})
+     * @param aph an Ant project helper
+     * @param evaluator a way to evaluate Ant properties used to define source locations
+     * @since org.netbeans.modules.project.ant/1 1.31
+     */
+    public SourcesHelper(Project project, AntProjectHelper aph, PropertyEvaluator evaluator) {
+        Parameters.notNull("project", project);
         this.project = project;
+        this.aph = aph;
         this.evaluator = evaluator;
     }
     
@@ -470,7 +491,7 @@ public final class SourcesHelper {
     }
     
     private Project getProject() {
-        return AntBasedProjectFactorySingleton.getProjectFor(project);
+        return project != null ? project : AntBasedProjectFactorySingleton.getProjectFor(aph);
     }
     
     /**
@@ -504,11 +525,14 @@ public final class SourcesHelper {
      * {@link FileOwnerQuery#EXTERNAL_ALGORITHM_TRANSIENT}.
      * </p>
      * <p>
-     * You may <em>not</em> call this method inside the project's constructor, as
-     * it requires the actual project to exist and be registered in {@link ProjectManager}.
-     * Typically you would use {@link org.openide.util.Mutex#postWriteRequest} to run it
+     * If you used the old constructor form
+     * {@link #SourcesHelper(AntProjectHelper, PropertyEvaluator)}
+     * then you may <em>not</em> call this method inside the project's constructor, as
+     * it requires the actual project to exist and be registered in {@link ProjectManager};
+     * in this case you could still use {@link org.openide.util.Mutex#postWriteRequest} to run it
      * later, if you were creating the helper in your constructor, since the project construction
      * normally occurs in read access.
+     * Better to use {@link #SourcesHelper(Project, AntProjectHelper, PropertyEvaluator)}.
      * </p>
      * @param algorithm an external root registration algorithm as per
      *                  {@link FileOwnerQuery#markExternalOwner}
@@ -584,7 +608,7 @@ public final class SourcesHelper {
         allRoots.addAll(nonSourceRoots);
         allRoots.addAll(ownedFiles);
         Project p = getProject();
-        FileObject pdir = project.getProjectDirectory();
+        FileObject pdir = aph.getProjectDirectory();
         // First time: register roots and add to lastRegisteredRoots.
         // Subsequent times: add to newRootsToRegister and maybe add them later.
         if (lastRegisteredRoots == null) {
@@ -676,7 +700,7 @@ public final class SourcesHelper {
         return new SourcesImpl();
     }
     
-    private final class SourcesImpl implements Sources, PropertyChangeListener, FileChangeSupportListener {
+    private final class SourcesImpl implements Sources, PropertyChangeListener, FileChangeListener {
         
         private final ChangeSupport cs = new ChangeSupport(this);
         private boolean haveAttachedListeners;
@@ -769,7 +793,7 @@ public final class SourcesHelper {
         private synchronized void listen(File rootLocation) {
             // #40845. Need to fire changes if a source root is added or removed.
             if (rootsListenedTo.add(rootLocation) && /* be lazy */ haveAttachedListeners) {
-                FileChangeSupport.DEFAULT.addListener(this, rootLocation);
+                FileUtil.addFileChangeListener(this, rootLocation);
             }
         }
         
@@ -777,7 +801,7 @@ public final class SourcesHelper {
             if (!haveAttachedListeners) {
                 haveAttachedListeners = true;
                 for (File rootLocation : rootsListenedTo) {
-                    FileChangeSupport.DEFAULT.addListener(this, rootLocation);
+                    FileUtil.addFileChangeListener(this, rootLocation);
                 }
             }
             cs.addChangeListener(listener);
@@ -805,25 +829,36 @@ public final class SourcesHelper {
             }
         }
 
-        public void fileCreated(FileChangeSupportEvent event) {
+        public void fileFolderCreated(FileEvent fe) {
             // Root might have been created on disk.
             maybeFireChange();
         }
 
-        public void fileDeleted(FileChangeSupportEvent event) {
+        public void fileDataCreated(FileEvent fe) {
+            maybeFireChange();
+        }
+
+        public void fileDeleted(FileEvent fe) {
             // Root might have been deleted.
             maybeFireChange();
         }
 
-        public void fileModified(FileChangeSupportEvent event) {
+        public void fileChanged(FileEvent fe) {
             // ignore; generally should not happen (listening to dirs)
         }
-        
+
+        public void fileRenamed(FileRenameEvent fe) {
+            maybeFireChange();
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            maybeFireChange();
+        }
+
         public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
             // Properties may have changed so as cause external roots to move etc.
             maybeFireChange();
         }
-
     }
     
     private final class PropChangeL implements PropertyChangeListener {

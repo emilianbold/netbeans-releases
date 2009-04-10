@@ -92,4 +92,9 @@ public class GdbVariable {
         hash = 41 * hash + (this.name != null ? this.name.hashCode() : 0);
         return hash;
     }
+
+    @Override
+    public String toString() {
+        return name + "=" + value; // NOI18N
+    }
 }

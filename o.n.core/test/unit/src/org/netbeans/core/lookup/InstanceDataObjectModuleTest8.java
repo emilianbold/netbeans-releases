@@ -42,7 +42,7 @@
 package org.netbeans.core.lookup;
 
 import javax.swing.Action;
-import org.netbeans.core.LoaderPoolNode;
+import org.netbeans.core.NbLoaderPool;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -125,7 +125,7 @@ implements FileChangeListener {
             ERR.log("Twidle reload");
             twiddle(m2, TWIDDLE_RELOAD);
             ERR.log("TWIDDLE_RELOAD done");
-            LoaderPoolNode.waitFinished();
+            NbLoaderPool.waitFinished();
             ERR.log("pool refeshed");
             DataObject obj2 = findIt("Services/Misc/inst-8.settings");
             ERR.log("Data object for inst-8: " + obj2);
@@ -145,7 +145,7 @@ implements FileChangeListener {
             ERR.log("Final disable done");
         }
         // Now make sure it has no cookie.
-        LoaderPoolNode.waitFinished();
+        NbLoaderPool.waitFinished();
         ERR.log("loader pool node refreshed");
         DataObject obj3 = findIt("Services/Misc/inst-8.settings");
         ERR.log("Third data object: " + obj3);

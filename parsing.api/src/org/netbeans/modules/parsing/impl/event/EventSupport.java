@@ -326,9 +326,17 @@ public final class EventSupport {
                     }                   
                 }
                 lastEditorRef = new WeakReference<JTextComponent>(editor);
-                if (lastEditor != null) {                    
-                    lastEditor.addCaretListener(this);
-                    lastEditor.addPropertyChangeListener(this);
+                if (editor != null) {
+                    editor.addCaretListener(this);
+                    editor.addPropertyChangeListener(this);
+                }
+            }
+            final JTextComponent focused = EditorRegistry.focusedComponent();
+            if (focused != null) {
+                final Document doc = editor.getDocument();
+                final Source source = doc == null ? null : Source.create(doc);
+                if (source != null) {
+                    SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, -1, -1);
                 }
             }
         }

@@ -42,8 +42,12 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
@@ -142,22 +146,57 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
             int endOfFirstLine = Utilities.getRowEnd(doc, node.getStartOffset());
 
             if (endOfFirstLine < node.getEndOffset()){
-                indentLevels.put(endOfFirstLine + 1, continuationIndentSize);
-                indentLevels.put(node.getEndOffset(), -1 * continuationIndentSize);
+                addIndentLevel(endOfFirstLine + 1, continuationIndentSize);
+
+                // if the last line of the expression is only a closing brace(s)
+                // do not indent it. E.g.
+                // foo($a1,
+                //     $a2,
+                // ); // - this line should not be indented
+                TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, node.getEndOffset());
+                int end = node.getEndOffset();
+
+                if (ts != null){
+                    ts.move(node.getEndOffset());
+
+                    do {
+                        ts.movePrevious();
+                        
+                    } while (indentContinuationWithinStatement_skipToken(ts.token()));
+
+                    end = ts.offset() + ts.token().length();
+                }
+
+                addIndentLevel(end, -1 * continuationIndentSize);
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
+    private static boolean indentContinuationWithinStatement_skipToken(Token token){
+        Object tokenID = token.id();
+
+        if (tokenID == PHPTokenId.PHP_SEMICOLON){
+            return true;
+        }
+
+        if (tokenID == PHPTokenId.PHP_TOKEN){
+            if (")".equals(token.text().toString())){ //NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void indentListOfStatements(List<Statement> stmts) {
         if (stmts.size() > 0){
             ASTNode firstNode = stmts.get(0);
             ASTNode lastNode = stmts.get(stmts.size() - 1);
-            int start = firstNonWSBwd(doc, firstNode.getStartOffset());
-            int end = firstNonWSFwd(doc, lastNode.getEndOffset());
-            indentLevels.put(start, indentSize);
-            indentLevels.put(end, -1 * indentSize);
+            int start = firstNonWSBwd(doc, firstNode.getStartOffset()) + 1;
+            int end = firstNonWSFwd(doc, lastNode.getEndOffset()) - 1;
+            addIndentLevel(start, indentSize);
+            addIndentLevel(end, -1 * indentSize);
         }
     }
 
@@ -168,20 +207,39 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         if (paramCount > 0){
             FormalParameter firstParam = node.getFormalParameters().get(0);
             FormalParameter lastParam = node.getFormalParameters().get(paramCount -1);
-            indentLevels.put(firstParam.getStartOffset(), continuationIndentSize);
-            indentLevels.put(lastParam.getEndOffset(), -1 * continuationIndentSize);
+            addIndentLevel(firstParam.getStartOffset(), continuationIndentSize);
+            addIndentLevel(lastParam.getEndOffset(), -1 * continuationIndentSize);
         }
 
         super.visit(node);
     }
 
     private void indentNonBlockStatement(ASTNode node) {
-        if (node != null && !(node instanceof Block)) {
-            int start = firstNonWSBwd(doc, node.getStartOffset());
-            int end = firstNonWSFwd(doc, node.getEndOffset());
-            indentLevels.put(start, indentSize);
-            indentLevels.put(end, -1 * indentSize);
+        if (node == null || node instanceof Block) {
+            return;
         }
+
+        // BEGIN AN UGLY HACK
+        // AST info does not allow to distinguish
+        // between "if" and "elseif"
+        if (node instanceof IfStatement) {
+            String ELSE_IF = "elseif"; //NOI18N
+            try {
+                if (doc.getLength() > node.getStartOffset() + ELSE_IF.length()
+                        && ELSE_IF.equals(doc.getText(node.getStartOffset(),
+                        ELSE_IF.length()))) {
+                    return;
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        // END AN UGLY HACK
+
+        int start = firstNonWSBwd(doc, node.getStartOffset()) + 1;
+        int end = firstNonWSFwd(doc, node.getEndOffset()) - 1;
+        addIndentLevel(start, indentSize);
+        addIndentLevel(end, -1 * indentSize);
     }
 
     private static int firstNonWSBwd(BaseDocument doc, int offset){
@@ -212,5 +270,12 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         }
 
         return r;
+    }
+
+    private void addIndentLevel(int offset, int indent){
+        Integer existingIndent = indentLevels.get(offset);
+
+        int newIndent = existingIndent == null ? indent : indent + existingIndent;
+        indentLevels.put(offset, newIndent);
     }
 }

@@ -1,7 +1,8 @@
 <?php
 
     require_once 'PEAR.php';    
-    // get this with “pear install HTTP_Request”
+    // Get this by installing HTTP_Request using
+    //      pear install HTTP_Request
     require_once "HTTP/Request.php";
     include_once "RestResponse.php";
 

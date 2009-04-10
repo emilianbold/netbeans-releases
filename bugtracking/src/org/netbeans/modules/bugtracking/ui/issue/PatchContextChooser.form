@@ -24,7 +24,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="locationLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="locationField" max="32767" attributes="0"/>
+                      <Component id="locationField" pref="254" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="locationButton" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -40,13 +40,12 @@
               <Component id="titleLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="projectsView" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="locationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="locationField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="locationButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

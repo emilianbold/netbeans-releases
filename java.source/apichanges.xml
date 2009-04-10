@@ -105,6 +105,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Comment.create">
+             <api name="general"/>
+             <summary>Migrated to the parsing.api</summary>
+             <version major="0" minor="43"/>
+             <date day="31" month="3" year="2009"/>
+             <author login="moonko"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Addint <code>Comment.create(Comment.Style, String)</code> to create new comment of any style from string. 
+             </description>
+             <class package="org.netbeans.api.java.source" name="Comment"/>
+        </change>
         <change id="parsing.api">
              <api name="general"/>
              <summary>Migrated to the parsing.api</summary>

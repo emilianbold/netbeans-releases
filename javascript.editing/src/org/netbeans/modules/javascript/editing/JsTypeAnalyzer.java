@@ -48,9 +48,9 @@ import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 
 /**
@@ -462,7 +462,7 @@ public class JsTypeAnalyzer {
     }
     
     public static String getCallFqn(JsParseResult info, Node callNode, boolean resolveLocals) {
-        JsIndex index = JsIndex.get(GsfUtilities.getRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.singleton(JsClassPathProvider.BOOT_CP), Collections.<String>emptySet()));
+        JsIndex index = JsIndex.get(QuerySupport.findRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.singleton(JsClassPathProvider.BOOT_CP), Collections.<String>emptySet()));
         Node methodNode = callNode.getParentNode();
         while (methodNode != null) {
             if (methodNode.getType() == Token.FUNCTION) {

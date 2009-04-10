@@ -85,7 +85,13 @@ public final class Task {
     }
     
     /**
-     * Create a new Task
+     * <p>Create a new Task</p>
+     * <p>Since version 1.4 the Task List implementation uses Indexing API to persist
+     * tasks created by FileTaskScanners. If a file hasn't changed since the last scan
+     * then the tasks associated with that file are loaded from cache to improve
+     * Task List performance. Therefore task's ActionListener isn't available when
+     * the task is restored from cache. Task providers must switch to PushTaskScanner
+     * if ActionListener is required to be available at all times.</p>
      * 
      * @param resource File or folder which the Task applies to, cannot be null.
      * @param groupName Name of the group this task belongs to (error, warning, todo, etc).

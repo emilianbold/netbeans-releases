@@ -27,7 +27,7 @@ paramValues[]
 param[]
 End cursor position = 993
 [${pageContext.|, ServletRequest request, ${pageContext.request, 1053]
-Class class
+Class  class
 ELContext eLContext
 ErrorData errorData
 Exception exception
@@ -63,9 +63,10 @@ cookie[]
 End cursor position = 1159
 [#{calendar.|, Date time, #{calendar.time, 1199]
 Locale[] availableLocales
-Class class
+Class  class
 int firstDayOfWeek
 Calendar instance
+boolean lenient
 int minimalDaysInFirstWeek
 Date time
 long timeInMillis
@@ -74,9 +75,10 @@ toString
 End cursor position = 1215
 [#{calendar.|, toString, #{calendar.toString, 1253]
 Locale[] availableLocales
-Class class
+Class  class
 int firstDayOfWeek
 Calendar instance
+boolean lenient
 int minimalDaysInFirstWeek
 Date time
 long timeInMillis

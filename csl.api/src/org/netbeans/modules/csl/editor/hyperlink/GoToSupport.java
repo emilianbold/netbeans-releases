@@ -66,11 +66,13 @@ import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.core.UiUtils;
+import org.netbeans.modules.csl.editor.completion.GsfCompletionProvider;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.awt.HtmlBrowser;
@@ -101,14 +103,13 @@ public class GoToSupport {
     }
     
     private static String perform(final Document doc, final int offset, final boolean tooltip) {
-// XXX: parsingapi
-//        if (SourceUtils.isScanInProgress()) {
-//            if (!tooltip) {
-//                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GsfCompletionProvider.class, "scanning-in-progress")); //NOI18N
-//                Toolkit.getDefaultToolkit().beep();
-//            }
-//            return null;
-//        }
+        if (IndexingManager.getDefault().isIndexing()) {
+            if (!tooltip) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GsfCompletionProvider.class, "scanning-in-progress")); //NOI18N
+                Toolkit.getDefaultToolkit().beep();
+            }
+            return null;
+        }
         
         if (tooltip && PopupUtil.isPopupShowing()) {
             return null;

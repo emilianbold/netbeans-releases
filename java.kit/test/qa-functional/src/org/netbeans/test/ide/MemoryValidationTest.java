@@ -41,8 +41,6 @@
 
 package org.netbeans.test.ide;
 
-import java.io.File;
-import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
@@ -54,23 +52,6 @@ import org.netbeans.junit.NbModuleSuite;
  * @author Jiri.Skrivanek@sun.com, mrkam@netbeans.org
  */
 public class MemoryValidationTest extends JellyTestCase {
-    private static boolean initBlacklistedClassesHandler() {        
-        String configFN = new MemoryValidationTest("Dummy").getDataDir()
-                + File.separator + "BlacklistedClassesHandlerConfig.xml";
-        configFN = configFN.replace("java.kit", "ide.kit"); //temporary hack
-        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getInstance();
-        
-        System.out.println("BlacklistedClassesHandler will be initialized with " + configFN);
-        if (bcHandler.initSingleton(configFN)) {
-            bcHandler.register();
-            System.out.println("BlacklistedClassesHandler handler added");
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    
     /** Need to be defined because of JUnit */
     public MemoryValidationTest(String name) {
         super(name);
@@ -80,16 +61,11 @@ public class MemoryValidationTest extends JellyTestCase {
         // XXX: supresses warning about jpda debugger using parsing API from AWT thread
         System.setProperty("org.netbeans.modules.parsing.impl.TaskProcessor.level", "OFF");
 
-        boolean blacklistEnabled = initBlacklistedClassesHandler();
-        
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             IDEValidation.class
         ).clusters("ide[0-9]*|java[0-9]*").enableModules(".*").
-        honorAutoloadEager(true).failOnException(Level.INFO).failOnMessage(Level.WARNING);
+        honorAutoloadEager(true);
 
-        if (blacklistEnabled) {
-            conf = conf.addTest("testBlacklistedClassesHandler");
-        }
         conf = conf.addTest("testInitGC");
         conf = conf.addTest("testMainMenu");
         conf = conf.addTest("testHelp");

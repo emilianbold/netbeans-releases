@@ -239,6 +239,8 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
             ref.setFieldModifiers(fieldModifier);
             ref.setAlwaysUseAccessors(alwaysUseAccessors);
             ref.setMethodInline(methodInline);
+            ref.setDefaultGetter(info.getDefaultGetter());
+            ref.setDefaultSetter(info.getDefaultSetter());
             ref.getContext().add(refactoring.getContext().lookup(InsertPoint.class));
             ref.getContext().add(refactoring.getContext().lookup(Documentation.class));
             ref.getContext().add(refactoring.getContext().lookup(SortBy.class));
@@ -302,7 +304,7 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
         Collection<CsmFile> files = new HashSet<CsmFile>();
         CsmFile startFile = CsmRefactoringUtils.getCsmFile(enclosingClass);
         if (refactoring.isAlwaysUseAccessors()) {
-            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(enclosingClass, true);
+            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(enclosingClass, null);
             CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
             refactoring.getContext().add(ar);
             files.addAll(getRelevantFiles(startFile, enclosingClass, refactoring));

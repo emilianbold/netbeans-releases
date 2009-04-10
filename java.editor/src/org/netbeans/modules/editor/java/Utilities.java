@@ -56,6 +56,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -86,6 +87,7 @@ import org.openide.util.WeakListeners;
 /**
  *
  * @author Dusan Balek
+ * @author Sam Halliday
  */
 public class Utilities {
     
@@ -113,19 +115,27 @@ public class Utilities {
                 showDeprecatedMembers = preferences.getBoolean(SimpleValueNames.SHOW_DEPRECATED_MEMBERS, true);
             }
             if (settingName == null || CodeCompletionPanel.GUESS_METHOD_ARGUMENTS.equals(settingName)) {
-                guessMethodArguments = preferences.getBoolean(CodeCompletionPanel.GUESS_METHOD_ARGUMENTS, true);
+                guessMethodArguments = preferences.getBoolean(CodeCompletionPanel.GUESS_METHOD_ARGUMENTS, CodeCompletionPanel.GUESS_METHOD_ARGUMENTS_DEFAULT);
             }
             if (settingName == null || CodeCompletionPanel.JAVA_AUTO_POPUP_ON_IDENTIFIER_PART.equals(settingName)) {
-                autoPopupOnJavaIdentifierPart = preferences.getBoolean(CodeCompletionPanel.JAVA_AUTO_POPUP_ON_IDENTIFIER_PART, false);
+                autoPopupOnJavaIdentifierPart = preferences.getBoolean(CodeCompletionPanel.JAVA_AUTO_POPUP_ON_IDENTIFIER_PART, CodeCompletionPanel.JAVA_AUTO_POPUP_ON_IDENTIFIER_PART_DEFAULT);
             }
             if (settingName == null || CodeCompletionPanel.JAVA_AUTO_COMPLETION_TRIGGERS.equals(settingName)) {
-                javaCompletionAutoPopupTriggers = preferences.get(CodeCompletionPanel.JAVA_AUTO_COMPLETION_TRIGGERS, "."); //NOI18N
+                javaCompletionAutoPopupTriggers = preferences.get(CodeCompletionPanel.JAVA_AUTO_COMPLETION_TRIGGERS, CodeCompletionPanel.JAVA_AUTO_COMPLETION_TRIGGERS_DEFAULT);
             }
             if (settingName == null || CodeCompletionPanel.JAVA_COMPLETION_SELECTORS.equals(settingName)) {
-                javaCompletionSelectors = preferences.get(CodeCompletionPanel.JAVA_COMPLETION_SELECTORS, ".,;:([+-="); //NOI18N
+                javaCompletionSelectors = preferences.get(CodeCompletionPanel.JAVA_COMPLETION_SELECTORS, CodeCompletionPanel.JAVA_COMPLETION_SELECTORS_DEFAULT);
             }
             if (settingName == null || CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS.equals(settingName)) {
-                javadocCompletionAutoPopupTriggers = preferences.get(CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS, ".#@"); //NOI18N
+                javadocCompletionAutoPopupTriggers = preferences.get(CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS, CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS_DEFAULT);
+            }
+            if (settingName == null || CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST.equals(settingName)) {
+                String blacklist = preferences.get(CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST, CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST_DEFAULT);
+                updateExcluder(exclude, blacklist);
+            }
+            if (settingName == null || CodeCompletionPanel.JAVA_COMPLETION_WHITELIST.equals(settingName)) {
+                String whitelist = preferences.get(CodeCompletionPanel.JAVA_COMPLETION_WHITELIST, CodeCompletionPanel.JAVA_COMPLETION_WHITELIST_DEFAULT);
+                updateExcluder(include, whitelist);
             }
         }
     };
@@ -215,9 +225,64 @@ public class Utilities {
         return javadocCompletionAutoPopupTriggers;
     }
 
+    static private volatile AtomicReference<Collection<String>> exclude;
+    static private volatile AtomicReference<Collection<String>> include;
+
+    private static void updateExcluder(AtomicReference<Collection<String>> existing, String updated) {
+        Collection<String> nue = new LinkedList<String>();
+        if (updated == null || updated.length() == 0) {
+            existing.set(nue);
+            return;
+        }
+        String[] entries = updated.split(","); //NOI18N
+        for (String entry : entries) {
+            if (entry != null && entry.length() != 0) {
+                nue.add(entry);
+            }
+        }
+        existing.set(nue);
+    }
+
+    /**
+     * @param fqn Fully Qualified Name (including method names). Packages names are expected to
+     * end in a trailing "."
+     * @return
+     */
+    public static boolean isExcluded(final CharSequence fqn) {
+        if (fqn == null || fqn.length() == 0 || fqn.equals(".")) { //NOI18N
+            return true;
+        }
+        lazyInit();
+        String s = fqn.toString();
+        if (!include.get().isEmpty()) {
+            for (String entry : include.get()) {
+                if (entry.length() > fqn.length()) {
+                    if (entry.startsWith(s)) {
+                        return false;
+                    }
+                } else if (s.startsWith(entry)) {
+                    return false;
+                }
+            }
+        }
+
+        if (!exclude.get().isEmpty()) {
+            for (String entry : exclude.get()) {
+                if (entry.length() <= fqn.length() && s.startsWith(entry)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private static void lazyInit() {
         if (!inited) {
             inited = true;
+            Collection<String> empty = Collections.emptySet();
+            exclude = new AtomicReference<Collection<String>>(empty);
+            include = new AtomicReference<Collection<String>>(empty);
             preferences = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
             preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, preferencesTracker, preferences));
             preferencesTracker.preferenceChange(null);

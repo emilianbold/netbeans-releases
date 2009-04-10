@@ -213,7 +213,7 @@ class InstancePropertiesVisual extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
 private void proxyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyButtonActionPerformed
-    OptionsDisplayer.getDefault().open("General");
+    OptionsDisplayer.getDefault().open("General"); // NOI18N
 }//GEN-LAST:event_proxyButtonActionPerformed
 
 private void autoSyncSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_autoSyncSpinnerStateChanged
@@ -246,7 +246,7 @@ private void autoSyncCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
             msgs.setInformationMessage(NbBundle.getMessage(InstanceDialog.class, "MSG_EmptyName"));
             return;
         }
-        if (HudsonManagerImpl.getInstance().getInstanceByName(name) != null) {
+        if (HudsonManagerImpl.getDefault().getInstanceByName(name) != null) {
             msgs.setErrorMessage(NbBundle.getMessage(InstanceDialog.class, "MSG_ExistName"));
             return;
         }
@@ -255,13 +255,13 @@ private void autoSyncCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
             return;
         }
         if (!url.endsWith("/")) { // NOI18N
-            msgs.setInformationMessage("URL should end with a slash (/)."); // XXX I18N
+            msgs.setInformationMessage(NbBundle.getMessage(InstancePropertiesVisual.class, "InstanceDialog.end_with_slash"));
             return;
         }
         try {
             URL u = new URL(url);
-            if (!u.getProtocol().matches("https?")) {
-                msgs.setErrorMessage("Must be an HTTP(S) URL."); // XXX I18N
+            if (!u.getProtocol().matches("https?")) { // NOI18N
+                msgs.setErrorMessage(NbBundle.getMessage(InstancePropertiesVisual.class, "InstanceDialog.http_protocol"));
                 return;
             }
         } catch (MalformedURLException x) {

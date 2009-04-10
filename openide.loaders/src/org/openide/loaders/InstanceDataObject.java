@@ -50,6 +50,7 @@ import java.util.logging.*;
 import org.openide.ServiceType;
 import org.openide.actions.DeleteAction;
 import org.openide.cookies.*;
+import org.openide.cookies.InstanceCookie.Of;
 import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.nodes.*;
@@ -480,10 +481,14 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         try {
             if (instanceOf (Node.class)) {
                 Node n = (Node)instanceCreate ();
-                return new CookieAdjustingFilter(n);
+                if (n != null) { // #161888 robustness
+                    return new CookieAdjustingFilter(n);
+                }
             } else if (instanceOf (Node.Handle.class)) {
                 Node.Handle h = (Node.Handle) instanceCreate ();
-                return new CookieAdjustingFilter(h.getNode());
+                if (h != null) {
+                    return new CookieAdjustingFilter(h.getNode());
+                }
             }
         } catch (IOException ex) {
             err.log(Level.WARNING, null, ex);
@@ -557,11 +562,17 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         return getCookiesLookup().lookup(clazz);
     }
 
+    @Override
     void notifyFileChanged(FileEvent fe) {
         super.notifyFileChanged(fe);
         if (getPrimaryFile().hasExt(XML_EXT)) {
             if (!Creator.isFiredFromMe(fe)) {
                 getCookiesLookup(true);
+            }
+        } else {
+            if (ser instanceof Ser) {
+                ser = new Ser(this);
+                getCookieSet().assign(InstanceCookie.class, ser);
             }
         }
     }
@@ -1127,6 +1138,19 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             this.dobj = dobj;
         }
 
+        private void setSaveTime(long t) {
+            saveTime = t;
+            if (err.isLoggable(Level.FINER)) {
+                err.log(
+                    Level.FINER,
+                    "saveTime for {0} set: {1}",
+                    new Object[] {
+                        dobj.getPrimaryFile().getPath(), saveTime
+                    }
+                );
+            }
+        }
+
         public String instanceName () {
             // try the life object if any
             FileObject fo = entry ().getFile ();
@@ -1231,25 +1255,33 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         }
 
 
+        @Override
         public Object instanceCreate () throws IOException, ClassNotFoundException {
             FileObject fo = entry ().getFile ();
+            boolean log = err.isLoggable(Level.FINER);
 
-
+            if (log) {
+                err.log(Level.FINER, "instanceCreate for {0}", fo.getPath()); // NOI18N
+            }
             Object o;
-            if (fo.lastModified ().getTime () <= saveTime) {
+            long fileTime = fo.lastModified().getTime ();
+            if (fileTime <= saveTime) {
                 o = bean.get ();
+                if (log) {
+                    err.log(Level.FINER, "  times are OK: {0} <= {1}", new Object[] { fileTime, saveTime }); // NOI18N
+                    err.log(Level.FINER, "  using cached instance {0}", o); // NOI18N
+                }
             } else {
                 o = null;
+                err.log(Level.FINER, "  using freshed instance"); // NOI18N
             }
 
             if (o != null) {
                 return o;
             }
 
-            saveTime = fo.lastModified ().getTime ();
-            if (saveTime < System.currentTimeMillis ()) {
-                saveTime = System.currentTimeMillis ();
-            }
+            long nowTime = System.currentTimeMillis();
+            setSaveTime(fileTime < nowTime ? nowTime : fileTime);
             boolean useFallback = true;
             if (fo.hasExt (INSTANCE)) {
                 // try to ask for instance creation attribute
@@ -1258,6 +1290,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                     // the factory method is there, just it returned null
                     useFallback = false;
                 }
+                err.log(Level.FINER, "  instanceCreate result: {0}", o); // NOI18N
             }
 
             if (o == null && useFallback) {
@@ -1267,6 +1300,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
             // remember the created value
             bean = new SoftReference<Object>(o);
+            if(log) {
+                err.log(Level.FINER, "  result for " + fo.getPath() + " will be: " + o); // NOI18N
+            }
             return o;
         }
 
@@ -1306,7 +1342,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                 try {
                     oos.writeObject (bean);
                     // avoid bean reloading
-                    saveTime = entry ().getFile ().lastModified ().getTime ();
+                    setSaveTime(entry().getFile().lastModified().getTime());
                 } finally {
                     oos.close ();
                 }

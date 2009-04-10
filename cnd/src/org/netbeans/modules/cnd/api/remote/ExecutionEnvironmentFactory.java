@@ -60,7 +60,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public class ExecutionEnvironmentFactory {
 
     private static final ExecutionEnvironment LOCAL = new ExecutionEnvironment();
-    private static final int DEFAULT_PORT = Integer.getInteger("cnd.remote.port", 22); //NOI18N
+    public static final int DEFAULT_PORT = Integer.getInteger("cnd.remote.port", 22); //NOI18N
 
     /** prevents instantiation */
     private ExecutionEnvironmentFactory() {

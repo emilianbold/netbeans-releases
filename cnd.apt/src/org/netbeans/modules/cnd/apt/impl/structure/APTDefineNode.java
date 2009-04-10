@@ -127,10 +127,14 @@ public final class APTDefineNode extends APTMacroBaseNode
         int ttype = token.getType();
         if (APTUtils.isEndDirectiveToken(ttype)) {
             if (bodyTokens != null){
-                ((ArrayList)bodyTokens).trimToSize();
+                ((ArrayList<?>)bodyTokens).trimToSize();
             }
             if (params != null){
-                ((ArrayList)params).trimToSize();
+                ((ArrayList<?>)params).trimToSize();
+            }
+            if (state == BEFORE_MACRO_NAME) {
+                // macro without name
+                state = ERROR;
             }
             return false;
         } else {

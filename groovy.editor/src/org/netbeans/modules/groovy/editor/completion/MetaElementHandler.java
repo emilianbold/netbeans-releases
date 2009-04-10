@@ -83,9 +83,13 @@ public final class MetaElementHandler {
         Class clz;
 
         try {
+            // FIXME should be loaded by classpath classloader
             clz = Class.forName(className);
         } catch (ClassNotFoundException e) {
-            LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+            LOG.log(Level.FINE, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+            return Collections.emptyMap();
+        } catch (NoClassDefFoundError err) {
+            LOG.log(Level.FINE, "Class.forName() failed: {0}", err.getMessage()); // NOI18N
             return Collections.emptyMap();
         }
 
@@ -113,9 +117,13 @@ public final class MetaElementHandler {
         Class clz;
 
         try {
+            // FIXME should be loaded by classpath classloader
             clz = Class.forName(className);
         } catch (ClassNotFoundException e) {
             LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+            return Collections.emptyMap();
+        } catch (NoClassDefFoundError err) {
+            LOG.log(Level.FINEST, "Class.forName() failed: {0}", err.getMessage()); // NOI18N
             return Collections.emptyMap();
         }
 
@@ -130,8 +138,10 @@ public final class MetaElementHandler {
                 LOG.log(Level.FINEST, field.toString());
                 MetaProperty prop = (MetaProperty) field;
                 //System.out.println("META: " + prop.getName() + " " + prop.getType().getSimpleName() + " " + Utilities.reflectionModifiersToModel(prop.getModifiers()));
-                result.put(new FieldSignature(prop.getName()), new CompletionItem.FieldItem(
-                        prop.getName(), prop.getModifiers(), anchor, info, prop.getType().getSimpleName()));
+                if (prop.getName().startsWith(prefix)) {
+                    result.put(new FieldSignature(prop.getName()), new CompletionItem.FieldItem(
+                            prop.getName(), prop.getModifiers(), anchor, info, prop.getType().getSimpleName()));
+                }
             }
 
             return result;

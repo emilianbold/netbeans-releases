@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.api.model.CsmBuiltIn;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -53,11 +54,14 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
@@ -81,35 +85,31 @@ public class UIDUtilities {
     private UIDUtilities() {
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmProject> createProjectUID(ProjectBase prj) {
         return UIDManager.instance().getSharedUID(new ProjectUID(prj));
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmFile> createFileUID(FileImpl file) {
         return UIDManager.instance().getSharedUID(new FileUID(file));
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmNamespace> createNamespaceUID(CsmNamespace ns) {
         return UIDManager.instance().getSharedUID(new NamespaceUID(ns));
     }
 
-    @SuppressWarnings("unchecked")
     public static <T extends CsmOffsetableDeclaration> CsmUID<T> createDeclarationUID(T declaration) {
         assert (!(declaration instanceof CsmBuiltIn)) : "built-in have own UIDs";
         CsmUID<T> uid;
         //if (!ProjectBase.canRegisterDeclaration(declaration)) {
         if (!namedDeclaration(declaration)) {
-            uid = handleUnnamedDeclaration((CsmOffsetableDeclaration) declaration);
+            uid = handleUnnamedDeclaration(declaration);
         } else {
             if (declaration instanceof CsmTypedef) {
-                uid = new TypedefUID((CsmTypedef) declaration);
+                uid = (CsmUID<T>) new TypedefUID((CsmTypedef) declaration);
             } else if (declaration instanceof CsmClassifier) {
-                uid = new ClassifierUID(declaration);
+                uid = new ClassifierUID<T>(declaration);
             } else {
-                uid = new DeclarationUID(declaration);
+                uid = new DeclarationUID<T>(declaration);
             }
         }
         return UIDManager.instance().getSharedUID(uid);
@@ -121,47 +121,41 @@ public class UIDUtilities {
         return declaration.getName().length() > 0;
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmMacro> createMacroUID(CsmMacro macro) {
         return UIDManager.instance().getSharedUID(new MacroUID(macro));
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmInclude> createIncludeUID(CsmInclude incl) {
         return UIDManager.instance().getSharedUID(new IncludeUID(incl));
     }
 
-    @SuppressWarnings("unchecked")
-    public static CsmUID<CsmParameterList> createParamListUID(CsmParameterList incl) {
-        return UIDManager.instance().getSharedUID(new ParamListUID(incl));
+    public static <T extends CsmNamedElement> CsmUID<CsmParameterList<T>> createParamListUID(CsmParameterList<T> incl) {
+        return UIDManager.instance().getSharedUID(new ParamListUID<T>(incl));
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmClass> createUnresolvedClassUID(String name, CsmProject project) {
         return UIDManager.instance().getSharedUID(new UnresolvedClassUID(name, project));
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmFile> createUnresolvedFileUID(CsmProject project) {
         return UIDManager.instance().getSharedUID(new UnresolvedFileUID(project));
     }
 
-    @SuppressWarnings("unchecked")
     public static CsmUID<CsmNamespace> createUnresolvedNamespaceUID(CsmProject project) {
         return UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
     }
 
     public static int getProjectID(CsmUID<CsmFile> uid) {
-        if (uid instanceof KeyBasedUID) {
-            return KeyUtilities.getProjectIndex(((KeyBasedUID) uid).getKey());
+        if (uid instanceof KeyBasedUID<?>) {
+            return KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid).getKey());
         }
         return -1;
     }
 
     public static boolean isProjectFile(CsmUID<CsmProject> uid1, CsmUID<CsmFile> uid2) {
-        if (uid1 instanceof KeyBasedUID && uid1 instanceof KeyBasedUID) {
-            int i1 = KeyUtilities.getProjectIndex(((KeyBasedUID) uid1).getKey());
-            int i2 = KeyUtilities.getProjectIndex(((KeyBasedUID) uid2).getKey());
+        if (uid1 instanceof KeyBasedUID<?> && uid2 instanceof KeyBasedUID<?>) {
+            int i1 = KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid1).getKey());
+            int i2 = KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid2).getKey());
             if (i1 >= 0 && i2 >=0) {
                 return i1 == i2;
             }
@@ -170,9 +164,9 @@ public class UIDUtilities {
     }
 
     public static boolean isSameProject(CsmUID<CsmFile> uid1, CsmUID<CsmFile> uid2) {
-        if (uid1 instanceof KeyBasedUID && uid1 instanceof KeyBasedUID) {
-            int i1 = KeyUtilities.getProjectIndex(((KeyBasedUID) uid1).getKey());
-            int i2 = KeyUtilities.getProjectIndex(((KeyBasedUID) uid2).getKey());
+        if (uid1 instanceof KeyBasedUID<?> && uid2 instanceof KeyBasedUID<?>) {
+            int i1 = KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid1).getKey());
+            int i2 = KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid2).getKey());
             if (i1 >= 0 && i2 >=0) {
                 return i1 == i2;
             }
@@ -181,9 +175,9 @@ public class UIDUtilities {
     }
 
     public static boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmUID<CsmOffsetableDeclaration> uid2) {
-        if (uid1 instanceof KeyBasedUID && uid1 instanceof KeyBasedUID) {
-            int i1 = KeyUtilities.getProjectFileIndex(((KeyBasedUID) uid1).getKey());
-            int i2 = KeyUtilities.getProjectFileIndex(((KeyBasedUID) uid2).getKey());
+        if (uid1 instanceof KeyBasedUID<?> && uid2 instanceof KeyBasedUID<?>) {
+            int i1 = KeyUtilities.getProjectFileIndex(((KeyBasedUID<?>) uid1).getKey());
+            int i2 = KeyUtilities.getProjectFileIndex(((KeyBasedUID<?>) uid2).getKey());
             if (i1 >= 0 && i2 >=0) {
                 return i1 == i2;
             }
@@ -202,58 +196,70 @@ public class UIDUtilities {
         return false;
     }
 
-    public static CsmDeclaration.Kind getKind(CsmUID<CsmOffsetableDeclaration> uid) {
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID) uid).getKey();
+    public static CsmDeclaration.Kind getKind(CsmUID<?> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
             return KeyUtilities.getKeyKind(key);
         } else if (UIDProviderIml.isSelfUID(uid)) {
-            return uid.getObject().getKind();
+            CsmObject object = (CsmObject) uid.getObject();
+            if (CsmKindUtilities.isDeclaration(object)) {
+                return ((CsmDeclaration)object).getKind();
+            }
         }
         return null;
     }
 
     public static CharSequence getFileName(CsmUID<CsmFile> uid) {
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID) uid).getKey();
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
             return KeyUtilities.getKeyName(key);
         }
         return null;
     }
 
     public static CharSequence getProjectName(CsmUID<CsmProject> uid) {
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID) uid).getKey();
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
             return KeyUtilities.getKeyName(key);
         }
         return null;
     }
 
-    public static <T extends CsmOffsetableDeclaration> CharSequence getName(CsmUID<T> uid) {
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID) uid).getKey();
+    public static CharSequence getName(CsmUID<?> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
             return KeyUtilities.getKeyName(key);
         } else if (UIDProviderIml.isSelfUID(uid)) {
-            return uid.getObject().getName();
+            Object object = uid.getObject();
+            if (CsmKindUtilities.isNamedElement(object)) {
+                return ((CsmNamedElement) object).getName();
+            }
         }
         return null;
     }
 
-    public static <T extends CsmOffsetableDeclaration> int getStartOffset(CsmUID<T> uid) {
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID) uid).getKey();
+    public static int getStartOffset(CsmUID<?> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
             return KeyUtilities.getKeyStartOffset(key);
         } else if (UIDProviderIml.isSelfUID(uid)) {
-            return uid.getObject().getStartOffset();
+            Object object = uid.getObject();
+            if (CsmKindUtilities.isOffsetable(object)) {
+                return ((CsmOffsetable) object).getStartOffset();
+            }
         }
         return -1;
     }
 
-    public static <T extends CsmOffsetableDeclaration> int getEndOffset(CsmUID<T> uid) {
-        if (uid instanceof KeyBasedUID) {
-            Key key = ((KeyBasedUID) uid).getKey();
+    public static int getEndOffset(CsmUID<?> uid) {
+        if (uid instanceof KeyBasedUID<?>) {
+            Key key = ((KeyBasedUID<?>) uid).getKey();
             return KeyUtilities.getKeyEndOffset(key);
         } else if (UIDProviderIml.isSelfUID(uid)) {
-            return uid.getObject().getEndOffset();
+            Object object = uid.getObject();
+            if (CsmKindUtilities.isOffsetable(object)) {
+                return ((CsmOffsetable) object).getEndOffset();
+            }
         }
         return -1;
     }
@@ -280,8 +286,8 @@ public class UIDUtilities {
         }
         // by name
         CharSequence name1 = getName(d1);
-        CharSequence name2 = getName(d1);
-        if (name1 instanceof Comparable) {
+        CharSequence name2 = getName(d2);
+        if (name1 instanceof Comparable<?>) {
             @SuppressWarnings("unchecked")
             Comparable<CharSequence> o1 = (Comparable<CharSequence>) name1;
             return o1.compareTo(name2);
@@ -293,16 +299,61 @@ public class UIDUtilities {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static CsmUID handleUnnamedDeclaration(CsmOffsetableDeclaration decl) {
+    public static <T extends CsmOffsetableDeclaration> CsmUID<T> findExistingUIDInList(List<CsmUID<T>> list, int start, int end, CharSequence name) {
+        CsmUID<T> out = null;
+        // look for the object with the same start position and the same name
+        // TODO: for now we are in O(n), but better to be O(ln n) speed
+        for (int i = list.size() - 1; i >= 0; i--) {
+            CsmUID<T> csmUID = list.get(i);
+            int startOffset = UIDUtilities.getStartOffset(csmUID);
+            if (startOffset == start && end == UIDUtilities.getEndOffset(csmUID) && name.equals(UIDUtilities.getName(csmUID))) {
+                out = csmUID;
+                break;
+            } else if (startOffset < start) {
+                break;
+            }
+        }
+        return out;
+    }
+
+    public static <T extends CsmOffsetableDeclaration> void insertIntoSortedUIDList(CsmUID<T> uid, List<CsmUID<T>> list) {
+        int start = UIDUtilities.getStartOffset(uid);
+        // start from the last, because most of the time we are in append, not insert mode
+        boolean lessThanOthers = false;
+        for (int pos = list.size() - 1; pos >= 0; pos--) {
+            CsmUID<T> currUID = list.get(pos);
+            int i = UIDUtilities.compareWithinFile(currUID, uid);
+            if (i <= 0) {
+                if (i == 0) {
+                    list.set(pos, uid);
+                } else {
+                    list.add(pos + 1, uid);
+                }
+                return;
+            } else if (UIDUtilities.getStartOffset(currUID) < start) {
+                break;
+            } else {
+                lessThanOthers = true;
+            }
+        }
+        if (!list.isEmpty() && lessThanOthers) {
+            // insert as the first
+            list.add(0, uid);
+        } else {
+            // add as the last
+            list.add(uid);
+        }
+    }
+
+    private static <T extends CsmOffsetableDeclaration> CsmUID<T> handleUnnamedDeclaration(T decl) {
         if (TraceFlags.TRACE_UNNAMED_DECLARATIONS) {
             System.err.print("\n\ndeclaration with empty name '" + decl.getUniqueName() + "'");
             new CsmTracer().dumpModel(decl);
         }
         if (decl instanceof CsmClassifier) {
-            return new UnnamedClassifierUID(decl, UnnamedID.incrementAndGet());
+            return new UnnamedClassifierUID<T>(decl, UnnamedID.incrementAndGet());
         } else {
-            return new UnnamedOffsetableDeclarationUID(decl, UnnamedID.incrementAndGet());
+            return new UnnamedOffsetableDeclarationUID<T>(decl, UnnamedID.incrementAndGet());
         }
     }
     private static AtomicInteger UnnamedID = new AtomicInteger(0);
@@ -357,7 +408,7 @@ public class UIDUtilities {
     private static abstract class OffsetableDeclarationUIDBase<T extends CsmOffsetableDeclaration> extends KeyBasedUID<T> {
 
         public OffsetableDeclarationUIDBase(T declaration) {
-            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase) declaration));
+            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase<?>) declaration));
         }
 
         protected OffsetableDeclarationUIDBase(Key key) {
@@ -382,9 +433,9 @@ public class UIDUtilities {
     /**
      * UID for CsmTypedef
      */
-    /* package */ static final class TypedefUID<T extends CsmTypedef> extends OffsetableDeclarationUIDBase<T> {
+    /* package */ static final class TypedefUID extends OffsetableDeclarationUIDBase<CsmTypedef> {
 
-        public TypedefUID(T typedef) {
+        public TypedefUID(CsmTypedef typedef) {
             super(typedef);
 //            assert typedef instanceof RegistarableDeclaration;
 //            if (!((RegistarableDeclaration)typedef).isRegistered()) {
@@ -435,9 +486,9 @@ public class UIDUtilities {
     /**
      * UID for CsmParameterList
      */
-    /* package */ static final class ParamListUID<T extends CsmParameterList, K extends CsmNamedElement> extends KeyBasedUID<CsmParameterList<T, K>> {
+    /* package */ static final class ParamListUID<T extends CsmNamedElement> extends KeyBasedUID<CsmParameterList<T>> {
 
-        public ParamListUID(CsmParameterList<T, K> paramList) {
+        public ParamListUID(CsmParameterList<T> paramList) {
             super(KeyUtilities.createParamListKey(paramList));
         }
 
@@ -490,7 +541,7 @@ public class UIDUtilities {
     /* package */ static final class UnnamedClassifierUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
 
         public UnnamedClassifierUID(T classifier, int index) {
-            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase) classifier, index));
+            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase<?>) classifier, index));
         }
 
         /* package */ UnnamedClassifierUID(DataInput aStream) throws IOException {
@@ -509,7 +560,7 @@ public class UIDUtilities {
     /* package */ static final class UnnamedOffsetableDeclarationUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
 
         public UnnamedOffsetableDeclarationUID(T decl, int index) {
-            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase) decl, index));
+            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase<?>) decl, index));
         }
 
         /* package */ UnnamedOffsetableDeclarationUID(DataInput aStream) throws IOException {
@@ -578,7 +629,7 @@ public class UIDUtilities {
 
     }
 
-    /* package */ static final class UnresolvedClassUID<T> extends UnresolvedUIDBase<CsmClass> {
+    /* package */ static final class UnresolvedClassUID extends UnresolvedUIDBase<CsmClass> {
 
         private CharSequence name;
 
@@ -607,7 +658,7 @@ public class UIDUtilities {
             if (!super.equals(obj)) {
                 return false;
             }
-            final UnresolvedClassUID<?> other = (UnresolvedClassUID<?>) obj;
+            final UnresolvedClassUID other = (UnresolvedClassUID) obj;
             if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
                 return false;
             }

@@ -78,8 +78,8 @@ public final class JsIndex {
     // XXX: make this accessible from IndexDocument
     private static final String FIELD_SOURCE_NAME = "_sn";  //NOI18N
     
-    private static final String [] TERMS_FQN = new String [] { JsIndexer.FIELD_FQN };
-    private static final String [] TERMS_BASE = new String [] { JsIndexer.FIELD_BASE };
+    private static final String [] TERMS_FQN = new String [] { JsIndexer.FIELD_FQN, JsIndexer.FIELD_SDOC_URL };
+    private static final String [] TERMS_BASE = new String [] { JsIndexer.FIELD_BASE, JsIndexer.FIELD_SDOC_URL };
     private static final String [] TERMS_EXTEND = new String [] { JsIndexer.FIELD_EXTEND };
 
     private static final JsIndex EMPTY = new JsIndex(null);
@@ -380,7 +380,9 @@ public final class JsIndex {
         String searchUrl = null;
         if (context != null) {
             try {
-                searchUrl = context.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
+                if (context.getSnapshot().getSource().getFileObject() != null) {
+                    searchUrl = context.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
+                }
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }

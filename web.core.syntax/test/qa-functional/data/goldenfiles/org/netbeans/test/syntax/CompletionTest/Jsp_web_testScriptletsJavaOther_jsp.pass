@@ -1,4 +1,4 @@
-[<% request.getSession().|, void setAttribute (String name , Object value ), <% request.getSession().setAttribute(name, value), 518]
+[<% request.getSession().|, void removeAttribute, <% request.getSession().removeAttribute(name), 487]
 boolean equals (Object obj )
 Object getAttribute (String name )
 Enumeration getAttributeNames ()
@@ -16,17 +16,17 @@ void invalidate ()
 boolean isNew ()
 void notify ()
 void notifyAll ()
-void putValue (String name , Object value )
+void putValue (String name , Object valu
 void removeAttribute (String name )
 void removeValue (String name )
-void setAttribute (String name , Object value )
-void setMaxInactiveInterval (int interval )
+void setAttribute (String name , Object 
+void setMaxInactiveInterval (int interva
 String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 560
-[<% session.|, Object getAttribute (String name ), <% session.getAttribute(name), 654]
+End cursor position = 532
+[<% session.|, Object getAttribute, <% session.getAttribute(name), 608]
 boolean equals (Object obj )
 Object getAttribute (String name )
 Enumeration getAttributeNames ()
@@ -44,34 +44,34 @@ void invalidate ()
 boolean isNew ()
 void notify ()
 void notifyAll ()
-void putValue (String name , Object value )
+void putValue (String name , Object valu
 void removeAttribute (String name )
 void removeValue (String name )
-void setAttribute (String name , Object value )
-void setMaxInactiveInterval (int interval )
+void setAttribute (String name , Object 
+void setMaxInactiveInterval (int interva
 String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 683
-[<%! void f() { this.|, ServletConfig getServletConfig (), <%! void f() { this.getServletConfig(), 831]
+End cursor position = 637
+[<%! void f() { this.|, ServletConfig getServletConfig (), <%! void f() { this.getServletConfig(), 785]
 long serialVersionUID
 Object clone ()
 void destroy ()
-void doDelete (HttpServletRequest req , HttpSe
-void doGet (HttpServletRequest req , HttpServl
-void doHead (HttpServletRequest req , HttpServ
-void doOptions (HttpServletRequest req , HttpS
-void doPost (HttpServletRequest req , HttpServ
-void doPut (HttpServletRequest req , HttpServl
-void doTrace (HttpServletRequest req , HttpSer
+void doDelete (HttpServletRequest req , 
+void doGet (HttpServletRequest req , Htt
+void doHead (HttpServletRequest req , Ht
+void doOptions (HttpServletRequest req ,
+void doPost (HttpServletRequest req , Ht
+void doPut (HttpServletRequest req , Htt
+void doTrace (HttpServletRequest req , H
 boolean equals (Object obj )
 void f ()
 void finalize ()
 Class <?> getClass ()
 String getInitParameter (String name )
 Enumeration getInitParameterNames ()
-long getLastModified (HttpServletRequest req )
+long getLastModified (HttpServletRequest
 ServletConfig getServletConfig ()
 ServletContext getServletContext ()
 String getServletInfo ()
@@ -83,14 +83,14 @@ void log (String msg )
 void log (String message , Throwable t )
 void notify ()
 void notifyAll ()
-void service (HttpServletRequest req , HttpSer
-void service (ServletRequest req , ServletResp
+void service (HttpServletRequest req , H
+void service (ServletRequest req , Servl
 String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 870
-[<%= request.|, String getContextPath (), <%= request.getContextPath(), 980]
+End cursor position = 824
+[<%= request.|, String getContextPath (), <%= request.getContextPath(), 934]
 String BASIC_AUTH
 String CLIENT_CERT_AUTH
 String DIGEST_AUTH
@@ -134,17 +134,17 @@ Locale getLocale ()
 Enumeration getLocales ()
 Map getParameterMap ()
 Enumeration getParameterNames ()
-String[] getParameterValues (String name )
+String[] getParameterValues (String name
 BufferedReader getReader ()
 int getRemotePort ()
-RequestDispatcher getRequestDispatcher (Strin
+RequestDispatcher getRequestDispatcher (
 StringBuffer getRequestURL ()
 int getServerPort ()
 HttpSession getSession ()
 HttpSession getSession (boolean create )
 Principal getUserPrincipal ()
 int hashCode ()
-boolean isRequestedSessionIdFromCookie ()
+boolean isRequestedSessionIdFromCookie (
 boolean isRequestedSessionIdFromURL ()
 boolean isRequestedSessionIdFromUrl ()
 boolean isRequestedSessionIdValid ()
@@ -153,9 +153,9 @@ boolean isUserInRole (String role )
 void notify ()
 void notifyAll ()
 void removeAttribute (String name )
-void setAttribute (String name , Object o )
+void setAttribute (String name , Object 
 void setCharacterEncoding (String env )
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 1009
+End cursor position = 963

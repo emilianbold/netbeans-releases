@@ -123,7 +123,7 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
         public void run(Phase phase) {
             Document doc = getDocument();
             if (doc != null) {
-                if (phase == Phase.PARSED || phase == Phase.INIT) {
+                if (phase == Phase.PARSED || phase == Phase.INIT || phase == Phase.PROJECT_PARSED) {
                     MyInterruptor interruptor = new MyInterruptor();
                     addCancelListener(interruptor);
                     try {

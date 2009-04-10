@@ -65,6 +65,7 @@ public class FunctionImpl implements Function {
     
     private CsmFunction function;
     private String htmlDisplayName = ""; // NOI18N
+    private String scopeName = null; // NOI18N
 
     public FunctionImpl(CsmFunction function) {
         super();
@@ -95,6 +96,26 @@ public class FunctionImpl implements Function {
         return function.getName().toString();
     }
 
+    public String getScopeName() {
+        if (scopeName == null) {
+            scopeName = "";
+            try {
+                CsmFunction f = getDeclaration();
+                if (CsmKindUtilities.isClassMember(f)) {
+                    CsmClass cls = ((CsmMember) f).getContainingClass();
+                    if (cls != null && cls.getName().length() > 0) {
+                        scopeName = cls.getName().toString()+"::"; // NOI18N
+                    }
+                }
+            } catch (AssertionError ex) {
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+        return scopeName;
+    }
+
     public String getHtmlDisplayName() {
         if (htmlDisplayName.length() == 0) {
             htmlDisplayName = createHtmlDisplayName();
@@ -121,6 +142,9 @@ public class FunctionImpl implements Function {
     
     private String createHtmlDisplayName() {
         String displayName = function.getName().toString().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
+        if (scopeName == null) {
+            scopeName = "";
+        }
         try {
             CsmFunction f = getDeclaration();
             if (CsmKindUtilities.isClassMember(f)) {
@@ -131,7 +155,7 @@ public class FunctionImpl implements Function {
                     if (isVurtual()){
                         displayName ="<i>"+displayName+"</i>"; // NOI18N
                     }
-                    //NOI18N
+                    scopeName = cls.getName().toString()+"::"; // NOI18N
                     return displayName + "<font color=\'!controlShadow\'>  " + in + " " + name; // NOI18N
                 }
             }
@@ -144,7 +168,7 @@ public class FunctionImpl implements Function {
     }
 
     public String getDescription() {
-        return function.getSignature().toString();
+        return scopeName+function.getSignature().toString();
     }
 
     public Image getIcon() {

@@ -39,11 +39,13 @@
 
 package org.netbeans.modules.maven.repository.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.Action;
+import javax.swing.JButton;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.embedder.MavenEmbedder;
@@ -65,9 +67,19 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.repository.dependency.AddAsDependencyAction;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.modules.InstalledFileLocator;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -115,34 +127,64 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
             public void run() {
                 MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
                 MavenProject mvnprj;
-                if (prj == null) {
-                    List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
-                    if (fRepos != null) {
-                        repos.addAll(fRepos);
-                    }
-                    if (repos.size() == 0) {
-                        //add central repo
-                        repos.add(EmbedderFactory.createRemoteRepository(embedder, "http://repo1.maven.org/maven2", "central"));
-                        //add repository form info
-                        if (info != null && !"central".equals(info.getRepoId())) {
-                            RepositoryInfo rinfo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
-                            String url = rinfo.getRepositoryUrl();
-                            if (url != null) {
-                                repos.add(EmbedderFactory.createRemoteRepository(embedder, url, rinfo.getId()));
+                try {
+                    if (prj == null) {
+                        List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
+                        if (fRepos != null) {
+                            repos.addAll(fRepos);
+                        }
+                        if (repos.size() == 0) {
+                            //add central repo
+                            repos.add(EmbedderFactory.createRemoteRepository(embedder, "http://repo1.maven.org/maven2", "central")); //NOI18N
+                            //add repository form info
+                            if (info != null && !"central".equals(info.getRepoId())) { //NOI18N
+                                RepositoryInfo rinfo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
+                                String url = rinfo.getRepositoryUrl();
+                                if (url != null) {
+                                    repos.add(EmbedderFactory.createRemoteRepository(embedder, url, rinfo.getId()));
+                                }
+                            }
+                        }
+                        mvnprj = readMavenProject(embedder, fArt, repos);
+                    } else {
+                        NbMavenProject im = prj.getLookup().lookup(NbMavenProject.class);
+                        @SuppressWarnings("unchecked")
+                        List<String> profiles = im.getMavenProject().getActiveProfiles();
+                        mvnprj = im.loadAlternateMavenProject(embedder, profiles, new Properties());
+                    FileObject fo = prj.getLookup().lookup(FileObject.class);
+                    if (fo != null) {
+                        ModelSource ms = Utilities.createModelSource(fo);
+                        if (ms.isEditable()) {
+                            POMModel model = POMModelFactory.getDefault().getModel(ms);
+                            if (model != null) {
+                                ic.add(model);
                             }
                         }
                     }
-                    mvnprj = readMavenProject(embedder, fArt, repos);
-                } else {
-                    NbMavenProject im = prj.getLookup().lookup(NbMavenProject.class);
-                    @SuppressWarnings("unchecked")
-                    List<String> profiles = im.getMavenProject().getActiveProfiles();
-                    mvnprj = im.loadAlternateMavenProject(embedder, profiles, new Properties());
-                    //TODO add editable model to the lookup, to allow editing of dependencies..
+                    }
+                    ic.add(mvnprj);
+                    DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
+                    ic.add(root);
+                } catch (ComponentLookupException ex) {
+                    Exceptions.printStackTrace(ex); //this should not happen, if it does, report.
+                } catch (ProjectBuildingException ex) {
+                    ErrorPanel pnl = new ErrorPanel(ex);
+                    DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(ArtifactMultiViewFactory.class, "TIT_Error"));
+                    JButton close = new JButton();
+                    org.openide.awt.Mnemonics.setLocalizedText(close, NbBundle.getMessage(ArtifactMultiViewFactory.class, "BTN_CLOSE"));
+                    dd.setOptions(new Object[] { close });
+                    dd.setClosingOptions(new Object[] { close });
+                    DialogDisplayer.getDefault().notify(dd);
+                    File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
+                    try {
+                        MavenProject m = embedder.readProject(fallback);
+                        m.setDescription(null);
+                        ic.add(m);
+                    } catch (Exception x) {
+                        // oh well..
+                        //NOPMD
+                    }
                 }
-                ic.add(mvnprj);
-                DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
-                ic.add(root);
             }
         });
 
@@ -166,18 +208,9 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         return tc;
     }
 
-    public static MavenProject readMavenProject(MavenEmbedder embedder, Artifact artifact, List<ArtifactRepository> remoteRepos) {
-
-        try {
-            MavenProjectBuilder bldr = (MavenProjectBuilder) embedder.getPlexusContainer().lookup(MavenProjectBuilder.ROLE);
-            return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository());
-        } catch (ProjectBuildingException ex) {
-            //TODO shall not end up in user's face..
-            Exceptions.printStackTrace(ex);
-        } catch (ComponentLookupException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return new MavenProject();
+    private static MavenProject readMavenProject(MavenEmbedder embedder, Artifact artifact, List<ArtifactRepository> remoteRepos) throws ComponentLookupException, ProjectBuildingException {
+        MavenProjectBuilder bldr = (MavenProjectBuilder) embedder.getPlexusContainer().lookup(MavenProjectBuilder.ROLE);
+        return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository());
     }
 
 

@@ -57,8 +57,6 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.IconType;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.NameType;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
@@ -77,7 +75,6 @@ import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.w3c.dom.svg.SVGElement;
 
 public class SVGListElementEventSourceCD extends ComponentDescriptor {
 
@@ -168,36 +165,6 @@ public class SVGListElementEventSourceCD extends ComponentDescriptor {
     private static String getName(DesignComponent component) {
         
         return MidpValueSupport.getHumanReadableString (component.readProperty (PROP_STRING));
-    }
-
-    private class SVGListElementresolver implements InfoPresenter.Resolver {
-
-        public DesignEventFilter getEventFilter(DesignComponent component) {
-            return new DesignEventFilter().setGlobal(true);
-        }
-
-        public String getDisplayName(DesignComponent component, NameType nameType) {
-            return getName(component);
-        }
-
-        public boolean isEditable(DesignComponent component) {
-            if (component.readProperty(PROP_STRING).getKind() == PropertyValue.Kind.USERCODE) {
-                return false;
-            }
-            return true;
-        }
-
-        public String getEditableName(DesignComponent component) {
-            return getName(component);
-        }
-
-        public void setEditableName(DesignComponent component, String enteredName) {
-            component.writeProperty(PROP_STRING, MidpTypes.createStringValue(enteredName));
-        }
-
-        public Image getIcon(DesignComponent component, IconType iconType) {
-            return ICON;
-        }
     }
 
     private class SVGListElementFlowEventSourcePinPresenter  extends   FlowEventSourcePinPresenter {

@@ -41,36 +41,39 @@
 
 package org.netbeans.modules.hudson;
 
+import java.util.prefs.BackingStoreException;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 import org.openide.windows.WindowManager;
 
-/**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
- *
- * @author Michal Mocnak
- */
-public class Installer extends ModuleInstall {
+public class Installer extends ModuleInstall implements Runnable {
     
-    @Override
-    public void restored() {
-        // Perform ancestor method
-        super.restored();
-        
-        // Initialize Hudson Support when IDE starts
-        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-            public void run() {
-                HudsonManagerImpl.getInstance().getInstances();
-            }
-        });
+    public @Override void restored() {
+        if (active()) {
+            WindowManager.getDefault().invokeWhenUIReady(this);
+        }
     }
     
-    @Override
-    public void uninstalled() {
-        HudsonManagerImpl.getInstance().terminate();
-        
-        // Perform ancestor method
-        super.uninstalled();
+    public void run() {
+        HudsonManagerImpl.getDefault().getInstances();
     }
+
+    public @Override void uninstalled() {
+        if (active()) {
+            HudsonManagerImpl.getDefault().terminate();
+        }
+    }
+
+    /** #159810: avoid loading anything further unless this module is known to be in use */
+    private static boolean active() {
+        try {
+            return NbPreferences.forModule(Installer.class).nodeExists("instances"); // NOI18N
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+            return false;
+        }
+    }
+
 }

@@ -1,0 +1,9 @@
+from . import moduleY
+from ...package import bar
+from ...sys import path
+from ..moduleA import foo
+from ..subpackage1 import moduleY
+from ..subpackage2.moduleZ import eggs
+from .moduleY import spam as ham
+from .moduleY import spam
+

@@ -48,14 +48,8 @@ import java.awt.geom.Rectangle2D;
  */
 public class RenderUtil {
 
-    private static final String javaVersion = System.getProperty ("java.version");
-    private static final boolean java6 = javaVersion.startsWith ("1.6");
-
     public static void drawRect (Graphics2D gr, Rectangle rect) {
-        if (java6)
-            gr.drawRect (rect.x, rect.y, rect.width, rect.height);
-        else
-            gr.draw (new Rectangle2D.Double (rect.x + 0.5, rect.y + 0.5, rect.width - 1.0, rect.height - 1.0));
+        gr.draw(new Rectangle2D.Double(rect.x + 0.5, rect.y + 0.5, rect.width - 1.0, rect.height - 1.0));
     }
 
 }

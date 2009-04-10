@@ -240,7 +240,7 @@ public class KenaiTest extends NbTestCase {
     public void testLogin() throws Exception {
         System.out.println("testLogin");
         try {
-            instance.login("jerry", "mouse".toCharArray());
+            instance.login("jerry_randomname", "mouse".toCharArray());
             assert false : "Bogus login successful";
         } catch (KenaiException e) {
             // this is the expected result
@@ -256,6 +256,9 @@ public class KenaiTest extends NbTestCase {
         PasswordAuthentication passAuth = instance.getPasswordAuthentication();
         assertEquals(uname, passAuth.getUserName());
         assertEquals(passw, new String(passAuth.getPassword()));
+        if ("true".equals(System.getProperty("show_login"))) {
+            System.out.println("cred:" + uname + "/" + passw);
+        }
     }
 
     @Test
@@ -273,17 +276,9 @@ public class KenaiTest extends NbTestCase {
         System.out.println("Originally logged in, OK");
         // User should be logged out
         assertNull(instance.getPasswordAuthentication());
-        Throwable thr = null;
-        try {
-        instance.getMyProjects();
-        } catch (Throwable t) {
-            thr = t;
-        }
-        if (thr == null) {
-            fail("It is possible to check 'my projects' when not logged in");
-        } else {
-            System.out.println("Logged out, OK - 1/2");
-        }
+        final Collection<KenaiProject> myProjects = instance.getMyProjects();
+        assert myProjects.isEmpty(): "My Projects Must Be Empty";
+        System.out.println("Logged out, OK - 1/2");
         System.out.println("Logged out, OK - 2/2");
         // Login again and check if user is logged in
         instance.login(uname, passw.toCharArray());
@@ -324,7 +319,7 @@ public class KenaiTest extends NbTestCase {
 //            boolean authorized = instance.isAuthorized(prj, KenaiActivity.PROJECTS_ADMIN);
 //            System.out.println("PROJECTS_ADMIN? " + authorized);
 //            assertTrue(authorized);
-//        } catch (KenaiErrorMessage mes) {
+//        } catch (KenaiException mes) {
 //            System.out.println(mes.getAsString());
 //            throw mes;
 //        }
@@ -346,7 +341,7 @@ public class KenaiTest extends NbTestCase {
             assert result.getName().equals(name);
             assert result.getDisplayName().equals(displayName);
             assert result.getDescription().equals(description);
-        } catch (KenaiErrorMessage kem) {
+        } catch (KenaiException kem) {
             System.out.println(kem.getAsString());
             throw kem;
         }
@@ -397,7 +392,7 @@ public class KenaiTest extends NbTestCase {
             } catch (Throwable _t) {
                 // expected result
             }
-        } catch (KenaiErrorMessage kem) {
+        } catch (KenaiException kem) {
             System.out.println(kem.getAsString());
             throw kem;
         }
@@ -448,11 +443,11 @@ public class KenaiTest extends NbTestCase {
                 assertEquals(line, feature.getWebLocation().toString());
                 System.out.println(feature.getWebLocation().toString());
             }
-        } catch (IOException ex) {
-            fail("Failure while reading the features-java-inline.data golden file.");
-        } catch (KenaiErrorMessage mes) {
+        } catch (KenaiException mes) {
             System.out.println(mes.getAsString());
             throw mes;
+        } catch (IOException ex) {
+            fail("Failure while reading the features-java-inline.data golden file.");
         }
     }
 
@@ -514,11 +509,11 @@ public class KenaiTest extends NbTestCase {
                 }
                 System.out.println(feature.getWebLocation().toString());
             }
-        } catch (IOException ex) {
-            fail("Failure while reading the features-java-inline.data golden file.");
-        } catch (KenaiErrorMessage mes) {
+        } catch (KenaiException mes) {
             System.out.println(mes.getAsString());
             throw mes;
+        } catch (IOException ex) {
+            fail("Failure while reading the features-java-inline.data golden file.");
         }
     }
 
@@ -607,7 +602,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testCreateFeature"));
         _suite.addTest(new KenaiTest("testIsAuthorized"));
 //        _suite.addTest(new KenaiTest("testIsAuthorized2"));
-        _suite.addTest(new KenaiTest("testGetFeatures"));
+//        _suite.addTest(new KenaiTest("testGetFeatures"));
         _suite.addTest(new KenaiTest("testGetFeaturesGolden"));
         _suite.addTest(new KenaiTest("testGetLicenses"));
         _suite.addTest(new KenaiTest("testGetServices"));

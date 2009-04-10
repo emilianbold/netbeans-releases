@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,6 +50,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree.Kind;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -78,6 +79,8 @@ public class IfTest extends GeneratorTest {
 //        suite.addTest(new IfTest("testEmptyElseBlock"));
 //        suite.addTest(new IfTest("testReplaceCondition"));
 //        suite.addTest(new IfTest("testModifyingIf"));
+//        suite.addTest(new IfTest("test158463a"));
+//        suite.addTest(new IfTest("test158463b"));
         return suite;
     }
 
@@ -284,6 +287,114 @@ public class IfTest extends GeneratorTest {
         assertEquals(golden, res);
     }
 
+    public void test158463a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    void m1(int p, int q) {\n" +
+            "        if (p > 0)\n" +
+            "            if (q > 0) { p++; }\n" +
+            "            else { p--; }\n" +
+            "    }\n" +
+            "}\n");
+         String golden =
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    void m1(int p, int q) {\n" +
+            "        if ((p > 0) && (q > 0)) {\n" +
+            "            p++;\n" +
+            "        } else {\n" +
+            "            p--;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                IfTree original = (IfTree) block.getStatements().get(0);
+                IfTree original2 = (IfTree) original.getThenStatement();
+                IfTree modified = make.If(
+                        make.Parenthesized(
+                            make.Binary(Kind.CONDITIONAL_AND,
+                                original.getCondition(),
+                                original2.getCondition())),
+                        original2.getThenStatement(),
+                        original2.getElseStatement());
+                workingCopy.rewrite(original, modified);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test158463b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    void m1(int p, int q) {\n" +
+            "        if (p > 0)\n" +
+            "            if (q > 0) p++; \n" +
+            "            else p--;\n" +
+            "    }\n" +
+            "}\n");
+         String golden =
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    void m1(int p, int q) {\n" +
+            "        if ((p > 0) && (q > 0))\n" +
+            "            p++;\n" +
+            "        else {\n" + //TODO: brackets (#158154)
+            "            p--;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                IfTree original = (IfTree) block.getStatements().get(0);
+                IfTree original2 = (IfTree) original.getThenStatement();
+                IfTree modified = make.If(
+                        make.Parenthesized(
+                            make.Binary(Kind.CONDITIONAL_AND,
+                                original.getCondition(),
+                                original2.getCondition())),
+                        original2.getThenStatement(),
+                        original2.getElseStatement());
+                workingCopy.rewrite(original, modified);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }

@@ -42,9 +42,12 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.CardLayout;
+import javax.swing.Action;
+import javax.swing.table.TableColumn;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.image.ComponentColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
@@ -71,6 +74,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -94,6 +98,7 @@ import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.netbeans.swing.outline.Outline;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -109,6 +114,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 import org.w3c.dom.Element;
 
 /**
@@ -123,7 +129,9 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     Set<ModuleEntry> extraBinaryModules = new HashSet<ModuleEntry>();
     static boolean TEST = false;
     private LibrariesChildren libChildren;
-    private boolean cpLoaded;
+    private boolean extClustersLoaded;
+    private AbstractNode realRoot;
+    private AbstractNode waitRoot;
 
     /**
      * Creates new form SuiteCustomizerLibraries
@@ -133,19 +141,30 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         initComponents();
         initAccessibility();
         manager = new ExplorerManager();
+        waitRoot = new AbstractNode(new Children.Array() {
+
+            @Override
+            protected Collection<Node> initCollection() {
+                return Collections.singleton((Node) new WaitNode());
+            }
+        });
+        waitRoot.setName(getMessage("LBL_ModuleListClusters"));
+        waitRoot.setDisplayName(getMessage("LBL_ModuleListClustersModules"));
+        manager.setRootContext(waitRoot);
         refresh();
 
         view.setProperties(new Node.Property[] { ENABLED_PROP_TEMPLATE, ORIGIN_PROP_TEMPLATE });
-        view.setRootVisible(false);
-        view.setDefaultActionAllowed(false);
-        // col widths: 60%, 10%, 30%
-        // XXX TTV is clumsy, rewrite to Outline (without Nodes) or OutlineView
-        Dimension dim = view.getPreferredSize();
-        int firstW = 80 * dim.width / 100,
-            secW = 5 * dim.width / 100;
-//        view.setTableColumnPreferredWidth(0, firstW);
-        view.setTableColumnPreferredWidth(0, secW);
-        view.setTableColumnPreferredWidth(1, dim.width - firstW - secW);
+        Outline outline = view.getOutline();
+        outline.setRootVisible(false);
+        outline.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        TableColumn col = outline.getColumnModel().getColumn(1);
+        col.setMinWidth(25);
+        col.setMaxWidth(200);
+        col.setPreferredWidth(70);
+        col = outline.getColumnModel().getColumn(2);
+        col.setMinWidth(25);
+        col.setMaxWidth(300);
+        col.setPreferredWidth(130);
 
         suiteProps.getBrandingModel().addChangeListener(this);
         suiteProps.addPropertyChangeListener(new PropertyChangeListener() {
@@ -176,7 +195,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         if (project != null) {
             if (thisPrj.getProjectDirectory().equals(project.getProjectDirectory())) {
                 if (showMessages)
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddMyself")));
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(SuiteCustomizerLibraries.class, "MSG_TryingToAddMyself")));
                 return;
             }
             NbModuleProvider nmtp = project.getLookup().lookup(NbModuleProvider.class);
@@ -185,7 +204,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     SuiteProvider sprv = project.getLookup().lookup(SuiteProvider.class);
                     FileObject otherSuiteDir = FileUtil.toFileObject(sprv.getSuiteDirectory());
                     if (showMessages) {
-                        NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(NbBundle.getMessage(UIUtil.class, "MSG_AddSuiteInstead", ProjectUtils.getInformation(project).getDisplayName(), Util.getDisplayName(otherSuiteDir)), NotifyDescriptor.YES_NO_OPTION);
+                        NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(NbBundle.getMessage(SuiteCustomizerLibraries.class, "MSG_AddSuiteInstead", ProjectUtils.getInformation(project).getDisplayName(), Util.getDisplayName(otherSuiteDir)), NotifyDescriptor.YES_NO_OPTION);
                         DialogDisplayer.getDefault().notify(confirmation);
                         if (confirmation.getValue() == NotifyDescriptor.YES_OPTION) {
                             try {
@@ -202,7 +221,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     File clusterDir = ClusterUtils.getClusterDirectory(project);
                     if (libChildren.findCluster(clusterDir) != null) {
                         if (showMessages)
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(UIUtil.class, "MSG_AlreadyOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(SuiteCustomizerLibraries.class, "MSG_AlreadyOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
                         return;
                     }
                     initNodes();
@@ -210,8 +229,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     libChildren.setMergedKeys();
                     return;
                 } else if (nmtp.getModuleType() == NbModuleProvider.NETBEANS_ORG) {
-                    if (showMessages)
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddNBORGModuleOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
+                    assert false : "Trying to add NB.org module";
                     return;
                 }
             }
@@ -220,7 +238,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 File clusterDir = sprv.getClusterDirectory();
                 if (libChildren.findCluster(clusterDir) != null) {
                     if (showMessages)
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(UIUtil.class, "MSG_AlreadyOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(SuiteCustomizerLibraries.class, "MSG_AlreadyOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
                     return;
                 }
                 initNodes();
@@ -228,42 +246,9 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 libChildren.setMergedKeys();
                 return;
             }
-            // not a netbeans module
-            if (showMessages)
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddNonNBModuleOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
+            assert false : "not a netbeans module";
         }
         return;
-    }
-
-    // XXX support "universal" "${nbplatform.active.dir}/*" entry in the cluster.path? not needed
-    // meaning "all platform clusters", recognized in harness and in UI;
-    // it would allow easy switch among platforms with different clusters;
-    // update also code of SuiteProjectGenerator#createPlatformProperties
-    private void loadClusterPath() {
-        assert platformModules != null : "Must create platform nodes first";
-        assert libChildren != null;
-        if (cpLoaded)
-            return;
-        Set<ClusterInfo> clusterPath = getProperties().getClusterPath();
-        if (clusterPath.size() > 0) {
-            // cluster.path exists, we enable/disabled platform nodes according to
-            // cluster.path, not enabled.clusterPath & disabled.clusterPath
-            for (ClusterNode node : libChildren.platformNodes) {
-                if (! clusterPath.contains(node.getClusterInfo()))
-                    // must not call setEnabled(true), disabled modules would be enabled
-                    node.setEnabled(false);
-            }
-            for (ClusterInfo ci : clusterPath) {
-                if (! ci.isPlatformCluster()) {
-                    if (ci.getProject() != null) {
-                        addProjectCluster(ci, false);
-                    } else {
-                        addExtCluster(ci);
-                    }
-                }
-            }
-        }
-        cpLoaded = true;
     }
 
     private boolean isExternalCluster(Enabled en) {
@@ -285,21 +270,24 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         removeButton.setEnabled(canRemove);
         editButton.setEnabled(canEdit);
     }
-    
+
+    private RequestProcessor.Task refreshTask;
+
     void refresh() {
         refreshJavaPlatforms();
         refreshPlatforms();
-        Runnable r = new Runnable() {
-            public void run() {
-                refreshModules();
-                loadClusterPath();
-                updateDependencyWarnings(true);
-            }
-        };
+        if (refreshTask == null) {
+            refreshTask = RP.create(new Runnable() {
+                public void run() {
+                    refreshModules();
+                    updateDependencyWarnings(true);
+                }
+            });
+        }
         if (TEST) {
-            r.run();
+            refreshTask.run();
         } else {
-            RequestProcessor.getDefault().post(r);
+            refreshTask.schedule(0);
         }
         updateJavaPlatformEnabled();
     }
@@ -334,22 +322,82 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return new ClusterNode(ci, moduleCh);
     }
 
+    private final class WaitNode extends AbstractNode {
+        public WaitNode() {
+            super(Children.LEAF);
+            setDisplayName(CustomizerComponentFactory.WAIT_VALUE);
+        }
+    }
+
     private void initNodes() {
         if (libChildren == null) {
             libChildren = new LibrariesChildren();
-            AbstractNode n = new AbstractNode(libChildren);
-            n.setName(getMessage("LBL_ModuleListClusters"));
-            n.setDisplayName(getMessage("LBL_ModuleListClustersModules"));
-            manager.setRootContext(n);
+            realRoot = new AbstractNode(libChildren);
+            realRoot.setName(getMessage("LBL_ModuleListClusters"));
+            realRoot.setDisplayName(getMessage("LBL_ModuleListClustersModules"));
         }
     }
 
     private void refreshModules() {
+        // create platform modules children first
         platformModules = getProperties().getActivePlatform().getSortedModules();
-        createPlatformModulesChildren();
-//       XXX  synchronized (this) {
-//            universe = null;
-//        }
+        initNodes();
+        Set<String> disabledModuleCNB = new HashSet<String>(Arrays.asList(getProperties().getDisabledModules()));
+        Set<String> enabledClusters = new HashSet<String>(Arrays.asList(getProperties().getEnabledClusters()));
+
+        Map<File, ClusterNode> clusterToNode = new HashMap<File, ClusterNode>();
+        libChildren.platformNodes.clear();
+
+        boolean newPlaf = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_67;
+
+        for (ModuleEntry platformModule : platformModules) {
+            File clusterDirectory = platformModule.getClusterDirectory();
+            ClusterNode cluster = clusterToNode.get(clusterDirectory);
+            if (cluster == null) {
+                Children.SortedArray modules = new Children.SortedArray();
+                modules.setComparator(MODULES_COMPARATOR);
+                // enablement for pre-6.7 modules, for cluster path it gets resolved in load cluster.path section below
+                boolean enabled = newPlaf || SingleModuleProperties.clusterMatch(enabledClusters, clusterDirectory.getName());
+                ClusterInfo ci = ClusterInfo.create(clusterDirectory, true, enabled);
+                cluster = new ClusterNode(ci, modules);
+                clusterToNode.put(clusterDirectory, cluster);
+                libChildren.platformNodes.add(cluster);
+            }
+
+            AbstractNode module = new BinaryModuleNode(platformModule,
+                    ! disabledModuleCNB.contains(platformModule.getCodeNameBase()) && cluster.isEnabled());
+            cluster.getChildren().add(new Node[] { module });
+        }
+
+        // next, load cluster.path
+        // XXX support "universal" "${nbplatform.active.dir}/*" entry in the cluster.path?
+        // meaning "all platform clusters", recognized in harness and in UI;
+        // it would allow easy switch among platforms with different clusters; probably not needed
+        // update also code of SuiteProjectGenerator#createPlatformProperties
+        Set<ClusterInfo> clusterPath = getProperties().getClusterPath();
+        if (clusterPath.size() > 0) {
+            // cluster.path exists, we enable/disabled platform nodes according to
+            // cluster.path, not enabled.clusterPath & disabled.clusterPath
+            for (ClusterNode node : libChildren.platformNodes) {
+                if (!clusterPath.contains(node.getClusterInfo())) // must not call setEnabled(true), disabled modules would be enabled
+                {
+                    node.setEnabled(false);
+                }
+            }
+            if (!extClustersLoaded) {
+                for (ClusterInfo ci : clusterPath) {
+                    if (!ci.isPlatformCluster()) {
+                        if (ci.getProject() != null) {
+                            addProjectCluster(ci, false);
+                        } else {
+                            addExtCluster(ci);
+                        }
+                    }
+                }
+                extClustersLoaded = true;
+            }
+        }
+        libChildren.setMergedKeys();
     }
     
     private void refreshJavaPlatforms() {
@@ -426,7 +474,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         javaPlatformCombo = new javax.swing.JComboBox();
         javaPlatformButton = new javax.swing.JButton();
         filler = new javax.swing.JLabel();
-        view = new org.openide.explorer.view.TreeTableView();
+        view = new org.openide.explorer.view.OutlineView();
         viewLabel = new javax.swing.JLabel();
         buttonsPanel = new javax.swing.JPanel();
         resolveButtonPanel = new javax.swing.JPanel();
@@ -531,14 +579,14 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         add(filler, gridBagConstraints);
 
         view.setBorder(javax.swing.UIManager.getBorder("ScrollPane.border"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(view, gridBagConstraints);
-
+        
         viewLabel.setLabelFor(view);
         org.openide.awt.Mnemonics.setLocalizedText(viewLabel, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_PlatformModules")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -617,8 +665,12 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }//GEN-LAST:event_javaPlatformComboItemStateChanged
     
     private void platformValueItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_platformValueItemStateChanged
-        getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
-        updateJavaPlatformEnabled();
+        if (evt.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+            manager.setRootContext(waitRoot);
+            store();    // restore the same enablement of clusters for new platform
+            getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
+            updateJavaPlatformEnabled();
+        }
     }//GEN-LAST:event_platformValueItemStateChanged
     
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
@@ -628,8 +680,22 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
     private void addProjectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addProjectButtonActionPerformed
         Project project = UIUtil.chooseProject(this);
-        if (project != null)
+        if (project != null) {
+            NbModuleProvider nmtp = project.getLookup().lookup(NbModuleProvider.class);
+            if (nmtp != null && nmtp.getModuleType() == NbModuleProvider.NETBEANS_ORG) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(
+                        SuiteCustomizerLibraries.class, "MSG_TryingToAddNBORGModuleOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
+                return;
+            } else {
+                SuiteProvider sprv = project.getLookup().lookup(SuiteProvider.class);
+                if (sprv == null) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(
+                            SuiteCustomizerLibraries.class, "MSG_TryingToAddNonNBModuleOnClusterPath", ProjectUtils.getInformation(project).getDisplayName())));
+                    return;
+                }
+            }
             addProjectCluster(ClusterInfo.create(project, true),true);
+        }
     }//GEN-LAST:event_addProjectButtonActionPerformed
 
     private void addClusterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addClusterButtonActionPerformed
@@ -637,7 +703,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         if (ci != null) {
             if (libChildren.findCluster(ci.getClusterDir()) != null) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(UIUtil.class, "MSG_ClusterAlreadyOnClusterPath",
+                        NbBundle.getMessage(SuiteCustomizerLibraries.class, "MSG_ClusterAlreadyOnClusterPath",
                         ci.getClusterDir())));
                 return;
             }
@@ -706,40 +772,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private javax.swing.JButton removeButton;
     private javax.swing.JButton resolveButton;
     private javax.swing.JPanel resolveButtonPanel;
-    private org.openide.explorer.view.TreeTableView view;
+    private org.openide.explorer.view.OutlineView view;
     private javax.swing.JLabel viewLabel;
     // End of variables declaration//GEN-END:variables
     
     
-    private void createPlatformModulesChildren() {
-        initNodes();
-        Set<String> disabledModuleCNB = new HashSet<String>(Arrays.asList(getProperties().getDisabledModules()));
-        Set<String> enabledClusters = new HashSet<String>(Arrays.asList(getProperties().getEnabledClusters()));
-        
-        Map<File, ClusterNode> clusterToNode = new HashMap<File, ClusterNode>();
-        libChildren.platformNodes.clear();
-
-        for (ModuleEntry platformModule : platformModules) {
-            File clusterDirectory = platformModule.getClusterDirectory();
-            ClusterNode cluster = clusterToNode.get(clusterDirectory);
-            if (cluster == null) {
-                Children.SortedArray modules = new Children.SortedArray();
-                modules.setComparator(MODULES_COMPARATOR);
-                boolean enabled = SingleModuleProperties.clusterMatch(enabledClusters, clusterDirectory.getName());
-                ClusterInfo ci = ClusterInfo.create(clusterDirectory, true, enabled);
-                cluster = new ClusterNode(ci, modules);
-                clusterToNode.put(clusterDirectory, cluster);
-                libChildren.platformNodes.add(cluster);
-            }
-            
-            AbstractNode module = new BinaryModuleNode(platformModule,
-                    ! disabledModuleCNB.contains(platformModule.getCodeNameBase()) && cluster.isEnabled());
-            cluster.getChildren().add(new Node[] { module });
-        }
-        
-        libChildren.setMergedKeys();
-    }
-
     private static final Comparator<Node> MODULES_COMPARATOR = new Comparator<Node>() {
         Collator COLL = Collator.getInstance();
         public int compare(Node n1, Node n2) {
@@ -848,13 +885,15 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         DISABLED
     }
 
-    // TODO C.P separate model from nodes, together with TreeTable --> Outline 
+    private static final SystemAction[] NO_ACTIONS = new SystemAction[0];
+
     abstract class Enabled extends AbstractNode {
+
         private EnabledState state;
 
         Enabled(Children ch, boolean enabled) {
             super(ch);
-            setEnabled(enabled);
+            setState(enabled ? EnabledState.FULL_ENABLED : EnabledState.DISABLED, false);
             
             Sheet s = Sheet.createDefault();
             Sheet.Set ss = s.get(Sheet.PROPERTIES);
@@ -863,6 +902,16 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             setSheet(s);
             setIconBaseWithExtension(
                     isLeaf() ? NbModuleProject.NB_PROJECT_ICON_PATH : SuiteProject.SUITE_ICON_PATH);
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            return null;
+        }
+
+        @Override
+        public SystemAction[] getActions() {
+            return NO_ACTIONS;
         }
 
         public void setEnabled(boolean s) {
@@ -1112,7 +1161,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         
         public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
             Children ch = node.getChildren();
-            // TODO C.P bugfix - new empty app shows all platform nodes checked for a while
             Logger logger = Logger.getLogger(EnabledProp.class.getName());
             if (ch == Children.LEAF) {
                 logger.log(Level.FINE, "Node '" + node.getName() + "' is LEAF, enabled=" + node.isEnabled());
@@ -1398,10 +1446,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private RequestProcessor.Task updateDependencyWarningsTask;
-    private RequestProcessor RP = new RequestProcessor(SuiteCustomizerLibraries.class.getName());
+    private RequestProcessor RP = new RequestProcessor(SuiteCustomizerLibraries.class.getName(), 1);
 
     private void updateDependencyWarnings(final boolean refreshUniverse) {
-        if (TEST || ! cpLoaded) {
+        if (TEST || ! extClustersLoaded) {
             return;
         }
         // XXX avoid running unless and until we become visible, perhaps
@@ -1515,7 +1563,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         Set<String> disabledModules = new TreeSet<String>();
         enabledClusters.add(ClusterUtils.getClusterDirectory(getProperties().getProject()));
         
-        for (Node cluster : getExplorerManager().getRootContext().getChildren().getNodes()) {
+        for (Node cluster : libChildren.getNodes()) {
             if (cluster instanceof ClusterNode) {
                 ClusterNode e = (ClusterNode) cluster;
                 if (e.isEnabled()) {
@@ -1536,18 +1584,22 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                CardLayout cl = (CardLayout) resolveButtonPanel.getLayout();
-                if (! fi.isEmpty()) {
-                    String key = fi.warning[0];
-                    String[] args = new String[fi.warning.length - 1];
-                    System.arraycopy(fi.warning, 1, args, 0, args.length);
-                    category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
-                    resolveFixInfo = fi;
-                    resolveButton.setEnabled(fi.fixable);
-                    cl.last(resolveButtonPanel);
-                } else {
-                    category.setErrorMessage(null);
-                    cl.first(resolveButtonPanel);
+                try {
+                    CardLayout cl = (CardLayout) resolveButtonPanel.getLayout();
+                    if (!fi.isEmpty()) {
+                        String key = fi.warning[0];
+                        String[] args = new String[fi.warning.length - 1];
+                        System.arraycopy(fi.warning, 1, args, 0, args.length);
+                        category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
+                        resolveFixInfo = fi;
+                        resolveButton.setEnabled(fi.fixable);
+                        cl.last(resolveButtonPanel);
+                    } else {
+                        category.setErrorMessage(null);
+                        cl.first(resolveButtonPanel);
+                    }
+                } finally {
+                    manager.setRootContext(realRoot);
                 }
             }
         });
@@ -1570,7 +1622,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
         private static void putUnfixable(FixInfo fi, String[] warning) {
             fi.fixable = false;
-            fi.warning = warning;
+            // chain of original warnings ended up in unfixable problem,
+            // but we have to show root cause (otherwise it can complain about unsatisifed
+            // dep. of excluded module; just disable "Resolve" button; 
+            // fi.warning = warning;
         }
 
         String[] warning;
@@ -1617,7 +1672,13 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
         });
         String mdn = m.getDisplayName();
-        String mc = libChildren.findCluster(m.getCluster()).getDisplayName();
+        ClusterNode node = libChildren.findCluster(m.getCluster());
+        if (node == null) {
+            // #162155: dirty hack of race conditions; proper solution would be to copy everything for doUpdateDependencyWarnings,
+            // but null here means another refresh is in progress, thus it is safe to return here, last refresh in row will get everything straight.
+            return false;
+        }
+        String mc = node.getDisplayName();
         deps.addAll(m.getModuleDependencies());
         boolean ret = false;
         for (Dependency d : deps) {
@@ -1648,7 +1709,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
             String ddn = dep.getDisplayName();
             if (excluded.contains(dep)) {
-                String dc = libChildren.findCluster(dep.getCluster()).getDisplayName();
+                node = libChildren.findCluster(dep.getCluster());
+                if (node == null) // #162155
+                    return false;
+                String dc = node.getDisplayName();
                 // currently the only fixable error
                 FixInfo.putFixable(fi, cnb, new String[] {"ERR_excluded_dep", mdn, mc, ddn, dc});
                 // include added module again and see what happens...
@@ -1693,10 +1757,22 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
             if (!found) {
                 if (wouldBeProvider != null) {
-                    // XXX may display dialog for choosing appropriate provider, turning this into fixable error
-                    FixInfo.putUnfixable(fi, new String[] {"ERR_only_excluded_providers", tok, mdn, mc,  // NOI18N
-                        wouldBeProvider.getDisplayName(), libChildren.findCluster(wouldBeProvider.getCluster()).getDisplayName()});
-                    return true;
+                    node = libChildren.findCluster(wouldBeProvider.getCluster());
+                    if (node == null) // #162155
+                        return false;
+                    String[] msg = new String[] {"ERR_only_excluded_providers", tok, mdn, mc,  // NOI18N
+                        wouldBeProvider.getDisplayName(), node.getDisplayName()};
+                    if (possibleProviders.size() == 1) {
+                        // exactly one (disabled) provider, can be fixed automatically
+                        excluded.remove(wouldBeProvider);
+                        FixInfo.putFixable(fi, wouldBeProvider.getCodeNameBase(), msg);
+                        ret = true;
+                        continue;
+                    } else {
+                        // XXX may display dialog for choosing appropriate provider, turning this into fixable error
+                        FixInfo.putUnfixable(fi, msg);
+                        return true;
+                    }
                 } else {
                     FixInfo.putUnfixable(fi, new String[] {"ERR_no_providers", tok, mdn, mc}); // NOI18N
                     return true;

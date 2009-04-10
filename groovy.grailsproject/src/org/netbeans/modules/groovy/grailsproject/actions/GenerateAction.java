@@ -136,6 +136,9 @@ public abstract class GenerateAction extends NodeAction {
         }
 
         Project prj = FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
+        if (prj == null) {
+            return false;
+        }
         FileObject domainDir = prj.getProjectDirectory().getFileObject(DOMAIN_DIR);
         if (domainDir == null) {
             return false;

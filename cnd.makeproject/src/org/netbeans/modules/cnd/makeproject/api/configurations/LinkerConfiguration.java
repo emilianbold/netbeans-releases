@@ -45,7 +45,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.LinkerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.LibrariesNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
@@ -333,15 +333,17 @@ public class LinkerConfiguration implements AllOptionsProvider {
             }
         }
 
+        Sheet.Set set1 = new Sheet.Set();
+        set1.setName("General"); // NOI18N
+        set1.setDisplayName(getString("GeneralTxt"));
+        set1.setShortDescription(getString("GeneralHint"));
         if (!isQtMode) {
-            Sheet.Set set1 = new Sheet.Set();
-            set1.setName("General"); // NOI18N
-            set1.setDisplayName(getString("GeneralTxt"));
-            set1.setShortDescription(getString("GeneralHint"));
             set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
             set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
-            set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
-            sheet.put(set1);
+        }
+        set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
+        sheet.put(set1);
+        if (!isQtMode) {
             Sheet.Set set2 = new Sheet.Set();
             set2.setName("Options"); // NOI18N
             set2.setDisplayName(getString("OptionsTxt"));

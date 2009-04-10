@@ -39,6 +39,8 @@
 package org.netbeans.modules.css.parser;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Assert;
 import org.netbeans.modules.css.editor.test.TestBase;
 
@@ -53,43 +55,65 @@ public class CssParserTest extends TestBase {
     }
 
     private SimpleNode parse(String source) throws ParseException {
-        CSSParser parser = new CSSParser();
-        CSSParserTokenManager tokenManager = new CSSParserTokenManager(new ASCII_CharStream(new StringReader(source)));
+        CssParser parser = new CssParser();
+        CssParserTokenManager tokenManager = new CssParserTokenManager(new ASCII_CharStream(new StringReader(source)));
         parser.ReInit(tokenManager);
 
         return parser.styleSheet();
     }
 
     private static boolean isErrorNode(SimpleNode node) {
-        return node.kind() == CSSParserTreeConstants.JJTERROR_SKIPBLOCK ||
-                node.kind() == CSSParserTreeConstants.JJTERROR_SKIPDECL ||
-                node.kind() == CSSParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE;
+        return node.kind() == CssParserTreeConstants.JJTERROR_SKIPBLOCK ||
+                node.kind() == CssParserTreeConstants.JJTERROR_SKIPDECL ||
+                node.kind() == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE;
     }
 
     /** returns number of error nodes underneath the node. */
-    private static int getNumErrors(SimpleNode node) {
-        final int[] errors = new int[1];
+    private static List<SimpleNode> getErrors(SimpleNode node) {
+        final List<SimpleNode> errors = new ArrayList<SimpleNode>();
         SimpleNodeUtil.visitChildren(node, new NodeVisitor() {
 
             public void visit(SimpleNode node) {
                 if (isErrorNode(node)) {
-                    errors[0]++;
+                    errors.add(node);
                 }
             }
         });
-        return errors[0];
+        return errors;
+    }
+
+    private void assertNoErrors(SimpleNode node) {
+        Assert.assertNotNull(node);
+        List<SimpleNode> errors = getErrors(node);
+        if(errors.size() > 0) {
+            StringBuffer buf = new StringBuffer();
+            for(SimpleNode e : errors) {
+                buf.append(e.toString());
+                buf.append(',');
+            }
+            buf.deleteCharAt(buf.length() - 1);
+            assertEquals("Unexpected parse errors found: " + buf.toString(), 0, errors.size());
+        }
     }
 
     public void testParserBasis() throws ParseException {
         SimpleNode node = parse("h1 { color: red; }");
         Assert.assertNotNull(node);
-        Assert.assertEquals(0, getNumErrors(node));
+        assertNoErrors(node);
+        
+    }
+
+    public void testParseComment() throws ParseException {
+        assertNoErrors(parse("h1 { /* comment */ }"));
+        assertNoErrors(parse("h1 { color: /* comment */ red; }"));
+        assertNoErrors(parse("h1 /* c */ { /* c2 */ color: red; }"));
+        assertNoErrors(parse("/* c */ h1 {  color: red; } /* c2 */"));
     }
 
     private void check(String source) throws ParseException {
         SimpleNode node = parse(source);
         Assert.assertNotNull(node);
-        Assert.assertEquals(0, getNumErrors(node));
+        assertNoErrors(node);
     }
 
     // @@@ represents a gap from the css perspective in reality filled with 
@@ -131,7 +155,6 @@ public class CssParserTest extends TestBase {
         check("h1 { @@@: rgb(@@@); }");
         check("span[hello=@@@][@@@]{}");
 
-        check("EXAMPLE { /* @@@ */ }");
         check("p.@@@:first-letter {color: @@@}");
 
 //        check("h1 {color: #@@@}");//fails
@@ -139,5 +162,9 @@ public class CssParserTest extends TestBase {
 
 //        check("media TV{ @@@ { } }");//fails
         check("@page:left{margin-left:@@@;}");
+    }
+
+    public void testTemplatingInComment() throws ParseException {
+        check("EXAMPLE { /* @@@ */ }");
     }
 }

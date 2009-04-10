@@ -71,7 +71,6 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPre
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.PropertiesPresenterForwarder;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
-import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
@@ -118,8 +117,7 @@ public abstract class SVGComponentEventSourceCD extends ComponentDescriptor {
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, ActionsPresenter.class);
         DocumentSupport.removePresentersOfClass(presenters, InspectorFolderPresenter.class);
-        MidpActionsSupport.addCommonEventSourceActionsPresenters(presenters, false,
-                true, true, false, true);
+        MidpSVGActionsSupport.addCommonEventSourceActionsPresenters(presenters, false,true, true, false, true);
 
         super.gatherPresenters(presenters);
     }

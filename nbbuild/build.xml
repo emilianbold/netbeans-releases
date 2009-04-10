@@ -722,7 +722,9 @@ the ${netbeans.dest}/bin/ directory.
   </target>
 
   <target name="zip-cluster-config" depends="init">
-    <property name="zip.name" value="NetBeans-${buildnum}-${cluster.config}.zip"/>
+    <property name="zip.dir" location="."/>
+    <mkdir dir="${zip.dir}"/>
+    <property name="zip.name" location="${zip.dir}/NetBeans-${buildnum}-${cluster.config}.zip"/>
     <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
     <resolvelist name="nb.clusters.dirs" list="${nb.clusters.list}">
         <mapper type="glob" from="*" to="*.dir"/>
@@ -1663,6 +1665,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <property name="continue.after.failing.tests" value="true"/>
         <property name="build.test.unit.results.dir" location="${build.test.results.dir}"/>
         <property name="build.test.qa-functional.results.dir" location="${build.test.results.dir}"/>
+        <property name="test-unit-sys-prop.ignore.random.failures" value="true"/>
+        <property name="test-qa-functional-sys-prop.ignore.random.failures" value="true"/>
         <dirset dir=".." includes="${nb.clusters.validation.list}"/>
     </subant>
     

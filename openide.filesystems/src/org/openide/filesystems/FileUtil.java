@@ -289,15 +289,9 @@ public final class FileUtil extends Object {
 
         private void locateCurrent() {
             FileObject oldCurrent = current;
-            currentF = path;
+            currentF = FileUtil.normalizeFile(path);
             while (true) {
-                try {
-                    current = FileUtil.toFileObject(currentF);
-                } catch (IllegalArgumentException x) {
-                    // #73526: was originally normalized, but now is not. E.g. file changed case.
-                    currentF = FileUtil.normalizeFile(currentF);
-                    current = FileUtil.toFileObject(currentF);
-                }
+                current = FileUtil.toFileObject(currentF);
                 if (current != null) {
                     isOnTarget = path.equals(currentF);
                     break;
@@ -870,14 +864,11 @@ public final class FileUtil extends Object {
         }
 
         FileObject retVal = null;
-
         try {
             URL url = file.toURI().toURL();
 
-            if (
-                (url.getAuthority() != null) &&
-                    (Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))
-            ) {
+            if ((url.getAuthority() != null) &&
+                    (Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) {
                 return null;
             }
 
@@ -1825,7 +1816,8 @@ public final class FileUtil extends Object {
                     in.close();
                 }
             } catch (IOException ioe) {
-                // #160507 - silently ignore exception (e.g. permission denied)
+                // #160507 - ignore exception (e.g. permission denied)
+                LOG.log(Level.FINE, null, ioe);
             }
 
             if (b == null) {

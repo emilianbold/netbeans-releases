@@ -58,6 +58,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EventObject;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
@@ -329,7 +330,7 @@ public class OutlineView extends JScrollPane {
     /** Registers in the tree of components.
      */
     private void lookupExplorerManager () {
-        // Enter key in the tree
+    // Enter key in the tree
 
         if (managerListener == null) {
             managerListener = new TableSelectionListener();
@@ -367,7 +368,10 @@ public class OutlineView extends JScrollPane {
 
     /** Synchronize the selected nodes from the manager of this Explorer.
      */
-    final void synchronizeSelectedNodes(boolean scroll) {
+    final void synchronizeSelectedNodes(boolean scroll, Node... nodes) {
+        if (! needToSynchronize ()) {
+            return ;
+        }
         expandSelection();
         outline.invalidate();
         invalidate();
@@ -408,6 +412,24 @@ public class OutlineView extends JScrollPane {
                 outline.scrollRectToVisible(rect);
             }
         }
+    }
+
+    private boolean needToSynchronize () {
+        boolean doSync = false;
+        Node [] arr = manager.getSelectedNodes ();
+        if (outline.getSelectedRows ().length != arr.length) {
+            doSync = true;
+        } else if (arr.length > 0) {
+            List<Node> nodes = Arrays.asList (arr);
+            for (int idx : outline.getSelectedRows ()) {
+                Node n = getNodeFromRow (idx);
+                if (n == null || ! nodes.contains (n)) {
+                    doSync = true;
+                    break;
+                }
+            }
+        }
+        return doSync;
     }
 
     /**
@@ -799,7 +821,7 @@ public class OutlineView extends JScrollPane {
             if (manager == null) return; // the tree view has been removed before the event got delivered
             if (evt.getPropertyName().equals(ExplorerManager.PROP_ROOT_CONTEXT)) {
                 synchronizeRootContext();
-            }
+        }
             if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
                 synchronizeSelectedNodes(true);
             }

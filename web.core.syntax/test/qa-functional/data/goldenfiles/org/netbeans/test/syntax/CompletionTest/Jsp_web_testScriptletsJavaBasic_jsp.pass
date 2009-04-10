@@ -15,9 +15,9 @@ ThreadLocal <T>
 Throwable
 TypeNotPresentException
 End cursor position = 627
-[<% testBean.|, void setName (String name ), <% testBean.setName(name), 778]
+[<% testBean.|, void setName, <% testBean.setName(name), 763]
 boolean equals (Object obj )
-Class <?> getClass ()
+Class  getClass ()
 Integer getId ()
 String getName ()
 int hashCode ()
@@ -29,13 +29,13 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 803
-[<% "Hello World !".| %>, int indexOf (String str ), <% "Hello World !".indexOf(str); %>, 934]
-Comparator <String> CASE_INSENSITIVE_ORDER
+End cursor position = 788
+[<% "Hello World !".| %>, int indexOf (String str ), <% "Hello World !".indexOf(str); %>, 919]
+Comparator <String> CASE_INSENSITIVE_ORD
 char charAt (int index )
 int codePointAt (int index )
 int codePointBefore (int index )
-int codePointCount (int beginIndex , int endIn
+int codePointCount (int beginIndex , int
 int compareTo (String anotherString )
 int compareToIgnoreCase (String str )
 String concat (String str )
@@ -43,47 +43,47 @@ boolean contains (CharSequence s )
 boolean contentEquals (CharSequence cs )
 boolean contentEquals (StringBuffer sb )
 String copyValueOf (char[] data )
-String copyValueOf (char[] data , int offset ,
+String copyValueOf (char[] data , int of
 boolean endsWith (String suffix )
 boolean equals (Object anObject )
-boolean equalsIgnoreCase (String anotherString )
-String format (String format , Objectargs )
-String format (Locale l , String format , Objec
+boolean equalsIgnoreCase (String another
+String format (String format , Object
+String format (Locale l , String format 
 byte[] getBytes ()
 byte[] getBytes (Charset charset )
 byte[] getBytes (String charsetName )
-void getBytes (int srcBegin , int srcEnd , byte
-void getChars (int srcBegin , int srcEnd , char
+void getBytes (int srcBegin , int srcEnd
+void getChars (int srcBegin , int srcEnd
 Class <?> getClass ()
 int hashCode ()
 int indexOf (String str )
 int indexOf (int ch )
-int indexOf (String str , int fromIndex )
+int indexOf (String str , int fromIndex 
 int indexOf (int ch , int fromIndex )
 String intern ()
 boolean isEmpty ()
 int lastIndexOf (String str )
 int lastIndexOf (int ch )
-int lastIndexOf (String str , int fromIndex )
-int lastIndexOf (int ch , int fromIndex )
+int lastIndexOf (String str , int fromIn
+int lastIndexOf (int ch , int fromIndex 
 int length ()
 boolean matches (String regex )
 void notify ()
 void notifyAll ()
-int offsetByCodePoints (int index , int codePo
-boolean regionMatches (int toffset , String ot
-boolean regionMatches (boolean ignoreCase , in
-String replace (CharSequence target , CharSequ
-String replace (char oldChar , char newChar )
-String replaceAll (String regex , String repla
-String replaceFirst (String regex , String rep
+int offsetByCodePoints (int index , int 
+boolean regionMatches (int toffset , Str
+boolean regionMatches (boolean ignoreCas
+String replace (CharSequence target , Ch
+String replace (char oldChar , char newC
+String replaceAll (String regex , String
+String replaceFirst (String regex , Stri
 String[] split (String regex )
-String[] split (String regex , int limit )
+String[] split (String regex , int limit
 boolean startsWith (String prefix )
-boolean startsWith (String prefix , int toffset )
-CharSequence subSequence (int beginIndex , int
+boolean startsWith (String prefix , int 
+CharSequence subSequence (int beginIndex
 String substring (int beginIndex )
-String substring (int beginIndex , int endIndex )
+String substring (int beginIndex , int e
 char[] toCharArray ()
 String toLowerCase ()
 String toLowerCase (Locale locale )
@@ -99,16 +99,16 @@ String valueOf (double d )
 String valueOf (float f )
 String valueOf (int i )
 String valueOf (long l )
-String valueOf (char[] data , int offset , int
+String valueOf (char[] data , int offset
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 965
-[<% Li|, LinkedList <E>, <% LinkedList, 1063]
+End cursor position = 950
+[<% Li|, LinkedList <E>, <% LinkedList, 1048]
 LinkageError
 LinkedList <E>
-End cursor position = 1077
-[<% C|, Card, <% Card, 1175]
+End cursor position = 1062
+[<% C|, Card, <% Card, 1160]
 ServletConfig config
 Object clone ()
 char
@@ -127,12 +127,12 @@ Cloneable
 Comparable <T>
 Compiler
 Cookie
-End cursor position = 1183
-[<% LinkedList l = new LinkedList();l.| %>, void clear (), <% LinkedList l = new LinkedList();l.clear(); %>, 1400]
+End cursor position = 1168
+[<% LinkedList l = new LinkedList();l.| %>, void clear (), <% LinkedList l = new LinkedList();l.clear(); %>, 1385]
 boolean add (Object e )
 void add (int index , Object element )
 boolean addAll (Collection c )
-boolean addAll (int index , Collection c )
+boolean addAll (int index , Collection c
 void addFirst (Object e )
 void addLast (Object e )
 void clear ()
@@ -171,21 +171,21 @@ boolean remove (Object o )
 Object remove (int index )
 boolean removeAll (Collection c )
 Object removeFirst ()
-boolean removeFirstOccurrence (Object o )
+boolean removeFirstOccurrence (Object o 
 Object removeLast ()
 boolean removeLastOccurrence (Object o )
 boolean retainAll (Collection c )
 Object set (int index , Object element )
 int size ()
-List subList (int fromIndex , int toIndex )
+List subList (int fromIndex , int toInde
 Object[] toArray ()
 Object[] toArray (Object[] a )
 String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 1446
-[<% org.test.TestBean t = new org.test.TestBean(); t.| %>, void setName (String name ), <% org.test.TestBean t = new org.test.TestBean(); t.setName(name); %>, 1675]
+End cursor position = 1431
+[<% org.test.TestBean t = new org.test.TestBean(); t.| %>, void setName, <% org.test.TestBean t = new org.test.TestBean(); t.setName(name); %>, 1645]
 boolean equals (Object obj )
 Class <?> getClass ()
 Integer getId ()
@@ -199,4 +199,4 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 1740
+End cursor position = 1710

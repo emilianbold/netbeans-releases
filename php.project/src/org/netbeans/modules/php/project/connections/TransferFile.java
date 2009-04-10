@@ -89,10 +89,7 @@ public final class TransferFile {
         this.timestamp = timestamp;
     }
 
-    /**
-     * Implementation for {@link File}.
-     */
-    public static TransferFile fromFile(File file, String baseDirectory) {
+    private static TransferFile fromFile0(File file, String baseDirectory, boolean isDirectory) {
         assert file != null;
         assert baseDirectory != null;
 
@@ -103,11 +100,17 @@ public final class TransferFile {
         String name = file.getName();
         String relativePath = getPlatformIndependentPath(getRelativePath(file.getAbsolutePath(), baseDirectory));
         String parentRelativePath = getPlatformIndependentPath(getParentRelativePath(file.getParentFile().getAbsolutePath(), baseDirectory));
-        boolean directory = file.isDirectory();
-        boolean f = file.isFile();
+        boolean directory = isDirectory;
+        boolean f = !isDirectory;
         long size = directory ? 0L : file.length();
 
         return new TransferFile(name, relativePath, parentRelativePath, size, directory, f, TimeUnit.SECONDS.convert(file.lastModified(), TimeUnit.MILLISECONDS));
+    }
+    /**
+     * Implementation for {@link File}.
+     */
+    public static TransferFile fromFile(File file, String baseDirectory) {
+        return fromFile0(file, baseDirectory, file.isDirectory());
     }
 
     /**
@@ -116,7 +119,7 @@ public final class TransferFile {
     public static TransferFile fromFileObject(FileObject fo, String baseDirectory) {
         assert fo != null;
 
-        return fromFile(FileUtil.toFile(fo), baseDirectory);
+        return fromFile0(FileUtil.toFile(fo), baseDirectory, fo.isFolder());
     }
 
     /**
@@ -126,7 +129,6 @@ public final class TransferFile {
         assert remoteFile != null;
         assert baseDirectory.startsWith(SEPARATOR) : "Base directory must start with '" + SEPARATOR + "' [" + baseDirectory + "]";
         assert parentDirectory.startsWith(SEPARATOR) : "Parent directory must start with '" + SEPARATOR + "' [" + parentDirectory + "]";
-        assert !baseDirectory.endsWith(SEPARATOR) && !parentDirectory.endsWith(SEPARATOR) : "Both base and parent directory cannot end with '" + SEPARATOR + "' [" + baseDirectory + ", " + parentDirectory + "]";
         assert parentDirectory.startsWith(baseDirectory) : "Parent directory must be underneath base directory [" + parentDirectory + " => " + baseDirectory + "]";
 
         String name = remoteFile.getName();

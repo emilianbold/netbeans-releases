@@ -98,12 +98,12 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
         assertNotNull(targetObject);
         Lookup lkp = Lookups.singleton(ref);
         WhereUsedQuery query = new WhereUsedQuery(lkp);
-        Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(targetObject, false);
+        Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(targetObject, ref.getContainingFile().getProject());
         CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
         query.getContext().add(ar);
 
         // set parameters
-        for (Map.Entry entry : params.entrySet()) {
+        for (Map.Entry<Object, Boolean> entry : params.entrySet()) {
             query.putValue(entry.getKey(), entry.getValue());
         }
         CsmWhereUsedQueryPlugin whereUsedPlugin = new CsmWhereUsedQueryPlugin(query);

@@ -71,7 +71,7 @@ public final class ClusterUtils {
     }
 
     public static boolean isValidCluster(File file) {
-        return (new File(file, "config/Modules")).exists();
+        return (new File(file, "config/Modules")).isDirectory();
     }
 
     /**

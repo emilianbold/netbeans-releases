@@ -85,7 +85,7 @@ public final class SourcesHelperTest extends NbTestCase {
     private Project project2;
     private SourcesHelper sh2;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType());
         scratch = TestUtil.makeScratchDir(this);
@@ -120,7 +120,7 @@ public final class SourcesHelperTest extends NbTestCase {
         p.setProperty("ext.file", "../../external/extFile");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
         ProjectManager.getDefault().saveProject(project);
-        sh = new SourcesHelper(h, h.getStandardPropertyEvaluator());
+        sh = new SourcesHelper(project, h, h.getStandardPropertyEvaluator());
         sh.addPrincipalSourceRoot("${src1.dir}", "Sources #1", null, null); // inside proj dir
         sh.addPrincipalSourceRoot("${src2.dir}", "Sources #2", null, null); // outside (rel path)
         sh.addPrincipalSourceRoot("${src2a.dir}", "Sources #2a", null, null); // redundant
@@ -147,7 +147,7 @@ public final class SourcesHelperTest extends NbTestCase {
         h2 = ProjectGenerator.createProject(proj2dir, "test");
         project2 = ProjectManager.getDefault().findProject(proj2dir);
         assertNotNull("have a project2", project2);
-        sh2 = new SourcesHelper(h2, h2.getStandardPropertyEvaluator());
+        sh2 = new SourcesHelper(project2, h2, h2.getStandardPropertyEvaluator());
         sh2.addPrincipalSourceRoot("src1", "Sources #1", null, null);
         sh2.addPrincipalSourceRoot("src2", "Sources #2", null, null);
         sh2.addNonSourceRoot("build");
@@ -420,7 +420,7 @@ public final class SourcesHelperTest extends NbTestCase {
         // <editor-fold desc="other setup #2">
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
         ProjectManager.getDefault().saveProject(project);
-        sh = new SourcesHelper(h, h.getStandardPropertyEvaluator());
+        sh = new SourcesHelper(project, h, h.getStandardPropertyEvaluator());
         sh.addPrincipalSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "Sources #1", null, null);
         sh.addPrincipalSourceRoot("${src2.dir}", "${src2.includes}", "${src2.excludes}", "Sources #2", null, null);
         sh.addPrincipalSourceRoot("${src3.dir}", "${src3.includes}", null, "Sources #3", null, null);
@@ -594,7 +594,7 @@ public final class SourcesHelperTest extends NbTestCase {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
         ProjectManager.getDefault().saveProject(project);
         //minimalSubfolders = true
-        sh = new SourcesHelper(h, h.getStandardPropertyEvaluator());
+        sh = new SourcesHelper(project, h, h.getStandardPropertyEvaluator());
         sh.addPrincipalSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "Sources #1", null, null);
         sh.addTypedSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "java", "Packages #1", null, null);
         sh.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, true);
@@ -604,7 +604,7 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("Packages #1", g1.getDisplayName());
         assertNull(FileOwnerQuery.getOwner(src1dir));
         //minimalSubfolders = false
-        sh = new SourcesHelper(h, h.getStandardPropertyEvaluator());
+        sh = new SourcesHelper(project, h, h.getStandardPropertyEvaluator());
         sh.addPrincipalSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "Sources #1", null, null);
         sh.addTypedSourceRoot("${src1.dir}", "${src1.includes}", "${src1.excludes}", "java", "Packages #1", null, null);
         sh.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, false);

@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -151,7 +152,7 @@ public abstract class SQLDataStorage extends DataStorage {
   private boolean enabled = false;
   private AsyncThread asyncThread = null;
   private final Map<String, PreparedStatement> stmts;
-
+  private final Map<String, String> serviceInfoMap = new ConcurrentHashMap<String, String>();
 
   static {
     classToType.put(Integer.class, "int");
@@ -166,7 +167,7 @@ public abstract class SQLDataStorage extends DataStorage {
     insertPreparedStatments = new HashMap<String, PreparedStatement>();
   }
 
-  protected SQLDataStorage(String dburl) {
+  protected SQLDataStorage(String dburl) throws SQLException {
     this();
     connect(dburl);
     if (!enabled) {
@@ -193,7 +194,7 @@ public abstract class SQLDataStorage extends DataStorage {
     asyncThread = null;
   }
 
-  protected abstract void connect(String dburl);
+  protected abstract void connect(String dburl) throws SQLException;
 
   protected String classToType(Class clazz) {
     return classToType.get(clazz);
@@ -417,11 +418,23 @@ public abstract class SQLDataStorage extends DataStorage {
     return stmt;
   }
 
+    public final Map<String, String> getInfo() {
+        return serviceInfoMap;
+    }
+
+    public final String getValue(String name) {
+        return serviceInfoMap.get(name);
+    }
+
+    public final String put(String name, String value) {
+        return serviceInfoMap.put(name, value);
+    }
+
   private static class EnumStringConstructor<T> {
 
-    public String constructEnumString(Collection<T> collection, Convertor<T> conv) {
+    public String constructEnumString(Collection<? extends T> collection, Convertor<T> conv) {
       StringBuilder sb = new StringBuilder();
-      Iterator<T> i = collection.iterator();
+      Iterator<? extends T> i = collection.iterator();
       T item;
 
       while (i.hasNext()) {

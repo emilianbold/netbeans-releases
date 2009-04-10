@@ -54,6 +54,9 @@ public class SQLStatementAnalyzer {
         if ( ! seq.moveNext ()) {
             return null;
         }
+        if (seq.token () != null && SQLTokenId.WHITESPACE.equals (seq.token ().id ())) {
+            seq.moveNext ();
+        }
         if (isKeyword ("SELECT", seq)) { // NOI18N
             return SQLStatementKind.SELECT;
         } else if (isKeyword ("INSERT", seq)) {

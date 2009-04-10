@@ -59,6 +59,7 @@ import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.Validateable;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -310,11 +311,16 @@ public final class DtraceDataCollector
         DLightLogger.assertNonUiThread();
 
         final ExecutionEnvironment execEnv = target.getExecEnv();
+
         ValidationStatus result = null;
         boolean fileExists = false;
         boolean connected = true;
 
         try {
+            if (!HostInfoUtils.getOS(execEnv).equals("SunOS")) { // NOI18N
+                return ValidationStatus.invalidStatus(
+                        NbBundle.getMessage(DtraceDataCollector.class, "DtraceDataCollector.DtraceIsSupportedOnSunOSOnly")); // NOI18N
+            }
             fileExists = HostInfoUtils.fileExists(execEnv, command);
         } catch (ConnectException ex) {
             connected = false;
@@ -355,7 +361,7 @@ public final class DtraceDataCollector
 
         if (sps == null) {
             return ValidationStatus.invalidStatus(
-                    "No privileges support for " + execEnv.toString()); // NOI18N
+                NbBundle.getMessage(DtraceDataCollector.class, "DtraceDataCollector.NoPrivSupport", execEnv.toString()));//NOI18N
         }
 
         boolean status = sps.hasPrivileges(requiredPrivilegesList);
@@ -388,15 +394,19 @@ public final class DtraceDataCollector
     }
 
     public ValidationStatus validate(final DLightTarget target) {
+        return validate(target, this, true);
+    }
+
+    ValidationStatus validate(final DLightTarget target, Validateable validatebleSource ,boolean notify) {
         if (validationStatus.isValid()) {
             return validationStatus;
         }
 
         ValidationStatus oldStatus = validationStatus;
         ValidationStatus newStatus = doValidation(target);
-
-        notifyStatusChanged(oldStatus, newStatus);
-
+        if (notify){
+          notifyStatusChanged(validatebleSource, oldStatus, newStatus);
+        }
         validationStatus = newStatus;
         return newStatus;
     }
@@ -452,7 +462,7 @@ public final class DtraceDataCollector
         validationListeners.remove(listener);
     }
 
-    protected void notifyStatusChanged(
+    void notifyStatusChanged(Validateable validatable,
             ValidationStatus oldStatus, ValidationStatus newStatus) {
         if (oldStatus.equals(newStatus)) {
             return;
@@ -461,9 +471,17 @@ public final class DtraceDataCollector
         ValidationListener[] ll =
                 validationListeners.toArray(new ValidationListener[0]);
 
-        for (ValidationListener l : ll) {
-            l.validationStateChanged(this, oldStatus, newStatus);
+        if (validatable == null){
+          validatable = this;
         }
+        for (ValidationListener l : ll) {
+            l.validationStateChanged(validatable, oldStatus, newStatus);
+        }
+    }
+
+    protected void notifyStatusChanged(
+            ValidationStatus oldStatus, ValidationStatus newStatus) {
+       notifyStatusChanged(this, oldStatus, newStatus);
     }
 
     public void targetStateChanged(

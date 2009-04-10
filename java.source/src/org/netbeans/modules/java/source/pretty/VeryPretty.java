@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -570,6 +570,10 @@ public final class VeryPretty extends JCTree.Visitor {
             if (tree.body != null) {
                 printBlock(tree.body, tree.body.stats, cs.getMethodDeclBracePlacement(), cs.spaceBeforeMethodDeclLeftBrace());
             } else {
+                if (tree.defaultValue != null) {
+                    print(" default ");
+                    printExpr(tree.defaultValue);
+                }
                 print(';');
             }
             enclClassName = enclClassNamePrev;
@@ -930,6 +934,11 @@ public final class VeryPretty extends JCTree.Visitor {
 	} else
 	    printIndentedStat(tree.thenpart, cs.redundantIfBraces(), cs.spaceBeforeIfLeftBrace(), cs.wrapIfStatement());
 	if (tree.elsepart != null) {
+        printElse(tree, prevblock);
+	}
+    }
+
+    public void printElse(JCIf tree, boolean prevblock) {
 	    if (cs.placeElseOnNewLine() || !prevblock) {
                 newline();
                 toLeftMargin();
@@ -942,7 +951,6 @@ public final class VeryPretty extends JCTree.Visitor {
 		printStat(tree.elsepart);
 	    } else
 		printIndentedStat(tree.elsepart, cs.redundantIfBraces(), cs.spaceBeforeElseLeftBrace(), cs.wrapIfStatement());
-	}
     }
 
     @Override
@@ -2013,6 +2021,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 print("/* ");
                 break;
             case JAVADOC:
+                toLeftMargin();
                 print("/**");
                 newline();
                 toLeftMargin();
@@ -2043,7 +2052,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 break;
             }
         }
-        if (comment.indent() >= 0 || comment.style() != Comment.Style.BLOCK) {
+        if (comment.indent() >= 0 || comment.style() != Comment.Style.BLOCK || comment.style() != Comment.Style.JAVADOC) {
             newline();
             toLeftMargin();
         } else {

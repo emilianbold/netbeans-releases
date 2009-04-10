@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -53,6 +54,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.ClassDeclarationHandle;
 import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.FieldsFromTagProperty;
 import org.netbeans.modules.php.editor.parser.GSFPHPElementHandle.FunctionDeclarationHandle;
@@ -130,7 +132,14 @@ public class PhpStructureScanner implements StructureScanner {
                     }
                 }
             }
-            info.getSnapshot().getSource().getDocument(false).putProperty(LAST_CORRECT_FOLDING_PROPERTY, folds);
+
+            Source source = info.getSnapshot().getSource();
+            assert source != null : "source was null";
+            Document doc = source.getDocument(false);
+            
+            if (doc != null){
+                doc.putProperty(LAST_CORRECT_FOLDING_PROPERTY, folds);
+            }
             return folds;
         }
         return Collections.emptyMap();

@@ -90,7 +90,7 @@ int DECEMBER
 
 <%--CC
 <% get| %>
-Calendar getInstance ()
+Calendar getInstance
 <% getInstance() %>
 --%>
 

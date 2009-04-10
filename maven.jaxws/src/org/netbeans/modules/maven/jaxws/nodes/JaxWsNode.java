@@ -58,6 +58,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -74,6 +75,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.maven.jaxws.ServerType;
 import org.netbeans.modules.maven.jaxws.WSStackUtils;
@@ -306,12 +308,12 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
     /**
      * get URL for Web Service WSDL file
      */
-    public String getWebServiceURL() {
+    private String getWebServiceURL() {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
         String serverInstanceID = provider.getServerInstanceID();
         if (serverInstanceID == null || WSStackUtils.DEVNULL.equals(serverInstanceID)) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class, "MSG_MissingServer"), NotifyDescriptor.ERROR_MESSAGE));
+            Logger.getLogger(JaxWsNode.class.getName()).log(Level.INFO, "Can not detect target J2EE server"); //NOI18N
             return "";
         }
         // getting port and host name
@@ -348,7 +350,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         // need to compute from annotations
         String wsURI = null;
 
-//        WSStackUtils stackUtils = new WSStackUtils(project);
+        WSStackUtils stackUtils = new WSStackUtils(project);
 //        boolean isJsr109Supported = stackUtils.isJsr109Supported();
 //        if (J2eeModule.WAR.equals(moduleType) && ServerType.JBOSS == stackUtils.getServerType()) {
 //            // JBoss type
@@ -384,6 +386,21 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
             if (contextRoot != null && contextRoot.startsWith("/")) {
                 //NOI18N
                 contextRoot = contextRoot.substring(1);
+            }
+            if ( (contextRoot == null || contextRoot.length() == 0) &&
+                    ServerType.GLASSFISH == stackUtils.getServerType()) {
+                NbMavenProject nbMaven = project.getLookup().lookup(NbMavenProject.class);
+                if (nbMaven != null) {
+                    StringBuffer buf = new StringBuffer();
+                    MavenProject mavenProject = nbMaven.getMavenProject();
+                    String groupId = mavenProject.getGroupId();
+                    String artifactId = mavenProject.getArtifactId();
+                    String packaging = mavenProject.getPackaging();
+                    String version = mavenProject.getVersion();
+                    if (groupId != null && artifactId !=null && packaging != null && version != null) {
+                        contextRoot = groupId+"_"+artifactId+"_"+packaging+"_"+version; // NOI18N
+                    }
+                }
             }
         }
 //            else if (J2eeModule.EJB.equals(moduleType) && ServerType.JBOSS == stackUtils.getServerType()) {

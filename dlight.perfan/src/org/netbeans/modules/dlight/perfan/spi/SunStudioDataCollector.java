@@ -108,7 +108,7 @@ public class SunStudioDataCollector
     private static final DataTableMetadata memSummaryInfoTable;
 
     // ***
-    private final String experimentDir;
+    private String experimentDir;
     private final Object lock = new String(SunStudioDataCollector.class.getName());
     // ***
     private final Collection<DataTableMetadata> dataTablesMetadata;
@@ -159,7 +159,6 @@ public class SunStudioDataCollector
     }
 
     public SunStudioDataCollector(List<CollectedInfo> collectedInfoList) {
-        this.experimentDir = "/var/tmp/dlightExperiment_" + uid.incrementAndGet() + ".er"; // NOI18N
         collectedInfo = new HashSet<CollectedInfo>();
         dataTablesMetadata = new HashSet<DataTableMetadata>();
         validationListeners = new CopyOnWriteArraySet<ValidationListener>();
@@ -344,13 +343,15 @@ public class SunStudioDataCollector
             DLightLogger.assertTrue(this.target == target,
                     "Validation was performed against another target"); // NOI18N
 
+            this.experimentDir = "/var/tmp/dlightExperiment_" + target.getExecEnv().getUser() + '_' + uid.incrementAndGet() + ".er"; // NOI18N
+
             this.storage = (PerfanDataStorage) dataStorage;
 
             startWarmUp();
 
             // Init storage (i.e. er_print, actually)
             storage.init(target.getExecEnv(), sproHome, experimentDir);
-            
+
             // In case when summary data was requested do init
             // periodic SummaryDataFetchingTask ...
             monitorsUpdater = new MonitorsUpdateService(this,
@@ -415,13 +416,15 @@ public class SunStudioDataCollector
     }
 
     private void startWarmUp() {
-        if (warmUpTaskResult != null && !warmUpTaskResult.isDone()) {
-            warmUpTaskResult.cancel(true);
-        }
+        synchronized (lock) {
+            if (warmUpTaskResult != null && !warmUpTaskResult.isDone()) {
+                warmUpTaskResult.cancel(true);
+            }
 
-        warmUpTaskResult = DLightExecutorService.submit(
-                new SSDCWarmUpTask(target.getExecEnv(), experimentDir),
-                "Warming SunStudioDataCollector up"); // NOI18N
+            warmUpTaskResult = DLightExecutorService.submit(
+                    new SSDCWarmUpTask(target.getExecEnv(), experimentDir),
+                    "Warming SunStudioDataCollector up"); // NOI18N
+        }
     }
 
     private void targetFinished(DLightTarget source) {
@@ -453,50 +456,56 @@ public class SunStudioDataCollector
     }
 
     private void targetStarted(DLightTarget source) {
-        if (source != target) {
-            return;
+        synchronized (lock) {
+            if (source != target) {
+                return;
+            }
+
+            // Wait for warm-up task completion ...
+            boolean warmUpStatus = false;
+
+            try {
+                // warmUpTaskResult may be null if invoke init against wrong target
+                // (not one that was validated)
+                warmUpStatus = warmUpTaskResult == null
+                        ? false
+                        : warmUpTaskResult.get().booleanValue();
+            } catch (CancellationException ex) {
+                log.fine("Will not start SunStudioDataCollector because of " // NOI18N
+                        + ex.getMessage());
+            } catch (InterruptedException ex) {
+                log.fine("Will not start SunStudioDataCollector because of " // NOI18N
+                        + ex.getMessage());
+            } catch (ExecutionException ex) {
+                log.fine("Will not start SunStudioDataCollector because of " // NOI18N
+                        + ex.getMessage());
+            }
+
+            // Make it null, to start it again on restart ...
+            warmUpTaskResult = null;
+
+            if (!warmUpStatus) {
+                log.fine("Will not start SunStudioDataCollector because warm-up task failed"); // NOI18N
+                return;
+            }
+
+            if (isAttachable()) {
+                // i.e. should start separate process
+                AttachableTarget at = (AttachableTarget) target;
+                NativeProcessBuilder npb = new NativeProcessBuilder(target.getExecEnv(), cmd);
+                npb = npb.setArguments("-P", "" + at.getPID(), "-o", experimentDir); // NOI18N
+
+                ExecutionDescriptor descr = new ExecutionDescriptor();
+                descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
+                descr = descr.outProcessorFactory(new StdErrRedirectorFactory());
+                descr = descr.inputOutput(InputOutput.NULL);
+
+                ExecutionService service = ExecutionService.newService(npb, descr, "collect"); // NOI18N
+                collectTaskResult = service.run();
+            }
+
+            monitorsUpdater.start();
         }
-        
-        // Wait for warm-up task completion ...
-        boolean warmUpStatus = false;
-
-        try {
-            warmUpStatus = warmUpTaskResult.get().booleanValue();
-        } catch (CancellationException ex) {
-            log.fine("Will not start SunStudioDataCollector because of " // NOI18N
-                    + ex.getMessage());
-        } catch (InterruptedException ex) {
-            log.fine("Will not start SunStudioDataCollector because of " // NOI18N
-                    + ex.getMessage());
-        } catch (ExecutionException ex) {
-            log.fine("Will not start SunStudioDataCollector because of " // NOI18N
-                    + ex.getMessage());
-        }
-
-        // Make it null, to start it again on restart ...
-        warmUpTaskResult = null;
-
-        if (!warmUpStatus) {
-            log.fine("Will not start SunStudioDataCollector because warm-up task failed"); // NOI18N
-            return;
-        }
-
-        if (isAttachable()) {
-            // i.e. should start separate process
-            AttachableTarget at = (AttachableTarget) target;
-            NativeProcessBuilder npb = new NativeProcessBuilder(target.getExecEnv(), cmd);
-            npb = npb.setArguments("-P", "" + at.getPID(), "-o", experimentDir); // NOI18N
-
-            ExecutionDescriptor descr = new ExecutionDescriptor();
-            descr = descr.errProcessorFactory(new StdErrRedirectorFactory());
-            descr = descr.outProcessorFactory(new StdErrRedirectorFactory());
-            descr = descr.inputOutput(InputOutput.NULL);
-
-            ExecutionService service = ExecutionService.newService(npb, descr, "collect"); // NOI18N
-            collectTaskResult = service.run();
-        }
-
-        monitorsUpdater.start();
     }
 
     private static class StdErrRedirectorFactory

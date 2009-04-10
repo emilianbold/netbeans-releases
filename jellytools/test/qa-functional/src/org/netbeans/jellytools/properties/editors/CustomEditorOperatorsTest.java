@@ -43,7 +43,6 @@ package org.netbeans.jellytools.properties.editors;
 
 import java.io.File;
 import junit.framework.TestSuite;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
@@ -326,51 +325,6 @@ public class CustomEditorOperatorsTest extends org.netbeans.jellytools.JellyTest
         assertEquals("test process test arguments", p.getValue());
     }
     
-    /** Test of org.netbeans.jellytools.properties.editors.ServiceTypeCustomEditorOperator. */
-    public void testServiceTypeCustomEditorOperator() {
-        ServiceTypeCustomEditorOperator editor=null;
-        Property p=new Property(new PropertySheetOperator(TestNode.NODE_NAME), "Service Type");
-        p.openEditor();
-        editor=new ServiceTypeCustomEditorOperator("Service Type");
-        // "No Indentation"
-        String noIndentationLabel = Bundle.getString("org.netbeans.beaninfo.Bundle", "LAB_IndentEngineDefault");  // NOI18N
-        editor.setServiceTypeValue(noIndentationLabel);
-        assertEquals(noIndentationLabel, editor.getServiceTypeValue());
-        editor.ok();
-        assertEquals(noIndentationLabel, p.getValue());
-    }
-    
-    /** Tests FilesystemCustomEditorOperator. */
-    public void testFilesystemCustomEditorOperator() {
-        Property p = new Property(new PropertySheetOperator(TestNode.NODE_NAME), "Filesystem");
-        p.openEditor();
-        FilesystemCustomEditorOperator editor = new FilesystemCustomEditorOperator("Filesystem");
-        editor.addLocalDirectory();
-        assertTrue("Add Local Directory radio button not pushed.", editor.rbAddLocalDirectory().isSelected());
-        editor.setDirectory("localDirectory");
-        assertEquals("Wrong value in Directory text field.", "localDirectory", editor.getDirectory());
-        editor.browse();
-        String userdir = System.getProperty("netbeans.user");
-        org.netbeans.jemmy.operators.JFileChooserOperator fileChooserOper = new org.netbeans.jemmy.operators.JFileChooserOperator();
-        fileChooserOper.setSelectedFile(new File(userdir));
-        fileChooserOper.approve();
-        assertEquals("Wrong value in Directory text field from file chooser.", userdir, editor.getDirectory());
-        // test JAR File
-        editor.addJARFile();
-        assertTrue("Add JAR File radio button not pushed.", editor.rbAddJARFile().isSelected());
-        editor.setJARFile("jarFile");
-        assertEquals("Wrong value in Directory text field.", "jarFile", editor.getJARFile());
-        editor.browse2();
-        fileChooserOper = new org.netbeans.jemmy.operators.JFileChooserOperator();
-        String nbhome = System.getProperty("netbeans.home");
-        String jarPath = nbhome+File.separator+"lib"+File.separator+"core.jar";
-        fileChooserOper.setSelectedFile(new File(jarPath));
-        fileChooserOper.approve();
-        assertEquals("Wrong value in JAR File text field from file chooser.", jarPath, editor.getJARFile());
-        editor.ok();
-        assertTrue("Editor doesn't save value after OK.", p.getValue().indexOf("core.jar")>-1);
-    }
-
     /** Test of org.netbeans.jellytools.properties.editors.IconCustomEditorOperator. */
     public void testIconCustomEditorOperator() {
         Property p=new Property(new PropertySheetOperator(TestNode.NODE_NAME), "Icon");

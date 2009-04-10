@@ -93,11 +93,6 @@ public class CsmContextUtilities {
     /** Creates a new instance of CsmScopeUtilities */
     private CsmContextUtilities() {
     }
-
-    public static List<CsmVariable> findGlobalVariables(CsmProject prj) {
-        CsmProjectContentResolver resolver = new CsmProjectContentResolver(prj);
-        return resolver.getGlobalVariables("", false);
-    }
     
     public static List<CsmDeclaration> findLocalDeclarations(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         return findLocalDeclarations(context, strPrefix, match, caseSensitive, true/*include file locals*/, false/*include function locals*/);
@@ -603,6 +598,13 @@ public class CsmContextUtilities {
                 if (CsmOffsetUtilities.isInObject(izer, offset)) {
                     return true;
                 }
+            }
+        }
+        if (CsmKindUtilities.isVariable(context.getLastObject())) {
+            CsmVariable var = (CsmVariable) context.getLastObject();
+            CsmExpression initialValue = var.getInitialValue();
+            if (initialValue != null && CsmOffsetUtilities.isInObject(initialValue, offset)) {
+                return true;
             }
         }
         return false;

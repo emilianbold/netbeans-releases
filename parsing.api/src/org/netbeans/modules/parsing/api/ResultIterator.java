@@ -48,10 +48,12 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.parsing.impl.ParserAccessor;
 import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
+import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 
 
 /**
@@ -108,6 +110,7 @@ public final class ResultIterator {
         if (result != null) {
             ParserAccessor.getINSTANCE ().invalidate (result);
             result = null;
+            parser = null;
         }
         for (Iterator<ResultIterator> it = children.iterator(); it.hasNext();) {
             final ResultIterator child = it.next();
@@ -122,10 +125,14 @@ public final class ResultIterator {
      * @return              parse {@link Result} for current source.
      */
     public Result getParserResult () throws ParseException {
-        if (parser != null)
-            return parser.getResult (task);
-        if (result == null)
-            result = sourceCache.getResult (task);
+        if (result == null) {
+            if (parser != null) {
+                SourceModificationEvent event = SourceAccessor.getINSTANCE ().getSourceModificationEvent (getSnapshot ().getSource ());
+                parser.parse (getSnapshot (), task, event);
+                result = parser.getResult (task);
+            } else
+                result = sourceCache.getResult (task);
+        }
         return result;
     }
     
@@ -169,8 +176,9 @@ public final class ResultIterator {
             return null;
         ResultIterator resultIterator = embeddingToResultIterator.get (embedding);
         if (resultIterator == null) {
+            SourceCache cache = sourceCache.getCache (embedding);
             resultIterator = new ResultIterator (
-                sourceCache.getCache (embedding), 
+                cache,
                 task
             );
             embeddingToResultIterator.put(embedding, resultIterator);

@@ -75,7 +75,6 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.Quer
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.completion.impl.xref.SymTabCache.CacheEntry;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
-import org.netbeans.modules.cnd.completion.impl.xref.SymTabCache;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
@@ -842,7 +841,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (clazz != null) {
             // We add template parameters to function parameters on function init,
             // so we dont need to add them to completion list again.
-            if (CsmKindUtilities.isTemplate(clazz) && !analyzeTemplates.contains(clazz)) {
+            if (CsmKindUtilities.isTemplate(clazz) && !analyzeTemplates.contains((CsmTemplate)clazz)) {
                 analyzeTemplates.add((CsmTemplate) clazz);
             }
             CsmScope scope = clazz.getScope();
@@ -1620,12 +1619,12 @@ public class CompletionResolverImpl implements CompletionResolver {
     private void initResolveMask(final CsmContext context, int offset, final String strPrefix, boolean match) {
         if ((resolveTypes & RESOLVE_CONTEXT) == RESOLVE_CONTEXT) {
             if (strPrefix.length() == 0) {
-                resolveTypes |= RESOLVE_FILE_LOCAL_MACROS | RESOLVE_FILE_PRJ_MACROS;
+                resolveTypes |= RESOLVE_FILE_PRJ_MACROS;
             } else {
                 if (fileReferncesContext == null) {
-                    resolveTypes |= RESOLVE_FILE_LOCAL_MACROS | RESOLVE_GLOB_MACROS | RESOLVE_LIB_MACROS;
+                    resolveTypes |= RESOLVE_GLOB_MACROS | RESOLVE_LIB_MACROS;
                 } else {
-                    resolveTypes |= RESOLVE_FILE_LOCAL_MACROS | RESOLVE_FILE_PRJ_MACROS | RESOLVE_FILE_LIB_MACROS;
+                    resolveTypes |= RESOLVE_FILE_PRJ_MACROS | RESOLVE_FILE_LIB_MACROS;
                 }
             }
 
@@ -1639,7 +1638,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             resolveTypes |= RESOLVE_LIB_CLASSES;
             resolveTypes |= RESOLVE_LIB_NAMESPACES;
             resolveTypes |= RESOLVE_CLASS_NESTED_CLASSIFIERS;
-            resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
+            resolveTypes |= FILE_LOCAL_ELEMENTS;
 
             // FIXUP: after we made static consts in headers belong to namespace,
             // in constuct below usage of globalVarUsedInArrayIndex became unresolved
@@ -1652,6 +1651,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
 
             assert (context != null);
+            boolean resolveGlobalContext = false;
             if (CsmContextUtilities.isInFunction(context, offset)) {
                 // for speed up remember result
                 updateResolveTypesInFunction(offset, context, match);
@@ -1661,10 +1661,11 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_CLASS_METHODS;
                 resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
             } else {
-
+                resolveGlobalContext = true;
+            }
+            if (resolveGlobalContext || (match && CsmContextUtilities.isInInitializerList(context, offset))) {
                 // resolve global context as well
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
-                resolveTypes |= RESOLVE_FILE_LOCAL_FUNCTIONS;
                 resolveTypes |= RESOLVE_GLOB_NAMESPACES;
                 resolveTypes |= RESOLVE_LIB_CLASSES;
                 resolveTypes |= RESOLVE_LIB_VARIABLES;

@@ -49,15 +49,16 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.spi.util.MangledNameType;
 import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
 import org.netbeans.modules.dlight.util.Util;
-import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.FunctionName;
+import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,6 +67,7 @@ import org.openide.util.NbBundle;
  */
 public final class MemoryToolConfigurationProvider implements DLightToolConfigurationProvider {
 
+    private static final int INDICATOR_POSITION = 200;
     private static final String TOOL_NAME = loc("MemoryTool.ToolName"); // NOI18N
     private static final Column totalColumn;
     private static final DataTableMetadata rawTableMetadata;
@@ -184,7 +186,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
 
         MemoryIndicatorConfiguration indicatorConfiguration =
-                new MemoryIndicatorConfiguration(indicatorMetadata); // NOI18N
+                new MemoryIndicatorConfiguration(indicatorMetadata, INDICATOR_POSITION); // NOI18N
 
         DataTableMetadata detailedViewTableMetadata =
             SunStudioDCConfiguration.getMemTableMetadata(
@@ -192,8 +194,13 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             SunStudioDCConfiguration.c_leakSize,
             SunStudioDCConfiguration.c_leakCount);
 
-        indicatorConfiguration.addVisualizerConfiguration(
-            new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata, SunStudioDCConfiguration.c_name.getColumnName(), SunStudioDCConfiguration.c_name.getColumnName()));
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName() ,null, SunStudioDCConfiguration.c_name.getColumnName());
+//        indicatorConfiguration.addVisualizerConfiguration(
+//            new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata, SunStudioDCConfiguration.c_name.getColumnName(), SunStudioDCConfiguration.c_name.getColumnName()));
+
+        FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
+            new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadata, functionDesc, Arrays.asList(SunStudioDCConfiguration.c_leakSize, SunStudioDCConfiguration.c_leakCount));
+        indicatorConfiguration.addVisualizerConfiguration(tableVisualizerConfiguration);
 
         indicatorConfiguration.addVisualizerConfiguration(getDetails(rawTableMetadata));
         return indicatorConfiguration;
@@ -201,34 +208,28 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
 
+        Column metricColumn = new Column("leak", Long.class, loc("MemoryTool.ColumnName.leak"), null); // NOI18N
         List<Column> viewColumns = Arrays.asList(
-                new Column("id", Integer.class, loc("MemoryTool.ColumnName.func_id"), null), // NOI18N
-                new Column("func_name", MangledNameType.class, loc("MemoryTool.ColumnName.func_name"), null), // NOI18N
-                new Column("leak", Long.class, loc("MemoryTool.ColumnName.leak"), null)); // NOI18N
+                new Column("func_name", FunctionName.class, loc("MemoryTool.ColumnName.func_name"), null), // NOI18N
+                metricColumn);
 
         String sql =
-                "SELECT func.func_id as id, func.func_name as func_name, SUM(size) as leak " + // NOI18N
+                "SELECT func.func_id as id, func.func_name as func_name, node.offset as offset, SUM(size) as leak " + // NOI18N
                 "FROM mem, node AS node, func, ( " + // NOI18N
                 "   SELECT MAX(timestamp) as leak_timestamp FROM mem, ( " + // NOI18N
                 "       SELECT address as leak_address, sum(kind*size) AS leak_size FROM mem GROUP BY address HAVING sum(kind*size) > 0 " + // NOI18N
                 "   ) AS vt1 WHERE address = leak_address GROUP BY address " + // NOI18N
                 ") AS vt2 WHERE timestamp = leak_timestamp " + // NOI18N
                 "AND stackid = node.node_id and node.func_id = func.func_id " + // NOI18N
-                " GROUP BY node.func_id, func.func_id, func.func_name"; // NOI18N
+                " GROUP BY node.func_id, func.func_id, func.func_name, node.offset"; // NOI18N
+
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_name", "offset", "id");
 
         DataTableMetadata viewTableMetadata = new DataTableMetadata(
                 "mem", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N
 
-        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
-                new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name", "id"); // NOI18N
-//        TableVisualizerConfiguration tableVisualizerConfiguration = new TableVisualizerConfiguration(viewTableMetadata);
-        tableVisualizerConfiguration.setEmptyAnalyzeMessage(
-                loc("DetailedView.EmptyAnalyzeMessage")); // NOI18N
-
-        tableVisualizerConfiguration.setEmptyRunningMessage(
-                loc("DetailedView.EmptyRunningMessage")); // NOI18N
-
-        tableVisualizerConfiguration.setDefaultActionProvider();
+        FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
+            new FunctionsListViewVisualizerConfiguration(viewTableMetadata, functionDesc, Arrays.asList(metricColumn));
 
         return tableVisualizerConfiguration;
     }

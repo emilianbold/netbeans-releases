@@ -52,13 +52,14 @@ import java.util.Map;
 import java.util.Properties;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.project.ant.FileChangeSupport;
-import org.netbeans.modules.project.ant.FileChangeSupportEvent;
-import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.netbeans.modules.project.ant.UserQuestionHandler;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -150,7 +151,7 @@ final class ProjectProperties {
         return pp;
     }
     
-    private static final class PP implements PropertyProvider, FileChangeSupportListener {
+    private static final class PP implements PropertyProvider, FileChangeListener {
         
         private static final RequestProcessor RP = new RequestProcessor("ProjectProperties.PP.RP"); // NOI18N
         
@@ -167,7 +168,7 @@ final class ProjectProperties {
         public PP(String path, AntProjectHelper helper) {
             this.path = path;
             this.helper = helper;
-            FileChangeSupport.DEFAULT.addListener(this, new File(FileUtil.toFile(dir()), path.replace('/', File.separatorChar)));
+            FileUtil.addFileChangeListener(this, new File(FileUtil.toFile(dir()), path.replace('/', File.separatorChar)));
         }
         
         private FileObject dir() {
@@ -360,18 +361,29 @@ final class ProjectProperties {
             }
         }
 
-        public void fileCreated(FileChangeSupportEvent event) {
+        public void fileFolderCreated(FileEvent fe) {
             diskChange();
         }
 
-        public void fileDeleted(FileChangeSupportEvent event) {
+        public void fileDataCreated(FileEvent fe) {
             diskChange();
         }
 
-        public void fileModified(FileChangeSupportEvent event) {
+        public void fileChanged(FileEvent fe) {
             diskChange();
         }
-        
+
+        public void fileRenamed(FileRenameEvent fe) {
+            diskChange();
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            diskChange();
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            diskChange();
+        }
     }
 
     /**

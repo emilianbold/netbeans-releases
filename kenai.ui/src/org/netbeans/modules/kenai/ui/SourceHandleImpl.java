@@ -57,6 +57,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;
@@ -168,6 +169,10 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     }
 
     private void initRecent() {
+        if (prefs==null) {
+            //external repository not supported
+            return;
+        }
         List<String> roots = getStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation().toString());
         for (String root:roots) {
             try {
@@ -181,13 +186,13 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     }
 
     private boolean isUnder(FileObject projectDirectory) {
-        final File workingDirectory = getWorkingDirectory();
-        if (workingDirectory==null)
+        String remoteLocation = (String) projectDirectory.getAttribute("ProvidedExtensions.RemoteLocation");
+        if (remoteLocation==null || remoteLocation.length()==0) {
             return false;
-        final FileObject foForWD = FileUtil.toFileObject(workingDirectory);
-        if (foForWD==null)
-            return false;
-        return FileUtil.isParentOf( foForWD,projectDirectory);
+        }
+        if (feature.getLocation().toASCIIString().equals(remoteLocation))
+            return true;
+        return false;
     }
 
     private void storeRecent() {

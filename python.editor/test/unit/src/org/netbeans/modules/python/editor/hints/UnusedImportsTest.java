@@ -73,6 +73,16 @@ public class UnusedImportsTest extends PythonTestBase {
         findHints(this, createRule(), "testfiles/futureimport.py", null, null);
     }
 
+    public void testNoHints4() throws Exception {
+        // No unused import detection in __init__.py files!
+        findHints(this, createRule(), "testfiles/package/subpackage1/__init__.py", null, null);
+    }
+
+    public void testNoHints5() throws Exception {
+        // No unused import detection in __init__.py files!
+        findHints(this, createRule(), "testfiles/imports/__init__.py", null, null);
+    }
+
     public void testFix1() throws Exception {
         applyHint(this, createRule(), "testfiles/unusedimports1.py", "import ur^import", "Remove Unused");
     }

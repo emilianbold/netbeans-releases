@@ -48,7 +48,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.HTMLKit;
+import org.netbeans.modules.html.editor.HtmlKit;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -70,7 +70,7 @@ public class HtmlElementHandle implements ElementHandle {
     }
 
     public String getMimeType() {
-        return HTMLKit.HTML_MIME_TYPE;
+        return HtmlKit.HTML_MIME_TYPE;
     }
 
     public String getName() {

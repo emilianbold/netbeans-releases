@@ -40,6 +40,7 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -49,7 +50,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
@@ -57,7 +58,7 @@ import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.HTMLAutoCompletion;
+import org.netbeans.modules.html.editor.HtmlAutoCompletion;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -75,7 +76,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
     //not used. HTMLKit coveres this functionality
     @Override
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
-        HTMLAutoCompletion.charInserted((BaseDocument)doc, caretOffset, target.getCaret(), ch);
+        HtmlAutoCompletion.charInserted((BaseDocument)doc, caretOffset, target.getCaret(), ch);
         if ('>' != ch) {
             return false;
         }
@@ -184,7 +185,10 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         //include the text under the carat to the ranges.
         //I need to do it this lexical way since we do not
         //add the text nodes into the ast due to performance reasons
-        TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(info.getSnapshot().getSource().getDocument(true));
+        TokenSequence ts = HtmlSyntaxSupport.getJoinedHtmlSequence(info.getSnapshot().getSource().getDocument(true));
+        if(ts == null) {
+            return Collections.emptyList();
+        }
         ts.move(caretOffset);
         if(ts.moveNext() || ts.movePrevious()) {
             Token token = ts.token();
@@ -220,18 +224,21 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             }
         }
 
-//        HtmlParserResult result = (HtmlParserResult)info.getEmbeddedResult("text/html", caretOffset);
-
         AstNode root = result.root();
+        Snapshot snapshot = result.getSnapshot();
 
         if(root != null) {
             //find leaf at the position
-            AstNode node = AstNodeUtils.findDescendant(root, astOffset(result.getSnapshot(), caretOffset));
+            AstNode node = AstNodeUtils.findDescendant(root, snapshot.getEmbeddedOffset(caretOffset));
             if(node != null) {
                 //go through the tree and add all parents with, eliminate duplicate nodes
                 do {
-                    int from = node.startOffset();
-                    int to = node.endOffset();
+                    int from = snapshot.getOriginalOffset(node.startOffset());
+                    int to = snapshot.getOriginalOffset(node.endOffset());
+
+                    if(from == -1 || to == -1) {
+                        continue;
+                    }
 
                     OffsetRange last = ranges.isEmpty() ? null : ranges.get(ranges.size() - 1);
                     //skip duplicated ranges
@@ -242,17 +249,13 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             }
         }
 
-        //the bottom most element represents the whole parse tree, replace it by the document
-        //range since they doesn't need to be the same
-        if(!ranges.isEmpty()) {
-            ranges.set(ranges.size() - 1, new OffsetRange(0, info.getSnapshot().getSource().getDocument(true).getLength()));
+        OffsetRange wholeDocument = new OffsetRange(0, info.getSnapshot().getSource().getDocument(true).getLength());
+        //add the whole document range if the latst element doesn't equal to it
+        if(ranges.size() == 0 || !ranges.get(ranges.size() - 1).equals(wholeDocument)) {
+            ranges.add(wholeDocument);
         }
-
+        
         return ranges;
-    }
-
-     private int astOffset(Snapshot snapshot, int offset) {
-         return snapshot.getEmbeddedOffset(offset);
     }
 
     //TODO implement

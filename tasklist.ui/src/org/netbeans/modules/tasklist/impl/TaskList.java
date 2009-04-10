@@ -368,6 +368,33 @@ public class TaskList {
         lock.writeLock().unlock();
         fireCleared();
     }
+
+    void clearDeletedFiles() {
+        lock.writeLock().lock();
+        LinkedList<Task> toRemove = new LinkedList<Task>();
+        for( Task t : allTasks ) {
+            FileObject fo = Accessor.getResource(t);
+            if( !fo.isValid() )
+                toRemove.add(t);
+        }
+
+        if( !toRemove.isEmpty() ) {
+            sortedTasks.removeAll( toRemove );
+            allTasks.removeAll( toRemove );
+            for( List<Task> scannerTasks : fileScanner2tasks.values() ) {
+                scannerTasks.removeAll( toRemove );
+            }
+            for( List<Task> groupTasks : group2tasks.values() ) {
+                groupTasks.removeAll( toRemove );
+            }
+        }
+
+        lock.writeLock().unlock();
+
+        if( !toRemove.isEmpty() ) {
+            fireTasksRemoved( toRemove );
+        }
+    }
     
     public void addListener( Listener l ) {
         synchronized( listeners ) {

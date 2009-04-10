@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -202,10 +201,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private void onDispose() {
         projectLock.writeLock().lock();
         try {
-            if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+            if (projectRef == null) {
                 // restore container from it's UID
                 this.projectRef = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
                 assert this.projectRef != null || this.projectUID == null : "no object for UID " + this.projectUID;
+            }
+            if (parentRef == null) {
                 // restore container from it's UID
                 this.parentRef = UIDCsmConverter.UIDtoNamespace(this.parentUID);
                 assert this.parentRef != null || this.parentUID == null : "no object for UID " + this.parentUID;
@@ -390,6 +391,10 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             return false;
         }
         return true;
+    }
+
+    public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
+        throw new UnsupportedOperationException();
     }
 
     public void addDeclaration(CsmOffsetableDeclaration declaration) {

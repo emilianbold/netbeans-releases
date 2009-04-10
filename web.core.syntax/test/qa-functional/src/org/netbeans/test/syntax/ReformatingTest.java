@@ -44,6 +44,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import junit.framework.Test;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -107,9 +108,10 @@ public class ReformatingTest extends CompletionTest {
     @Override
     public void runTest() throws Exception {
         try {
-            openFile(testFileObj);
+            BaseDocument doc = openFile(testFileObj);
             String fileName = testFileObj.getName();
             EditorOperator eOperator = new EditorOperator(fileName);
+            waitTypingFinished(doc);
             if (fileName.startsWith(reformatSimplePrefix)) {
                 eOperator.pushKey(KeyEvent.VK_F, InputEvent.ALT_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
             } else if (fileName.startsWith(reformatTwice)) {

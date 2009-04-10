@@ -84,7 +84,21 @@ public class IfStatementImpl extends StatementBase implements CsmIfStatement {
         renderIfNeed(); // long live lazyness! ;-))
         return elseStmt;
     }
-    
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (condition instanceof Disposable) {
+            ((Disposable) condition).dispose();
+        }
+        if (thenStmt instanceof Disposable) {
+            ((Disposable) thenStmt).dispose();
+        }
+        if (elseStmt instanceof Disposable) {
+            ((Disposable) elseStmt).dispose();
+        }
+    }
+
     private void renderIfNeed() {
         if( condition == null ) { // should never be null, so used as a flag
             render(getAst());

@@ -43,7 +43,8 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="SunStudioExpress" display="Sun Studio Express Compiler Collection" family="SunStudio" qmakespec="${os}-cc"/>
-    <platforms stringvalue="sun_intel" release_file="/etc/release" release_pattern="\s*OpenSolaris.*"/>
+    <platforms stringvalue="sun_intel"/>
+    <makefile_writer class="org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter"/>
     <default_locations>
 	<platform os="sun_intel" directory="/opt/SunStudioExpress/bin"/>
     </default_locations>

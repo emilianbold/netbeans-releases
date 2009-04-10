@@ -514,7 +514,7 @@ public abstract class NbTopManager {
                 if (org.netbeans.core.startup.Main.getModuleSystem().shutDown(new ExitActions(1))) {
                     try {
                         try {
-                            LoaderPoolNode.store();
+                            NbLoaderPool.store();
                         } catch (IOException ioe) {
                             Logger.getLogger(NbTopManager.class.getName()).log(Level.WARNING, null, ioe);
                         }

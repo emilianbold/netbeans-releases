@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.ListenableIntNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.modules.InstalledFileLocator;
@@ -341,7 +341,7 @@ public class RunProfile implements ConfigurationAuxObject {
     public void setDefault(boolean b) {
         defaultProfile = b;
     }
-    
+
     // Args ...
     public void setArgs(String argsFlat) {
         String oldArgsFlat = getArgsFlat();
@@ -362,6 +362,13 @@ public class RunProfile implements ConfigurationAuxObject {
         if (pcs != null && !IpeUtils.sameStringArray(oldArgsArray, argsArray)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsArray, argsArray);
         }
+        needSave = true;
+    }
+    
+    public void setArgsRaw(String argsFlat) {
+        this.argsFlat = argsFlat;
+        argsFlatValid = true;
+        argsArrayValid = false;
         needSave = true;
     }
     
@@ -502,10 +509,11 @@ public class RunProfile implements ConfigurationAuxObject {
         return environment;
     }
     
-    public void setEnvironment(Env environment) {
-        this.environment = environment;
-        if (pcs != null) {
-            pcs.firePropertyChange(PROP_ENVVARS_CHANGED, null, this);
+    public void setEnvironment(Env env) {
+        Env oldEnv = environment;
+        this.environment = env;
+        if (pcs != null && !environment.equals(oldEnv)) {
+            pcs.firePropertyChange(PROP_ENVVARS_CHANGED, oldEnv, environment);
         }
     }
     

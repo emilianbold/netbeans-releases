@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;

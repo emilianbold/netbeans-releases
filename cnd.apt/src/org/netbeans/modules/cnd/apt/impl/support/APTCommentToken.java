@@ -129,4 +129,7 @@ public final class APTCommentToken extends APTTokenAbstact {
         length = t.length();
     }
 
+    public void setTextLength(int len) {
+        length = len;
+    }
 }

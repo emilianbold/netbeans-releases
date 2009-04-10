@@ -272,8 +272,10 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         RepositoryConnection rc = null; 
         try {
             rc = getSelectedRCIntern();
-            // check for a valid svnurl
-            rc.getSvnUrl();                             
+            // check for a valid svnurl - file:/// returns file://, which is invalid, so this is kind of a double-check
+            // 1. rc.getSvnUrl()
+            // 2. new SVNUrl(string)
+            new SVNUrl(rc.getSvnUrl().toString());
             if(!isSet(FLAG_ACCEPT_REVISION) && !rc.getSvnRevision().equals(SVNRevision.HEAD)) 
             {
                 message = NbBundle.getMessage(Repository.class, "MSG_Repository_OnlyHEADRevision");

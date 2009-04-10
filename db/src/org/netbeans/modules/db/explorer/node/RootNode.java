@@ -41,6 +41,7 @@ package org.netbeans.modules.db.explorer.node;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.lib.ddl.impl.SpecificationFactory;
@@ -48,6 +49,7 @@ import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseOption;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * This is the root node for the database explorer.  This is a singleton
@@ -69,9 +71,15 @@ public class RootNode extends BaseNode {
 
     /**
      * Gets the singleton instance.
-     * 
+     *            
      * @return the singleton instance
      */
+    @ServicesTabNodeRegistration(
+        name="Databases",
+        displayName="org.netbeans.modules.db.explorer.node.Bundle#RootNode_DISPLAYNAME",
+        iconResource="org/netbeans/modules/db/resources/database.gif",
+        position=101
+    )
     public static RootNode instance() {
         if (instance == null) { 
             NodeDataLookup lookup = new NodeDataLookup();
@@ -102,7 +110,7 @@ public class RootNode extends BaseNode {
             factory = new SpecificationFactory();
             if (factory == null) {
                 throw new Exception(
-                        bundle().getString("EXC_NoSpecificationFactory"));
+                        NbBundle.getMessage (RootNode.class, "EXC_NoSpecificationFactory"));
             }
 
             initDebugListening();
@@ -154,7 +162,7 @@ public class RootNode extends BaseNode {
 
     @Override
     public String getDisplayName() {
-        return bundle().getString ("RootNode_DISPLAYNAME"); // NOI18N
+        return NbBundle.getMessage (RootNode.class, "RootNode_DISPLAYNAME"); // NOI18N
     }
 
     @Override
@@ -164,7 +172,7 @@ public class RootNode extends BaseNode {
 
     @Override
     public String getShortDescription() {
-        return bundle().getString("ND_Root"); //NOI18N
+        return NbBundle.getMessage (RootNode.class, "ND_Root"); //NOI18N
     }
 
     @Override

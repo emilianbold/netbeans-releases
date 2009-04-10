@@ -1,27 +1,27 @@
-[<jsp:body><h|, <html>, <jsp:body><html>, 150]
-<h1>
-<h2>
-<h3>
-<h4>
-<h5>
-<h6>
-<head>
-<hr>
-<html>
-End cursor position = 167
-[<jsp:body><html |, lang, <jsp:body><html lang="", 250]
+[<jsp:body><h|, html, <jsp:body><html>, 148]
+<h1 >
+<h2 >
+<h3 >
+<h4 >
+<h5 >
+<h6 >
+<head >
+<hr >
+<html >
+End cursor position = 165
+[<jsp:body><html |, lang, <jsp:body><html lang="", 248]
 dir
 lang
 version
-End cursor position = 273
-[<jsp:body><html dir="|, rtl, <jsp:body><html dir="rtl", 352]
+End cursor position = 271
+[<jsp:body><html dir="|, rtl, <jsp:body><html dir="rtl, 349]
 ltr
 rtl
-End cursor position = 378
-[&q|, &quot;, &quot;, 421]
-&quot;
-End cursor position = 428
-[<jsp:body><html></|, </html>,     <jsp:body><html></html>, 528]
+End cursor position = 374
+[&q|, &quot;, &quot;, 418]
+" &quot;
+End cursor position = 425
+[<jsp:body><html></|, /html,     <jsp:body><html></html>, 523]
 < /jsp:body >
-</html>
-End cursor position = 552
+</html >
+End cursor position = 547

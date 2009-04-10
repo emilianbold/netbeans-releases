@@ -80,26 +80,11 @@ import org.openide.util.NbPreferences;
  */
 public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     private DeploymentFactory df;
-    private ServerUtilities su;
+    private ServerUtilities commonUtilities;
 
-//<<<<<<< local
-//=======
-//    // Could not use createPrelude and createEe6 in the layer.xml file
-//    /**
-//     * @deprecated for use from the layer.xml file ONLY
-//     */
-//>>>>>>> other
-//    public Hk2OptionalFactory() {
-//<<<<<<< local
-//        this(Hk2DeploymentFactory.createPrelude(),ServerUtilities.getPreludeUtilities());
-//=======
-//        //this(Hk2DeploymentFactory.createPrelude(),ServerUtilities.getPreludeUtilities());
-//>>>>>>> other
-//    }
-//
     protected Hk2OptionalFactory(DeploymentFactory df, ServerUtilities su) {
         this.df = df;
-        this.su = su;
+        this.commonUtilities = su;
     }
 
     public static Hk2OptionalFactory createPrelude() {
@@ -143,7 +128,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     
     @Override
     public InstantiatingIterator getAddInstanceIterator() {
-        return new J2eeInstantiatingIterator(su);
+        return new J2eeInstantiatingIterator(commonUtilities);
     }
     
     @Override
@@ -275,6 +260,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     public void finishServerInitialization() throws ServerInitializationException {
         try {
             // remove any invalid server definitions...
+            commonUtilities.finishServerInitialization();
             String[] urls = InstanceProperties.getInstanceList();
             if (null != urls) {
                 List<String> needToRemove = new ArrayList<String>();
@@ -302,7 +288,7 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
             final boolean needToRegisterDefaultServer =
                     !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
             if (needToRegisterDefaultServer) {
-                su.getServerProvider();
+                commonUtilities.getServerProvider();
             }
         } catch (Exception ex) {
             throw new ServerInitializationException("failed to init default instance", ex);

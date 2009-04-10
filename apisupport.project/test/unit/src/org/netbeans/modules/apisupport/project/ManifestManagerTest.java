@@ -43,6 +43,9 @@ package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.jar.Manifest;
 
 /**
  * Test functionality of ManifestManager.
@@ -113,5 +116,24 @@ public class ManifestManagerTest extends TestBase {
         TestBase.createJar(jar, Collections.singletonMap("foo", "bar"), null);
         ManifestManager.getInstanceFromJAR(jar);
     }
-    
+
+    public void testGetJarWithGeneratedManifest() throws Exception {
+        clearWorkDir();
+        Manifest mf = new Manifest();
+        mf.getMainAttributes().putValue("OpenIDE-Module", "platform.module");
+        mf.getMainAttributes().putValue("OpenIDE-Module-Layer", "platform/module/layer.xml");
+        Map<String, String> contents = new HashMap<String, String>();
+        contents.put("platform/module/Bundle.properties", "folder/file=English");
+        contents.put("platform/module/layer.xml", "<filesystem><folder name=\"folder\"><file name=\"file\"><attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"platform.module.Bundle\"/></file></folder></filesystem>");
+        File jar = new File(getWorkDir(), "test.jar");
+        TestBase.createJar(jar, contents, mf);
+        ManifestManager mm = ManifestManager.getInstanceFromJAR(jar, true);
+        assertNull(mm.getGeneratedLayer());
+
+        contents.put("META-INF/generated-layer.xml", "</filesystem>");
+        jar = new File(getWorkDir(), "test2.jar");
+        TestBase.createJar(jar, contents, mf);
+        mm = ManifestManager.getInstanceFromJAR(jar, true);
+        assertEquals("META-INF/generated-layer.xml", mm.getGeneratedLayer());
+    }
 }

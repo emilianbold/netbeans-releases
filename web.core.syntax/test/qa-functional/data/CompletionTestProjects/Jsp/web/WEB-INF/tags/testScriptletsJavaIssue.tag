@@ -35,7 +35,7 @@ void clear ()
 <%-- issue 91026: [cc] Object methods code completion doesn't work in scriptlets for imported classes --%>
 <%--CC
 <% org.test.TestBean t = new org.test.TestBean(); t.|
-void setName (String name )
+void setName (String name
 <% org.test.TestBean t = new org.test.TestBean(); t.setName(name)
 --%>
 

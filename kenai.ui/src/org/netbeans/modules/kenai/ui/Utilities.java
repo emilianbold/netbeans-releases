@@ -51,17 +51,6 @@ import org.openide.util.NbBundle;
  */
 public class Utilities {
 
-    // IMPORTANT !!!
-    // Strings returned by KenaiService.getName()
-    // Must to be treated as API by kenai.com !!!
-    public static final String SVN_REPO = "subversion";
-    public static final String HG_REPO = "mercurial";
-    public static final String GIT_REPO = "git";
-    public static final String EXT_REPO = "external_repository";
-    public static final String BGZ_ISSUES = "issues";
-    public static final String JIRA_ISSUES = "jira";
-    public static final String EXT_ISSUES = "external_issues";
-
     public static File getDefaultRepoFolder() {
         File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
         if (defaultDir != null && defaultDir.exists() && defaultDir.isDirectory()) {

@@ -99,7 +99,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     private JButton refresh;
     private final TreeTableVisualizerConfiguration configuration;
     private final DefaultTreeModel treeModel;
-    protected final DefaultMutableTreeNode TREE_ROOT = new DefaultMutableTreeNode("ROOT");
+    protected final DefaultMutableTreeNode TREE_ROOT = new DefaultMutableTreeNode("ROOT");////NOI18N
     private JPanel mainPanel = null;
     private TreeModelImpl treeModelImpl;
     private TableModelImpl tableModelImpl;
@@ -125,7 +125,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     }
 
     protected void setLoadingContent() {
-        isEmptyContent = true;
+        isEmptyContent = false;
         isLoadingContent = true;
         this.removeAll();
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -158,9 +158,14 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     }
 
     protected void setContent(final boolean isEmpty) {
-        if (isLoadingContent){
+        if (isLoadingContent && isEmpty) {
             isLoadingContent = false;
-            setContent(isEmpty);
+            setEmptyContent();
+            return;
+        }
+        if (isLoadingContent && !isEmpty) {
+            isLoadingContent = false;
+            setNonEmptyContent();
             return;
         }
         if (isEmptyContent && isEmpty) {
@@ -209,16 +214,14 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         super.removeNotify();
         synchronized (queryLock) {
             if (task != null) {
-                if (!task.isDone()) {
-                    task.cancel(true);
-                }
+                task.cancel(true);
+                task = null;
             }
         }
-        synchronized(syncFillInLock){
-            if (syncFillDataTask != null){
-                if (!syncFillDataTask.isDone()){
-                    syncFillDataTask.cancel(true);
-                }
+        synchronized (syncFillInLock) {
+            if (syncFillDataTask != null) {
+                syncFillDataTask.cancel(true);
+                syncFillDataTask = null;
             }
         }
         if (timerHandler != null) {
@@ -469,10 +472,11 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
     protected final void asyncFillModel(final List<Column> columns) {
         synchronized (queryLock) {
-            if (task != null) {
-                if (!task.isDone()) {
-                    task.cancel(true);
-                }
+            if (task != null && !task.isDone() && !task.isCancelled()){
+                return;//
+            }
+            if (task != null && !task.isDone()) {
+                task.cancel(true);
             }
             task = DLightExecutorService.submit(new Callable<Boolean>() {
 
@@ -487,34 +491,47 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
     protected void syncFillModel(final List<Column> columns) {
         synchronized (syncFillInLock) {
+            if (syncFillDataTask != null) {
+                return;
+            //syncFillDataTask.cancel(true);
+            }
             syncFillDataTask = DLightExecutorService.submit(new Callable<List<T>>() {
 
                 public List<T> call() throws Exception {
                     return dataProvider.getTableView(columns, null, Integer.MAX_VALUE);
                 }
             }, "Sync TreeTableVisualizer model fill " + configuration.getID()); // NOI18N
-            try {
-                final List<T> list = syncFillDataTask.get();
-                //if we have emptyContent here should
-                final boolean isEmptyConent = list == null || list.isEmpty();
-                UIThread.invoke(new Runnable() {
+        }
+        try {
+            final List<T> list = syncFillDataTask.get();
+            synchronized (syncFillInLock) {
+                syncFillDataTask = null;
+            }
+            //if we have emptyContent here should
+            final boolean isEmptyConent = list == null || list.isEmpty();
+            UIThread.invoke(new Runnable() {
 
-                    public void run() {
-                        setContent(isEmptyConent);
-                        if (isEmptyConent) {
-                            return;
-                        }
-
-                        updateList(list);
+                public void run() {
+                    setContent(isEmptyConent);
+                    if (isEmptyConent) {
+                        return;
                     }
-                });
-            } catch (ExecutionException ex) {
+
+                    updateList(list);
+                }
+            });
+        } catch (ExecutionException ex) {
 //                Thread.currentThread().
             } catch (InterruptedException ex1) {
-                //              Thread.currentThread().interrupt();
+            synchronized (syncFillInLock) {
+                if (syncFillDataTask != null) {
+                    //syncFillDataTask.cancel(true);TODO: uncomment when ErPRint is ready
+                    syncFillDataTask = null;
+                }
             }
-
         }
+
+
     }
 
     protected void updateList(List<T> list) {
@@ -601,6 +618,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         if (!isShown() || !isShowing()) {
             return 0;
         }
+
         syncFillModel(configuration.getMetadata().getColumns());
         return 0;
     }
@@ -630,6 +648,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         if (isShown) {
             return;
         }
+
         isShown = isShowing();
         // Fill model only in case we are really became visible ...
         if (isShown) {
@@ -637,7 +656,10 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             asyncFillModel(configuration.getMetadata().getColumns());
         }
 
+    }
 
+    public void refresh() {
+        asyncFillModel(configuration.getMetadata().getColumns());
     }
 
     public void componentHidden(ComponentEvent e) {
@@ -845,14 +867,14 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
                             }
                         }
                     }, "insight getDisplayName.. "); // NOI18N
-                    return "...";
+                    return "...";//NOI18N
 
                 } else {
                     result = nodeObject.toString();
                 }
                 return result;
             }
-            return "Unknown";
+            return "Unknown";//NOI18N
         }
 
         public String getIconBase(Object node) {
@@ -868,7 +890,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
                 return ((TreeTableNode) treeNode.getUserObject()).getValue() + "";
             }
 
-            return "Unknown";
+            return "Unknown";//NOI18N
         }
 
         void fireNodeModelChanged(final Object node) {

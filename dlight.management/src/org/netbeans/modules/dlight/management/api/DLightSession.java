@@ -44,7 +44,9 @@ import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -55,6 +57,8 @@ import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.api.impl.DLightSessionInternalReference;
 import org.netbeans.modules.dlight.api.impl.DLightToolAccessor;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
+import org.netbeans.modules.dlight.spi.impl.IndicatorRepairActionProviderAccessor;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -74,15 +78,16 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private List<SessionStateListener> sessionStateListeners = null;
     private List<DataStorage> storages = null;
     private List<DataCollector> collectors = null;
-    private List<Visualizer> visualizers = null;
+    private Map<String, Map<String, Visualizer>> visualizers = null;
     private SessionState state;
     private final int sessionID;
     private String description = null;
     private List<ExecutionContextListener> contextListeners;
     private boolean isActive;
     private final DLightSessionContext sessionContext;
+    private final String name;
 
-    public enum SessionState {
+    public static enum SessionState {
 
         CONFIGURATION,
         STARTING,
@@ -116,14 +121,24 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
      * Instead DLightManager.newSession() should be used.
      *
      */
-    DLightSession() {
+    DLightSession(String name) {
         this.state = SessionState.CONFIGURATION;
+        this.name = name;
         sessionID = sessionCount++;
         sessionContext = DLightSessionContextAccessor.getDefault().newContext();
     }
 
     public DLightSessionContext getSessionContext() {
         return sessionContext;
+    }
+
+    void cleanVisualizers() {
+        visualizers.clear();
+        visualizers = null;
+    }
+
+    List<ExecutionContext> getExecutionContexts() {
+        return contexts;
     }
 
     void addExecutionContext(ExecutionContext context) {
@@ -183,18 +198,58 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         return description;
     }
 
+    public String getDisplayName() {
+        return name == null? getDescription() : name;
+    }
+
     boolean isRunning() {
         return state == SessionState.RUNNING;
     }
 
-    void addVisualizer(Visualizer visualizer) {
+    boolean hasVisualizer(String toolName, String visualizerID){
+        if (visualizers == null || !visualizers.containsKey(toolName)) {
+            return false;
+        }
+        Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+        return toolVisualizers.containsKey(visualizerID);
+    }
+
+    List<Visualizer> getVisualizers(){
+        if (visualizers == null){
+            return null;
+        }
+        List<Visualizer> result = new ArrayList<Visualizer>();
+        for (String toolName: visualizers.keySet()){
+            Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+            for (String visID : toolVisualizers.keySet()){
+                result.add(toolVisualizers.get(visID));
+            }
+        }
+        return result;
+
+    }
+
+    Visualizer getVisualizer(String toolName, String visualizerID){
+        if (visualizers == null || !visualizers.containsKey(toolName)) {
+            return null;
+        }
+        Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+        return toolVisualizers.get(visualizerID);
+    }
+
+    Visualizer putVisualizer(String toolName, String id, Visualizer visualizer) {
         if (visualizers == null) {
-            visualizers = new ArrayList<Visualizer>();
+            visualizers = new HashMap<String, Map<String, Visualizer>>();
         }
 
-        if (!visualizers.contains(visualizer)) {
-            visualizers.add(visualizer);
+        Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+        if (toolVisualizers == null){
+            toolVisualizers = new HashMap<String, Visualizer>();
+            visualizers.put(toolName, toolVisualizers);
         }
+        Visualizer oldVis = toolVisualizers.put(id,  visualizer);
+        return oldVis;
+    
     }
 
     public void revalidate() {
@@ -290,7 +345,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         }
         if (context.getDLightConfiguration().getConfigurationOptions(false).areCollectorsTurnedOn()) {
             for (DLightTool tool : validTools) {
-                List<DataCollector> toolCollectors = context.getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
+                List<DataCollector<?>> toolCollectors = context.getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
                 //TODO: no algorithm here:) should be better
                 for (DataCollector c : toolCollectors) {
                     if (!collectors.contains(c)) {
@@ -304,12 +359,14 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             collectors.clear();
         }
 
+        
         //if we have IDP which are collectors add them into the list of collectors
-for (DLightTool tool : validTools) {
+        for (DLightTool tool : validTools) {
             // Try to subscribe every IndicatorDataProvider to every Indicator
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
-            List<IndicatorDataProvider> idps = context.getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
+            List<Indicator> subscribedIndicators = new ArrayList<Indicator>();
+            List<IndicatorDataProvider<?>> idps = context.getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
             if (idps != null) {
                 for (IndicatorDataProvider idp : idps) {
                     if (idp.getValidationStatus().isValid()) {
@@ -317,17 +374,21 @@ for (DLightTool tool : validTools) {
                             context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) idp);
                         }
                         if (idp instanceof DataCollector) {
-                            if (!collectors.contains(idp)){
-                                collectors.add((DataCollector)idp);
+                            if (!collectors.contains(idp)) {
+                                collectors.add((DataCollector) idp);
                             }
                             if (notAttachableDataCollector == null && !((DataCollector) idp).isAttachable()) {
                                 notAttachableDataCollector = ((DataCollector) idp);
                             }
                         }
-                        List<Indicator> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
+                        List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
                         for (Indicator i : indicators) {
+                            target.addTargetListener(i);
                             boolean wasSubscribed = idp.subscribe(i);
                             if (wasSubscribed) {
+                                if (!subscribedIndicators.contains(i)){
+                                    subscribedIndicators.add(i);
+                                }
                                 target.addTargetListener(idp);
                                 log.info("I have subscribed indicator " + i + " to indicatorDataProvider " + idp);
                             }
@@ -335,7 +396,14 @@ for (DLightTool tool : validTools) {
                     }
                 }
             }
+            List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
+            for (Indicator i : indicators){
+                if (!subscribedIndicators.contains(i)){
+                    IndicatorAccessor.getDefault().setRepairActionProviderFor(i, IndicatorRepairActionProviderAccessor.getDefault().createNew(context.getDLightConfiguration(), tool, target));
+                }
+            }
         }
+
 
         for (DataCollector toolCollector : collectors) {
             DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(toolCollector);
@@ -345,6 +413,12 @@ for (DLightTool tool : validTools) {
             if (storage != null) {
                 if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
                     notAttachableDataCollector = toolCollector;
+                }
+                //init storage with the target values
+                DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
+                Map<String, String> info = targetInfo.getInfo();
+                for (String key : info.keySet()) {
+                    storage.put(key, info.get(key));
                 }
                 toolCollector.init(storage, target);
                 if (storages == null) {
@@ -361,7 +435,7 @@ for (DLightTool tool : validTools) {
             target.addTargetListener(toolCollector);
         }
 
-        
+
 
         //and now if we have collectors which cannot be attached let's substitute target
         //the question is is it possible in case target is the whole system: WebTierTarget
@@ -419,9 +493,10 @@ for (DLightTool tool : validTools) {
         }
     }
 
-    List<Visualizer> getVisualizers() {
-        return visualizers;
-    }
+
+
+    
+
 
     // Proxy method to contexts
     public void addExecutionContextListener(ExecutionContextListener listener) {

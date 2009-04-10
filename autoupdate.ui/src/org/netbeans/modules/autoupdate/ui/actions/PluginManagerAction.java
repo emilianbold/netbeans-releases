@@ -62,7 +62,7 @@ public final class PluginManagerAction extends CallableSystemAction {
             JButton close = new JButton ();
             close.setDefaultCapable(false);
             Mnemonics.setLocalizedText (close,NbBundle.getMessage (PluginManagerAction.class, "PluginManager_CloseButton_Name"));
-            pluginManagerUI = new PluginManagerUI (close);
+            pluginManagerUI = new PluginManagerUI (close, getValue("InitialTab")); //NOI18N
             DialogDescriptor dd = new DialogDescriptor (
                                         pluginManagerUI,
                                         NbBundle.getMessage (PluginManagerAction.class, "PluginManager_Panel_Name"),

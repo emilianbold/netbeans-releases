@@ -109,9 +109,8 @@ METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
 METHOD     xor(Number)                                Number
-FIELD      MAX_VALUE                                  byte
-FIELD      MIN_VALUE                                  byte
-FIELD      SIZE                                       int
-FIELD      TYPE                                       Class
-FIELD      serialVersionUID                           long
-FIELD      value                                      byte
+FIELD      MAX_VALUE                       [STATIC,   byte
+FIELD      MIN_VALUE                       [STATIC,   byte
+FIELD      SIZE                            [STATIC,   int
+FIELD      TYPE                            [STATIC,   Class<Byte>
+FIELD      class                                      Class

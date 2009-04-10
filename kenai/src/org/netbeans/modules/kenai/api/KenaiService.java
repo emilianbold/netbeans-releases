@@ -74,6 +74,16 @@ public final class KenaiService {
         return "KenaiService " + getName();
     }
 
+    public static final class Names {
+        public static final String SUBVERSION = "subversion";
+        public static final String MERCURIAL = "mercurial";
+        public static final String GIT = "git";
+        public static final String EXTERNAL_REPOSITORY = "external_repository";
+        public static final String BUGZILLA = "bugzilla";
+        public static final String JIRA = "jira";
+        public static final String EXTERNAL_ISSUES = "external_issues";
+    }
+
     public static enum Type {
 
         FORUM("forum"),

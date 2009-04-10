@@ -77,16 +77,22 @@ public class UpdateContextRoot implements ProgressListener {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
-                    GetPropertyCommand gpc = new GetPropertyCommand("*." + moduleId.getModuleID() + ".context-root");
-                    Future<OperationState> result = 
+                    // Maven projects like to embed a '.' into the ModuleID
+                    //   that played havoc with the get command, so we started
+                    //   to use a different get pattern,
+                    GetPropertyCommand gpc = new GetPropertyCommand("applications.application.*.context-root");
+                    Future<OperationState> result =
                             ((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
                     try {
                         if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
                             Map<String, String> retVal = gpc.getData();
-                            if (retVal.size() == 1) {
+                            String newCR = retVal.get("applications.application." + moduleId.getModuleID() + ".context-root");
+                            if (null != newCR) {
+                                moduleId.setPath(newCR); //e.getValue());
                                 returnProgress.operationStateChanged(OperationState.COMPLETED, "updated the moduleid");
-                                moduleId.setPath(retVal.entrySet().iterator().next().getValue());
+                                return;
                             }
+                            returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
                         }
                     } catch (InterruptedException ex) {
                         returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");

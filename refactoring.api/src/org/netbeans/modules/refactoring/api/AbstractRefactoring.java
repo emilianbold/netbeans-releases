@@ -547,6 +547,7 @@ public abstract class AbstractRefactoring {
                 current = 0;
                 if (event.getCount()==-1) {
                     fireProgressListenerStart(event.getOperationType(), -1);
+                    progressStep = -1;
                 } else {
                     fireProgressListenerStart(event.getOperationType(), PLUGIN_STEPS*pluginsWithProgress.size());
                 }
@@ -557,8 +558,18 @@ public abstract class AbstractRefactoring {
         }
         
         public void step(ProgressEvent event) {
-            current = current + progressStep;
-            fireProgressListenerStep((int) current) ;
+            if (progressStep < 0) {
+                int size = event.getCount();
+                if (size > 0) {
+                    progressStep = (float) PLUGIN_STEPS / size;
+                    fireProgressListenerStep(PLUGIN_STEPS*pluginsWithProgress.size());
+                } else {
+                    fireProgressListenerStep();
+                }
+            } else {
+                current = current + progressStep;
+                fireProgressListenerStep((int) current) ;
+            }
         }
         
         public void stop(ProgressEvent event) {
