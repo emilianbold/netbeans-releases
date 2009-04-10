@@ -38,60 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package sample1;
 
-package org.netbeans.jellytools.modules.db.nodes;
-
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.modules.db.actions.DisableDebugAction;
-import org.netbeans.jellytools.modules.db.actions.EnableDebugAction;
-import org.netbeans.jellytools.nodes.Node;
-
-/** Node representing "Databases" node in Services tab.
- * <p>
- * Usage:<br>
- * <pre>
- *      DatabasesNode databases = DatabasesNode.invoke();
- *      databases.enableDebug();
- *      ....
- * </pre>
- *
- * @author Martin.Schovanek@sun.com
+/**
+ * This is a sample class used in Jellytools tests
  */
-public class DatabasesNode extends Node {
-    static final String TREE_PATH = Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.explorer.node.Bundle",
-                "Databases");
-    private static final Action enableDebugAction = new EnableDebugAction();
-    private static final Action disableDebugAction = new DisableDebugAction();
-    
-    public DatabasesNode() {
-        super(new RuntimeTabOperator().getRootNode(), TREE_PATH);
+public class SampleClass1 {
+
+    /** Creates a new instance of SampleClass1 */
+    public SampleClass1() {
     }
-    
-    /** Finds "Databases" node in Runtime tab
+
+    /**
+     * @param args the command line arguments
      */
-    public static DatabasesNode invoke() {
-        RuntimeTabOperator.invoke();
-        return new DatabasesNode();
+    public static void main(String[] args) {
     }
-    
-    /** performs EnableDebugAction with this node */
-    public void enableDebug() {
-        enableDebugAction.perform(this);
-    }
-    
-    /** performs DisableDebugAction with this node */
-    public void disableDebug() {
-        disableDebugAction.perform(this);
-    }
-    
-    /** tests popup menu items for presence */
-    public void verifyPopup() {
-        verifyPopup(new Action[]{
-            enableDebugAction,
-            disableDebugAction,
-        });
-    }
+
 }
+
