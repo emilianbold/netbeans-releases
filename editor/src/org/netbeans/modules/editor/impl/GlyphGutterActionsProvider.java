@@ -65,11 +65,11 @@ public final class GlyphGutterActionsProvider extends ActionsList implements Cla
     }
     
     public GlyphGutterActionsProvider() {
-        super(null);
+        super(null, false, false);
     }
 
     private GlyphGutterActionsProvider(List<FileObject> keys) {
-        super(keys);
+        super(keys, false, false);
     }
     
     public Class<GlyphGutterActionsProvider> getClazz() {

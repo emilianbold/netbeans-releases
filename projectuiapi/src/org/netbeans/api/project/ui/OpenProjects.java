@@ -169,6 +169,24 @@ public final class OpenProjects {
         trampoline.openAPI (projects,openSubprojects);
     }
 
+    /** Finds out if the project is opened.
+     * @param p the project to verify. Can be <code>null</code> in such case
+     *    the method return <code>false</code>
+     * @return true if this project is among open ones, false otherwise
+     * @since 1.34
+     */
+    public boolean isProjectOpen(Project p) {
+        if (p == null) {
+            return false;
+        }
+        for (Project real : getOpenProjects()) {
+            if (p.equals(real) || real.equals(p)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Closes given projects.
      * Acquires {@link org.netbeans.api.project.ProjectManager#mutex()} in the write mode.
