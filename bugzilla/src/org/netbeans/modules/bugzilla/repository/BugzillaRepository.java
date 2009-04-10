@@ -433,7 +433,7 @@ public class BugzillaRepository extends Repository {
                     for (BugzillaQuery q : queries) {
                         Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
                         QueryController qc = q.getController();
-                        qc.onRefresh();
+                        qc.autoRefresh();
                     }
 
                     scheduleQueryRefresh();

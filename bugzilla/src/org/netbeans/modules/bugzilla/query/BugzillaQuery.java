@@ -53,6 +53,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
@@ -194,11 +195,21 @@ public class BugzillaQuery extends Query {
                     repository.getExecutor().execute(dataCmd);
                     ret[0] = dataCmd.hasFailed();
                 } finally {
+                    logQueryEvent(issues.size());
                     Bugzilla.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
                 }
             }
         });
         return ret[0];
+    }
+
+    protected void logQueryEvent(int count) {
+        BugtrackingUtil.logQueryEvent(
+            BugzillaConnector.getConnectorName(),
+            name,
+            count,
+            false,
+            getController().isAutoRefresh());
     }
 
     public void refresh(String urlParameters) {

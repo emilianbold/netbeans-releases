@@ -76,8 +76,10 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Query.Filter;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
+import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
@@ -666,19 +668,36 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
+
+
+    public void autoRefresh() {
+        onRefresh(true);
+    }
+
     public void onRefresh() {
+        onRefresh(false);
+    }
+
+    private void onRefresh(final boolean auto) {
         post(new Runnable() {
             public void run() {
                 panel.setQueryRunning(true);
+                autoRefresh = auto;
                 try {
                     refresh();
                 } finally {
+                    autoRefresh = false;
                     panel.setQueryRunning(false);
                     task = null;
                 }
             }
 
         });        
+    }
+
+    private boolean autoRefresh = false;
+    public boolean isAutoRefresh() {
+        return autoRefresh;
     }
 
     public void refresh() {
@@ -728,6 +747,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void onAutoRefresh() {
         final boolean autoRefresh = panel.refreshCheckBox.isSelected();
         BugzillaConfig.getInstance().setQueryAutoRefresh(query.getDisplayName(), autoRefresh);
+        BugtrackingUtil.logAutoRefreshEvent(BugzillaConnector.getConnectorName(), autoRefresh);
         if(autoRefresh) {
             scheduleForRefresh();
         } else {
