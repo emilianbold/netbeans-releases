@@ -321,6 +321,9 @@ public class BugtrackingUtil {
             file = FileUtil.toFile(fileObj);
         }
 
+        if (fileObj == null) {
+            return null;
+        }
         if (!fileObj.isValid()) {
             return null;
         }
