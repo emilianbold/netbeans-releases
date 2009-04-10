@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.clientproject.ui.wizards.NewAppClientProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.clientproject.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/clientproject/ui/resources/emptyProject.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/clientproject/ui/resources/application-client-emptyProject.html"/>
                 </file>
         
                 <file name="importCar.xml">
@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.clientproject.ui.wizards.ImportAppClientProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.clientproject.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/clientproject/ui/resources/importProject.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/clientproject/ui/resources/application-client-importProject.html"/>
                 </file>                
             </folder>
         </folder>

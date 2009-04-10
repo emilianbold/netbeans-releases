@@ -174,7 +174,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/jruby.png"/>
 
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/application.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/ruby-application.html"/>
                 </file>
         
                 
