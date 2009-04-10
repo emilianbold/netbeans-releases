@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
+import java.io.InterruptedIOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import org.netbeans.modules.dlight.perfan.util.TasksCachedProcessor;
@@ -169,14 +170,16 @@ class SSStackDataProvider implements StackDataProvider {
     }
 
     public List<FunctionCall> getFunctionCalls(final List<Column> columns, final List<Column> orderBy, final int limit) {
-        while (true) {
-            try {
-                return hotSpotFunctionsFetcher.compute(
-                        new HotSpotFunctionsFetcherParams("lines", columns, orderBy, limit)); // NOI18N
-            } catch (InterruptedException ex) {
-                log.fine("HotSpotFunctionsFetcher interrupted - retry..."); // NOI18N
-            }
+        List<FunctionCall> result = Collections.emptyList();
+
+        try {
+            result = hotSpotFunctionsFetcher.compute(
+                    new HotSpotFunctionsFetcherParams("lines", columns, orderBy, limit)); // NOI18N
+        } catch (InterruptedException ex) {
+            log.fine("HotSpotFunctionsFetcher interrupted"); // NOI18N
         }
+
+        return result;
     }
 
     public List<FunctionCall> getHotSpotFunctions(
@@ -277,7 +280,7 @@ class SSStackDataProvider implements StackDataProvider {
                 throw new IllegalArgumentException("HotSpotFunctionsFetcherParams: empty columns list!"); // NOI18N
             }
             if (command == null) {
-                this.command = "functions";//NOI18N
+                this.command = "functions"; // NOI18N
             } else {
                 this.command = command;
             }
@@ -288,7 +291,7 @@ class SSStackDataProvider implements StackDataProvider {
         }
 
         boolean isDefaultCommand() {
-            return "functions".equals(command);//NOI18N
+            return "functions".equals(command); // NOI18N
         }
 
         @Override
@@ -319,11 +322,18 @@ class SSStackDataProvider implements StackDataProvider {
         }
 
         public List<FunctionCall> compute(HotSpotFunctionsFetcherParams taskArguments) throws InterruptedException {
-            log.fine("Started to fetch Hot Spot Functions"); // NOI18N
+            log.finest("Started to fetch Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
 
             Metrics metrics = taskArguments.metrics;
 
-            String[] er_result = storage.getTopFunctions(taskArguments.command, metrics, taskArguments.limit);
+            String[] er_result = null;
+
+            try {
+                er_result = storage.getTopFunctions(taskArguments.command, metrics, taskArguments.limit);
+            } catch (InterruptedException ex) {
+                log.finest("Fetching Interrupted! Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
+                return null;
+            }
 
             if (er_result == null) {
                 return null;
@@ -346,9 +356,9 @@ class SSStackDataProvider implements StackDataProvider {
                 String name = info[colCount - 1];
                 if (!taskArguments.isDefaultCommand()) {
                     //parse
-                    if ("lines".equals(taskArguments.command)) {//NOI18N
+                    if ("lines".equals(taskArguments.command)) { // NOI18N
                         //if name.startsWith< will skip
-                        if (name.startsWith("<")) {//NOI18N
+                        if (name.startsWith("<")) { // NOI18N
                             continue;
                         }
                         Matcher match = linesCommandPattern.matcher(name);
