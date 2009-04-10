@@ -39,52 +39,42 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.impl;
+package org.netbeans.api.editor;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
-import org.netbeans.spi.editor.mimelookup.InstanceProvider;
-import org.openide.filesystems.FileObject;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
+ * Annotation allowing to annotate one action class by multiple
+ * {@link EditorActionRegistration} annotations.
+ * <br/>
+ * Example:
+ * <pre>
+ * @EditorActionRegistrations({ @EditorActionRegistration(name = "name1", ...),
+ *                              @EditorActionRegistration(name = "name2", ...)
+ *                            })
+ * public class MultiAction extends BaseAction {
  *
- * @author Vita Stejskal
+ *     public void actionPerformed(ActionEvent evt) {
+ *         if ("name1".equals(getValue(Action.NAME))) {
+ *             // behavior for "name1"
+ *         } else {
+ *             // behavior for "name2"
+ *         }
+ *     }
+ *
+ * ]
+ * </pre>
+ *
+ * @since 1.10
+ * @author Miloslav Metelka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-public final class GlyphGutterActionsProvider extends ActionsList implements Class2LayerFolder<GlyphGutterActionsProvider>, InstanceProvider<GlyphGutterActionsProvider> {
+@Retention(RetentionPolicy.SOURCE)
+@Target({ ElementType.TYPE, ElementType.METHOD })
+public @interface EditorActionRegistrations {
 
-    public static final String GLYPH_GUTTER_ACTIONS_FOLDER_NAME = "GlyphGutterActions"; //NOI18N
-    
-    public static List getGlyphGutterActions(String mimeType) {
-        MimePath mimePath = MimePath.parse(mimeType);
-        GlyphGutterActionsProvider provider = MimeLookup.getLookup(mimePath).lookup(GlyphGutterActionsProvider.class);
-        return provider == null ? Collections.emptyList() : provider.getActionsOnly();
-    }
-    
-    public GlyphGutterActionsProvider() {
-        super(null, false, false);
-    }
+    EditorActionRegistration[] value();
 
-    private GlyphGutterActionsProvider(List<FileObject> keys) {
-        super(keys, false, false);
-    }
-    
-    public Class<GlyphGutterActionsProvider> getClazz() {
-        return GlyphGutterActionsProvider.class;
-    }
-
-    public String getLayerFolderName(){
-        return GLYPH_GUTTER_ACTIONS_FOLDER_NAME;
-    }
-
-    public InstanceProvider<GlyphGutterActionsProvider> getInstanceProvider() {
-        return new GlyphGutterActionsProvider();
-    }
-    
-    public GlyphGutterActionsProvider createInstance(List<FileObject> fileObjectList) {
-        return new GlyphGutterActionsProvider(fileObjectList);
-    }
 }

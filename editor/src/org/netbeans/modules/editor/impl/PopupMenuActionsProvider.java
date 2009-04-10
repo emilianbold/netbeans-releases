@@ -65,11 +65,11 @@ public final class PopupMenuActionsProvider extends ActionsList implements Class
     }
     
     public PopupMenuActionsProvider() {
-        super(null);
+        super(null, false, false);
     }
 
     private PopupMenuActionsProvider(List<FileObject> keys) {
-        super(keys);
+        super(keys, false, false);
     }
     
     public Class<PopupMenuActionsProvider> getClazz(){
