@@ -1088,8 +1088,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         
         private void findDependencies(
                 final URL rootURL,
-                final Map<URL,
-                List<URL>> depGraph,
+                final Map<URL, List<URL>> depGraph,
                 DependenciesContext ctx,
                 final Set<String> libraryClassPathIds,
                 final Set<String> binaryLibraryClassPathIds)
