@@ -87,6 +87,11 @@ Microsystems, Inc. All Rights Reserved.
             <code>System.getProperty("something")</code> is non-null.
             </p>
             <p>
+            By adding <code>config-something</code> attribute you identify
+            an action that will be called as soon as the node is expanded and
+            <code>FileUtil.getConfigFile("something")</code> is non-null.
+            </p>
+            <p>
             By adding <code>wizardMessage</code> attribute you tell the
             <q>Add Server...</q> action to display this message as an
             option, if no servers are yet registered. If user agrees, your
