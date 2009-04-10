@@ -92,6 +92,8 @@ public class RepositoryRevision {
         StringBuffer text = new StringBuffer();
         text.append(getLog().getRevision());
         text.append("\t");
+        text.append(getLog().getCSetShortID());
+        text.append("\t");
         text.append(getLog().getDate());
         text.append("\t");
         text.append(getLog().getAuthor()); // NOI18N

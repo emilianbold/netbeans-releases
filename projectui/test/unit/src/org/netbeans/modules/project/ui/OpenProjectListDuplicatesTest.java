@@ -114,10 +114,16 @@ public class OpenProjectListDuplicatesTest extends NbTestCase {
         }
 
         LOG.info("Before first open");
-        OpenProjects.getDefault().open(new Project[] { new Fake() }, false);
+        Fake f = new Fake();
+        assertFalse("null is not open", OpenProjects.getDefault().isProjectOpen(null));
+        OpenProjects.getDefault().open(new Project[] { f }, false);
+        assertTrue("Fake is open", OpenProjects.getDefault().isProjectOpen(f));
+        assertTrue("Fake is open, but real one is reported open too", OpenProjects.getDefault().isProjectOpen(p));
         LOG.info("After first and Before 2nd open");
         OpenProjects.getDefault().open(new Project[] { p }, false);
         LOG.info("After 2nd open");
+        assertTrue("Real one is open", OpenProjects.getDefault().isProjectOpen(p));
+        assertTrue("Fake is open too", OpenProjects.getDefault().isProjectOpen(f));
 
 
         List<Project> arr = Arrays.asList(OpenProjects.getDefault().openProjects().get());
@@ -129,6 +135,8 @@ public class OpenProjectListDuplicatesTest extends NbTestCase {
         if (OpenProjects.getDefault().getOpenProjects().length != 0) {
             fail("All projects shall be closed: " + Arrays.asList(OpenProjects.getDefault().getOpenProjects()));
         }
+        assertFalse("No project is opened", OpenProjects.getDefault().isProjectOpen(p));
+        assertFalse("No project is opened", OpenProjects.getDefault().isProjectOpen(f));
 
         assertEquals("Close hook called", 1, TestProjectOpenedHookImpl.closed);
     }
