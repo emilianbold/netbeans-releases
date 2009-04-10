@@ -51,7 +51,6 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.log.SearchHistoryAction;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
 /**
