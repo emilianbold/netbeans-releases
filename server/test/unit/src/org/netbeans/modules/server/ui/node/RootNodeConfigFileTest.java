@@ -55,9 +55,9 @@ import org.openide.util.actions.CallableSystemAction;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class RootNodeTest extends NbTestCase {
+public class RootNodeConfigFileTest extends NbTestCase {
 
-    public RootNodeTest(String s) {
+    public RootNodeConfigFileTest(String s) {
         super(s);
     }
 
@@ -67,28 +67,12 @@ public class RootNodeTest extends NbTestCase {
     }
 
 
-
-    public void testGetActions() throws Exception {
-        RootNode rn = RootNode.getInstance();
-        FileObject fo = FileUtil.getConfigFile("Servers/Actions");
-        assertNotNull("Folder for actions precreated", fo);
-        FileObject x = fo.createData(MyAction.class.getName().replace('.', '-') + ".instance");
-        x.setAttribute("position", 37);
-        Action[] arr = rn.getActions(true);
-        assertEquals("Two actions and one separator found: " + Arrays.asList(arr), 3, arr.length);
-        assertEquals("Last one is separator", null, arr[2]);
-        MyAction a = MyAction.get(MyAction.class);
-
-        if (a != arr[0] && a != arr[1]) {
-            fail("My action shall be present in the node context actions: " + arr[0] + " 2nd: " + arr[1]);
-        }
-    }
-
-    public void testInvokeActionsOnProperties() throws Throwable {
+    public void testInvokeActionsOnConfigFiles() throws Throwable {
         class Work implements Runnable {
             int action;
             Throwable t;
             CntAction a;
+            CntAction b;
 
 
             public void run() {
@@ -106,8 +90,13 @@ public class RootNodeTest extends NbTestCase {
                     a = new CntAction();
                     FileObject afo = fo.createData("A2.instance");
                     afo.setAttribute("instanceCreate", a);
-                    afo.setAttribute("property-myprop", "true");
-                    afo.setAttribute("position", 98);
+                    afo.setAttribute("position", 99);
+                    afo.setAttribute("config-Kuk/Buk/Huk.instance", "true");
+
+                    b = new CntAction();
+                    FileObject bfo = fo.createData("A3.instance");
+                    bfo.setAttribute("instanceCreate", b);
+                    bfo.setAttribute("position", 98);
                 } catch (IOException ex) {
                     this.t = ex;
                 }
@@ -117,12 +106,13 @@ public class RootNodeTest extends NbTestCase {
                 try {
                     RootNode.enableActionsOnExpand();
                     assertEquals("No action called", 0, a.cnt);
-                    assertEquals("No action called2", 0, MyAction.cnt);
+                    assertEquals("No action called2", 0, b.cnt);
 
-                    System.setProperty("myprop", "ahoj");
+                    FileObject huk = FileUtil.createData(FileUtil.getConfigRoot(), "Kuk/Buk/Huk.instance");
+
                     RootNode.enableActionsOnExpand();
                     assertEquals("CntAction called", 1, a.cnt);
-                    assertEquals("No Myaction", 0, MyAction.cnt);
+                    assertEquals("No Myaction", 0, b.cnt);
                 } catch (Throwable ex) {
                     this.t = ex;
                 }
@@ -147,25 +137,5 @@ public class RootNodeTest extends NbTestCase {
             assertEquals("noui", e.getActionCommand());
             cnt++;
         }
-    }
-
-    public static final class MyAction extends CallableSystemAction {
-        static int cnt;
-
-        @Override
-        public void performAction() {
-            cnt++;
-        }
-
-        @Override
-        public String getName() {
-            return "My";
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
-        }
-
     }
 }
