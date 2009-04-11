@@ -157,18 +157,6 @@ public class MakefileConfiguration {
         } else if (IpeUtils.isPathAbsolute(getOutput().getValue())) {
             return getOutput().getValue();
         } else {
-            // FIXME
-//            List<String> paths = new ArrayList<String>();
-//            paths.add(makeConfiguration.getBaseDir());
-//            paths.addAll(mcd.getSourceRoots());
-//
-//            for (String dir : paths) {
-//                dir = dir.replace("\\", "/");  // NOI18N
-//                String path = dir.replace("\\", "/") + '/' + getOutput().getValue();
-//                File file = new File(path);
-//                if (file.exists()) {
-//                    return path;
-//                }
             return getMakeConfiguration().getBaseDir() + "/" + getOutput().getValue(); // NOI18N
         }
     }
