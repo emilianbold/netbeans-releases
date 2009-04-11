@@ -42,16 +42,14 @@ package org.netbeans.modules.ide.ergonomics;
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,6 +63,10 @@ public class Utilities {
     }
 
     public static final boolean featureNotFoundDialog(final FeatureInfo featureInfo, final String featureName) {
+        String notFound = NbBundle.getMessage(Utilities.class, "LBL_FeatureNotFound");
+        return featureDialog(featureInfo, notFound, featureName);
+    }
+    public static final boolean featureDialog(final FeatureInfo featureInfo, final String notFoundMessage, final String featureName) {
         final boolean[] result = new boolean[] { false };
         final DialogDescriptor[] descriptor = new DialogDescriptor[1];
         final Callable<JComponent> call = new Callable<JComponent>() {
@@ -74,19 +76,11 @@ public class Utilities {
                 return new JPanel();
             }
         };
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-
-                public void run() {
-                    String notFound = NbBundle.getMessage(Utilities.class, "LBL_FeatureNotFound");
-                    descriptor[0] = new DialogDescriptor(new ConfigurationPanel(featureName, call, featureInfo, true), notFound);
-                }
-            });
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        descriptor[0] = Mutex.EVENT.readAccess(new Mutex.Action<DialogDescriptor>() {
+            public DialogDescriptor run() {
+                return new DialogDescriptor(new ConfigurationPanel(featureName, call, featureInfo, true), notFoundMessage);
+            }
+        });
         descriptor[0].setOptions(new Object[] { DialogDescriptor.CANCEL_OPTION });
         final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor[0]);
         descriptor[0].addPropertyChangeListener(new PropertyChangeListener() {

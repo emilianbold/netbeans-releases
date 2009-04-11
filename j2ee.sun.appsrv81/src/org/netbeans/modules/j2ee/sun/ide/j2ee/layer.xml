@@ -312,6 +312,8 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="550"/>
                 <attr name="property-com.sun.aas.installRoot" boolvalue="true"/>
                 <attr name="property-org.netbeans.modules.tomcat.autoregister.catalinaHome" boolvalue="true"/>
+                <attr name="config-J2EE/InstalledServers/" boolvalue="true"/>
+                <attr name="wizardMessage" bundlevalue="org.netbeans.modules.j2ee.sun.ide.Bundle#CTL_InfoWizard"/>
             </file>
         </folder>
     </folder>

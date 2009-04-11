@@ -4,4 +4,5 @@ OpenIDE-Module-Layer: org/netbeans/modules/server/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/server/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.4
 AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Provides: org.netbeans.modules.server
 
