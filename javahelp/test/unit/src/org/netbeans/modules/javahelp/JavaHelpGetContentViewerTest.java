@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,49 +34,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model.nodes;
+package org.netbeans.modules.javahelp;
 
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.impl.VariousUtils;
-import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
-import org.netbeans.modules.php.editor.parser.astnodes.Include;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Parameters;
+import java.awt.AWTEvent;
+import java.awt.Component;
+import java.net.URL;
+import javax.help.JHelp;
+import javax.help.search.SearchEngine;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.openide.util.HelpCtx;
 
 /**
- * @author Radek Matous
+ *
+ * @author Victor G. Vasilyev
  */
-public class IncludeInfo extends ASTNodeInfo<Include> {
-    IncludeInfo(Include node) {
-        super(node);
+public class JavaHelpGetContentViewerTest {
+
+    public JavaHelpGetContentViewerTest() {
     }
 
-    public static IncludeInfo create(Include include) {
-        return new IncludeInfo(include);
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
 
-    @Override
-    public Kind getKind() {
-        return Kind.INCLUDE;
+    @AfterClass
+    public static void tearDownClass() throws Exception {
     }
 
-    @Override
-    public String getName() {
-        Include incl = getOriginalNode();
-        return VariousUtils.resolveFileName(incl);
+    @Before
+    public void setUp() {
     }
 
-    @Override
-    public OffsetRange getRange() {
-        Include incl = getOriginalNode();
-        return new OffsetRange(incl.getStartOffset(), incl.getEndOffset());
+    @After
+    public void tearDown() {
     }
 
-    public FileObject getIncludeFile(FileObject sourceFile) {
-        Parameters.notNull("sourceFile", sourceFile);
-        return VariousUtils.resolveInclude(sourceFile, getOriginalNode());
+
+    /**
+     * Test of getContentViewer method, of class JavaHelp.
+     */
+    @Test
+    public void testGetContentViewer() {
+        System.out.println("JavaHelp.getContentViewer");
+        Component c = new JHelp();
+        JavaHelp instance = new JavaHelp();
+        Component expResult = null;
+        Component result = instance.getContentViewer(c);
+        assertNotNull("Seems the version of the JavaHelp is changed. " +
+                      " Please, review the method " +
+  "org.netbeans.modules.javahelp.JavaHelp.getContentViewer(java.awt.Component)",
+                      result);
     }
+
 }

@@ -39,7 +39,6 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -90,7 +89,7 @@ public class HtmlParserResult extends ParserResult {
      */
     public synchronized AstNode root() {
         if (parseTreeRoot == null) {
-            parseTreeRoot = SyntaxTree.makeTree(elementsList());
+            parseTreeRoot = SyntaxTree.makeTree(elementsList(), dtd());
             analyzeParseResult();
         }
         return parseTreeRoot;
@@ -104,23 +103,21 @@ public class HtmlParserResult extends ParserResult {
     /** @return an instance of DTD bound to the html document. */
     public synchronized DTD dtd() {
         if (dtd == null) {
-            final DTD[] dtds = new DTD[]{org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null)};
             //find document type declaration
-            AstNodeUtils.visitChildren(root(), new AstNodeVisitor() {
-
-                public void visit(AstNode node) {
-                    if (node.type() == AstNode.NodeType.DECLARATION) {
-                        String publicID = (String) node.getAttribute("public_id"); //NOI18N
-                        if (publicID != null) {
-                            DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(publicID, null);
-                            if (dtd != null) {
-                                dtds[0] = dtd;
-                            }
-                        }
+            for (SyntaxElement e : elementsList()) {
+                if (e.type() == SyntaxElement.TYPE_DECLARATION) {
+                    String publicID = ((SyntaxElement.Declaration) e).getPublicIdentifier();
+                    if (publicID != null) {
+                        dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(publicID, null);
+                        break;
                     }
                 }
-            });
-            dtd = dtds[0];
+            }
+
+            if (dtd == null) {
+                //nothing found, use fallback dtd
+                dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
+            }
         }
         return dtd;
     }
@@ -162,7 +159,8 @@ public class HtmlParserResult extends ParserResult {
                                 //check the unmatched tag according to the DTD
                                 Element element = dtd.getElement(node.name().toUpperCase(Locale.US));
                                 if (element != null) {
-                                    if (unmatched.type() == AstNode.NodeType.OPEN_TAG && element.hasOptionalEnd() || unmatched.type() == AstNode.NodeType.ENDTAG && element.hasOptionalStart()) {
+                                    if (unmatched.type() == AstNode.NodeType.OPEN_TAG && element.hasOptionalEnd() /*||
+                                            unmatched.type() == AstNode.NodeType.ENDTAG && element.hasOptionalStart()*/) {
                                         return;
                                     }
                                 }
@@ -177,6 +175,31 @@ public class HtmlParserResult extends ParserResult {
                                     node.endOffset(),
                                     Severity.WARNING); //NOI18N
                             _errors.add(error);
+
+                        } else if (node.type() == AstNode.NodeType.TAG || node.type() == AstNode.NodeType.OPEN_TAG) {
+
+                            if (node.getErrorMessages().size() > 0) {
+                                StringBuffer b = new StringBuffer();
+                                for (String s : node.getErrorMessages()) {
+                                    b.append(s);
+                                    b.append(';');
+                                    b.append('\n');
+                                }
+                                //remove the tail ';\n'
+                                b.delete(b.length() - 2, b.length());
+
+                                //some error in the node, report
+                                Error error =
+                                        new DefaultError("tag_error",
+                                        b.toString(),
+                                        null,
+                                        getSnapshot().getSource().getFileObject(),
+                                        node.startOffset(),
+                                        node.endOffset(),
+                                        Severity.WARNING); //NOI18N
+                                _errors.add(error);
+
+                            }
                         }
                     }
                 });
