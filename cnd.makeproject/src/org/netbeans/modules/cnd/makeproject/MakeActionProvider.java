@@ -102,6 +102,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.remote.FilePathMapper;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
@@ -545,10 +546,8 @@ public class MakeActionProvider implements ActionProvider {
                         }
                     } else {
                         // Always absolute
-                        // FIXME - GRP: This call fails for a Makefile project where the sources aren't in the
-                        // project baseDir and the buildOutput isn't absolute.
-                        path = getExePath(pd, conf);
-//                        path = conf.getMakefileConfiguration().getAbsOutput().replace("\\", "/"); // NOI18N
+                        path = conf.getMakefileConfiguration().getAbsOutput(); // NOI18N
+                        path = FilePathAdaptor.normalize(path);
                     }
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
@@ -1300,30 +1299,30 @@ public class MakeActionProvider implements ActionProvider {
         return pi.fileExists(path) || pi.isWindows() && pi.fileExists(path+".lnk") || pi.findCommand(path) != null; // NOI18N
     }
 
-    private static String getExePath(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
-        String buildResult = conf.getMakefileConfiguration().getOutput().getValue();
-
-        if (buildResult == null || buildResult.length() == 0) {
-            return buildResult;
-        }
-
-        List<String> paths = new ArrayList<String>();
-        if (isAbsolutePath(conf, buildResult)) {
-            paths.add(buildResult);
-        }
-        paths.add(conf.getBaseDir());
-        paths.addAll(mcd.getSourceRoots());
-
-        for (String dir : paths) {
-            dir = dir.replace("\\", "/");  // NOI18N
-            String path = dir + '/' + buildResult; // gdb *requires* forward slashes!
-            File file = new File(path);
-            if (file.exists()) {
-                return path;
-            }
-        }
-        return "";
-    }
+//    private static String getExePath(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
+//        String buildResult = conf.getMakefileConfiguration().getOutput().getValue();
+//
+//        if (buildResult == null || buildResult.length() == 0) {
+//            return buildResult;
+//        }
+//
+//        List<String> paths = new ArrayList<String>();
+//        if (isAbsolutePath(conf, buildResult)) {
+//            paths.add(buildResult);
+//        }
+//        paths.add(conf.getBaseDir());
+//        paths.addAll(mcd.getSourceRoots());
+//
+//        for (String dir : paths) {
+//            dir = dir.replace("\\", "/");  // NOI18N
+//            String path = dir + '/' + buildResult; // gdb *requires* forward slashes!
+//            File file = new File(path);
+//            if (file.exists()) {
+//                return path;
+//            }
+//        }
+//        return "";
+//    }
 
     private static boolean isAbsolutePath(MakeConfiguration conf, String path) {
         if (conf.getPlatform().getValue() == PlatformTypes.PLATFORM_WINDOWS) {
