@@ -180,7 +180,7 @@ public class HostInfoTest {
             expResult = false;
             System.out.println(fname + (result == false ? " doesn't exist" : " exists")); // NOI18N
             assertEquals(expResult, result);
-        } catch (ConnectException ex) {
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             fail("Wrong exception"); // NOI18N
         }
@@ -191,7 +191,7 @@ public class HostInfoTest {
             expResult = true;
             System.out.println(fname + (result == false ? " doesn't exist" : " exists")); // NOI18N
             assertEquals(expResult, result);
-        } catch (ConnectException ex) {
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             fail("Wrong exception"); // NOI18N
         }

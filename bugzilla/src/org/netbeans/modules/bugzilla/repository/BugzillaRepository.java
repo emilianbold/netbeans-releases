@@ -513,4 +513,10 @@ public class BugzillaRepository extends Repository {
         }
         return refreshProcessor;
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + " (" + getDisplayName() + ')';        //NOI18N
+    }
+
 }

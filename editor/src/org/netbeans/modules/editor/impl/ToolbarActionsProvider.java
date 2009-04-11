@@ -77,11 +77,11 @@ public final class ToolbarActionsProvider extends ActionsList implements Class2L
     }
     
     public ToolbarActionsProvider() {
-        super(null);
+        super(null, false, false);
     }
 
     private ToolbarActionsProvider(List<FileObject> keys) {
-        super(keys, true);
+        super(keys, true, false);
     }
     
     public Class<ToolbarActionsProvider> getClazz(){
@@ -107,11 +107,11 @@ public final class ToolbarActionsProvider extends ActionsList implements Class2L
     public static final class LegacyToolbarActionsProvider extends ActionsList implements Class2LayerFolder<LegacyToolbarActionsProvider>, InstanceProvider<LegacyToolbarActionsProvider> {
 
         public LegacyToolbarActionsProvider() {
-            super(null);
+            this(null);
         }
 
         private LegacyToolbarActionsProvider(List<FileObject> keys) {
-            super(keys);
+            super(keys, false, false);
         }
 
         public Class<LegacyToolbarActionsProvider> getClazz(){

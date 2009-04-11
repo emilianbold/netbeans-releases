@@ -78,7 +78,7 @@ public final class HostInfoUtils {
      * environment is not connected.
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
-            final String fname) throws ConnectException {
+            final String fname) throws IOException {
         return fileExists(execEnv, fname, true);
     }
 
@@ -99,7 +99,7 @@ public final class HostInfoUtils {
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
             final String fname, final boolean useCache)
-            throws ConnectException {
+            throws IOException {
         String key = execEnv.toString() + fname;
 
         if (useCache && filesExistenceHash.containsKey(key)) {
@@ -121,9 +121,7 @@ public final class HostInfoUtils {
             try {
                 fileExists = npb.call().waitFor() == 0;
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                throw new IOException(ex.getMessage());
             }
         }
 

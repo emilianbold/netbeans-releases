@@ -48,7 +48,6 @@ import java.awt.Insets;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.RSSFeedReaderPanel;
 import org.netbeans.modules.welcome.content.WebLink;
@@ -69,7 +68,8 @@ class Blogs extends RSSFeedReaderPanel {
         WebLink allBlogs = new WebLink( "AllBlogs", false ); // NOI18N
         BundleSupport.setAccessibilityProperties( allBlogs, "AllBlogs" ); //NOI18N
 
-        JPanel panel = new BackgroundPanel( new GridBagLayout() );
+        JPanel panel = new JPanel( new GridBagLayout() );
+        panel.setOpaque(false);
         panel.add( allBlogs, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.SOUTHEAST,GridBagConstraints.HORIZONTAL,new Insets(5,5,0,5),0,0) );
         panel.add( new JLabel(), new GridBagConstraints(0,0,1,1,1.0,0.0,GridBagConstraints.CENTER,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
 

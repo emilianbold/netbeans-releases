@@ -47,6 +47,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.TopSecurityManager;
 
 /** Logger that will enable the logging of important events during the startup
  * annotated with real time and possibly time differences.
@@ -135,7 +136,7 @@ public class StartLog {
                 // Note that this can only happen when logging is off
                 // (which is the default).
                 System.err.flush();
-                System.exit(1);
+                TopSecurityManager.exit(1);
             }
             LOG.log(Level.FINE, "end", action); // NOI18N
         }

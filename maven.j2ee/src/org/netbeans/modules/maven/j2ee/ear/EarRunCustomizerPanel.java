@@ -41,6 +41,8 @@ package org.netbeans.modules.maven.j2ee.ear;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
@@ -112,9 +114,18 @@ public class EarRunCustomizerPanel extends javax.swing.JPanel {
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
         sc.setServerInstanceId(null);
         //TODO - not sure this is necessary since the PoHImpl listens on project changes.
-        //any save of teh project shall effectively caus ethe module server change..
+        //any save of the project shall effectively cause the module server change..
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
         poh.hackModuleServerChange();
+
+        // USG logging
+        Object obj = comServer.getSelectedItem();
+        if (obj != null) {
+            LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_MAVEN_SERVER");  //NOI18N
+            record.setLoggerName(POHImpl.USG_LOGGER_NAME);
+            record.setParameters(new Object[] { obj.toString() });
+            POHImpl.USG_LOGGER.log(record);
+        }
     }
 
     /** This method is called from within the constructor to
