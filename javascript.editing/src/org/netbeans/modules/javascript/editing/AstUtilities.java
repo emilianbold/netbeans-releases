@@ -52,10 +52,14 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -160,6 +164,26 @@ public final class AstUtilities {
         return (JsParseResult) info;
     }
 
+    private static boolean isJavascript(String mimeType) {
+        return mimeType.equals(JsTokenId.JAVASCRIPT_MIME_TYPE) ||
+                mimeType.equals(JsTokenId.JSON_MIME_TYPE);
+    }
+
+    private static Parser.Result findJsParserResult(ResultIterator ri) throws ParseException {
+        if(isJavascript(ri.getSnapshot().getMimeType())) {
+            return ri.getParserResult();
+        } else {
+            //try to dive deeper
+            for(Embedding e : ri.getEmbeddings()) {
+                Parser.Result res = findJsParserResult(ri.getResultIterator(e));
+                if(res != null) {
+                    return res;
+                }
+            }
+        }
+        return null;
+    }
+
     public static Node getForeignNode(final IndexedElement o, JsParseResult[] compilationInfoRet) {
         FileObject fo = o.getFileObject();
         if (fo == null) {
@@ -172,7 +196,7 @@ public final class AstUtilities {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    infoHolder[0] = resultIterator.getParserResult();
+                    infoHolder[0] = findJsParserResult(resultIterator);
                 }
             });
         } catch (ParseException ex) {
@@ -180,10 +204,11 @@ public final class AstUtilities {
             return null;
         }
 
-        JsParseResult info = AstUtilities.getParseResult(infoHolder[0]);
-        if (info == null) {
+        if (infoHolder[0] == null) {
             return null;
         }
+
+        JsParseResult info = AstUtilities.getParseResult(infoHolder[0]);
 
         if (compilationInfoRet != null) {
             compilationInfoRet[0] = info;
