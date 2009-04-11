@@ -37,58 +37,34 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.server.ui.node;
+package org.netbeans.modules.server.ui.wizard;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.Arrays;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
-import org.netbeans.junit.NbTestCase;
+import javax.swing.JRadioButton;
+import org.junit.Test;
+import static org.junit.Assert.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.CallableSystemAction;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class RootNodeTest extends NbTestCase {
+public class AddServerInstanceWizardTest {
 
-    public RootNodeTest(String s) {
-        super(s);
+    public AddServerInstanceWizardTest() {
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        clearWorkDir();
-    }
-
-
-
-    public void testGetActions() throws Exception {
-        RootNode rn = RootNode.getInstance();
-        FileObject fo = FileUtil.getConfigFile("Servers/Actions");
-        assertNotNull("Folder for actions precreated", fo);
-        FileObject x = fo.createData(MyAction.class.getName().replace('.', '-') + ".instance");
-        x.setAttribute("position", 37);
-        Action[] arr = rn.getActions(true);
-        assertEquals("Two actions and one separator found: " + Arrays.asList(arr), 3, arr.length);
-        assertEquals("Last one is separator", null, arr[2]);
-        MyAction a = MyAction.get(MyAction.class);
-
-        if (a != arr[0] && a != arr[1]) {
-            fail("My action shall be present in the node context actions: " + arr[0] + " 2nd: " + arr[1]);
-        }
-    }
-
-    public void testInvokeActionsOnProperties() throws Throwable {
+    @Test
+    public void testListAvailableProviders() throws Throwable {
         class Work implements Runnable {
             int action;
             Throwable t;
             CntAction a;
+            CntAction b;
 
 
             public void run() {
@@ -106,8 +82,12 @@ public class RootNodeTest extends NbTestCase {
                     a = new CntAction();
                     FileObject afo = fo.createData("A2.instance");
                     afo.setAttribute("instanceCreate", a);
-                    afo.setAttribute("property-myprop", "true");
-                    afo.setAttribute("position", 98);
+                    afo.setAttribute("wizardMessage", "Ahoj");
+                    afo.setAttribute("position", 309);
+                    b = new CntAction();
+                    FileObject bfo = fo.createData("A3.instance");
+                    bfo.setAttribute("instanceCreate", b);
+                    bfo.setAttribute("position", 159);
                 } catch (IOException ex) {
                     this.t = ex;
                 }
@@ -115,14 +95,13 @@ public class RootNodeTest extends NbTestCase {
 
             private void check1() {
                 try {
-                    RootNode.enableActionsOnExpand();
-                    assertEquals("No action called", 0, a.cnt);
-                    assertEquals("No action called2", 0, MyAction.cnt);
-
-                    System.setProperty("myprop", "ahoj");
-                    RootNode.enableActionsOnExpand();
-                    assertEquals("CntAction called", 1, a.cnt);
-                    assertEquals("No Myaction", 0, MyAction.cnt);
+                    JRadioButton[] result = AddServerInstanceWizard.listAvailableProviders();
+                    assertEquals("One action found", 1, result.length);
+                    assertEquals("Message is taken from attribute", "Ahoj", result[0].getText());
+                    assertSame("Not part of API, but behaviour: Action is stored in property",
+                        a,
+                        result[0].getClientProperty("action")
+                    );
                 } catch (Throwable ex) {
                     this.t = ex;
                 }
@@ -138,34 +117,17 @@ public class RootNodeTest extends NbTestCase {
         if (w.t != null) {
             throw w.t;
         }
+
+        
     }
 
     public static final class CntAction extends AbstractAction {
         int cnt;
-        
+
         public void actionPerformed(ActionEvent e) {
             assertEquals("noui", e.getActionCommand());
             cnt++;
         }
     }
 
-    public static final class MyAction extends CallableSystemAction {
-        static int cnt;
-
-        @Override
-        public void performAction() {
-            cnt++;
-        }
-
-        @Override
-        public String getName() {
-            return "My";
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
-        }
-
-    }
 }

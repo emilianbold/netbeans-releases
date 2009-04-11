@@ -130,13 +130,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.glassfish.common</code-name-base>
-                    <run-dependency>
-                        <release-version>0</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.httpserver</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
