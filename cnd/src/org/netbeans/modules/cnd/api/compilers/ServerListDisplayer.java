@@ -37,39 +37,25 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.server;
+package org.netbeans.modules.cnd.api.compilers;
 
-import java.awt.Dialog;
-import org.netbeans.modules.cnd.api.compilers.ServerListDisplayer;
-import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
- * ServerListDisplayer implementation
+ * Displayes Edit Servers List dialog.
+ *
+ * Initially it was created as a replacement of the show() method
+ * of the ServerList class (ServerList is a model, so it shouldn't be mixed with UI)
+ *
+ * Now it's moved to o.n.m.c.api.compilers package because
+ * both its signature and implementation is connected too tightly with
+ * CompilerSet, CompilerSetManager, ToolsCacheManager, etc.
+ *
+ * This should be redesigned, and this class should be moved to o.n.m.c.api.remote.
+ *
  * @author Vladimir Kvashin
  */
-@ServiceProvider(service = ServerListDisplayer.class)
-public class RemoteServerListDisplayer implements ServerListDisplayer {
+public interface ServerListDisplayer {
 
-    public boolean showServerListDialog(ToolsCacheManager cacheManager) {
-        EditServerListDialog dlg = new EditServerListDialog(cacheManager);
-        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true,
-                    DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
-        dlg.setDialogDescriptor(dd);
-        dd.addPropertyChangeListener(dlg);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            cacheManager.setHosts(dlg.getHosts());
-            cacheManager.setDefaultIndex(dlg.getDefaultIndex());
-            return true;
-        } else {
-            return false;
-        }
-    }
-
+    public boolean showServerListDialog(ToolsCacheManager cacheManager);
 }
