@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
     
     <target name="felix" depends="-init-proxy" unless="felix.downloaded">
         <property name="felix" value="felix-1.4.1"/>
-        <get dest="${felix}.zip" src="ftp://ftp.ibiblio.org/pub/mirrors/apache/felix/${felix}.zip"/>
+        <get dest="${felix}.zip" src="http://archive.apache.org/dist/felix/${felix}.zip"/>
         <unzip src="${felix}.zip" dest=".">
             <patternset>
                 <include name="${felix}/**/bin/felix.jar"/>
