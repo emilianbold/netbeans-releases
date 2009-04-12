@@ -61,7 +61,6 @@ made subject to such option by the copyright holder.
             The AlwaysEnabledAction.getValue() now resolves all the keys
             in Acxtion.getValue() against the defined attributes in the xml-layer.
         </description>
-        <class package="org.openide.awt" name="AlwaysEnabledAction"/>
         <issue number="150875"/>
     </change>
     <change id="Notifications">
