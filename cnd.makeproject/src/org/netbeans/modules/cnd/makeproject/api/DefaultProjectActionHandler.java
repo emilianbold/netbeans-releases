@@ -114,7 +114,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     }
                 }
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    if (HostInfoProvider.getDefault().getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS) {
+                    if (HostInfoProvider.getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS) {
                         // we need to run the application under cmd on windows
                         exe = "cmd.exe"; // NOI18N
                         // exe path naturalization is needed for cmd on windows, see issue 149404
@@ -151,7 +151,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                         }
                         if (pae.getType() == ProjectActionEvent.Type.RUN &&
                                 pae.getConfiguration().isApplicationConfiguration() &&
-                                HostInfoProvider.getDefault().getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS &&
+                                HostInfoProvider.getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS &&
                                 !exe.endsWith(".exe")) { // NOI18N
                             exe = exe + ".exe"; // NOI18N
                         }
