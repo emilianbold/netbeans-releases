@@ -37,15 +37,34 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.remote;
+package org.netbeans.modules.cnd.spi.remote;
 
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * Displayes Edit Servers List dialog
+ * A factory for HostInfoProvider
  * @author Vladimir Kvashin
  */
-public interface ServerListDisplayer {
+public interface HostInfoProviderFactory {
 
-    public boolean showServerListDialog(ToolsCacheManager cacheManager);
+    /**
+     * Determines whether this factory is applicable for the given execution environment
+     * @param execEnv
+     * @return true is this factory is applicable for the given execution environment,
+     * otherwiae false
+     */
+    boolean canCreate(ExecutionEnvironment execEnv);
+
+    /**
+     * Creates new HostInfoProvider
+     * @param execEnv execution environment to create the provider for
+     * @return HostInfoProvider for the given environment or null
+     * in the case such environment is not supported by this factory.
+
+     * It must return non-null in the case canCreate with the same environment
+     * returned true
+     */
+    HostInfoProvider create(ExecutionEnvironment execEnv);
+
 }
