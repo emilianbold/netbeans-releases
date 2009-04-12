@@ -71,7 +71,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -81,11 +80,9 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -841,29 +838,29 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 return false;
             }
 
-            if (allLanguagesParsersCount == -1) {
-                Collection<? extends ParserFactory> allLanguagesParsers = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(ParserFactory.class);
-                allLanguagesParsersCount = allLanguagesParsers.size();
-            }
-            Collection<? extends ParserFactory> parsers = MimeLookup.getLookup(mimeType).lookupAll(ParserFactory.class);
-            if (parsers.size() - allLanguagesParsersCount > 0) {
-                return true;
-            }
-
-            // Ideally we should check that there are EmbeddingProviders registered for the
-            // mimeType, but let's assume that if there are TaskFactories they are either
-            // ordinary scheduler tasks or EmbeddingProviders. The former would most likely
-            // mean that there is also a Parser and would have been caught in the previous check.
-            if (allLanguagesTasksCount == -1) {
-                Collection<? extends TaskFactory> allLanguagesTasks = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(TaskFactory.class);
-                allLanguagesTasksCount = allLanguagesTasks.size();
-            }
-            Collection<? extends TaskFactory> tasks = MimeLookup.getLookup(mimeType).lookupAll(TaskFactory.class);
-            if (tasks.size() - allLanguagesTasksCount > 0) {
-                return true;
-            }
+//            if (allLanguagesParsersCount == -1) {
+//                Collection<? extends ParserFactory> allLanguagesParsers = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(ParserFactory.class);
+//                allLanguagesParsersCount = allLanguagesParsers.size();
+//            }
+//            Collection<? extends ParserFactory> parsers = MimeLookup.getLookup(mimeType).lookupAll(ParserFactory.class);
+//            if (parsers.size() - allLanguagesParsersCount > 0) {
+//                return true;
+//            }
+//
+//            // Ideally we should check that there are EmbeddingProviders registered for the
+//            // mimeType, but let's assume that if there are TaskFactories they are either
+//            // ordinary scheduler tasks or EmbeddingProviders. The former would most likely
+//            // mean that there is also a Parser and would have been caught in the previous check.
+//            if (allLanguagesTasksCount == -1) {
+//                Collection<? extends TaskFactory> allLanguagesTasks = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(TaskFactory.class);
+//                allLanguagesTasksCount = allLanguagesTasks.size();
+//            }
+//            Collection<? extends TaskFactory> tasks = MimeLookup.getLookup(mimeType).lookupAll(TaskFactory.class);
+//            if (tasks.size() - allLanguagesTasksCount > 0) {
+//                return true;
+//            }
             
-            return false;
+            return true;
         }
 
         private String urlForMessage(URL currentlyScannedRoot) {
