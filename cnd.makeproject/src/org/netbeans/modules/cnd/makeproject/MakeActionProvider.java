@@ -102,7 +102,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathMapper;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
@@ -589,7 +588,7 @@ public class MakeActionProvider implements ActionProvider {
                                 if (cancelled.get()) {
                                     return; // getEnv() might be costly for remote host
                                 }
-                            userPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
+                            userPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
                         }
                         path = path + ";" + userPath; // NOI18N
                         runProfile.getEnvironment().putenv(pi.getPathName(), path);
@@ -623,7 +622,7 @@ public class MakeActionProvider implements ActionProvider {
                                 if (cancelled.get()) {
                                     return; // getEnv() might be costly for remote host
                                 }
-                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
+                                extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
                             }
                             if (extPath != null) {
                                 path.append(":" + extPath); // NOI18N
@@ -651,7 +650,7 @@ public class MakeActionProvider implements ActionProvider {
                                 if (cancelled.get()) {
                                     return; // getEnv() might be costly for remote host
                                 }
-                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
+                                extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
                             }
                             if (extPath != null) {
                                 path.append(":" + extPath); // NOI18N
@@ -668,7 +667,7 @@ public class MakeActionProvider implements ActionProvider {
                         if (cancelled.get()) {
                             return; // getEnv() might be costly for remote host
                         }
-                        if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
+                        if (HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null) {
                                 runProfile = conf.getProfile().clone();

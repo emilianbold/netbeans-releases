@@ -98,7 +98,7 @@ public class RemoteFile extends File {
     @Override
     public boolean exists() {
         //TODO: nonono
-        return HostInfoProvider.getDefault().fileExists(execEnv, getPath());
+        return HostInfoProvider.fileExists(execEnv, getPath());
     }
 
     @Override

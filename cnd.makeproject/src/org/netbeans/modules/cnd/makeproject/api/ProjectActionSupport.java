@@ -353,7 +353,7 @@ public class ProjectActionSupport {
 //                        final String projectName = info.getDisplayName();
 //                        runDirectory = MakeActionProvider.REMOTE_BASE_PATH + "/" + projectName;
                 } else {
-                    PathMap mapper = HostInfoProvider.getDefault().getMapper(conf.getDevelopmentHost().getExecutionEnvironment());
+                    PathMap mapper = HostInfoProvider.getMapper(conf.getDevelopmentHost().getExecutionEnvironment());
                     if (!mapper.isRemote(basedir, true)) {
 //                        mapper.showUI();
 //                        if (!mapper.isRemote(basedir)) {
@@ -512,7 +512,7 @@ public class ProjectActionSupport {
      * @return true if executable exists and is an executable, otherwise false
      */
     private static boolean verifyRemoteExecutable(ExecutionEnvironment execEnv, String executable) {
-        PathMap mapper = HostInfoProvider.getDefault().getMapper(execEnv);
+        PathMap mapper = HostInfoProvider.getMapper(execEnv);
         String remoteExecutable = mapper.getRemotePath(executable);
         CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
         if (cmd != null) {
