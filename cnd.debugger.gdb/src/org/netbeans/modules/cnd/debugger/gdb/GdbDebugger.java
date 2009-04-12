@@ -246,7 +246,7 @@ public class GdbDebugger implements PropertyChangeListener {
         try {
             pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
             execEnv = (pae.getConfiguration()).getDevelopmentHost().getExecutionEnvironment();
-            pathMap = HostInfoProvider.getDefault().getMapper(execEnv);
+            pathMap = HostInfoProvider.getMapper(execEnv);
             iotab = lookupProvider.lookupFirst(null, InputOutput.class);
             if (iotab != null) {
                 iotab.setErrSeparated(false);
@@ -257,7 +257,7 @@ public class GdbDebugger implements PropertyChangeListener {
             conType = execEnv.isLocal() ? pae.getProfile().getConsoleType().getValue() : RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
             // See IZ 161592: we do not care what platform we have in project configuration
             // we use real platform instead
-            platform = HostInfoProvider.getDefault().getPlatform(execEnv);
+            platform = HostInfoProvider.getPlatform(execEnv);
             if (platform != PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW && pae.getType() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
             }
@@ -408,7 +408,7 @@ public class GdbDebugger implements PropertyChangeListener {
                             inRedir = " < " + inFile + " > " + outFile + " 2> " + outFile; // NOI18N
                         } else {
                             // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
-                            String shell = HostInfoProvider.getDefault().getEnv(execEnv).get("SHELL"); // NOI18N
+                            String shell = HostInfoProvider.getEnv(execEnv).get("SHELL"); // NOI18N
                             if (shell != null && shell.endsWith("csh")) { // NOI18N
                                 inRedir = " < " + inFile + " >& " + outFile; // NOI18N
                             } else {

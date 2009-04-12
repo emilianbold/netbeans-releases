@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,26 +34,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.remote;
+package org.netbeans.modules.cnd.remote;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.Reader;
-import java.io.StringReader;
-import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.spi.remote.HostInfoProviderFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- *
- * @author Sergey Grinev
+ * A factory for local HostInfoProvider
+ * @author Vladimir Kvashin
  */
-public class RemoteBufferedReader {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.HostInfoProviderFactory.class)
+public class LocalHostInfoProviderFactory implements  HostInfoProviderFactory {
 
-    protected RemoteBufferedReader(File file) {
-
+    public boolean canCreate(ExecutionEnvironment execEnv) {
+        return execEnv.isLocal();
     }
 
+    public HostInfoProvider create(ExecutionEnvironment execEnv) {
+        return new LocalHostInfoProvider(execEnv);
+    }
 }
