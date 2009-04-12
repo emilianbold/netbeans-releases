@@ -104,14 +104,14 @@ public class SourceIndexer {
                         private void visit (final ResultIterator resultIterator,
                                 final EmbeddingIndexerFactory currentIndexerFactory) throws ParseException,IOException {
                             if (currentIndexerFactory != null) {
-                                final String indexerName = currentIndexerFactory.getIndexerName();
-                                final int indexerVersion = currentIndexerFactory.getIndexVersion();
-                                final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob);
-                                transactionContexts.add(context);
-
                                 final Parser.Result pr = resultIterator.getParserResult();
                                 if (pr != null) {
-                                    final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty,resultIterator.getSnapshot());
+                                    final String indexerName = currentIndexerFactory.getIndexerName();
+                                    final int indexerVersion = currentIndexerFactory.getIndexVersion();
+                                    final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob);
+                                    transactionContexts.add(context);
+
+                                    final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty, pr.getSnapshot());
                                     if (indexer != null) {
                                         try {
                                             SPIAccessor.getInstance().index(indexer, dirty, pr, context);
