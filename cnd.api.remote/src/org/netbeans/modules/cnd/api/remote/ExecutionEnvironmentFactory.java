@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -85,7 +84,8 @@ public class ExecutionEnvironmentFactory {
      */
     public static String getHostKey(ExecutionEnvironment executionEnvironment) {
         if (executionEnvironment.isLocal()) {
-            return CompilerSetManager.LOCALHOST;
+            // this "localhost" is for compatibility with other
+            return "localhost"; //NOI18N
         } else if (executionEnvironment.getUser() == null || executionEnvironment.getUser().length() == 0) {
             return executionEnvironment.getHost();
         } else {

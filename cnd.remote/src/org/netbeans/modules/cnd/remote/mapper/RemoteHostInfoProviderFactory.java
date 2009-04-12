@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.spi.remote.HostInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -52,10 +53,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * @author gordonp
  * @author Sergey Grinev
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.HostInfoProvider.class)
-public class RemoteHostInfoProvider extends HostInfoProvider {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.HostInfoProviderFactory.class)
+public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
 
-    public static class RemoteHostInfo {
+    public static class RemoteHostInfo extends HostInfoProvider {
 
         private final ExecutionEnvironment executionEnvironment;
         private String home = null;
@@ -64,11 +65,27 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
         private Boolean isCshShell;
         private Integer platform;
 
+        @Override
+        public boolean fileExists(String path) {
+            RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment,
+                    "test -d \"" + path + "\" -o -f \"" + path + "\""); // NOI18N
+            return support.run() == 0;
+        }
+
+        @Override
+        public String getLibDir() {
+            String base = getHome();
+            if (base == null) {
+                return null;
+            }
+            return base + "/" + RemoteServerSetup.REMOTE_LIB_DIR; // NOI18N
+        }
+
         private RemoteHostInfo(ExecutionEnvironment executionEnvironment) {
             this.executionEnvironment = executionEnvironment;
         }
 
-        public String getHome() {
+        private String getHome() {
             if (home == null) {
                 RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "pwd"); // NOI18N
                 if (support.run() == 0) {
@@ -78,6 +95,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
             return home;
         }
 
+        @Override
         public synchronized PathMap getMapper() {
             if (mapper == null) {
                 mapper = RemotePathMap.getPathMap(executionEnvironment);
@@ -85,6 +103,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
             return mapper;
         }
 
+        @Override
         public synchronized Map<String, String> getEnv() {
             if (envCache == null) {
                 envCache = new HashMap<String, String>();
@@ -114,6 +133,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
             return isCshShell.booleanValue();
         }
 
+        @Override
         public int getPlatform() {
             if (platform == null) {
                 RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "uname -sm"); //NOI18N
@@ -155,34 +175,11 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
         return hi;
     }
 
-    @Override
-    public PathMap getMapper(ExecutionEnvironment execEnv) {
-        return getHostInfo(execEnv).getMapper();
+    public boolean canCreate(ExecutionEnvironment execEnv) {
+        return execEnv.isRemote();
     }
 
-    @Override
-    public Map<String, String> getEnv(ExecutionEnvironment execEnv) {
-        return getHostInfo(execEnv).getEnv();
-    }
-
-    @Override
-    public String getLibDir(ExecutionEnvironment execEnv) {
-        String home = getHostInfo(execEnv).getHome();
-        if (home == null) {
-            return null;
-        }
-        return home + "/" + RemoteServerSetup.REMOTE_LIB_DIR; // NOI18N
-    }
-
-    @Override
-    public boolean fileExists(ExecutionEnvironment execEnv, String path) {
-        RemoteCommandSupport support = new RemoteCommandSupport(execEnv,
-                "test -d \"" + path + "\" -o -f \"" + path + "\""); // NOI18N
-        return support.run() == 0;
-    }
-
-    @Override
-    public int getPlatform(ExecutionEnvironment execEnv) {
-        return getHostInfo(execEnv).getPlatform();
+    public HostInfoProvider create(ExecutionEnvironment execEnv) {
+        return getHostInfo(execEnv);
     }
 }

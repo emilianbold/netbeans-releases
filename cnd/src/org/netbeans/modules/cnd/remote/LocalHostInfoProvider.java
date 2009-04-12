@@ -37,39 +37,71 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.server;
+package org.netbeans.modules.cnd.remote;
 
-import java.awt.Dialog;
-import org.netbeans.modules.cnd.api.compilers.ServerListDisplayer;
-import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import java.io.File;
+import java.util.Map;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Utilities;
 
 /**
- * ServerListDisplayer implementation
+ * HostInfoProvider implementation for local host
  * @author Vladimir Kvashin
  */
-@ServiceProvider(service = ServerListDisplayer.class)
-public class RemoteServerListDisplayer implements ServerListDisplayer {
+/*package-local*/ class LocalHostInfoProvider extends HostInfoProvider {
 
-    public boolean showServerListDialog(ToolsCacheManager cacheManager) {
-        EditServerListDialog dlg = new EditServerListDialog(cacheManager);
-        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true,
-                    DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
-        dlg.setDialogDescriptor(dd);
-        dd.addPropertyChangeListener(dlg);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            cacheManager.setHosts(dlg.getHosts());
-            cacheManager.setDefaultIndex(dlg.getDefaultIndex());
-            return true;
-        } else {
-            return false;
-        }
+    private ExecutionEnvironment execEnv;
+
+    LocalHostInfoProvider(ExecutionEnvironment execEnv) {
+        this.execEnv = execEnv;
     }
 
+    @Override
+    public boolean fileExists(String path) {
+        if (new File(path).exists()) {
+            return true;
+        }
+        if (Utilities.isWindows() && !path.endsWith(".lnk")) { //NOI18N
+            return new File(path+".lnk").exists(); //NOI18N
+        }
+        return false;
+    }
+
+    @Override
+    public Map<String, String> getEnv() {
+        return System.getenv();
+    }
+
+    @Override
+    public String getLibDir() {
+        return null;
+    }
+
+    @Override
+    public PathMap getMapper() {
+        return new LocalPathMap();
+    }
+
+    @Override
+    public int getPlatform() {
+        return CompilerSetManager.computeLocalPlatform();
+    }
+
+    private static class LocalPathMap implements PathMap {
+
+        public boolean isRemote(String path, boolean fixMissingPath) {
+            return false;
+        }
+
+        public String getLocalPath(String rpath) {
+            return rpath;
+        }
+
+        public String getRemotePath(String lpath) {
+            return lpath;
+        }
+    }
 }
