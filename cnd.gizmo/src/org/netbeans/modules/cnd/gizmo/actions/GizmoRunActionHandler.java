@@ -102,7 +102,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
         String runDirectory = pae.getProfile().getRunDirectory();
         if (execEnv.isRemote()) {
-            PathMap mapper = HostInfoProvider.getDefault().getMapper(execEnv);
+            PathMap mapper = HostInfoProvider.getMapper(execEnv);
             runDirectory = mapper.getRemotePath(runDirectory);
         }
 

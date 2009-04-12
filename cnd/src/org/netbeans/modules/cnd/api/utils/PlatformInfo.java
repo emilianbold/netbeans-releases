@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
@@ -268,11 +267,11 @@ public final class PlatformInfo {
     }
 
     public Map<String, String> getEnv() {
-        return HostInfoProvider.getDefault().getEnv(executionEnvironment);
+        return HostInfoProvider.getEnv(executionEnvironment);
     }
 
     public boolean fileExists(String path) {
-        return HostInfoProvider.getDefault().fileExists(executionEnvironment, path);
+        return HostInfoProvider.fileExists(executionEnvironment, path);
     }
 
     public File[] listFiles(File file) {
@@ -340,7 +339,7 @@ public final class PlatformInfo {
     public static synchronized PlatformInfo getDefault(ExecutionEnvironment execEnv) {
         PlatformInfo pi = map.get(execEnv);
         if (pi == null) {
-            int thePlatform = HostInfoProvider.getDefault().getPlatform(execEnv);
+            int thePlatform = HostInfoProvider.getPlatform(execEnv);
             pi = new PlatformInfo(execEnv, thePlatform);
             map.put(execEnv, pi);
         }
