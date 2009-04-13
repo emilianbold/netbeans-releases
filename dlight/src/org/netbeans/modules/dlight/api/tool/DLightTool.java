@@ -78,6 +78,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     private final List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
     private boolean collectorsTurnedOn = true;
     private final String iconPath;
+    private final DLightToolConfiguration configuration;
     //register accessor which will be used ne friend packages of API/SPI accessor packages
     //to get access to tool creation, etc.
 
@@ -91,6 +92,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         this.iconPath = DLightToolConfigurationAccessor.getDefault().getIconPath(configuration);
         dataCollectors = Collections.synchronizedList(new ArrayList<DataCollector<?>>());
         indicators = Collections.synchronizedList(new ArrayList<Indicator<?>>());
+        this.configuration = configuration;
         indicatorDataProviders = Collections.synchronizedList(new ArrayList<IndicatorDataProvider<?>>());
         List<DataCollectorConfiguration> configurations = DLightToolConfigurationAccessor.getDefault().getDataCollectors(configuration);
         List<IndicatorDataProviderConfiguration> idpConfigurations = DLightToolConfigurationAccessor.getDefault().getIndicatorDataProviders(configuration);
@@ -122,20 +124,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
             }
         }
 
-        List<IndicatorConfiguration> indConfigurationsList = DLightToolConfigurationAccessor.getDefault().getIndicators(configuration);
-        for (IndicatorConfiguration indConfiguration : indConfigurationsList) {
-            Indicator indicator = IndicatorProvider.getInstance().createIndicator(toolName, indConfiguration);
-            if (indicator == null) {
-                log.info("Could not find Indicator for configuration with id:" + indConfiguration.getID() + " check if " +
-                        "IndicatorFactory is registered in Global Lookup with the same ID");
-                continue;
 
-            }
-
-            addIndicator(indicator);
-        // Name is already set in IndicatorProvider.createIndicator()
-        // IndicatorAccessor.getDefault().setToolName(indicator, toolName);
-        }
     }
 
     static DLightTool newDLightTool(DLightToolConfiguration configuration) {
@@ -220,7 +209,27 @@ public final class DLightTool implements Validateable<DLightTarget> {
         }
     }
 
+    private void addAllIndicators(){
+        List<IndicatorConfiguration> indConfigurationsList = DLightToolConfigurationAccessor.getDefault().getIndicators(configuration);
+        for (IndicatorConfiguration indConfiguration : indConfigurationsList) {
+            Indicator indicator = IndicatorProvider.getInstance().createIndicator(toolName, indConfiguration);
+            if (indicator == null) {
+                log.info("Could not find Indicator for configuration with id:" + indConfiguration.getID() + " check if " +
+                        "IndicatorFactory is registered in Global Lookup with the same ID");
+                continue;
+
+            }
+
+            addIndicator(indicator);
+        // Name is already set in IndicatorProvider.createIndicator()
+        // IndicatorAccessor.getDefault().setToolName(indicator, toolName);
+        }
+    }
+
     final List<Indicator<?>> getIndicators() {
+        if (indicators.size() == 0){
+            addAllIndicators();
+        }
         return indicators;
     }
 
