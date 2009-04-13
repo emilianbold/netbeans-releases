@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.hudson.api;
 
+import java.awt.EventQueue;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -184,6 +185,9 @@ public final class ConnectionBuilder {
     public URLConnection connection() throws IOException {
         if (url == null) {
             throw new IllegalArgumentException("You must call the url method!"); // NOI18N
+        }
+        if (url.getProtocol().matches("https?") && EventQueue.isDispatchThread()) {
+            LOG.log(Level.FINER, "opening " + url, new IllegalStateException("Avoid connecting from EQ"));
         }
         URLConnection conn = url.openConnection();
         RETRY: while (true) {
