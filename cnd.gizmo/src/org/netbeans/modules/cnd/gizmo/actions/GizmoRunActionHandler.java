@@ -143,6 +143,9 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         if (options instanceof GizmoConfigurationOptions){
             ((GizmoConfigurationOptions)options).configure(pae.getProject());
         }
+   
+
+        //WE are here only when Profile On RUn 
         final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(
                 target, configuration, IpeUtils.getBaseName(pae.getExecutable()));
 
