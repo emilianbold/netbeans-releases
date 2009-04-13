@@ -28,7 +28,6 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
     public RemoteNativeProcess(NativeProcessInfo info) {
         super(info);
-        createAndStart();
     }
 
     protected void create() throws Throwable {
