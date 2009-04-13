@@ -46,6 +46,8 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
+import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -72,22 +74,30 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     private static final String PRSTAT_INDICATOR = "prstat";//NOI18N
     private Project currentProject;
     private boolean areCollectorsTurnedOn = false;
+    private boolean profileOnRun = true;
 
     public void turnCollectorsState(boolean turnState) {
         areCollectorsTurnedOn = turnState;
     }
 
+    public boolean profileOnRun() {
+        return profileOnRun;
+    }
+
     public void configure(Project project){
         this.currentProject = project;
-        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
-        turnCollectorsState(options.getDataCollectorEnabled());
+//        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
         //set up as following:
         //get data from the project about selected provider of detailed voew
         Configuration activeConfiguration = getActiveConfiguration();
+        GizmoOptions options = GizmoOptionsProvider.getOptions(activeConfiguration);
+        turnCollectorsState(true);
+        profileOnRun = options.getProfileOnRunValue();
         String hkey = null;
         if (!(activeConfiguration instanceof MakeConfiguration)) {
             return;
         }
+
         hkey = ((MakeConfiguration) activeConfiguration).getDevelopmentHost().getName();
         //if we have sun studio compiler along compiler collections presentedCompiler
         CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
@@ -100,22 +110,13 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             }
         }
 
-//        try {
-//            isLinux = HostInfoUtils.getOS(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment()).indexOf("linux") != -1;
-//            isSolaris = HostInfoUtils.getOS(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment()).equals("SunOS");
-//
-//        } catch (ConnectException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
+        GizmoOptions.DataProvider currentProvider = options.getDataProviderValue();
 
-        String dataCollectorSelectName = options.getDataCollectorName();//DTrace or SunStudio
-        if (dataCollectorSelectName == null || dataCollectorSelectName.trim().equals("")){
-            dataCollectorSelectName = "SunStudio";//NOI18N
-        }
+       
         DLightCollectorString = DTRACE;
         DLightIndicatorDPStrings = Arrays.asList(PRSTAT_INDICATOR, DTRACE);
 
-        if (hasSunStudio && dataCollectorSelectName.equals("SunStudio")) {//NOI18N
+        if (hasSunStudio && currentProvider == GizmoOptions.DataProvider.SUN_STUDIO) {//NOI18N
             DLightCollectorString = SUNSTUDIO;
             DLightIndicatorDPStrings = new ArrayList<String>();
             DLightIndicatorDPStrings.add(SUNSTUDIO);

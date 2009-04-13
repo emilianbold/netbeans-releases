@@ -41,9 +41,13 @@
 
 package org.netbeans.modules.cnd.gizmo.options;
 
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
@@ -51,6 +55,9 @@ import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
+import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.openide.util.NbBundle;
 
 public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
@@ -60,18 +67,19 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     private boolean needSave = false;
     private String baseDir;
 
-    // Profile on Run
+//    // Profile on Run
     private BooleanConfiguration profileOnRun;
     public static String PROFILE_ON_RUN_PROP = "profileOnRun"; // NOI18N
-    // Cpu
-    private BooleanConfiguration cpu;
-    public static String CPU_PROP = "cpu"; // NOI18N
-    // Memory
-    private BooleanConfiguration memory;
-    public static String MEMORY_PROP = "memory"; // NOI18N
-    // Synchronization
-    private BooleanConfiguration synchronization;
-    public static String SYNCHRONIZATION_PROP = "synchronization"; // NOI18N
+    private final Map<String, BooleanConfiguration> toolConfigurations;
+//    // Cpu
+//    private BooleanConfiguration cpu;
+//    public static String CPU_PROP = "cpu"; // NOI18N
+//    // Memory
+//    private BooleanConfiguration memory;
+//    public static String MEMORY_PROP = "memory"; // NOI18N
+//    // Synchronization
+//    private BooleanConfiguration synchronization;
+//    public static String SYNCHRONIZATION_PROP = "synchronization"; // NOI18N
     // Data Provider
     public static final int SUN_STUDIO = 0;
     public static final int DTRACE = 1;
@@ -85,13 +93,24 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     public GizmoOptionsImpl(String baseDir, PropertyChangeSupport pcs) {
         this.baseDir = baseDir;
         this.pcs = pcs;
-
+        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
+        toolConfigurations = new HashMap<String, BooleanConfiguration>();
+        List<DLightTool> tools = gizmoConfiguration.getToolsSet();
+        for (DLightTool tool : tools){
+            toolConfigurations.put(tool.getName(), new BooleanConfiguration(null, true, tool.getName(), tool.getName()));
+        }
         profileOnRun = new BooleanConfiguration(null, true, null, null);
-        cpu = new BooleanConfiguration(null, true, null, null);
-        memory = new BooleanConfiguration(null, true, null, null);
-        synchronization = new BooleanConfiguration(null, true, null, null);
-        dataProvider = new IntConfiguration(null, DTRACE, DATA_PROVIDER_NAMES, null);
+//        cpu = new BooleanConfiguration(null, true, null, null);
+//        memory = new BooleanConfiguration(null, true, null, null);
+//        synchronization = new BooleanConfiguration(null, true, null, null);
+        dataProvider = new IntConfiguration(null, SUN_STUDIO, DATA_PROVIDER_NAMES, null);
     }
+
+    public Collection<String> getNames() {
+        return toolConfigurations.keySet();
+    }
+
+
 
     public void initialize() {
         clearChanged();
@@ -144,68 +163,91 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     }
 
 
-    /**
-     * CPU
-     */
-    public BooleanConfiguration getCpu() {
-        return cpu;
+    public BooleanConfiguration getByName(String toolName){
+        return toolConfigurations.get(toolName);
     }
 
-    public boolean getCpuValue() {
-        return getCpu().getValue();
+    public boolean getValueByName(String toolName){
+        return toolConfigurations.get(toolName).getValue();
     }
 
-    public void setCpu(BooleanConfiguration cpu) {
-        this.cpu = cpu;
+    public void setByName(String toolName, BooleanConfiguration value){
+        toolConfigurations.put(toolName, value);
     }
 
-    public void setCpuValue(boolean cpu) {
-        boolean oldValue = getCpuValue();
-        getCpu().setValue(cpu);
-        checkPropertyChange(CPU_PROP, oldValue, getCpuValue());
+    public void setValueByName(String toolName, boolean value){
+        BooleanConfiguration confguration = toolConfigurations.get(toolName);
+        boolean oldValue = confguration == null ? false : confguration.getValue();
+        if (confguration == null){
+            confguration = new BooleanConfiguration(null, true, toolName, toolName);
+            toolConfigurations.put(toolName, confguration);
+        }
+        confguration.setValue(value);
+        checkPropertyChange(toolName, oldValue, value);
     }
-
-    /**
-     * Memory
-     */
-    public BooleanConfiguration getMemory() {
-        return memory;
-    }
-
-    public boolean getMemoryValue() {
-        return getMemory().getValue();
-    }
-
-    public void setMemory(BooleanConfiguration memory) {
-        this.memory = memory;
-    }
-
-    public void setMemoryValue(boolean memory) {
-        boolean oldValue = getMemoryValue();
-        getMemory().setValue(memory);
-        checkPropertyChange(MEMORY_PROP, oldValue, getMemoryValue());
-    }
-
-    /**
-     * Synchronization
-     */
-    public BooleanConfiguration getSynchronization() {
-        return synchronization;
-    }
-
-    public boolean getSynchronizationValue() {
-        return getSynchronization().getValue();
-    }
-
-    public void setSynchronization(BooleanConfiguration synchronization) {
-        this.synchronization = synchronization;
-    }
-
-    public void setSynchronizationValue(boolean synchronization) {
-        boolean oldValue = getSynchronizationValue();
-        getSynchronization().setValue(synchronization);
-        checkPropertyChange(MEMORY_PROP, oldValue, getSynchronizationValue());
-    }
+//
+//    /**
+//     * CPU
+//     */
+//    public BooleanConfiguration getCpu() {
+//        return cpu;
+//    }
+//
+//    public boolean getCpuValue() {
+//        return getCpu().getValue();
+//    }
+//
+//    public void setCpu(BooleanConfiguration cpu) {
+//        this.cpu = cpu;
+//    }
+//
+//    public void setCpuValue(boolean cpu) {
+//        boolean oldValue = getCpuValue();
+//        getCpu().setValue(cpu);
+//        checkPropertyChange(CPU_PROP, oldValue, getCpuValue());
+//    }
+//
+//    /**
+//     * Memory
+//     */
+//    public BooleanConfiguration getMemory() {
+//        return memory;
+//    }
+//
+//    public boolean getMemoryValue() {
+//        return getMemory().getValue();
+//    }
+//
+//    public void setMemory(BooleanConfiguration memory) {
+//        this.memory = memory;
+//    }
+//
+//    public void setMemoryValue(boolean memory) {
+//        boolean oldValue = getMemoryValue();
+//        getMemory().setValue(memory);
+//        checkPropertyChange(MEMORY_PROP, oldValue, getMemoryValue());
+//    }
+//
+//    /**
+//     * Synchronization
+//     */
+//    public BooleanConfiguration getSynchronization() {
+//        return synchronization;
+//    }
+//
+//    public boolean getSynchronizationValue() {
+//        return getSynchronization().getValue();
+//    }
+//
+//    public void setSynchronization(BooleanConfiguration synchronization) {
+//        this.synchronization = synchronization;
+//    }
+//
+//    public void setSynchronizationValue(boolean synchronization) {
+//        boolean oldValue = getSynchronizationValue();
+//        getSynchronization().setValue(synchronization);
+//        checkPropertyChange(MEMORY_PROP, oldValue, getSynchronizationValue());
+//    }
 
     /**
      * Data Provider
@@ -275,18 +317,24 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         oldBoolValue = getProfileOnRun().getValue();
         getProfileOnRun().assign(gizmoOptions.getProfileOnRun());
         checkPropertyChange(PROFILE_ON_RUN_PROP, oldBoolValue, getProfileOnRunValue());
-
-        oldBoolValue = getCpu().getValue();
-        getCpu().assign(gizmoOptions.getCpu());
-        checkPropertyChange(CPU_PROP, oldBoolValue, getCpu().getValue());
-
-        oldBoolValue = getMemory().getValue();
-        getMemory().assign(gizmoOptions.getMemory());
-        checkPropertyChange(MEMORY_PROP, oldBoolValue, getMemory().getValue());
-
-        oldBoolValue = getSynchronization().getValue();
-        getSynchronization().assign(gizmoOptions.getSynchronization());
-        checkPropertyChange(SYNCHRONIZATION_PROP, oldBoolValue, getSynchronization().getValue());
+        Set<String> keys = toolConfigurations.keySet();
+        for (String key: keys){
+            BooleanConfiguration conf = toolConfigurations.get(key);
+            oldBoolValue = conf.getValue();
+            conf.assign(gizmoOptions.getByName(key));
+            checkPropertyChange(key, oldBoolValue, getValueByName(key));
+        }
+//        oldBoolValue = getCpu().getValue();
+//        getCpu().assign(gizmoOptions.getCpu());
+//        checkPropertyChange(CPU_PROP, oldBoolValue, getCpu().getValue());
+//
+//        oldBoolValue = getMemory().getValue();
+//        getMemory().assign(gizmoOptions.getMemory());
+//        checkPropertyChange(MEMORY_PROP, oldBoolValue, getMemory().getValue());
+//
+//        oldBoolValue = getSynchronization().getValue();
+//        getSynchronization().assign(gizmoOptions.getSynchronization());
+//        checkPropertyChange(SYNCHRONIZATION_PROP, oldBoolValue, getSynchronization().getValue());
 
         oldDValue = getDataProviderValue();
         getDataProvider().assign(gizmoOptions.getDataProvider());
@@ -299,9 +347,12 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         GizmoOptionsImpl clone = new GizmoOptionsImpl(getBaseDir(), null);
 
         clone.setProfileOnRun(getProfileOnRun().clone());
-        clone.setCpu(getCpu().clone());
-        clone.setMemory(getMemory().clone());
-        clone.setSynchronization(getSynchronization().clone());
+        Set<String> keys = toolConfigurations.keySet();
+        for (String key: keys){
+            BooleanConfiguration conf = toolConfigurations.get(key);
+            clone.setByName(key, conf.clone());
+        }
+
         clone.setDataProvider(getDataProvider().clone());
         return clone;
     }

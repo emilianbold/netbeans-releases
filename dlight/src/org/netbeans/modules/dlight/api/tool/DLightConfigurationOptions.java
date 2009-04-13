@@ -48,13 +48,14 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
  */
 public interface DLightConfigurationOptions {
 
-    void turnCollectorsState(boolean turnState);
+    boolean profileOnRun();
 
+    void turnCollectorsState(boolean turnState);
 
     boolean areCollectorsTurnedOn();
 
     List<DataCollector<?>> getCollectors(DLightTool tool);
-    
+
     List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool);
 
     boolean validateToolsRequiredUserInteraction();

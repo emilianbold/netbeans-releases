@@ -234,6 +234,10 @@ public final class DLightConfiguration {
         public boolean validateToolsRequiredUserInteraction() {
             return false;
         }
+
+        public boolean profileOnRun() {
+            return false;
+        }
     }
 
 }
