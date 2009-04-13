@@ -50,7 +50,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.openide.util.Exceptions;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.RequestProcessor;
 
 
@@ -64,18 +64,22 @@ public class TopLoggingNbLoggerConsoleTest extends TopLoggingTest {
         final PrintStream OLD = System.err;
         System.setProperty("netbeans.logger.console", "true");
         w = new ByteArrayOutputStream() {
+            @Override
             public void write(byte[] b, int off, int len) {
                 super.write(b, off, len);
             }
 
+            @Override
             public void write(byte[] b) throws IOException {
                 super.write(b);
             }
 
+            @Override
             public void write(int b) {
                 super.write(b);
             }
 
+            @Override
             public String toString() {
                 TopLogging.flush(false);
                 OLD.flush();
@@ -95,6 +99,7 @@ public class TopLoggingNbLoggerConsoleTest extends TopLoggingTest {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
 
@@ -107,18 +112,16 @@ public class TopLoggingNbLoggerConsoleTest extends TopLoggingTest {
         w.reset();
     }
 
-    protected void tearDown() throws Exception {
-    }
-
+    @Override
     protected ByteArrayOutputStream getStream() {
         return w;
     }
 
+    @RandomlyFails
     public void testFlushHappensQuickly() throws Exception {
         Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "First visible message");
 
         Pattern p = Pattern.compile("INFO.*First visible message");
-        Matcher m = p.matcher(getStream().toString("utf-8"));
 
         Matcher d = null;
         String disk = null;
