@@ -85,7 +85,7 @@ public final class RepositoryUtils {
     public static <T> T get(CsmUID<T> uid) {
         Key key = UIDtoKey(uid);
         Persistent obj = get(key);
-        assert obj == null || (obj instanceof CsmIdentifiable);
+        assert obj == null || (obj instanceof CsmIdentifiable) : "unexpected object with class " + obj.getClass() + obj; // NOI18N
         // we are sure in type, because of uid type
         @SuppressWarnings("unchecked")
         T out = (T)obj;

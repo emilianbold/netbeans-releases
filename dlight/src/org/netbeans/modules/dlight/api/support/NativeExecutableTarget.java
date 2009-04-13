@@ -210,7 +210,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             pb = pb.addEnvironmentVariables(envs);
 
             // Setup external terminal ...
-            if (externalTerminal != null) {
+            if (execEnv.isLocal() && externalTerminal != null) {
                 pb = pb.useExternalTerminal(externalTerminal);
                 descr = descr.inputVisible(false);
                 if (io != null) {

@@ -47,13 +47,24 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
 import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * This implementation of NativeExecution provides execution on a remote server.
  *
  * @author gordonp
  */
-public class RemoteNativeExecution extends NativeExecution {
+/* package-local */
+class RemoteNativeExecution extends NativeExecution {
+
+    private final ExecutionEnvironment execEnv;
+
+    /* package-local */
+    RemoteNativeExecution(ExecutionEnvironment execEnv) {
+        assert execEnv.isRemote();
+        this.execEnv = execEnv;
+    }
+    
 
     /**
      * Execute an executable, a makefile, or a script
