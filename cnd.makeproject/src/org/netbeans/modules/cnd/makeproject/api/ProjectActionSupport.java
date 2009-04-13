@@ -118,13 +118,13 @@ public class ProjectActionSupport {
             DebuggerChooserConfiguration chooser = conf.getDebuggerChooserConfiguration();
             CustomizerNode node = chooser.getNode();
             if (node instanceof ProjectActionHandlerFactory) {
-                if (((ProjectActionHandlerFactory) node).canHandle(type)) {
+                if (((ProjectActionHandlerFactory) node).canHandle(type, conf)) {
                     return true;
                 }
             }
         }
         for (ProjectActionHandlerFactory factory : handlerFactories) {
-            if (factory.canHandle(type)) {
+            if (factory.canHandle(type, conf)) {
                 return true;
             }
         }
@@ -330,7 +330,7 @@ public class ProjectActionSupport {
                     return;
                 }
                 for (ProjectActionHandlerFactory factory : handlerFactories) {
-                    if (factory.canHandle(pae.getType())) {
+                    if (factory.canHandle(pae.getType(), pae.getConfiguration())) {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
                         initHandler(handler, pae);
                         handler.execute(ioTab);
