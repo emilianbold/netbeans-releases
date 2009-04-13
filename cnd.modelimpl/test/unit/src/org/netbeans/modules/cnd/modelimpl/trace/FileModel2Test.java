@@ -68,6 +68,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ162280() throws Exception {
+        // IZ#162280: Inaccuracy tests: regression in Boost and Vlc
+        performTest("iz162280_friend_fwd_cls.cpp");
+    }
+    
     public void testIZ156061() throws Exception {
         // IZ156061: structure typedefs are highlighted as error
         performTest("iz156061.cc");
