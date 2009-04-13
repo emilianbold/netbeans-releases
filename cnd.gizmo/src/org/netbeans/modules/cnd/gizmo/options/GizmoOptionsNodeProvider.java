@@ -105,10 +105,13 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
 
         set = new Sheet.Set();
         set.setName("Indicators"); // NOI18N
-        set.setDisplayName(getString("IndicatorsName"));
-        set.put(new BooleanNodeProp(gizmoOptions.getCpu(), true, GizmoOptionsImpl.CPU_PROP, getString("cpu_txt"), getString("cpu_help"))); // NOI18N
-        set.put(new BooleanNodeProp(gizmoOptions.getMemory(), true, GizmoOptionsImpl.MEMORY_PROP, getString("memory_txt"), getString("memory_help"))); // NOI18N
-        set.put(new BooleanNodeProp(gizmoOptions.getSynchronization(), true, GizmoOptionsImpl.SYNCHRONIZATION_PROP, getString("synchronization_txt"), getString("synchronization_help"))); // NOI18N
+        set.setDisplayName(getString("IndicatorsName"));//NOI18B
+        for (String name : gizmoOptions.getNames()){
+            set.put(new BooleanNodeProp(gizmoOptions.getByName(name), true, name, name, name)); // NOI18N
+        }
+//        set.put(new BooleanNodeProp(gizmoOptions.getCpu(), true, GizmoOptionsImpl.CPU_PROP, getString("cpu_txt"), getString("cpu_help"))); // NOI18N
+//        set.put(new BooleanNodeProp(gizmoOptions.getMemory(), true, GizmoOptionsImpl.MEMORY_PROP, getString("memory_txt"), getString("memory_help"))); // NOI18N
+//        set.put(new BooleanNodeProp(gizmoOptions.getSynchronization(), true, GizmoOptionsImpl.SYNCHRONIZATION_PROP, getString("synchronization_txt"), getString("synchronization_help"))); // NOI18N
         sheet.put(set);
         
         return sheet;
