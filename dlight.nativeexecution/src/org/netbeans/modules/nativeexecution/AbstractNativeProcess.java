@@ -82,7 +82,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 new ArrayList<ChangeListener>(ll));
     }
 
-    protected void createAndStart() {
+    public NativeProcess createAndStart() {
         try {
             setState(State.STARTING);
             create();
@@ -93,6 +93,8 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             setState(State.ERROR);
             interrupt();
         }
+
+        return this;
     }
 
     abstract protected void create() throws Throwable;
@@ -118,7 +120,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         synchronized (this) {
             if (pid == 0) {
                 if (isInterrupted()) {
-                    interrupt();
+                    destroy();
                     throw new InterruptedIOException();
                 } else {
                     throw new IOException("PID of process '" + id + "' is not received!"); // NOI18N

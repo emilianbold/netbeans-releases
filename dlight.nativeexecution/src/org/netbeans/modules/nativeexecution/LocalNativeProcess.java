@@ -78,7 +78,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     public LocalNativeProcess(NativeProcessInfo info) {
         super(info);
-        createAndStart();
     }
 
     protected void create() throws Throwable {
