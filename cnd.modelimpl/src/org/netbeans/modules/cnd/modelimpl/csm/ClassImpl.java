@@ -50,6 +50,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -371,7 +372,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             if (child != null &&
                     (child.getType() == CPPTokenTypes.LITERAL_struct ||
                     child.getType() == CPPTokenTypes.LITERAL_class)) {
-                CsmNamespace scope = getContainingFile().getProject().getGlobalNamespace();
+                CsmScope scope = ClassImpl.this.getScope();
+                while (!CsmKindUtilities.isNamespace(scope) && CsmKindUtilities.isScopeElement(scope)) {
+                    scope = ((CsmScopeElement)scope).getScope();
+                }
+                if (!CsmKindUtilities.isNamespace(scope)) {
+                    scope = getContainingFile().getProject().getGlobalNamespace();
+                }
                 cfd = super.createForwardClassDeclaration(ast, null, (FileImpl) getContainingFile(), scope);
                 if (true) { // always put in repository, because it's an element of global NS
                     RepositoryUtils.put(cfd);
