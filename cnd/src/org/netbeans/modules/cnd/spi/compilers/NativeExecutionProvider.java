@@ -37,24 +37,29 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.execution;
+package org.netbeans.modules.cnd.spi.compilers;
 
-import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.spi.compilers.NativeExecutionProvider;
+import org.netbeans.modules.cnd.api.execution.*;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
  * @author gordonp
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.compilers.NativeExecutionProvider.class)
-public class RemoteNativeExecutionProvider implements NativeExecutionProvider {
-    
-    public NativeExecution getNativeExecution(ExecutionEnvironment execEnv) {
-        return new RemoteNativeExecution(execEnv);
-    }
+public interface NativeExecutionProvider {
 
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return execEnv.isRemote();
-    }
+    /**
+     * Determines whether this factory is applicable to the given environment
+     * @param execEnv environment to check
+     * @return true if this factory is applicable to the given environment, otherwise false
+     */
+    boolean isApplicable(ExecutionEnvironment execEnv);
+
+    /**
+     * Creates a NativeExecution for the given environment
+     * @param execEnv environment to create NativeExecution for
+     * @return an instance of the NativeExecution for the given environment.
+     * It shold be null only in the case isApplicable returned false for this environment.
+     */
+    NativeExecution getNativeExecution(ExecutionEnvironment execEnv);
 }

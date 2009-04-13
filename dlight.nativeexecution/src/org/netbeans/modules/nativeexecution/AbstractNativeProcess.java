@@ -50,6 +50,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.openide.util.NbBundle;
 
 public abstract class AbstractNativeProcess extends NativeProcess {
 
@@ -57,6 +58,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private final static Integer PID_TIMEOUT =
             Integer.valueOf(System.getProperty(
             "dlight.nativeexecutor.pidtimeout", "70")); // NOI18N
+    protected final NativeProcessInfo info;
     private final String id;
     // Immutable listeners list.
     private final Collection<ChangeListener> listeners;
@@ -68,6 +70,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private boolean cancelled = false;
 
     public AbstractNativeProcess(NativeProcessInfo info) {
+        this.info = info;
         isInterrupted = false;
         state = State.INITIAL;
         id = info.getCommandLine();
@@ -77,9 +80,22 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         listeners = (ll == null || ll.isEmpty()) ? null
                 : Collections.unmodifiableList(
                 new ArrayList<ChangeListener>(ll));
-
-        setState(State.STARTING);
     }
+
+    protected void createAndStart() {
+        try {
+            setState(State.STARTING);
+            create();
+            setState(State.RUNNING);
+        } catch (Throwable ex) {
+            String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+            log.info(loc("NativeProcess.exceptionOccured.text", msg)); // NOI18N
+            setState(State.ERROR);
+            interrupt();
+        }
+    }
+
+    abstract protected void create() throws Throwable;
 
     protected boolean isInterrupted() {
         try {
@@ -95,7 +111,6 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
     protected void interrupt() {
         isInterrupted = true;
-        Thread.currentThread().interrupt();
         destroy();
     }
 
@@ -158,10 +173,10 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             if (cancelled) {
                 return;
             }
-            
+
             cancelled = true;
         }
-        
+
         synchronized (stateLock) {
             cancel();
             setState(State.CANCELLED);
@@ -283,7 +298,6 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 for (ChangeListener l : listeners) {
                     l.stateChanged(event);
                 }
-
             } finally {
                 if (isInterrupted()) {
                     Thread.currentThread().interrupt();
@@ -298,12 +312,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         pid = 0;
 
         while (true) {
-            try {
-                c = is.read();
-            } catch (IOException ex) {
-                interrupt();
-                throw ex;
-            }
+            c = is.read();
 
             if (c >= '0' && c <= '9') {
                 pid = pid * 10 + (c - '0');
@@ -311,7 +320,9 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 break;
             }
         }
+    }
 
-        setState(State.RUNNING);
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(AbstractNativeProcess.class, key, params);
     }
 }

@@ -37,15 +37,25 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.execution;
+package org.netbeans.modules.cnd.execution;
 
+import org.netbeans.modules.cnd.api.execution.NativeExecution;
+import org.netbeans.modules.cnd.spi.compilers.NativeExecutionProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
  * @author gordonp
  */
-public interface NativeExecutionProvider {
-    public NativeExecution getNativeExecution();
-    public void setHost(ExecutionEnvironment host);
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.compilers.NativeExecutionProvider.class)
+public class LocalNativeExecutionProvider implements NativeExecutionProvider {
+    
+    public NativeExecution getNativeExecution(ExecutionEnvironment execEnv) {
+        assert execEnv.isLocal();
+        return new LocalNativeExecution(execEnv);
+    }
+
+    public boolean isApplicable(ExecutionEnvironment execEnv) {
+        return execEnv.isLocal();
+    }
 }
