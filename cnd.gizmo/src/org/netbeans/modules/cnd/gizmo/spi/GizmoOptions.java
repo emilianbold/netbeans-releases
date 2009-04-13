@@ -38,12 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.gizmo.spi;
 
+import java.util.Collection;
+
 public interface GizmoOptions {
-    
+
     public static enum DataProvider {
+
         SUN_STUDIO,
         DTRACE,
     };
@@ -58,36 +60,44 @@ public interface GizmoOptions {
      */
     public void setProfileOnRunValue(boolean profileOnRunValue);
 
-    /**
-     * @return the cpu
-     */
-    public boolean getCpuValue();
+    public boolean getValueByName(String name);
 
-    /**
-     * @param cpu the cpu value to set
-     */
-    public void setCpuValue(boolean cpu);
+    public void setValueByName(String name, boolean value);
 
-    /**
-     * @return the memory
-     */
-    public boolean getMemoryValue();
+    public Collection<String> getNames();
 
-    /**
-     * @param memory the memory value to set
-     */
-    public void setMemoryValue(boolean memory);
+//    public void setDataProviderValue(String value);
 
-    /**
-     * @return the synchronization
-     */
-    public boolean getSynchronizationValue();
-
-    /**
-     * @param synchronization the synchronization value to set
-     */
-    public void setSynchronizationValue(boolean synchronization);
-
+//    /**
+//     * @return the cpu
+//     */
+//    public boolean getCpuValue();
+//
+//    /**
+//     * @param cpu the cpu value to set
+//     */
+//    public void setCpuValue(boolean cpu);
+//
+//    /**
+//     * @return the memory
+//     */
+//    public boolean getMemoryValue();
+//
+//    /**
+//     * @param memory the memory value to set
+//     */
+//    public void setMemoryValue(boolean memory);
+//
+//    /**
+//     * @return the synchronization
+//     */
+//    public boolean getSynchronizationValue();
+//
+//    /**
+//     * @param synchronization the synchronization value to set
+//     */
+//    public void setSynchronizationValue(boolean synchronization);
+//
     /**
      * @return the dataProvider
      */
