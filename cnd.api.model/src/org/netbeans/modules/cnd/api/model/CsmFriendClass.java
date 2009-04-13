@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.api.model;
  *
  * @author Alexander Simon
  */
-public interface CsmFriendClass extends CsmFriend, CsmClassifier {
+public interface CsmFriendClass extends CsmFriend {
 
     /** gets correspondent class */
     CsmClass getReferencedClass();
