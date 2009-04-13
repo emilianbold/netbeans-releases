@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.api.tool;
 
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
@@ -59,4 +60,6 @@ public interface DLightConfigurationOptions {
     List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool);
 
     boolean validateToolsRequiredUserInteraction();
+
+    Collection<String> getActiveToolNames();
 }

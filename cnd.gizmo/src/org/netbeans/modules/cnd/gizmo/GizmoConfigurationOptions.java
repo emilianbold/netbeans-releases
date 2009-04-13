@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -75,6 +76,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     private Project currentProject;
     private boolean areCollectorsTurnedOn = false;
     private boolean profileOnRun = true;
+    private GizmoOptions gizmoOptions = null;
 
     public void turnCollectorsState(boolean turnState) {
         areCollectorsTurnedOn = turnState;
@@ -84,15 +86,31 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         return profileOnRun;
     }
 
+    public Collection<String> getActiveToolNames() {
+        if (gizmoOptions == null){
+            return null;
+        }
+        Collection<String> result = new ArrayList<String>();
+        Collection<String> allNames = gizmoOptions.getNames();
+        for (String name : allNames){
+            if (gizmoOptions.getValueByName(name)){
+                result.add(name);
+            }
+        }
+        return result;
+    }
+
+    
+
     public void configure(Project project){
         this.currentProject = project;
 //        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
         //set up as following:
         //get data from the project about selected provider of detailed voew
         Configuration activeConfiguration = getActiveConfiguration();
-        GizmoOptions options = GizmoOptionsProvider.getOptions(activeConfiguration);
+        gizmoOptions = GizmoOptionsProvider.getOptions(activeConfiguration);
         turnCollectorsState(true);
-        profileOnRun = options.getProfileOnRunValue();
+        profileOnRun = gizmoOptions.getProfileOnRunValue();
         String hkey = null;
         if (!(activeConfiguration instanceof MakeConfiguration)) {
             return;
@@ -110,7 +128,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             }
         }
 
-        GizmoOptions.DataProvider currentProvider = options.getDataProviderValue();
+        GizmoOptions.DataProvider currentProvider = gizmoOptions.getDataProviderValue();
 
        
         DLightCollectorString = DTRACE;

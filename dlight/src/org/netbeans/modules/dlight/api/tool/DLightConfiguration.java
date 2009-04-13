@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.api.tool;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -237,6 +238,10 @@ public final class DLightConfiguration {
 
         public boolean profileOnRun() {
             return false;
+        }
+
+        public Collection<String> getActiveToolNames() {
+            return null;
         }
     }
 
