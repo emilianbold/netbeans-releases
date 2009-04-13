@@ -316,6 +316,10 @@ public class CreateLicenseSummary extends Task {
                                     ignored = true;
                                     break;
                                 }
+                                if (SelectorUtils.matchPath(parts[0], path) && SelectorUtils.matchPath(parts[1], otherPath)) {
+                                    ignored = true;
+                                    break;
+                                }
                             }
                             if (!ignored) {
                                 testBinariesAreUnique.append("\n" + otherPath + " and " + path + " are identical");
