@@ -173,7 +173,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
                 try {
                     if (panel != null) {
-                        panel.setProgress(pos/msg.length());
+                        panel.setProgress(pos*100/msg.length());
                     }
                     if (!cancelled && !dialogOpened && System.currentTimeMillis() - start > 2000) {
                         dialogOpened = true;
