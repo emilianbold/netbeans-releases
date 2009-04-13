@@ -43,28 +43,25 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
-import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
 import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
 import org.netbeans.modules.nativeexecution.support.WindowsSupport;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
 
-    private final static java.util.logging.Logger log = Logger.getInstance();
     private final static String shell;
     private final static boolean isWindows;
-    private final InputStream processOutput;
-    private final InputStream processError;
-    private final OutputStream processInput;
-    private final Process process;
-
+    private Process process = null;
+    private InputStream processOutput = null;
+    private OutputStream processInput = null;
+    private InputStream processError = null;
 
     static {
         String sh = null;
@@ -79,17 +76,15 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         isWindows = Utilities.isWindows();
     }
 
-    public LocalNativeProcess(NativeProcessInfo info) throws IOException {
+    public LocalNativeProcess(NativeProcessInfo info) {
         super(info);
+        createAndStart();
+    }
 
+    protected void create() throws Throwable {
         try {
-            Process proc = null;
-            InputStream is = null;
-            InputStream es = null;
-            OutputStream os = null;
-
             if (Utilities.isWindows() && shell == null) {
-                throw new IOException("CYGWIN/MSYS are currently required on Windows."); // NOI18N
+                throw new IOException(loc("LocalNativeProcess.shellNotFound.text")); // NOI18N
             }
 
             // Get working directory ....
@@ -112,74 +107,44 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                 env.put("PATH", "/bin:$PATH"); // NOI18N
             }
 
-            try {
-                final ProcessBuilder pb = new ProcessBuilder(shell, "-s"); // NOI18N
+            final ProcessBuilder pb = new ProcessBuilder(shell, "-s"); // NOI18N
 
-                if (isInterrupted()) {
-                    throw new InterruptedException();
-                }
-
-                try {
-                    proc = pb.start();
-                } catch (InterruptedIOException ex) {
-                    throw new InterruptedException();
-                } catch (IOException ex) {
-                }
-
-                is = proc.getInputStream();
-                es = proc.getErrorStream();
-                os = proc.getOutputStream();
-
-                os.write("/bin/echo $$\n".getBytes()); // NOI18N
-                os.flush();
-
-                EnvWriter ew = new EnvWriter(os);
-                ew.write(env);
-
-                if (workingDirectory != null) {
-                    os.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
-                }
-
-                String cmd = "exec " + info.getCommandLine() + "\n"; // NOI18N
-
-                if (isWindows) {
-                    cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
-                }
-
-                os.write(cmd.getBytes());
-                os.flush();
-            } catch (InterruptedException ex) {
-                interrupt();
-            } catch (InterruptedIOException ex) {
-                interrupt();
+            if (isInterrupted()) {
+                throw new InterruptedException();
             }
 
-            if (proc == null || isInterrupted()) {
-                if (proc != null) {
-                    proc.destroy();
-                }
+            process = pb.start();
 
-                process = null;
-                processError = new ByteArrayInputStream(new byte[0]);
-                processOutput = new ByteArrayInputStream(new byte[0]);
-                processInput = new ByteArrayOutputStream();
-                return;
+            processInput = process.getOutputStream();
+            processError = process.getErrorStream();
+            processOutput = process.getInputStream();
+
+            processInput.write("/bin/echo $$\n".getBytes()); // NOI18N
+            processInput.flush();
+
+            EnvWriter ew = new EnvWriter(processInput);
+            ew.write(env);
+
+            if (workingDirectory != null) {
+                processInput.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
             }
 
-            process = proc;
-            processError = es;
-            processInput = os;
-            processOutput = is;
+            String cmd = "exec " + info.getCommandLine() + "\n"; // NOI18N
 
-            try {
-                readPID(processOutput);
-            } catch (IOException ex) {
-                interrupt();
+            if (isWindows) {
+                cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
             }
-        } finally {
-//            if (isInterrupted()) {
-//                throw new InterruptedIOException("Process interrupted"); // NOI18N
-//            }
+
+            processInput.write(cmd.getBytes());
+            processInput.flush();
+
+            readPID(processOutput);
+        } catch (Throwable ex) {
+            String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+            processOutput = new ByteArrayInputStream(new byte[0]);
+            processError = new ByteArrayInputStream(msg.getBytes());
+            processInput = new ByteArrayOutputStream();
+            throw ex;
         }
     }
 
@@ -250,5 +215,9 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         if (process != null) {
             process.destroy();
         }
+    }
+
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(LocalNativeProcess.class, key, params);
     }
 }
