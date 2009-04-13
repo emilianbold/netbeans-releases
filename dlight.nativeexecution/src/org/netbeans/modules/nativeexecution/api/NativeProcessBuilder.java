@@ -46,6 +46,7 @@ import java.util.concurrent.Callable;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.modules.nativeexecution.AbstractNativeProcess;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
@@ -73,7 +74,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
     private final static java.util.logging.Logger log = Logger.getInstance();
     private final NativeProcessInfo info;
     private ExternalTerminal externalTerminal = null;
-    private NativeProcess process = null;
+    private AbstractNativeProcess process = null;
 
     /**
      * Creates a new instance of the builder that will create a {@link NativeProcess}
@@ -143,7 +144,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
             }
         }
 
-        return process;
+        return process.createAndStart();
     }
 
     /**
