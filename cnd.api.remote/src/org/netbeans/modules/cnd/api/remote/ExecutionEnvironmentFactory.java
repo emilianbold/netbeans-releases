@@ -86,10 +86,13 @@ public class ExecutionEnvironmentFactory {
         if (executionEnvironment.isLocal()) {
             // this "localhost" is for compatibility with other
             return "localhost"; //NOI18N
-        } else if (executionEnvironment.getUser() == null || executionEnvironment.getUser().length() == 0) {
-            return executionEnvironment.getHost();
         } else {
-            return executionEnvironment.getUser() + '@' + executionEnvironment.getHost();
+            String hostAndPort = executionEnvironment.getHost() + ':' + executionEnvironment.getSSHPort();
+            if (executionEnvironment.getUser() == null || executionEnvironment.getUser().length() == 0) {
+                return hostAndPort;
+            } else {
+                return executionEnvironment.getUser() + '@' + hostAndPort;
+            }
         }
     }
 
@@ -112,6 +115,18 @@ public class ExecutionEnvironmentFactory {
         } else {
             user = hostKey.substring(0, pos);
             host = hostKey.substring(pos + 1);
+        }
+        int colonPos = host.indexOf(':');
+        if (colonPos > 0) {
+            String strPort = host.substring(colonPos+1);
+            host = host.substring(0, colonPos);
+            try {
+                int port = Integer.parseInt(strPort);
+                return getExecutionEnvironment(user, host, port);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return getExecutionEnvironment(user, host);
+            }
         }
         return getExecutionEnvironment(user, host);
     }
