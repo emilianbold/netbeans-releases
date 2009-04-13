@@ -841,18 +841,21 @@ abstract public class CsmCompletionQuery {
         return cls;
         }*/
         private CsmType resolveType(CsmCompletionExpression exp) {
-            Context ctx = (Context) clone();
-            ctx.setFindType(true);
-            // when resolve type use full scope of search
-            QueryScope old = ctx.compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
-            CsmType typ = null;
-            try {
-                if (ctx.resolveExp(exp)) {
-                    typ = ctx.lastType;
+            CsmType typ = exp.getCachedType();
+            if (typ == null) {
+                Context ctx = (Context) clone();
+                ctx.setFindType(true);
+                // when resolve type use full scope of search
+                QueryScope old = ctx.compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
+                try {
+                    if (ctx.resolveExp(exp)) {
+                        typ = ctx.lastType;
+                    }
+                } finally {
+                    exp.cacheType(typ);
+                    // restore old
+                    ctx.compResolver.setResolveScope(old);
                 }
-            } finally {
-                // restore old
-                ctx.compResolver.setResolveScope(old);
             }
             return typ;
         }
