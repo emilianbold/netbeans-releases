@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.disassembly;
 
+import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -47,7 +48,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -64,6 +64,8 @@ import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -115,15 +117,24 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private static FileObject fo = null;
     
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+
+    private boolean cancelled = false;
     
     public Disassembly(GdbDebugger debugger) {
         this.debugger = debugger;
         debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
     }
+
+    protected void cancel() {
+        cancelled = true;
+    }
     
     public void update(String msg) {
         assert msg.startsWith(RESPONSE_HEADER) : "Invalid asm response message"; // NOI18N
-        
+        cancelled = false;
+
+        Dialog dialog = null;
+
         synchronized (lines) {
             lines.clear();
             disLength = 0;
@@ -152,9 +163,37 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                 srcFile = new File(fileName);
             }
 
-            for (;;) {
+            long start = System.currentTimeMillis();
+            boolean dialogOpened = false;
+            DisProgressPanel panel = null;
+
+            for (;!cancelled;) {
                 int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
                 int addressPos = msg.indexOf(ADDRESS_HEADER, pos);
+
+                try {
+                    if (panel != null) {
+                        panel.setProgress(pos/msg.length());
+                    }
+                    if (!cancelled && !dialogOpened && System.currentTimeMillis() - start > 2000) {
+                        dialogOpened = true;
+                        panel = new DisProgressPanel();
+                        final DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(Disassembly.class, "DIS_PROGRESS_TITLE")); // NOI18N
+                        dd.setOptions(new Object[]{DialogDescriptor.CANCEL_OPTION});
+                        dialog = DialogDisplayer.getDefault().createDialog(dd);
+                        final Dialog dlg = dialog;
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                dlg.setVisible(true);
+                                if (dd.getValue() == DialogDescriptor.CANCEL_OPTION) {
+                                    cancel();
+                                }
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 if (addressPos == -1) {
                     break;
@@ -199,12 +238,29 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                     pos = addressPos+1;
                 }
             }
-            disLength = text.getLength();
-            try {
-                text.save(getFileObject().getOutputStream());
-            } catch (IOException ioe) {
-                // do nothing
+            if (!cancelled) {
+                disLength = text.getLength();
+                try {
+                    text.save(getFileObject().getOutputStream());
+                } catch (IOException ioe) {
+                    // do nothing
+                }
             }
+        }
+
+        if (dialog != null) {
+            final Dialog dlg = dialog;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    dlg.setVisible(false);
+                    dlg.dispose();
+                }
+            });
+        }
+
+        if (cancelled) {
+            close();
+            return;
         }
         // If we got empty dis try to reload without source line info
         if (lines.isEmpty() && withSource) {
@@ -287,11 +343,13 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         if (e.getOffset() + e.getLength() >= disLength) {
             final boolean dis = opening;
             opening = false;
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateAnnotations(dis);
-                }
-            });
+            if (opened) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        updateAnnotations(dis);
+                    }
+                });
+            }
         }
     }
     
