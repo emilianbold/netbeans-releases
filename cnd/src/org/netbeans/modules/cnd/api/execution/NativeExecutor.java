@@ -252,7 +252,7 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            nativeExecution = NativeExecution.getDefault(execEnv).getNativeExecution();
+            nativeExecution = NativeExecution.getDefault(execEnv);
             rc = nativeExecution.executeCommand(
                     runDirFile,
                     executable,

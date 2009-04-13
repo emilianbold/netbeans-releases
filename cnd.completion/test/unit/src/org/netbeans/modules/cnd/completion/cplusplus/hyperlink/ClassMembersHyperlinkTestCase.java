@@ -50,6 +50,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ149685() throws Exception {
+        // IZ#149685: Multi-level class declarations not recognized by ide
+        performTest("iz149685.cpp", 8, 30, "iz149685.cpp", 6, 13);
+        performTest("iz149685.cpp", 19, 15, "iz149685.cpp", 6, 13);
+    }
+
     public void testIZ155578() throws Exception {
         // IZ155578: Overloaded functions with tpedef'ed argument types break Code Assistance
         performTest("iz155578.cpp", 6, 20, "iz155578.cpp", 6, 5);
