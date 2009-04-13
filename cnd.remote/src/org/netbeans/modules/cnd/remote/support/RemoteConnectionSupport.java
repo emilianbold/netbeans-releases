@@ -73,7 +73,7 @@ public abstract class RemoteConnectionSupport {
             do {
                 try {
                     String passwd = ui.getPassword();
-                    if (passwd == null) {
+                    if (passwd == null || passwd.length() == 0) {
                         ConnectionManager.getInstance().connectTo(env);
                     } else {
 //                        try {

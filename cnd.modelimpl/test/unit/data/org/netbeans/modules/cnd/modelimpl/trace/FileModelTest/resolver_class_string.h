@@ -26,14 +26,14 @@ namespace std_1 {
 }
 
 namespace std_1 {
-    class wstring : protected basic_string<wchar_t> {
+    class wstring1 : protected basic_string<wchar_t> {
         
     };
 }
 
 using std_1::string;
 
-std_1 :: wstring wrt_1(string str);
+std_1 :: wstring1 wrt_1(string str);
 
 
 namespace resolver_class_string {
@@ -41,7 +41,7 @@ namespace resolver_class_string {
   using namespace std_1;
   class ClassA {
   public:
-    wstring read() const;
+    wstring1 read() const;
   };
 }
 
