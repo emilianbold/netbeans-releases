@@ -98,10 +98,9 @@ public class BundleNodeCustomizer extends JPanel {
     private static Locale[] retrieveLocales(PropertiesDataObject propDataObject) {
         List<Locale> entryList = new ArrayList<Locale>();
 
-        entryList.add(LocaleNodeCustomizer.getLocale((PropertiesFileEntry)propDataObject.getPrimaryEntry()));
-        
-        for (Iterator it = propDataObject.secondaryEntries().iterator(); it.hasNext(); ) {
-            entryList.add(LocaleNodeCustomizer.getLocale((PropertiesFileEntry)it.next()));
+        BundleStructure structure = propDataObject.getBundleStructure();
+        for (int i=0; i<structure.getEntryCount();i++) {
+            entryList.add(LocaleNodeCustomizer.getLocale(structure.getNthEntry(i)));
         }
         
         Locale[] entryLocales = new Locale[entryList.size()];
@@ -252,7 +251,8 @@ public class BundleNodeCustomizer extends JPanel {
 
     private void localesListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_localesListValueChanged
         if(localesList.isSelectionEmpty() 
-                || new Locale("", "").equals(localesList.getSelectedValue())) {
+                || new Locale("", "").equals(localesList.getSelectedValue())
+                || propDataObject.getBundleStructure().getEntryCount()==1) {
 
             removeLocales.setEnabled(false);
         } else {
@@ -264,6 +264,7 @@ public class BundleNodeCustomizer extends JPanel {
         Object[] selectedValues = localesList.getSelectedValues();
 
         String basicName = propDataObject.getPrimaryFile().getName();
+        basicName = Util.getBaseName(basicName);
         
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(BundleNodeCustomizer.class, "CTL_Deletebundle_Prompt"));
         descriptor.setTitle(NbBundle.getMessage(BundleNodeCustomizer.class, "CTL_Deletebundle_Title"));
@@ -279,6 +280,10 @@ public class BundleNodeCustomizer extends JPanel {
             PropertiesFileEntry entry = propDataObject.getBundleStructure().getEntryByFileName(basicName + PropertiesDataLoader.PRB_SEPARATOR_CHAR + selectedValues[i].toString());
             try {
                 entry.delete();
+                if (!propDataObject.isValid()) {
+                    propDataObject = Util.findPrimaryDataObject(propDataObject);
+                    nameText.setText(propDataObject.getName());
+                }
             } catch(IOException ioe) {
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ioe);
             }
