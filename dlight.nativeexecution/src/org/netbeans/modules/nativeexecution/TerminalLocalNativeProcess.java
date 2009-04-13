@@ -109,7 +109,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         super(info);
         this.terminal = terminal;
         this.processOutput = new ByteArrayInputStream(new byte[]{32});
-        createAndStart();
     }
 
     protected void create() throws Throwable {

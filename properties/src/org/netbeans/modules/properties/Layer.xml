@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
-                        <attr name="position" intvalue="0"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
                     <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
