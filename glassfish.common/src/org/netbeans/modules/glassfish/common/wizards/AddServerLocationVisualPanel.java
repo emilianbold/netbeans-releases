@@ -110,7 +110,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
             prevValue = prefs.get(wizardIterator.getInstallRootKey(), null);
         }
         if (null == prevValue) {
-            String installDir = System.getProperty(wizardIterator.getInstallRootProperty()); // System.getProperty("org.glassfish.v3.installRoot");
+            String installDir = System.getProperty(wizardIterator.getInstallRootProperty());
             if (null != installDir && !(installDir.trim().length() == 0)) {
                  return installDir;
             } else {
