@@ -39,18 +39,24 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -58,8 +64,8 @@ import org.openide.util.lookup.Lookups;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class BrokenProject implements Project, ProjectInformation, LogicalViewProvider {
-    private FileObject pd;
-    private String msg;
+    private final FileObject pd;
+    final String msg;
 
     public BrokenProject(FileObject projectDirectory, String error) {
         this.pd = projectDirectory;
@@ -111,7 +117,7 @@ final class BrokenProject implements Project, ProjectInformation, LogicalViewPro
     }
 
     public Node createLogicalView() {
-        AbstractNode n = new AbstractNode(Children.LEAF, getLookup());
+        BrokenNode n = new BrokenNode(Children.LEAF, getLookup());
         n.setName(getName());
         n.setDisplayName(getDisplayName());
         n.setIconBaseWithExtension("org/netbeans/modules/ide/ergonomics/fod/BrokenProject.png"); // NOI18N
@@ -120,5 +126,54 @@ final class BrokenProject implements Project, ProjectInformation, LogicalViewPro
 
     public Node findPath(Node root, Object target) {
         return null;
+    }
+
+    private static final class BrokenNode extends AbstractNode {
+        public BrokenNode(Children children, Lookup lookup) {
+            super(children, lookup);
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {
+                CommonProjectActions.closeProjectAction(),
+                null,
+                BrokenActionInfo.ACTION
+            };
+        }
+    }
+
+    private static final class BrokenActionInfo extends AbstractAction
+    implements ContextAwareAction {
+        private final Lookup context;
+
+        static final Action ACTION = new BrokenActionInfo(Utilities.actionsGlobalContext());
+
+        private BrokenActionInfo(Lookup c) {
+            context = c;
+            putValue(NAME, NbBundle.getMessage(BrokenProject.class, "MSG_BrokenActionInfo"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            BrokenProject p = context.lookup(BrokenProject.class);
+            if (p == null) {
+                return;
+            }
+            BrokenProjectInfo.showInfo(p);
+        }
+
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new BrokenActionInfo(actionContext);
+        }
+
+        @Override
+        public int hashCode() {
+            return getClass().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj != null && getClass().equals(obj.getClass());
+        }
     }
 }
