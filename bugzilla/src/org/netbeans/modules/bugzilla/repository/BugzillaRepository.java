@@ -42,6 +42,8 @@ package org.netbeans.modules.bugzilla.repository;
 import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -258,6 +260,16 @@ public class BugzillaRepository extends Repository {
         for (int i = 0; i < keywords.length; i++) {
             String val = keywords[i].trim();
             if(val.equals("")) continue;                                        // NOI18N
+            try {
+                val = URLEncoder.encode(val, getTaskRepository().getCharacterEncoding());
+            } catch (UnsupportedEncodingException ueex) {
+                Bugzilla.LOG.log(Level.INFO, null, ueex);
+                try {
+                    val = URLEncoder.encode(val, "UTF-8"); // NOI18N
+                } catch (UnsupportedEncodingException ex) {
+                    // should not happen
+                }
+            }
             url.append(val);
             if(i < keywords.length - 1) {
                 url.append("+");                                                // NOI18N
