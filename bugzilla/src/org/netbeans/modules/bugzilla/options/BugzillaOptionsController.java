@@ -90,7 +90,11 @@ public final class BugzillaOptionsController extends OptionsPanelController impl
     private boolean isValidRefreshValue(String s) {
         if(!s.equals("")) {                                                     // NOI18N
             try {
-                Integer.parseInt(s);
+                int i = Integer.parseInt(s);
+                if(i < 5) {
+                    panel.errorLabel.setText("Must be a number greater then 5."); // XXX bundle me
+                    return false;
+                }
             } catch (NumberFormatException e) {
                 panel.errorLabel.setText("Invalid value."); // XXX bundle me
                 return false;
