@@ -78,7 +78,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
@@ -140,7 +140,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             btEditDevHost.setEnabled(true);
             cbDevHost.setEnabled(true);
         } else {
-            execEnv = ExecutionEnvironmentFactory.getLocalExecutionEnvironment();
+            execEnv = ExecutionEnvironmentFactory.getLocal();
         }
 
         lstDirlist.setCellRenderer(new MyCellRenderer());
@@ -178,7 +178,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 cbDevHost.addItem(env);
             }
         } else {
-            cbDevHost.addItem(ExecutionEnvironmentFactory.getLocalExecutionEnvironment());
+            cbDevHost.addItem(ExecutionEnvironmentFactory.getLocal());
         }
 
         if (model.getSelectedDevelopmentHost() != null) {
@@ -232,7 +232,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     private void addCompilerSet() {
         AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
         String title = isRemoteHostSelected() ? 
-            getString("NEW_TOOL_SET_TITLE_REMOTE", ExecutionEnvironmentFactory.getHostKey(csm.getExecutionEnvironment())) :
+            getString("NEW_TOOL_SET_TITLE_REMOTE", ExecutionEnvironmentFactory.toString(csm.getExecutionEnvironment())) :
             getString("NEW_TOOL_SET_TITLE");
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
         panel.setDialogDescriptor(dialogDescriptor);

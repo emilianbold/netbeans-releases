@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -93,10 +93,10 @@ public class RemoteServerList implements ServerList {
         unlisted = new ArrayList<RemoteServerRecord>();
         
         // Creates the "localhost" record and any remote records cached in remote.preferences
-        addServer(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), false, RemoteServerRecord.State.ONLINE);
+        addServer(ExecutionEnvironmentFactory.getLocal(), false, RemoteServerRecord.State.ONLINE);
         if (slist != null) {
             for (String hostKey : slist.split(",")) { // NOI18N
-                ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hostKey);
+                ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(hostKey);
                 if (env.isRemote()) {
                     addServer(env, false, RemoteServerRecord.State.OFFLINE);
                 }
@@ -199,7 +199,7 @@ public class RemoteServerList implements ServerList {
         // TODO: Save the state as well as name. On restart, only try connecting to
         // ONLINE hosts.
         String slist = getPreferences().get(REMOTE_SERVERS, null);
-        String preferencesKey = ExecutionEnvironmentFactory.getHostKey(execEnv);
+        String preferencesKey = ExecutionEnvironmentFactory.toString(execEnv);
         if (slist == null) {
             getPreferences().put(REMOTE_SERVERS, preferencesKey);
         } else {

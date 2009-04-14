@@ -107,7 +107,7 @@ public class LocalNativeProcessTest {
 
     @Before
     public void setUp() {
-        execEnv = new ExecutionEnvironment();
+        execEnv = ExecutionEnvironmentFactory.getLocal();
 //        execEnv = new ExecutionEnvironment("ak119685", "endif", 22);
 //        try {
 //            ConnectionManager.getInstance().connectTo(execEnv, "".toCharArray(), false);

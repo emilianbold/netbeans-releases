@@ -37,9 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.remote;
-
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+package org.netbeans.modules.nativeexecution.api;
 
 /**
  * A factory for ExecutionEnvironment.
@@ -65,26 +63,53 @@ public class ExecutionEnvironmentFactory {
     private ExecutionEnvironmentFactory() {
     }
 
-    public static ExecutionEnvironment getLocalExecutionEnvironment() {
+    /**
+     * Returns an instance of <tt>ExecutionEnvironment</tt> for localexecution.
+     */
+    public static ExecutionEnvironment getLocal() {
         return LOCAL;
     }
 
-    public static ExecutionEnvironment getExecutionEnvironment(String user, String host) {
-        return getExecutionEnvironment(user, host, DEFAULT_PORT);
+    /**
+     * Creates a new instance of <tt>ExecutionEnvironment</tt>. If <tt>host</tt>
+     * refers to the localhost or is <tt>null</tt> then task, started in this
+     * environment will be executed locally. Otherwise it will be executed
+     * remotely using ssh connection to the specified host using default ssh
+     * port (22).
+     *
+     * @param user user name to be used in this environment
+     * @param host host identification string (either hostname or IP address)
+     */
+    public static ExecutionEnvironment createNew(String user, String host) {
+        return createNew(user, host, DEFAULT_PORT);
     }
 
-    public static ExecutionEnvironment getExecutionEnvironment(String user, String host, int port) {
+    /**
+     * Creates a new instance of <tt>ExecutionEnvironment</tt>.
+     * It is allowable to pass <tt>null</tt> values for <tt>user</tt> and/or
+     * <tt>host</tt> params. In this case
+     * <tt>System.getProperty("user.name")</tt> will be used as a username and
+     * <tt>HostInfo.LOCALHOST</tt> will be used for <tt>host</tt>.
+     * If sshPort == 0 and host identification string represents remote host,
+     * port 22 will be used.
+     *
+     * @param user user name for ssh connection.
+     * @param host host identification string. Either hostname or IP address.
+     * @param sshPort port to be used to establish ssh connection.
+     */
+    public static ExecutionEnvironment createNew(String user, String host, int port) {
         return new ExecutionEnvironment(user, host, port);
     }
 
     /**
-     * A method that returns a legacy string that contains
+     * Returns a string representation of the executionEnvironment,
+     * so that client can store it (for example, in properties)
+     * and restore later via fromString()
      * either user@host or "localhost"
-     * TODO: deprecate and remove
      */
-    public static String getHostKey(ExecutionEnvironment executionEnvironment) {
+    public static String toString(ExecutionEnvironment executionEnvironment) {
         if (executionEnvironment.isLocal()) {
-            // this "localhost" is for compatibility with other
+            // "localhost" is for compatibility with remote development 6.5
             return "localhost"; //NOI18N
         } else {
             String hostAndPort = executionEnvironment.getHost() + ':' + executionEnvironment.getSSHPort();
@@ -97,11 +122,11 @@ public class ExecutionEnvironmentFactory {
     }
 
     /**
-     * That's for transition period only
-     * TODO: deprecate, then remove as soone as switching to o.n.m.nativeexecution is complete
-     * @param hostKey key in the form user@host
+     * Creates an instance of ExecutionEnvironment
+     * by string that was got via toString() method
+     * @param hostKey a string that was returned by toString() method.
      */
-    public static ExecutionEnvironment getExecutionEnvironment(String hostKey) {
+    public static ExecutionEnvironment fromString(String hostKey) {
         // TODO: remove this check and refactor clients to use getLocal() instead
         if ("localhost".equals(hostKey) || "127.0.0.1".equals(hostKey)) { //NOI18N
             return LOCAL;
@@ -122,12 +147,12 @@ public class ExecutionEnvironmentFactory {
             host = host.substring(0, colonPos);
             try {
                 int port = Integer.parseInt(strPort);
-                return getExecutionEnvironment(user, host, port);
+                return createNew(user, host, port);
             } catch (NumberFormatException e) {
                 e.printStackTrace();
-                return getExecutionEnvironment(user, host);
+                return createNew(user, host);
             }
         }
-        return getExecutionEnvironment(user, host);
+        return createNew(user, host);
     }
 }

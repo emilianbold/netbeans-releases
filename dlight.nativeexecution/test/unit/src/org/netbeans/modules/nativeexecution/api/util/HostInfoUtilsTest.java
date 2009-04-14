@@ -49,6 +49,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.Platform;
 import org.openide.util.Utilities;
 
@@ -110,7 +111,7 @@ public class HostInfoUtilsTest extends NbTestCase {
 
     @Test
     public void testGetPlatformLocal() throws Exception {
-        ExecutionEnvironment env = new ExecutionEnvironment();
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
         Platform platform = HostInfoUtils.getPlatform(env);
         String os_name = System.getProperty("os.name").toLowerCase();
         switch(platform.getOSType()) {

@@ -58,6 +58,7 @@ import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
 import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory.CPPCompiler;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
@@ -82,7 +83,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         if (nPrj == null) {
             cppCompiler = CPPCompiler.GNU;
             dem_util_path = GNU_FAMILIY;
-            env = new ExecutionEnvironment();
+            env = ExecutionEnvironmentFactory.getLocal();
             return;
         }
         MakeConfiguration conf = (MakeConfiguration) ConfigurationSupport.getProjectDescriptor(project).getConfs().getActive();
@@ -98,9 +99,9 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         //String baseDir = new File(binDir).getParent();
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
         if (execEnv.isRemote()) {
-            env = new ExecutionEnvironment(execEnv.getUser(), execEnv.getHost());
+            env = ExecutionEnvironmentFactory.createNew(execEnv.getUser(), execEnv.getHost());
         } else {
-            env = new ExecutionEnvironment();
+            env = ExecutionEnvironmentFactory.getLocal();
         }
         dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
     }
@@ -112,7 +113,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         } else {
             dem_util_path = SS_FAMILIY;
         }
-        env = new ExecutionEnvironment();
+        env = ExecutionEnvironmentFactory.getLocal();
     }
 
     public Future<String> demangle(String functionName) {
