@@ -117,6 +117,7 @@ public interface HudsonLogger {
                 LineCookie c = d.getLookup().lookup(LineCookie.class);
                 if (c == null) {
                     LOG.fine("no LineCookie found for " + f);
+                    openAt(f, -1, -1, force);
                     return;
                 }
                 try {

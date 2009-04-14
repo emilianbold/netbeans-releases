@@ -37,76 +37,45 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html;
+package org.netbeans.modules.nativeexecution;
 
-import java.util.Set;
-import org.netbeans.editor.ext.html.dtd.*;
-import org.netbeans.editor.ext.html.dtd.DTD.Content;
-import org.netbeans.editor.ext.html.dtd.DTD.Element;
-import org.netbeans.modules.html.editor.NbReaderProvider;
-import org.netbeans.modules.html.editor.test.TestBase;
-import static org.junit.Assert.*;
+import org.netbeans.modules.nativeexecution.api.Platform;
+import org.netbeans.modules.nativeexecution.api.Platform.HardwareType;
+import org.netbeans.modules.nativeexecution.api.Platform.OSType;
 
 /**
- *
- * @author marekfukala
+ * A factory class for org.netbeans.modules.nativeexecution.api.Platform
+ * @author Vladimir Kvashin
  */
-public class DTDParserTest extends TestBase {
+public abstract class PlatformAccessor {
 
-    private static final String FALLBACK_DOCTYPE = "-//W3C//DTD HTML 4.01//EN";  // NOI18N
+    private static PlatformAccessor DEFAULT;
 
-    public DTDParserTest() {
-        super(DTDParserTest.class.getName());
+    protected PlatformAccessor() {
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        NbReaderProvider.setupReaders();
+    public static Platform createNew(HardwareType hardwareType, OSType oSType) {
+        return getDefault().createImpl(hardwareType, oSType);
     }
 
-
-    public void testDTDParser_HTML_BODY_Elements() {
-        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
-        assertNotNull(dtd);
-
-        Element htmlElement = dtd.getElement("HTML");
-        assertNotNull(htmlElement);
-
-        Element headElement = dtd.getElement("HEAD");
-        assertNotNull(headElement);
-
-        Content c = htmlElement.getContentModel().getContent();
-        assertTrue(c.getPossibleElements().contains(headElement));
-
-        c = c.reduce("HEAD");
-
-        Element bodyElement = dtd.getElement("BODY");
-        assertNotNull(bodyElement);
-
-        assertTrue(c.getPossibleElements().contains(bodyElement));
+    public static void setDefault(PlatformAccessor accessor) {
+        if (DEFAULT != null) {
+          throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
     }
 
-      public void testTable() {
-        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
-        assertNotNull(dtd);
+    public static PlatformAccessor getDefault() {
+        PlatformAccessor a = DEFAULT;
+        if (a != null) {
+          return a;
+        }
+        try {
+          Class.forName(Platform.class.getName(), true, Platform.class.getClassLoader());
+        } catch (Exception e) {
+        }
+        return DEFAULT;
+    }
 
-        Element el = dtd.getElement("TABLE");
-        assertNotNull(el);
-
-        Content c = el.getContentModel().getContent();
-
-//        dumpContent(c);
-
-        assertEquals(Content.EMPTY_CONTENT, c.reduce("TR"));
-
-      }
-
-//      private void dumpContent(Content c) {
-//          for(Object obj : c.getPossibleElements()) {
-//            Element e = (Element)obj;
-//            System.out.println(e);
-//        }
-//      }
-
+    protected abstract Platform createImpl(HardwareType hardwareType, OSType oSType);
 }
