@@ -86,7 +86,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         List<IndicatorDataProvider<?>> providers = configuration.getConfigurationOptions(false).getIndicatorDataProviders(currentTool);
         toReValidate = new ArrayList<IndicatorDataProvider<?>>();
         for (IndicatorDataProvider idp : providers) {
-            if (!idp.getValidationStatus().isKnown()) {
+            if (!idp.getValidationStatus().isKnown() || (idp.getValidationStatus().isKnown() && idp.getValidationStatus().isInvalid())) {
                 idp.addValidationListener(this);
                 toReValidate.add(idp);
                 currentStatus = idp.getValidationStatus();
@@ -129,6 +129,10 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
 
     public String getReason() {
         return currentStatus.getReason();
+    }
+
+    public final ValidationStatus getValidationStatus(){
+        return currentStatus;
     }
 
     public Future<Boolean> asyncRepair() {
