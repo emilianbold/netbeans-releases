@@ -43,16 +43,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import org.netbeans.editor.ext.html.dtd.DTD;
-import org.netbeans.editor.ext.html.dtd.DTD.Content;
 import org.netbeans.editor.ext.html.dtd.DTD.ContentModel;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Tomasz.Slota@Sun.COM, mfukala@netbeans.org
  */
 public class SyntaxTree {
+
+    static boolean DEBUG = false;
 
     public static AstNode makeTree(List<SyntaxElement> elements, DTD dtd) {
         assert elements != null;
@@ -75,9 +76,11 @@ public class SyntaxTree {
                 String tagName = ((SyntaxElement.Named) element).getName();
                 AstNode lastNode = !nodeStack.isEmpty() ? nodeStack.getLast() : null;
 
-//                System.out.println("--------------------------------");
-//                System.out.println("Processing tag " + tagName);
-//                System.out.println("Last open tag = " + (lastNode != null ? lastNode.name() : "<NONE>"));
+                if (DEBUG) {
+                    System.out.println("--------------------------------");
+                    System.out.println("Processing tag " + tagName);
+                    System.out.println("Last open tag = " + (lastNode != null ? lastNode.name() : "<NONE>"));
+                }
 
                 Element currentNodeDtdElement = dtd.getElement(tagName.toUpperCase(Locale.ENGLISH));
                 ContentModel contentModel = null;
@@ -96,13 +99,18 @@ public class SyntaxTree {
                                 errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
                                         new Object[]{currentNodeDtdElement.getName(), expectedElements});
 
-//                                System.out.println(lastNode.isResolved() ? "Node resolved, ok." : "NODE NOT RESOLVED! Missing " + expectedElements);
+                                if(DEBUG) {
+                                    System.out.println(lastNode.isResolved() ? "Node resolved, ok." : "NODE NOT RESOLVED! Missing " + expectedElements);
+                                }
                             }
 
                             //close the previous node
                             lastNode.setEndOffset(element.offset());
                             nodeStack.removeLast();
-//                            System.out.println("Closing tag " + lastNode.name() + " by the end of this tag!");
+
+                            if(DEBUG) {
+                                System.out.println("Closing tag " + lastNode.name() + " by the end of this tag!");
+                            }
 
                         }
                     }

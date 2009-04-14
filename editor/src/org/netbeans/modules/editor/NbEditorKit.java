@@ -194,6 +194,8 @@ public class NbEditorKit extends ExtKit implements Callable {
                                        new NavigationHistoryForwardAction(),
                                        new SearchBar.IncrementalSearchForwardAction(),
                                        new SearchBar.IncrementalSearchBackwardAction(),
+                                       new ToggleToolbarAction(),
+                                       new NbToggleLineNumbersAction(),
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
@@ -275,7 +277,8 @@ public class NbEditorKit extends ExtKit implements Callable {
         return bundle;
     }
     
-    @EditorActionRegistration(name = toggleToolbarAction)
+    //@EditorActionRegistration(name = toggleToolbarAction)
+    // Registration in createActions() due to getPopupMenuItem()
     public static class ToggleToolbarAction extends BaseAction {
 
         public ToggleToolbarAction() {
@@ -567,7 +570,8 @@ public class NbEditorKit extends ExtKit implements Callable {
     }
 
     /** Switch visibility of line numbers in editor */
-    @EditorActionRegistration(name = BaseKit.toggleLineNumbersAction)
+    //@EditorActionRegistration(name = BaseKit.toggleLineNumbersAction)
+    // Registration in createActions() due to getPopupMenuItem() in predecessor
     public static class NbToggleLineNumbersAction extends ActionFactory.ToggleLineNumbersAction {
 
         public NbToggleLineNumbersAction() {
