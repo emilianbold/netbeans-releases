@@ -56,6 +56,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -303,7 +304,7 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
         private final FeatureInfo[] additional;
         private final Lookup lookup;
         private ProjectState state;
-        private boolean success = false;
+        private String error;
         private final ChangeListener weakL;
 
         public FeatureNonProject(
@@ -359,6 +360,8 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
                         throw new IllegalStateException("New project shall be found! " + p); // NOI18N
                     }
                     delegate.associate(p);
+                } catch (IOException ex) {
+                    error = ex.getLocalizedMessage();
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -366,14 +369,14 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
         }
 
         private final class FeatureOpenHook extends ProjectOpenedHook
-        implements Runnable {
+        implements Runnable, ProgressMonitor {
             @Override
             protected void projectOpened() {
                 if (state == null) {
                     return;
                 }
                 RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY).waitFinished ();
-                if (success) {
+                if (error == null) {
                     switchToReal();
                     // make sure support for projects we depend on are also enabled
                     SubprojectProvider sp = getLookup().lookup(SubprojectProvider.class);
@@ -386,7 +389,8 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
                             }
                         }
                     }
-
+                } else {
+                    delegate.associate(new BrokenProject(getProjectDirectory(), error));
                 }
             }
 
@@ -396,22 +400,33 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
 
             public void run() {
                 FeatureManager.logUI("ERGO_PROJECT_OPEN", info.clusterName);
+                error = null;
                 FindComponentModules findModules = new FindComponentModules(info, additional);
                 Collection<UpdateElement> toInstall = findModules.getModulesForInstall ();
                 Collection<UpdateElement> toEnable = findModules.getModulesForEnable ();
                 if (toInstall != null && ! toInstall.isEmpty ()) {
-                    ModulesInstaller installer = new ModulesInstaller(toInstall, findModules);
+                    ModulesInstaller installer = new ModulesInstaller(toInstall, findModules, this);
                     installer.getInstallTask ().waitFinished ();
-                    success = true;
                 } else if (toEnable != null && ! toEnable.isEmpty ()) {
-                    ModulesActivator enabler = new ModulesActivator (toEnable, findModules);
+                    ModulesActivator enabler = new ModulesActivator (toEnable, findModules, this);
                     enabler.getEnableTask ().waitFinished ();
-                    success = true;
-                } else if (toEnable == null || toInstall == null) {
-                    success = true;
-                } else if (toEnable.isEmpty() && toInstall.isEmpty()) {
-                    success = true;
                 }
+            }
+
+            public void onDownload(ProgressHandle progressHandle) {
+            }
+
+            public void onValidate(ProgressHandle progressHandle) {
+            }
+
+            public void onInstall(ProgressHandle progressHandle) {
+            }
+
+            public void onEnable(ProgressHandle progressHandle) {
+            }
+
+            public void onError(String message) {
+                error = message;
             }
         } // end of FeatureOpenHook
     } // end of FeatureNonProject

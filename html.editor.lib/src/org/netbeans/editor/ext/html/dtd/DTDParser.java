@@ -1610,7 +1610,11 @@ class DTDParser extends Object {
         
         /** ContentLeaf can't be discarded as it hac no operation associated */
         public boolean isDiscardable() {
-            return false;
+            //#PCDATA can be discarded
+            //XXX this is mostly a workaround for SyntaxTree class which
+            //doesn't process text nodes
+            return getName().equals("#PCDATA");
+            //return false;
         }
         
         /** ContentLeaf is either reduced to EMPTY_CONTENT or doesn't
