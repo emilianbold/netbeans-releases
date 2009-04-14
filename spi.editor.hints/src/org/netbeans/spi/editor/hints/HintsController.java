@@ -48,16 +48,18 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
 /**
- *
+ * One of the main etry points for the Editor Hints SPI. Call one of the
+ * setErrors method to change the hints on the document.
  * @author Jan Lahoda
  */
 public final class HintsController {
 
-    /** Creates a new instance of HintsController */
+    /** No instances of this class are needed. */
     private HintsController() {
     }
 
-    /**Assign given list of errors to a file. This removes any errors that were assigned to this
+    /**
+     * Assign given list of errors to a file. This removes any errors that were assigned to this
      * file before under the same "layer". The file to which the errors should be assigned
      * is gathered from the given document.
      * 
@@ -75,7 +77,8 @@ public final class HintsController {
         });
     }
     
-    /**Assign given list of errors to a given file. This removes any errors that were assigned to this
+    /**
+     * Assign given list of errors to a given file. This removes any errors that were assigned to this
      * file before under the same "layer".
      *
      * @param file to which the errors should be assigned

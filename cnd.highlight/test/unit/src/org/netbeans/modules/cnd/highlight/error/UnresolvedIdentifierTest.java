@@ -192,6 +192,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz151054.cpp");
     }
 
+    public void testIZ150827() throws Exception {
+        // IZ#150827 : Expression statement with & is treated as a declaration
+        performStaticTest("iz150827.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

@@ -53,7 +53,7 @@ import org.netbeans.jellytools.modules.db.actions.ExecuteCommandAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
-/** Node representing "Databases > ${connection}" node in Runtime tab.
+/** Node representing "Databases > ${connection}" node in Services tab.
  * <p>
  * Usage:<br>
  * <pre>
@@ -131,11 +131,11 @@ public class ConnectionNode extends Node {
     private static String connectionName(String url, String user, String schema) {
         if (schema == null) {
             schema = Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+                "org.netbeans.modules.db.explorer.Bundle",
                 "SchemaIsNotSet");
         }
         return Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+                "org.netbeans.modules.db.explorer.Bundle",
                 "ConnectionNodeUniqueName", new Object[] {url, user, schema});
     }
 

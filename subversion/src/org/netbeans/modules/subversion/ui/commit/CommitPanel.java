@@ -217,7 +217,7 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
         recentLink.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/recent_messages.png"))); // NOI18N
         recentLink.setToolTipText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_RecentMessages")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(filesSectionButton, "&Files to Commit:");
+        org.openide.awt.Mnemonics.setLocalizedText(filesSectionButton, org.openide.util.NbBundle.getMessage(CommitPanel.class, "LBL_CommitDialog_FilesToCommit")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(hooksSectionButton, org.openide.util.NbBundle.getMessage(CommitPanel.class, "LBL_Advanced")); // NOI18N
 
@@ -230,11 +230,11 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
         filesPanel.setLayout(filesPanelLayout);
         filesPanelLayout.setHorizontalGroup(
             filesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 600, Short.MAX_VALUE)
+            .add(0, 614, Short.MAX_VALUE)
         );
         filesPanelLayout.setVerticalGroup(
             filesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 116, Short.MAX_VALUE)
+            .add(0, 123, Short.MAX_VALUE)
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(filesLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_FilesToCommit")); // NOI18N
@@ -244,14 +244,14 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
         filesSectionPanelLayout.setHorizontalGroup(
             filesSectionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(filesLabel)
-            .add(filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+            .add(filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 614, Short.MAX_VALUE)
         );
         filesSectionPanelLayout.setVerticalGroup(
             filesSectionPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(filesSectionPanelLayout.createSequentialGroup()
                 .add(filesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE))
+                .add(filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE))
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -263,14 +263,14 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(hooksSectionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+                    .add(hooksSectionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 614, Short.MAX_VALUE)
                     .add(hooksSectionButton)
                     .add(filesSectionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 614, Short.MAX_VALUE)
                     .add(filesSectionButton)
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 465, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 480, Short.MAX_VALUE)
                         .add(recentLink)))
                 .addContainerGap())
         );
@@ -287,7 +287,7 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
                             .add(jLabel1)
                             .add(recentLink))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(filesSectionButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -295,7 +295,7 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(hooksSectionButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(hooksSectionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)))
+                        .add(hooksSectionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 35, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
