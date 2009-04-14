@@ -66,6 +66,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.FocusManager;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -239,8 +240,7 @@ final class QueryTopComponent extends TopComponent
         panel.setLayout(new java.awt.BorderLayout());
 
         repoPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
-
-        repositoryComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        repoPanel.setNextFocusableComponent(newButton);
 
         queriesPanel.setMaximumSize(new java.awt.Dimension(400, 32767));
         queriesPanel.setMinimumSize(new java.awt.Dimension(400, 26));
@@ -315,7 +315,7 @@ final class QueryTopComponent extends TopComponent
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 746, Short.MAX_VALUE)
+            .add(panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 799, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -326,7 +326,7 @@ final class QueryTopComponent extends TopComponent
             .add(jPanel2Layout.createSequentialGroup()
                 .add(repoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(14, 14, 14)
-                .add(panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE))
+                .add(panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE))
         );
 
         scrollPane.setViewportView(jPanel2);
@@ -423,11 +423,11 @@ final class QueryTopComponent extends TopComponent
         if(query != null) {
             query.getController().opened();
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                repositoryComboBox.requestFocus();
-            }
-        });
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
+//                repositoryComboBox.requestFocusInWindow();
+//            }
+//        });
     }
 
     @Override
@@ -588,6 +588,9 @@ final class QueryTopComponent extends TopComponent
                             panel.add(addController.getComponent());
                             panel.revalidate();
                             panel.repaint();
+
+                            focusFirstEnabledComponent();
+
                         }
                     });
                 } finally {
@@ -596,6 +599,16 @@ final class QueryTopComponent extends TopComponent
                 }
             }
         });
+    }
+
+    private void focusFirstEnabledComponent() {
+        repositoryComboBox.requestFocusInWindow();
+        if(!repositoryComboBox.isEnabled()) {
+            newButton.requestFocusInWindow();
+            if(!newButton.isEnabled()) {
+                newButton.transferFocus();
+            }
+        }
     }
 
     private void setNameAndTooltip() throws MissingResourceException {
@@ -624,17 +637,22 @@ final class QueryTopComponent extends TopComponent
         Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
         repoModel = new DefaultComboBoxModel(repos);
         repositoryComboBox.setModel(repoModel);
-        
-        for (int i = 0; i < repoModel.getSize(); i++) {
-            Repository r = (Repository) repoModel.getElementAt(i);
-            if(r == lastSelection) {
-                repoModel.setSelectedItem(r);
-                break;
+
+        if(lastSelection != null) {
+            for (int i = 0; i < repoModel.getSize(); i++) {
+                Repository r = (Repository) repoModel.getElementAt(i);
+                if(r == lastSelection) {
+                    repoModel.setSelectedItem(r);
+                    break;
+                }
             }
         }
     }
 
     private void updateSavedQueries(Repository repo) {
+        if(repo == null) {
+            return;
+        }
         synchronized (LOCK) {
             if(savedQueries != null) {
                 for (Query q : savedQueries) {

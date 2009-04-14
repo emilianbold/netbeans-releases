@@ -235,6 +235,8 @@ public class EditorOperator extends TopComponentOperator {
 
     /** Returns operator of label showing current row and column at the left
      * corner of the Source Editor window.
+     * NOTE: this label is accessible only when the editor window is undocked.
+     * Otherwise it is a part of MainWindow.
      * @return JLabelOperator instance of row:column label
      */
     public JLabelOperator lblRowColumn() {
@@ -246,6 +248,8 @@ public class EditorOperator extends TopComponentOperator {
 
     /** Returns operator of label showing current input mode (INS/OVR -
      * insert/overwrite).
+     * NOTE: this label is accessible only when the editor window is undocked.
+     * Otherwise it is a part of MainWindow.
      * @return JLabelOperator instance of input mode label
      */
     public JLabelOperator lblInputMode() {
@@ -256,6 +260,8 @@ public class EditorOperator extends TopComponentOperator {
     }
 
     /** Returns operator of status bar at the bottom of the Source Editor.
+     * NOTE: this label is accessible only when the editor window is undocked.
+     * Otherwise it is a part of MainWindow.
      * @return JLabelOperator instance of status bar
      */
     public JLabelOperator lblStatusBar() {
@@ -999,10 +1005,14 @@ public class EditorOperator extends TopComponentOperator {
 
     /** Performs verification by accessing all sub-components */
     public void verify() {
+       
         txtEditorPane();
-        lblInputMode();
-        lblRowColumn();
-        lblStatusBar();
+        
+        /*Commented, because these three labels are accessible only
+        when the editor window is undocked. Otherwise they are a part of MainWindow.
+        lblInputMode();       
+        lblRowColumn();       
+        lblStatusBar();*/
     }
 
     /** SubChooser to determine Editor TopComponent
