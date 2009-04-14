@@ -226,7 +226,8 @@ public class NativeExecutor implements Runnable {
      *  Call execute(), not this method directly!
      */
     synchronized public void run() {
-        io.setFocusTaken(true);
+        // IZ162493: no need to switch each time into Ouput window
+//        io.setFocusTaken(true);
         io.setErrVisible(false);
         io.setErrSeparated(false);
         if (showInput) {
