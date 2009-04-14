@@ -40,6 +40,7 @@
 package org.netbeans.modules.ide.ergonomics.fod;
 
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -54,14 +55,16 @@ import org.openide.awt.HtmlBrowser;
 final class BrokenProjectInfo implements HyperlinkListener {
     public static void showInfo(BrokenProject prj) {
         JEditorPane errorLabel = new JEditorPane();
+        JLabel infoLabel = new JLabel();
 
         errorLabel.setContentType("text/html"); // NOI18N
         errorLabel.setEditable(false);
         errorLabel.setForeground(UIManager.getDefaults().getColor("nb.errorForeground"));
         errorLabel.setRequestFocusEnabled(false);
+        errorLabel.setBackground(infoLabel.getBackground());
+        errorLabel.setFont(infoLabel.getFont());
 
         errorLabel.addHyperlinkListener(new BrokenProjectInfo());
-
 
         errorLabel.setText(prj.msg);
 
