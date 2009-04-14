@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.hudson.api;
 
+import java.awt.EventQueue;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -64,6 +66,7 @@ import org.netbeans.modules.hudson.spi.ConnectionAuthenticator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -73,12 +76,14 @@ import org.openide.util.Utilities;
 public final class ConnectionBuilder {
 
     private static final Logger LOG = Logger.getLogger(ConnectionBuilder.class.getName());
+    private static final RequestProcessor TIMER = new RequestProcessor(ConnectionBuilder.class.getName() + ".TIMER"); // NOI18N
 
     private URL home;
     private URL url;
     private final Map<String,String> requestHeaders = new LinkedHashMap<String,String>();
     private byte[] postData;
     private Map<String,List<String>> responseHeaders;
+    private int timeout;
 
     /**
      * Prepare a connection.
@@ -175,6 +180,18 @@ public final class ConnectionBuilder {
     }
 
     /**
+     * Sets a timeout on the response.
+     * If the connection has not opened within that time,
+     * {@link InterruptedIOException} will be thrown from {@link #connection}.
+     * @param milliseconds time to wait
+     * @return this builder
+     */
+    public ConnectionBuilder timeout(int milliseconds) {
+        timeout = milliseconds;
+        return this;
+    }
+
+    /**
      * Actually try to open the connection.
      * May need to retry to handle redirects and/or authentication.
      * @return an open and valid connection, ready for {@link URLConnection#getInputStream},
@@ -185,6 +202,30 @@ public final class ConnectionBuilder {
         if (url == null) {
             throw new IllegalArgumentException("You must call the url method!"); // NOI18N
         }
+        if (url.getProtocol().matches("https?") && EventQueue.isDispatchThread()) {
+            LOG.log(Level.FINER, "opening " + url, new IllegalStateException("Avoid connecting from EQ"));
+            if (timeout == 0) {
+                timeout = 3000;
+            }
+        }
+        if (timeout == 0) {
+            return doConnection();
+        } else {
+            final Thread curr = Thread.currentThread();
+            RequestProcessor.Task task = TIMER.post(new Runnable() {
+                public void run() {
+                    curr.interrupt();
+                }
+            }, timeout);
+            try {
+                return doConnection();
+            } finally {
+                task.cancel();
+            }
+        }
+    }
+
+    private URLConnection doConnection() throws IOException {
         URLConnection conn = url.openConnection();
         RETRY: while (true) {
             if (conn instanceof HttpURLConnection) {
