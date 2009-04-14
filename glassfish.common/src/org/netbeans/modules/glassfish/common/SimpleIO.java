@@ -50,14 +50,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
@@ -146,7 +144,7 @@ public class SimpleIO {
             final String originalName = Thread.currentThread().getName();
             
             try {
-                Thread.currentThread().setName(this.getClass().getName() + " - " + inputStream);
+                Thread.currentThread().setName(this.getClass().getName() + " - " + inputStream); // NOI18N
                 
                 // create a reader from the input stream
                 Reader reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -172,12 +170,12 @@ public class SimpleIO {
                     }
                 }
             } catch (IOException ex) {
-                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
             } finally {
                 try {
                     inputStream.close();
                 } catch (IOException ex) {
-                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                 }
                 
                 Thread.currentThread().setName(originalName);
@@ -193,14 +191,13 @@ public class SimpleIO {
                 "org/netbeans/modules/glassfish/common/resources/stop.png"; // NOI18N
         
         public CancelAction() {
-            super(NbBundle.getMessage(SimpleIO.class, "CTL_Cancel"),ImageUtilities.loadImageIcon(ICON, false));
-            putValue(SHORT_DESCRIPTION, 
-                    NbBundle.getMessage(SimpleIO.class, "LBL_CancelDesc"));
+            super(NbBundle.getMessage(SimpleIO.class, "CTL_Cancel"),ImageUtilities.loadImageIcon(ICON, false)); // NOI18N
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(SimpleIO.class, "LBL_CancelDesc")); // NOI18N
         }
 
         public void actionPerformed(ActionEvent e) {
             if(process.get() != null) {
-                String message = NbBundle.getMessage(SimpleIO.class, "MSG_QueryCancel", name);
+                String message = NbBundle.getMessage(SimpleIO.class, "MSG_QueryCancel", name); // NOI18N
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message,
                         NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
                 if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
@@ -208,7 +205,7 @@ public class SimpleIO {
                     if(p != null) {
                         p.destroy();
                     } else {
-                        Logger.getLogger("glassfish").log(Level.FINEST, "Process handle unexpectedly null, cancel aborted.");
+                        Logger.getLogger("glassfish").log(Level.FINEST, "Process handle unexpectedly null, cancel aborted."); // NOI18N
                     }
                 }
             }

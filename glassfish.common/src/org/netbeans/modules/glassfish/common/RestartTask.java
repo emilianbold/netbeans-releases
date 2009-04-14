@@ -86,10 +86,8 @@ public class RestartTask extends BasicTask<OperationState> {
      * 
      */
     public OperationState call() {
-        Logger.getLogger("glassfish").log(Level.FINEST,
-                "RestartTask.call() called on thread \"" + Thread.currentThread().getName() + "\"");
-        fireOperationStateChanged(OperationState.RUNNING,
-                "MSG_RESTART_SERVER_IN_PROGRESS", instanceName);
+        Logger.getLogger("glassfish").log(Level.FINEST,"RestartTask.call() called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
+        fireOperationStateChanged(OperationState.RUNNING, "MSG_RESTART_SERVER_IN_PROGRESS", instanceName); // NOI18N
 
         ServerState state = support.getServerState();
 
@@ -102,7 +100,7 @@ public class RestartTask extends BasicTask<OperationState> {
                 try {
                     Thread.sleep(DELAY);
                 } catch(InterruptedException ex) {
-                    Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex);
+                    Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex); // NOI18N
                 }
                 currentState = support.getServerState();
             }
@@ -119,7 +117,7 @@ public class RestartTask extends BasicTask<OperationState> {
                 try {
                     stopResult = stopTask.get(STOP_TIMEOUT, TIMEUNIT);
                 } catch(Exception ex) {
-                    Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex);
+                    Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex); // NOI18N
                 }
 
                 if(stopResult == OperationState.FAILED) {
@@ -135,7 +133,7 @@ public class RestartTask extends BasicTask<OperationState> {
                     try {
                         Thread.sleep(DELAY);
                     } catch(InterruptedException ex) {
-                        Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex);
+                        Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex); // NOI18N
                     }
                     currentState = support.getServerState();
                 }
@@ -164,7 +162,7 @@ public class RestartTask extends BasicTask<OperationState> {
             try {
                 startResult = startTask.get(START_TIMEOUT, TIMEUNIT);
             } catch(Exception ex) {
-                Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex);
+                Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex); // NOI18N
             }
 
             if(startResult == OperationState.FAILED) {
