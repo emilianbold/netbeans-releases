@@ -14,8 +14,10 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -24,6 +26,7 @@ import org.netbeans.modules.nativeexecution.PlatformAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.Platform;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.WindowsSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -37,6 +40,8 @@ public final class HostInfoUtils {
      * String constant that can be used to identify a localhost.
      */
     public static final String LOCALHOST = "127.0.0.1"; // NOI18N
+    private static final java.util.logging.Logger log = Logger.getInstance();
+
     private static final List<String> myIPAdresses = new ArrayList<String>();
     private static final Map<String, Boolean> filesExistenceHash =
             Collections.synchronizedMap(new WeakHashMap<String, Boolean>());
@@ -130,6 +135,61 @@ public final class HostInfoUtils {
         filesExistenceHash.put(key, fileExists);
 
         return fileExists;
+    }
+
+    public static String searchFile(ExecutionEnvironment execEnv,
+            List<String> searchPaths, String file, boolean searchInUserPaths) {
+        NativeProcessBuilder npb;
+        BufferedReader br;
+        String line;
+        Process p;
+
+        try {
+            String shell = HostInfoUtils.getShell(execEnv);
+
+            if (shell == null) {
+                return null;
+            }
+
+            List<String> sp = new ArrayList<String>(searchPaths);
+
+            if (searchInUserPaths) {
+                npb = new NativeProcessBuilder(execEnv, shell).setArguments("-c", "echo $PATH"); // NOI18N
+                p = npb.call();
+                p.waitFor();
+                br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                line = br.readLine();
+
+                if (line != null) {
+                    sp.addAll(Arrays.asList(line.split("[;:]"))); // NOI18N
+                }
+            }
+
+            StringBuilder cmd = new StringBuilder();
+
+            for (Iterator<String> i = sp.iterator(); i.hasNext();) {
+                cmd.append("/bin/ls " + i.next() + "/" + file); // NOI18N
+                if (i.hasNext()) {
+                    cmd.append(" || "); // NOI18N
+                }
+            }
+
+            npb = new NativeProcessBuilder(execEnv, shell).setArguments("-c", cmd.toString()); // NOI18N
+            p = npb.call();
+            p.waitFor();
+            br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            line = br.readLine();
+            
+            return (line == null || "".equals(line.trim())) ? null : line.trim(); // NOI18N
+        } catch (IOException ex) {
+            log.finest("Exception in searchFile() " + ex.toString()); // NOI18N
+        } catch (InterruptedException ex) {
+            log.finest("Exception in searchFile() " + ex.toString()); // NOI18N
+        }
+
+        log.finest("File " + file + " not found"); // NOI18N
+        
+        return null;
     }
 
     /**
@@ -253,10 +313,10 @@ public final class HostInfoUtils {
      */
     private static Platform.HardwareType getHardwareType(String os_arch) {
         if ("i386".equals(os_arch) || // NOI18N
-            "i686".equals(os_arch) || // NOI18N
-            "x86_64".equals(os_arch) || // NOI18N
-            "amd64".equals(os_arch) || // NOI18N
-            "athlon".equals(os_arch)) { // NOI18N
+                "i686".equals(os_arch) || // NOI18N
+                "x86_64".equals(os_arch) || // NOI18N
+                "amd64".equals(os_arch) || // NOI18N
+                "athlon".equals(os_arch)) { // NOI18N
             return Platform.HardwareType.X86;
         } else if ("sparc".equals(os_arch)) {
             return Platform.HardwareType.X86;
@@ -303,7 +363,7 @@ public final class HostInfoUtils {
         // IZ#160260 - cannot always relay on sun.cpu.isalist
         String isalist = System.getProperty("sun.cpu.isalist"); // NOI18N
 
-        if ("".equals(isalist)) { // NOI18N
+        if ("".equals(isalist) && info.shell != null) { // NOI18N
             String testcmd;
             if ("SunOS".equals(info.os)) { // NOI18N
                 testcmd = "/usr/bin/isalist | /bin/egrep \"sparcv9|amd64\""; // NOI18N
