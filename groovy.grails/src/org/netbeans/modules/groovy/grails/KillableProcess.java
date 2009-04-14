@@ -175,8 +175,9 @@ public class KillableProcess extends Process {
 
         public PidLineProcessor(CountDownLatch latch, String command, String remark) {
             this.latch = latch;
-            pattern = Pattern.compile("^.*grails.bat\"?(\\s+-D\\S*=(\"(\\s|\\S)*\")|(\\S*))*\\s+" // NOI18N
-                    + Pattern.quote(command) + "\\s+REM NB:" + Pattern.quote(remark)
+            // grails.bat["] parameters command mark
+            pattern = Pattern.compile("^.*grails.bat\"?(\\s+.*)*\\s+" // NOI18N
+                    + Pattern.quote(command) + "\\s+REM NB:" + Pattern.quote(remark) // NOI18n
                     + ".*\\s+(\\d+)(\\s+.*)?$"); // NOI18N
         }
 
@@ -186,7 +187,7 @@ public class KillableProcess extends Process {
             Matcher matcher = pattern.matcher(line);
             try {
                 if (matcher.matches()) {
-                    pid.set(Integer.parseInt(matcher.group(5)));
+                    pid.set(Integer.parseInt(matcher.group(2)));
                     latch.countDown();
                 }
             } catch (NumberFormatException ex) {
