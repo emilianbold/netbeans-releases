@@ -46,17 +46,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.earproject.EarProject;
-import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.customizer.ProjectSharability;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -69,7 +66,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Hrebejk
  */
-public class CustomizerProviderImpl implements CustomizerProvider {
+public class CustomizerProviderImpl implements CustomizerProvider, ProjectSharability {
     
     private final EarProject project;
     private final AntProjectHelper antProjectHelper;   
@@ -119,15 +116,19 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
         }
     }
-    
-    public boolean makeSharable() {
+
+    public boolean isSharable() {
+        return project.getAntProjectHelper().isSharableProject();
+    }
+
+    public void makeSharable() {
         EarProjectProperties uiProperties = new EarProjectProperties(project, project.getUpdateHelper(), project.evaluator(), project.getReferenceHelper());
         if (project.getAntProjectHelper().isSharableProject() ) {
             assert false : "Project "+project+" is already sharable.";
-            return true;
+            return;
         }
         final String serverLibraryName[] = new String[1];
-        return CustomizerLibraries.makeSharable(uiProperties, serverLibraryName);
+        CustomizerLibraries.makeSharable(uiProperties, serverLibraryName);
     }
 
     private class StoreListener implements ActionListener {

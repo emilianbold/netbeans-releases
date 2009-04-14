@@ -57,6 +57,7 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProv
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.customizer.ProjectSharability;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -70,7 +71,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Hrebejk
  */
-public class CustomizerProviderImpl implements CustomizerProvider2 {
+public class CustomizerProviderImpl implements CustomizerProvider2, ProjectSharability {
     
     private final EjbJarProject project;
     private final UpdateHelper updateHelper;
@@ -125,12 +126,16 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
             dialog.setVisible(true);
         }
     }    
-    
-    public boolean makeSharable() {
+
+    public boolean isSharable() {
+        return project.getAntProjectHelper().isSharableProject();
+    }
+
+    public void makeSharable() {
         EjbJarProjectProperties uiProperties = new EjbJarProjectProperties(project, updateHelper, evaluator, refHelper);
-        if (project.getAntProjectHelper().isSharableProject() ) {
+        if (project.getAntProjectHelper().isSharableProject()) {
             assert false : "Project "+project+" is already sharable.";
-            return true;
+            return;
         }
         final String serverLibraryName[] = new String[1];
         boolean res = CustomizerLibraries.makeSharable(uiProperties, serverLibraryName);
@@ -153,7 +158,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
                 }
             });
         }
-        return res;
+        return;
     }
 
     private class StoreListener implements ActionListener {

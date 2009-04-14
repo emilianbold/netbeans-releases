@@ -56,6 +56,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider2;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.customizer.ProjectSharability;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -71,7 +72,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Hrebejk, Radko Najman
  */
-public class CustomizerProviderImpl implements CustomizerProvider2 {
+public class CustomizerProviderImpl implements CustomizerProvider2, ProjectSharability {
     
     private final WebProject project;
     private final UpdateHelper updateHelper;
@@ -130,11 +131,15 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
         }
     }
 
-    public boolean makeSharable() {
+    public boolean isSharable() {
+        return project.getAntProjectHelper().isSharableProject();
+    }
+
+    public void makeSharable() {
         WebProjectProperties uiProperties = new WebProjectProperties(project, updateHelper, evaluator, refHelper);
-        if (project.getAntProjectHelper().isSharableProject() ) {
+        if (project.getAntProjectHelper().isSharableProject()) {
             assert false : "Project "+project+" is already sharable.";
-            return true;
+            return;
         }
         final String serverLibraryName[] = new String[1];
         boolean res = CustomizerLibraries.makeSharable(uiProperties, serverLibraryName);
@@ -157,7 +162,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
                 }
             });
         }
-        return res;
+        return;
     }
         
     private class StoreListener implements ActionListener {
