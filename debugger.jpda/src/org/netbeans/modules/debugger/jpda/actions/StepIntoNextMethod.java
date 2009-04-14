@@ -118,6 +118,10 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
     }
 
     public void runAction() {
+        runAction(true);
+    }
+
+    public void runAction(boolean doResume) {
         smartLogger.finer("STEP INTO NEXT METHOD.");
         JPDAThread t = getDebuggerImpl ().getCurrentThread ();
         if (t == null) {
@@ -150,12 +154,14 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
             }
             if (stepRequest == null) return ;
             ((JPDAThreadImpl) t).setInStep(true, stepRequest);
-            if (resumeThread == null) {
-                getDebuggerImpl ().resume ();
-            } else {
-                //resumeThread.resume();
-                //stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
-                getDebuggerImpl().resumeCurrentThread();
+            if (doResume) {
+                if (resumeThread == null) {
+                    getDebuggerImpl ().resume ();
+                } else {
+                    //resumeThread.resume();
+                    //stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
+                    getDebuggerImpl().resumeCurrentThread();
+                }
             }
         } finally {
             lock.unlock();
