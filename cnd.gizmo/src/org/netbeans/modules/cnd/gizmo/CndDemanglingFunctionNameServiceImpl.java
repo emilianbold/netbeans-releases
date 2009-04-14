@@ -74,6 +74,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
     private final String dem_util_path;
     private static final String GNU_FAMILIY = "gc++filt"; //NOI18N
     private static final String SS_FAMILIY = "dem"; //NOI18N
+    private static final String EQUALS_EQUALS = "==";
 
     CndDemanglingFunctionNameServiceImpl() {
         Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
@@ -143,10 +144,17 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
                 Future<Integer> res = execService.run();
                 try {
                     res.get();
-                    String demanled = result.toString();
+                    String demangled_name = result.toString();
+                    if (cppCompiler == CPPCompiler.SS){
+                        if (demangled_name != null && demangled_name.indexOf(EQUALS_EQUALS) != -1){
+                            demangled_name = demangled_name.substring(demangled_name.indexOf(EQUALS_EQUALS) + 2);
+                            demangled_name = demangled_name.trim();
+                        }
+                    }
+                    
                     demangled_functions.put(nameToDemangleSeq,
-                            demanled.subSequence(0, demanled.length()));
-                    return demanled;
+                            demangled_name.subSequence(0, demangled_name.length()));
+                    return demangled_name;
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (ExecutionException ex) {

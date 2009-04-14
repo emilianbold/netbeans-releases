@@ -86,6 +86,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private boolean isActive;
     private final DLightSessionContext sessionContext;
     private final String name;
+    private boolean closeOnRun = false;
 
     public static enum SessionState {
 
@@ -258,6 +259,11 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         }
     }
 
+
+    void closeOnRun(){
+        closeOnRun = true;
+    }
+
     synchronized void stop() {
         if (state == SessionState.ANALYZE) {
             return;
@@ -279,7 +285,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         Runnable sessionRunnable = new Runnable() {
 
             public void run() {
-                DataStorageManager.getInstance().clearActiveStorages();
+                DataStorageManager.getInstance().clearActiveStorages(DLightSession.this);
 
                 if (storages != null) {
                     storages.clear();
@@ -406,7 +412,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
 
         for (DataCollector toolCollector : collectors) {
-            DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(toolCollector);
+            DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(this, toolCollector);
             if (toolCollector instanceof DLightTarget.ExecutionEnvVariablesProvider) {
                 context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) toolCollector);
             }
@@ -471,6 +477,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             sessionStateListeners.clear();
             sessionStateListeners = null;
         }
+        DataStorageManager.getInstance().closeSession(this);
+        cleanVisualizers();
     }
 
     private void targetStarted(DLightTarget target) {
@@ -480,6 +488,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private void targetFinished(DLightTarget target) {
         setState(SessionState.ANALYZE);
         target.removeTargetListener(this);
+        if (closeOnRun){
+            close();
+        }
     }
 
     private void setState(SessionState state) {
@@ -541,6 +552,11 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             result.addAll(c.getIndicators());
         }
         return result;
+    }
+
+
+    boolean containsIndicator(Indicator indicator){
+        return getIndicators().contains(indicator);
     }
 
     private void assertState(SessionState expectedState) {
