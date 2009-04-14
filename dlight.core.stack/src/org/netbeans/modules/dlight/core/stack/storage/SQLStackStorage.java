@@ -205,9 +205,9 @@ public final class SQLStackStorage {
                     try {
                         func_name = demanglingService.demangle(func_name).get();
                     } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
+//                        Exceptions.printStackTrace(ex);
                     } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
+  //                      Exceptions.printStackTrace(ex);
                     }
                 }
                 result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), func_name, rs.getString(3)), metrics));
