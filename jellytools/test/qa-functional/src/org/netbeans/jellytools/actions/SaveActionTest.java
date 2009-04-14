@@ -57,7 +57,7 @@ import org.netbeans.junit.NbTestSuite;
 public class SaveActionTest extends JellyTestCase {
 
     public static final String[] tests = new String[] {
-        "testPerformMenu", "testPerformAPI", "testPerformShortcut"
+        "testPerformPopup", "testPerformMenu", "testPerformAPI", "testPerformShortcut"
     };
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
@@ -78,7 +78,7 @@ public class SaveActionTest extends JellyTestCase {
         suite.addTest(new SaveActionTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(SaveActionTest.class);
+        return createModuleTest(SaveActionTest.class, tests);
     }
     
     /** Use for internal test execution inside IDE
