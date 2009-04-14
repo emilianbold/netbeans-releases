@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -521,7 +520,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         public ClassMemberForwardDeclaration(CsmClass containingClass, AST ast, CsmVisibility curentVisibility, boolean register) {
             super(ast, containingClass.getContainingFile(), register);
             visibility = curentVisibility;
-            containerUID = UIDs.get(containingClass);
+            containerUID = UIDCsmConverter.declarationToUID(containingClass);
             if (register) {
                 registerInProject();
             }
@@ -571,10 +570,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
         @Override
         public CsmClass getCsmClass() {
-            CsmClass cls = null;
-            if (classDefinition != null) {
-                cls = classDefinition.getObject();
-            }
+            CsmClass cls = UIDCsmConverter.UIDtoClass(classDefinition);
             // we need to replace i.e. ForwardClass stub
             if (cls != null && cls.isValid() && !ForwardClass.isForwardClass(cls)) {
                 return cls;
@@ -588,15 +584,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         @Override
         protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
             CsmClass cls = super.createForwardClassIfNeed(ast, scope, registerInProject);
+            classDefinition = UIDCsmConverter.declarationToUID(cls);
             if (cls != null) {
-                classDefinition = UIDs.get(cls);
                 RepositoryUtils.put(this);
             }
             return cls;
         }
 
         public void setCsmClass(CsmClass cls) {
-            classDefinition = cls == null ? null : UIDs.get(cls);
+            classDefinition = UIDCsmConverter.declarationToUID(cls);
         }
 
         @Override
