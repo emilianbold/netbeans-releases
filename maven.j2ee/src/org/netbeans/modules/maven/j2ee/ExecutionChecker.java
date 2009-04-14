@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
 import org.netbeans.api.project.Project;
@@ -59,6 +60,7 @@ import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -205,11 +207,22 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                             } else {
                                 SessionContent sc = project.getLookup().lookup(SessionContent.class);
                                 sc.setServerInstanceId(instanceId);
+                                WebModuleProviderImpl prv = project.getLookup().lookup(WebModuleProviderImpl.class);
                                 POHImpl poh = project.getLookup().lookup(POHImpl.class);
+                                if (prv != null) {
+                                    poh.setContextPath(prv.getWebModuleImplementation().getContextPath());
+                                }
                                 poh.hackModuleServerChange();
                                 //provider instance not relevant from here
                                 provider = null;
                             }
+
+                            // USG logging
+                            LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_MAVEN_SERVER");  //NOI18N
+                            record.setLoggerName(POHImpl.USG_LOGGER_NAME);
+                            record.setParameters(new Object[] { POHImpl.obtainServerName(project) });
+                            POHImpl.USG_LOGGER.log(record);
+
                             return true;
                         }
                     }

@@ -56,6 +56,7 @@ import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
 import org.netbeans.modules.php.project.api.Pair;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -141,6 +142,10 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText();
 
+        // #150179 - index file not mandatory
+        if (!PhpProjectUtils.hasText(indexFile)) {
+            indexFile = null;
+        }
         String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(getWebRoot()), indexFile, args);
         category.setErrorMessage(err);
         // #148957 always allow to save customizer
@@ -316,17 +321,22 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     private void advancedButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_advancedButtonActionPerformed
-        RunAsWebAdvanced advanced = new RunAsWebAdvanced(
-                project,
+        RunAsWebAdvanced.Properties props = new RunAsWebAdvanced.Properties(
                 getValue(PhpProjectProperties.DEBUG_URL),
                 hintLabel.getText(),
                 getValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE),
-                getValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL));
+                getValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL),
+                getValue(PhpProjectProperties.DEBUG_PROXY_HOST),
+                getValue(PhpProjectProperties.DEBUG_PROXY_PORT));
+        RunAsWebAdvanced advanced = new RunAsWebAdvanced(project, props);
         if (advanced.open()) {
             Pair<String, String> pathMapping = advanced.getPathMapping();
+            Pair<String, String> debugProxy = advanced.getDebugProxy();
             RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_URL, advanced.getDebugUrl().name());
             RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, pathMapping.first);
             RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, pathMapping.second);
+            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_HOST, debugProxy.first);
+            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_PORT, debugProxy.second);
         }
     }//GEN-LAST:event_advancedButtonActionPerformed
 

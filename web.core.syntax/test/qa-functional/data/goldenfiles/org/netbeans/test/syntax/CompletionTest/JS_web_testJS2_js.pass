@@ -12,9 +12,9 @@ XMLHttpRequest abort () : void
 abstract
 End cursor position = 92
 [has|, Node hasChildNodes () : void, hasChildNodes(), 147]
-DOMImplementation hasFeature ( String feature ,
-Element hasAttribute ( attName ) : Boolean
-Element hasAttributeNS ( namespace , String loc
+DOMImplementation hasFeature ( String fe
+Element hasAttribute ( attName ) : Boole
+Element hasAttributeNS ( namespace , Str
 Element hasAttributes () : void
 Element hasChildNodes () : void
 Node hasAttributes () : void
@@ -51,8 +51,8 @@ Math tan ( x ) : Number
 Object constructor
 Object eval ( string ) : void
 Object hasOwnProperty ( prop ) : Boolean
-Object isPrototypeOf ( object ) : Boolean
-Object propertyIsEnumerable ( prop ) : Boolean
+Object isPrototypeOf ( object ) : Boolea
+Object propertyIsEnumerable ( prop ) : B
 Object prototype
 Object toLocaleString () : String
 Object toSource () : void

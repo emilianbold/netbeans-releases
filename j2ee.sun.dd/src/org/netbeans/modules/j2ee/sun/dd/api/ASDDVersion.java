@@ -226,7 +226,34 @@ public final class ASDDVersion {
         "Sun Java System Application Server 9.1.1" // NOI18N
     );
 
-    /** Represents Sun Java System Application Server 9.0
+    /** Represents Sun GlassFish Enterprise Server 10.0
+     */
+    public static final ASDDVersion SUN_APPSERVER_10_0 = new ASDDVersion(
+        "10.0", 100,	// NOI18N
+        DTDRegistry.SUN_WEBAPP_300_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_WEBAPP_300_DTD_SYSTEM_ID,
+        SunWebApp.VERSION_3_0_0,
+        250,
+        DTDRegistry.SUN_EJBJAR_301_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_EJBJAR_301_DTD_SYSTEM_ID,
+        SunEjbJar.VERSION_3_0_1,
+        301,
+        DTDRegistry.SUN_CMP_MAPPING_810_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_CMP_MAPPING_810_DTD_SYSTEM_ID,
+        "1.2",
+        120,
+        DTDRegistry.SUN_APPLICATION_50_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_APPLICATION_50_DTD_SYSTEM_ID,
+        SunApplication.VERSION_5_0_0,
+        500,
+        DTDRegistry.SUN_APPCLIENT_50_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_APPCLIENT_50_DTD_SYSTEM_ID,
+        SunApplicationClient.VERSION_5_0_0,
+        500,
+        "Sun GlassFish Enterprise Server 10.0" // NOI18N
+    );
+
+    /** Represents Sun Java System Web Server 7.0
      */
     public static final ASDDVersion SUN_WEBSERVER_7_0 = new ASDDVersion(
         "8.1", 81,	// NOI18N

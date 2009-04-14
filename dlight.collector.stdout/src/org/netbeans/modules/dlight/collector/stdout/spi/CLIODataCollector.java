@@ -39,7 +39,7 @@
 package org.netbeans.modules.dlight.collector.stdout.spi;
 
 import java.io.File;
-import java.net.ConnectException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -255,7 +255,7 @@ public final class CLIODataCollector
         }
     }
 
-    private static String loc(String key, Object... params) {
+    private static String loc(String key, String... params) {
         return NbBundle.getMessage(CLIODataCollector.class, key, params);
     }
 
@@ -284,10 +284,12 @@ public final class CLIODataCollector
         boolean fileExists = false;
         boolean connected = true;
         final ExecutionEnvironment execEnv = target.getExecEnv();
+        String error = ""; // NOI18N
 
         try {
             fileExists = HostInfoUtils.fileExists(execEnv, command);
-        } catch (ConnectException ex) {
+        } catch (IOException ex) {
+            error = ex.getMessage();
             connected = false;
         }
 
@@ -312,7 +314,7 @@ public final class CLIODataCollector
             AsynchronousAction connectAction = mgr.getConnectToAction(execEnv, doOnConnect);
 
             result = ValidationStatus.unknownStatus(
-                    loc("ValidationStatus.HostNotConnected"), // NOI18N
+                    loc("ValidationStatus.ErrorWhileValidation", error), // NOI18N
                     connectAction);
         }
 

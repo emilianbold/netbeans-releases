@@ -470,7 +470,7 @@ public class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementatio
     
     private synchronized MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
         if (webservicesMetadataModel == null) {
-            FileObject ddFO = getDeploymentDescriptor();
+            FileObject ddFO = getWebServicesDeploymentDescriptor();
             File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
             ProjectSourcesClassPathProvider cpProvider = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
             MetadataUnit metadataUnit = MetadataUnit.create(
@@ -483,5 +483,16 @@ public class EjbJarImpl implements EjbJarImplementation, J2eeModuleImplementatio
         }
         return webservicesMetadataModel;
     }
+
+    /** Deployment descriptor (META-INF/webservices.xml file) of the ejb module.
+     */
+    private FileObject getWebServicesDeploymentDescriptor() {
+        FileObject metaInf = getMetaInf();
+        if (metaInf != null) {
+            return metaInf.getFileObject("webservices.xml"); //NOI18N
+        }
+        return null;
+    }
+
     
 }

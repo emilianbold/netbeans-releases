@@ -54,7 +54,7 @@ public class ConnectAction extends ActionNoBlock {
     /** creates new "Connect ..." action */
     public ConnectAction() {
         super(null, Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+                "org.netbeans.modules.db.explorer.action.Bundle",
                 "Connect"));
         setComparator(new Operator.DefaultStringComparator(true, true));
     }

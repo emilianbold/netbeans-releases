@@ -491,18 +491,20 @@ final class ResourceWizardPanel extends JPanel {
                 
                 // prepare new sourcedata
                 // Get i18n support for this source.
-                I18nSupport support;
-                try {
-                    support = FactoryRegistry.getFactory(source.getClass()).create(source);
-                } catch(IOException ioe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-                    // Remove source from settings.
-                    sourceIterator.remove();
-                    continue;
-                }
+                I18nSupport support = sourceData.getSupport();
+                if (support == null) {
+                    try {
+                        support = FactoryRegistry.getFactory(source.getClass()).create(source);
+                    } catch(IOException ioe) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                        // Remove source from settings.
+                        sourceIterator.remove();
+                        continue;
+                    }
 
-                sourceData = new SourceData(sourceData.getResource(), support);
-                entry.setValue(sourceData);
+                    sourceData = new SourceData(sourceData.getResource(), support);
+                    entry.setValue(sourceData);
+                }
                 
                 progressPanel.setMainText(prefixSearchingIn + fileName);
                 

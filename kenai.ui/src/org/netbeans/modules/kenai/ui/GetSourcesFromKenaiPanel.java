@@ -77,6 +77,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
@@ -122,14 +123,18 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     }
 
     public GetSourcesInfo getSelectedSourcesInfo() {
+
         StringTokenizer stok = new StringTokenizer(repoFolderTextField.getText(), ","); // NOI18N
         ArrayList<String> repoFolders = new ArrayList<String>();
         while (stok.hasMoreTokens()) {
             repoFolders.add(stok.nextToken().trim());
         }
         String relPaths[] = repoFolders.size() == 0 ? new String[] { "" } : repoFolders.toArray(new String[repoFolders.size()]); // NOI18N
-        return new GetSourcesInfo(((KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem()).feature,
-                localFolderTextField.getText(), relPaths);
+        KenaiFeatureListItem featureItem = (KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem();
+
+        return (featureItem != null) ? new GetSourcesInfo(featureItem.feature,
+                localFolderTextField.getText(), relPaths) : null;
+        
     }
 
     /** This method is called from within the constructor to
@@ -344,11 +349,15 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         if (NotifyDescriptor.OK_OPTION.equals(option)) {
             KenaiProject selProject[] = browsePanel.getSelectedProjects();
             if (null != selProject && selProject.length > 0) {
-                KenaiFeature features[] = selProject[0].getFeatures(Type.SOURCE);
-                for (KenaiFeature feature : features) {
-                    KenaiFeatureListItem item = new KenaiFeatureListItem(selProject[0], feature);
-                    comboModel.addElement(item);
-                    comboModel.setSelectedItem(item);
+                try {
+                    KenaiFeature features[] = selProject[0].getFeatures(Type.SOURCE);
+                    for (KenaiFeature feature : features) {
+                        KenaiFeatureListItem item = new KenaiFeatureListItem(selProject[0], feature);
+                        comboModel.addElement(item);
+                        comboModel.setSelectedItem(item);
+                    }
+                } catch (KenaiException kenaiException) {
+                    Exceptions.printStackTrace(kenaiException);
                 }
             }
         }
@@ -366,8 +375,12 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                     "GetSourcesFromKenaiPanel.SelectRepositoryFolderTitle");
             String repoUrl = featureItem.feature.getLocation().toASCIIString();
             try {
-                svnFolders = Subversion.selectRepositoryFolders(title, repoUrl,
+                if (passwdAuth != null) {
+                    svnFolders = Subversion.selectRepositoryFolders(title, repoUrl,
                         passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
+                } else {
+                    svnFolders = Subversion.selectRepositoryFolders(title, repoUrl);
+                }
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -435,13 +448,18 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                     if (myProjectsIter != null) {
                         while (myProjectsIter.hasNext() ) {
                             final KenaiProject project = myProjectsIter.next();
-                            KenaiFeature features[] = project.getFeatures(Type.SOURCE);
-                            for (final KenaiFeature feature : features) {
-                                EventQueue.invokeLater(new Runnable() {
-                                    public void run() {
-                                        addElement(new KenaiFeatureListItem(project, feature));
-                                    }
-                                });
+                            try {
+                                KenaiFeature features[] = project.getFeatures(Type.SOURCE);
+                                for (final KenaiFeature feature : features) {
+                                    EventQueue.invokeLater(new Runnable() {
+
+                                        public void run() {
+                                            addElement(new KenaiFeatureListItem(project, feature));
+                                        }
+                                    });
+                                }
+                            } catch (KenaiException kenaiException) {
+                                Exceptions.printStackTrace(kenaiException);
                             }
                         }
                     }
@@ -481,9 +499,13 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                     if (projects != null) {
                         while (projects.hasNext() ) {
                             KenaiProject project = projects.next();
-                            KenaiFeature features[] = project.getFeatures(Type.SOURCE);
-                            for (KenaiFeature feature : features) {
-                                addElement(new KenaiFeatureListItem(project, feature));
+                            try {
+                                KenaiFeature features[] = project.getFeatures(Type.SOURCE);
+                                for (KenaiFeature feature : features) {
+                                    addElement(new KenaiFeatureListItem(project, feature));
+                                }
+                            } catch (KenaiException kenaiException) {
+                                Exceptions.printStackTrace(kenaiException);
                             }
                         }
                     }
@@ -535,13 +557,13 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             String serviceName = featureItem.feature.getService(); // XXX service or name
             String repositoryText = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                     "GetSourcesFromKenaiPanel.RepositoryLabel");
-            if (Utilities.SVN_REPO.equals(serviceName)) {
+            if (KenaiService.Names.SUBVERSION.equals(serviceName)) {
                 enableFolderToGetUI(true);
                 localFolderDescLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                         "GetSourcesFromKenaiPanel.localFolderDescLabel.svnText"));
                 projectPreviewLabel.setText("(" + featureItem.project.getDisplayName() +
                         "; Subversion " + repositoryText + ")"); // NOI18N
-            } else if (Utilities.HG_REPO.equals(serviceName)) {
+            } else if (KenaiService.Names.MERCURIAL.equals(serviceName)) {
                 enableFolderToGetUI(false);
                 localFolderDescLabel.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                         "GetSourcesFromKenaiPanel.localFolderDescLabel.hgText"));

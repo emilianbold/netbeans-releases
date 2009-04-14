@@ -42,13 +42,15 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.support.CaseInsensitiveMacroMap;
+import org.netbeans.modules.nativeexecution.support.MacroMap;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -58,12 +60,12 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroE
 public final class NativeProcessInfo {
 
     private final ExecutionEnvironment execEnv;
-    private final Map<String, String> envVariables = new HashMap<String, String>();
+    private final MacroMap envVariables;
     private final String command;
     private final List<String> arguments = new ArrayList<String>();
     private String workingDirectory;
     private boolean unbuffer;
-    protected final MacroExpander macroExpander;
+    public final MacroExpander macroExpander;
     private Collection<ChangeListener> listeners = null;
 
     public NativeProcessInfo(NativeProcessInfo info) {
@@ -71,6 +73,13 @@ public final class NativeProcessInfo {
         command = info.command;
         macroExpander = MacroExpanderFactory.getExpander(execEnv);
         workingDirectory = info.workingDirectory;
+
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            envVariables = new CaseInsensitiveMacroMap(macroExpander);
+        } else {
+            envVariables = new MacroMap(macroExpander);
+        }
+
         envVariables.putAll(info.envVariables);
         arguments.addAll(info.arguments);
 
@@ -86,7 +95,13 @@ public final class NativeProcessInfo {
         this.command = command;
         this.unbuffer = false;
         this.workingDirectory = null;
-        macroExpander = MacroExpanderFactory.getExpander(execEnv);
+        this.macroExpander = MacroExpanderFactory.getExpander(execEnv);
+
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            envVariables = new CaseInsensitiveMacroMap(macroExpander);
+        } else {
+            envVariables = new MacroMap(macroExpander);
+        }
     }
 
     public void addNativeProcessListener(ChangeListener listener) {
@@ -115,11 +130,7 @@ public final class NativeProcessInfo {
      * @param value
      */
     public void addEnvironmentVariable(final String name, final String value) {
-        try {
-            envVariables.put(name, macroExpander.expandMacros(value, envVariables));
-        } catch (ParseException ex) {
-            envVariables.put(name, value);
-        }
+        envVariables.put(name, value);
     }
 
     public void addEnvironmentVariables(Map<String, String> envs) {
@@ -163,7 +174,7 @@ public final class NativeProcessInfo {
 
         if (!arguments.isEmpty()) {
             for (String arg : arguments) {
-                sb.append(" '").append(arg).append('\'');
+                sb.append(" '").append(arg).append('\''); // NOI18N
             }
         }
 
@@ -190,26 +201,13 @@ public final class NativeProcessInfo {
         return workingDirectory;
     }
 
-    public Map<String, String> getEnvVariables() {
-        return getEnvVariables(new HashMap<String, String>());
+    public MacroMap getEnvVariables() {
+        return getEnvVariables(null);
     }
 
-    public Map<String, String> getEnvVariables(Map<String, String> prependMap) {
-        Map<String, String> result = new HashMap<String, String>(prependMap);
-
-        for (String varName : envVariables.keySet()) {
-            String varValue = envVariables.get(varName);
-            try {
-                varValue = macroExpander.expandMacros(varValue, result);
-                varValue = macroExpander.expandPredefinedMacros(varValue);
-            } catch (ParseException ex) {
-            }
-
-            if (varValue != null) {
-                result.put(varName, varValue);
-            }
-        }
-
-        return result;
+    public MacroMap getEnvVariables(Map<String, String> prependMap) {
+        // TODO: is there a need of prepending prependMap ?
+        // there was some implementation in one of previous version...
+        return envVariables;
     }
 }

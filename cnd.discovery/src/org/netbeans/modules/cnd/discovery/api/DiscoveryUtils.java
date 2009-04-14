@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.discovery.api;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -64,31 +65,32 @@ public class DiscoveryUtils {
     public static final List<String> getSystemIncludePaths(ProjectProxy project, boolean isCPP) {
         Project p = project.getProject();
         if (p != null){
-            return new ProjectBridge(p).getSystemIncludePaths(isCPP);
+            ProjectBridge bridge = new ProjectBridge(p);
+            if (bridge.isValid()) {
+                return bridge.getSystemIncludePaths(isCPP);
+            }
         }
-        return null;
+        return new ArrayList<String>();
     }
     
     public static final String getCompilerFlavor(ProjectProxy project){
         Project p = project.getProject();
         if (p != null){
-            return new ProjectBridge(p).getCompilerFlavor();
+            ProjectBridge bridge = new ProjectBridge(p);
+            if (bridge.isValid()) {
+                return bridge.getCompilerFlavor();
+            }
         }
-        return null;
-    }
-
-    public static final String getCompilerDirectory(ProjectProxy project){
-        Project p = project.getProject();
-        if (p != null){
-            return new ProjectBridge(p).getCompilerDirectory();
-        }
-        return null;
+        return ""; // NOI18N
     }
 
     public static final String getCygwinDrive(ProjectProxy project){
         Project p = project.getProject();
         if (p != null){
-            return new ProjectBridge(p).getCygwinDrive();
+            ProjectBridge bridge = new ProjectBridge(p);
+            if (bridge.isValid()) {
+                return bridge.getCygwinDrive();
+            }
         }
         return null;
     }
@@ -96,9 +98,12 @@ public class DiscoveryUtils {
     public static final Map<String,String> getSystemMacroDefinitions(ProjectProxy project, boolean isCPP) {
         Project p = project.getProject();
         if (p != null){
-            return new ProjectBridge(p).getSystemMacroDefinitions(isCPP);
+            ProjectBridge bridge = new ProjectBridge(p);
+            if (bridge.isValid()) {
+                return bridge.getSystemMacroDefinitions(isCPP);
+            }
         }
-        return null;
+        return new HashMap<String,String>();
     }
     
     public static final boolean ignoreFolder(File file){

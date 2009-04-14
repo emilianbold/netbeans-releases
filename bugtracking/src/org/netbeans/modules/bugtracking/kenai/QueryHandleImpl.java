@@ -51,6 +51,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -65,7 +66,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
     public QueryHandleImpl(Query query) {
         this.query = query;
         changeSupport = new PropertyChangeSupport(query);
-        query.addPropertyChangeListener(this);
+        query.addPropertyChangeListener(WeakListeners.propertyChange(this, query));
         registerIssues();
     }
 
@@ -126,12 +127,9 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
     }
 
     private void registerIssues() {
-        for (Issue issue : issues) {
-            issue.removePropertyChangeListener(this);
-        }
         issues = query.getIssues(Issue.ISSUE_STATUS_ALL);
         for (Issue issue : issues) {
-            issue.addPropertyChangeListener(this);
+            issue.addPropertyChangeListener(WeakListeners.propertyChange(this, issue));
         }
     }
 

@@ -53,9 +53,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileBuiltQuery;
-import org.netbeans.modules.project.ant.FileChangeSupport;
-import org.netbeans.modules.project.ant.FileChangeSupportEvent;
-import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -221,19 +218,46 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         }
     }
     
-    private final class StatusImpl implements FileBuiltQuery.Status, PropertyChangeListener/*<DataObject>*/, FileChangeListener, FileChangeSupportListener, Runnable {
+    private final class StatusImpl implements FileBuiltQuery.Status, PropertyChangeListener/*<DataObject>*/, FileChangeListener, Runnable {
         
         private final ChangeSupport cs = new ChangeSupport(this);
         private Boolean built = null;
         private final DataObject source;
         private File target;
+        private FileChangeListener targetListener;
         
         StatusImpl(DataObject source, FileObject sourceFO, File target) {
             this.source = source;
             this.source.addPropertyChangeListener(WeakListeners.propertyChange(this, this.source));
             sourceFO.addFileChangeListener(FileUtil.weakFileChangeListener(this, sourceFO));
             this.target = target;
-            FileChangeSupport.DEFAULT.addListener(this, target);
+            targetListener = new FileChangeListener() {
+
+                public void fileFolderCreated(FileEvent fe) {
+                    // N/A for file
+                }
+
+                public void fileDataCreated(FileEvent fe) {
+                    update();
+                }
+
+                public void fileChanged(FileEvent fe) {
+                    update();
+                }
+
+                public void fileDeleted(FileEvent fe) {
+                    update();
+                }
+
+                public void fileRenamed(FileRenameEvent fe) {
+                    update();
+                }
+
+                public void fileAttributeChanged(FileAttributeEvent fe) {
+                    update();
+                }
+            };
+            FileUtil.addFileChangeListener(targetListener, target);
         }
         
         // Side effect is to update its cache and maybe fire changes.
@@ -323,10 +347,10 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             if (!Utilities.compareObjects(target, target2)) {
                 // #45694: source file moved, recalculate target.
                 if (target != null) {
-                    FileChangeSupport.DEFAULT.removeListener(this, target);
+                    FileUtil.removeFileChangeListener(targetListener, target);
                 }
                 if (target2 != null) {
-                    FileChangeSupport.DEFAULT.addListener(this, target2);
+                    FileUtil.addFileChangeListener(targetListener, target2);
                 }
                 target = target2;
             }
@@ -345,18 +369,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             // ignore
         }
         
-        public void fileCreated(FileChangeSupportEvent event) {
-            update();
-        }
-
-        public void fileDeleted(FileChangeSupportEvent event) {
-            update();
-        }
-
-        public void fileModified(FileChangeSupportEvent event) {
-            update();
-        }
-        
+        @Override
         public String toString() {
             return "GFBQ.StatusImpl[" + source.getPrimaryFile() + " -> " + target + "]"; // NOI18N
         }

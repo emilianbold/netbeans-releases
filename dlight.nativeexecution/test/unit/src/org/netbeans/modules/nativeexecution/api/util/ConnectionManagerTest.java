@@ -76,9 +76,9 @@ public class ConnectionManagerTest {
 
 //    @Test
     public void testGetConnectToAction() {
-        System.out.println("getConnectToAction");
+        System.out.println("getConnectToAction"); // NOI18N
 
-        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "129.159.127.94", 22);
+        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "129.159.127.94", 22); // NOI18N
         
         try {
             ConnectionManager.getInstance().connectTo(execEnv);
@@ -91,7 +91,7 @@ public class ConnectionManagerTest {
 
     @Test
     public void concurrentAccess() {
-        System.out.println("Concurrent access");
+        System.out.println("Concurrent access"); // NOI18N
 
         int threadsNum = 10;
 
@@ -100,11 +100,11 @@ public class ConnectionManagerTest {
         Runnable onConnect = new Runnable() {
 
             public void run() {
-                System.out.println("Perform on connect action!");
+                System.out.println("Perform on connect action!"); // NOI18N
             }
         };
 
-        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "129.159.127.252", 22);
+        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "129.159.127.252", 22); // NOI18N
 
         for (int i = 0; i < threadsNum; i++) {
             final AsynchronousAction action = ConnectionManager.getInstance().getConnectToAction(execEnv, onConnect);
@@ -117,7 +117,7 @@ public class ConnectionManagerTest {
                         try {
                             action.invoke();
                         } catch (Throwable ex) {
-                            System.err.println("XXX: " + ex.toString());
+                            System.err.println("XXX: " + ex.toString()); // NOI18N
                         }
                     } catch (InterruptedException ex) {
                         Exceptions.printStackTrace(ex);

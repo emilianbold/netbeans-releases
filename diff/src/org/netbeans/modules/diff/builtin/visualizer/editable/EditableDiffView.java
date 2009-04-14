@@ -535,7 +535,16 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 document.remove(start, end - start);
             } else if (diff.getType() == Difference.DELETE) {
                 int start = DiffViewManager.getRowStartFromLineOffset(document, diff.getSecondStart());
-                document.insertString(start, diff.getFirstText(), null);
+                /**
+                 * If adding as the last line, there is no line after
+                 * And start is -1;
+                 */
+                String addedText = diff.getFirstText();
+                if (start == -1) {
+                    start = document.getLength();
+                    addedText = switchLineEndings(addedText);
+                }
+                document.insertString(start, addedText, null);
             } else {
                 int start = DiffViewManager.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
                 int end = DiffViewManager.getRowStartFromLineOffset(document, diff.getSecondEnd());
@@ -547,6 +556,20 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
         }
+    }
+
+    /**
+     * Moves empty line from the end to the beginning
+     * @param addedText
+     * @return
+     */
+    private static String switchLineEndings(String addedText) {
+        StringBuilder sb = new StringBuilder(addedText);
+        sb.insert(0, '\n'); // add a line to the beginning
+        if (sb.charAt(sb.length() - 1) == '\n') {
+            sb.deleteCharAt(sb.length() - 1); // and remove the last empty line
+        }
+        return sb.toString();
     }
 
     Stroke getBoldStroke() {

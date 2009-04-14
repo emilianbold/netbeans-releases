@@ -53,9 +53,9 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
-import org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.IssueFinder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -99,8 +99,10 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
         }
         if(file == null) return;
         
-        final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId);
+        final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
         if(repo == null) return;
+
+        BugtrackingOwnerSupport.getInstance().setLooseAssociation(file, repo);
 
         class IssueDisplayer implements Runnable {
             private Issue issue = null;
@@ -156,6 +158,9 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
                 return null;
             }
             Token t = ts.token();
+            if(t.id() == null || t.id().primaryCategory() == null || t.id().name() == null) {
+                continue;
+            }
             if (t.id().primaryCategory().toUpperCase().indexOf("COMMENT") > -1      ||  // primaryCategory == commment should be more or less a convention
                 t.id().name().toUpperCase().indexOf("COMMENT") > -1)                    // consider this as a fallback
             {

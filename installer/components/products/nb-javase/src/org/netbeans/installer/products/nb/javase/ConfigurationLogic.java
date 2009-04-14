@@ -52,6 +52,8 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             "{apisupport-cluster}"; // NOI18N
     private static final String HARNESS_CLUSTER = 
             "{harness-cluster}"; // NOI18N
+    private static final String PROFILER_CLUSTER =
+            "{profiler-cluster}"; // NOI18N
     private static final String ID = 
             "JAVA"; // NOI18N
     
@@ -61,6 +63,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         super(new String[]{
             JAVA_CLUSTER, 
             APISUPPORT_CLUSTER, 
-            HARNESS_CLUSTER}, ID);
+            HARNESS_CLUSTER,
+            PROFILER_CLUSTER}, ID);
     }
 }

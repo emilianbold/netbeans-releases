@@ -40,10 +40,13 @@ package org.netbeans.modules.dlight.api.tool;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -113,6 +116,16 @@ public final class DLightConfiguration {
         return toolsConfiguration.getToolsSet();
     }
 
+    public List<Indicator> getIndicators(){
+        List<Indicator> result = new ArrayList<Indicator>();
+        List<DLightTool> tools = getToolsSet();
+          for (DLightTool tool : tools){
+            result.addAll(tool.getIndicators());
+        }
+          return result;
+
+    }
+    
     public DLightTool getToolByName(String name){
         if (name == null){
             return null;
@@ -211,16 +224,24 @@ public final class DLightConfiguration {
             return DLightConfiguration.this.toolsConfiguration.getToolsSet();
         }
 
-        public List<DataCollector> getCollectors(DLightTool tool) {
+        public List<DataCollector<?>> getCollectors(DLightTool tool) {
             return tool.getCollectors();
         }
 
-        public List<IndicatorDataProvider> getIndicatorDataProviders(DLightTool tool) {
+        public List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool) {
             return tool.getIndicatorDataProviders();
         }
 
         public boolean validateToolsRequiredUserInteraction() {
             return false;
+        }
+
+        public boolean profileOnRun() {
+            return false;
+        }
+
+        public Collection<String> getActiveToolNames() {
+            return null;
         }
     }
 

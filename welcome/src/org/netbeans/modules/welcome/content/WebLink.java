@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.welcome.content;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import org.openide.awt.StatusDisplayer;
@@ -60,6 +61,11 @@ public class WebLink extends LinkButton {
 
     public WebLink( String label, String url, boolean showBullet ) {
         super( label, showBullet );
+        this.url = url;
+    }
+
+    public WebLink( String label, String url, boolean showBullet, Color foreground ) {
+        super( label, showBullet, foreground );
         this.url = url;
     }
 

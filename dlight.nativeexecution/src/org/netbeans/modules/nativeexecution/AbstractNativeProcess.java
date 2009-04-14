@@ -38,21 +38,19 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.openide.util.NbBundle;
 
 public abstract class AbstractNativeProcess extends NativeProcess {
 
@@ -60,34 +58,84 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private final static Integer PID_TIMEOUT =
             Integer.valueOf(System.getProperty(
             "dlight.nativeexecutor.pidtimeout", "70")); // NOI18N
-    private final Object stateLock = new Object();
+    protected final NativeProcessInfo info;
     private final String id;
+    // Immutable listeners list.
     private final Collection<ChangeListener> listeners;
-    private State state = State.INITIAL;
-    private Integer exitValue = null;
-    private Integer pid = null;
+    private final Object stateLock;
+    private volatile State state;
+    private volatile int pid = 0;
+    private volatile Integer exitValue = null;
+    private volatile boolean isInterrupted;
+    private boolean cancelled = false;
 
     public AbstractNativeProcess(NativeProcessInfo info) {
-        this.id = info.getCommandLine();
-        this.listeners = info.getListeners() == null
-                ? Collections.synchronizedList(new ArrayList<ChangeListener>())
-                : info.getListeners();
-        setState(State.STARTING);
+        this.info = info;
+        isInterrupted = false;
+        state = State.INITIAL;
+        id = info.getCommandLine();
+        stateLock = new String("StateLock: " + id); // NOI18N
+
+        Collection<ChangeListener> ll = info.getListeners();
+        listeners = (ll == null || ll.isEmpty()) ? null
+                : Collections.unmodifiableList(
+                new ArrayList<ChangeListener>(ll));
     }
 
-    public final synchronized int getPID() {
-        if (pid == null) {
-            throw new IllegalStateException("Process was not started"); // NOI18N
+    public NativeProcess createAndStart() {
+        try {
+            setState(State.STARTING);
+            create();
+            setState(State.RUNNING);
+        } catch (Throwable ex) {
+            String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+            log.info(loc("NativeProcess.exceptionOccured.text", msg)); // NOI18N
+            setState(State.ERROR);
+            interrupt();
         }
 
-        return pid.intValue();
+        return this;
+    }
+
+    abstract protected void create() throws Throwable;
+
+    protected boolean isInterrupted() {
+        try {
+            Thread.sleep(0);
+        } catch (InterruptedException ex) {
+            isInterrupted = true;
+            Thread.currentThread().interrupt();
+        }
+
+        isInterrupted |= Thread.currentThread().isInterrupted();
+        return isInterrupted;
+    }
+
+    protected void interrupt() {
+        isInterrupted = true;
+        destroy();
+    }
+
+    public final int getPID() throws IOException {
+        synchronized (this) {
+            if (pid == 0) {
+                if (isInterrupted()) {
+                    destroy();
+                    throw new InterruptedIOException();
+                } else {
+                    throw new IOException("PID of process '" + id + "' is not received!"); // NOI18N
+                }
+            }
+
+            return pid;
+        }
     }
 
     /**
      * To be implemented by a successor.
      * It must terminate the underlaying system process on this method call.
      */
-    public abstract void cancel();
+    protected abstract void cancel();
 
     /**
      * To be implemented by a successor. This method must cause the current
@@ -100,10 +148,12 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      *             while it is waiting, then the wait is ended and an
      *             {@link InterruptedException} is thrown.
      */
-    public abstract int waitResult() throws InterruptedException;
+    protected abstract int waitResult() throws InterruptedException;
 
     public final State getState() {
-        return state;
+        synchronized (stateLock) {
+            return state;
+        }
     }
 
     /**
@@ -121,11 +171,17 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      */
     @Override
     public final void destroy() {
-        synchronized (stateLock) {
-            if (this.state == State.RUNNING) {
-                cancel();
-                setState(State.CANCELLED);
+        synchronized (this) {
+            if (cancelled) {
+                return;
             }
+
+            cancelled = true;
+        }
+
+        synchronized (stateLock) {
+            cancel();
+            setState(State.CANCELLED);
         }
     }
 
@@ -167,49 +223,37 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      */
     @Override
     public final int exitValue() {
-        if (exitValue == null) {
-            if (state == State.CANCELLED) {
-                // TODO: ??
-                // Removed CancellationException because it is not proceeded
-                // in ExecutionService...
-                // throw new CancellationException("Process has been cancelled");
-                return -1;
-            } else {
-                // Process not started yet...
-                throw new IllegalThreadStateException();
+        synchronized (stateLock) {
+            if (exitValue == null) {
+                if (state == State.CANCELLED) {
+                    // TODO: ??
+                    // Removed CancellationException because it is not proceeded
+                    // in ExecutionService...
+                    // throw new CancellationException("Process has been cancelled");
+                    return -1;
+                } else {
+                    // Process not started yet...
+                    throw new IllegalThreadStateException();
+                }
             }
         }
 
         return exitValue;
     }
 
-    private void notifyListeners(State oldState, State newState) {
-        log.fine(this.toString() + " State change: " + // NOI18N
-                oldState + " -> " + newState); // NOI18N
-
-        if (listeners.isEmpty()) {
-            return;
-        }
-
-        final ChangeEvent event = new ChangeEvent(this);
-
-        for (ChangeListener l : listeners) {
-            l.stateChanged(event);
-        }
-
-    }
-
     private void setExitValue(int exitValue) {
-        if (this.exitValue != null) {
-            return;
-        }
+        synchronized (stateLock) {
+            if (this.exitValue != null) {
+                return;
+            }
 
-        if (state == State.CANCELLED || state == State.ERROR) {
-            return;
-        }
+            if (state == State.CANCELLED || state == State.ERROR) {
+                return;
+            }
 
-        this.exitValue = Integer.valueOf(exitValue);
-        setState(State.FINISHED);
+            this.exitValue = Integer.valueOf(exitValue);
+            setState(State.FINISHED);
+        }
     }
 
     private final void setState(State state) {
@@ -218,56 +262,69 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 return;
             }
 
-            State oldState = this.state;
-            this.state = state;
+            /*
+             * Process has determinated order of states it can be set to:
+             * INITIAL ---> STARTING  ---> RUNNING  ---> FINISHED
+             *          |-> CANCELLED  |-> CENCELLED |-> CANCELLED
+             *          |-> ERROR      |-> ERROR     |-> ERROR
+             *
+             * CANCELLED, ERROR and FINISHED are terminal states.
+             */
 
-            notifyListeners(oldState, state);
+            if (this.state == State.CANCELLED ||
+                    this.state == State.ERROR ||
+                    this.state == State.FINISHED) {
+                return;
+            }
+
+            try {
+                if (isInterrupted()) {
+                    // clear flag.
+                    // will restore in finally block.
+                    Thread.interrupted();
+                }
+
+                if (!isInterrupted()) {
+                    log.fine(this.toString() + " State change: " + // NOI18N
+                            this.state + " -> " + state); // NOI18N
+                }
+
+                this.state = state;
+
+                if (listeners == null) {
+                    return;
+                }
+
+                final ChangeEvent event = new NativeProcessChangeEvent(this, state, pid);
+
+                for (ChangeListener l : listeners) {
+                    l.stateChanged(event);
+                }
+            } finally {
+                if (isInterrupted()) {
+                    Thread.currentThread().interrupt();
+                }
+            }
         }
     }
 
-    protected synchronized final void readPID(final InputStream is) {
-        Callable<Integer> pidReaderTask = new Callable<Integer>() {
+    // To be called from successors' constructor only...
+    protected final void readPID(final InputStream is) throws IOException {
+        int c = -1;
+        pid = 0;
 
-            public Integer call() throws Exception {
-                int i;
-                StringBuilder sb = new StringBuilder();
+        while (true) {
+            c = is.read();
 
-                while (true) {
-                    i = is.read();
-                    if (i < 0 || i == '\n') {
-                        break;
-                    }
-                    sb.append((char) i);
-                }
-
-                Integer result = null;
-
-                try {
-                    result = Integer.parseInt(sb.toString());
-                } catch (NumberFormatException e) {
-                }
-
-                return result;
+            if (c >= '0' && c <= '9') {
+                pid = pid * 10 + (c - '0');
+            } else {
+                break;
             }
-        };
-
-
-        Future<Integer> futurePID =
-                NativeTaskExecutorService.submit(pidReaderTask, "Read PID of " + id); // NOI18N
-
-        try {
-            pid = futurePID.get(PID_TIMEOUT, TimeUnit.SECONDS);
-        } catch (InterruptedException ex) {
-        } catch (ExecutionException ex) {
-        } catch (TimeoutException ex) {
-            futurePID.cancel(true);
         }
+    }
 
-        if (pid == null) {
-            // was unable to get real pid
-            setState(State.ERROR);
-        } else {
-            setState(State.RUNNING);
-        }
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(AbstractNativeProcess.class, key, params);
     }
 }

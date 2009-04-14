@@ -42,6 +42,7 @@
 package org.netbeans.modules.subversion.ui.commit;
 
 import java.io.IOException;
+import java.text.ParseException;
 import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
@@ -60,6 +61,7 @@ import java.util.*;
 import java.util.List;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
@@ -73,6 +75,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
+import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -535,24 +538,23 @@ public class CommitAction extends ContextAction {
     }
 
     private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, List<SvnHook> hooks) {
-        performCommit(message, commitFiles, ctx, support, false, hooks);
+        SvnClient client = getClient(ctx, support);
+        if(client == null) {
+            return;
+        }
+        performCommit(client, message, commitFiles, ctx, support, false, hooks);
     }
 
     public static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate) {
-        performCommit(message, commitFiles, ctx, support, rootUpdate, new ArrayList<SvnHook>(0));
+        SvnClient client = getClient(ctx, support);
+        if(client == null) {
+            return;
+        }
+        performCommit(client, message, commitFiles, ctx, support, rootUpdate, new ArrayList<SvnHook>(0));
     }
 
-    public static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate, List<SvnHook> hooks) {
-        ISVNLogMessage[] log;
+    public static void performCommit(SvnClient client, String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate, List<SvnHook> hooks) {
         try {
-
-            SvnClient client;
-            try {
-                client = Subversion.getInstance().getClient(ctx, support);
-            } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
-                return;
-            }
             support.setDisplayName(org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
 
             List<SvnFileNode> addCandidates = new ArrayList<SvnFileNode>();
@@ -639,6 +641,7 @@ public class CommitAction extends ContextAction {
 
             List<ISVNLogMessage> logs = new ArrayList<ISVNLogMessage>();
             List<File> hookFiles = new ArrayList<File>();
+            boolean modifyMessage = false;
             if(hooks.size() > 0) {
                 for (List<File> l : managedTrees) {
                     hookFiles.addAll(l);
@@ -649,6 +652,7 @@ public class CommitAction extends ContextAction {
                         // XXX handle returned context
                         context = hook.beforeCommit(context);
                         if(context != null) {
+                            modifyMessage = true;
                             message = context.getMessage();
                         }
                     } catch (IOException ex) {
@@ -671,15 +675,12 @@ public class CommitAction extends ContextAction {
 
                     // commit recursively
                     File[] files = recursiveCommits.toArray(new File[recursiveCommits.size()]);
-                    client.commit(files, message, true); // true = recursive
+                    long revision = client.commit(files, message, true); // true = recursive
                     if(support.isCanceled()) {
                         return;
                     }
-                    if(hooks.size() > 0 && files.length > 0) {
-                        ISVNLogMessage[] ls = (client.getLogMessages(files[0], SVNRevision.HEAD, SVNRevision.HEAD));
-                        if(ls.length > 0) {
-                            logs.add(ls[0]);
-                        }
+                    if(modifyMessage && hooks.size() > 0 && files.length > 0) {
+                        addLogMessage(client, logs, files[0], revision);
                     }
                     if(support.isCanceled()) {
                         return;
@@ -690,15 +691,12 @@ public class CommitAction extends ContextAction {
                 if(commitList.size() > 0) {
 
                     File[] files = commitList.toArray(new File[commitList.size()]);
-                    client.commit(files, message, false); // false = non recursive
+                    long revision = client.commit(files, message, false); // false = non recursive
                     if(support.isCanceled()) {
                         return;
                     }
-                    if(hooks.size() > 0 && files.length > 0) {
-                        ISVNLogMessage[] ls = (client.getLogMessages(files[0], SVNRevision.HEAD, SVNRevision.HEAD));
-                        if(ls.length > 0) {
-                            logs.add(ls[0]);
-                        }
+                    if(modifyMessage && hooks.size() > 0 && files.length > 0) {
+                        addLogMessage(client, logs, files[0], revision);
                     }
                     if(support.isCanceled()) {
                         return;
@@ -745,6 +743,30 @@ public class CommitAction extends ContextAction {
         SvnHookContext context = new SvnHookContext(files.toArray(new File[files.size()]), message, entries);
         for (SvnHook hook : hooks) {
             hook.afterCommit(context);
+        }
+    }
+
+    /**
+     * Adds a log message for given revision
+     * @param client
+     * @param logs
+     * @param file
+     * @param revision
+     * @throws org.tigris.subversion.svnclientadapter.SVNClientException
+     */
+    private static void addLogMessage(ISVNClientAdapter client, List<ISVNLogMessage> logs, File file, long revision) throws SVNClientException {
+        SVNRevision rev = SVNRevision.HEAD;
+        try {
+            rev = SVNRevision.getRevision(String.valueOf(revision));
+        } catch (ParseException ex) {
+            Subversion.LOG.log(Level.INFO, null, ex);
+        }
+        if (Subversion.LOG.isLoggable(Level.FINER)) {
+            Subversion.LOG.log(Level.FINER, CommitAction.class.getName() + ": getting last commit message for svn hooks");
+        }
+        ISVNLogMessage[] ls = client.getLogMessages(SvnUtils.getRepositoryRootUrl(file), rev, rev);
+        if (ls.length > 0) {
+            logs.add(ls[0]);
         }
     }
 
@@ -972,5 +994,14 @@ public class CommitAction extends ContextAction {
         }
 
         return ret;
+    }
+
+    private static SvnClient getClient(Context ctx, SvnProgressSupport support) {
+        try {
+            return Subversion.getInstance().getClient(ctx, support);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
+            return null;
+        }
     }
 }

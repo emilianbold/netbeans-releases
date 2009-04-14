@@ -101,6 +101,7 @@ import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -490,7 +491,6 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(2, binIndexerFactory.indexer.getCount());
     }
 
-    @RandomlyFails
     public void testFileChanges() throws Exception {
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
@@ -556,8 +556,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         eindexerFactory.indexer.setExpectedFile(new URL[0], new URL[]{f3.getURL()}, new URL[0]);
         f3.delete();
         assertTrue (handler.await());
-        assertTrue(indexerFactory.indexer.awaitIndex());
-        assertTrue(eindexerFactory.indexer.awaitIndex());
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(eindexerFactory.indexer.awaitDeleted());
         assertEquals(0, eindexerFactory.indexer.indexCounter);
         assertEquals(0,eindexerFactory.indexer.expectedDeleted.size());
         assertEquals(0, eindexerFactory.indexer.expectedDirty.size());
@@ -584,6 +584,40 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, eindexerFactory.indexer.getIndexCount());
         assertEquals(0, eindexerFactory.indexer.getDirtyCount());
         assertEquals(1, eindexerFactory.indexer.getDeletedCount());
+    }
+
+    public void testFileRenamed() throws Exception {
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        GlobalPathRegistry.getDefault().register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+
+        final URL newURL = new URL(f3.getParent().getURL(), "newName.emb");
+        final URL oldURL = f3.getURL();
+
+        indexerFactory.indexer.setExpectedFile(new URL[0], new URL[]{oldURL}, new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{newURL}, new URL[]{oldURL}, new URL[0]);
+        FileLock lock = f3.lock();
+        try {
+            FileObject f = f3.move(lock, f3.getParent(), "newName", "emb");
+        } finally {
+            lock.releaseLock();
+        }
+        assertTrue(indexerFactory.indexer.awaitDeleted());
+        assertTrue(eindexerFactory.indexer.awaitDeleted());
+        assertTrue(indexerFactory.indexer.awaitIndex());
+        assertTrue(eindexerFactory.indexer.awaitIndex());
+        assertEquals(1, eindexerFactory.indexer.getIndexCount());
+        assertEquals(1, eindexerFactory.indexer.getDeletedCount());
+        assertEquals(0, eindexerFactory.indexer.getDirtyCount());
+        assertEquals(0, indexerFactory.indexer.getIndexCount());
+        assertEquals(1, indexerFactory.indexer.getDeletedCount());
+        assertEquals(0, indexerFactory.indexer.getDirtyCount());
     }
 
     private void touchFile (final File file) throws IOException {

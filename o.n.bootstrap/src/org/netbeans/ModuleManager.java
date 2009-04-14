@@ -336,7 +336,7 @@ public final class ModuleManager {
 
     /** Get a classloader capable of loading from any
      * of the enabled modules or their declared extensions.
-     * Should be used as the result of TopManager.systemClassLoader.
+     * Normally used as {@link Thread#getContextClassLoader}.
      * Thread-safe.
      * @see #PROP_CLASS_LOADER
      */
@@ -421,7 +421,7 @@ public final class ModuleManager {
     }
 
     /** A classloader giving access to all the module classloaders at once. */
-    private static final class SystemClassLoader extends JarClassLoader {
+    private final class SystemClassLoader extends JarClassLoader {
 
         private final PermissionCollection allPermissions;
         int size;
@@ -450,7 +450,7 @@ public final class ModuleManager {
             return allPermissions;
         }
 
-        private static final Set<String> JRE_PROVIDED_FACTORIES = new HashSet<String>(Arrays.asList(
+        private final Set<String> JRE_PROVIDED_FACTORIES = new HashSet<String>(Arrays.asList(
                 "META-INF/services/javax.xml.parsers.SAXParserFactory", // NOI18N
                 "META-INF/services/javax.xml.parsers.DocumentBuilderFactory", // NOI18N
                 "META-INF/services/javax.xml.transform.TransformerFactory", // NOI18N
@@ -464,6 +464,13 @@ public final class ModuleManager {
             } else {
                 return super.getResourceAsStream(name);
             }
+        }
+
+        protected @Override boolean shouldDelegateResource(String pkg, ClassLoader parent) {
+            if ((parent == null || parent instanceof MainImpl.BootClassLoader) && !installer.shouldDelegateClasspathResource(pkg)) {
+                return false;
+            }
+            return super.shouldDelegateResource(pkg, parent);
         }
 
     }
@@ -525,6 +532,9 @@ public final class ModuleManager {
     /** Used by Module to communicate with the ModuleInstaller re. dependencies. */
     void refineDependencies(Module m, Set<Dependency> dependencies) {
         installer.refineDependencies(m, dependencies);
+    }
+    Set<Dependency> loadDependencies(String cnb) {
+        return installer.loadDependencies(cnb);
     }
     /** Allows the installer to add provides (used to provide name of platform we run on)
      */
@@ -820,7 +830,8 @@ public final class ModuleManager {
                         }
                         if (! Util.checkPackageDependency(dep, m.getClassLoader())) {
                             failedPackageDep = dep;
-                            throw new InvalidException(m, "Dependency failed on " + dep); // NOI18N
+                            String polite = (String)m.getLocalizedAttribute("OpenIDE-Module-Package-Dependency-Message"); // NOI18N
+                            throw new InvalidException(m, "Dependency failed on " + dep, polite); // NOI18N
                         }
                         Util.err.fine("Successful check for: " + dep);
                     }

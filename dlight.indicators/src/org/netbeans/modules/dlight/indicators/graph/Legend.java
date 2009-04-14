@@ -67,8 +67,8 @@ public class Legend extends JPanel {
     public Legend(List<GraphDescriptor> descriptors, Map<String, String> details) {
         super(new GridBagLayout());
 
-        setBackground(GraphColors.LEGEND_COLOR);
-        setBorder(BorderFactory.createLineBorder(GraphColors.BORDER_COLOR));
+        setBackground(GraphConfig.LEGEND_COLOR);
+        setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
         setSize(new Dimension(80, 60));
         setMinimumSize(new Dimension(80, 60));
         setPreferredSize(new Dimension(80, 60));
@@ -77,7 +77,7 @@ public class Legend extends JPanel {
 
         for (GraphDescriptor descriptor : descriptors) {
             JLabel label = new JLabel(descriptor.getDescription(), new ColorIcon(descriptor.getColor()), SwingConstants.LEADING);
-            label.setForeground(GraphColors.TEXT_COLOR);
+            label.setForeground(GraphConfig.TEXT_COLOR);
             label.setFont(label.getFont().deriveFont(10f));
             c = new GridBagConstraints();
             c.anchor = GridBagConstraints.WEST;
@@ -97,7 +97,7 @@ public class Legend extends JPanel {
 
         for (Map.Entry<String, String> entry : details.entrySet()) {
             JLabel name = new JLabel(entry.getValue());
-            name.setForeground(GraphColors.TEXT_COLOR);
+            name.setForeground(GraphConfig.TEXT_COLOR);
             name.setFont(name.getFont().deriveFont(10f));
             c = new GridBagConstraints();
             c.anchor = GridBagConstraints.WEST;
@@ -106,7 +106,7 @@ public class Legend extends JPanel {
             add(name, c);
             JLabel value = new JLabel();
             value.setName(entry.getKey());
-            value.setForeground(GraphColors.TEXT_COLOR);
+            value.setForeground(GraphConfig.TEXT_COLOR);
             value.setFont(value.getFont().deriveFont(Font.BOLD, 10f));
             c = new GridBagConstraints();
             c.anchor = GridBagConstraints.WEST;
@@ -141,6 +141,23 @@ public class Legend extends JPanel {
         }
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        if (isEnabled()) {
+            super.paintComponent(g);
+        } else {
+            g.setColor(GraphConfig.LEGEND_COLOR);
+            g.fillRect(0, 0, getWidth(), getHeight());
+        }
+    }
+
+    @Override
+    protected void paintChildren(Graphics g) {
+        if (isEnabled()) {
+            super.paintChildren(g);
+        }
+    }
+
     private static class ColorIcon implements Icon {
 
         private static final int WIDTH = 10;
@@ -163,7 +180,7 @@ public class Legend extends JPanel {
             Graphics2D g2 = (Graphics2D) g;
             g2.setPaint(color);
             g2.fillRect(x, y, WIDTH - 1, HEIGHT - 1);
-            g2.setPaint(GraphColors.BORDER_COLOR);
+            g2.setPaint(GraphConfig.BORDER_COLOR);
             g2.drawRect(x, y, WIDTH - 1, HEIGHT - 1);
         }
     }

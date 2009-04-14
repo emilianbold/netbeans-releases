@@ -126,7 +126,8 @@ public class BundleTest extends JellyTestCase {
             // right, should fail
         }
         try {
-            Bundle.getString("org.netbeans.core.Bundle", "nonsense key - @#$%^");
+            String bundleString = "org.netbeans.core.Bundle";
+            Bundle.getString(bundleString, "nonsense key - @#$%^");
             fail("Should not find nonsense key.");
         } catch (JemmyException e) {
             // right, should fail
@@ -141,9 +142,9 @@ public class BundleTest extends JellyTestCase {
 
     /** Test of getString method with parameter to format. */
     public void testGetStringParams() {
-        String pattern = Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties");
+        String pattern = Bundle.getString("org.netbeans.core.windows.view.ui.Bundle", "CTL_FMT_LocalProperties");
         Object[] params = new Object[]{new Integer(1), "AnObject"};
-        String value = Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", params);
+        String value = Bundle.getString("org.netbeans.core.windows.view.ui.Bundle", "CTL_FMT_LocalProperties", params);
         String expected = java.text.MessageFormat.format(pattern, params);
         assertEquals("Parameters not properly formattted.", expected, value);
     }
@@ -162,9 +163,9 @@ public class BundleTest extends JellyTestCase {
 
     /** Test of getStringTrimmed method with parameter to format. */
     public void testGetStringTrimmedParams() {
-        String pattern = Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties");
+        String pattern = Bundle.getString("org.netbeans.core.windows.view.ui.Bundle", "CTL_FMT_LocalProperties");
         Object[] params = new Object[]{new Integer(1), "AnOb&ject"};
-        String value = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", params);
+        String value = Bundle.getStringTrimmed("org.netbeans.core.windows.view.ui.Bundle", "CTL_FMT_LocalProperties", params);
         String expected = java.text.MessageFormat.format(pattern, params);
         expected = new StringBuffer(expected).deleteCharAt(expected.indexOf('&')).toString();
         assertEquals("Parameters not properly formattted.", expected, value);

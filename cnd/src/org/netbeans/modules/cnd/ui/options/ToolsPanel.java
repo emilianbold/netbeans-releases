@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.cnd.api.compilers.ServerListDisplayer;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
@@ -88,6 +89,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -974,7 +976,9 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
      */
     private void editDevHosts() {
         // Show the Dev Host Manager dialog
-        if (cacheManager.show()) {
+        ServerListDisplayer d = Lookup.getDefault().lookup(ServerListDisplayer.class);
+        assert d != null;
+        if (d.showServerListDialog(cacheManager)) {
             changed = true;
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
@@ -1733,12 +1737,14 @@ private boolean selectTool(JTextField tf) {
     class MyDevHostListCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            ExecutionEnvironment execEnv = (ExecutionEnvironment) value;
+            label.setText(execEnv.isLocal() ? "localhost" : //NOI18N
+                String.format("%s@%s:%d", execEnv.getUser(), execEnv.getHost(), execEnv.getSSHPort())); //NOI18N
             if (index == cacheManager.getDefaultHostIndex()) {
-                JLabel label = (JLabel) comp;
                 label.setFont(label.getFont().deriveFont(Font.BOLD));
             }
-            return comp;
+            return label;
         }
     }
 
@@ -1821,7 +1827,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     final Frame mainWindow = WindowManager.getDefault().getMainWindow();
     String title = getString("TITLE_Configure");
     String msg = getString("MSG_Configure_Compiler_Sets", execEnv.toString());
-    ModalMessageDlg.runLongTask(mainWindow, longTask, postWork, title, msg);
+    ModalMessageDlg.runLongTask(mainWindow, longTask, postWork, null, title, msg);
 }//GEN-LAST:event_btRestoreActionPerformed
 
 private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAsBrowseActionPerformed

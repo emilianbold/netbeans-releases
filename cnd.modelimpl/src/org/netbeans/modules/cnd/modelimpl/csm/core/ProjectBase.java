@@ -52,6 +52,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -76,7 +77,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
@@ -94,12 +94,12 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -399,7 +399,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         if (CsmKindUtilities.isClass(decl) || CsmKindUtilities.isEnum(decl)) {
 
-            ClassEnumBase cls = (ClassEnumBase) decl;
+            ClassEnumBase<?> cls = (ClassEnumBase<?>) decl;
             CharSequence qname = cls.getQualifiedName();
 
             synchronized (classifierReplaceLock) {
@@ -413,11 +413,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         return false;
                     }
                     // remove the old one if the new one is stronger
-                    if ((old instanceof ClassEnumBase) && ((ClassEnumBase) old).shouldBeReplaced(cls)) {
+                    if ((old instanceof ClassEnumBase<?>) && ((ClassEnumBase<?>) old).shouldBeReplaced(cls)) {
                         if (TraceFlags.TRACE_REGISTRATION) {
                             System.err.println("disposing old decl " + old + " UID " + UIDs.get(decl)); //NOI18N
                         } 
-                        ((ClassEnumBase) old).dispose();
+                        ((ClassEnumBase<?>) old).dispose();
                     }
                 }
                 getDeclarationsSorage().putDeclaration(decl);
@@ -520,47 +520,53 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    protected synchronized void ensureFilesCreated() {
-        if (status == Status.Initial || status == Status.Restored) {
-            try {
-                setStatus((status == Status.Initial) ? Status.AddingFiles : Status.Validating);
-                long time = 0;
-                if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
-                    System.err.println("suspend queue");
-                    ParserQueue.instance().suspend();
-                    if (TraceFlags.TIMING) {
-                        time = System.currentTimeMillis();
-                    }
-                }
-                ParserQueue.instance().onStartAddingProjectFiles(this);
-                registerProjectListeners();
-                NativeProject nativeProject = ModelSupport.getNativeProject(platformProject);
-                if (nativeProject != null) {
-                    try {
+    protected void ensureFilesCreated() {
+        boolean notify = false;
+        synchronized (this) {
+            if (status == Status.Initial || status == Status.Restored) {
+                try {
+                    setStatus((status == Status.Initial) ? Status.AddingFiles : Status.Validating);
+                    long time = 0;
+                    if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
+                        System.err.println("suspend queue");
                         ParserQueue.instance().suspend();
-                        createProjectFilesIfNeed(nativeProject);
-                    } finally {
+                        if (TraceFlags.TIMING) {
+                            time = System.currentTimeMillis();
+                        }
+                    }
+                    ParserQueue.instance().onStartAddingProjectFiles(this);
+                    registerProjectListeners();
+                    NativeProject nativeProject = ModelSupport.getNativeProject(platformProject);
+                    if (nativeProject != null) {
+                        try {
+                            ParserQueue.instance().suspend();
+                            createProjectFilesIfNeed(nativeProject);
+                        } finally {
+                            ParserQueue.instance().resume();
+                        }
+                    }
+                    if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
+                        if (TraceFlags.TIMING) {
+                            time = System.currentTimeMillis() - time;
+                            System.err.println("getting files from project system + put in queue took " + time + "ms");
+                        }
+                        try {
+                            System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before resuming queue");
+                            Thread.sleep(TraceFlags.SUSPEND_PARSE_TIME * 1000);
+                            System.err.println("woke up after sleep");
+                        } catch (InterruptedException ex) {
+                            // do nothing
+                        }
                         ParserQueue.instance().resume();
                     }
+                    notify = true;
+                } finally {
+                    setStatus(Status.Ready);
                 }
-                if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
-                    if (TraceFlags.TIMING) {
-                        time = System.currentTimeMillis() - time;
-                        System.err.println("getting files from project system + put in queue took " + time + "ms");
-                    }
-                    try {
-                        System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before resuming queue");
-                        Thread.sleep(TraceFlags.SUSPEND_PARSE_TIME * 1000);
-                        System.err.println("woke up after sleep");
-                    } catch (InterruptedException ex) {
-                        // do nothing
-                    }
-                    ParserQueue.instance().resume();
-                }
-                ParserQueue.instance().onEndAddingProjectFiles(this);
-            } finally {
-                setStatus(Status.Ready);
             }
+        }
+        if (notify) {
+            ParserQueue.instance().onEndAddingProjectFiles(this);
         }
     }
 
@@ -755,7 +761,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return;
         }
         File file = nativeFile.getFile();
-        int fileType = isSourceFile ? getFileType(nativeFile) : FileImpl.HEADER_FILE;
+        FileImpl.FileType fileType = isSourceFile ? getFileType(nativeFile) : FileImpl.FileType.HEADER_FILE;
 
         FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.getFileBuffer(file), nativeFile, fileType);
 
@@ -921,7 +927,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             boolean remove = true;
             Set<CsmFile> parents = getGraphStorage().getParentFiles(file);
             for (CsmFile parent : parents) {
-                if (!candidates.contains(parent)) {
+                if (!candidates.contains((FileImpl)parent)) {
                     remove = false;
                     break;
                 }
@@ -973,21 +979,20 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected final boolean isSourceFile(NativeFileItem nativeFile) {
-        int type = getFileType(nativeFile);
-        return type == FileImpl.SOURCE_CPP_FILE || type == FileImpl.SOURCE_C_FILE || type == FileImpl.SOURCE_FILE;
-    //return nativeFile.getSystemIncludePaths().size()>0;
+        FileImpl.FileType type = getFileType(nativeFile);
+        return FileImpl.isSourceFileType(type);
     }
 
-    protected static int getFileType(NativeFileItem nativeFile) {
+    protected static FileImpl.FileType getFileType(NativeFileItem nativeFile) {
         switch (nativeFile.getLanguage()) {
             case C:
-                return FileImpl.SOURCE_C_FILE;
+                return FileImpl.FileType.SOURCE_C_FILE;
             case CPP:
-                return FileImpl.SOURCE_CPP_FILE;
+                return FileImpl.FileType.SOURCE_CPP_FILE;
             case C_HEADER:
-                return FileImpl.HEADER_FILE;
+                return FileImpl.FileType.HEADER_FILE;
             default:
-                return FileImpl.UNDEFINED_FILE;
+                return FileImpl.FileType.UNDEFINED_FILE;
         }
     }
 
@@ -1094,10 +1099,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected final void invalidatePreprocState(File file) {
-        Object stateLock = getFileContainer().getLock(file);
+        FileContainer fileContainer = getFileContainer();
+        Object stateLock = fileContainer.getLock(file);
         synchronized (stateLock) {
-            getFileContainer().invalidatePreprocState(file);
+            fileContainer.invalidatePreprocState(file);
         }
+        fileContainer.put();
     }
 
     /**
@@ -1111,6 +1118,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
+    private static final boolean TRACE_FILE = false;
     /**
      * called to inform that file was #included from another file with specific preprocHandler
      *
@@ -1127,7 +1135,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (disposing) {
                 return null;
             }
-            FileImpl csmFile = findFile(new File(file.toString()), FileImpl.HEADER_FILE, preprocHandler, false, null, null);
+            FileImpl csmFile = findFile(new File(file.toString()), FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
             APTFile aptLight = getAPTLight(csmFile);
 
@@ -1138,13 +1146,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
 
             APTPreprocHandler.State newState = preprocHandler.getState();
-
-//            if (TraceFlags.TRACE_PC_STATE) {
-//                System.err.printf("onFileIncluded  %s %s %s\n", //NOI18N
-//                        csmFile.getAbsolutePath(),
-//                        TraceUtils.getPreprocStateString(preprocHandler.getState()),
-//                        TraceUtils.getMacroString(preprocHandler, TraceFlags.logMacros));
-//            }
 
             FileContainer.Entry entry = getFileContainer().getEntry(csmFile.getBuffer().getFile());
 
@@ -1181,21 +1182,42 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
             Collection<FileContainer.StatePair> statesToKeep = new ArrayList<FileContainer.StatePair>();
             ComparisonResult comparisonResult;
+            boolean existsInEntryOnPhaseAExit = false;
             AtomicBoolean newStateFound = new AtomicBoolean();
 
+            // Race:
+            // Thread 1 in phase A has BETTER comparision (because empty entry)
+            //   => statesToKeep is empty
+            //   + put it's pair into entry with null pcState
+            //   + (mod count 1)
+            // Thread 2 in phase A got SAME comparision result (because also context state)
+            //   => statesToKeep contain pair with null from Thread 1
+            //   + thread 2 didn't add it's pair
+            //   + (mod count 1)
+            // Thread 1 in phase B does not recheck preproc state in B1 because the same mod count 1
+            //  => Thread 1 stays with BETTER comparision and empty statesToKeep and add only itself
+            //     into parsing queue and into entry states (change mod count)
+            // Thread 2 in phase B1 checks itself again, because mod count is changed and have
+            //     states to keep as state of Thread 1.
+            //   => if comparision is SAME => we shouldn't exit if not existed in Phase A (existsInEntryOnPhaseAExit)
+
+            // Phase A
             // We need to make this pre check
             // at least for the case of recursion
             synchronized (entry.getLock()) {
                 comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
+                if (TRACE_FILE && FileImpl.traceFile(file)) {
+                    traceIncludeStates("comparison 1 " + comparisonResult, csmFile, newState, null, newStateFound.get(), null, statesToKeep); // NOI18N
+                }
                 if (comparisonResult == ComparisonResult.BETTER) {
+                    CndUtils.assertTrue(statesToKeep.isEmpty(), "states to keep must be empty 1", Level.INFO); // NOI18N
                     entry.setPendingReparse(true); // #148608 Instable test regressions on CLucene
                     // some of the old states are worse than the new one; we'll deinitely parse
-                    if (TraceFlags.SMART_HEADERS_PARSE) {
-                        entry.setStates(statesToKeep, new FileContainer.StatePair(newState, null));
-                    } else {
-                        entry.setState(newState, null);
-                    }
+                    existsInEntryOnPhaseAExit = true;
+                    entry.setStates(statesToKeep, new FileContainer.StatePair(newState, null));
                     updateFileContainer = true;
+                } else {
+                    existsInEntryOnPhaseAExit = newStateFound.get();
                 }
                 entryModCount = entry.getModCount();
             }
@@ -1206,13 +1228,20 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             walker.visit();
 
             if (comparisonResult == ComparisonResult.WORSE) {
+                if (TRACE_FILE && FileImpl.traceFile(file)) {
+                    traceIncludeStates("worse 1", csmFile, newState, pcState, false, null, statesToKeep); // NOI18N
+                }
                 return csmFile;
             } else if (comparisonResult == ComparisonResult.SAME && newStateFound.get() /*&& csmFile.isParsed()*/) {
                 // it's better than rely on pcStates check -
                 // somebody could place state, but not yet calculate pcState
+                if (TRACE_FILE && FileImpl.traceFile(file)) {
+                    traceIncludeStates("same 1", csmFile, newState, pcState, false, null, statesToKeep); // NOI18N
+                }
                 return csmFile;
             }
 
+            // Phase B
             // 1) check that the entry has not been changed since previous check;
             //    if it has, perform the check again
             // 2) check preocessor conditions state (if needed)
@@ -1220,13 +1249,25 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             synchronized (entry.getLock()) {
                 // if the entry has been changed since previous check, check again
                 if (entry.getModCount() != entryModCount) {
+                    // Phase B1
                     comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
-                    if (comparisonResult == ComparisonResult.WORSE) {
-                        return csmFile;
+                    if (TRACE_FILE && FileImpl.traceFile(file)) {
+                        traceIncludeStates("comparison 2 " + comparisonResult, csmFile, newState, pcState, newStateFound.get(), null, statesToKeep); // NOI18N
                     }
-                    if (!newStateFound.get()) {
-                        // our state was removed => it was invalidated => no need to parse
+                    if (comparisonResult == ComparisonResult.WORSE) {
+                        if (TRACE_FILE && FileImpl.traceFile(file)) {
+                            traceIncludeStates("worse 2", csmFile, newState, pcState, false, null, statesToKeep); // NOI18N
+                        }
                         return csmFile;
+                    } else if (comparisonResult == ComparisonResult.SAME) {
+                        // we are not better than all
+                        if (existsInEntryOnPhaseAExit && !newStateFound.get()) {
+                            // our existing state was removed => it was invalidated => no need to parse
+                            if (TRACE_FILE && FileImpl.traceFile(file)) {
+                                traceIncludeStates("state was removed ", csmFile, newState, pcState, false, null, statesToKeep); // NOI18N
+                            }
+                            return csmFile;
+                        }
                     }
                 }
                 // from that point we are NOT interested in what is in the entry:
@@ -1234,7 +1275,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
                 assert comparisonResult != ComparisonResult.WORSE;
 
-                // if another thread decided that it should be REparsed, let's fo it
+                // if another thread decided that it should be REparsed, let's do it
                 // (#148608 Instable test regressions on CLucene)
                 boolean clean = entry.isPendingReparse();
                 entry.setPendingReparse(false);
@@ -1244,46 +1285,53 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
                 if (comparisonResult == ComparisonResult.BETTER) {
                     clean = true;
+                    CndUtils.assertTrue(statesToKeep.isEmpty(), "states to keep must be empty 2", Level.INFO); // NOI18N
+                    if (TRACE_FILE && FileImpl.traceFile(file)) {
+                        traceIncludeStates("best state", csmFile, newState, pcState, clean, statesToParse, statesToKeep); // NOI18N
+                    }
                 } else {  // comparisonResult == SAME
-                    if (TraceFlags.SMART_HEADERS_PARSE) {
-                        comparisonResult = fillStatesToKeep(pcState, new ArrayList<FileContainer.StatePair>(statesToKeep), statesToKeep);
-                        switch (comparisonResult) {
-                            case BETTER:
-                                clean = true;
-                                break;
-                            case SAME:
-                                //clean is set by isPendingReparse() call
-                                break;
-                            case WORSE:
-                                return csmFile;
-                            default:
-                                assert false : "unexpected comparison result: " + comparisonResult; //NOI18N
-                                return csmFile;
-                        }
-                    } else {
-                        if (isBetterThanAll(pcState, statesToKeep)) {
-                            statesToKeep.clear();
+                    // Phase B2
+                    comparisonResult = fillStatesToKeep(pcState, new ArrayList<FileContainer.StatePair>(statesToKeep), statesToKeep);
+                    if (TRACE_FILE && FileImpl.traceFile(file)) {
+                        traceIncludeStates("pc state comparison " + comparisonResult, csmFile, newState, pcState, clean, statesToParse, statesToKeep); // NOI18N
+                    }
+                    switch (comparisonResult) {
+                        case BETTER:
+                            CndUtils.assertTrue(statesToKeep.isEmpty(), "states to keep must be empty 3", Level.INFO); // NOI18N
                             clean = true;
-                        } else {
+                            break;
+                        case SAME:
+                            //clean is set by isPendingReparse() call
+                            break;
+                        case WORSE:
                             return csmFile;
-                        }
+                        default:
+                            assert false : "unexpected comparison result: " + comparisonResult; //NOI18N
+                            return csmFile;
                     }
                 }
                 // TODO: think over, what if we aready changed entry,
                 // but now deny parsing, because base, but not this project, is disposing?!
                 if (!isDisposing() && !base.isDisposing()) {
                     if (clean) {
-                        if (TraceFlags.SMART_HEADERS_PARSE) {
-                            for (FileContainer.StatePair pair : statesToKeep) {
+                        for (FileContainer.StatePair pair : statesToKeep) {
+                            // if pair has null in pair.pcState
+                            // => a parallel thread is processing the same file
+                            // below entry.setStates will change mode count
+                            // => the parallel thread will check that itself
+                            // Conclusion:
+                            // - do not add it's pair.state to parsing states
+                            if (pair.pcState != null) {
                                 statesToParse.add(pair.state);
                             }
                         }
                     }
+                    // This entry.setStates will modify critical mod count
                     entry.setStates(statesToKeep, new FileContainer.StatePair(newState, pcState));
                     ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
                             clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
                     if (TraceFlags.TRACE_PC_STATE || TraceFlags.TRACE_PC_STATE_COMPARISION) {
-                        traceIncludeScheduling(csmFile, newState, pcState, clean,
+                        traceIncludeStates("scheduling", csmFile, newState, pcState, clean, // NOI18N
                                 statesToParse, statesToKeep);
                     }
                     updateFileContainer = true;
@@ -1298,7 +1346,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    private static void traceIncludeScheduling(
+    private static void traceIncludeStates(CharSequence title,
             FileImpl file, APTPreprocHandler.State newState, FilePreprocessorConditionState pcState,
             boolean clean, Collection<APTPreprocHandler.State> statesToParse, Collection<FileContainer.StatePair> statesToKeep) {
 
@@ -1314,24 +1362,28 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         APTPreprocHandler preprocHandler = file.getProjectImpl(true).createEmptyPreprocHandler(file.getBuffer().getFile());
         preprocHandler.setState(newState);
 
-        System.err.printf("scheduling %s (1) %s %s %s %s keeping [%s]\n", //NOI18N
+        System.err.printf("%s %s (1) %s\n\tfrom %s \n\t%s %s \n\t%s keeping [%s]\n", title, //NOI18N
                 (clean ? "reparse" : "  parse"), file.getAbsolutePath(), //NOI18N
+                APTHandlersSupport.extractStartEntry(newState).getStartFile(),
                 TraceUtils.getPreprocStateString(preprocHandler.getState()),
                 TraceUtils.getMacroString(preprocHandler, TraceFlags.logMacros),
                 pcState, sb);
 
-        for (APTPreprocHandler.State state : statesToParse) {
-            if (!newState.equals(state)) {
-                FilePreprocessorConditionState currPcState = null;
-                for (FileContainer.StatePair pair : statesToKeep) {
-                    if (newState.equals(pair.state)) {
-                        currPcState = pair.pcState;
-                        break;
+        if (statesToParse != null) {
+            for (APTPreprocHandler.State state : statesToParse) {
+                if (!newState.equals(state)) {
+                    FilePreprocessorConditionState currPcState = null;
+                    for (FileContainer.StatePair pair : statesToKeep) {
+                        if (newState.equals(pair.state)) {
+                            currPcState = pair.pcState;
+                            break;
+                        }
                     }
+                    System.err.printf("%s %s (2) %s \n\tfrom %s\n\t valid %b context %b %s\n", title,//NOI18N
+                            "  parse", file.getAbsolutePath(), //NOI18N
+                            APTHandlersSupport.extractStartEntry(state).getStartFile(),
+                            state.isValid(), state.isCompileContext(), currPcState);
                 }
-                System.err.printf("scheduling %s (2) %s valid %b context %b %s\n", //NOI18N
-                        "  parse", file.getAbsolutePath(), //NOI18N
-                        state.isValid(), state.isCompileContext(), currPcState);
             }
         }
     }
@@ -1342,9 +1394,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         SAME,
         WORSE
     }
-    private static final int BETTER = 1;
-    private static final int SAME = 0;
-    private static final int WORSE = -1;
 
     /**
      * Checks old states and new one, decides
@@ -1368,8 +1417,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @return  BETTER - new state is better than old ones 
      *          SAME - new state is more or less  the same :) as old ones
      *          WORSE - new state is worse than old ones
-     *
-     * NB: if exit is true, the return value is unpredictable and shouldn't be used.
      */
     private ComparisonResult fillStatesToKeep(
             APTPreprocHandler.State newState,
@@ -1413,26 +1460,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
         }
+        if (result == ComparisonResult.BETTER) {
+            CndUtils.assertTrue(statesToKeep.isEmpty(), "states to keep must be empty ", Level.INFO); // NOI18N
+        }
         return result;
     }
 
-    private boolean isBetterThanAll(
-            FilePreprocessorConditionState pcState,
-            Collection<FileContainer.StatePair> oldStates) {
-
-        if (TraceFlags.NO_HEADERS_REPARSE) {
-            return false;
-        }
-        for (FileContainer.StatePair pair : oldStates) {
-            if (!pcState.isBetter(pair.pcState)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     /**
-     * If it returns EXIT, statesToKeep content is unpredictable!
+     * If it returns WORSE, statesToKeep content is unpredictable!
      * 
      * @param newState
      * @param pcState
@@ -1450,7 +1485,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         Collection<FilePreprocessorConditionState> possibleSuperSet = new ArrayList<FilePreprocessorConditionState>();
 
         // we assume that
-        // 1. all statesToKeep are valid
+        // 1. all oldStates are valid
         // 2. either them all are compileContext
         //    or this one and them all are NOT compileContext
         // so we do *not* check isValid & isCompileContext
@@ -1587,11 +1622,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
             if (preprocHandler != null) {
-                return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, preprocHandler.getState(), nativeFile);
+                return findFile(file, FileImpl.FileType.UNDEFINED_FILE, preprocHandler, true, preprocHandler.getState(), nativeFile);
             }
         }
         // if getPreprocState(file) isn't null, the file alreasy exists, so we may not pass nativeFile
-        return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, null, null);
+        return findFile(file, FileImpl.FileType.UNDEFINED_FILE, preprocHandler, true, null, null);
     }
 
     private CsmFile findFileByItem(NativeFileItem nativeFile) {
@@ -1609,14 +1644,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
             if (preprocHandler != null) {
-                return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, preprocHandler.getState(), nativeFile);
+                return findFile(file, FileImpl.FileType.UNDEFINED_FILE, preprocHandler, true, preprocHandler.getState(), nativeFile);
             }
         }
         // if getPreprocState(file) isn't null, the file alreasy exists, so we may not pass nativeFile
-        return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, null, null);
+        return findFile(file, FileImpl.FileType.UNDEFINED_FILE, preprocHandler, true, null, null);
     }
 
-    protected final FileImpl findFile(File file, int fileType, APTPreprocHandler preprocHandler,
+    protected final FileImpl findFile(File file, FileImpl.FileType fileType, APTPreprocHandler preprocHandler,
             boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
         FileImpl impl = getFile(file);
         if (impl == null){
@@ -1625,7 +1660,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return impl;
     }
 
-    private FileImpl findFileImpl(File file, int fileType, APTPreprocHandler preprocHandler,
+    private FileImpl findFileImpl(File file, FileImpl.FileType fileType, APTPreprocHandler preprocHandler,
             boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
         FileImpl impl = null;
         synchronized (fileContainerLock) {
@@ -1644,9 +1679,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
         }
-        if (fileType == FileImpl.SOURCE_FILE && !impl.isSourceFile()) {
+        if (fileType == FileImpl.FileType.SOURCE_FILE && !impl.isSourceFile()) {
             impl.setSourceFile();
-        } else if (fileType == FileImpl.HEADER_FILE && !impl.isHeaderFile()) {
+        } else if (fileType == FileImpl.FileType.HEADER_FILE && !impl.isHeaderFile()) {
             impl.setHeaderFile();
         }
         if (initial != null) {
@@ -1679,7 +1714,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         public APTPreprocHandler preprocHandler;
     }
 
-    private FileAndHandler createOrFindFileImpl(final FileBuffer buf, final NativeFileItem nativeFile, int fileType) {
+    private FileAndHandler createOrFindFileImpl(final FileBuffer buf, final NativeFileItem nativeFile, FileImpl.FileType fileType) {
         APTPreprocHandler preprocHandler = null;
         File file = buf.getFile();
         FileImpl impl = getFile(file);
@@ -1990,7 +2025,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return Math.max(threadCount, 1);
     }
 
-    public void fixFakeRegistration(boolean libsAlreadyParsed){
+    public final void fixFakeRegistration(boolean libsAlreadyParsed){
         final Collection<CsmUID<CsmFile>> files = getAllFilesUID();
         CountDownLatch countDownLatch = new CountDownLatch(files.size());
         RequestProcessor rp = new RequestProcessor("Fix registration", getNumberThreads()); // NOI18N
@@ -2642,12 +2677,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if (file == null){
                     return;
                 }
-                FileImpl impl = (FileImpl) file.getObject();
-                Thread.currentThread().setName("Fix registration "+file); // NOI18N
-                impl.fixFakeRegistrations();
-                if (libsAlreadyParsed) {
-                    impl.clearFakeRegistrations();
+                FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(file);
+                CndUtils.assertTrue(impl != null, "no deref file for " + file, Level.INFO); // NOI18N
+                // situation is possible for standalone files which were already replaced
+                // by real files
+                if (impl == null) {
+                    return;
                 }
+                Thread.currentThread().setName("Fix registration "+file); // NOI18N
+                impl.onProjectParseFinished(libsAlreadyParsed);
             } finally {
                 countDownLatch.countDown();
             }

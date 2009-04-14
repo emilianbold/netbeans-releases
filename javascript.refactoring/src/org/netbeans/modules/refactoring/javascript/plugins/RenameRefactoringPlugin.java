@@ -263,6 +263,10 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
     
     public Problem fastCheckParameters() {
         Problem fastCheckProblem = null;
+        if(treePathHandle == null) {
+            return null; //no refactoring, not params check
+        }
+
         ElementKind kind = treePathHandle.getKind();
         String newName = refactoring.getNewName();
         String oldName = treePathHandle.getSimpleName();
@@ -443,7 +447,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
             // For local variables, only look in the current file!
             return Collections.singleton(treePathHandle.getFileObject());
         }  else {
-            return RetoucheUtils.getJsFilesInProject(treePathHandle.getFileObject());
+            return RetoucheUtils.getJsFilesInProject(treePathHandle.getFileObject(), true);
         }
 
 //        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
@@ -527,9 +531,13 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                     RenameTransformer rt = new RenameTransformer(refactoring.getNewName(), allMethods);
                     rt.setWorkingCopy(jspr);
                     rt.scan();
-                    ModificationResult mr = new ModificationResult();
-                    mr.addDifferences(jspr.getSnapshot().getSource().getFileObject(), rt.diffs);
-                    return Collections.singleton(mr);
+                    if(rt.diffs.isEmpty()) {
+                        return Collections.emptyList();
+                    } else {
+                        ModificationResult mr = new ModificationResult();
+                        mr.addDifferences(jspr.getSnapshot().getSource().getFileObject(), rt.diffs);
+                        return Collections.singleton(mr);
+                    }
                 }
             };
 

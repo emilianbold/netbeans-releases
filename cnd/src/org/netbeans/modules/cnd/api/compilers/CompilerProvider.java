@@ -43,13 +43,46 @@ package org.netbeans.modules.cnd.api.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author gordonp
  */
 public abstract class CompilerProvider {
+    private static final CompilerProvider INSTANCE = new Default();
     
     public abstract Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path);
-        
+
+    protected CompilerProvider() {
+    }
+
+    /**
+     * Static method to obtain the provider.
+     * @return the provider
+     */
+    public static CompilerProvider getInstance() {
+        return INSTANCE;
+    }
+
+    //
+    // Implementation of the default provider
+    //
+    private static final class Default extends CompilerProvider {
+        private final Lookup.Result<CompilerProvider> res;
+
+        private Default() {
+            res = Lookup.getDefault().lookupResult(CompilerProvider.class);
+        }
+
+        public Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+            for (CompilerProvider resolver : res.allInstances()) {
+                Tool out = resolver.createCompiler(env, flavor, kind, name, displayName, path);
+                if (out != null) {
+                    return out;
+                }
+            }
+            return Tool.createTool(env, flavor, kind, name, displayName, path);
+        }
+    }
 }

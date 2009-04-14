@@ -82,6 +82,15 @@ made subject to such option by the copyright holder.
             <xsl:attribute name="default">default</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
             <import file="ant-deploy.xml" />
+
+            <fail message="Please build using Ant 1.7.1 or higher.">
+                <condition>
+                    <not>
+                        <antversion atleast="1.7.1"/>
+                    </not>
+                </condition>
+            </fail>
+
             <target name="default">
                 <xsl:attribute name="depends">dist,javadoc</xsl:attribute>
                 <xsl:attribute name="description">Build whole project.</xsl:attribute>
@@ -1462,7 +1471,7 @@ exists or setup the property manually. For example like this:
             <target name="-post-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run,-do-test-run</xsl:attribute>
-                <fail if="tests.failed">Some tests failed; see details above.</fail>
+                <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>
             </target>
             
             <target name="test-report">
@@ -1507,7 +1516,7 @@ exists or setup the property manually. For example like this:
             <target name="-post-test-run-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single,-do-test-run-single</xsl:attribute>
-                <fail if="tests.failed">Some tests failed; see details above.</fail>
+                <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>
             </target>
             
             <target name="test-single">

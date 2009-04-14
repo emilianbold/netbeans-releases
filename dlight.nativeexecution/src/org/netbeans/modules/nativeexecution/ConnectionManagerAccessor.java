@@ -70,5 +70,5 @@ public abstract class ConnectionManagerAccessor {
     }
 
     public abstract Session getConnectionSession(
-            final ConnectionManager mgr, final ExecutionEnvironment env);
+            final ConnectionManager mgr, final ExecutionEnvironment env, boolean restoreLostConnection);
 }

@@ -38,29 +38,47 @@
  */
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
+import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Exceptions;
 
 public final class PerfanDataStorage extends DataStorage {
 
-    private Erprint erprint;
+    private final Map<String, String> serviceInfoMap = new ConcurrentHashMap<String, String>();
+    private ErprintSession er_print;
 
     public PerfanDataStorage() {
         super();
     }
 
+    public final Map<String, String> getInfo() {
+        return serviceInfoMap;
+    }
+
+    public final String getValue(String name) {
+        return serviceInfoMap.get(name);
+    }
+
+    public final String put(String name, String value) {
+        return serviceInfoMap.put(name, value);
+    }
+
     public void init(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory) {
         synchronized (this) {
-            if (erprint != null) {
-                erprint.stop();
+            if (er_print != null) {
+                er_print.close();
             }
 
-            erprint = new Erprint(execEnv, sproHome, experimentDirectory);
+            er_print = new ErprintSession(execEnv, sproHome, experimentDirectory);
         }
     }
 
@@ -79,11 +97,60 @@ public final class PerfanDataStorage extends DataStorage {
      * TODO: change the behavior later...
      */
     public String[] getTopFunctions(Metrics metrics, int limit) {
-        return erprint.getHotFunctions(metrics, limit, true);
+        String[] result = null;
+
+        try {
+            result = er_print.getHotFunctions(metrics, limit, 0, true);
+        } catch (InterruptedIOException ex) {
+            // it was terminated while getting functions list...
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return result == null ? new String[0] : result;
+    }
+
+    public String[] getTopFunctions(String command, Metrics metrics, int limit) throws InterruptedException {
+        String[] result = null;
+
+        try {
+            result = er_print.getHotFunctions(command, metrics, limit, true);
+        } catch (InterruptedIOException ex) {
+            // it was terminated while getting functions list...
+            throw new InterruptedException();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return result;
+    }
+
+    public FunctionStatistic getFunctionStatistic(String function) {
+        FunctionStatistic result = null;
+
+        try {
+            result = er_print.getFunctionStatistic(function, true);
+        } catch (InterruptedIOException ex) {
+            // it was terminated while getting functions list...
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return result;
     }
 
     public ExperimentStatistics fetchSummaryData() {
-        return erprint.getExperimentStatistics(true);
+        ExperimentStatistics result = null;
+
+        try {
+            result = er_print.getExperimentStatistics(0, true);
+        } catch (InterruptedIOException ex) {
+            // it was terminated while getting functions list...
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return result;
     }
 
     @Override
@@ -92,7 +159,7 @@ public final class PerfanDataStorage extends DataStorage {
     }
 
     public void shutdown() {
-        erprint.stop();
+        er_print.close();
     }
 
     @Override

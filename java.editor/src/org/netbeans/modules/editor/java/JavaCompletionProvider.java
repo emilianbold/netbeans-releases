@@ -50,7 +50,6 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.element.*;
-import org.netbeans.modules.parsing.spi.Parser;
 import static javax.lang.model.element.ElementKind.*;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.type.*;
@@ -1048,7 +1047,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         m.add(VOLATILE);
                         break;
                 }                
-            };            
+            }
             if (lastNonWhitespaceTokenId == JavaTokenId.AT) {
                 addKeyword(env, INTERFACE_KEYWORD, SPACE, false);
                 addTypes(env, EnumSet.of(ANNOTATION_TYPE), null, null, false);
@@ -1542,6 +1541,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     toExclude = te;
                             }
                         }
+                        boolean insideNew = true;
                         HashSet<TypeElement> subtypes = new HashSet<TypeElement>();
                         if (queryType == COMPLETION_QUERY_TYPE) {
                             Set<? extends TypeMirror> smarts = env.getSmartTypes();
@@ -1557,6 +1557,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                 subtypes.add(elem);
                                             }
                                         } else if (smart.getKind() == TypeKind.ARRAY) {
+                                            insideNew = false;
                                             try {
                                                 results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));                                            
                                             } catch (IllegalArgumentException iae) {}
@@ -1567,7 +1568,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         if (toExclude != null)
                             subtypes.add(toExclude);
-                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ANNOTATION_TYPE), base, subtypes, true);
+                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ANNOTATION_TYPE), base, subtypes, insideNew);
                         break;
                     case LPAREN:
                     case COMMA:
@@ -1612,7 +1613,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             IfTree iff = (IfTree)env.getPath().getLeaf();
             if (env.getSourcePositions().getEndPosition(env.getRoot(), iff.getCondition()) <= env.getOffset()) {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, iff, env.getOffset());
-                if (last != null && last.token().id() == JavaTokenId.RPAREN) {
+                if (last != null && (last.token().id() == JavaTokenId.RPAREN || last.token().id() == JavaTokenId.ELSE)) {
                     localResult(env);
                     addKeywordsForStatement(env);
                 }
@@ -2421,10 +2422,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     tu.isAccessible(scope, e, t);
                         case METHOD:
-                            return startsWith(env, e.getSimpleName().toString(), prefix) &&
+                            String sn = e.getSimpleName().toString();
+                            return startsWith(env, sn, prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
-                                    tu.isAccessible(scope, e, t);
+                                    tu.isAccessible(scope, e, t) &&
+                                    !Utilities.isExcluded(Utilities.getElementName(e.getEnclosingElement(), true) + "." + sn); //NOI18N
                     }
                     return false;
                 }
@@ -2605,11 +2608,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) &&
                                     tu.isAccessible(scope, e, t);
                         case METHOD:
-                            return startsWith(env, e.getSimpleName().toString(), prefix) &&
+                            String sn = e.getSimpleName().toString();
+                            return startsWith(env, sn, prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(((ExecutableType)asMemberOf(e, t, types)).getReturnType(), e, kinds, baseType, scope, trees, types) &&
                                     (isSuperCall && e.getModifiers().contains(PROTECTED) || tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t)) &&
-                                    (!isStatic || e.getModifiers().contains(STATIC));
+                                    (!isStatic || e.getModifiers().contains(STATIC)) &&
+                                    !Utilities.isExcluded(Utilities.getElementName(e.getEnclosingElement(), true) + "." + sn); //NOI18N
                         case CLASS:
                         case ENUM:
                         case INTERFACE:
@@ -2729,7 +2734,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (fqnPrefix == null)
                 fqnPrefix = EMPTY;
             for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true,EnumSet.allOf(ClassIndex.SearchScope.class)))
-                if (pkgName.length() > 0)
+                if (pkgName.length() > 0 && !Utilities.isExcluded(pkgName + ".")) //NOI18N
                     results.add(JavaCompletionItem.createPackageItem(pkgName, anchorOffset, inPkgStmt));
         }
         
@@ -4479,6 +4484,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return found ? modified.getEndPosition(compilationUnitTree, tree) + startOffset : original.getEndPosition(compilationUnitTree, tree);
             }
 
+            @Override
             public Void scan(Tree node, Tree p) {
                 if (node == p)
                     found = true;

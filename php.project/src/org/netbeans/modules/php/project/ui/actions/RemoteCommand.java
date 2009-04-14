@@ -121,7 +121,11 @@ public abstract class RemoteCommand extends Command {
     }
 
     protected RemoteClient getRemoteClient(InputOutput io) {
-        return new RemoteClient(getRemoteConfiguration(), io, getRemoteDirectory(), ProjectPropertiesSupport.areRemotePermissionsPreserved(getProject()));
+        return new RemoteClient(getRemoteConfiguration(), RemoteClient.AdvancedProperties.create(
+                io,
+                getRemoteDirectory(),
+                ProjectPropertiesSupport.areRemotePermissionsPreserved(getProject()),
+                ProjectPropertiesSupport.isRemoteUploadDirectly(getProject())));
     }
 
     protected RemoteConfiguration getRemoteConfiguration() {

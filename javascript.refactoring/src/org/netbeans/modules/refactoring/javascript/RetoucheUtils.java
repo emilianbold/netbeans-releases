@@ -64,13 +64,13 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.JsClassPathProvider;
 import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.editing.JsUtils;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
@@ -247,13 +247,7 @@ public class RetoucheUtils {
     public static boolean isFileInOpenProject(FileObject file) {
         assert file != null;
         Project p = FileOwnerQuery.getOwner(file);
-        Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i]) {
-                return true;
-            }
-        }
-        return false;
+        return OpenProjects.getDefault().isProjectOpen(p);
     }
     
     public static boolean isOnSourceClasspath(FileObject fo) {
@@ -263,7 +257,7 @@ public class RetoucheUtils {
         }
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i]) {
+            if (p.equals(opened[i]) || opened[i].equals(p)) {
                 //SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(JsProject.SOURCES_TYPE_Js);
                 SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
                 for (int j = 0; j < gr.length; j++) {
@@ -374,12 +368,19 @@ public class RetoucheUtils {
 //    }
 //
     public static Set<FileObject> getJsFilesInProject(FileObject fileInProject) {
+        return getJsFilesInProject(fileInProject, false);
+    }
+
+    public static Set<FileObject> getJsFilesInProject(FileObject fileInProject, boolean excludeReadOnlySourceRoots) {
         Set<FileObject> files = new HashSet<FileObject>(100);
-        Collection<FileObject> sourceRoots = GsfUtilities.getRoots(fileInProject,
+        Collection<FileObject> sourceRoots = QuerySupport.findRoots(fileInProject,
                 null,
                 Collections.singleton(JsClassPathProvider.BOOT_CP),
                 Collections.<String>emptySet());
         for (FileObject root : sourceRoots) {
+            if(excludeReadOnlySourceRoots && !root.canWrite()) {
+                continue; //skip read only source roots
+            }
             String name = root.getName();
             // Skip non-refactorable parts in renaming
             if (name.equals("vendor") || name.equals("script")) { // NOI18N

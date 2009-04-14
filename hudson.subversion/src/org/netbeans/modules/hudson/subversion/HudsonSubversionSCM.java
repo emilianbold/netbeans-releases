@@ -77,13 +77,14 @@ public class HudsonSubversionSCM implements HudsonSCM {
             return new Configuration() {
                 public void configure(Document doc) {
                     Element root = doc.getDocumentElement();
-                    Element configXmlSCM = (Element) root.appendChild(doc.createElement("scm"));
-                    configXmlSCM.setAttribute("class", "hudson.scm.SubversionSCM");
-                    Element loc = (Element) configXmlSCM.appendChild(doc.createElement("locations")).
-                            appendChild(doc.createElement("hudson.scm.SubversionSCM_-ModuleLocation"));
-                    loc.appendChild(doc.createElement("remote")).appendChild(doc.createTextNode(urlS));
-                    loc.appendChild(doc.createElement("local")).appendChild(doc.createTextNode("."));
-                    configXmlSCM.appendChild(doc.createElement("useUpdate")).appendChild(doc.createTextNode("true"));
+                    Element configXmlSCM = (Element) root.appendChild(doc.createElement("scm")); // NOI18N
+                    configXmlSCM.setAttribute("class", "hudson.scm.SubversionSCM"); // NOI18N
+                    Element loc = (Element) configXmlSCM.appendChild(doc.createElement("locations")). // NOI18N
+                            appendChild(doc.createElement("hudson.scm.SubversionSCM_-ModuleLocation")); // NOI18N
+                    loc.appendChild(doc.createElement("remote")).appendChild(doc.createTextNode(urlS)); // NOI18N
+                    loc.appendChild(doc.createElement("local")).appendChild(doc.createTextNode(".")); // NOI18N
+                    // HUDSON-3390 would be a more attractive alternative:
+                    configXmlSCM.appendChild(doc.createElement("useUpdate")).appendChild(doc.createTextNode("false")); // NOI18N
                     Helper.addTrigger(doc);
                 }
             };
@@ -103,7 +104,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
             int slash = workspacePath.lastIndexOf('/');
             String workspaceDir = workspacePath.substring(0, slash + 1);
             String workspaceFile = workspacePath.substring(slash + 1);
-            URL remoteCheckout = new URL(job.getUrl() + "ws/" + workspaceDir);
+            URL remoteCheckout = new URL(job.getUrl() + "ws/" + workspaceDir); // NOI18N
             SvnUtils.Info remote = SvnUtils.parseCheckout(remoteCheckout, job);
             if (remote == null) {
                 LOG.log(Level.FINE, "no remote checkout found at {0}", remoteCheckout);
@@ -125,8 +126,8 @@ public class HudsonSubversionSCM implements HudsonSCM {
                 LOG.log(Level.FINE, "repository mismatch between {0} and {1}", new Object[] {remote.repository, local.repository});
                 return null;
             }
-            String remoteModule = new URL(remote.module + "/" + workspaceFile).getPath();
-            String localModuleBase = new URL(local.module + "/").getPath();
+            String remoteModule = new URL(remote.module + "/" + workspaceFile).getPath(); // NOI18N
+            String localModuleBase = new URL(local.module + "/").getPath(); // NOI18N
             if (!remoteModule.startsWith(localModuleBase)) {
                 LOG.log(Level.FINE, "checkout mismatch between {0} and {1}", new Object[] {localModuleBase, remoteModule});
                 return null;
@@ -140,10 +141,10 @@ public class HudsonSubversionSCM implements HudsonSCM {
         }
     }
 
-    public List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJob job, final Element changeSet) {
-        if (!"svn".equals(Helper.xpath("kind", changeSet))) {
+    public List<? extends HudsonJobChangeItem> parseChangeSet(final HudsonJob job, final Element changeSet) {
+        if (!"svn".equals(Helper.xpath("kind", changeSet))) { // NOI18N
             // Either a different SCM, or old Hudson.
-            if (changeSet.getElementsByTagName("revision").getLength() == 0) {
+            if (changeSet.getElementsByTagName("revision").getLength() == 0) { // NOI18N
                 // A different SCM. This clause could be deleted assuming 1.284.
                 return null;
             }
@@ -154,10 +155,10 @@ public class HudsonSubversionSCM implements HudsonSCM {
                 this.itemXML = xml;
             }
             public String getUser() {
-                return Helper.xpath("user", itemXML);
+                return Helper.xpath("user", itemXML); // NOI18N
             }
             public String getMessage() {
-                return Helper.xpath("msg", itemXML);
+                return Helper.xpath("msg", itemXML); // NOI18N
             }
             public Collection<? extends HudsonJobChangeFile> getFiles() {
                 class SubversionFile implements HudsonJobChangeFile {
@@ -166,15 +167,15 @@ public class HudsonSubversionSCM implements HudsonSCM {
                         this.fileXML = xml;
                     }
                     public String getName() {
-                        return Helper.xpath("file", fileXML);
+                        return Helper.xpath("file", fileXML); // NOI18N
                     }
                     public EditType getEditType() {
-                        return EditType.valueOf(Helper.xpath("editType", fileXML));
+                        return EditType.valueOf(Helper.xpath("editType", fileXML)); // NOI18N
                     }
                     public OutputListener hyperlink() {
-                        String module = Helper.xpath("revision/module", changeSet);
-                        String rev = Helper.xpath("revision", itemXML);
-                        if (module == null || !module.startsWith("http") || rev == null) {
+                        String module = Helper.xpath("revision/module", changeSet); // NOI18N
+                        String rev = Helper.xpath("revision", itemXML); // NOI18N
+                        if (module == null || !module.startsWith("http") || rev == null) { // NOI18N
                             return null;
                         }
                         int r = Integer.parseInt(rev);
@@ -196,11 +197,11 @@ public class HudsonSubversionSCM implements HudsonSCM {
                         default:
                             throw new AssertionError();
                         }
-                        return new SubversionHyperlink(module, path, startRev, endRev);
+                        return new SubversionHyperlink(module, path, startRev, endRev, job);
                     }
                 }
                 List<SubversionFile> files = new ArrayList<SubversionFile>();
-                NodeList nl = itemXML.getElementsByTagName("path");
+                NodeList nl = itemXML.getElementsByTagName("path"); // NOI18N
                 for (int i = 0; i < nl.getLength(); i++) {
                     files.add(new SubversionFile((Element) nl.item(i)));
                 }
@@ -208,7 +209,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
             }
         }
         List<SubversionItem> items = new ArrayList<SubversionItem>();
-        NodeList nl = changeSet.getElementsByTagName("item");
+        NodeList nl = changeSet.getElementsByTagName("item"); // NOI18N
         for (int i = 0; i < nl.getLength(); i++) {
             items.add(new SubversionItem((Element) nl.item(i)));
         }

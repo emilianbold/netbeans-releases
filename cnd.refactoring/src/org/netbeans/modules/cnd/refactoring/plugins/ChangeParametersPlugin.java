@@ -118,7 +118,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         Collection<CsmFile> files = new HashSet<CsmFile>();
         CsmFile startFile = getStartCsmFile();
         for (CsmObject obj : objs) {
-            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(obj, true);
+            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(obj, null);
             CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
             refactoring.getContext().add(ar);
             files.addAll(getRelevantFiles(startFile, obj, refactoring));
@@ -272,8 +272,9 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             String oldName = ref.getText().toString();
             String descr = getDescription(ref, oldName);
             Difference diff = changeFunRef(ref, ces, oldName, parameterInfo, descr, outProblem);
-            assert diff != null;
-            mr.addDifference(fo, diff);
+            if (diff != null) {
+                mr.addDifference(fo, diff);
+            }
         }
     }
 
@@ -309,39 +310,55 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             endOffset = ref.getEndOffset();
         } else {
             boolean decl = CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
+            boolean def = CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION));
             startOffset = funInfo.getStartOffset();
             endOffset = funInfo.getEndOffset();
+            boolean skipComma = true;
+            boolean wereChanges = false;
             oldText.append(funInfo.getOriginalParamsText());
             newText.append("(");// NOI18N
             // TODO: varargs
             for (int i = 0; i < parameterInfo.length; i++) {
-                if (i > 0) {
+                if (!skipComma) {
                     newText.append(","); // NOI18N
                 }
                 ParameterInfo pi = parameterInfo[i];
                 int originalIndex = pi.getOriginalIndex();
-                CharSequence text;
                 if (originalIndex == -1) {
-                    if (i > 0 && needSpaceAfterComma()) {
+                    if (!skipComma && needSpaceAfterComma()) {
                         newText.append(" "); // NOI18N
                     }
+                    skipComma = false;
                     // new parameter
                     if (decl) {
                         // in declaration add parameter
                         newText.append(pi.getType()).append(" ").append(pi.getName()); // NOI18N
-                    } else {
+                        if (def && refactoring.isUseDefaultValueOnlyInFunctionDefinition()) {
+                            newText.append(" = ").append(pi.getDefaultValue()); // NOI18N
+                        } else {
+                            newText.append(" /* = ").append(pi.getDefaultValue()).append(" */"); // NOI18N
+                        }
+                        wereChanges = true;
+                    } else if (!refactoring.isUseDefaultValueOnlyInFunctionDefinition()) {
                         // in reference add default value
                         newText.append(pi.getDefaultValue());
+                        wereChanges = true;
+                    } else {
+                        skipComma = true;
                     }
                 } else if (funInfo.hasParam(originalIndex)) {
                     CharSequence origText = funInfo.getParameter(originalIndex);
-                    if (i > 0 && needSpaceAfterComma() && !Character.isWhitespace(origText.charAt(0))) {
+                    if (!skipComma && needSpaceAfterComma() && !Character.isWhitespace(origText.charAt(0))) {
                         newText.append(" "); // NOI18N
                     }
+                    skipComma = false;
                     newText.append(origText);
                 }
             }
             newText.append(")");// NOI18N
+            if (!wereChanges) {
+                return null;
+            }
         }
         assert startOffset <= endOffset;
         PositionRef startPos = ces.createPositionRef(startOffset, Bias.Forward);

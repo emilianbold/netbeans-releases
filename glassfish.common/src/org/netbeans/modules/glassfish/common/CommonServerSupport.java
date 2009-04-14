@@ -268,7 +268,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     public Future<OperationState> startServer(final OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, 
                 "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\"");
-        OperationStateListener startServerListener = new StartOperationStateListener();
+        OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.RUNNING);
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), startServerListener, stateListener));
         RequestProcessor.getDefault().post(task);
@@ -278,7 +278,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     public Future<OperationState> startServer(final OperationStateListener stateListener, FileObject jdkRoot, String[] jvmArgs) {
         Logger.getLogger("glassfish").log(Level.FINEST, 
                 "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\"");
-        OperationStateListener startServerListener = new StartOperationStateListener();
+        OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.STOPPED_JVM_PROFILER);
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), jdkRoot, jvmArgs, startServerListener, stateListener));
         RequestProcessor.getDefault().post(task);
@@ -594,6 +594,8 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                         setServerState(ServerState.RUNNING);
                     } else if(currentState == ServerState.RUNNING && !isRunning) {
                         setServerState(ServerState.STOPPED);
+                    } else if(currentState == ServerState.STOPPED_JVM_PROFILER && isRunning) {
+                        setServerState(ServerState.RUNNING);
                     }
                     
                     refreshRunning.set(false);
@@ -608,12 +610,18 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
 
 
     class StartOperationStateListener implements OperationStateListener {
+        private ServerState endState;
+
+        StartOperationStateListener(ServerState endState) {
+            this.endState = endState;
+        }
+
         public void operationStateChanged(OperationState newState, String message) {
             if(newState == OperationState.RUNNING) {
                 setServerState(ServerState.STARTING);
             } else if(newState == OperationState.COMPLETED) {
                 startedByIde = true;
-                setServerState(ServerState.RUNNING);
+                setServerState(endState);
             } else if(newState == OperationState.FAILED) {
                 setServerState(ServerState.STOPPED);
                 // Open a warning dialog here...

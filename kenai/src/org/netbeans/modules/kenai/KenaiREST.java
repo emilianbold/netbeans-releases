@@ -48,10 +48,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.kenai.api.KenaiException;
 import org.codeviation.pojson.*;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiErrorMessage;
+import org.netbeans.modules.kenai.api.KenaiException;
 
 /**
  * Talks to remote Kenai server via Web services API.
@@ -115,7 +114,7 @@ public class KenaiREST extends KenaiImpl {
         }
 
         if (resp.getResponseCode() != 200)
-            throw new KenaiErrorMessage(resp.getResponseMessage(),resp.getDataAsString());
+            throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
 
         String sss = resp.getDataAsString();
 
@@ -126,7 +125,7 @@ public class KenaiREST extends KenaiImpl {
     @Override
     public Collection<ProjectData> searchProjects(String pattern) throws KenaiException {
         try {
-            ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects.json?q=" + URLEncoder.encode(pattern, "UTF-8"), ProjectsListData.class);
+            ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects.json?full=true&q=" + URLEncoder.encode(pattern, "UTF-8"), ProjectsListData.class);
             return new LazyList(pld, ProjectsListData.class);
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);
@@ -136,7 +135,7 @@ public class KenaiREST extends KenaiImpl {
 
     @Override
     public Collection<ProjectData> getMyProjects() throws KenaiException {
-        ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects/mine.json", ProjectsListData.class);
+        ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects/mine.json?full=true", ProjectsListData.class);
         return new LazyList(pld, ProjectsListData.class);
     }
 
@@ -161,7 +160,7 @@ public class KenaiREST extends KenaiImpl {
             System.err.println("Page " + url + " loaded in " + (System.currentTimeMillis()-start) + " ms");
         }
         if (resp.getResponseCode() != 200)
-            throw new KenaiErrorMessage(resp.getResponseMessage(),resp.getDataAsString());
+            throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
         String responseString = resp.getDataAsString();
 
         PojsonLoad pload = PojsonLoad.create();
@@ -247,11 +246,7 @@ public class KenaiREST extends KenaiImpl {
 
         private ITEM colToItem(int index) {
             if (col instanceof ProjectsListData) {
-                try {
-                    return (ITEM) getProject(((ProjectsListData) col).projects[index].name);
-                } catch (KenaiException ex) {
-                    throw new RuntimeException("Error loading project " + ((ProjectsListData) col).projects[index].name, ex);
-                }
+                return (ITEM) ((ProjectsListData) col).projects[index];
             } else if (col instanceof ServicesListData) {
                 return (ITEM) ((ServicesListData) col).services[index];
             } else if (col instanceof LicensesListData) {
@@ -296,7 +291,7 @@ public class KenaiREST extends KenaiImpl {
         }
 
         if (resp.getResponseCode() != 201)
-            throw new KenaiErrorMessage(resp.getResponseMessage(),resp.getDataAsString());
+            throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
 
         String response = resp.getDataAsString();
 
@@ -342,7 +337,7 @@ public class KenaiREST extends KenaiImpl {
         }
 
         if (resp.getResponseCode() != 201)
-            throw new KenaiErrorMessage(resp.getResponseMessage(),resp.getDataAsString());
+            throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
 
         String response = resp.getDataAsString();
 

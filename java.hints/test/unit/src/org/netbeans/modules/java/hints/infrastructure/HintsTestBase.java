@@ -41,10 +41,16 @@
 package org.netbeans.modules.java.hints.infrastructure;
 
 import java.beans.PropertyVetoException;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +60,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.text.Document;
+import junit.framework.TestCase;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
@@ -61,7 +68,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.api.java.source.SourceUtilsTestUtil2;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.gen.WhitespaceIgnoringDiff;
 import org.netbeans.api.lexer.InputAttributes;
@@ -77,6 +83,7 @@ import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.hints.EnhancedFix;
@@ -95,6 +102,8 @@ import org.openide.util.lookup.Lookups;
  * @author Jan Lahoda
  */
 public class HintsTestBase extends NbTestCase {
+    private static final String DATA_EXTENSION = "org/netbeans/test/java/hints/";
+    private Document doc;
     
     /** Need to be defined because of JUnit */
     public HintsTestBase(String name) {
@@ -159,7 +168,7 @@ public class HintsTestBase extends NbTestCase {
     }
     
     protected String testDataExtension() {
-        return "org/netbeans/test/java/hints/";
+        return DATA_EXTENSION;
     }
     
     protected String layer() {
@@ -175,8 +184,11 @@ public class HintsTestBase extends NbTestCase {
         FileObject buildRoot  = workFO.createFolder("build");
 //        FileObject cache = workFO.createFolder("cache");
         
-        packageRoot = FileUtil.createFolder(sourceRoot, testDataExtension());
-        
+        packageRoot = FileUtil.createFolder(sourceRoot, DATA_EXTENSION);
+
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[]{
+                    new JavaCustomIndexer.Factory()});
+
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cacheFO);
         
         String testPackagePath = testDataExtension();
@@ -197,7 +209,7 @@ public class HintsTestBase extends NbTestCase {
             files[cntr] = testPackagePath + names[cntr];
         }
         
-        TestUtil.copyFiles(getDataDir(), FileUtil.toFile(sourceRoot), files);
+        copyFiles(getDataDir(), FileUtil.toFile(sourceRoot), files);
         
         packageRoot.refresh();
         
@@ -207,11 +219,18 @@ public class HintsTestBase extends NbTestCase {
         
         assertNotNull(testSource);
 
+        DataObject od = DataObject.find(testSource);
+        EditorCookie ec = od.getCookie(EditorCookie.class);
+
+        assertNotNull(ec);
+
+        doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        doc.putProperty("mimeType", "text/x-java");
+
         //XXX: takes a long time
         //re-index, in order to find classes-living-elsewhere
         IndexingManager.getDefault().refreshIndexAndWait(sourceRoot.getURL(), null);
-//        CountDownLatch latch = RepositoryUpdater.getDefault().scheduleCompilationAndWait(sourceRoot, sourceRoot);
-//        latch.await();
 
         js = JavaSource.forFileObject(testSource);
         
@@ -251,6 +270,48 @@ public class HintsTestBase extends NbTestCase {
             Repository.getDefault().addFileSystem(lfs);
             return lfs.getRoot();
         }
+    }
+
+    private void copyFiles(File sourceDir, File destDir, String[] resourceNames) throws IOException {
+        for( String resourceName : resourceNames ) {
+
+            File src = new File( sourceDir, resourceName );
+
+            if ( !src.canRead() ) {
+                TestCase.fail( "The test requires the file: " + resourceName + " to be readable and stored in: " + sourceDir );
+            }
+
+            InputStream is = new FileInputStream( src );
+            BufferedInputStream bis = new BufferedInputStream( is );
+
+            //Strip last folder to align with packagename
+            File dest = new File( destDir, resourceName.replace(testDataExtension(), DATA_EXTENSION) );
+            File parent = dest.getParentFile();
+
+            if ( !parent.exists() ) {
+                parent.mkdirs();
+            }
+
+            dest.createNewFile();
+            BufferedOutputStream bos = new BufferedOutputStream( new FileOutputStream( dest ) );
+
+            copyFile( bis, bos );
+        }
+    }
+
+    private static int BLOCK_SIZE = 16384;
+    private static void copyFile( InputStream is, OutputStream os ) throws IOException {
+        byte[] b = new byte[ BLOCK_SIZE ];
+        int count = is.read(b);
+
+        while (count != -1)
+        {
+         os.write(b, 0, count);
+         count = is.read(b);
+        }
+
+        is.close();
+        os.close();
     }
     
 //    private int getOffset(Document doc, int linenumber, int column) {
@@ -455,7 +516,6 @@ public class HintsTestBase extends NbTestCase {
             
             assertFile(dump, golden, diff, new WhitespaceIgnoringDiff());
         } finally {
-            SourceUtilsTestUtil2.ignoreCompileRequests();
             LifecycleManager.getDefault().saveAll();
         }
     }

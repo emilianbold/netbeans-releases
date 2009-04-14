@@ -38,15 +38,20 @@
  */
 package org.netbeans.modules.cnd.gizmo.actions;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions;
+import org.netbeans.modules.cnd.gizmo.GizmoServiceInfo;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -64,6 +69,7 @@ import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
@@ -75,6 +81,8 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     private ProjectActionEvent pae;
     private List<ExecutionListener> listeners;
     private DLightSessionHandler session;
+    private static final String GNU_FAMILIY = "gc++filt"; //NOI18N
+    private static final String SS_FAMILIY = "dem"; //NOI18N
 
     public GizmoRunActionHandler() {
         this.listeners = new ArrayList<ExecutionListener>();
@@ -85,18 +93,35 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     }
 
     public void execute(InputOutput io) {
-        // TODO: use given InputOutput
         NativeExecutableTargetConfiguration targetConf = new NativeExecutableTargetConfiguration(
                 pae.getExecutable(),
                 pae.getProfile().getArgsArray(),
                 createMap(pae.getProfile().getEnvironment().getenvAsPairs()));
-        MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
+
+        MakeConfiguration conf = pae.getConfiguration();
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+        String runDirectory = pae.getProfile().getRunDirectory();
+        if (execEnv.isRemote()) {
+            PathMap mapper = HostInfoProvider.getMapper(execEnv);
+            runDirectory = mapper.getRemotePath(runDirectory);
+        }
+
+        targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath());//NOI18N
+        targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, runDirectory + File.separator + pae.getExecutable());
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+        String binDir = compilerSet.getDirectory();
+        String demangle_utility = SS_FAMILIY;
+        if (compilerSet.isGnuCompiler()){
+            demangle_utility = GNU_FAMILIY;
+        }
+        String dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
+        targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
+        
         if (execEnv.isRemote()) {
             targetConf.setHost(execEnv.getHost());
             targetConf.setUser(execEnv.getUser());
         }
-        targetConf.setWorkingDirectory(pae.getProfile().getRunDirectory());
+        targetConf.setWorkingDirectory(runDirectory);
         int consoleType = pae.getProfile().getConsoleType().getValue();
         if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
             consoleType = RunProfile.getDefaultConsoleType();
@@ -118,7 +143,11 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         if (options instanceof GizmoConfigurationOptions){
             ((GizmoConfigurationOptions)options).configure(pae.getProject());
         }
-        final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(target, configuration); // NOI18N
+   
+
+        //WE are here only when Profile On RUn 
+        final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(
+                target, configuration, IpeUtils.getBaseName(pae.getExecutable()));
 
         DLightExecutorService.submit(new Runnable() {
             public void run() {

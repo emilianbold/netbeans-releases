@@ -74,8 +74,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Utilities;
 
@@ -203,12 +201,7 @@ public class RetoucheUtils {
     public static boolean isFileInOpenProject(FileObject file) {
         assert file != null;
         Project p = FileOwnerQuery.getOwner(file);
-        Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i])
-                return true;
-        }
-        return false;
+        return OpenProjects.getDefault().isProjectOpen(p);
     }
     
     public static boolean isOnSourceClasspath(FileObject fo) {
@@ -216,7 +209,7 @@ public class RetoucheUtils {
         if (p==null) return false;
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i]) {
+            if (p.equals(opened[i]) || opened[i].equals(p)) {
                 SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                 for (int j = 0; j < gr.length; j++) {
                     if (fo==gr[j].getRootFolder()) return true;

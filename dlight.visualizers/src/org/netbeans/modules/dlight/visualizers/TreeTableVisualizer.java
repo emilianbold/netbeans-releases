@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -79,6 +78,7 @@ import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.Models;
+import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -91,15 +91,16 @@ import org.openide.util.datatransfer.PasteType;
  * @author mt154047
  */
 class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
-    Visualizer<TreeTableVisualizerConfiguration>, OnTimerTask, ComponentListener {
+        Visualizer<TreeTableVisualizerConfiguration>, OnTimerTask, ComponentListener {
 
     //public static final String IS_CALLS = "TopTenFunctionsIsCalls"; // NOI18N
+    private final Object queryLock = new String(TreeTableVisualizer.class + " query lock"); // NOI18N
     private boolean isShown = true;
     private JToolBar buttonsToolbar;
     private JButton refresh;
     private final TreeTableVisualizerConfiguration configuration;
     private final DefaultTreeModel treeModel;
-    protected final DefaultMutableTreeNode TREE_ROOT = new DefaultMutableTreeNode("ROOT");
+    protected final DefaultMutableTreeNode TREE_ROOT = new DefaultMutableTreeNode("ROOT");////NOI18N
     private JPanel mainPanel = null;
     private TreeModelImpl treeModelImpl;
     private TableModelImpl tableModelImpl;
@@ -110,12 +111,11 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     protected boolean isEmptyContent;
     protected boolean isLoadingContent;
     private Future task;
-    private final Object queryLock = new Object();
     private Future<List<T>> syncFillDataTask;
     private final Object syncFillInLock = new Object();
 
     TreeTableVisualizer(TreeTableVisualizerConfiguration configuration,
-        TreeTableDataProvider<T> dataProvider) {
+            TreeTableDataProvider<T> dataProvider) {
         //timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.configuration = configuration;
         this.dataProvider = dataProvider;
@@ -125,7 +125,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     }
 
     protected void setLoadingContent() {
-        isEmptyContent = true;
+        isEmptyContent = false;
         isLoadingContent = true;
         this.removeAll();
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -158,29 +158,38 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     }
 
     protected void setContent(final boolean isEmpty) {
-        if (isLoadingContent){
-            isLoadingContent = false;
-            setContent(isEmpty);
-            return;
-        }
-        if (isEmptyContent && isEmpty) {
-            return;
-        }
-        if (isEmptyContent && !isEmpty) {
-            setNonEmptyContent();
-            return;
-        }
-        if (!isEmptyContent && isEmpty) {
-            setEmptyContent();
-            return;
-        }
+        UIThread.invoke(new Runnable() {
+
+            public void run() {
+                if (isLoadingContent && isEmpty) {
+                    isLoadingContent = false;
+                    setEmptyContent();
+                    return;
+                }
+                if (isLoadingContent && !isEmpty) {
+                    isLoadingContent = false;
+                    setNonEmptyContent();
+                    return;
+                }
+                if (isEmptyContent && isEmpty) {
+                    return;
+                }
+                if (isEmptyContent && !isEmpty) {
+                    setNonEmptyContent();
+                    return;
+                }
+                if (!isEmptyContent && isEmpty) {
+                    setEmptyContent();
+                    return;
+                }
+            }
+        });
 
     }
 
     protected void setNonEmptyContent() {
         initComponents();
         updateButtons();
-
     }
 
     @Override
@@ -189,7 +198,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         addComponentListener(this);
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
-        asyncFillModel(configuration.getMetadata().getColumns());
+//        asyncFillModel(configuration.getMetadata().getColumns());
 
         if (timerHandler != null && timerHandler.isSessionRunning()) {
             timerHandler.startTimer();
@@ -209,16 +218,14 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         super.removeNotify();
         synchronized (queryLock) {
             if (task != null) {
-                if (!task.isDone()) {
-                    task.cancel(true);
-                }
+                task.cancel(true);
+                task = null;
             }
         }
-        synchronized(syncFillInLock){
-            if (syncFillDataTask != null){
-                if (!syncFillDataTask.isDone()){
-                    syncFillDataTask.cancel(true);
-                }
+        synchronized (syncFillInLock) {
+            if (syncFillDataTask != null) {
+                syncFillDataTask.cancel(true);
+                syncFillDataTask = null;
             }
         }
         if (timerHandler != null) {
@@ -228,23 +235,25 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         VisualizerTopComponentTopComponent.findInstance().removeComponentListener(this);
     }
 
-    protected DefaultMutableTreeNode getTreeRoot() {
-        return TREE_ROOT;
+    protected void setNodes(List<DefaultMutableTreeNode> nodes) {
+        synchronized (TREE_ROOT) {
+            TREE_ROOT.removeAllChildren();
+            fireTreeModelChanged();
+
+            if (nodes != null) {
+                for (DefaultMutableTreeNode node : nodes) {
+                    TREE_ROOT.add(node);
+                }
+                fireTreeModelChanged();
+            }
+        }
     }
 
     /**
      * Fire treeModelChanged event in AWT Thread
      */
     protected void fireTreeModelChanged() {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-
-                treeModelImpl.fireTreeModelChanged();
-            }
-        });
-
-
+        fireTreeModelChanged(null);
     }
 
     /**
@@ -254,7 +263,11 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                treeModelImpl.fireTreeModelChanged(node);
+                if (node == null) {
+                    treeModelImpl.fireTreeModelChanged();
+                } else {
+                    treeModelImpl.fireTreeModelChanged(node);
+                }
             }
         });
     }
@@ -269,13 +282,11 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     protected void initComponents() {
         this.removeAll();
         setLayout(new BorderLayout());
-        buttonsToolbar =
-            new JToolBar();
-        refresh =
-            new JButton();
+        buttonsToolbar = new JToolBar();
+        refresh = new JButton();
 
         buttonsToolbar.setFloatable(false);
-        buttonsToolbar.setOrientation(1);
+        buttonsToolbar.setOrientation(JToolBar.VERTICAL);
         buttonsToolbar.setRollover(true);
 
         // Refresh button...
@@ -287,173 +298,53 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         refresh.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                asyncFillModel(configuration.getMetadata().getColumns());
+                asyncFillModel(configuration.getMetadata().getColumns(), false);
             }
         });
 
         buttonsToolbar.add(refresh);
 
         add(buttonsToolbar, BorderLayout.LINE_START);
-        mainPanel =
-            new JPanel();
+        mainPanel = new JPanel();
         mainPanel.removeAll();
         add(mainPanel, BorderLayout.CENTER);
 
+        TreeTableVisualizerConfigurationAccessor configInfo =
+                TreeTableVisualizerConfigurationAccessor.getDefault();
+
+
         List<ColumnModel> columns = new ArrayList<ColumnModel>();
-        Column[] tableColumns = TreeTableVisualizerConfigurationAccessor.getDefault().getTableColumns(configuration);
-        for (final Column f : tableColumns) {
-            //      final int col = i;
-            ColumnModel column = new ColumnModel() {
+        Column[] tableColumns = configInfo.getTableColumns(configuration);
 
-                boolean isVisible = true;
-                boolean isSorted = false;
-                boolean isSortedDescending = false;
-                int currentOrderNumber = -1;
-
-                public String getID() {
-                    return f.getColumnName();
-                }
-
-                public String getDisplayName() {
-                    return f.getColumnUName();
-                }
-
-                public Class getType() {
-                    return f.getColumnClass();
-                }
-
-                @Override
-                public void setCurrentOrderNumber(int newOrderNumber) {
-                    this.currentOrderNumber = newOrderNumber;
-                }
-
-                @Override
-                public int getCurrentOrderNumber() {
-                    return currentOrderNumber;
-                }
-
-                @Override
-                public void setVisible(boolean arg0) {
-                    this.isVisible = arg0;
-                }
-
-                @Override
-                public boolean isVisible() {
-                    return isVisible;
-                }
-
-                @Override
-                public boolean isSortable() {
-                    return true;
-                }
-
-                @Override
-                public boolean isSorted() {
-                    return isSorted;
-                }
-
-                @Override
-                public void setSorted(boolean sorted) {
-                    this.isSorted = sorted;
-                }
-
-                @Override
-                public void setSortedDescending(boolean sortedDescending) {
-                    this.isSortedDescending = sortedDescending;
-                }
-
-                @Override
-                public boolean isSortedDescending() {
-                    return isSortedDescending;
-                }
-            };
-
-            columns.add(column);
+        for (final Column column : tableColumns) {
+            columns.add(new TreeTableVisualizerColumnModel(column));
         }
-        columns.add(new ColumnModel() {
 
-            boolean isVisible = true;
-            boolean isSorted = false;
-            boolean isSortedDescending = false;
-            int currentOrderNumber = -1;
-
-            @Override
-            public String getID() {
-                return TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnName();
-            }
-
-            @Override
-            public String getDisplayName() {
-                return TreeTableVisualizerConfigurationAccessor.getDefault().getTreeColumn(configuration).getColumnUName();
-            }
+        Column treeColumn = configInfo.getTreeColumn(configuration);
+        columns.add(new TreeTableVisualizerColumnModel(treeColumn) {
 
             @Override
             public Class getType() {
                 return null;
             }
-
-            @Override
-            public void setCurrentOrderNumber(int newOrderNumber) {
-                this.currentOrderNumber = newOrderNumber;
-            }
-
-            @Override
-            public int getCurrentOrderNumber() {
-                return currentOrderNumber;
-            }
-
-            @Override
-            public void setVisible(boolean arg0) {
-                this.isVisible = arg0;
-            }
-
-            @Override
-            public boolean isVisible() {
-                return isVisible;
-            }
-
-            @Override
-            public boolean isSortable() {
-                return true;
-            }
-
-            @Override
-            public boolean isSorted() {
-                return isSorted;
-            }
-
-            @Override
-            public void setSorted(boolean sorted) {
-                this.isSorted = sorted;
-            }
-
-            @Override
-            public void setSortedDescending(boolean sortedDescending) {
-                this.isSortedDescending = sortedDescending;
-            }
-
-            @Override
-            public boolean isSortedDescending() {
-                return isSortedDescending;
-            }
         });
-        List<Model> models = new ArrayList<Model>();
-        treeModelImpl =
-            new TreeModelImpl();
 
-        models.add(treeModelImpl);//tree model
-        tableModelImpl =
-            new TableModelImpl();
+        treeModelImpl = new TreeModelImpl();
+        tableModelImpl = new TableModelImpl();
+        NodeActionsProvider nodesActionProvider =
+                configInfo.getNodesActionProvider(configuration);
+
+        List<Model> models = new ArrayList<Model>();
+        models.add(treeModelImpl);
         models.add(tableModelImpl);
         models.addAll(columns);
         models.add(new NodeModelImpl());
-        if (TreeTableVisualizerConfigurationAccessor.getDefault().getNodesActionProvider(configuration) != null) {
-            models.add(TreeTableVisualizerConfigurationAccessor.getDefault().getNodesActionProvider(configuration));
+        if (nodesActionProvider != null) {
+            models.add(nodesActionProvider);
         }
-        compoundModel =
-            Models.createCompoundModel(models);
-        treeTableView =
-            Models.createView(compoundModel);
+
+        compoundModel = Models.createCompoundModel(models);
+        treeTableView = Models.createView(compoundModel);
         mainPanel.setLayout(new BorderLayout());
         mainPanel.add(treeTableView, BorderLayout.CENTER);
 
@@ -462,23 +353,24 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         //tableModelImpl.fireTableValueChanged();
         mainPanel.repaint();
         repaint();
-
         revalidate();
-
     }
 
-    protected final void asyncFillModel(final List<Column> columns) {
+    protected final void asyncFillModel(final List<Column> columns, boolean cancelIfNotDone) {
         synchronized (queryLock) {
-            if (task != null) {
-                if (!task.isDone()) {
+            if (task != null && !task.isDone()) {
+                if (cancelIfNotDone) {
                     task.cancel(true);
+                } else {
+                    return;
                 }
             }
+
             task = DLightExecutorService.submit(new Callable<Boolean>() {
 
                 public Boolean call() {
                     syncFillModel(columns);
-                    return Boolean.valueOf(true);
+                    return Boolean.TRUE;
                 }
             }, "Async TreeTableVisualizer model fill " + configuration.getID()); // NOI18N
         }
@@ -486,70 +378,27 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     }
 
     protected void syncFillModel(final List<Column> columns) {
-        synchronized (syncFillInLock) {
-            syncFillDataTask = DLightExecutorService.submit(new Callable<List<T>>() {
-
-                public List<T> call() throws Exception {
-                    return dataProvider.getTableView(columns, null, Integer.MAX_VALUE);
-                }
-            }, "Sync TreeTableVisualizer model fill " + configuration.getID()); // NOI18N
-            try {
-                final List<T> list = syncFillDataTask.get();
-                //if we have emptyContent here should
-                final boolean isEmptyConent = list == null || list.isEmpty();
-                UIThread.invoke(new Runnable() {
-
-                    public void run() {
-                        setContent(isEmptyConent);
-                        if (isEmptyConent) {
-                            return;
-                        }
-
-                        updateList(list);
-                    }
-                });
-            } catch (ExecutionException ex) {
-//                Thread.currentThread().
-            } catch (InterruptedException ex1) {
-                //              Thread.currentThread().interrupt();
-            }
-
-        }
+        List<T> list = dataProvider.getTableView(columns, null, Integer.MAX_VALUE);
+        updateList(list);
     }
 
     protected void updateList(List<T> list) {
-        //if there is no elements in the list
-        synchronized (TREE_ROOT) {
-            TREE_ROOT.removeAllChildren();
+        if (list == null) {
+            return;
         }
 
-        UIThread.invoke(new Runnable() {
+        List<DefaultMutableTreeNode> nodes =
+                new ArrayList<DefaultMutableTreeNode>(list.size());
 
-            public void run() {
-                treeModelImpl.fireTreeModelChanged();
-            }
-        });
-
-        if (list != null) {
-            synchronized (TREE_ROOT) {
-                for (T value : list) {
-                    TREE_ROOT.add(new DefaultMutableTreeNode(value));
-                }
-
-            }
+        for (T value : list) {
+            nodes.add(new DefaultMutableTreeNode(value));
         }
 
-        UIThread.invoke(new Runnable() {
-
-            public void run() {
-                treeModelImpl.fireTreeModelChanged();
-            }
-        });
-
+        setNodes(nodes);
     }
 
     protected void loadTree(final DefaultMutableTreeNode rootNode,
-        final List<T> path) {
+            final List<T> path) {
         //we should show Loading Node
         //this.functionsCallTreeModel.get
         Runnable r = new Runnable() {
@@ -567,7 +416,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
         if (SwingUtilities.isEventDispatchThread()) {
             DLightExecutorService.submit(r,
-                "Loading data for TreeTableVisualizer " + configuration.getID()); // NOI18N
+                    "Loading data for TreeTableVisualizer " + configuration.getID()); // NOI18N
         } else {
             r.run();
         }
@@ -575,7 +424,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     }
 
     protected void updateTree(final DefaultMutableTreeNode rootNode,
-        List<T> result) {
+            List<T> result) {
         //add them all as a children to rootNode
         rootNode.removeAllChildren();
         if (result != null) {
@@ -585,12 +434,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                treeModelImpl.fireTreeModelChanged(rootNode);
-            }
-        });
+        fireTreeModelChanged();
     }
 
     protected boolean isShown() {
@@ -601,6 +445,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         if (!isShown() || !isShowing()) {
             return 0;
         }
+
         syncFillModel(configuration.getMetadata().getColumns());
         return 0;
     }
@@ -630,14 +475,18 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         if (isShown) {
             return;
         }
+
         isShown = isShowing();
         // Fill model only in case we are really became visible ...
         if (isShown) {
             // We are in the AWT thread. Need to update model out of it.
-            asyncFillModel(configuration.getMetadata().getColumns());
+            asyncFillModel(configuration.getMetadata().getColumns(), true);
         }
 
+    }
 
+    public void refresh() {
+        asyncFillModel(configuration.getMetadata().getColumns(), false);
     }
 
     public void componentHidden(ComponentEvent e) {
@@ -845,14 +694,14 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
                             }
                         }
                     }, "insight getDisplayName.. "); // NOI18N
-                    return "...";
+                    return "...";//NOI18N
 
                 } else {
                     result = nodeObject.toString();
                 }
                 return result;
             }
-            return "Unknown";
+            return "Unknown";//NOI18N
         }
 
         public String getIconBase(Object node) {
@@ -868,7 +717,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
                 return ((TreeTableNode) treeNode.getUserObject()).getValue() + "";
             }
 
-            return "Unknown";
+            return "Unknown";//NOI18N
         }
 
         void fireNodeModelChanged(final Object node) {
@@ -946,6 +795,5 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
             return null;
         }
     }
-
 }
 

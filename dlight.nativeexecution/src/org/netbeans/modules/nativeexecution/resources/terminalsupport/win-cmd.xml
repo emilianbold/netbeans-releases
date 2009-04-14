@@ -44,9 +44,10 @@ made subject to such option by the copyright holder.
     <terminal id="cmd.exe" platforms="windows"/>
     <command stringvalue="cmd.exe"/>
     <arguments>
-        <arg>/c</arg>
+        <arg>/Q</arg>
+        <arg>/K</arg>
         <arg>start</arg>
-        <arg>sh</arg>
+        <arg>$shell</arg>
         <arg>$@</arg>
     </arguments>
 </terminaldefinition>

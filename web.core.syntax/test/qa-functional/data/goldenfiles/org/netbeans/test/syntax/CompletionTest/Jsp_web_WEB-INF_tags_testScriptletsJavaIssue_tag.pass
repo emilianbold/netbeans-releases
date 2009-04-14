@@ -26,7 +26,7 @@ End cursor position = 578
 boolean add (Object e )
 void add (int index , Object element )
 boolean addAll (Collection c )
-boolean addAll (int index , Collection c )
+boolean addAll (int index , Collection c
 void addFirst (Object e )
 void addLast (Object e )
 void clear ()
@@ -37,7 +37,7 @@ Iterator descendingIterator ()
 Object element ()
 boolean equals (Object o )
 Object get (int index )
-Class <?> getClass ()
+Class  getClass ()
 Object getFirst ()
 Object getLast ()
 int hashCode ()
@@ -65,13 +65,13 @@ boolean remove (Object o )
 Object remove (int index )
 boolean removeAll (Collection c )
 Object removeFirst ()
-boolean removeFirstOccurrence (Object o )
+boolean removeFirstOccurrence (Object o 
 Object removeLast ()
 boolean removeLastOccurrence (Object o )
 boolean retainAll (Collection c )
 Object set (int index , Object element )
 int size ()
-List subList (int fromIndex , int toIndex )
+List subList (int fromIndex , int toInde
 Object[] toArray ()
 Object[] toArray (Object[] a )
 String toString ()
@@ -79,7 +79,7 @@ void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
 End cursor position = 833
-[<% org.test.TestBean t = new org.test.TestBean(); t.|, void setName (String name ), <% org.test.TestBean t = new org.test.TestBean(); t.setName(name), 1056]
+[<% org.test.TestBean t = new org.test.TestBean(); t.|, void setName (String name, <% org.test.TestBean t = new org.test.TestBean(); t.setName(name), 1054]
 boolean equals (Object obj )
 Class <?> getClass ()
 Integer getId ()
@@ -93,4 +93,4 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 1121
+End cursor position = 1119

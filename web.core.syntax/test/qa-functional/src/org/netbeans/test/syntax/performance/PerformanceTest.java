@@ -157,6 +157,7 @@ public class PerformanceTest extends NbTestCase {
         FileObject testObject = FileUtil.createData(testFile);
         DataObject dataObj = DataObject.find(testObject);
         EditorCookie.Observable ed = dataObj.getCookie(Observable.class);
+        waitTimeout();
         ed.openDocument();
         ed.open();
         waitTimeout();
@@ -178,10 +179,10 @@ public class PerformanceTest extends NbTestCase {
         }
         Number nTime = (Number) params[1];
         Integer time = nTime.intValue();
-        if (time > expected) {
+        if (time > expected * 2) {
             System.err.println(log.getMessage() + " Reached:" + time);
         }
-        if (time > boundary) {
+        if (time > boundary * 2) {
             failures.add(new Failure(log, time));
         }
     }

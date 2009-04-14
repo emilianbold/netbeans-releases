@@ -252,7 +252,7 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            nativeExecution = NativeExecution.getDefault(execEnv).getNativeExecution();
+            nativeExecution = NativeExecution.getDefault(execEnv);
             rc = nativeExecution.executeCommand(
                     runDirFile,
                     executable,
@@ -331,7 +331,7 @@ public class NativeExecutor implements Runnable {
     private void executionStarted() {
         if(showHeader) {
             String runDirToShow = execEnv.isLocal() ?
-                runDir : HostInfoProvider.getDefault().getMapper(execEnv).getRemotePath(runDir);
+                runDir : HostInfoProvider.getMapper(execEnv).getRemotePath(runDir);
             
             String preText = MessageFormat.format(getString("PRETEXT"),
 		    exePlusArgsQuoted(executable, arguments), runDirToShow);

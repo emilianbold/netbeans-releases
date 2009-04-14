@@ -57,25 +57,18 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
-import org.netbeans.modules.hudson.api.HudsonManager;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Implementation of the HudsonManager
  *
  * @author Michal Mocnak
  */
-@ServiceProvider(service=HudsonManager.class)
-public class HudsonManagerImpl extends HudsonManager {
-    
-    /** Init lock */
-    private static final Object LOCK_INIT = new Object();
+public class HudsonManagerImpl {
     
     /** The only instance of the hudson manager implementation in the system */
     private static HudsonManagerImpl defaultInstance;
@@ -85,14 +78,7 @@ public class HudsonManagerImpl extends HudsonManager {
     private PropertyChangeListener projectsListener;
     private Map<Project, HudsonInstanceImpl> projectInstances = new HashMap<Project, HudsonInstanceImpl>();
     
-    public HudsonManagerImpl() {
-        synchronized(LOCK_INIT) {
-            // a static object to synchronize on
-            if (null != defaultInstance)
-                throw new IllegalStateException("Instance already exists"); // NOI18N
-            
-            defaultInstance = this;
-        }
+    private HudsonManagerImpl() {
         projectsListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
@@ -103,7 +89,6 @@ public class HudsonManagerImpl extends HudsonManager {
                     });
                 }
             }
-
         };
     }
     
@@ -112,13 +97,11 @@ public class HudsonManagerImpl extends HudsonManager {
      *
      * @return instance of hudson manager implementation
      */
-    public static HudsonManagerImpl getInstance() {
-        if (null != defaultInstance) {
-            // Save a bunch of time accessing global lookup, acc. to profiler.
-            return defaultInstance;
+    public static synchronized HudsonManagerImpl getDefault() {
+        if (defaultInstance == null) {
+            defaultInstance = new HudsonManagerImpl();
         }
-        
-        return (HudsonManagerImpl) Lookup.getDefault().lookup(HudsonManager.class);
+        return defaultInstance;
     }
     
     public HudsonInstanceImpl addInstance(final HudsonInstanceImpl instance) {
@@ -241,7 +224,7 @@ public class HudsonManagerImpl extends HudsonManager {
     public static String simplifyServerLocation(String name, boolean forKey) {
         // http://deadlock.netbeans.org/hudson/ => deadlock.netbeans.org_hudson
         String display = name.replaceFirst("https?://", "").replaceFirst("/$", "");
-        return forKey ? display.replaceAll("[/:]", "_") : display;
+        return forKey ? display.replaceAll("[/:]", "_") : display; // NOI18N
     }
     
     private void removeInstanceDefinition(HudsonInstanceImpl instance) {

@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import javax.swing.JMenuItem;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.lib.NavigationHistory;
@@ -57,14 +58,16 @@ import org.openide.util.WeakListeners;
  *
  * @author Vita Stejskal
  */
+@EditorActionRegistration(
+        name = "jump-list-last-edit",
+        iconResource = "org/netbeans/modules/editor/resources/last_edit_location_16.png",
+        shortDescription = "#NavigationHistoryLastEditAction_Tooltip_simple"
+)
 public final class NavigationHistoryLastEditAction extends BaseAction implements PropertyChangeListener {
     
     private static final Logger LOG = Logger.getLogger(NavigationHistoryLastEditAction.class.getName());
     
     public NavigationHistoryLastEditAction() {
-        super("jump-list-last-edit"); //NOI18N
-        putValue(ICON_RESOURCE_PROPERTY, "org/netbeans/modules/editor/resources/last_edit_location_16.png"); // NOI18N
-
         update();
         NavigationHistory nav = NavigationHistory.getEdits();
         nav.addPropertyChangeListener(WeakListeners.propertyChange(this, nav));
@@ -97,8 +100,6 @@ public final class NavigationHistoryLastEditAction extends BaseAction implements
     
     private void update() {
         NavigationHistory nav = NavigationHistory.getEdits();
-        putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NavigationHistoryLastEditAction.class, 
-            "NavigationHistoryLastEditAction_Tooltip_simple"));
         setEnabled(nav.hasNextWaypoints() || nav.hasPreviousWaypoints() || null != nav.getCurrentWaypoint());
     }
  

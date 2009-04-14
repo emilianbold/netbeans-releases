@@ -41,6 +41,8 @@ package org.netbeans.modules.dlight.sync;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
@@ -52,16 +54,17 @@ import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
+import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
-import org.netbeans.modules.dlight.spi.util.MangledNameType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
-import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.FunctionName;
+import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,6 +73,7 @@ import org.openide.util.NbBundle;
  */
 public final class SyncToolConfigurationProvider implements DLightToolConfigurationProvider {
 
+    private static final int INDICATOR_POSITION = 300;
     private static final String TOOL_NAME = loc("SyncTool.ToolName"); // NOI18N    
     private static final Column timestampColumn =
         new Column("timestamp", Long.class, loc("SyncTool.ColumnName.timestamp"), null); // NOI18N
@@ -85,6 +89,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         new Column("stackid", Integer.class, loc("SyncTool.ColumnName.stackid"), null); // NOI18N
     private static final Column locksColumn =
         new Column("locks", Float.class, loc("SyncTool.ColumnName.locks"), null); // NOI18N
+    private static final Column threadsColumn =
+        new Column("threads", Integer.class, loc("SyncTool.ColumnName.threads"), null); // NOI18N
     private static final DataTableMetadata rawTableMetadata;
 
 
@@ -97,7 +103,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             timeColumn,
             stackColumn);
 
-        rawTableMetadata = new DataTableMetadata("sync", rawColumns);
+        rawTableMetadata = new DataTableMetadata("sync", rawColumns);//NOI18N
     }
 
     public SyncToolConfigurationProvider() {
@@ -105,7 +111,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     public DLightToolConfiguration create() {
         DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME);
-        toolConfiguration.setIcon("org/netbeans/modules/dlight/sync/resources/threads.png");
+        toolConfiguration.setIcon("org/netbeans/modules/dlight/sync/resources/threads.png");//NOI18N
         List<DataCollectorConfiguration> dcConfigurations = initDataCollectorConfigurations();
         for (DataCollectorConfiguration dc : dcConfigurations) {
             toolConfiguration.addDataCollectorConfiguration(dc);
@@ -133,7 +139,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
         result.add(new MultipleDTDCConfiguration(
             dataCollectorConfiguration, "sync:")); // NOI18N
-        result.add(new SunStudioDCConfiguration(CollectedInfo.SYNCHRONIZARION));
+        result.add(new SunStudioDCConfiguration(CollectedInfo.SYNCHRONIZATION));
         result.add(new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.SYNC));
         return result;
     }
@@ -144,11 +150,12 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         IndicatorMetadata indicatorMetadata = null;
         List<Column> indicatorColumns = new ArrayList<Column>();
         indicatorColumns.add(locksColumn);
+        indicatorColumns.add(threadsColumn);
         indicatorColumns.add(SunStudioDCConfiguration.c_ulockSummary);
         indicatorColumns.addAll(LLDataCollectorConfiguration.SYNC_TABLE.getColumns());
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
         SyncIndicatorConfiguration indicatorConfiguration =
-            new SyncIndicatorConfiguration(indicatorMetadata);
+            new SyncIndicatorConfiguration(indicatorMetadata, INDICATOR_POSITION);
 
         indicatorConfiguration.addVisualizerConfiguration(getDetails(rawTableMetadata));
 
@@ -157,12 +164,15 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         DataTableMetadata detailedViewTableMetadata =
             SunStudioDCConfiguration.getSyncTableMetadata(
             SunStudioDCConfiguration.c_name,
-            SunStudioDCConfiguration.c_iSync,
-            SunStudioDCConfiguration.c_iSyncn);
+            SunStudioDCConfiguration.c_eSync,
+            SunStudioDCConfiguration.c_eSyncn);
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName() ,null, SunStudioDCConfiguration.c_name.getColumnName());
+//        indicatorConfiguration.addVisualizerConfiguration(new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata,
+//            SunStudioDCConfiguration.c_name.getColumnName(), SunStudioDCConfiguration.c_name.getColumnName()));
 
-        indicatorConfiguration.addVisualizerConfiguration(new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata,
-            SunStudioDCConfiguration.c_name.getColumnName(), SunStudioDCConfiguration.c_name.getColumnName()));
-
+        FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
+            new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadata, functionDesc, Arrays.asList(SunStudioDCConfiguration.c_eSync, SunStudioDCConfiguration.c_eSyncn));
+        indicatorConfiguration.addVisualizerConfiguration(tableVisualizerConfiguration);
 
         return indicatorConfiguration;
     }
@@ -170,12 +180,12 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private List<IndicatorDataProviderConfiguration> initIndicatorDataProviderConfigurations() {
 
         List<IndicatorDataProviderConfiguration> lockIndicatorDataProviders = new ArrayList<IndicatorDataProviderConfiguration>();
-        final DataTableMetadata indicatorTableMetadata = new DataTableMetadata("locks", Arrays.asList(locksColumn));
+        final DataTableMetadata indicatorTableMetadata = new DataTableMetadata("locks", Arrays.asList(locksColumn, threadsColumn));//NOI18N
         List<DataTableMetadata> indicatorTablesMetadata = Arrays.asList(indicatorTableMetadata);
         CLIODCConfiguration lockConf = new CLIODCConfiguration(
             "/bin/prstat", "-mv -p @PID -c 1", // NOI18N
-            new SyncCLIOParser(locksColumn), indicatorTablesMetadata);
-        lockConf.setName("prstat");
+            new SyncCLIOParser(locksColumn, threadsColumn), indicatorTablesMetadata);
+        lockConf.setName("prstat");//NOI18N
         lockIndicatorDataProviders.add(lockConf);
 
         lockIndicatorDataProviders.add(new SunStudioDCConfiguration(CollectedInfo.SYNCSUMMARY));
@@ -188,10 +198,13 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     private static class SyncCLIOParser implements CLIOParser {
 
+        private static final Pattern TOTAL = Pattern.compile("^Total: \\d+ processes, (\\d+) lwps"); // NOI18N
         private final List<String> colnames;
+        private float locks;
+        private boolean nextLineShouldBeTotal;
 
-        public SyncCLIOParser(Column locksColumn) {
-            colnames = Arrays.asList(locksColumn.getColumnName());
+        public SyncCLIOParser(Column locksColumn, Column threadsColumn) {
+            colnames = Arrays.asList(locksColumn.getColumnName(), threadsColumn.getColumnName());
         }
 
         public DataRow process(String line) {
@@ -209,50 +222,55 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
             line = line.trim();
 
-            if (!Character.isDigit(line.charAt(0))) {
-                return null;
+            if (Character.isDigit(line.charAt(0))) {
+                line = line.replaceAll(",", ".");//NOI18N
+                String[] tokens = line.split("[ \t]+");//NOI18N
+                if (tokens.length < 8) {
+                    return null;
+                }
+                try {
+                    locks = Float.parseFloat(tokens[7]);
+                    nextLineShouldBeTotal = true;
+                } catch (NumberFormatException ex) {
+                }
+            } else if (nextLineShouldBeTotal) {
+                Matcher m = TOTAL.matcher(line);
+                if (m.find()) {
+                    try {
+                        int threads = Integer.parseInt(m.group(1));
+                        return new DataRow(colnames, Arrays.asList(locks, threads));
+                    } catch (NumberFormatException ex) {
+                    } finally {
+                        nextLineShouldBeTotal = false;
+                    }
+                }
             }
-
-            String l = line.trim();
-            l = l.replaceAll(",", ".");
-            String[] tokens = l.split("[ \t]+");
-
-            if (tokens.length < 8) {
-                return null;
-            }
-
-            try {
-                float locks = Float.parseFloat(tokens[7]);
-                return new DataRow(colnames, Arrays.asList(locks));
-            } catch (NumberFormatException ex) {
-                return null;
-            }
+            return null;
         }
     }
 
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
         DataTableMetadata viewTableMetadata = null;
+        Column syncTimeColumn = new Column("time", Long.class, "Time, ms", null);//NOI18N
+        Column syncCountColumn = new Column("count", Long.class, "Count", null);//NOI18N
         List<Column> viewColumns = Arrays.asList(
             new Column("id", Integer.class, "id", null),// NOI18N
-            new Column("func_name", MangledNameType.class, "Function", null),// NOI18N
-            new Column("time", Long.class, "Time, ms", null),// NOI18N
-            new Column("count", Long.class, "Count", null));// NOI18N
-        String sql = "SELECT func.func_id as id, func.func_name as func_name, SUM(sync.time/1000000) as time, COUNT(*) as count" +// NOI18N
+            new Column("func_name", FunctionName.class, "Function", null),// NOI18N
+            syncTimeColumn,
+            syncCountColumn);
+        String sql = "SELECT func.func_id as id, func.func_name as func_name, node.offset as offset, SUM(sync.time/1000000) as time, COUNT(*) as count" +// NOI18N
             " FROM sync, node AS node, func" +// NOI18N
             " WHERE  sync.stackid = node.node_id and node.func_id = func.func_id" +// NOI18N
-            " GROUP BY node.func_id, func.func_id, func.func_name"; // NOI18N
+            " GROUP BY node.func_id, func.func_id, func.func_name, node.offset"; // NOI18N
 
         viewTableMetadata = new DataTableMetadata("sync", viewColumns, sql, Arrays.asList(rawTableMetadata));// NOI18N
-        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
-            new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name", "id");// NOI18N
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_name", "offset", "id");//NOI18N
+//        AdvancedTableViewVisualizerConfiguration tableVisualizerConfiguration =
+//            new AdvancedTableViewVisualizerConfiguration(viewTableMetadata, "func_name", "id");// NOI18N
 
-        tableVisualizerConfiguration.setEmptyAnalyzeMessage(
-            loc("DetailedView.EmptyAnalyzeMessage")); // NOI18N
+        FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
+            new FunctionsListViewVisualizerConfiguration(viewTableMetadata, functionDesc, Arrays.asList(syncCountColumn, syncTimeColumn));
 
-        tableVisualizerConfiguration.setEmptyRunningMessage(
-            loc("DetailedView.EmptyRunningMessage")); // NOI18N
-
-        tableVisualizerConfiguration.setDefaultActionProvider();
 
         return tableVisualizerConfiguration;
     }

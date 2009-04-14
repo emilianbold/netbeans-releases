@@ -106,7 +106,7 @@ public class InstanceDialog extends DialogDescriptor {
                 try {
                     URL u = new URL(panel.getUrl());
                     HttpURLConnection connection = new ConnectionBuilder().homeURL(u).url(u).httpConnection();
-                    String sVersion = connection.getHeaderField("X-Hudson");
+                    String sVersion = connection.getHeaderField("X-Hudson"); // NOI18N
                     connection.disconnect();
                     if (sVersion == null) {
                         problem(NbBundle.getMessage(InstanceDialog.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
@@ -117,10 +117,8 @@ public class InstanceDialog extends DialogDescriptor {
                         problem(NbBundle.getMessage(InstanceDialog.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
                         return;
                     }
-                } catch (MalformedURLException x) {
-                    assert false : x; // should have been caught by form validator already
                 } catch (IOException x) {
-                    LOG.log(Level.FINE, null, x);
+                    LOG.log(Level.INFO, null, x);
                     problem(NbBundle.getMessage(InstanceDialog.class, "MSG_FailedToConnect"));
                     return;
                 } catch (IllegalArgumentException x) { // JRE #6797318

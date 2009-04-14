@@ -49,12 +49,14 @@ public final class TimeMetric {
     static public final FunctionMetric UserFuncTimeExclusive = fm("e.user", Double.class); // NOI18N
     static public final FunctionMetric SyncWaitTimeInclusive = fm("i.sync", Double.class); // NOI18N
     static public final FunctionMetric SyncWaitCallInclusive = fm("i.syncn", Integer.class); // NOI18N
+    static public final FunctionMetric SyncWaitTimeExclusive = fm("e.sync", Double.class); // NOI18N
+    static public final FunctionMetric SyncWaitCallExclusive = fm("e.syncn", Integer.class); // NOI18N
 
     static private FunctionMetric fm(String id, Class clazz) {
         return FunctionMetricsFactory.getInstance().getFunctionMetric(
-                new FunctionMetricConfiguration(id,
-                NbBundle.getMessage(TimeMetric.class,
-                "TimeMetric." + id + ".uname"), clazz)); // NOI18N
+            new FunctionMetricConfiguration(id,
+            NbBundle.getMessage(TimeMetric.class,
+            "TimeMetric." + id + ".uname"), clazz)); // NOI18N
     }
 }
 

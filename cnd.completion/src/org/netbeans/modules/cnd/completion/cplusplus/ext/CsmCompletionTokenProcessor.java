@@ -260,6 +260,18 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
         }
     }
 
+    private void setExprToTYPE(CsmCompletionExpression exp) {
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < exp.getTokenCount(); i++) {
+            if (i > 0) {
+                buf.append(" ");// NOI18N
+            }
+            buf.append(exp.getTokenText(i));
+        }
+        exp.setType(buf.toString());
+        exp.setExpID(TYPE);
+    }
+
     /** Check whether there can be any joining performed
      * for current expressions on the stack.
      * @param tokenID tokenID of the current token
@@ -286,7 +298,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 case AMP:
                                 case CONST:
                                 case IDENTIFIER:
-                                    top.setExpID(TYPE);
+                                    setExprToTYPE(top);
                                     stop = true;
                                     break;
                             }
@@ -300,7 +312,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 case CONST:
                                 case IDENTIFIER:
                                     popExp();
-                                    top2.setExpID(TYPE);
+                                    setExprToTYPE(top2);
                                     for (int i = 0; i < top.getTokenCount(); ++i) {
                                         top2.addToken(top.getTokenID(i),
                                                 top.getTokenOffset(i),
@@ -332,7 +344,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                 case AMP:
                                 case CONST:
                                 case IDENTIFIER:
-                                    top.setExpID(TYPE);
+                                    setExprToTYPE(top);
                                     break;
                             }
                             break;
@@ -815,6 +827,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
 //                        if (topID == GENERIC_WILD_CHAR)
 //                            break;
 
+                    case TYPEID:
                     case IDENTIFIER: // identifier found e.g. 'a'
                          {
                             switch (topID) {
@@ -1581,6 +1594,12 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                         top = top2;
                                         break;
 
+                                    case PARENTHESIS_OPEN:
+                                        popExp();
+                                        top2.addParameter(top);
+                                        top = top2;
+                                        break;
+
                                     default:
                                         int cnt = expStack.size();
                                         CsmCompletionExpression gen = null;
@@ -1633,7 +1652,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                         break;
                                     case DOT_OPEN:
                                     case ARROW_OPEN:
-                                    case SCOPE_OPEN: {
+                                    case SCOPE_OPEN:
+                                    {
                                         CsmCompletionExpression top3 = peekExp2();
                                         if (getValidExpID(top3) == ANNOTATION) {
                                             top2.setExpID(openExpID2ExpID(top2ID)); // *_OPEN => *, use value of case
@@ -1643,6 +1663,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                             popExp();
                                             break;
                                         }
+                                        // nobreak
                                     }
                                     default:
                                         CsmCompletionExpression mtdOpExp = createTokenExp(METHOD_OPEN);
@@ -1669,6 +1690,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                             case PARENTHESIS:      // if (a > b) (
                             case GENERIC_TYPE_OPEN:// a < (
                             case MEMBER_POINTER_OPEN:// *(
+                            case UNARY_OPERATOR: // !(
                                 pushExp(createTokenExp(PARENTHESIS_OPEN));
                                 break;
 
@@ -1739,7 +1761,11 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                         } else {
                                             popExp();
                                             top2.addParameter(top);
-                                            top2.setExpID(CsmCompletionExpression.isValidType(top) ? CONVERSION : PARENTHESIS);
+                                            if (top2.getParameterCount() == 1 && CsmCompletionExpression.isValidType(top)) {
+                                                top2.setExpID(CONVERSION);
+                                            } else {
+                                                top2.setExpID(PARENTHESIS);
+                                            }
                                             addTokenTo(top2);
                                         }
                                         break;
@@ -2078,7 +2104,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
             }
         }
 
-        if (kwdType != null) { // keyword constant (in conversions)
+        if (kwdType != null && tokenID != CppTokenId.TYPEID) { // keyword constant (in conversions)
             switch (topID) {
                 case NO_EXP: // declaration started with type name
                 case NEW: // possibly new kwdType[]
@@ -2112,6 +2138,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                         case VOLATILE:
                             expType = TYPE_PREFIX;
                     }
+                    setExprToTYPE(top);
                     top.setExpID(expType);
                 // fallthrough
                 }

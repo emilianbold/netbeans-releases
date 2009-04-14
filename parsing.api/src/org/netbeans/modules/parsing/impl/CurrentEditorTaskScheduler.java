@@ -75,11 +75,13 @@ public abstract class CurrentEditorTaskScheduler extends Scheduler {
                 JTextComponent editor = EditorRegistry.focusedComponent ();
                 if (editor == currentEditor) return;
                 currentEditor = editor;
-                Document document = editor.getDocument ();
-                FileObject fileObject = NbEditorUtilities.getFileObject (document);
-                if (fileObject == null) {
-                    System.out.println("no file object for " + document);
-                    return;
+                if (currentEditor != null) {
+                    Document document = currentEditor.getDocument ();
+                    FileObject fileObject = NbEditorUtilities.getFileObject (document);
+                    if (fileObject == null) {
+                        System.out.println("no file object for " + document);
+                        return;
+                    }
                 }
                 setEditor (currentEditor);
             }

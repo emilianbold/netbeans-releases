@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
+import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.loaders.DataObject;
@@ -129,7 +129,7 @@ public class JspContextInfoImpl extends JspContextInfo {
         return getCachedParseResult(fo, successfulOnly, preferCurrent, false);
     }
     
-    public JSPColoringData getJSPColoringData (FileObject fo) {
+    public JspColoringData getJSPColoringData (FileObject fo) {
         TagLibParseSupport sup = getTagLibParseSupport (fo);
         if (sup != null) {
             return sup.getJSPColoringData ();

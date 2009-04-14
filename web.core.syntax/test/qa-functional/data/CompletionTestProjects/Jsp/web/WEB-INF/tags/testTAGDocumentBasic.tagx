@@ -3,7 +3,7 @@
 <!-- completion for tags -->
 <%--CC
 <j|
-< jsp:directive.attribute / >
+jsp:directive.attribute
 <jsp:directive.attribute
 --%>
 
@@ -17,9 +17,20 @@ language
 <!-- completion for end tags -->
 <%--CC
 <jsp:body><html></|
-< /jsp:body >
+/jsp:body
 <jsp:body><html></jsp:body>
 --%>
 
-</jsp:root>
+<%--CC
+<jsp:directive.attribute fragment="|"/>
+true
+<jsp:directive.attribute fragment="true"/>
+--%>
 
+<%--CC
+<jsp:directive.tag isELIgnored="|"/>
+false
+<jsp:directive.tag isELIgnored="false"/>
+--%>
+
+</jsp:root>

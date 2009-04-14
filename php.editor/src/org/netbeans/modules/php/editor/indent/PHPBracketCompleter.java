@@ -1624,6 +1624,11 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         boolean onlyWhitespaceFollows = (Boolean) result[4];
         
         Token<?extends PHPTokenId> token = ts.token();
+
+        if (token == null){ // Issue #151886
+            return false;
+        }
+
         Token<?extends PHPTokenId> previousToken = ts.movePrevious() ? ts.token() : null;
 
         // Check if we are inside a comment
@@ -1632,10 +1637,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             token.id() == PHPTokenId.PHPDOC_COMMENT ||
             token.id() == PHPTokenId.T_INLINE_HTML // #132981
         ) {
-            return false;
-        } else if (onlyWhitespaceFollows && previousToken != null && previousToken.id() == PHPTokenId.PHP_LINE_COMMENT) {
-            // We could be at the EOL of a line comment, token is the EOL whitespace,
-            // but the previous token is PHP_LINE_COMMENT
             return false;
         }
 

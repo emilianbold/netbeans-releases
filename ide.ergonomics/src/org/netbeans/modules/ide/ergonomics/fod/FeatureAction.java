@@ -40,37 +40,34 @@ package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.SwingUtilities;
+import javax.swing.JDialog;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.ide.ergonomics.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public class FeatureAction implements ActionListener, Runnable {
-
-    private boolean success;
+public class FeatureAction implements ActionListener {
     private FileObject fo;
-    private boolean isDelegateAction = false;
+    private ProgressHandle handle;
+    private JDialog dialog;
 
-    public FeatureAction(FileObject fo, boolean delegate) {
+    private FeatureAction(FileObject fo) {
         this.fo = fo;
-        this.isDelegateAction = delegate;
+    }
+
+    public static ActionListener create(FileObject fo) {
+        return new FeatureAction(fo);
     }
 
     public void actionPerformed(ActionEvent e) {
-        success = false;
-        RequestProcessor.Task t = RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
-        if (isDelegateAction) {
-            t.waitFinished ();
-        } else {
-            return ;
-        }
-        
-        if (! success) {
-            return ;
+        FeatureInfo info = FoDFileSystem.getInstance().whichProvides(fo);
+        boolean success = Utilities.featureDialog(info, (String)fo.getAttribute("displayName"), "Kuk");
+        if (!success) {
+            return;
         }
         
         FileObject newFile = FileUtil.getConfigFile(fo.getPath());
@@ -82,11 +79,5 @@ public class FeatureAction implements ActionListener, Runnable {
         if (obj instanceof ActionListener) {
             ((ActionListener)obj).actionPerformed(e);
         }
-    }
-
-    public void run() {
-        assert ! SwingUtilities.isEventDispatchThread () : "Cannot run in EQ!";
-        FeatureInfo info = FoDFileSystem.getInstance().whichProvides(fo);
-        success = ModulesInstaller.installModules(info);
     }
 }

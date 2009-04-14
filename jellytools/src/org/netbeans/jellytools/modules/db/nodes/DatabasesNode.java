@@ -48,7 +48,7 @@ import org.netbeans.jellytools.modules.db.actions.DisableDebugAction;
 import org.netbeans.jellytools.modules.db.actions.EnableDebugAction;
 import org.netbeans.jellytools.nodes.Node;
 
-/** Node representing "Databases" node in Runtime tab.
+/** Node representing "Databases" node in Services tab.
  * <p>
  * Usage:<br>
  * <pre>
@@ -61,8 +61,8 @@ import org.netbeans.jellytools.nodes.Node;
  */
 public class DatabasesNode extends Node {
     static final String TREE_PATH = Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
-                "NDN_Databases");
+                "org.netbeans.modules.db.explorer.node.Bundle",
+                "Databases");
     private static final Action enableDebugAction = new EnableDebugAction();
     private static final Action disableDebugAction = new DisableDebugAction();
     

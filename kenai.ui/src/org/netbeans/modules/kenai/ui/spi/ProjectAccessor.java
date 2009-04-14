@@ -28,19 +28,21 @@ public abstract class ProjectAccessor {
     /**
      * Retrieve the list of projects the given user is member of.
      * @param login
-     * @return
+     * @param forceRefresh force reload from server
+     * @return list of member projects or null, if member projects
+     * are not accessible
      */
-    public abstract List<ProjectHandle> getMemberProjects( LoginHandle login );
+    public abstract List<ProjectHandle> getMemberProjects( LoginHandle login, boolean forceRefresh );
 
     /**
      * Load details for given project.
      * @param projectId Project identification
-     * @return
+     * @param forceRefresh force reload from server
+     * @return projectHandle or null, if project handle not accessible
      */
-    public abstract ProjectHandle getNonMemberProject( String projectId );
+    public abstract ProjectHandle getNonMemberProject(String projectId, boolean forceRefresh);
 
     /**
-     * @param d
      * @return Adds a Kenai project into given Dashboard window.
      */
     public abstract ActionListener getOpenNonMemberProjectAction();
@@ -52,7 +54,7 @@ public abstract class ProjectAccessor {
     public abstract ActionListener getDetailsAction( ProjectHandle project );
     /**
      *
-     * @param query
+     * @param project 
      * @return Action to invokie when user pressed Enter key on the header line
      * for given project.
      */

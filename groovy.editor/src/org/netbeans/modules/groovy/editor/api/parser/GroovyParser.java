@@ -42,18 +42,23 @@
 package org.netbeans.modules.groovy.editor.api.parser;
 
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyResourceLoader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.Phases;
@@ -65,7 +70,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
-import org.netbeans.modules.groovy.editor.api.elements.AstRootElement;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -73,6 +77,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.Token;
@@ -87,23 +92,30 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
  * @author Martin Adamek
  */
-class GroovyParser extends Parser {
+public class GroovyParser extends Parser {
 
     private static final Logger LOG = Logger.getLogger(GroovyParser.class.getName());
 
     private static final AtomicLong PARSING_TIME = new AtomicLong(0);
 
     private static final AtomicInteger PARSING_COUNT = new AtomicInteger(0);
-    
+
+    private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath(new URL[] {});
+
+    private static long maximumParsingTime;
+
     private boolean waitJavaScanFinished = true;
 
     private GroovyParserResult lastResult;
-    
+
+    private AtomicBoolean cancelled = new AtomicBoolean();
+
     public GroovyParser() {
         super();
     }
@@ -118,9 +130,14 @@ class GroovyParser extends Parser {
         // FIXME parsing API
     }
 
+    public boolean isCancelled() {
+        return cancelled.get();
+    }
+
     @Override
     public void cancel() {
-        // FIXME parsing API
+        LOG.log(Level.FINEST, "Parser cancelled");
+        cancelled.set(true);
     }
 
     @Override
@@ -131,6 +148,8 @@ class GroovyParser extends Parser {
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        cancelled.set(false);
+
         Context context = new Context(snapshot, event);
         final List<Error> errors = new ArrayList<Error>();
         context.errorHandler = new ParseErrorHandler() {
@@ -139,45 +158,23 @@ class GroovyParser extends Parser {
             }
         };
         lastResult = parseBuffer(context, Sanitize.NONE);
-        lastResult.setErrors(errors);
+        if (lastResult != null) {
+            lastResult.setErrors(errors);
+        } else {
+            // FIXME just temporary
+            lastResult = createParseResult(snapshot, null, null);
+        }
     }
-
-//    public void parseFiles(Job job) {
-//        ParseListener listener = job.listener;
-//        SourceFileReader reader = job.reader;
-//        for (ParserFile file : job.files) {
-//            ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
-//            listener.started(beginEvent);
-//
-//            ParserResult result = null;
-//
-//            try {
-//                CharSequence buffer = reader.read(file);
-//                String source = asString(buffer);
-//                int caretOffset = reader.getCaretOffset(file);
-//                Context context = new Context(file, listener, source, caretOffset, AstUtilities.getBaseDocument(file.getFileObject(), true));
-//                result = parseBuffer(context, Sanitize.NONE);
-//            } catch (IOException ioe) {
-//                listener.exception(ioe);
-//                result = createParseResult(file, null, null, null);
-//            }
-//
-//            ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
-//            listener.finished(doneEvent);
-//        }
-//    }
 
     void setWaitJavaScanFinished(boolean shouldWait) {
         waitJavaScanFinished = shouldWait;
     }
 
-    protected GroovyParserResult createParseResult(Snapshot snapshot, AstRootElement rootElement, ErrorCollector errorCollector) {
-        
-        GroovyParserResult parserResult = new GroovyParserResult(this, snapshot, rootElement, errorCollector);
-        
+    protected GroovyParserResult createParseResult(Snapshot snapshot, ModuleNode rootNode, ErrorCollector errorCollector) {
+        GroovyParserResult parserResult = new GroovyParserResult(this, snapshot, rootNode, errorCollector);
         return parserResult;
     }
-    
+
     private boolean sanitizeSource(Context context, Sanitize sanitizing) {
 
         if (sanitizing == Sanitize.MISSING_END) {
@@ -301,7 +298,7 @@ class GroovyParser extends Parser {
                         if (line.endsWith("?.") || line.endsWith(".&")) { // NOI18N
                             removeChars = 2;
                         } else if (line.endsWith(".") || line.endsWith("(")) { // NOI18N
-                            removeChars = 1; 
+                            removeChars = 1;
                         } else if (line.endsWith(",")) { // NOI18N                            removeChars = 1;
                             removeChars = 1;
                         } else if (line.endsWith(", ")) { // NOI18N
@@ -349,7 +346,7 @@ class GroovyParser extends Parser {
 
         return false;
     }
-    
+
     @SuppressWarnings("fallthrough")
     private GroovyParserResult sanitize(final Context context,
         final Sanitize sanitizing) {
@@ -412,6 +409,10 @@ class GroovyParser extends Parser {
 
     @SuppressWarnings("unchecked")
     GroovyParserResult parseBuffer(final Context context, final Sanitize sanitizing) {
+        if (isCancelled()) {
+            return null;
+        }
+
         boolean sanitizedSource = false;
         String source = context.source;
         if (!((sanitizing == Sanitize.NONE) || (sanitizing == Sanitize.NEVER))) {
@@ -426,29 +427,27 @@ class GroovyParser extends Parser {
                 return sanitize(context, sanitizing);
             }
         }
-        
+
         final boolean ignoreErrors = sanitizedSource;
 
         if (sanitizing == Sanitize.NONE) {
             context.errorOffset = -1;
         }
-        
+
         String fileName = "";
         if (context.snapshot.getSource().getFileObject() != null) {
             fileName = context.snapshot.getSource().getFileObject().getNameExt();
         }
-        
+
         FileObject fo = context.snapshot.getSource().getFileObject();
-        ClassPath bootPath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.BOOT);
-        ClassPath compilePath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        ClassPath sourcePath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        ClassPath bootPath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.BOOT);
+        ClassPath compilePath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        ClassPath sourcePath = fo == null ? EMPTY_CLASSPATH : ClassPath.getClassPath(fo, ClassPath.SOURCE);
         ClassPath cp = ClassPathSupport.createProxyClassPath(bootPath, compilePath, sourcePath);
-        
-        ClassLoader parentLoader = cp.getClassLoader(true);
-        
+
         CompilerConfiguration configuration = new CompilerConfiguration();
-        GroovyClassLoader classLoader = new GroovyClassLoader(parentLoader, configuration);
-        
+        GroovyClassLoader classLoader = new ParsingClassLoader(cp, configuration);
+
         ClasspathInfo cpInfo = ClasspathInfo.create(
                 // we should try to load everything by javac instead of classloader,
                 // but for now it is faster to use javac only for sources
@@ -458,58 +457,59 @@ class GroovyParser extends Parser {
                 // are found by Java and field completion does not work
                 // this has to evaluated and fixed - due to need of super
                 // ClassNode for exceptions
-                /*bootPath == null ?*/ ClassPathSupport.createClassPath(new FileObject[] {}) /* : bootPath*/,
-                /*compilePath == null ?*/ ClassPathSupport.createClassPath(new FileObject[] {}) /*: compilePath*/,
+                bootPath == null ? EMPTY_CLASSPATH : bootPath,
+                compilePath == null ? EMPTY_CLASSPATH : compilePath,
                 sourcePath);
         JavaSource javaSource = JavaSource.create(cpInfo);
 
-        CompilationUnit compilationUnit = new NbCompilationUnit(configuration, null, classLoader, javaSource, waitJavaScanFinished);
+        CompilationUnit compilationUnit = new CompilationUnit(this, configuration,
+                null, classLoader, javaSource, waitJavaScanFinished);
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
+
+        if (isCancelled()) {
+            return null;
+        }
 
         long start = 0;
         if (LOG.isLoggable(Level.FINEST)) {
             PARSING_COUNT.incrementAndGet();
             start = System.currentTimeMillis();
         }
-        
-        try {
-            compilationUnit.compile(Phases.CLASS_GENERATION);
 
-            if (LOG.isLoggable(Level.FINEST)) {
-                long full = PARSING_TIME.addAndGet(System.currentTimeMillis() - start);
-                LOG.log(Level.FINEST, "Compilation success in {0}; total time spent {1}; total count {2}",
-                        new Object[] {(System.currentTimeMillis() - start), full, PARSING_COUNT.intValue()});
+        try {
+            try {
+                compilationUnit.compile(Phases.CLASS_GENERATION);
+            } catch (CancellationException ex) {
+                // cancelled probably
+                if (isCancelled()) {
+                    return null;
+                }
+                throw ex;
             }
         } catch (Throwable e) {
-            if (LOG.isLoggable(Level.FINEST)) {
-                long full = PARSING_TIME.addAndGet(System.currentTimeMillis() - start);
-                LOG.log(Level.FINEST, "Compilation failure in {0}; total time spent {1}; total count {2}",
-                        new Object[] {(System.currentTimeMillis() - start), full, PARSING_COUNT.intValue()});
-            }
-
             int offset = -1;
             String errorMessage = e.getMessage();
             String localizedMessage = e.getLocalizedMessage();
-            
+
             ErrorCollector errorCollector = compilationUnit.getErrorCollector();
             if (errorCollector.hasErrors()) {
                 Message message = errorCollector.getLastError();
                 if (message instanceof SyntaxErrorMessage) {
                     SyntaxException se = ((SyntaxErrorMessage)message).getCause();
-                    
+
                     // if you have a single line starting with: "$
                     // SyntaxException.getStartLine() returns 0 instead of 1
-                    // we have to fix this here, before ending our life  
+                    // we have to fix this here, before ending our life
                     // in an Assertion in AstUtilities.getOffset().
-                    
+
                     int line = se.getStartLine();
-                    
+
                     if(line < 1 )
                         line = 1;
-                    
+
                     int col = se.getStartColumn();
-                    
+
                     if(col < 1 )
                         col = 1;
 
@@ -529,7 +529,7 @@ class GroovyParser extends Parser {
 //                    System.out.println("getStartLine(): " + line);
 //                    System.out.println("getLine(): " + se.getLine());
 //                    System.out.println("getStartColumn(): " + col);
-                    
+
                     // FIXME parsing API
                     if (context.document != null) {
                         offset = AstUtilities.getOffset(context.document, line, col);
@@ -537,8 +537,14 @@ class GroovyParser extends Parser {
                     errorMessage = se.getMessage();
                     localizedMessage = se.getLocalizedMessage();
                 }
+            } else {
+                if (LOG.isLoggable(Level.FINE)) {
+                    if (e instanceof CancellationException) {
+                        LOG.log(Level.FINE, null, e);
+                    }
+                }
             }
-            
+
             // XXX should this be >, and = length?
             if (offset >= source.length()) {
                 offset = source.length() - 1;
@@ -549,22 +555,27 @@ class GroovyParser extends Parser {
             }
 
             /*
-             
-            This used to be a direct call to notifyError(). Now all calls to 
+
+            This used to be a direct call to notifyError(). Now all calls to
             notifyError() should be done via handleErrorCollector() below
             to make sure to eliminate duplicates and the like.
-            
+
             I've added the two logging calls only for debugging purposes
-            
+
              */
-            
+
              // if (!ignoreErrors) {
              //      notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
              // }
-            
+
             LOG.log(Level.FINEST, "Comp-Ex, errorMessage    : {0}", errorMessage);
             LOG.log(Level.FINEST, "Comp-Ex, localizedMessage: {0}", localizedMessage);
-            
+
+        } finally {
+            if (LOG.isLoggable(Level.FINEST)) {
+                logParsingTime(context, start, isCancelled());
+            }
+
         }
 
         CompileUnit compileUnit = compilationUnit.getAST();
@@ -580,16 +591,35 @@ class GroovyParser extends Parser {
         }
 
         handleErrorCollector(compilationUnit.getErrorCollector(), context, module, ignoreErrors, sanitizing);
-        
+
         if (module != null) {
             context.sanitized = sanitizing;
             // FIXME parsing API
-            AstRootElement astRootElement = new AstRootElement(context.snapshot.getSource().getFileObject(), module);
-            GroovyParserResult r = createParseResult(context.snapshot, astRootElement, compilationUnit.getErrorCollector());
+            GroovyParserResult r = createParseResult(context.snapshot, module, compilationUnit.getErrorCollector());
             r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             return r;
         } else {
             return sanitize(context, sanitizing);
+        }
+    }
+
+    private static void logParsingTime(Context context, long start, boolean cancelled) {
+        long diff = System.currentTimeMillis() - start;
+        long full = PARSING_TIME.addAndGet(diff);
+        if (cancelled) {
+            LOG.log(Level.FINEST, "Compilation cancelled in {0} for file {3}; total time spent {1}; total count {2}",
+                    new Object[] {diff, full, PARSING_COUNT.intValue(), context.snapshot.getSource().getFileObject()});
+        } else {
+            LOG.log(Level.FINEST, "Compilation finished in {0} for file {3}; total time spent {1}; total count {2}",
+                    new Object[] {diff, full, PARSING_COUNT.intValue(), context.snapshot.getSource().getFileObject()});
+        }
+
+        synchronized (GroovyParser.class) {
+            if (diff > maximumParsingTime) {
+                maximumParsingTime = diff;
+                LOG.log(Level.FINEST, "Maximum parsing time has been updated to {0}; file {1}",
+                    new Object[] {diff, context.snapshot.getSource().getFileObject()});
+            }
         }
     }
 
@@ -601,12 +631,12 @@ class GroovyParser extends Parser {
         }
     }
 
-    private static void notifyError(Context context, String key, Severity severity, String description, String details, 
+    private static void notifyError(Context context, String key, Severity severity, String description, String details,
             int offset, Sanitize sanitizing) {
         notifyError(context, key, severity, description, details, offset, offset, sanitizing);
     }
 
-    private static void notifyError(Context context, String key, Severity severity, String description, String displayName, 
+    private static void notifyError(Context context, String key, Severity severity, String description, String displayName,
             int startOffset, int endOffset, Sanitize sanitizing) {
 
         LOG.log(Level.FINEST, "---------------------------------------------------");
@@ -615,14 +645,14 @@ class GroovyParser extends Parser {
         LOG.log(Level.FINEST, "displayName : {0}\n", displayName);
         LOG.log(Level.FINEST, "startOffset : {0}\n", startOffset);
         LOG.log(Level.FINEST, "endOffset   : {0}\n", endOffset);
-        
+
         // FIXME: we silently drop errors which have no description here.
         // There might be still a way to recover.
         if(description == null) {
             LOG.log(Level.FINEST, "dropping error");
             return;
         }
-        
+
         // TODO: we might need a smarter way to provide a key in the long run.
         if (key == null) {
             key = description;
@@ -632,13 +662,12 @@ class GroovyParser extends Parser {
         if (displayName == null) {
             displayName = description;
         }
-        
+
         Error error =
             new GroovyError(key, displayName, description, context.snapshot.getSource().getFileObject(),
                 startOffset, endOffset, severity, getIdForErrorMessage(description));
 
-        // parsing API
-        //context.listener.error(error);
+        context.errorHandler.error(error);
 
         if (sanitizing == Sanitize.NONE) {
             context.errorOffset = startOffset;
@@ -656,9 +685,10 @@ class GroovyParser extends Parser {
 
         return GroovyCompilerErrorID.UNDEFINED;
     }
-     
-    private void handleErrorCollector(ErrorCollector errorCollector, Context context, ModuleNode moduleNode, boolean ignoreErrors, Sanitize sanitizing) {
-        LOG.log(Level.FINEST, "handleErrorCollector()");
+
+    private void handleErrorCollector(ErrorCollector errorCollector, Context context,
+            ModuleNode moduleNode, boolean ignoreErrors, Sanitize sanitizing) {
+
         if (!ignoreErrors && errorCollector != null) {
             List errors = errorCollector.getErrors();
             if (errors != null) {
@@ -666,7 +696,7 @@ class GroovyParser extends Parser {
                     LOG.log(Level.FINEST, "Error found in collector: {0}", object);
                     if (object instanceof SyntaxErrorMessage) {
                         SyntaxException ex = ((SyntaxErrorMessage)object).getCause();
-                        
+
                         String sourceLocator = ex.getSourceLocator();
                         String name = null;
                         if (moduleNode != null) {
@@ -674,7 +704,7 @@ class GroovyParser extends Parser {
                         } else if (context.snapshot.getSource().getFileObject() != null) {
                             name = context.snapshot.getSource().getFileObject().getNameExt();
                         }
-                        
+
                         if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
                             int startLine = ex.getStartLine();
                             int startColumn = ex.getStartColumn();
@@ -699,20 +729,20 @@ class GroovyParser extends Parser {
             }
         }
     }
-    
+
     /** Attempts to sanitize the input buffer */
     public static enum Sanitize {
         /** Only parse the current file accurately, don't try heuristics */
-        NEVER, 
+        NEVER,
         /** Perform no sanitization */
-        NONE, 
+        NONE,
         /** Try to remove the trailing . or :: at the caret line */
-        EDITED_DOT, 
+        EDITED_DOT,
         /** Try to remove the trailing . or :: at the error position, or the prior
          * line, or the caret line */
-        ERROR_DOT, 
+        ERROR_DOT,
         /** Try to cut out the error line */
-        ERROR_LINE, 
+        ERROR_LINE,
         /** Try to cut out the current edited line, if known */
         EDITED_LINE,
         /** Attempt to add an "end" to the end of the buffer to make it compile */
@@ -734,7 +764,7 @@ class GroovyParser extends Parser {
         private String sanitizedContents;
         private int caretOffset;
         private Sanitize sanitized = Sanitize.NONE;
-        
+
         public Context(Snapshot snapshot, SourceModificationEvent event) {
             this.snapshot = snapshot;
             this.event = event;
@@ -743,12 +773,12 @@ class GroovyParser extends Parser {
             // FIXME parsing API
             this.document = LexUtilities.getDocument(snapshot.getSource(), true);
         }
-        
+
         @Override
         public String toString() {
             return "GroovyParser.Context(" + snapshot.getSource().getFileObject() + ")"; // NOI18N
         }
-        
+
         public OffsetRange getSanitizedRange() {
             return sanitizedRange;
         }
@@ -756,11 +786,11 @@ class GroovyParser extends Parser {
         Sanitize getSanitized() {
             return sanitized;
         }
-        
+
         public String getSanitizedSource() {
             return sanitizedSource;
         }
-        
+
         public int getErrorOffset() {
             return errorOffset;
         }
@@ -769,6 +799,60 @@ class GroovyParser extends Parser {
     private static interface ParseErrorHandler {
 
         void error(Error error);
-        
+
+    }
+
+    private static class ParsingClassLoader extends GroovyClassLoader {
+
+        private final CompilerConfiguration config;
+
+        private final ClassPath path;
+
+        private final GroovyResourceLoader resourceLoader = new GroovyResourceLoader() {
+            public URL loadGroovySource(final String filename) throws MalformedURLException {
+                URL file = (URL) AccessController.doPrivileged(new PrivilegedAction() {
+                    public Object run() {
+                        return getSourceFile(filename);
+                    }
+                });
+                return file;
+            }
+        };
+
+        public ParsingClassLoader(ClassPath path, CompilerConfiguration config) {
+            super(path.getClassLoader(true), config);
+            this.config = config;
+            this.path = path;
+        }
+
+        @Override
+        public Class loadClass(String name, boolean lookupScriptFiles,
+                boolean preferClassOverScript, boolean resolve) throws ClassNotFoundException, CompilationFailedException {
+
+            boolean assertsEnabled = false;
+            assert assertsEnabled = true;
+            if (assertsEnabled) {
+                Class clazz = super.loadClass(name, lookupScriptFiles, preferClassOverScript, resolve);
+                assert false : "Class " + clazz + " loaded by GroovyClassLoader";
+            }
+
+            // if it is a class (java or compiled groovy) it is resolved via java infr.
+            // if it is groovy it is resolved with resource loader with compile unit
+            throw new ClassNotFoundException();
+        }
+
+        @Override
+        public GroovyResourceLoader getResourceLoader() {
+            return resourceLoader;
+        }
+
+        private URL getSourceFile(String name) {
+            // this is slightly faster then original implementation
+            FileObject fo = path.findResource(name.replace('.', '/') + config.getDefaultScriptExtension());
+            if (fo == null || fo.isFolder()) {
+                return null;
+            }
+            return URLMapper.findURL(fo, URLMapper.EXTERNAL);
+        }
     }
 }

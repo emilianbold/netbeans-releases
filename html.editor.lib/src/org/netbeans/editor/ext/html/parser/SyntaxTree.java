@@ -36,105 +36,188 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
+import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.dtd.DTD.Content;
+import org.netbeans.editor.ext.html.dtd.DTD.ContentModel;
+import org.netbeans.editor.ext.html.dtd.DTD.Element;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
 public class SyntaxTree {
-    
-    public static AstNode makeTree(List<SyntaxElement> elements) {
+
+    public static AstNode makeTree(List<SyntaxElement> elements, DTD dtd) {
+        assert elements != null;
+        assert dtd != null;
+
         SyntaxElement last = elements.size() > 0 ? elements.get(elements.size() - 1) : null;
         int lastEndOffset = last == null ? 0 : last.offset() + last.length();
-        
+
         AstNode root = new AstNode("root", null, 0, lastEndOffset);
-        LinkedList<AstNode> nodeStack = new  LinkedList<AstNode>();
+        LinkedList<AstNode> nodeStack = new LinkedList<AstNode>();
         nodeStack.add(root);
-        
-        for (SyntaxElement element : elements){
-            if (element.type() == SyntaxElement.TYPE_TAG){
+
+        for (SyntaxElement element : elements) {
+            if (element.type() == SyntaxElement.TYPE_TAG) {
+                assert element instanceof SyntaxElement.Tag;
                 // OPENING TAG
                 // create tag node, push it on stack
                 // add opening tag node
-                
-                String tagName = ((SyntaxElement.Named)element).getName();
+
+                String tagName = ((SyntaxElement.Named) element).getName();
+                AstNode lastNode = !nodeStack.isEmpty() ? nodeStack.getLast() : null;
+
+//                System.out.println("--------------------------------");
+//                System.out.println("Processing tag " + tagName);
+//                System.out.println("Last open tag = " + (lastNode != null ? lastNode.name() : "<NONE>"));
+
+                Element currentNodeDtdElement = dtd.getElement(tagName.toUpperCase(Locale.ENGLISH));
+                ContentModel contentModel = null;
+                String errorMessage = null;
+
+                if (currentNodeDtdElement != null) {
+                    if (lastNode != null) {
+                        //check if the last open tag allows this tag as its content
+                        //if not, close the previous open tag by the end of this tag
+                        if (!lastNode.reduce(currentNodeDtdElement)) {
+                            //current node cannot be present inside its parent
+
+                            if (!lastNode.isResolved()) {
+                                String expectedElements = elementsToString(lastNode.getUnresolvedElements());
+                                //some mandatory content unresolved, report error
+                                errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
+                                        new Object[]{currentNodeDtdElement.getName(), expectedElements});
+
+//                                System.out.println(lastNode.isResolved() ? "Node resolved, ok." : "NODE NOT RESOLVED! Missing " + expectedElements);
+                            }
+
+                            //close the previous node
+                            lastNode.setEndOffset(element.offset());
+                            nodeStack.removeLast();
+//                            System.out.println("Closing tag " + lastNode.name() + " by the end of this tag!");
+
+                        }
+                    }
+
+                    //create DTD content for this node
+                    contentModel = currentNodeDtdElement.getContentModel();
+                }
+
                 int openingTagEndOffset = element.offset() + element.length();
-                
                 AstNode newTagNode = new AstNode(tagName, AstNode.NodeType.TAG,
-                        element.offset(), openingTagEndOffset);
-                        
+                        element.offset(), openingTagEndOffset, contentModel);
+
                 nodeStack.getLast().addChild(newTagNode);
-                assert element instanceof SyntaxElement.Tag;
-                
-                if (!((SyntaxElement.Tag) element).isEmpty()){
+                if (!((SyntaxElement.Tag) element).isEmpty()) {
                     nodeStack.add(newTagNode);
                 }
-                
+
                 AstNode openingTagNode = new AstNode(tagName, AstNode.NodeType.OPEN_TAG,
                         element.offset(), openingTagEndOffset);
-                
+
+                if (errorMessage != null) {
+                    openingTagNode.addErrorMessage(errorMessage);
+                }
                 newTagNode.addChild(openingTagNode);
             } else if (element.type() == SyntaxElement.TYPE_ENDTAG) {
                 // CLOSING TAG
                 // is it consistent with the last open tag? for now assuming 'yes'
                 // add closing tag node
                 // pop current node from the stack
-                
-                String tagName = ((SyntaxElement.Named)element).getName();        
+
+                String tagName = ((SyntaxElement.Named) element).getName();
                 int lastMatchedTag = nodeStack.size() - 1;
-                
-                while (!tagName.equals(nodeStack.get(lastMatchedTag).name()) && lastMatchedTag > 0){
-                    lastMatchedTag --;
+
+                while (!tagName.equals(nodeStack.get(lastMatchedTag).name()) && lastMatchedTag > 0) {
+                    lastMatchedTag--;
                 }
-                
+
                 int closingTagEndOffset = element.offset() + element.length();
-                            
+
                 AstNode closingTag = new AstNode(tagName, AstNode.NodeType.ENDTAG,
-                       element.offset(), closingTagEndOffset);
-                
-                if (tagName.equals(nodeStack.get(lastMatchedTag).name())){
+                        element.offset(), closingTagEndOffset);
+
+                if (tagName.equals(nodeStack.get(lastMatchedTag).name())) {
                     int nodesToDelete = nodeStack.size() - lastMatchedTag - 1;
                     removeNLastNodes(nodesToDelete, nodeStack);
-                    
-                    nodeStack.getLast().addChild(closingTag);
-                    nodeStack.getLast().setEndOffset(closingTagEndOffset);
+
+                    AstNode lastNode = nodeStack.getLast();
+
+                    lastNode.addChild(closingTag);
+                    lastNode.setEndOffset(closingTagEndOffset);
+
+                    //some error checks >>>
+                    if (lastNode.type() == AstNode.NodeType.TAG) {
+                        AstNode openTag = lastNode.children().get(0);
+                        assert openTag.type() == AstNode.NodeType.OPEN_TAG : "Unexpected tag type: " + openTag.type();
+
+                        //check if the tag content is resolved (only for html tags)
+                        if (dtd.getElement(openTag.name().toUpperCase(Locale.ENGLISH)) != null) {
+                            if (!lastNode.isResolved()) {
+                                //some mandatory content unresolved, report error to the open tag
+                                String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG",
+                                        new Object[]{elementsToString(lastNode.getUnresolvedElements())});
+ 
+                                openTag.addErrorMessage(errorMessage);
+                            }
+                        } else {
+                            //non-html tag, report error
+                            String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_TAG",
+                                    new Object[]{openTag.name()});
+                            openTag.addErrorMessage(errorMessage);
+                        }
+                    }
+                    //<<< end of error checks
+
                     nodeStack.removeLast();
                 } else {
                     // unmatched closing tag
                     AstNode newTagNode = new AstNode(tagName, AstNode.NodeType.TAG,
-                        element.offset(), closingTagEndOffset);
-                
+                            element.offset(), closingTagEndOffset);
+
                     newTagNode.markUnmatched();
                     nodeStack.getLast().addChild(newTagNode);
                     nodeStack.add(newTagNode);
                     newTagNode.addChild(closingTag);
                 }
-                
+
             } else {
                 // add a new AST node to the last node on the stack
                 AstNode.NodeType nodeType = intToNodeType(element.type());
-                
+
                 AstNode node = new AstNode(null, nodeType, element.offset(),
                         element.offset() + element.length());
-                
-                //hack
-                if(nodeType == AstNode.NodeType.DECLARATION) {
-                    node.setAttribute("public_id", ((SyntaxElement.Declaration)element).getPublicIdentifier()); //NOI18N
-                }
-                
+
                 nodeStack.getLast().addChild(node);
             }
         }
-        
+
         removeNLastNodes(nodeStack.size() - 1, nodeStack);
         return root;
     }
-    
+
+    private static String elementsToString(Collection<Element> elements) {
+        StringBuffer b = new StringBuffer();
+        for(Element e: elements) {
+            b.append('<');
+            b.append(e.getName());
+            b.append('>');
+            b.append(", ");
+        }
+
+        b.delete(b.length() - 2, b.length()); //strip last delimiters
+
+        return b.toString();
+    }
+
     private static void removeNLastNodes(int nodesToDelete, LinkedList<AstNode> nodeStack) {
         LinkedList<LinkedList<AstNode>> orphanMatrix = new LinkedList<LinkedList<AstNode>>();
 
@@ -153,7 +236,7 @@ public class SyntaxTree {
             nodeStack.removeLast();
             orphanMatrix.addFirst(orphans);
         }
-        
+
         for (LinkedList<AstNode> orphans : orphanMatrix) {
             for (AstNode orphan : orphans) {
                 nodeStack.getLast().addChild(orphan);
@@ -161,7 +244,7 @@ public class SyntaxTree {
         }
     }
 
-    private static AstNode.NodeType intToNodeType(int type){
+    private static AstNode.NodeType intToNodeType(int type) {
         switch (type) {
             case SyntaxElement.TYPE_COMMENT:
                 return AstNode.NodeType.COMMENT;
@@ -178,7 +261,7 @@ public class SyntaxTree {
             case SyntaxElement.TYPE_TEXT:
                 return AstNode.NodeType.TEXT;
         }
-        
+
         return null;
-    }    
+    }
 }

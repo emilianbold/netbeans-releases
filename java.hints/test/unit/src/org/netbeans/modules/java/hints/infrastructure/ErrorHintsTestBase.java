@@ -104,22 +104,22 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         assertNotNull(dataFile);
         
         TestUtilities.copyStringToFile(dataFile, code);
-        
+
+//        SourceUtilsTestUtil.prepareTest(new String[0], new Object[]{
+//                    new JavaCustomIndexer.Factory()});
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache, getExtraClassPathElements());
         
         DataObject od = DataObject.find(data);
         EditorCookie ec = od.getCookie(EditorCookie.class);
-        
+
         assertNotNull(ec);
-        
+
         doc = ec.openDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
         doc.putProperty("mimeType", "text/x-java");
 
         //XXX: takes a long time
         //re-index, in order to find classes-living-elsewhere
-//        CountDownLatch latch = RepositoryUpdater.getDefault().scheduleCompilationAndWait(sourceRoot, sourceRoot);
-//        latch.await();
         IndexingManager.getDefault().refreshIndexAndWait(sourceRoot.getURL(), null);
 
         JavaSource js = JavaSource.forFileObject(data);
@@ -148,7 +148,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     protected FileObject[] getExtraClassPathElements() {
         return new FileObject[0];
     }
-    
+
     protected void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         int[] caretPosition = new int[1];
         

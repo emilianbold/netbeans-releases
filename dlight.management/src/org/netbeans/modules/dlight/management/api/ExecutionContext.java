@@ -132,17 +132,17 @@ final class ExecutionContext {
             validationInProgress = true;
         }
 
-        Map<Validateable, Future<ValidationStatus>> tasks =
-            new HashMap<Validateable, Future<ValidationStatus>>();
+        Map<Validateable<DLightTarget>, Future<ValidationStatus>> tasks =
+            new HashMap<Validateable<DLightTarget>, Future<ValidationStatus>>();
 
-        Map<Validateable, ValidationStatus> states =
-            new HashMap<Validateable, ValidationStatus>();
+        Map<Validateable<DLightTarget>, ValidationStatus> states =
+            new HashMap<Validateable<DLightTarget>, ValidationStatus>();
 
 //        count++;
-        List<DataCollector> collectors = new ArrayList<DataCollector>();
+        List<DataCollector<?>> collectors = new ArrayList<DataCollector<?>>();
         if (getDLightConfiguration().getConfigurationOptions(false).areCollectorsTurnedOn()) {
             for (DLightTool tool : tools) {
-                List<DataCollector> toolCollectors = getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
+                List<DataCollector<?>> toolCollectors = getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
                 //TODO: no algorithm here:) should be better
                 for (DataCollector c : toolCollectors) {
 //                    if (c.getValidationStatus().isValid()) {//for valid collectors only
@@ -152,12 +152,12 @@ final class ExecutionContext {
                 }
             }
         }
-        List<IndicatorDataProvider> idps = new ArrayList<IndicatorDataProvider>();
+        List<IndicatorDataProvider<?>> idps = new ArrayList<IndicatorDataProvider<?>>();
         for (DLightTool tool : tools) {
             // Try to subscribe every IndicatorDataProvider to every Indicator
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
-            List<IndicatorDataProvider> tool_idps = getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
+            List<IndicatorDataProvider<?>> tool_idps = getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
             for (IndicatorDataProvider idp : tool_idps){
                 if (!collectors.contains(idp) && !idps.contains(idps)){
                     idps.add(idp);
@@ -182,7 +182,7 @@ final class ExecutionContext {
 //
 ////            System.out.printf("%d: Future for validation task: %s\n", count, tasks.get(tool).toString());
 //        }
-        for (final DataCollector c : collectors){
+        for (final DataCollector<?> c : collectors){
             ValidationStatus collectorCurrentStatus = c.getValidationStatus();
             states.put(c, collectorCurrentStatus);
             tasks.put(c, DLightExecutorService.submit(new Callable<ValidationStatus>() {
@@ -194,7 +194,7 @@ final class ExecutionContext {
 
 
         }
-        for (final IndicatorDataProvider idp : idps){
+        for (final IndicatorDataProvider<?> idp : idps){
             ValidationStatus collectorCurrentStatus = idp.getValidationStatus();
             states.put(idp, collectorCurrentStatus);
             tasks.put(idp, DLightExecutorService.submit(new Callable<ValidationStatus>() {
@@ -211,10 +211,10 @@ final class ExecutionContext {
         boolean willReiterate = true;
 
         while (willReiterate) {
-            Validateable[] toValidate = tasks.keySet().toArray(new Validateable[0]);
+            List<Validateable<DLightTarget>> toValidate = new ArrayList<Validateable<DLightTarget>>(tasks.keySet());
             willReiterate = false;
 
-            for (final Validateable validatable : toValidate) {
+            for (final Validateable<DLightTarget> validatable : toValidate) {
                 Future<ValidationStatus> task = tasks.get(validatable);
 
                 try {
@@ -297,15 +297,26 @@ final class ExecutionContext {
 
     List<Indicator> getIndicators() {
         ArrayList<Indicator> result = new ArrayList<Indicator>();
+        Collection activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
         for (DLightTool tool : tools) {
-            result.addAll(DLightToolAccessor.getDefault().getIndicators(tool));
+            if (activeToolNames == null || activeToolNames.contains(tool.getName())){
+                result.addAll(DLightToolAccessor.getDefault().getIndicators(tool));
+            }
         }
 
         return result;
     }
 
     List<DLightTool> getTools() {
-        return tools;
+        List<DLightTool> result = new ArrayList<DLightTool>();
+        Collection activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
+        for (DLightTool tool : tools) {
+            if (activeToolNames == null || activeToolNames.contains(tool.getName())){
+                result.add(tool);
+            }
+        }
+
+        return result;
     }
 
     final class DLightTargetExecutionEnvProviderCollection implements ExecutionEnvVariablesProvider {

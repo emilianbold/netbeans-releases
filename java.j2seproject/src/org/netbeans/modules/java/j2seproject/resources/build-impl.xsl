@@ -84,6 +84,14 @@ is divided into following sections:
             <xsl:attribute name="default">default</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
             
+            <fail message="Please build using Ant 1.7.1 or higher.">
+                <condition>
+                    <not>
+                        <antversion atleast="1.7.1"/>
+                    </not>
+                </condition>
+            </fail>
+
             <target name="default">
                 <xsl:attribute name="depends">test,jar,javadoc</xsl:attribute>
                 <xsl:attribute name="description">Build and test whole project.</xsl:attribute>
@@ -591,6 +599,8 @@ is divided into following sections:
                             </xsl:if>
                             <jvmarg line="${{debug-args-line}}"/>
                             <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                            <jvmarg value="-Dfile.encoding=${{source.encoding}}"/>
+                            <redirector inputencoding="${{source.encoding}}" outputencoding="${{source.encoding}}" errorencoding="${{source.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>
@@ -627,6 +637,8 @@ is divided into following sections:
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
+                            <jvmarg value="-Dfile.encoding=${{source.encoding}}"/>
+                            <redirector inputencoding="${{source.encoding}}" outputencoding="${{source.encoding}}" errorencoding="${{source.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>

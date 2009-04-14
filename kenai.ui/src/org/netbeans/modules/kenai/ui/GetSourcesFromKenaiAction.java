@@ -45,6 +45,7 @@ import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.GetSourcesInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.mercurial.api.Mercurial;
@@ -88,29 +89,43 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
             
             final PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
             final GetSourcesInfo sourcesInfo = getSourcesPanel.getSelectedSourcesInfo();
+            if (sourcesInfo == null) {
+                return;
+            }
+
             final KenaiFeature feature = sourcesInfo.feature;
 
-            if (Utilities.SVN_REPO.equals(feature.getService())) { // XXX service or name
+            if (KenaiService.Names.SUBVERSION.equals(feature.getService())) { // XXX service or name
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
 
-                            Subversion.checkoutRepositoryFolder(feature.getLocation().toASCIIString(), sourcesInfo.relativePaths,
-                                new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
+                            if (passwdAuth != null) {
+                                Subversion.checkoutRepositoryFolder(feature.getLocation().toASCIIString(), sourcesInfo.relativePaths,
+                                    new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
+                            } else {
+                                Subversion.checkoutRepositoryFolder(feature.getLocation().toASCIIString(), sourcesInfo.relativePaths,
+                                    new File(sourcesInfo.localFolderPath), true);
+                            }
 
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }
                     }
                 });
-            } else if (Utilities.HG_REPO.equals(sourcesInfo.feature.getService())) { // XXX service or name
+            } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) { // XXX service or name
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
 
-                            Mercurial.cloneRepository(feature.getLocation().toASCIIString(), new File(sourcesInfo.localFolderPath),
+                            if (passwdAuth != null) {
+                                Mercurial.cloneRepository(feature.getLocation().toASCIIString(), new File(sourcesInfo.localFolderPath),
                                     "", "", "", passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
-                            
+                            } else {
+                                Mercurial.cloneRepository(feature.getLocation().toASCIIString(), new File(sourcesInfo.localFolderPath),
+                                    "", "", "");
+                            }
+
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }

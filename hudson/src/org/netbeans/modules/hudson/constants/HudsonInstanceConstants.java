@@ -49,20 +49,20 @@ public class HudsonInstanceConstants {
 
     private HudsonInstanceConstants() {}
     
-    public static final String INSTANCE_NAME = "name";
+    public static final String INSTANCE_NAME = "name"; // NOI18N
     
-    public static final String INSTANCE_URL = "url";
+    public static final String INSTANCE_URL = "url"; // NOI18N
     
-    public static final String INSTANCE_SYNC = "sync_time";
+    public static final String INSTANCE_SYNC = "sync_time"; // NOI18N
 
     /**
      * preferred jobs for the instance, list of job names, separated by |
      */
-    public static final String INSTANCE_PREF_JOBS = "pref_jobs";
+    public static final String INSTANCE_PREF_JOBS = "pref_jobs"; // NOI18N
 
     /**
      * Nonsalient jobs for the instance, list of job names, separated by |
      */
-    public static final String INSTANCE_SUPPRESSED_JOBS = "suppressed_jobs";
+    public static final String INSTANCE_SUPPRESSED_JOBS = "suppressed_jobs"; // NOI18N
 
 }

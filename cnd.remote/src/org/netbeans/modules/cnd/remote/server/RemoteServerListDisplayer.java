@@ -40,7 +40,7 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.awt.Dialog;
-import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
+import org.netbeans.modules.cnd.api.compilers.ServerListDisplayer;
 import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.openide.DialogDescriptor;

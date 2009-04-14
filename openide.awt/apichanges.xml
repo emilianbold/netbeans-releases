@@ -47,6 +47,22 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="AlwaysEnabledAction-extra-properties-and-name-sync">
+        <api name="awt"/>
+        <summary>AlwaysEnabledAction extra properties and Action.NAME synchronization</summary>
+        <version major="7" minor="7"/>
+        <date day="7" month="4" year="2009"/>
+        <author login="mmetelka"/>
+        <compatibility addition="no" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="yes"/>
+        <description>
+            Actions.alwaysEnabled() now checks whether Action.NAME property value
+            of the delegate action (if defined) matches to the one in the declared
+            for the action in the xml-layer.
+            The AlwaysEnabledAction.getValue() now resolves all the keys
+            in Acxtion.getValue() against the defined attributes in the xml-layer.
+        </description>
+        <issue number="150875"/>
+    </change>
     <change id="Notifications">
         <api name="awt"/>
         <summary>Support for showing of notification-like messages in the main status line.</summary>

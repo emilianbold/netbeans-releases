@@ -41,12 +41,14 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ButtonGroup;
@@ -56,6 +58,9 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -67,6 +72,8 @@ import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.Pair;
+import org.netbeans.modules.php.project.connections.common.RemoteValidator;
+import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -77,13 +84,14 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.Debug
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.NotificationLineSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Tomas Mysik
  */
 public class RunAsWebAdvanced extends JPanel {
     private static final long serialVersionUID = 7842376554376847L;
-    static final String DEFAULT_LOCAL_PATH = NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_DefaultLocalPath");
+    static final String DEFAULT_LOCAL_PATH = ""; // NOI18N
     static final int COLUMN_REMOTE_PATH = 0;
     static final int COLUMN_LOCAL_PATH = 1;
 
@@ -92,21 +100,22 @@ public class RunAsWebAdvanced extends JPanel {
     private DialogDescriptor descriptor = null;
     private NotificationLineSupport notificationLineSupport;
 
-    RunAsWebAdvanced(PhpProject project, String debugUrl, String urlPreview, String remotePaths, String localPaths) {
+    RunAsWebAdvanced(PhpProject project, Properties properties) {
         assert project != null;
-        assert urlPreview != null;
+        assert properties != null;
 
         this.project = project;
 
         initComponents();
-        setDebugUrl(debugUrl, urlPreview);
+        setDebugUrl(properties);
+        setDebugProxy(properties);
 
         String[] columnNames = {
             NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_ServerPath"),
             NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_LocalPath"),
         };
         // tmysik init data
-        pathMappingTableModel = new PathMappingTableModel(columnNames, getPathMappings(remotePaths, localPaths));
+        pathMappingTableModel = new PathMappingTableModel(columnNames, getPathMappings(properties.remotePaths, properties.localPaths));
         pathMappingTable.setModel(pathMappingTableModel);
         pathMappingTable.setDefaultRenderer(LocalPathCell.class, new LocalPathCellRenderer());
         pathMappingTable.addMouseListener(new LocalPathCellMouseListener(pathMappingTable));
@@ -130,6 +139,22 @@ public class RunAsWebAdvanced extends JPanel {
                 handleButtonStates();
             }
         });
+        DocumentListener defaultDocumentListener = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            private void processUpdate() {
+                validateFields();
+            }
+        };
+        proxyHostTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        proxyPortTextField.getDocument().addDocumentListener(defaultDocumentListener);
     }
 
     public boolean open() {
@@ -163,17 +188,23 @@ public class RunAsWebAdvanced extends JPanel {
     }
 
     public Pair<String, String> getPathMapping() {
+        FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
         int rowCount = pathMappingTableModel.getRowCount();
         List<String> remotes = new ArrayList<String>(rowCount);
         List<String> locals = new ArrayList<String>(rowCount);
         for (int i = 0; i < rowCount; ++i) {
             String remotePath = (String) pathMappingTableModel.getValueAt(i, COLUMN_REMOTE_PATH);
-            String localPath = ""; // NOI18N
             if (PhpProjectUtils.hasText(remotePath)) {
+                String localPath = null;
                 localPath = ((LocalPathCell) pathMappingTableModel.getValueAt(i, COLUMN_LOCAL_PATH)).getPath();
-                if (isDefaultLocalPath(localPath)) {
-                    localPath = "."; // NOI18N
+                File local = new File(localPath);
+                assert local.isDirectory() : localPath + " must be a directory!";
+                FileObject localFileObject = FileUtil.toFileObject(local);
+                String relativePath = FileUtil.getRelativePath(sources, localFileObject);
+                if (relativePath != null) {
+                    localPath = relativePath;
                 }
+
                 remotes.add(remotePath);
                 locals.add(localPath);
             }
@@ -183,13 +214,47 @@ public class RunAsWebAdvanced extends JPanel {
                 PhpProjectUtils.implode(locals, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR));
     }
 
+    public Pair<String, String> getDebugProxy() {
+        String proxyHost = proxyHostTextField.getText();
+        String proxyPort = null;
+        if (PhpProjectUtils.hasText(proxyHost)) {
+            proxyPort = proxyPortTextField.getText();
+        }
+        return Pair.of(proxyHost, proxyPort);
+    }
+
     void validateFields() {
         assert notificationLineSupport != null;
 
         for (int i = 0; i < pathMappingTableModel.getRowCount(); ++i) {
+            String remotePath = (String) pathMappingTableModel.getValueAt(i, COLUMN_REMOTE_PATH);
             String localPath = ((LocalPathCell) pathMappingTableModel.getValueAt(i, COLUMN_LOCAL_PATH)).getPath();
-            if (!isLocalPathValid(localPath)) {
+            if (!PhpProjectUtils.hasText(remotePath)
+                    && !PhpProjectUtils.hasText(localPath)) {
+                // empty line
+                continue;
+            } else if (!PhpProjectUtils.hasText(remotePath)
+                    && PhpProjectUtils.hasText(localPath)) {
+                notificationLineSupport.setErrorMessage(NbBundle.getMessage(RunAsWebAdvanced.class, "MSG_RemotePathEmpty"));
+                descriptor.setValid(false);
+                return;
+            } else if (PhpProjectUtils.hasText(remotePath)
+                    && !PhpProjectUtils.hasText(localPath)) {
+                notificationLineSupport.setErrorMessage(NbBundle.getMessage(RunAsWebAdvanced.class, "MSG_LocalPathEmpty"));
+                descriptor.setValid(false);
+                return;
+            } else if (!isLocalPathValid(localPath)) {
                 notificationLineSupport.setErrorMessage(NbBundle.getMessage(RunAsWebAdvanced.class, "MSG_LocalPathNotValid", localPath));
+                descriptor.setValid(false);
+                return;
+            }
+        }
+
+        String proxyHost = proxyHostTextField.getText();
+        if (PhpProjectUtils.hasText(proxyHost)) {
+            String err = RemoteValidator.validatePort(proxyPortTextField.getText());
+            if (err != null) {
+                notificationLineSupport.setErrorMessage(err);
                 descriptor.setValid(false);
                 return;
             }
@@ -227,25 +292,36 @@ public class RunAsWebAdvanced extends JPanel {
     private Object[][] getPathMappings(String remotePaths, String localPaths) {
         List<String> remotes = PhpProjectUtils.explode(remotePaths, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
         List<String> locals = PhpProjectUtils.explode(localPaths, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
-        int size = remotes.size();
-        if (size != locals.size()) {
-            // something is wrong...
-            size = 0;
-        }
-        Object[][] paths = new Object[size + 1][2];
-        for (int i = 0; i < size; ++i) {
-            Pair<String, String> pathMapping = getPathMapping(remotes.get(i), locals.get(i));
+        int remotesSize = remotes.size();
+        int localsSize = locals.size();
+        Object[][] paths = new Object[remotesSize + 1][2];
+        for (int i = 0; i < remotesSize; ++i) {
+            // if user has only 1 path and local == sources => property is not stored at all!
+            String local = DEFAULT_LOCAL_PATH;
+            if (i < localsSize) {
+                local = locals.get(i);
+            }
+            Pair<String, String> pathMapping = getPathMapping(remotes.get(i), local);
             paths[i][COLUMN_REMOTE_PATH] = pathMapping.first;
             paths[i][COLUMN_LOCAL_PATH] = new LocalPathCell(pathMapping.second);
         }
-        paths[size][COLUMN_REMOTE_PATH] = null;
-        paths[size][COLUMN_LOCAL_PATH] = new LocalPathCell(DEFAULT_LOCAL_PATH);
+        paths[remotesSize][COLUMN_REMOTE_PATH] = null;
+        paths[remotesSize][COLUMN_LOCAL_PATH] = new LocalPathCell(DEFAULT_LOCAL_PATH);
         return paths;
     }
 
     private Pair<String, String> getPathMapping(String remotePath, String localPath) {
-        if (!PhpProjectUtils.hasText(remotePath)
-                || isDefaultLocalPath(localPath)) {
+        if (PhpProjectUtils.hasText(remotePath)) {
+            FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
+            if (isSources(localPath)) {
+                localPath = FileUtil.toFile(sources).getAbsolutePath();
+            } else {
+                FileObject resolved = sources.getFileObject(localPath);
+                if (resolved != null) {
+                    localPath = FileUtil.toFile(resolved).getAbsolutePath();
+                }
+            }
+        } else {
             localPath = DEFAULT_LOCAL_PATH;
         }
         return Pair.of(remotePath, localPath);
@@ -259,7 +335,8 @@ public class RunAsWebAdvanced extends JPanel {
         return getTableSelectedRow() != -1;
     }
 
-    private void setDebugUrl(String debugUrl, String urlPreview) {
+    private void setDebugUrl(Properties properties) {
+        String debugUrl = properties.debugUrl;
         if (debugUrl == null) {
             debugUrl = DebugUrl.DEFAULT_URL.name();
         }
@@ -276,7 +353,16 @@ public class RunAsWebAdvanced extends JPanel {
             default:
                 throw new IllegalArgumentException("Unknown debug url type: " + debugUrl);
         }
-        defaultUrlPreviewLabel.setText(urlPreview);
+        defaultUrlPreviewLabel.setText(properties.urlPreview);
+    }
+
+    private void setDebugProxy(Properties properties) {
+        proxyHostTextField.setText(properties.proxyHost);
+        String port = properties.proxyPort;
+        if (RemoteValidator.validatePort(port) != null) {
+            port = String.valueOf(PhpProjectProperties.DEFAULT_DEBUG_PROXY_PORT);
+        }
+        proxyPortTextField.setText(port);
     }
 
     /** This method is called from within the constructor to
@@ -299,7 +385,12 @@ public class RunAsWebAdvanced extends JPanel {
         pathMappingTable = new JTable();
         newPathMappingButton = new JButton();
         removePathMappingButton = new JButton();
-        infoLabel = new JLabel();
+        pathMappingInfoLabel = new JLabel();
+        proxyLabel = new JLabel();
+        proxyHostLabel = new JLabel();
+        proxyHostTextField = new JTextField();
+        proxyPortLabel = new JLabel();
+        proxyPortTextField = new JTextField();
 
         debugUrlLabel.setLabelFor(defaultUrlRadioButton);
 
@@ -340,13 +431,22 @@ public class RunAsWebAdvanced extends JPanel {
 
         Mnemonics.setLocalizedText(removePathMappingButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.removePathMappingButton.text")); // NOI18N
         removePathMappingButton.setEnabled(false);
-
         removePathMappingButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 removePathMappingButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.infoLabel.text"));
+
+        Mnemonics.setLocalizedText(pathMappingInfoLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingInfoLabel.text")); // NOI18N
+        pathMappingInfoLabel.setEnabled(false);
+
+
+
+        Mnemonics.setLocalizedText(proxyLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyLabel.text"));
+        Mnemonics.setLocalizedText(proxyHostLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostLabel.text"));
+        Mnemonics.setLocalizedText(proxyPortLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortLabel.text"));
+        proxyPortTextField.setPreferredSize(new Dimension(46, 19));
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -355,7 +455,7 @@ public class RunAsWebAdvanced extends JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+                        .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
                             .add(removePathMappingButton)
@@ -368,7 +468,16 @@ public class RunAsWebAdvanced extends JPanel {
                     .add(askUrlRadioButton)
                     .add(doNotOpenBrowserRadioButton)
                     .add(pathMappingLabel)
-                    .add(infoLabel))
+                    .add(pathMappingInfoLabel)
+                    .add(proxyLabel)
+                    .add(layout.createSequentialGroup()
+                        .add(proxyHostLabel)
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(proxyHostTextField, GroupLayout.PREFERRED_SIZE, 207, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(proxyPortLabel)
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(proxyPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -395,10 +504,18 @@ public class RunAsWebAdvanced extends JPanel {
                         .add(newPathMappingButton)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(removePathMappingButton))
-                    .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE))
+                    .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(infoLabel)
-                .add(0, 0, 0))
+                .add(pathMappingInfoLabel)
+                .addPreferredGap(LayoutStyle.UNRELATED)
+                .add(proxyLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(proxyHostTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .add(proxyHostLabel)
+                    .add(proxyPortLabel)
+                    .add(proxyPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -416,16 +533,14 @@ public class RunAsWebAdvanced extends JPanel {
         }
     }//GEN-LAST:event_removePathMappingButtonActionPerformed
 
-    static boolean isDefaultLocalPath(String path) {
-        return path == null || path.trim().length() == 0 || path.equals(".") || DEFAULT_LOCAL_PATH.equals(path); // NOI18N
+    static boolean isSources(String path) {
+        return path == null || DEFAULT_LOCAL_PATH.equals(path);
     }
 
     private boolean isLocalPathValid(String localPath) {
-        if (isDefaultLocalPath(localPath)) {
-            return true;
-        }
-        FileObject directory = ProjectPropertiesSupport.getSourceSubdirectory(project, localPath);
-        return directory != null && directory.isValid();
+        assert PhpProjectUtils.hasText(localPath);
+        File directory = new File(localPath);
+        return directory.isDirectory() && directory.isAbsolute();
     }
 
 
@@ -436,11 +551,16 @@ public class RunAsWebAdvanced extends JPanel {
     private JLabel defaultUrlPreviewLabel;
     private JRadioButton defaultUrlRadioButton;
     private JRadioButton doNotOpenBrowserRadioButton;
-    private JLabel infoLabel;
     private JButton newPathMappingButton;
+    private JLabel pathMappingInfoLabel;
     private JLabel pathMappingLabel;
     private JScrollPane pathMappingScrollPane;
     private JTable pathMappingTable;
+    private JLabel proxyHostLabel;
+    private JTextField proxyHostTextField;
+    private JLabel proxyLabel;
+    private JLabel proxyPortLabel;
+    private JTextField proxyPortTextField;
     private JButton removePathMappingButton;
     // End of variables declaration//GEN-END:variables
 
@@ -506,16 +626,32 @@ public class RunAsWebAdvanced extends JPanel {
                 JButton button = localPathCell.getButton();
                 if (e.getX() > (cellRect.x + cellRect.width - button.getWidth())) {
                     //inside changeButton
-                    String selected = Utils.browseSourceFolder(project, localPathCell.getPath());
-                    if (selected == null) {
-                        return;
+                    File newLocation = Utils.browseLocationAction(table, LastUsedFolders.getPathMapping(), NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_SelectProjectFolder"));
+                    if (newLocation != null) {
+                        localPathCell.setPath(newLocation.getAbsolutePath());
+                        LastUsedFolders.setPathMapping(newLocation);
                     }
-                    if (isDefaultLocalPath(selected)) {
-                        selected = DEFAULT_LOCAL_PATH;
-                    }
-                    localPathCell.setPath(selected);
+                    validateFields();
                 }
             }
+        }
+    }
+
+    public static final class Properties {
+        public final String debugUrl;
+        public final String urlPreview;
+        public final String remotePaths;
+        public final String localPaths;
+        public final String proxyHost;
+        public final String proxyPort;
+
+        public Properties(String debugUrl, String urlPreview, String remotePaths, String localPaths, String proxyHost, String proxyPort) {
+            this.debugUrl = debugUrl;
+            this.urlPreview = urlPreview;
+            this.remotePaths = remotePaths;
+            this.localPaths = localPaths;
+            this.proxyHost = proxyHost;
+            this.proxyPort = proxyPort;
         }
     }
 }

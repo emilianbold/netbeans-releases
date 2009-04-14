@@ -42,10 +42,11 @@
 package org.netbeans.modules.refactoring.api.impl;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.ProgressListener;
-import org.openide.ErrorManager;
 
 /**
  * Support class for progress notifications
@@ -53,13 +54,10 @@ import org.openide.ErrorManager;
  */
 public final class ProgressSupport {
     /** Utility field holding list of ProgressListeners. */
-    private transient ArrayList progressListenerList = null;
+    private final List<ProgressListener> progressListenerList = new ArrayList<ProgressListener>();
     private int counter;
+    private boolean deterministic;
 
-
-    public ProgressSupport() {
-        progressListenerList = new ArrayList();
-    }
     public synchronized void addProgressListener(ProgressListener listener) {
         progressListenerList.add(listener);
     }
@@ -80,16 +78,14 @@ public final class ProgressSupport {
      */
     public void fireProgressListenerStart(Object source, int type, int count) {
         counter = -1;
-        ArrayList list;
+        deterministic = count > 0;
         ProgressEvent event = new ProgressEvent(source, ProgressEvent.START, type, count);
-        synchronized (this) {
-            list = (ArrayList) progressListenerList.clone();
-        }
-        for (Iterator it = list.iterator(); it.hasNext();) {
+        ProgressListener[] listeners = getListenersCopy();
+        for (ProgressListener listener : listeners) {
             try {
-                ((ProgressListener) it.next()).start(event);
+                listener.start(event);
             } catch (RuntimeException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                log(e);
             }
         }
     }
@@ -108,38 +104,47 @@ public final class ProgressSupport {
     /** Notifies all registered listeners about the event.
      */
     public void fireProgressListenerStep(Object source, int count) {
-        counter = count;
-        ArrayList list;
-        ProgressEvent event = new ProgressEvent(source, ProgressEvent.STEP, 0, count);
-        synchronized (this) {
-            list = (ArrayList) progressListenerList.clone();
+        if (deterministic) {
+            if (count < 0) {
+                deterministic = false;
+            }
+            counter = count;
+        } else {
+            if (count > 0) {
+                deterministic = true;
+                counter = -1;
+            } else {
+                counter = count;
+            }
         }
-        for (Iterator it = list.iterator(); it.hasNext();) {
+        ProgressEvent event = new ProgressEvent(source, ProgressEvent.STEP, 0, count);
+        ProgressListener[] listeners = getListenersCopy();
+        for (ProgressListener listener : listeners) {
             try {
-                ((ProgressListener) it.next()).step(event);
+                listener.step(event);
             } catch (RuntimeException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                log(e);
             }
         }
     }
     /** Notifies all registered listeners about the event.
      */
     public void fireProgressListenerStep(Object source) {
-        fireProgressListenerStep(source, counter+1);
+        if (deterministic) {
+            ++counter;
+        }
+        fireProgressListenerStep(source, counter);
     }
     /** Notifies all registered listeners about the event.
      */
     public void fireProgressListenerStop(Object source) {
-        ArrayList list;
         ProgressEvent event = new ProgressEvent(source, ProgressEvent.STOP);
-        synchronized (this) {
-            list = (ArrayList) progressListenerList.clone();
-        }
-        for (Iterator it = list.iterator(); it.hasNext();) {
+        ProgressListener[] listeners = getListenersCopy();
+        for (ProgressListener listener : listeners) {
             try {
-                ((ProgressListener) it.next()).stop(event);
+                listener.stop(event);
             } catch (RuntimeException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                log(e);
             }
         }
     }
@@ -149,4 +154,13 @@ public final class ProgressSupport {
     public void fireProgressListenerStop() {
         fireProgressListenerStop(this);
     }
+
+    private synchronized ProgressListener[] getListenersCopy() {
+        return progressListenerList.toArray(new ProgressListener[progressListenerList.size()]);
+    }
+
+    private void log(Exception e) {
+        Logger.getLogger(ProgressSupport.class.getName()).log(Level.INFO, e.getMessage(), e);
+    }
+
 }

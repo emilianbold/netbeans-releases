@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -63,7 +64,7 @@ public class QueryAction extends SystemAction {
     }
 
     public String getName() {
-        return NbBundle.getMessage(QueryAction.class, "CTL_QueryAction");
+        return NbBundle.getMessage(QueryAction.class, "CTL_QueryAction"); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {
@@ -75,7 +76,10 @@ public class QueryAction extends SystemAction {
     }
 
     public static void openQuery(Query query) {
-        openQuery(query, null);
+        Repository repository = BugtrackingOwnerSupport.getInstance()
+                                .getRepository(BugtrackingOwnerSupport.ContextType
+                                               .SELECTED_FILE_AND_ALL_PROJECTS) ;
+        openQuery(query, repository);
     }
 
     public static void openQuery(final Query query, final Repository repository) {

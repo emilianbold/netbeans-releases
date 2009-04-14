@@ -44,7 +44,6 @@ import org.netbeans.modules.cnd.api.compilers.CompilerProvider;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.NbBundle;
 
 /**
  * Override the cnd default compiler type "Tool". MakeProjects uses classes derived from Tool but cnd/core
@@ -52,7 +51,7 @@ import org.openide.util.NbBundle;
  *
  * @author gordonp
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.api.compilers.CompilerProvider.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.api.compilers.CompilerProvider.class, position=1000)
 public class MakeProjectCompilerProvider extends CompilerProvider {
 
     /**
@@ -103,7 +102,6 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
         if (kind == Tool.CustomTool) {
             return CustomTool.create(env);
         }
-        throw new IllegalArgumentException(NbBundle.getMessage(MakeProjectCompilerProvider.class,
-                "ERR_UnrecognizedCompilerType")); // NOI18N
+        return null;
     }
 }

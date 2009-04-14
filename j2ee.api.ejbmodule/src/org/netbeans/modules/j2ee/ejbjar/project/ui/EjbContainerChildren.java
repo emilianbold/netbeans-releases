@@ -84,7 +84,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
         this.nodeFactory = nodeFactory;
         this.project = project;
         try {
-            ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            ejbModule.getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) {
                     org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = metadata.getRoot();
                     if (ejbJar != null) {
@@ -101,6 +101,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
         }
     }
 
+    @Override
     protected void addNotify() {
         super.addNotify();
         try {
@@ -159,6 +160,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
         setKeys(result);
     }
 
+    @Override
     protected void removeNotify() {
         //TODO: RETOUCHE stop listening on model
 //        model.removePropertyChangeListener(this);

@@ -48,10 +48,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -64,6 +66,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -86,6 +89,11 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     private FeatureInfo info;
     private WizardDescriptor wd;
     private FileObject fo;
+    private boolean autoEnable;
+
+    public DescriptionStep(boolean autoEnable) {
+        this.autoEnable = autoEnable;
+    }
 
     public Component getComponent () {
         if (panel == null) {
@@ -138,18 +146,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
 
     private void presentModulesForActivation () {
         forEnable = getFinder ().getModulesForEnable ();
-        if (forEnable != null && ! forEnable.isEmpty ()) {
-            presentModulesForEnable ();
-        } else {
-            presentNone ();
-        }
-    }
-    
-    private void presentNone () {
-        panel.replaceComponents (
-            new JLabel (getBundle ("DescriptionStep_NoMissingModules1")),
-            new JLabel ()
-        );
+        presentModulesForEnable ();
     }
     
     private void presentModulesForEnable () {
@@ -174,7 +171,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                                 waitForDelegateWizard ();
                                 return new JLabel(" ");
                             }
-                        }, info, true);
+                        }, info, autoEnable);
                     }
                 });
             } catch (InterruptedException ex) {
@@ -185,10 +182,8 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             panel.replaceComponents(pan[0]);
             forEnable = elems;
         } else {
-            panel.replaceComponents (
-                new JLabel (getBundle ("DescriptionStep_NoMissingModules1")),
-                new JLabel ()
-            );
+            FoDFileSystem.getInstance().refresh();
+            waitForDelegateWizard ();
         }
         fireChange ();
     }
@@ -235,9 +230,40 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             iterator = readWizard(fo);
             // reset and warn, seems like 100 millis isn't enough!
             if (iterator instanceof FeatureOnDemanWizardIterator) {
-                Logger.getLogger(DescriptionStep.class.getName()).warning(iterator.getClass().getName());
+                Logger LOG = Logger.getLogger(DescriptionStep.class.getName());
+                LOG.warning(
+                    "There is still wrong interator " + // NOI18N
+                    iterator.getClass().getName() +
+                    " for file object " + fo // NOI18N
+                );
+                FeatureManager.dumpModules(Level.INFO, Level.INFO);
                 iterator = null;
-                if (++i == 10) break; // seems we will go to NPE :-(
+                if (++i == 10) {
+                    Logger.getLogger(DescriptionStep.class.getName()).severe("Giving up to find iterator for " + fo); // NOI18N
+                    boolean npe = false;
+                    assert npe = true;
+                    if (npe) {
+                        throw new NullPointerException("Send us the messages.log please!"); // NOI18N
+                    }
+                    return; // give up
+                }
+                LOG.info("Forcing refresh"); // NOI18N
+                // force refresh for the filesystem
+                FoDFileSystem.getInstance().refresh();
+                LOG.info("Done with refresh"); // NOI18N
+
+                FileObject fake = FileUtil.getConfigFile(fo.getPath());
+                if (fake == null) {
+                    LOG.warning("no "+ fo.getPath() + " on FoD: " + fake); // NOI18N
+                    FileObject p = fake;
+                    while (p != null) {
+                        LOG.info("  parent: " + p + " children: " + Arrays.asList(p.getChildren())); // NOI18N
+                        p = p.getParent();
+                    }
+                } else {
+                    LOG.info("fake found " + fake); // NOI18N
+                    LOG.info("its wizard is " + readWizard(fake)); // NOI18N
+                }
             }
         }
         iterator.initialize (wd);

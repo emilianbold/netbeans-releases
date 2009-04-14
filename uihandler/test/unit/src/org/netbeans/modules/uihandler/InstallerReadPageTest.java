@@ -71,33 +71,22 @@ public class InstallerReadPageTest extends NbTestCase {
     public InstallerReadPageTest(String testName) {
         super(testName);
     }
-    
-    @Override
-    protected boolean runInEQ() {
-        return true;
-    }
-
-    @Override
-    protected Level logLevel() {
-        return Level.INFO;
-    }
-    
 
     @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath());
         clearWorkDir();
-        
+        MemoryURL.initialize();
+        Locale.setDefault(new Locale("te", "ST"));
+        DD.d = null;
+        MockServices.setServices(DD.class);
+
         Installer installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
 
         // setup the listing
         installer.restored();
-        
-        Locale.setDefault(new Locale("te", "ST"));
         Installer.dontWaitForUserInputInTests();
-        DD.d = null;
-        MockServices.setServices(DD.class);
     }
 
     @Override
@@ -160,6 +149,8 @@ public class InstallerReadPageTest extends NbTestCase {
         
         MemoryURL.registerURL("memory://kun.html", is);
         
+        DialogDisplayer d = DialogDisplayer.getDefault();
+        assertTrue(d instanceof DD);
         boolean res = Installer.displaySummary("KUN", true, false,true);
         assertFalse("Close options was pressed", res);
         assertNotNull("DD.d assigned", DD.d);

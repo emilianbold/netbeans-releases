@@ -59,6 +59,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void testDDD() throws Exception {
+        // test for number of DDD problems
+        performStaticTest("ddd_errors.cpp");
+    }
+
     public void testIZ145280() throws Exception {
         // IZ#145280: IDE highlights code with '__attribute__((unused))' as wrong
         performStaticTest("iz145280.cc");
@@ -185,6 +190,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
     public void testIZ151054() throws Exception {
         // IZ#151054 : False recognition of operator ->
         performStaticTest("iz151054.cpp");
+    }
+
+    public void testIZ150827() throws Exception {
+        // IZ#150827 : Expression statement with & is treated as a declaration
+        performStaticTest("iz150827.cpp");
     }
 
     /////////////////////////////////////////////////////////////////////

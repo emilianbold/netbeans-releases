@@ -173,7 +173,7 @@ public class TreeTableVisualizerConfiguration implements VisualizerConfiguration
     }
 
     public DataModelScheme getSupportedDataScheme() {
-        return DataModelSchemeProvider.getInstance().getScheme("model:tree:table");
+        return DataModelSchemeProvider.getInstance().getScheme("model:tree:table");//NOI18N
     }
 
 

@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -95,7 +94,7 @@ public class MakeSources implements Sources, AntProjectListener {
     }
 
     private Sources initSources() {
-        final SourcesHelper h = new SourcesHelper(helper, project.evaluator());
+        SourcesHelper h = new SourcesHelper(project, helper, project.evaluator());
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         ConfigurationDescriptor pd = pdp.getConfigurationDescriptor(!MakeProjectConfigurationProvider.ASYNC_LOAD);
         if (pd != null) {
@@ -159,12 +158,7 @@ public class MakeSources implements Sources, AntProjectListener {
                 h.addTypedSourceRoot(name, "generic", displayName, null, null); // NOI18N
             }
         }
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-
-            public void run() {
-                h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            }
-        });
+        h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return h.createSources();
     }
 

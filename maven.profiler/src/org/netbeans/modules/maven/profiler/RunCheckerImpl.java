@@ -45,11 +45,14 @@ import java.util.Set;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
+import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
+import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -80,17 +83,18 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
 
         if (ACTION_PROFILE.equals(config.getActionName()) || ACTION_PROFILE_SINGLE.equals(config.getActionName()) || ACTION_PROFILE_TESTS.equals(config.getActionName())) { // action "profile"
             // Get the ProjectTypeProfiler for Maven project
-            final MavenProjectTypeProfiler ptp = (MavenProjectTypeProfiler)ProjectUtilities.getProjectTypeProfiler(project);
-            
+            final ProjectTypeProfiler ptp = ProjectUtilities.getProjectTypeProfiler(project);
+            if (!(ptp instanceof MavenProjectTypeProfiler)) return false;
             // Resolve profiling session properties
-            Properties sessionProperties = ptp.getLastSessionProperties();
+            Properties sessionProperties = ((MavenProjectTypeProfiler)ptp).getLastSessionProperties();
             for (Object k : configProperties.keySet()) {
                 String key = (String)k;
                 
                 String value = configProperties.getProperty(key);
                 if (value.contains(PROFILER_ARGS)) {
+                    String agentArg = fixAgentArg(sessionProperties.getProperty("profiler.info.jvmargs.agent"));
                     value = value.replace(PROFILER_ARGS, sessionProperties.getProperty("profiler.info.jvmargs") // NOI18N
-                            + " " + sessionProperties.getProperty("profiler.info.jvmargs.agent").replace("\\", "/")); // NOI18N
+                            + " " + agentArg.replace("\\", "/")); // NOI18N
                     configProperties.setProperty(key, value);
                 }
                 if (value.contains(PROFILER_JAVA)) {
@@ -106,7 +110,7 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
             // Attach profiler engine (in separate thread) to profiled process
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    Profiler.getDefault().connectToStartedApp(ptp.getLastProfilingSettings(), ptp.getLastSessionSettings());
+                    Profiler.getDefault().connectToStartedApp(((MavenProjectTypeProfiler)ptp).getLastProfilingSettings(), ((MavenProjectTypeProfiler)ptp).getLastSessionSettings());
                 }
             });
             
@@ -119,4 +123,20 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
         return true;
     }
 
+    private String fixAgentArg(String agentArg) {
+        if (agentArg.indexOf(' ') != -1) { //NOI18N
+            if (Utilities.isUnix()) {
+                // Profiler is installed in directory with space on Unix (Linux, Solaris, Mac OS X)
+                // create temporary link in /tmp directory and use it instead of directory with space
+                String libsDir = Profiler.getDefault().getLibsDir();
+                return IntegrationUtils.fixLibsDirPath(libsDir, agentArg); //NOI18N
+            } else if (Utilities.isWindows()) {
+                // Profiler is installed in directory with space on Windows
+                // surround the whole -agentpath argument with quotes for NB source module
+                agentArg = "\"" + agentArg + "\""; //NOI18N
+                return agentArg; //NOI18N
+            }
+        }
+        return agentArg;
+    }
 }

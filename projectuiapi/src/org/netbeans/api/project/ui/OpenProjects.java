@@ -46,6 +46,7 @@ import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.modules.project.uiapi.Utilities;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 
 /**
  * List of projects open in the GUI.
@@ -147,26 +148,43 @@ public final class OpenProjects {
 
     /**
      * Opens given projects.
-     * Acquires {@link org.netbeans.api.project.ProjectManager#mutex()} in the write mode.
-     * @param projects to be opened. In the case when some of the projects are already opened
-     * these projects are not opened again. If the projects contain duplicates, the duplicated
-     * projects are opened just once.
-     * @param openSubprojects if true also subprojects are opened.
-     * @since org.netbeans.modules.projectuiapi/0 1.2
+     * Acquires {@link org.netbeans.api.project.ProjectManager#mutex()} in write mode.
      * <p class="nonnormative">
-     * This method is designed for use by logical view's Libraries Node to open one or more of dependent
-     * projects. This method can be used also by other project GUI components which need to open certain
-     * project(s), eg. code generation wizards.<br>
-     * The method should not be used for opening newly created project, insted the
-     * {@link org.openide.WizardDescriptor.InstantiatingIterator#instantiate()} used for creation of new project
-     * should return the project directory.<br>
-     * The method should not be also used  to provide a GUI to open subprojects.
-     * The {@link org.netbeans.spi.project.ui.support.CommonProjectActions#openSubprojectsAction()} should be used
-     * instead.
+     * This method is designed for uses such as a logical view's Libraries node to open a dependent
+     * project. It can also be used by other project GUI components which need to open certain
+     * project(s), e.g. code generation wizards.
+     * This should not be used for opening a newly created project; rather,
+     * {@link org.openide.WizardDescriptor.InstantiatingIterator#instantiate}
+     * should return the project directory.
+     * This should also not be used to provide a GUI to open subprojects;
+     * {@link CommonProjectActions#openSubprojectsAction} should be used instead.
      * </p>
+     * @param projects to be opened. If some of the projects are already opened
+     * these projects are ignored. If the list contain duplicates, the duplicated
+     * projects are opened just once.
+     * @param openSubprojects if true subprojects are also opened
+     * @since org.netbeans.modules.projectuiapi/0 1.2
      */
     public void open (Project[] projects, boolean openSubprojects) {
         trampoline.openAPI (projects,openSubprojects);
+    }
+
+    /** Finds out if the project is opened.
+     * @param p the project to verify. Can be <code>null</code> in such case
+     *    the method return <code>false</code>
+     * @return true if this project is among open ones, false otherwise
+     * @since 1.34
+     */
+    public boolean isProjectOpen(Project p) {
+        if (p == null) {
+            return false;
+        }
+        for (Project real : getOpenProjects()) {
+            if (p.equals(real) || real.equals(p)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

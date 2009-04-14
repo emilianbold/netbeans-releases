@@ -4,7 +4,7 @@
 <%-- completion for JSP directives --%>
 <%--CC
 <%@|
-<%@ include % >
+include
 <%@include  %>
 --%>
 

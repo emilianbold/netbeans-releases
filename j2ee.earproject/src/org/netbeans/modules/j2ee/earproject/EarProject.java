@@ -52,10 +52,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -97,7 +95,6 @@ import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -206,18 +203,6 @@ public final class EarProject implements Project, AntProjectListener {
     
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-        
-        // XXX unnecessarily creates a SourcesHelper, which is then GC's
-        // as it is not hold. This is probably unneeded now that issue 63359 was fixed.
-        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
-        String configFilesLabel = NbBundle.getMessage(EarProject.class, "LBL_Node_ConfigBase"); //NOI18N
-        
-        sourcesHelper.addPrincipalSourceRoot("${"+EarProjectProperties.META_INF+"}", configFilesLabel, /*XXX*/null, null); // NOI18N
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            }
-        });
         Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -232,7 +217,7 @@ public final class EarProject implements Project, AntProjectListener {
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
-            new EarSources(helper, evaluator()),
+            new EarSources(this, helper, evaluator()),
             new RecommendedTemplatesImpl(),
             helper.createSharabilityQuery(evaluator(),
                     new String[] {"${"+EarProjectProperties.SOURCE_ROOT+"}"}, // NOI18N

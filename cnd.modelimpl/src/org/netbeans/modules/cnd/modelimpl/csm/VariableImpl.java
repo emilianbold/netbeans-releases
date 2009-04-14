@@ -49,7 +49,6 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -71,7 +70,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     // only one of scopeRef/scopeAccessor must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
-    private final boolean _extern;
+    private boolean _extern;
     private ExpressionBase initExpr;
 
     /** Creates a new instance of VariableImpl 
@@ -231,6 +230,10 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return _extern;
     }
 
+    public void setExtern(boolean _extern) {
+        this._extern = _extern;
+    }
+
     public boolean isConst() {
         CsmType _type = getType();
         if (_type != null) {
@@ -287,7 +290,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
 
     private synchronized void onDispose() {
-        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+        if (this.scopeRef == null) {
             // restore container from it's UID
             this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);
             assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;

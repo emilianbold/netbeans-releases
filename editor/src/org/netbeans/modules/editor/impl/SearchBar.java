@@ -100,6 +100,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
+import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.Mnemonics;
@@ -127,6 +128,9 @@ public final class SearchBar extends JPanel {
     private static final int defaultIncremantalSearchComboWidth = 200;
     private static final int maxIncremantalSearchComboWidth = 350;
     
+    public static final String INCREMENTAL_SEARCH_FORWARD = "incremental-search-forward";
+    public static final String INCREMENTAL_SEARCH_BACKWARD = "incremental-search-backward";
+
     /** Shared mouse listener used for setting the border painting property
      * of the toolbar buttons and for invoking the popup menu.
      */
@@ -213,16 +217,20 @@ public final class SearchBar extends JPanel {
             Action[] actions = component.getActions();
             for(Action action:actions) {
                 // Discover the keyStrokes for incremental-search-forward
-                if (action.getValue(Action.NAME).equals(IncrementalSearchForwardAction.ACTION_NAME)) {
+                String actionName = (String) action.getValue(Action.NAME);
+                if (actionName == null) {
+                    LOG.warning("SearchBar: Null Action.NAME property of action: " + action + "\n");
+                }
+                if (actionName.equals(INCREMENTAL_SEARCH_FORWARD)) {
                     Action incrementalSearchForwardAction = action;
                     KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchForwardAction);
                     if (keyStrokes != null) {
                         InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
                         for(KeyStroke ks : keyStrokes) {
                             LOG.fine("found IncrementalSearchForwardAction, " + ks); //NOI18N
-                            inputMap.put(ks, IncrementalSearchForwardAction.ACTION_NAME);
+                            inputMap.put(ks, INCREMENTAL_SEARCH_FORWARD);
                         }
-                        getActionMap().put(IncrementalSearchForwardAction.ACTION_NAME,
+                        getActionMap().put(INCREMENTAL_SEARCH_FORWARD,
                             new AbstractAction() {
                                 public void actionPerformed(ActionEvent e) {
                                     findNext();
@@ -230,16 +238,16 @@ public final class SearchBar extends JPanel {
                             });
                     }
                 // Discover the keyStrokes for incremental-search-backward
-                } else if (action.getValue(Action.NAME).equals(IncrementalSearchBackwardAction.ACTION_NAME)) {
+                } else if (action.getValue(Action.NAME).equals(INCREMENTAL_SEARCH_BACKWARD)) {
                     Action incrementalSearchBackwardAction = action;
                     KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchBackwardAction);
                     if (keyStrokes != null) {
                         InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
                         for(KeyStroke ks : keyStrokes) {
                             LOG.fine("found IncrementalSearchBackwardAction, " + ks); //NOI18N
-                            inputMap.put(ks, IncrementalSearchBackwardAction.ACTION_NAME);
+                            inputMap.put(ks, INCREMENTAL_SEARCH_BACKWARD);
                         }
-                        getActionMap().put(IncrementalSearchBackwardAction.ACTION_NAME,
+                        getActionMap().put(INCREMENTAL_SEARCH_BACKWARD,
                             new AbstractAction() {
                                 public void actionPerformed(ActionEvent e) {
                                     findPrevious();
@@ -871,13 +879,11 @@ public final class SearchBar extends JPanel {
 
     public static class IncrementalSearchForwardAction extends BaseAction {
         
-        public static final String ACTION_NAME = "incremental-search-forward"; // NOI18N
-    
         static final long serialVersionUID = -1;
         
         public IncrementalSearchForwardAction() {
-            super(ACTION_NAME, CLEAR_STATUS_TEXT);
-            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IncrementalSearchForwardAction.class, ACTION_NAME));
+            super(INCREMENTAL_SEARCH_FORWARD, CLEAR_STATUS_TEXT);
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IncrementalSearchForwardAction.class, INCREMENTAL_SEARCH_FORWARD));
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -895,16 +901,14 @@ public final class SearchBar extends JPanel {
             }
         }
     }
-    
+
     public static class IncrementalSearchBackwardAction extends BaseAction {
         
-        public static final String ACTION_NAME = "incremental-search-backward"; // NOI18N
-
         static final long serialVersionUID = -1;
         
         public IncrementalSearchBackwardAction() {
-            super(ACTION_NAME, CLEAR_STATUS_TEXT);
-            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IncrementalSearchBackwardAction.class, ACTION_NAME));
+            super(INCREMENTAL_SEARCH_BACKWARD, CLEAR_STATUS_TEXT);
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IncrementalSearchBackwardAction.class, INCREMENTAL_SEARCH_BACKWARD));
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {

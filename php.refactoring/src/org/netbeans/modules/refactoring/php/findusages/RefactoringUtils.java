@@ -227,13 +227,7 @@ public class RefactoringUtils {
     public static boolean isFileInOpenProject(FileObject file) {
         assert file != null;
         Project p = FileOwnerQuery.getOwner(file);
-        Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i < opened.length; i++) {
-            if (p == opened[i]) {
-                return true;
-            }
-        }
-        return false;
+        return OpenProjects.getDefault().isProjectOpen(p);
     }
 
     public static boolean isOnSourceClasspath(FileObject fo) {
@@ -243,7 +237,7 @@ public class RefactoringUtils {
         }
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < opened.length; i++) {
-            if (p == opened[i]) {
+            if (p.equals(opened[i]) || opened[i].equals(p)) {
                 //SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(JsProject.SOURCES_TYPE_Js);
                 SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
                 for (int j = 0; j < gr.length; j++) {

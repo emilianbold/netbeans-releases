@@ -50,8 +50,8 @@ public class HudsonJobChangeItemConstants {
 
     private HudsonJobChangeItemConstants() {}
     
-    public static final String JOB_CHANGE_ITEM_USER = "job_change_item_user";
+    public static final String JOB_CHANGE_ITEM_USER = "job_change_item_user"; // NOI18N
     
-    public static final String JOB_CHANGE_ITEM_MESSAGE = "job_change_item_message";
+    public static final String JOB_CHANGE_ITEM_MESSAGE = "job_change_item_message"; // NOI18N
 
 }

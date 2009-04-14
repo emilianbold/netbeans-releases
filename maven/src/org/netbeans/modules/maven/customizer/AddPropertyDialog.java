@@ -54,7 +54,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.ListSelectionModel;
-import javax.swing.text.EditorKit;
 import javax.swing.text.html.HTMLEditorKit;
 import org.apache.maven.model.Plugin;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -64,7 +63,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Children.Array;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -109,8 +107,8 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
         });
         ((BeanTreeView)tvExpressions).setRootVisible(false);
         ((BeanTreeView)tvExpressions).setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        RequestProcessor.getDefault().post(new Loader());
         this.goalsText = goalsText;
+        RequestProcessor.getDefault().post(new Loader());
     }
 
     public JButton getOkButton() {

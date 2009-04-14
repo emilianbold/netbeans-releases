@@ -586,12 +586,7 @@ public class AppClientProjectGenerator {
         if (h.isSharableProject() && serverLibraryName != null) {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH,
                     "${libs." + serverLibraryName + "." + "classpath" + "}"); // NOI18N
-            ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH,
-                    "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
-            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                    "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
-            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                    "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
+            setServerProperties(ep, serverLibraryName);
         } else {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, "");
         }        
@@ -681,7 +676,16 @@ public class AppClientProjectGenerator {
         
         return h;
     }
-    
+
+    public static void setServerProperties(EditableProperties ep, String serverLibraryName) {
+        ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH,
+                "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
+        ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
+                "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
+        ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
+                "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
+    }
+
     private static String createFileReference(ReferenceHelper refHelper, FileObject projectFO, FileObject referencedFO) {
         String relPath = FileUtil.getRelativePath(projectFO, referencedFO);
         if (relPath != null) {

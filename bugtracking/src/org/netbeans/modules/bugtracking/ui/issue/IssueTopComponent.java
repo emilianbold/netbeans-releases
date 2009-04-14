@@ -57,12 +57,17 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.TopComponent;
 
 /**
@@ -75,12 +80,15 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private static Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
     /** Issue displayed by this top-component. */
     private Issue issue;
+    private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true); // NOI18N
+    private Task prepareTask;
 
     /**
      * Creates new {@code IssueTopComponent}.
      */
     public IssueTopComponent() {
         initComponents();
+        BugtrackingManager.getInstance().addPropertyChangeListener(this);
     }
 
     /**
@@ -93,6 +101,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }
 
     public void initNewIssue(Repository toSelect) {
+        initNewIssue(toSelect, false);
+    }
+
+    public void initNewIssue(Repository toSelect, boolean suggestedSelectionOnly) {
         Font f = new JLabel().getFont();
         int s = f.getSize();
         findIssuesLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
@@ -119,9 +131,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             }
         });
 
-        DefaultComboBoxModel repoModel;
-        if(toSelect != null) {
-            repoModel = new DefaultComboBoxModel();
+        if ((toSelect != null) && !suggestedSelectionOnly) {
+            /* fixed selection that cannot be changed by user */
+            DefaultComboBoxModel  repoModel = new DefaultComboBoxModel();
             repoModel.addElement(toSelect);
             repositoryComboBox.setModel(repoModel);
             repositoryComboBox.setSelectedItem(toSelect);
@@ -129,11 +141,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             newButton.setEnabled(false);
             onRepoSelected();
         } else {
-            Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
-            repoModel = new DefaultComboBoxModel(repos);
-            repositoryComboBox.setModel(repoModel);
-            if(repositoryComboBox.getModel().getSize() > 0) {
+            boolean selected = setupRepositoryModel(toSelect);
+            if (!selected && (repositoryComboBox.getModel().getSize() > 0)) {
                 repositoryComboBox.setSelectedIndex(0);
+                selected = true;
+            }
+            if (selected) {
                 onRepoSelected();
             }
         }
@@ -179,8 +192,6 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
         repoPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
-        repositoryComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
         org.openide.awt.Mnemonics.setLocalizedText(findIssuesLabel, org.openide.util.NbBundle.getMessage(IssueTopComponent.class, "IssueTopComponent.findIssuesLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(repoLabel, org.openide.util.NbBundle.getMessage(IssueTopComponent.class, "IssueTopComponent.repoLabel.text")); // NOI18N
@@ -217,7 +228,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     .add(findIssuesLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(90, Short.MAX_VALUE))
+                .addContainerGap(152, Short.MAX_VALUE))
         );
         repoPanelLayout.setVerticalGroup(
             repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -263,33 +274,63 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     private BugtrackingController controller;
     private void onRepoSelected() {
-        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+        if(prepareTask != null) {
+            prepareTask.cancel();
+        }
+        Cancellable c = new Cancellable() {
+            public boolean cancel() {
+                if(prepareTask != null) {
+                    prepareTask.cancel();
+                }
+                return true;
+            }
+        };
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueTopComponent.class, "CTL_PreparingIssue"), c); // NOI18N
+        prepareTask = rp.post(new Runnable() {
             public void run() {
-                Repository repo = (Repository) repositoryComboBox.getSelectedItem();
-                if (repo == null) {
-                    return;
-                }
-                if(issue != null) {                    
-                    if(controller != null) issuePanel.remove(controller.getComponent());
-                    issue.removePropertyChangeListener(IssueTopComponent.this);
-                }
-                issue = repo.createIssue();
-                if (issue == null) {
-                    return;
-                }
-                controller = issue.getController();
-
-                final BugtrackingController c = issue.getController();
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
-                        issue.addPropertyChangeListener(IssueTopComponent.this);
-                        revalidate();
-                        repaint();
+                try {
+                    handle.start();
+                    Repository repo = (Repository) repositoryComboBox.getSelectedItem();
+                    if (repo == null) {
+                        return;
                     }
-                });
+                    if(issue != null) {
+                        if(controller != null) issuePanel.remove(controller.getComponent());
+                        issue.removePropertyChangeListener(IssueTopComponent.this);
+                    }
+                    issue = repo.createIssue();
+                    if (issue == null) {
+                        return;
+                    }
+                    controller = issue.getController();
+
+                    final BugtrackingController c = issue.getController();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
+                            issue.addPropertyChangeListener(IssueTopComponent.this);
+                            revalidate();
+                            repaint();
+
+                            focusFirstEnabledComponent();
+                        }
+                    });
+                } finally {
+                    handle.finish();
+                    prepareTask = null;
+                }
             }
         });
+    }
+
+    private void focusFirstEnabledComponent() {
+        repositoryComboBox.requestFocusInWindow();
+        if(!repositoryComboBox.isEnabled()) {
+            newButton.requestFocusInWindow();
+            if(!newButton.isEnabled()) {
+                newButton.transferFocus();
+            }
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -310,12 +351,21 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     @Override
     public void componentOpened() {
         openIssues.add(this);
+        if(issue != null) {
+            issue.getController().opened();
+        }
     }
 
     @Override
     public void componentClosed() {
         openIssues.remove(this);
-        issue.removePropertyChangeListener(this);
+        if(issue != null) {
+            issue.removePropertyChangeListener(this);
+            issue.getController().closed();
+        }
+        if(prepareTask != null) {
+            prepareTask.cancel();
+        }
     }
 
     /**
@@ -342,8 +392,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     setName(issue.getDisplayName());
                     setToolTipText(issue.getTooltip());
                 } else {
-                    setName(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent"));
-                    setToolTipText(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent"));
+                    setName(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent")); // NOI18N
+                    setToolTipText(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent")); // NOI18N
                 }
             }
         });
@@ -353,7 +403,53 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_DATA_CHANGED)) {
             repoPanel.setVisible(false);
             setNameAndTooltip();
-        } 
+        } else if(evt.getPropertyName().equals(BugtrackingManager.EVENT_REPOSITORIES_CHANGED)) {
+            if(!repositoryComboBox.isEnabled()) {
+                // well, looks like there shuold be only one repository available
+                return;
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setupRepositoryModel();
+                }
+            });
+        }
+    }
+
+    private void setupRepositoryModel() {
+        setupRepositoryModel(null);
+    }
+
+    /**
+     * Initializes the combo-box's data model.
+     *
+     * @param  object (repository) to be preselected if possible, or {@code null}
+     * @return  {@code true} if the preferred selection was found and selected,
+     *          {@code false} otherwise
+     */
+    private boolean setupRepositoryModel(Object preferredSelection) {
+        assert (preferredSelection == null)
+               || (preferredSelection instanceof Repository);
+
+        if (preferredSelection == null) {
+            preferredSelection = repositoryComboBox.getSelectedItem();
+        }
+
+        DefaultComboBoxModel repoModel;
+        Repository[] repos = BugtrackingManager.getInstance().getKnownRepositories();
+        repoModel = new DefaultComboBoxModel(repos);
+        repositoryComboBox.setModel(repoModel);
+
+        if (preferredSelection != null) {
+            for (int i = 0; i < repoModel.getSize(); i++) {
+                Repository r = (Repository) repoModel.getElementAt(i);
+                if (r == preferredSelection) {
+                    repoModel.setSelectedItem(r);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }

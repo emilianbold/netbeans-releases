@@ -463,7 +463,7 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
     
     private synchronized MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
         if (webservicesMetadataModel == null) {
-            FileObject ddFO = getDeploymentDescriptor();
+            FileObject ddFO = getWebServicesDeploymentDescriptor();
             File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
             ProjectSourcesClassPathProvider cpProvider = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
             MetadataUnit metadataUnit = MetadataUnit.create(
@@ -475,6 +475,16 @@ public class WebModuleImpl implements WebModuleImplementation, J2eeModuleImpleme
             webservicesMetadataModel = WebservicesMetadataModelFactory.createMetadataModel(metadataUnit);
         }
         return webservicesMetadataModel;
+    }
+
+    /** Deployment descriptor (WEB-INF/webservices.xml file) of the web module.
+     */
+    private FileObject getWebServicesDeploymentDescriptor() {
+        FileObject root = getDocumentBase();
+        if (root != null) {
+            return root.getFileObject(J2eeModule.WEBSERVICES_XML);
+        }
+        return null;
     }
     
     /**

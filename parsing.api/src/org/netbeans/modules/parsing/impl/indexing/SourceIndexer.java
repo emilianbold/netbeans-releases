@@ -41,12 +41,10 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -56,13 +54,13 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 
 /**
  * Indexer of {@link Source} with possible embeddings
@@ -85,11 +83,7 @@ public class SourceIndexer {
         this.followUpJob = followUpJob;
     }
 
-    protected void index(Iterable<? extends Indexable> files, Collection<? extends Indexable> deleted, final List<Context> transactionContexts) throws IOException {
-        if (deleted != null && deleted.size() > 0) {
-            deleted (deleted);
-        }
-        
+    protected void index(Iterable<? extends Indexable> files, final List<Context> transactionContexts) throws IOException {
         // XXX: Replace with multi source when done
         for (final Indexable dirty : files) {
             try {
@@ -101,26 +95,31 @@ public class SourceIndexer {
                         public void run(ResultIterator resultIterator) throws Exception {
                             final String mimeType = src.getMimeType();
                             final EmbeddingIndexerFactory indexer = findIndexer (mimeType);
-                            LOG.fine("Indexing " + fileObject.getPath() + "; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("Indexing " + fileObject.getPath() + "; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
+                            }
                             visit(resultIterator,indexer);
                         }
 
                         private void visit (final ResultIterator resultIterator,
                                 final EmbeddingIndexerFactory currentIndexerFactory) throws ParseException,IOException {
                             if (currentIndexerFactory != null) {
-                                final String indexerName = currentIndexerFactory.getIndexerName();
-                                final int indexerVersion = currentIndexerFactory.getIndexVersion();
-                                final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob);
-                                transactionContexts.add(context);
-                                
-                                final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty,resultIterator.getSnapshot());
-                                if (indexer != null) {
-                                    try {
-                                        SPIAccessor.getInstance().index(indexer, dirty, resultIterator.getParserResult(), context);
-                                    } catch (ThreadDeath td) {
-                                        throw td;
-                                    } catch (Throwable t) {
-                                        LOG.log(Level.WARNING, null, t);
+                                final Parser.Result pr = resultIterator.getParserResult();
+                                if (pr != null) {
+                                    final String indexerName = currentIndexerFactory.getIndexerName();
+                                    final int indexerVersion = currentIndexerFactory.getIndexVersion();
+                                    final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob);
+                                    transactionContexts.add(context);
+
+                                    final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty, pr.getSnapshot());
+                                    if (indexer != null) {
+                                        try {
+                                            SPIAccessor.getInstance().index(indexer, dirty, pr, context);
+                                        } catch (ThreadDeath td) {
+                                            throw td;
+                                        } catch (Throwable t) {
+                                            LOG.log(Level.WARNING, null, t);
+                                        }
                                     }
                                 }
                             }
@@ -133,23 +132,10 @@ public class SourceIndexer {
                         }
                     });
                 }
-            }
-            catch (final ParseException e) {
-                Exceptions.printStackTrace(e);
+            } catch (final ParseException e) {
+                LOG.log(Level.WARNING, null, e);
             }
         }        
-    }
-
-    private void deleted (final Collection<? extends Indexable> deleted) throws IOException {
-        final Set<String> allMimeTypes = Util.getAllMimeTypes();
-        for (String mimeType : allMimeTypes) {
-            final EmbeddingIndexerFactory factory = MimeLookup.getLookup(mimeType).lookup(EmbeddingIndexerFactory.class);
-            if (factory != null) {
-                embeddedIndexers.put(mimeType, factory);
-                final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob);
-                factory.filesDeleted(deleted, context);
-            }
-        }
     }
 
     private EmbeddingIndexerFactory findIndexer (final String mimeType) {

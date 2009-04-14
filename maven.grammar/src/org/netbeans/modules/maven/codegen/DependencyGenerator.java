@@ -40,8 +40,11 @@
  */
 package org.netbeans.modules.maven.codegen;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.model.pom.Dependency;
@@ -89,8 +92,12 @@ public class DependencyGenerator implements CodeGenerator {
     }
 
     public void invoke() {
+        try {
+            model.sync();
+        } catch (IOException ex) {
+            Logger.getLogger(DependencyGenerator.class.getName()).log(Level.INFO, "Error while syncing the editor document with model for pom.xml file", ex); //NOI18N
+        }
         if (!model.getState().equals(State.VALID)) {
-            //TODO report somehow, status line?
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DependencyGenerator.class, "MSG_Cannot_Parse"));
             return;
         }
@@ -114,6 +121,7 @@ public class DependencyGenerator implements CodeGenerator {
             String scope = ret[3];
             String type = ret[4];
             String classifier = ret[5];
+            int newPos = -1;
             try {
                 model.startTransaction();
                 pos = component.getCaretPosition();
@@ -129,10 +137,12 @@ public class DependencyGenerator implements CodeGenerator {
                     dep.setClassifier(classifier);
                     container.addDependency(dep);
                 }
-                pos = dep.getModel().getAccess().findPosition(dep.getPeer());
-                component.setCaretPosition(pos);
+                newPos = dep.getModel().getAccess().findPosition(dep.getPeer());
             } finally {
                 model.endTransaction();
+            }
+            if (newPos != -1) {
+                component.setCaretPosition(newPos);
             }
         }
     }

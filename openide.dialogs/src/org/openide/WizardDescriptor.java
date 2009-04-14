@@ -114,9 +114,15 @@ import org.netbeans.api.progress.ProgressHandleFactory;
  * A list of <em>wizard panels</em> may be specified and these
  * may be traversed at the proper times using the "Previous"
  * and "Next" buttons (or "Finish" on the last one).
+ *
+ * <p><b>Related Tutorial</b>
+ *
+ * <ul>
+ * <li><a href="http://platform.netbeans.org/tutorials/nbm-wizard.html">NetBeans Wizard Module Tutorial</a>
+ * <li><a href="doc-files/wizard-guidebook.html">Wizard Guide</a>
+ * </ul>
+ *
  * @see DialogDisplayer#createDialog
- * @see <a href="doc-files/wizard-guidebook.html">Wizard Guidebook
- * (describes the set of properties controlling the display of wizard panels)</a>
  */
 public class WizardDescriptor extends DialogDescriptor {
     /** "Next" button option.
@@ -505,7 +511,7 @@ public class WizardDescriptor extends DialogDescriptor {
                         public void windowClosing (WindowEvent e) {
                             if (!changeStateInProgress) {
                                 if (WizardDescriptor.this.getValue () == null || WizardDescriptor.NEXT_OPTION.equals (WizardDescriptor.this.getValue ())) {
-                                    WizardDescriptor.this.setValueWithoutPCH (NotifyDescriptor.CLOSED_OPTION);
+                                    WizardDescriptor.this.setValue (NotifyDescriptor.CLOSED_OPTION);
                                 }
                                 w.setVisible (false);
                                 w.dispose ();
@@ -1120,8 +1126,10 @@ public class WizardDescriptor extends DialogDescriptor {
         if (wizardPanel != null) {
             // set back escapeActionListener as same as NbPresenter does
             if (escapeActionListener != null) {
-                wizardPanel.getRootPane ().registerKeyboardAction (escapeActionListener, "Escape",
-                    KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                if (wizardPanel.getRootPane () != null) {
+                    wizardPanel.getRootPane ().registerKeyboardAction (escapeActionListener, "Escape",
+                        KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                }
             }
             wizardPanel.setProgressComponent (null, null);
         }

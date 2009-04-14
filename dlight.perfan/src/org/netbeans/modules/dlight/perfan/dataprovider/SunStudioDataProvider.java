@@ -45,6 +45,9 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
+import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
 
 /**
@@ -52,7 +55,7 @@ import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
  * @author mt154047
  */
 final class SunStudioDataProvider extends SSStackDataProvider
-        implements TableDataProvider {
+        implements TableDataProvider, FunctionsListDataProvider {
 
     SunStudioDataProvider() {
     }
@@ -84,5 +87,29 @@ final class SunStudioDataProvider extends SSStackDataProvider
             result.add(new DataRow(columnNames, data));
         }
         return result;
+    }
+
+    public List<FunctionCall> getFunctionsList(DataTableMetadata metadata,
+            FunctionDatatableDescription functionDecsr, List<Column> metricsColumn) {
+
+        List<FunctionCall> result = new ArrayList<FunctionCall>();
+
+        if (!metricsColumn.contains(SunStudioDCConfiguration.c_name)) {
+            List<Column> oldMetrics = metricsColumn;
+            metricsColumn = new ArrayList<Column>();
+            metricsColumn.addAll(oldMetrics);
+            metricsColumn.add(SunStudioDCConfiguration.c_name);
+        }
+
+        List<FunctionCallTreeTableNode> nodes =
+                super.getTableView(metricsColumn, null, Integer.MAX_VALUE);
+
+        for (FunctionCallTreeTableNode node : nodes) {
+            FunctionCall call = node.getDeligator();
+            result.add(call);
+        }
+
+        return result;
+
     }
 }

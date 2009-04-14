@@ -82,7 +82,7 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
             .gui(false);
         return NbModuleSuite.create(config);
     }
-    
+
 
     @Override
     public void setUp() throws Exception {
@@ -110,7 +110,7 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
         
         assertEquals("1000 nodes", 1000, arr.length);
         
-        CountingSecurityManager.assertCounts("About 1000 * 5?", 5000, len);
+        CountingSecurityManager.assertCounts("About 1000 * 7?", 7000, len);
     }
 
     public void testGetNodesForAFolderExtxml() throws Exception {
@@ -129,18 +129,22 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
         return len.longValue();
     }
 
-    private static final class CompareResults implements Test {
+    private static final class CompareResults extends NbTestCase {
         private final NbTestSuite suite;
 
         public CompareResults(NbTestSuite suite) {
+            super("testCompareResults");
             this.suite = suite;
         }
         
+        @Override
         public int countTestCases() {
             return 1;
         }
 
+        @Override
         public void run(TestResult result) {
+            result.startTest(this);
             StringBuffer times = new StringBuffer("\n");
             AtomicLong min = new AtomicLong(Long.MAX_VALUE);
             AtomicLong max = new AtomicLong(Long.MIN_VALUE);
@@ -151,6 +155,7 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
             if (max.longValue() > 3 * min.longValue()) {
                 result.addFailure(this, new AssertionFailedError(times.toString()));
             }
+            result.endTest(this);
         }
         
         private void iterateTests(TestResult result, StringBuffer times, TestSuite suite, AtomicLong min, AtomicLong max) {

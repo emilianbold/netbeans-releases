@@ -45,6 +45,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,11 +67,13 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.spi.java.project.runner.JavaRunnerImplementation;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -196,7 +199,41 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         setProperty(antProps, "platform.java", javaTool);
         setProperty(antProps, "work.dir", workDir);
         setProperty(antProps, "run.jvmargs", toOneLine(runJVMArgs));
-        setProperty(antProps, "application.args", toOneLine(args));
+        if (toRun == null) {
+            // #152881 - pass arguments only if not run single
+            setProperty(antProps, "application.args", toOneLine(args));
+        }
+        {
+            FileObject source = toRun;
+            if (source == null) {
+                String binaryResource = className.replace('.', '/') + ".class";
+                for (FileObject root : exec.getRoots()) {
+                    if (root.getFileObject(binaryResource) != null) {
+                        try {
+                            String sourceResource = className.replace('.', '/') + ".java";
+                            for (FileObject srcRoot : SourceForBinaryQuery.findSourceRoots(root.getURL()).getRoots()) {
+                                FileObject srcFile = srcRoot.getFileObject(sourceResource);
+                                if (srcFile != null) {
+                                    source = srcFile;
+                                    break;
+                                }
+                            }
+                        } catch (FileStateInvalidException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    break;
+                }
+            }
+            String encoding = "UTF-8";
+            if (source != null) {
+                Charset sourceEncoding = FileEncodingQuery.getEncoding(source);
+                if (Charset.isSupported(sourceEncoding.name())) {
+                    encoding = sourceEncoding.name();
+                }
+            }
+            setProperty(antProps, "encoding", encoding);
+        }
 
         for (Entry<String, ?> e : properties.entrySet()) {
             if (e.getValue() instanceof String) {

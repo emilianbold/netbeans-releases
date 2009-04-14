@@ -41,9 +41,14 @@
 
 package org.netbeans.modules.hudson.impl;
 
+import java.util.ArrayList;
+import org.netbeans.modules.hudson.api.HudsonJob.Color;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
+import org.netbeans.modules.hudson.impl.HudsonJobImpl.HudsonMavenModule;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.constants.HudsonXmlApiConstants;
@@ -51,6 +56,7 @@ import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 
 public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
@@ -97,7 +103,7 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
     public Collection<? extends HudsonJobChangeItem> getChanges() {
         if (changes == null) {
             Document changeSet = connector.getDocument(getUrl() +
-                    HudsonXmlApiConstants.XML_API_URL + "?xpath=/*/changeSet");
+                    HudsonXmlApiConstants.XML_API_URL + "?xpath=/*/changeSet"); // NOI18N
             if (changeSet != null) {
                 for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
                     changes = scm.parseChangeSet(job, changeSet.getDocumentElement());
@@ -115,6 +121,60 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
 
     public FileSystem getArtifacts() {
         return job.getInstance().getArtifacts(this);
+    }
+
+    public Collection<? extends HudsonMavenModuleBuild> getMavenModules() {
+        List<HudsonMavenModuleBuildImpl> modules = new ArrayList<HudsonMavenModuleBuildImpl>();
+        for (HudsonJobImpl.HudsonMavenModule module : job.mavenModules) {
+            modules.add(new HudsonMavenModuleBuildImpl(module));
+        }
+        return modules;
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(HudsonJobBuildImpl.class, "HudsonJobBuildImpl.display_name", job.getDisplayName(), getNumber());
+    }
+
+    private final class HudsonMavenModuleBuildImpl implements HudsonMavenModuleBuild, OpenableInBrowser {
+
+        private final HudsonJobImpl.HudsonMavenModule module;
+
+        HudsonMavenModuleBuildImpl(HudsonMavenModule module) {
+            this.module = module;
+        }
+
+        public String getName() {
+            return module.name;
+        }
+
+        public String getDisplayName() {
+            return module.displayName;
+        }
+
+        public Color getColor() {
+            return module.color;
+        }
+
+        public String getUrl() {
+            return module.url + build + "/"; // NOI18N
+        }
+
+        public HudsonJobBuild getBuild() {
+            return HudsonJobBuildImpl.this;
+        }
+
+        public FileSystem getArtifacts() {
+            return job.getInstance().getArtifacts(this);
+        }
+
+        public @Override String toString() {
+            return getUrl();
+        }
+
+        public String getBuildDisplayName() {
+            return NbBundle.getMessage(HudsonJobBuildImpl.class, "HudsonJobBuildImpl.display_name", getDisplayName(), getNumber());
+        }
+
     }
 
 }

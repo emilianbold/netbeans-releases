@@ -127,7 +127,7 @@ final class FileSelector extends JPanel implements PropertyChangeListener, Explo
                 manager.setSelectedNodes (new Node[] { root });
                 JLabel label = new JLabel();
                 Mnemonics.setLocalizedText(label, rootLabel);
-                label.setLabelFor(tree);
+                label.setLabelFor(tree.getViewport().getView());
                 add(label, BorderLayout.NORTH);
         } catch(PropertyVetoException pve) {
             throw new IllegalStateException(pve.getMessage());

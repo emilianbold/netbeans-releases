@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.cpu.impl;
 
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -46,10 +45,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import javax.swing.*;
 import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
+import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.UIThread;
 
 /**
  *
@@ -59,10 +64,13 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
 
     private CpuIndicatorPanel panel;
     private Collection<ActionListener> listeners;
+    private int lastSysValue;
+    private int lastUsrValue;
+    private int seconds;
 
     CpuIndicator(CpuIndicatorConfiguration configuration) {
         super(configuration);
-        panel = new CpuIndicatorPanel(this);
+        panel = new CpuIndicatorPanel();
     }
 
     @Override
@@ -76,22 +84,25 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
 
     @Override
     public void updated(List<DataRow> data) {
-        DataRow lastRow = null;
         for (DataRow row : data) {
-            if (DLightLogger.instance.isLoggable(Level.FINE)) { DLightLogger.instance.fine("UPDATE: " + row.getData().get(0) + " " + row.getData().get(1)); }
+            if (DLightLogger.instance.isLoggable(Level.FINE)) {
+                DLightLogger.instance.fine("UPDATE: " + row.getData().get(0) + " " + row.getData().get(1));
+            }
             Float usr = (Float) row.getData("utime"); // NOI18N
             Float sys = (Float) row.getData("stime"); // NOI18N
             if (usr != null && sys != null) {
-                panel.addData(sys.intValue(), usr.intValue());
-                lastRow = row;
+                lastSysValue = sys.intValue();
+                lastUsrValue = usr.intValue();
             }
         }
-        if (lastRow != null) {
-            Float usr = (Float) lastRow.getData("utime"); // NOI18N
-            Float sys = (Float) lastRow.getData("stime"); // NOI18N
-            panel.setSysValue(sys.intValue());
-            panel.setUsrValue(usr.intValue());
-        }
+    }
+
+    @Override
+    protected void tick() {
+        panel.addData(lastSysValue, lastUsrValue);
+        panel.setSysValue(lastSysValue);
+        panel.setUsrValue(lastUsrValue);
+        panel.setTime(++seconds);
     }
 
     /*package*/ void fireActionPerformed() {
@@ -121,6 +132,43 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
             if (listeners != null) {
                 listeners.remove(listener);
             }
+        }
+    }
+
+    @Override
+    protected void repairNeeded(boolean needed) {
+        if (needed) {
+            final RepairPanel repairPanel = new RepairPanel(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    final Future<Boolean> result = getRepairActionProvider().asyncRepair();
+                    DLightExecutorService.submit(new Callable<Boolean>() {
+                        public Boolean call() throws Exception {
+                            UIThread.invoke(new Runnable() {
+                                public void run() {
+                                    panel.getPanel().setOverlay(null);
+                                }
+                            });
+                            return result.get();
+                        }
+                    }, "Click On Repair in CPU Indicator task");//NOI18N
+                }
+            });
+            UIThread.invoke(new Runnable() {
+                public void run() {
+                    panel.getPanel().setEnabled(false);
+                    panel.getPanel().setOverlay(repairPanel);
+                }
+            });
+        } else {
+            final JLabel label = new JLabel(getRepairActionProvider().isValid()?
+                "<html><center>Will show data on the next run</center></html>" :
+                "<html><center>Invalid</center></html>");
+            label.setForeground(GraphConfig.TEXT_COLOR);
+            UIThread.invoke(new Runnable() {
+                public void run() {
+                    panel.getPanel().setOverlay(label);
+                }
+            });
         }
     }
 }

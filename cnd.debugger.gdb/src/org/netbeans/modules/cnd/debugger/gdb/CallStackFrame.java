@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
+import java.util.Collection;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
@@ -66,6 +67,7 @@ public class CallStackFrame {
     private final String from;
     
     private LocalVariable[] cachedLocalVariables = null;
+    private Collection<GdbVariable> arguments = null;
     //private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public CallStackFrame(GdbDebugger debugger, String func, String file, String fullname, String lnum, String address, int frameNumber, String from) {
@@ -140,7 +142,11 @@ public class CallStackFrame {
      */
     public String getFullname() {
         // PathMap.getLocalPath throws NPE when argument is null
-        return fullname == null? null : debugger.getPathMap().getLocalPath(fullname);
+        return fullname == null? null : debugger.getPathMap().getLocalPath(debugger.checkCygwinLibs(fullname));
+    }
+
+    public String getOriginalFullName() {
+        return fullname;
     }
     
     /**
@@ -174,6 +180,14 @@ public class CallStackFrame {
      */
     public void popFrame() {
         debugger.getGdbProxy().exec_finish();
+    }
+
+    public Collection<GdbVariable> getArguments() {
+        return arguments;
+    }
+
+    public void setArguments(Collection<GdbVariable> arguments) {
+        this.arguments = arguments;
     }
     
     /**

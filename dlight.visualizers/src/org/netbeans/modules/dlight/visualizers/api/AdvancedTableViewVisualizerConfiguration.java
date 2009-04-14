@@ -103,7 +103,7 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
     }
 
     public DataModelScheme getSupportedDataScheme() {
-        return DataModelSchemeProvider.getInstance().getScheme("model:table");
+        return DataModelSchemeProvider.getInstance().getScheme("model:table");//NOI18N
     }
 
     public DataTableMetadata getMetadata() {
@@ -150,7 +150,7 @@ public final class AdvancedTableViewVisualizerConfiguration implements Visualize
         private DataRow row;
 
         GoToSourceAction(DataRow row) {
-            super(NbBundle.getMessage(AdvancedTableViewVisualizerConfiguration.class, "GoToSourceActionName"));
+            super(NbBundle.getMessage(AdvancedTableViewVisualizerConfiguration.class, "GoToSourceActionName"));//NOI18N
             this.row = row;
         }
 

@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.util.Collections;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -55,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
@@ -66,15 +68,17 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     private final CharSequence name;
     private final CharSequence[] nameParts;
     private final CsmUID<CsmClass> parentUID;
+    private final CsmUID<CsmClassForwardDeclaration> classForwardUID;
     private CsmUID<CsmClass> friendUID;
     private TemplateDescriptor templateDescriptor = null;
     
-    public FriendClassImpl(AST ast, FileImpl file, CsmClass parent, boolean register) {
+    public FriendClassImpl(AST ast, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) {
         super(ast, file);
         this.parentUID = UIDs.get(parent);
         AST qid = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
+        classForwardUID = UIDCsmConverter.declarationToUID(cfd);
         AST templateParams = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LITERAL_template);
         if (templateParams != null) {
             List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, file, parent, register);
@@ -125,16 +129,23 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     }
 
     public CsmClass getReferencedClass(Resolver resolver) {
-        if (friendUID != null) {
-            return friendUID.getObject();
+        CsmClass cls = UIDCsmConverter.UIDtoClass(friendUID);
+        if(!CsmBaseUtilities.isValid(cls)|| ForwardClass.isForwardClass(cls)) {
+            cls = null;
+            CsmClassForwardDeclaration cfd = UIDCsmConverter.UIDtoCsmObject(classForwardUID);
+            if(CsmBaseUtilities.isValid(cfd)) {
+                cls = cfd.getCsmClass();
+            }
+            friendUID = UIDCsmConverter.declarationToUID(cls);
         }
-        CsmObject o = resolve(resolver);
-        if (CsmKindUtilities.isClass(o)) {
-            CsmClass cls = (CsmClass) o;
-            friendUID = UIDs.get(cls);
-            return cls;
+        if (!CsmBaseUtilities.isValid(cls) || ForwardClass.isForwardClass(cls)) {
+            CsmObject o = resolve(resolver);
+            if (CsmKindUtilities.isClass(o)) {
+                cls = (CsmClass) o;
+                friendUID = UIDCsmConverter.objectToUID(cls);
+            }
         }
-        return null;
+        return cls;
     }
     
     private CharSequence[] initNameParts(AST qid) {
@@ -155,10 +166,14 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     @Override
     public void dispose() {
         super.dispose();
-	unregisterInProject();
+        unregisterInProject();
     }
 
     private void unregisterInProject() {
+        CsmClassForwardDeclaration cfd = UIDCsmConverter.UIDtoCsmObject(classForwardUID);
+        if (cfd instanceof ClassForwardDeclarationImpl) {
+            ((ClassForwardDeclarationImpl) cfd).dispose();
+        }
         ((ProjectBase) getContainingFile().getProject()).unregisterDeclaration(this);
         this.cleanUID();
     }
@@ -191,6 +206,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         UIDObjectFactory.getDefaultFactory().writeUID(this.parentUID, output);    
         UIDObjectFactory.getDefaultFactory().writeUID(this.friendUID, output);
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
+        UIDObjectFactory.getDefaultFactory().writeUID(this.classForwardUID, output);
     }
 
 
@@ -202,5 +218,6 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         this.parentUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         this.friendUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
+        this.classForwardUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
 }

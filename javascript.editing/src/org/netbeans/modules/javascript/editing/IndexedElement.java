@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -59,6 +61,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 
@@ -221,11 +224,17 @@ public abstract class IndexedElement extends JsElement {
 
     protected final String getFilenameUrl() {
         try {
-            return indexResult.getFile().getURL().toExternalForm();
+            FileObject entryFO = indexResult.getFile();
+            if(entryFO != null) {
+                //test if the entry fo is non null since the file may be already
+                //deleted (completion invoked after the file deletion but before
+                //index update
+                return entryFO.getURL().toExternalForm();
+            }
         } catch (FileStateInvalidException ex) {
             LOG.log(Level.WARNING, null, ex);
-            return null;
         }
+        return null;
     }
 
     public Document getDocument() {
@@ -273,7 +282,27 @@ public abstract class IndexedElement extends JsElement {
         
         return -1;
     }
-    
+
+    private Document getSdocDocument() {
+        try {
+            //read the sdocurl field in the indexdocument
+            String sdocurl = indexResult.getValue(JsIndexer.FIELD_SDOC_URL);
+            if (sdocurl != null) {
+                URL url = new URL(sdocurl);
+                FileObject resource = URLMapper.findFileObject(url);
+                if (resource != null) {
+                    Document doc = GsfUtilities.getDocument(resource, true);
+                    return doc;
+                } else {
+                    LOG.warning("Cannot find FileObject for " + url.toExternalForm());
+                }
+            }
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
     protected List<String> getComments() {
         int docOffsetIndex = getAttributeSection(DOC_INDEX);
         if (docOffsetIndex != -1) {
@@ -282,7 +311,8 @@ public abstract class IndexedElement extends JsElement {
                 return null;
             }
             try {
-                BaseDocument doc = (BaseDocument) getDocument();
+                //get the sdoc document if present
+                BaseDocument doc = (BaseDocument) getSdocDocument();
                 if (doc == null) {
                     return null;
                 }

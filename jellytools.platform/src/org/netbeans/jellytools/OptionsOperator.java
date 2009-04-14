@@ -69,6 +69,8 @@ import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.openide.nodes.Node;
 
+//TODO: update this class - there's no classic view anymore
+
 /**
  * Provides access to the Options window and it's subcomponents.
  * Use PropertySheet class to access properties. 
@@ -317,7 +319,7 @@ public class OptionsOperator extends NbDialogOperator {
      * @param colIndex column index in the table
      */
     protected void revertLevel(final int row, final int colIndex) {
-        editLevel(row, colIndex, Bundle.getString("org.netbeans.core.projects.Bundle", 
+        editLevel(row, colIndex, Bundle.getString("org.netbeans.modules.options.classic.Bundle",
                                                   "LBL_action_revert"));
     }
 
@@ -326,7 +328,7 @@ public class OptionsOperator extends NbDialogOperator {
      * @param colIndex column index in the table
      */
     protected void defineHere(int row, int colIndex) {
-        editLevel(row, colIndex, Bundle.getString("org.netbeans.core.projects.Bundle", 
+        editLevel(row, colIndex, Bundle.getString("org.netbeans.modules.options.classic.Bundle",
                                                   "LBL_action_define"));
     }
 
@@ -457,8 +459,7 @@ public class OptionsOperator extends NbDialogOperator {
                 }
 
                 public String getDescription() {
-                    return "org.netbeans.core.actions.OptionsAction$OptionsPanel or "+ // NOI18N
-                           "org.netbeans.modules.options.OptionsPanel"; // NOI18N
+                    return "org.netbeans.modules.options.OptionsPanel"; // NOI18N
                 }
             });
         }

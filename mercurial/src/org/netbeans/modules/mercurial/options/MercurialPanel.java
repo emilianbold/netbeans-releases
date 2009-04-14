@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.mercurial.options;
 
+import java.io.IOException;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 
 import javax.swing.event.DocumentListener;
@@ -97,18 +98,13 @@ final class MercurialPanel extends javax.swing.JPanel {
         jTextPane1 = new javax.swing.JTextPane();
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
+        cbOpenOutputWindow = new javax.swing.JCheckBox();
 
         jLabel1.setLabelFor(userNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel1.text")); // NOI18N
 
         jLabel2.setLabelFor(executablePathTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel2.text")); // NOI18N
-
-        executablePathTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                executablePathTextFieldActionPerformed(evt);
-            }
-        });
 
         org.openide.awt.Mnemonics.setLocalizedText(execPathBrowseButton, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.browseButton.text")); // NOI18N
 
@@ -136,6 +132,10 @@ final class MercurialPanel extends javax.swing.JPanel {
         jTextPane1.setBackground(jLabel1.getBackground());
         jTextPane1.setText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jTextPane1.text")); // NOI18N
 
+        cbOpenOutputWindow.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(cbOpenOutputWindow, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.cbOpenOutputWindow.text")); // NOI18N
+        cbOpenOutputWindow.setToolTipText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_cbOpenOutputWindow")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -147,20 +147,20 @@ final class MercurialPanel extends javax.swing.JPanel {
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel6)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE))
+                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel5)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE))
+                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel2)
                             .add(exportFilename))
                         .add(30, 30, 30)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, exportFilenameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, userNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, executablePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, exportFilenameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, userNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, executablePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(exportFilenameBrowseButton)
@@ -169,17 +169,20 @@ final class MercurialPanel extends javax.swing.JPanel {
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(jTextPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
+                                .add(jTextPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(jLabel3)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(annotationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
+                                .add(annotationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
                                 .add(2, 2, 2)))
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, manageButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .add(0, 0, 0))
+            .add(layout.createSequentialGroup()
+                .add(cbOpenOutputWindow)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -216,7 +219,9 @@ final class MercurialPanel extends javax.swing.JPanel {
                     .add(jTextPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(backupOnRevertModifications)
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(cbOpenOutputWindow)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         userNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_userNameTextField")); // NOI18N
@@ -227,11 +232,8 @@ final class MercurialPanel extends javax.swing.JPanel {
         backupOnRevertModifications.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_backupOnRevertModifications")); // NOI18N
         addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_addButton")); // NOI18N
         manageButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_manageButton")); // NOI18N
+        cbOpenOutputWindow.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_cbOpenOutputWindow")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-    private void executablePathTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executablePathTextFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_executablePathTextFieldActionPerformed
     
     private void nameChange() {
         controller.changed();
@@ -251,6 +253,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         exportFilenameTextField.setText(HgModuleConfig.getDefault().getExportFilename());
         annotationTextField.setText(HgModuleConfig.getDefault().getAnnotationFormat());
         backupOnRevertModifications.setSelected(HgModuleConfig.getDefault().getBackupOnRevertModifications());
+        cbOpenOutputWindow.setSelected(HgModuleConfig.getDefault().getAutoOpenOutput());
     }
     
     void store() {
@@ -261,13 +264,19 @@ final class MercurialPanel extends javax.swing.JPanel {
         // NbPreferences.forModule(MercurialPanel.class).putBoolean("someFlag", someCheckBox.isSelected()); // NOI18N
         // or:
         // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
-        if(!initialUserName.equals(userNameTextField.getText()))
-            HgModuleConfig.getDefault().setUserName(userNameTextField.getText());
+        if(!initialUserName.equals(userNameTextField.getText())) {
+            try {
+                HgModuleConfig.getDefault().setUserName(userNameTextField.getText());
+            } catch (IOException ex) {
+                HgModuleConfig.notifyParsingError();
+            }
+        }
         HgModuleConfig.getDefault().setExecutableBinaryPath(executablePathTextField.getText());
 	Mercurial.getInstance().checkVersion();
         HgModuleConfig.getDefault().setExportFilename(exportFilenameTextField.getText());
         HgModuleConfig.getDefault().setAnnotationFormat(annotationTextField.getText());
         HgModuleConfig.getDefault().setBackupOnRevertModifications(backupOnRevertModifications.isSelected());
+        HgModuleConfig.getDefault().setAutoOpenOutput(cbOpenOutputWindow.isSelected());
     }
     
     boolean valid() {
@@ -286,6 +295,7 @@ final class MercurialPanel extends javax.swing.JPanel {
     final javax.swing.JButton addButton = new javax.swing.JButton();
     final javax.swing.JTextField annotationTextField = new javax.swing.JTextField();
     private javax.swing.JCheckBox backupOnRevertModifications;
+    private javax.swing.JCheckBox cbOpenOutputWindow;
     final javax.swing.JButton execPathBrowseButton = new javax.swing.JButton();
     final javax.swing.JTextField executablePathTextField = new javax.swing.JTextField();
     private javax.swing.JLabel exportFilename;

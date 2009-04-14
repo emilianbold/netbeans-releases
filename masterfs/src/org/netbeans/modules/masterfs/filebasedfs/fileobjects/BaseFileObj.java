@@ -58,8 +58,8 @@ import javax.swing.event.EventListenerList;
 import java.io.*;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
-import java.util.Stack;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
@@ -171,36 +171,30 @@ public abstract class BaseFileObj extends FileObject {
 
     @Override
     public final String getPath() {
-        File rootFile = getFactory().getRoot().getFileName().getFile();
-        String prefix = "";
+        FileNaming fileNaming = getFileName();
+        LinkedList<String> stack = new LinkedList<String>();
+        while (fileNaming != null) {
+            stack.addFirst(fileNaming.getName());
+            fileNaming = fileNaming.getParent();
+        }
+        String rootName = stack.removeFirst();
         if (Utilities.isWindows()) {
-            prefix = rootFile.getPath().replace(File.separatorChar, '/');
-            if(prefix.startsWith("//")) {
+            rootName = rootName.replace(File.separatorChar, '/');
+            if(rootName.startsWith("//")) {  //NOI18N
                 // UNC root like //computer/sharedFolder
-                prefix += "/";
+                rootName += "/";  //NOI18N
             }
         }
-        return prefix+getRelativePath(rootFile, this.getFileName().getFile());//NOI18N
-    }
-
-    private static String getRelativePath(final File dir, final File file) {
-        Stack<String> stack = new Stack<String>();
-        File tempFile = file;
-        while(tempFile != null && !tempFile.equals(dir)) {
-            stack.push (tempFile.getName());
-            tempFile = tempFile.getParentFile();
-        }
-        assert tempFile != null : file.getAbsolutePath() + "not found in " + dir.getAbsolutePath();//NOI18N
-        StringBuilder retval = new StringBuilder();
+        StringBuilder path = new StringBuilder();
+        path.append(rootName);
         while (!stack.isEmpty()) {
-            retval.append(stack.pop());
+            path.append(stack.removeFirst());
             if (!stack.isEmpty()) {
-                retval.append('/');//NOI18N
+                path.append('/');  //NOI18N
             }
-        }                        
-        return retval.toString();
+        }
+        return path.toString();
     }
-
 
     public final FileSystem getFileSystem() throws FileStateInvalidException {
         return FileBasedFileSystem.getInstance();

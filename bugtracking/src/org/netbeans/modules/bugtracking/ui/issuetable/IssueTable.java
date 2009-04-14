@@ -109,6 +109,7 @@ public class IssueTable implements MouseListener, AncestorListener {
     private static final Color newHighlightColor = new Color(0x00b400);
     private static final Color modifiedHighlightColor = new Color(0x0000ff);
     private static final Color obsoleteHighlightColor = new Color(0x999999);
+    private static final Color defaultForegroundColor = new JLabel().getForeground();
 
     private static Icon seenHeaderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-header.png")); // NOI18N
     private static Icon seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-value.png")); // NOI18N
@@ -313,13 +314,14 @@ public class IssueTable implements MouseListener, AncestorListener {
         }
 
         public CellRenderer() {
-                seenCell.setBackground(Color.RED);
+            seenCell.setBackground(Color.RED);
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             MessageFormat format = null;
             Color background = null;
+            Color foreground = null;
             Component renderer = null;
             String tooltip = null;
             if(value instanceof IssueNode.SeenProperty) {
@@ -327,10 +329,11 @@ public class IssueTable implements MouseListener, AncestorListener {
                 seenCell.setIcon(!ps.getValue() ? seenValueIcon : null);
                 renderer = seenCell;
             }
+            Issue issue = null;
             if(query.isSaved() && value instanceof IssueNode.IssueProperty) {
                 IssueProperty p = (IssueNode.IssueProperty) value;
                 try {
-                    Issue issue = p.getIssue();
+                    issue = p.getIssue();
                     if(!query.contains(issue)) {
                         format = issueObsoleteFormat;
                         if(isSelected) {
@@ -364,25 +367,33 @@ public class IssueTable implements MouseListener, AncestorListener {
             if(renderer == null) {
                 renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
+
             if(isSelected) {
                 format = null;
+                if(issue != null && issue.wasSeen()) {
+                    foreground = Color.WHITE;
+                }
             } else {
                 background = row % 2 != 0 ? unevenLineColor : Color.WHITE;
+                foreground = defaultForegroundColor;
             }
             if(renderer instanceof JComponent) {
                 JComponent l = (JComponent) renderer;
-                l.putClientProperty("format", format);
+                l.putClientProperty("format", format);                          // NOI18N
                 ((JComponent) renderer).setToolTipText(tooltip);
                 if(background != null) {
                     l.setBackground(background);
                 }
+                if(foreground != null) {
+                    l.setForeground(foreground);
+                } 
             }
             return renderer;
         }
 
         @Override
         protected void paintComponent(Graphics g) {
-            MessageFormat format = (MessageFormat) getClientProperty("format");
+            MessageFormat format = (MessageFormat) getClientProperty("format"); // NOI18N
             String s = computeFitText(getText());
             if(format != null) {
                 StringBuffer sb = new StringBuffer();

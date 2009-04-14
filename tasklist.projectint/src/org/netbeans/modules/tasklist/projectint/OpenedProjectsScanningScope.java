@@ -44,11 +44,9 @@ package org.netbeans.modules.tasklist.projectint;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -60,7 +58,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
@@ -71,13 +68,12 @@ import org.openide.windows.TopComponent;
  * @author S. Aubrecht
  */
 public class OpenedProjectsScanningScope extends TaskScanningScope 
-        implements PropertyChangeListener, Runnable {
+        implements PropertyChangeListener {
     
     private Callback callback;
     private InstanceContent lookupContent = new InstanceContent();
     private Lookup lookup;
     private Project[] currentProjects;
-    private Collection<FileObject> editedFiles;
     
     /** Creates a new instance of OpenedProjectsScanningScope 
      * @param displayName 
@@ -104,7 +100,7 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
     }
     
     public Iterator<FileObject> iterator() {
-        return new OpenedProjectsIterator( editedFiles );
+        return new OpenedProjectsIterator();
     }
     
     @Override
@@ -137,15 +133,9 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
                 OpenProjects.getDefault().addPropertyChangeListener( this );
                 TopComponent.getRegistry().addPropertyChangeListener( this );
                 setLookupContent( OpenProjects.getDefault().getOpenProjects() );
-                if( SwingUtilities.isEventDispatchThread() ) {
-                    run();
-                } else {
-                    SwingUtilities.invokeLater( this );
-                }
             } else if( null == newCallback && null != callback ) {
                 OpenProjects.getDefault().removePropertyChangeListener( this );
                 TopComponent.getRegistry().removePropertyChangeListener( this );
-                editedFiles = null;
                 setLookupContent( null );
             }
             this.callback = newCallback;
@@ -160,14 +150,7 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
                     callback.refresh();
                 }
             }
-        } else if( TopComponent.Registry.PROP_OPENED.equals( e.getPropertyName() ) ) {
-            //remember which files are opened so that they can be scanned first
-            run();
         }
-    }
-    
-    public void run() {
-        editedFiles = Utils.collectEditedFiles();
     }
     
     private void setLookupContent( Project[] newProjects ) {

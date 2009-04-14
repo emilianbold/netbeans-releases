@@ -38,200 +38,113 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
-import java.text.ParseException;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.support.EnvReader;
-import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.support.EnvWriter;
+import org.netbeans.modules.nativeexecution.support.MacroMap;
+import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.support.WindowsSupport;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
 
-    private final static java.util.logging.Logger log = Logger.getInstance();
-    private final static Map<String, String> userEnv;
     private final static String shell;
     private final static boolean isWindows;
-    private final InputStream processOutput;
-    private final InputStream processError;
-    private final OutputStream processInput;
-    private final Process process;
+    private Process process = null;
+    private InputStream processOutput = null;
+    private OutputStream processInput = null;
+    private InputStream processError = null;
 
     static {
-        ExecutionEnvironment execEnv = new ExecutionEnvironment();
         String sh = null;
 
         try {
-            sh = HostInfoUtils.getShell(execEnv);
+            sh = HostInfoUtils.getShell(new ExecutionEnvironment());
         } catch (ConnectException ex) {
         }
 
         shell = sh;
 
         isWindows = Utilities.isWindows();
-
-        Map<String, String> env = new HashMap<String, String>();
-
-        if (isWindows && shell == null) {
-            env = new TreeMap<String, String>(new Comparator<String>() {
-
-                public int compare(String o1, String o2) {
-                    return o1.compareToIgnoreCase(o2);
-                }
-            });
-        } else {
-            env = new HashMap<String, String>();
-        }
-
-        if (isWindows) {
-            // For Windows need to get env from cygwin
-            try {
-                Process p = new ProcessBuilder(shell, "-c", "export").start(); // NOI18N
-                Future<Map<String, String>> envResult =
-                        NativeTaskExecutorService.submit(
-                        new EnvReader(p.getInputStream()),
-                        "Read-out environment.."); // NOI18N
-                p.waitFor();
-                env.putAll(envResult.get());
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } else {
-            // things easier for non-Windows systems...
-            env.putAll(new ProcessBuilder().environment());
-        }
-        
-        userEnv = env;
     }
 
-    // TODO: For now cygwin is the ONLY tested environment on Windows!
-    public LocalNativeProcess(NativeProcessInfo info) throws IOException {
+    public LocalNativeProcess(NativeProcessInfo info) {
         super(info);
+    }
 
-        if (isWindows && shell == null) {
-            throw new IOException("CYGWIN currently is the ONLY supported env on Windows."); // NOI18N
-        }
-
-        final String workingDirectory = info.getWorkingDirectory(true);
-        final File wdir =
-                workingDirectory == null ? null : new File(workingDirectory);
-
-        final ProcessBuilder pb;
-        final Map<String, String> env = info.getEnvVariables(userEnv);
-
-        pb = new ProcessBuilder(shell, "-s");// NOI18N
-
-        if (info.isUnbuffer()) {
-            String unbufferPath = null; // NOI18N
-            String unbufferLib = null; // NOI18N
-
-            try {
-                unbufferPath = info.macroExpander.expandPredefinedMacros(
-                        "bin/nativeexecution/$osname-$platform"); // NOI18N
-                unbufferLib = info.macroExpander.expandPredefinedMacros(
-                        "unbuffer.$soext"); // NOI18N
-            } catch (ParseException ex) {
-            }
-
-            if (unbufferLib != null && unbufferPath != null) {
-                InstalledFileLocator fl = InstalledFileLocator.getDefault();
-                File file = fl.locate(unbufferPath + "/" + unbufferLib, null, false); // NOI18N
-
-                if (file != null && file.exists()) {
-                    unbufferPath = file.getParentFile().getAbsolutePath();
-                    String ldPreload = env.get("LD_PRELOAD"); // NOI18N
-                    ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
-                            unbufferLib; // NOI18N
-                    env.put("LD_PRELOAD", ldPreload); // NOI18N
-
-                    String ldLibPath = env.get("LD_LIBRARY_PATH"); // NOI18N
-                    ldLibPath = ((ldLibPath == null) ? "" : (ldLibPath + ":")) + // NOI18N
-                            unbufferPath + ":" + unbufferPath + "_64"; // NOI18N
-                    env.put("LD_LIBRARY_PATH", ldLibPath); // NOI18N
-                }
-            }
-        }
-
-        Process pr = null;
-
-        // On non-Windows platforms just pass environment to ProcessBuilder ...
-        // On Windows platform will do this lately...
-        if (!isWindows) {
-            for (String key : env.keySet()) {
-                try {
-                    pb.environment().put(key, env.get(key));
-                } catch (IllegalArgumentException ex) {
-                }
-            }
-            
-            pb.directory(wdir);
-        }
-
+    protected void create() throws Throwable {
         try {
-            pr = pb.start();
-        } catch (IOException ex) {
-            Logger.getInstance().warning(ex.getMessage());
+            if (Utilities.isWindows() && shell == null) {
+                throw new IOException(loc("LocalNativeProcess.shellNotFound.text")); // NOI18N
+            }
+
+            // Get working directory ....
+            String workingDirectory = info.getWorkingDirectory(true);
+
+            if (workingDirectory != null) {
+                workingDirectory = new File(workingDirectory).getAbsolutePath();
+                if (isWindows) {
+                    workingDirectory = WindowsSupport.getInstance().normalizePath(workingDirectory);
+                }
+            }
+
+            final MacroMap env = info.getEnvVariables();
+
+            UnbufferSupport.initUnbuffer(info, env);
+
+            // On windows add /bin to PATH in case cygwin is not in
+            // the Path environment variable ...
+            if (isWindows) {
+                env.put("PATH", "/bin:$PATH"); // NOI18N
+            }
+
+            final ProcessBuilder pb = new ProcessBuilder(shell, "-s"); // NOI18N
+
+            if (isInterrupted()) {
+                throw new InterruptedException();
+            }
+
+            process = pb.start();
+
+            processInput = process.getOutputStream();
+            processError = process.getErrorStream();
+            processOutput = process.getInputStream();
+
+            processInput.write("/bin/echo $$\n".getBytes()); // NOI18N
+            processInput.flush();
+
+            EnvWriter ew = new EnvWriter(processInput);
+            ew.write(env);
+
+            if (workingDirectory != null) {
+                processInput.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
+            }
+
+            String cmd = "exec " + info.getCommandLine() + "\n"; // NOI18N
+
+            if (isWindows) {
+                cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
+            }
+
+            processInput.write(cmd.getBytes());
+            processInput.flush();
+
+            readPID(processOutput);
+        } catch (Throwable ex) {
+            String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+            processOutput = new ByteArrayInputStream(new byte[0]);
+            processError = new ByteArrayInputStream(msg.getBytes());
+            processInput = new ByteArrayOutputStream();
             throw ex;
         }
-
-        process = pr;
-
-        processOutput = process.getInputStream();
-        processError = process.getErrorStream();
-        processInput = process.getOutputStream();
-
-        if (isWindows) {
-            // On Windows we cannot use pb.environment() array to put env vars -
-            // sygwin uses another set... So, setup vars this way...
-            if (!env.isEmpty()) {
-                String val = null;
-                // Very simple sanity check of vars...
-                Pattern pattern = Pattern.compile("[a-zA-Z_]+.*"); // NOI18N
-                for (String var : env.keySet()) {
-                    if (!pattern.matcher(var).matches()) {
-                        continue;
-                    }
-
-                    val = env.get(var);
-
-                    if (val != null) {
-                        log.fine(var + "='" + env.get(var) + // NOI18N
-                                "' && export " + var); // NOI18N
-                        processInput.write((var + "='" + env.get(var) + // NOI18N
-                                "' && export " + var + "\n").getBytes()); // NOI18N
-                        processInput.flush();
-                    }
-                }
-            }
-
-            if (wdir != null) {
-                processInput.write(("cd " + wdir + "\n").getBytes()); // NOI18N
-            }
-        }
-
-        String cmd = "/bin/echo $$ && exec " + info.getCommandLine() + "\n"; // NOI18N
-        processInput.write(cmd.getBytes());
-        processInput.flush();
-
-        readPID(processOutput);
     }
 
     @Override
@@ -251,11 +164,59 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     public final int waitResult() throws InterruptedException {
-        return process.waitFor();
+        if (process == null) {
+            throw new InterruptedException();
+        }
+
+        /*
+         * Why not just process.waitResult()...
+         * This is to avoid a problem with short-running tasks, when
+         * this Thread (that waits for process' termination) doesn't see
+         * that it has been interrupted....
+         * TODO: describe situation in details... 
+         */
+
+        int result = -1;
+
+//        // Get lock on process not to take it on every itteration
+//        // (in process.exitValue())
+//
+//        synchronized (process) {
+        // Why this synchronized is commented-out..
+        // This is because ProcessReaper is also synchronized on this...
+        // And it should be able to react on process' termination....
+
+        while (true) {
+            // This sleep is to avoid lost interrupted exception...
+            try {
+                Thread.sleep(200);
+            // 200 - to make this check not so often...
+            // actually, to avoid the problem, 1 is OK.
+            } catch (InterruptedException ex) {
+                throw ex;
+            }
+
+            try {
+                result = process.exitValue();
+            } catch (IllegalThreadStateException ex) {
+                continue;
+            }
+
+            break;
+        }
+//        }
+
+        return result;
     }
 
     @Override
-    public void cancel() {
-        process.destroy();
+    protected final synchronized void cancel() {
+        if (process != null) {
+            process.destroy();
+        }
+    }
+
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(LocalNativeProcess.class, key, params);
     }
 }

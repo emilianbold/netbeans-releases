@@ -45,8 +45,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
@@ -103,7 +101,7 @@ public class RailsProject extends RubyBaseProject {
             final ProjectInformation info,
             final ProjectOpenedHook projectOpenedHook) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-        sources = new RailsSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots());
+        sources = new RailsSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         
         Lookup base = Lookups.fixed(new Object[] {
             info,

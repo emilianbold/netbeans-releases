@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -61,5 +63,15 @@ public class ProjectHandleImpl extends ProjectHandle {
 
     public KenaiProject getKenaiProject() {
         return prj;
+    }
+
+    @Override
+    public boolean isPrivate() {
+        try {
+            return prj.isPrivate();
+        } catch (KenaiException kenaiException) {
+            Exceptions.printStackTrace(kenaiException);
+        }
+        return false;
     }
 }

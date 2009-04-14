@@ -87,6 +87,7 @@ import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import org.netbeans.modules.maven.execute.JarPackagingRunChecker;
 import org.netbeans.modules.maven.execute.UserActionGoalProvider;
+import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSharabilityQueryImpl;
@@ -195,7 +196,7 @@ public final class NbMavenProjectImpl implements Project {
         sharability = new MavenSharabilityQueryImpl(this);
         watcher = ACCESSOR.createWatcher(this);
         subs = new SubprojectProviderImpl(this, watcher);
-        lookup = new LazyLookup(this, watcher, projectInfo, sharability, subs);
+        lookup = new LazyLookup(this, watcher, projectInfo, sharability, subs, fileObject);
         updater1 = new Updater();
         updater2 = new Updater(USER_DIR_FILES);
         state = projectState;
@@ -255,7 +256,7 @@ public final class NbMavenProjectImpl implements Project {
             // that will not be used in current pom anyway..
             // #135070
             req.setRecursive(false);
-            req.setProperty("netbeans.execution", "true"); //NOI18N
+            req.setProperties(createSystemPropsForProjectLoading());
             MavenExecutionResult res = embedder.readProjectWithDependencies(req);
             if (!res.hasExceptions()) {
                 return res.getProject();
@@ -278,7 +279,7 @@ public final class NbMavenProjectImpl implements Project {
         } catch (Exception x) {
             // oh well..
             //NOPMD
-            }
+        }
         return null;
     }
 
@@ -291,6 +292,17 @@ public final class NbMavenProjectImpl implements Project {
             toRet.addAll(activeProfiles);
         }
         return toRet;
+    }
+
+    //#158700
+    private Properties createSystemPropsForProjectLoading() {
+        Properties props = new Properties();
+        props.setProperty("netbeans.execution", "true"); //NOI18N
+        EmbedderFactory.fillEnvVars(props);
+        props.putAll(AbstractMavenExecutor.excludeNetBeansProperties(System.getProperties()));
+        //TODO the properties for java.home and maybe others shall be relevant to the project setup not ide setup.
+        // we got a chicken-egg situation here, the jdk used in project can be defined in the pom.xml file.
+        return props;
     }
 
     /**
@@ -312,7 +324,7 @@ public final class NbMavenProjectImpl implements Project {
                 // that will not be used in current pom anyway..
                 // #135070
                 req.setRecursive(false);
-                req.setProperty("netbeans.execution", "true"); //NOI18N
+                req.setProperties(createSystemPropsForProjectLoading());
                 MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
                 project = res.getProject();
                 if (res.hasExceptions()) {
@@ -382,7 +394,11 @@ public final class NbMavenProjectImpl implements Project {
             }
             oldProject = null;
             long endLoading = System.currentTimeMillis();
-            Logger.getLogger(NbMavenProjectImpl.class.getName()).fine( "Loaded project in " + ((endLoading - startLoading) / 1000) + " s at " + getProjectDirectory().getPath());
+            Logger logger = Logger.getLogger(NbMavenProjectImpl.class.getName());
+            logger.fine("Loaded project in " + ((endLoading - startLoading) / 1000) + " s at " + getProjectDirectory().getPath());
+            if (logger.isLoggable(Level.FINE) && SwingUtilities.isEventDispatchThread()) {
+                logger.log(Level.FINE, "Project " + getProjectDirectory().getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
+            }
         }
 
         return project;
@@ -550,25 +566,16 @@ public final class NbMavenProjectImpl implements Project {
         if (!test && getProjectDirectory().getFileObject("src/main/aspect") != null) { //NOI18N
             srcs.add(FileUtil.toFile(getProjectDirectory().getFileObject("src/main/aspect")).getAbsolutePath()); //NOI18N
         }
-        //TODO groovy and scala stuff should probably end up in separate module's
-        //ClassPathProvider
-        //TODO the folder should be checked against the configuration of scala/groovy plugin.
-        String groovy = test ? "src/test/groovy" : "src/main/groovy"; //NOI18N
-        if (getProjectDirectory().getFileObject(groovy) != null) {
-            srcs.add(FileUtil.toFile(getProjectDirectory().getFileObject(groovy)).getAbsolutePath());
-        }
-        String scala = test ? "src/test/scala" : "src/main/scala"; //NOI18N
-        if (getProjectDirectory().getFileObject(scala) != null) {
-            srcs.add(FileUtil.toFile(getProjectDirectory().getFileObject(scala)).getAbsolutePath());
-        }
         
-        URI[] uris = new URI[srcs.size()];
+        URI[] uris = new URI[srcs.size() + 2];
         int count = 0;
         for (String str : srcs) {
             File fil = FileUtil.normalizeFile(new File(str));
             uris[count] = fil.toURI();
             count = count + 1;
         }
+        uris[uris.length - 2 ] = getScalaDirectory(test);
+        uris[uris.length - 1] = getGroovyDirectory(test);
         return uris;
     }
 
@@ -640,6 +647,23 @@ public final class NbMavenProjectImpl implements Project {
         return FileUtilities.getDirURI(getProjectDirectory(), prop);
     }
 
+    public URI getScalaDirectory(boolean test) {
+        //TODO hack, should be supported somehow to read this..
+        String prop = PluginPropertyUtils.getPluginProperty(getOriginalMavenProject(), "org.scala.tools",
+                "scala-maven-plugin", //NOI18N
+                "sourceDir", //NOI18N
+                "compile"); //NOI18N
+
+        prop = prop == null ? (test ? "src/test/scala" : "src/main/scala") : prop; //NOI18N
+
+        return FileUtilities.getDirURI(getProjectDirectory(), prop);
+    }
+
+    public URI getGroovyDirectory(boolean test) {
+        String prop = test ? "src/test/groovy" : "src/main/groovy"; //NOI18N
+        return FileUtilities.getDirURI(getProjectDirectory(), prop);
+    }
+
     public URI[] getResources(boolean test) {
         List<URI> toRet = new ArrayList<URI>();
         @SuppressWarnings("unchecked")
@@ -661,7 +685,11 @@ public final class NbMavenProjectImpl implements Project {
             toRet.addAll(Arrays.asList(fil.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
                     //TODO most probably a performance bottleneck of sorts..
-                    return !("java".equalsIgnoreCase(name)) && !("webapp".equalsIgnoreCase(name)) /*NOI18N*/ && VisibilityQuery.getDefault().isVisible(FileUtil.toFileObject(new File(dir, name))); //NOI18N
+                    return !("java".equalsIgnoreCase(name)) && //NOI18N
+                           !("webapp".equalsIgnoreCase(name)) && //NOI18N
+                           !("groovy".equalsIgnoreCase(name)) && //NOI18N
+                           !("scala".equalsIgnoreCase(name)) //NOI18N
+                       && VisibilityQuery.getDefault().isVisible(FileUtil.toFileObject(new File(dir, name))); //NOI18N
                 }
             })));
         }
@@ -688,8 +716,9 @@ public final class NbMavenProjectImpl implements Project {
     private class LazyLookup extends ProxyLookup {
         private Lookup lookup;
         boolean initialized = false;
-        LazyLookup(Project ths, NbMavenProject watcher, ProjectInformation info, SharabilityQueryImplementation shara, SubprojectProvider subs) {
-            setLookups(Lookups.fixed(ths, watcher, info, shara, subs));
+        LazyLookup(Project ths, NbMavenProject watcher, ProjectInformation info, 
+                SharabilityQueryImplementation shara, SubprojectProvider subs, FileObject projectFO) {
+            setLookups(Lookups.fixed(ths, watcher, info, shara, subs, projectFO));
         }
 
         @Override
@@ -741,6 +770,7 @@ public final class NbMavenProjectImpl implements Project {
         Lookup staticLookup = Lookups.fixed(new Object[]{
                     projectInfo,
                     this,
+                    fileObject,
                     new CacheDirProvider(this),
                     new MavenForBinaryQueryImpl(this),
                     new MavenBinaryForSourceQueryImpl(this),
@@ -786,6 +816,11 @@ public final class NbMavenProjectImpl implements Project {
                     CosChecker.createResultChecker(),
                     new ReactorChecker(),
                     new PrereqCheckerMerger(),
+                    new RecommendedTemplates() {
+                        public String[] getRecommendedTypes() {
+                            return new String[] { "scala-classes" }; //NOI18N
+                        }
+                    }
                 });
         return staticLookup;
     }

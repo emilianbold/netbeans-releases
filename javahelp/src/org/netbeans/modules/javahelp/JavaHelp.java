@@ -43,6 +43,8 @@ package org.netbeans.modules.javahelp;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -78,6 +80,7 @@ import javax.swing.BoundedRangeModel;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
@@ -118,7 +121,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
      */
     private HelpSet master = null;
     /** map from help sets to (soft refs to) components showing them */
-    private Map<HelpSet,Reference<JHelp>> availableJHelps = new HashMap<HelpSet,Reference<JHelp>>();
+    private final Map<HelpSet,Reference<JHelp>> availableJHelps = new HashMap<HelpSet,Reference<JHelp>>();
     /** viewer (may be invisible) showing help normally; null until first used; if invisible, is empty */
     private JFrame frameViewer = null;
     /** viewer showing help parented to current modal dialog; initially null */
@@ -222,7 +225,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
      * need to have different contents (or a different
      * order of contents) when next viewed.
      */    
-    protected void helpSetsChanged() {
+    protected @Override void helpSetsChanged() {
         synchronized (this) {
             // XXX might be better to incrementally add/remove helpsets?
             // Unfortunately the JavaHelp API does not provide a way to
@@ -782,7 +785,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             Dimension me = getSize();
             setLocation((screen.width - me.width) / 2, (screen.height - me.height) / 2);
         }
-        public void setVisible(boolean show) {
+        public @Override void setVisible(boolean show) {
             if (show && run != null) {
                 Installer.log.fine("posting request from progress dialog...");
                 getHelpLoader().post(run).addTaskListener(this);
@@ -913,6 +916,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         try {
             title = hs.getTitle();
             jh = new JHelp(hs);
+            adjust(jh);
         } catch (RuntimeException e) {
             Installer.log.log(Level.WARNING, "While trying to display: " + title, e); // NOI18N
             return null;
@@ -929,6 +933,55 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             Installer.log.log(Level.WARNING, null, e);
         }
         return jh;
+    }
+
+    private void adjust(JHelp jh) {
+        JEditorPane contentViewer = (JEditorPane) getContentViewer(jh);
+        adjustFontSize(contentViewer);
+    }
+
+    private void adjustFontSize(JEditorPane contentViewer) {
+        if(contentViewer != null) {
+            contentViewer.putClientProperty(
+                    JEditorPane.W3C_LENGTH_UNITS, Boolean.TRUE);
+            contentViewer.putClientProperty(
+                    JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        }
+    }
+
+    /**
+     * Gets an instance of the the JavaHelp Content Viewer from the component
+     * hierarchy specified by its root component.
+     * @param c the root component of the JavaHelp component hierarchy, e.g.
+     * an instance of the javax.help.JHelp class.
+     * @return a instance of the JavaHelp Content Viewer component if it
+     * possible, otherwise <code>null</code>.
+     */
+     Component getContentViewer(Component c) {
+        // this method has the package private visibility for testing purposes.
+        if(isContentViewer(c)) {
+            return c;
+        }
+        if(c instanceof Container) {
+            Component[] cs = ((Container)c).getComponents();
+            for (int i = 0; i < cs.length; i++) {
+                c = getContentViewer(cs[i]);
+                if(isContentViewer(c)) {
+                    return c;
+                }
+            }
+        }
+        return null; // The component hierarchy doesn't contain
+                     // expected JH Content Viewer
+    }
+
+    private static boolean isContentViewer(Component c) {
+        // TODO: need to find a criterion to recognize the JH Content Viewer,
+        // i.e. an instance of
+        // javax.help.plaf.basic.BasicContentViewerUI$JHEditorPane .
+        // The following test won't work if component hierarchy of the Java Help
+        // contains more then one JEditorPane.
+        return c instanceof JEditorPane;
     }
 
     // XXX(ttran) see JDK bug 5092094 for details

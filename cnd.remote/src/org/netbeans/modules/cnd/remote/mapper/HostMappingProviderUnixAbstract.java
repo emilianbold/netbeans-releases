@@ -101,7 +101,7 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
             BufferedReader reader = new BufferedReader(outputReader);
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 String path = fetchPath(pattern.split(line));
-                if (path != null && HostInfoProvider.getDefault().fileExists(execEnv, path)) {
+                if (path != null && HostInfoProvider.fileExists(execEnv, path)) {
                     paths.add(path); // NOI18N
                 }
             }

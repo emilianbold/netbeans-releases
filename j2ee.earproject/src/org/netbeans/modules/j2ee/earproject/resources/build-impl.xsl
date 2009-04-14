@@ -75,6 +75,15 @@ is divided into following sections:
             <xsl:attribute name="default">default</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
             <import file="ant-deploy.xml" />
+
+            <fail message="Please build using Ant 1.7.1 or higher.">
+                <condition>
+                    <not>
+                        <antversion atleast="1.7.1"/>
+                    </not>
+                </condition>
+            </fail>
+
             <target name="default">
                 <xsl:attribute name="depends">dist</xsl:attribute>
                 <xsl:attribute name="description">Build whole project.</xsl:attribute>
@@ -195,6 +204,9 @@ is divided into following sections:
                         <isfalse value="${{directory.deployment.supported}}"/>
                     </and>
                 </condition>
+                <condition property="do.package.not.directory.deploy">
+                    <isfalse value="${{directory.deployment.supported}}"/>
+                </condition>
                 <xsl:comment>End Variables needed to support directory deployment.</xsl:comment>
 
                 <condition property="j2ee.appclient.mainclass.tool.param" value="-mainclass ${{main.class}}" else="">
@@ -308,12 +320,17 @@ exists or setup the property manually. For example like this:
             </target>
 
             <target name="do-compile">
-                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile,-do-compile-deps</xsl:attribute>
                 
                 <copy todir="${{build.dir}}/META-INF">
                   <fileset dir="${{meta.inf}}"/>
                 </copy>
-                
+            </target>
+
+            <target name="-do-compile-deps">
+                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
+                <xsl:attribute name="if">do.package.not.directory.deploy</xsl:attribute>
+
                 <xsl:for-each select="/p:project/p:configuration/ear2:data/ear2:web-module-additional-libraries/ear2:library[ear2:path-in-war]">
                     <xsl:variable name="copyto" select=" ear2:path-in-war"/>
                     <xsl:variable name="file" select=" ear2:file"/>
@@ -322,7 +339,7 @@ exists or setup the property manually. For example like this:
                        <xsl:attribute name="files"><xsl:value-of select="$file"/></xsl:attribute>
                     </copyfiles>
                 </xsl:for-each>
-                
+
             </target>
 
             <target name="post-compile">
@@ -680,7 +697,14 @@ to simulate
                 </condition>
                 <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">                   
                     <property name="dist.ear.dir" location="${{build.dir}}"/>
-                    <property name="deploy.on.save" value="${{build.deploy.on.save}}"/>
+                    <xsl:choose>
+                        <xsl:when test="$subtarget = 'jar'">
+                            <property name="deploy.on.save" value="false"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <property name="deploy.on.save" value="${{build.deploy.on.save}}"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </ant>
             </xsl:for-each>
             <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
@@ -696,10 +720,27 @@ to simulate
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps2:script"/>
+                <!--
+                If build.deploy.on.save is not set init-cos hasn't
+                been called so we are running the old style build.
+                -->
+                <condition>
+                    <xsl:attribute name="property">build.deploy.on.save</xsl:attribute>
+                    <xsl:attribute name="value">false</xsl:attribute>
+                    <not><isset property="build.deploy.on.save"/></not>
+                </condition>
                 <ant target="{$subtarget}" inheritall="false" antfile="{$script}">
                     <property name="dist.ear.dir" location="${{build.dir}}"/>
                     <xsl:for-each select="projdeps2:properties/projdeps2:property">
                         <property name="{@name}" value="{.}"/>
+                        <xsl:choose>
+                            <xsl:when test="$subtarget = 'jar'">
+                                <property name="deploy.on.save" value="false"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <property name="deploy.on.save" value="${{build.deploy.on.save}}"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:for-each>
                 </ant>
             </xsl:for-each>

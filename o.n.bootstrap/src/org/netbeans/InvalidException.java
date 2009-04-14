@@ -53,6 +53,7 @@ import java.io.IOException;
 public final class InvalidException extends IOException {
 
     private final Module m;
+    private String localizedMessage;
 
     public InvalidException(String detailMessage) {
         super(detailMessage);
@@ -63,7 +64,12 @@ public final class InvalidException extends IOException {
         super(m + ": " + detailMessage); // NOI18N
         this.m = m;
     }
-    
+
+    public InvalidException(Module m, String detailMessage, String localizedMessage) {
+        this(m, detailMessage);
+        this.localizedMessage = localizedMessage;
+    }
+
     /** Affected module. May be null if this is hard to determine
      * (for example a problem which would make the module ill-formed,
      * during creation or reloading).
@@ -71,5 +77,13 @@ public final class InvalidException extends IOException {
     public Module getModule() {
         return m;
     }
-    
+
+    @Override
+    public String getLocalizedMessage() {
+        if (localizedMessage != null) {
+            return localizedMessage;
+        } else {
+            return super.getLocalizedMessage();
+        }
+    }
 }

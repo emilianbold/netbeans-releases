@@ -292,10 +292,10 @@ final class RendererPropertyDisplayer extends JComponent implements PropertyDisp
 
         JComponent result = rfactory(inline).getRenderer(inline.getProperty());
 
-        if (inline.isTableUI()) {
+        if (inline.isTableUI() && null == result.getBorder() ) {
             //Actually want an empty border, not null - some components treat
             //a null border as an invitation to improvise
-            result.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            result.setBorder(BorderFactory.createEmptyBorder());
         }
 
         inGetRenderer = false;

@@ -58,6 +58,18 @@ made subject to such option by the copyright holder.
                 <attr name="iconBase" stringvalue="org/netbeans/modules/cnd/debugger/gdb/resources/memory.png"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.debugger.gdb.ui.Bundle#CTL_MemoryViewAction"/>
             </file>
+            <file name="org-netbeans-modules-cnd-debugger-gdb-ui-AutosAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.cnd.debugger.gdb.ui.AutosAction"/>
+                <!--<attr name="iconBase" stringvalue="org/netbeans/modules/cnd/debugger/gdb/resources/autos.png"/>-->
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.debugger.gdb.ui.Bundle#CTL_AutosAction"/>
+            </file>
+            <file name="org-netbeans-modules-cnd-debugger-gdb-ui-DebugCoreAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.cnd.debugger.gdb.ui.DebugCoreAction"/>
+                <!--<attr name="iconBase" stringvalue="org/netbeans/modules/cnd/debugger/gdb/resources/autos.png"/>-->
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.debugger.gdb.ui.Bundle#CTL_DebugCoreAction"/>
+            </file>
         </folder>
     </folder>
     <folder name="Editors">
@@ -185,6 +197,33 @@ made subject to such option by the copyright holder.
                     </file> 
                 </folder>
             </folder>
+
+            <folder name="x-fortran">
+                <folder name="ToolTips">
+                    <file name="org-netbeans-modules-cnd-debugger-gdb-ToolTipAnnotation.instance"/>
+                </folder>
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                </folder>
+                <folder name="Popup">
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1426"/>
+                    </file>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="1710"/>
+                    </file>
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance">
+                        <attr name="position" intvalue="1568"/>
+                    </file>
+
+
+                </folder>
+            </folder>
         </folder>
         
         <folder name="AnnotationTypes">
@@ -206,6 +245,10 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance"/>
                 <attr name="position" intvalue="600"/>
+            </file>
+            <file name="org-netbeans-modules-cnd-debugger-gdb-ui-DebugCoreAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-ui-DebugCoreAction.instance"/>
+                <attr name="position" intvalue="630"/>
             </file>
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
@@ -313,6 +356,10 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-ui-MemoryViewAction.instance"/>
                     <attr name="position" intvalue="952"/>
                 </file>
+                <!--<file name="AutosAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-ui-AutosAction.instance"/>
+                    <attr name="position" intvalue="949"/>
+                </file>-->
             </folder>
         </folder>
     </folder>
@@ -354,6 +401,7 @@ made subject to such option by the copyright holder.
         <folder name="Components">
             <file name="MemoryViewTopComponent.settings" url="MemoryViewTopComponentSettings.xml"/>
             <file name="RegistersTopComponent.settings" url="RegistersTopComponentSettings.xml"/>
+            <file name="AutosTopComponent.settings" url="AutosTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
             <folder name="output">
@@ -363,6 +411,15 @@ made subject to such option by the copyright holder.
                 <file name="MemoryViewTopComponent.wstcref" url="MemoryViewTopComponentWstcref.xml">
                     <attr name="position" intvalue="835"/>
                 </file>
+                <file name="AutosTopComponent.wstcref" url="AutosTopComponentWstcref.xml">
+                    <attr name="position" intvalue="836"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="Groups">
+            <folder name="debugger">
+                <file name="RegistersTopComponent.wstcgrp" url="RegistersTopComponentWstcgrp.xml"/>
+                <file name="MemoryViewTopComponent.wstcgrp" url="MemoryViewTopComponentWstcgrp.xml"/>
             </folder>
         </folder>
     </folder>

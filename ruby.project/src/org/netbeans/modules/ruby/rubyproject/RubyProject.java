@@ -43,7 +43,6 @@ package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.IOException;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
@@ -107,7 +106,7 @@ public final class RubyProject extends RubyBaseProject {
             new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             projectOpenedHook,
-            new RubySources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            new RubySources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new RubySharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl (this.updateHelper),
             this, // never cast an externally obtained Project to RubyProject - use lookup instead

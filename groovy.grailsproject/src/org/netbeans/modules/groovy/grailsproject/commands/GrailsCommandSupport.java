@@ -103,6 +103,8 @@ public final class GrailsCommandSupport {
 
     private static final Logger LOGGER = Logger.getLogger(GrailsCommandSupport.class.getName());
 
+    private static final String WEB_APP_DIR = "web-app"; // NOI18N
+
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
     private final GrailsProject project;
@@ -209,6 +211,7 @@ public final class GrailsCommandSupport {
         }
 
         synchronized (this) {
+            // FIXME this is 1.0 code only
             if (pluginListener == null) {
                 pluginListener = new PluginListener();
                 File folder = FileUtil.toFile(project.getProjectDirectory());
@@ -240,7 +243,7 @@ public final class GrailsCommandSupport {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(url);
             }
         } else {
-            FileObject webAppDir = project.getProjectDirectory().getFileObject(GrailsProjectFactory.WEB_APP_DIR);
+            FileObject webAppDir = project.getProjectDirectory().getFileObject(WEB_APP_DIR);
             GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
 
             String port = config.getPort();

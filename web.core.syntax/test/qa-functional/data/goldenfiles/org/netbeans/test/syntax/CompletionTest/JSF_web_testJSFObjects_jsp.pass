@@ -26,9 +26,7 @@ param[]
 requestScope[]
 sessionScope[]
 End cursor position = 414
-[<h:outputText value="#{MyBean.|}" title="Hi" />, String name, <h:outputText value="#{MyBean.name}" title="Hi" />, 508]
-Class class
-doSome
+[<h:outputText value="#{MyBean.n|}" title="Hi" />, String name, <h:outputText value="#{MyBean.name}" title="Hi" />, 509]
 String name
-toString
-End cursor position = 543
+boolean noErrors
+End cursor position = 544

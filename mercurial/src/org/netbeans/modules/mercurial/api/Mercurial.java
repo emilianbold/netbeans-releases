@@ -47,9 +47,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.log.SearchHistoryAction;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
 import org.openide.util.NbPreferences;
 
 /**
@@ -143,10 +144,9 @@ public class Mercurial {
      * @param lineNumber requested line number to fix on
      * @return true if suplpied arguments are valid and the search panel is opened, otherwise false
      */
-    public static boolean showFileHistory (final String path, final int lineNumber) {
+    public static boolean showFileHistory (final File file, final int lineNumber) {
         assert !EventQueue.isDispatchThread();
 
-        final File file = FileUtil.normalizeFile(new File(path));
         if (!file.exists()) {
             org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Trying to show history for non-existent file {0}", file.getAbsolutePath());
             return false;
@@ -172,5 +172,18 @@ public class Mercurial {
             }
         });
         return true;
+    }
+
+    /**
+     * Adds a remote url for the combos used in Clone wizard
+     *
+     * @param url
+     * @throws java.net.MalformedURLException
+     */
+    public static void addRecentUrl(String url) throws MalformedURLException {
+        new URL(url); // check url format
+
+        RepositoryConnection rc = new RepositoryConnection(url);
+        HgModuleConfig.getDefault().insertRecentUrl(rc);
     }
 }

@@ -264,23 +264,20 @@ class MakefileLexer implements Lexer<MakefileTokenId> {
     }
 
     private static boolean readMacro(LexerInput input) {
-        int i = input.read();
-        while (i != LexerInput.EOF) {
-            switch (i) {
-                case '(': // NOI18N
-                    return readTo(input, ')'); // NOI18N
-                case '{': // NOI18N
-                    return readTo(input, '}'); // NOI18N
-                case ' ': // NOI18N
-                case '\r': // NOI18N
-                case '\n': // NOI18N
-                    return false;
-                default:
-                    input.read();
-                    return true;
-            }
+        switch (input.read()) {
+            case '(': // NOI18N
+                return readTo(input, ')'); // NOI18N
+            case '{': // NOI18N
+                return readTo(input, '}'); // NOI18N
+            case LexerInput.EOF:
+            case ' ': // NOI18N
+            case '\t': // NOI18N
+            case '\r': // NOI18N
+            case '\n': // NOI18N
+                return false;
+            default:
+                return true;
         }
-        return false;
     }
 
     private static boolean readTo(LexerInput input, char barrier) {
@@ -293,14 +290,14 @@ class MakefileLexer implements Lexer<MakefileTokenId> {
                     }
                     break;
                 case '\\': // NOI18N
-                    input.read();
-                    input.read();
+                    input.read(); // skip any character after backslash
                     break;
                 default:
-                    if (input.read() == barrier) {
+                    if (i == barrier) {
                         return true;
                     }
             }
+            i = input.read();
         }
         return false;
     }

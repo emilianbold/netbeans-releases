@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.hudson.impl;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -61,6 +62,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -77,6 +79,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
         AbstractFileSystem.Attr, AbstractFileSystem.Change, AbstractFileSystem.List, AbstractFileSystem.Info {
 
     private static final Logger LOG = Logger.getLogger(RemoteFileSystem.class.getName());
+    private static final int TIMEOUT = 10000;
 
     /** base URL of filesystem */
     private final URL baseURL;
@@ -106,13 +109,18 @@ final class RemoteFileSystem extends AbstractFileSystem implements
     }
 
     RemoteFileSystem(HudsonJobBuild build) throws MalformedURLException {
-        this(new URL(build.getUrl() + "artifact/"), /*XXX I18N*/build.getJob().getDisplayName() + " #" + build, build.getJob());
+        this(new URL(build.getUrl() + "artifact/"), build.getDisplayName(), build.getJob()); // NOI18N
+    }
+
+    RemoteFileSystem(HudsonMavenModuleBuild module) throws MalformedURLException {
+        this(new URL(module.getUrl() + "artifact/"), module.getBuildDisplayName(), module.getBuild().getJob()); // NOI18N
     }
 
     /**
      * For {@link HudsonInstanceImpl} to refresh after the workspace has been synchronized.
      */
     void refreshAll() {
+        LOG.log(Level.FINE, "refreshing files in {0}", baseURL);
         synchronized (nonDirs) {
             nonDirs.clear();
             lastModified.clear();
@@ -120,7 +128,10 @@ final class RemoteFileSystem extends AbstractFileSystem implements
             headers.clear();
         }
         for (FileObject f : NbCollections.iterable(existingFileObjects(getRoot()))) {
-            LOG.log(Level.FINE, "{0} refreshing {1}", new Object[] {baseURL, f.getPath()});
+            if (Thread.interrupted()) {
+                return;
+            }
+            LOG.log(Level.FINER, "  refreshing {0}", f.getPath());
             f.refresh();
         }
     }
@@ -146,7 +157,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
         String fSlash = f.length() > 0 ? f + "/" : ""; // NOI18N
         try {
             URL url = new URL(baseURL, fSlash + "*plain*"); // NOI18N
-            URLConnection conn = new ConnectionBuilder().job(job).url(url).connection();
+            URLConnection conn = new ConnectionBuilder().job(job).url(url).timeout(TIMEOUT).connection();
             String contentType = conn.getContentType();
             if (contentType == null || !contentType.startsWith("text/plain")) { // NOI18N
                 // Missing workspace, or Hudson prior to SVN 13601 (i.e. 1.264).
@@ -158,7 +169,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
             java.util.List<String> kids = new ArrayList<String>();
             String line;
             while ((line = r.readLine()) != null) {
-                if (line.endsWith("/")) {
+                if (line.endsWith("/")) { // NOI18N
                     String n = line.substring(0, line.length() - 1);
                     kids.add(n);
                 } else {
@@ -185,27 +196,33 @@ final class RemoteFileSystem extends AbstractFileSystem implements
         }
     }
 
-    private URLConnection connection(String name) throws IOException {
-        assert Thread.holdsLock(nonDirs);
+    private URLConnection connection(String name, boolean cacheMetadata) throws IOException {
         LOG.log(Level.FINE, "metadata in {0}: {1}", new Object[] {baseURL, name});
-        URLConnection conn = new ConnectionBuilder().job(job).url(new URL(baseURL, name)).connection();
-        lastModified.put(name, conn.getLastModified());
-        int contentLength = conn.getContentLength();
-        size.put(name, Math.max(0, contentLength));
-        if (contentLength >= 0 && contentLength < /* more than MIMEResolverImpl needs */ 4050) {
-            InputStream is = conn.getInputStream();
-            byte[] buf = new byte[contentLength];
-            int p = 0;
-            int read;
-            while ((read = is.read(buf, p, contentLength - p)) != -1) {
-                p += read;
+        URLConnection conn = new ConnectionBuilder().job(job).url(new URL(baseURL, name)).timeout(TIMEOUT).connection();
+        if (cacheMetadata) {
+            assert Thread.holdsLock(nonDirs);
+            lastModified.put(name, conn.getLastModified());
+            int contentLength = conn.getContentLength();
+            size.put(name, Math.max(0, contentLength));
+            if (contentLength >= 0) {
+                byte[] buf = new byte[Math.min(contentLength, /* BufferedInputStream.defaultBufferSize */ 8192)];
+                InputStream is = conn.getInputStream();
+                try {
+                    int p = 0;
+                    int read;
+                    while (p < buf.length && (read = is.read(buf, p, buf.length - p)) != -1) {
+                        p += read;
+                    }
+                    if (p == buf.length) {
+                        headers.put(name, buf);
+                    } else {
+                        LOG.warning("incomplete read for " + name + " in " + baseURL + ": read up to " + p + " where reported length is " + contentLength);
+                    }
+                } finally {
+                    is.close();
+                }
             }
-            if (p == contentLength) {
-                headers.put(name, buf);
-            } else {
-                LOG.warning("incomplete read for " + name + " in " + baseURL + ": read up to " + p + " where reported length is " + contentLength);
-            }
-        } // for bigger files, just reread content later if requested
+        }
         return conn;
     }
 
@@ -216,7 +233,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
             }
             if (!lastModified.containsKey(name)) {
                 try {
-                    connection(name);
+                    connection(name, true);
                 } catch (IOException x) {
                     LOG.log(Level.FINE, "cannot get metadata for " + name + " in " + baseURL, x);
                     return new Date(0);
@@ -233,7 +250,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
             }
             if (!size.containsKey(name)) {
                 try {
-                    connection(name);
+                    connection(name, true);
                 } catch (IOException x) {
                     LOG.log(Level.FINE, "cannot get metadata for " + name + " in " + baseURL, x);
                     return 0;
@@ -243,23 +260,67 @@ final class RemoteFileSystem extends AbstractFileSystem implements
         }
     }
 
-    public InputStream inputStream(String name) throws FileNotFoundException {
+    public InputStream inputStream(final String name) throws FileNotFoundException {
         synchronized (nonDirs) {
-            byte[] header = headers.get(name);
+            final byte[] header = headers.get(name);
             if (header != null) {
                 LOG.log(Level.FINE, "cached inputStream: {0}", name);
-                return new ByteArrayInputStream(header);
+                if (header.length == size(name)) {
+                    return new ByteArrayInputStream(header);
+                } else {
+                    class HeaderCachedInputStream extends InputStream {
+                        int p;
+                        InputStream delegate;
+                        public int read() throws IOException {
+                            if (delegate != null) {
+                                return delegate.read();
+                            }
+                            if (p < header.length) {
+                                return header[p++] & 0xff;
+                            }
+                            if (delegate == null) {
+                                LOG.log(Level.FINE, "uncached tail of inputStream: {0}", name);
+                                delegate = inputStreamNoCache(name);
+                                while (p-- > 0) { // delegate.skip(p) might not return p
+                                    if (delegate.read() == -1) {
+                                        throw new IOException("Premature EOF in " + name); // NOI18N
+                                    }
+                                }
+                            }
+                            return delegate.read();
+                        }
+                        public @Override void close() throws IOException {
+                            if (delegate != null) {
+                                delegate.close();
+                            }
+                        }
+                        public @Override int available() throws IOException {
+                            if (delegate != null) {
+                                return delegate.available();
+                            } else {
+                                return header.length - p;
+                            }
+                        }
+                    }
+                    return new HeaderCachedInputStream();
+                }
             }
-            LOG.log(Level.FINE, "inputStream: {0}", name);
-            try {
-                return connection(name).getInputStream();
-            } catch (IOException x) {
-                throw (FileNotFoundException) new FileNotFoundException(x.getMessage()).initCause(x);
-            }
+            return inputStreamNoCache(name);
+        }
+    }
+    private InputStream inputStreamNoCache(String name) throws FileNotFoundException {
+        LOG.log(Level.FINE, "inputStream: {0}", name);
+        try {
+            return new BufferedInputStream(connection(name, false).getInputStream());
+        } catch (IOException x) {
+            throw (FileNotFoundException) new FileNotFoundException(x.getMessage()).initCause(x);
         }
     }
 
     public Object readAttribute(String name, String attrName) {
+        if (attrName.equals("isRemoteAndSlow")) { // NOI18N
+            return true; // #159628
+        }
         return null;
     }
 

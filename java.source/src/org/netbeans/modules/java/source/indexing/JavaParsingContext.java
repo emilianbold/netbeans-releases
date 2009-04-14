@@ -41,14 +41,15 @@ package org.netbeans.modules.java.source.indexing;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.SourceAnalyser;
-import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
 
 class JavaParsingContext {
@@ -57,14 +58,24 @@ class JavaParsingContext {
     final String sourceLevel;
     final JavaFileFilterImplementation filter;
     final Charset encoding;
+    final ClassIndexImpl uq;
     final SourceAnalyser sa;
 
-    public JavaParsingContext(Context context) throws IOException {
-        FileObject root = context.getRoot();
+    public JavaParsingContext(final FileObject root) throws IOException {
         cpInfo = ClasspathInfo.create(root);
         sourceLevel = SourceLevelQuery.getSourceLevel(root);
         filter = JavaFileFilterQuery.getFilter(root);
         encoding = FileEncodingQuery.getEncoding(root);
-        sa = ClassIndexManager.getDefault().createUsagesQuery(root.getURL(), true).getSourceAnalyser();
+        uq = ClassIndexManager.getDefault().createUsagesQuery(root.getURL(), true);
+        sa = uq != null ? uq.getSourceAnalyser() : null;
+    }
+
+    public JavaParsingContext(final FileObject root, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath) throws IOException {
+        cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+        sourceLevel = SourceLevelQuery.getSourceLevel(root);
+        filter = JavaFileFilterQuery.getFilter(root);
+        encoding = FileEncodingQuery.getEncoding(root);
+        uq = ClassIndexManager.getDefault().createUsagesQuery(root.getURL(), true);
+        sa = uq != null ? uq.getSourceAnalyser() : null;
     }
 }

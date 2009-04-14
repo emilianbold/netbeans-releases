@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,6 +46,9 @@ import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -464,6 +467,44 @@ public class AnnotationTest extends GeneratorTest {
         assertEquals(golden, res);
     }
     
+    public void testAddAttributeWithDefaultValue() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package aloisovo;\n" +
+            "\n" +
+            "public @interface Traktor {\n" +
+            "}\n");
+        String golden =
+            "package aloisovo;\n" +
+            "\n" +
+            "public @interface Traktor {\n" + "\n" +
+            "    public String zetorBrno() default \"\";\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+                TreeMaker make = workingCopy.getTreeMaker();
+                MethodTree method = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
+                                                "zetorBrno",
+                                                make.QualIdent(workingCopy.getElements().getTypeElement("java.lang.String")),
+                                                Collections.<TypeParameterTree>emptyList(),
+                                                Collections.<VariableTree>emptyList(),
+                                                Collections.<ExpressionTree>emptyList(),
+                                                (BlockTree) null,
+                                                make.Literal(""));
+                workingCopy.rewrite(ct, make.addClassMember(ct, method));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

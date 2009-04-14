@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import java.awt.Dialog;
 import java.awt.Frame;
@@ -56,6 +57,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
@@ -105,6 +107,7 @@ import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -116,6 +119,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -249,11 +253,9 @@ public class MakeActionProvider implements ActionProvider {
         final MakeConfigurationDescriptor pd = getProjectDescriptor();
         final MakeConfiguration conf = (MakeConfiguration) pd.getConfs().getActive();
 
-        final AtomicBoolean cancelled = new AtomicBoolean(false);
-        ModalMessageDlg.CancellableTask actionWorker = new ModalMessageDlg.CancellableTask() {
-
-            public void run() {
-                // Add actions to do
+        CancellableTask actionWorker = new CancellableTask() {
+            @Override
+            protected void runImpl() {
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
                 if (command.equals(COMMAND_BATCH_BUILD)) {
                     BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(pd.getConfs().getConfs());
@@ -272,19 +274,15 @@ public class MakeActionProvider implements ActionProvider {
                 }
 
                 // Execute actions
-                if (actionEvents.size() > 0) {
+                if (actionEvents.size() > 0 && ! cancelled.get()) {
                     ProjectActionSupport.getInstance().fireActionPerformed(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
                 }
-            }
-            public boolean cancel() {
-                cancelled.set(true);
-                return true;
             }
         };
         runActionWorker(conf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
     }
 
-    private static void runActionWorker(ExecutionEnvironment exeEnv, ModalMessageDlg.CancellableTask actionWorker) {
+    private static void runActionWorker(ExecutionEnvironment exeEnv, CancellableTask actionWorker) {
         if (exeEnv.isLocal()) {
             actionWorker.run();
         } else {
@@ -297,27 +295,23 @@ public class MakeActionProvider implements ActionProvider {
     }
 
     public void invokeCustomAction(final String projectName, final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
-        final AtomicBoolean cancelled = new AtomicBoolean(false);
-        ModalMessageDlg.CancellableTask actionWorker = new ModalMessageDlg.CancellableTask() {
-            public void run() {
+        CancellableTask actionWorker = new CancellableTask() {
+            @Override
+            protected void runImpl() {
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
                 addAction(actionEvents, projectName, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null, cancelled);
                 ProjectActionSupport.getInstance().fireActionPerformed(
                         actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]),
                         customProjectActionHandler);
             }
-            public boolean cancel() {
-                cancelled.set(true);
-                return true;
-            }
         };
         runActionWorker(conf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
     }
 
-    private static void invokeRemoteHostAction(final ServerRecord record, final ModalMessageDlg.CancellableTask actionWorker) {
-        ModalMessageDlg.CancellableTask csmWorker;
+    private static void invokeRemoteHostAction(final ServerRecord record, final CancellableTask actionWorker) {
+        CancellableTask wrapper;
         if (!record.isDeleted() && record.isOnline()) {
-            csmWorker = actionWorker;
+            wrapper = actionWorker;
         } else {
             String message;
             int res = JOptionPane.NO_OPTION;
@@ -337,18 +331,32 @@ public class MakeActionProvider implements ActionProvider {
                 return;
             }
             // start validation phase
-            csmWorker = new ModalMessageDlg.CancellableTask() {
+            wrapper = new CancellableTask() {
+                @Override
                 public boolean cancel() {
                     return actionWorker.cancel();
                 }
-                public void run() {
+                public void runImpl() {
                     try {
+                        if (!ConnectionManager.getInstance().isConnectedTo(record.getExecutionEnvironment())) {
+                            ConnectionManager.getInstance().connectTo(record.getExecutionEnvironment());
+                        }
                         record.validate(true);
                         // initialize compiler sets for remote host if needed
                         CompilerSetManager csm = CompilerSetManager.getDefault(record.getExecutionEnvironment());
                         csm.initialize(true, true);
+                    } catch (CancellationException ex) {
+                        cancel();
                     } catch (Exception e) {
                         e.printStackTrace();
+                        final String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getName()); //NOI18N
+                        final String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
+                                        message, title, JOptionPane.ERROR_MESSAGE);
+                            }
+                        });
                     }
                     if (record.isOnline()) {
                         actionWorker.run();
@@ -359,7 +367,7 @@ public class MakeActionProvider implements ActionProvider {
         Frame mainWindow = WindowManager.getDefault().getMainWindow();
         String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getName());
         String title = NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Validate_Host");
-        ModalMessageDlg.runLongCancellableTask(mainWindow, csmWorker, null, title, msg);
+        ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
     }
 
     class BatchConfigurationSelector implements ActionListener {
@@ -425,6 +433,11 @@ public class MakeActionProvider implements ActionProvider {
     public void addAction(ArrayList<ProjectActionEvent> actionEvents, String projectName, 
             MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context,
             AtomicBoolean cancelled) throws IllegalArgumentException {
+
+        if (cancelled.get()) {
+            return;
+        }
+
         String[] targetNames;
         boolean validated = false;
         lastValidation = false;
@@ -532,10 +545,8 @@ public class MakeActionProvider implements ActionProvider {
                         }
                     } else {
                         // Always absolute
-                        // FIXME - GRP: This call fails for a Makefile project where the sources aren't in the
-                        // project baseDir and the buildOutput isn't absolute.
-                        path = getExePath(pd, conf);
-//                        path = conf.getMakefileConfiguration().getAbsOutput().replace("\\", "/"); // NOI18N
+                        path = conf.getMakefileConfiguration().getAbsOutput(); // NOI18N
+                        path = FilePathAdaptor.normalize(path);
                     }
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
@@ -577,7 +588,7 @@ public class MakeActionProvider implements ActionProvider {
                                 if (cancelled.get()) {
                                     return; // getEnv() might be costly for remote host
                                 }
-                            userPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
+                            userPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
                         }
                         path = path + ";" + userPath; // NOI18N
                         runProfile.getEnvironment().putenv(pi.getPathName(), path);
@@ -611,7 +622,7 @@ public class MakeActionProvider implements ActionProvider {
                                 if (cancelled.get()) {
                                     return; // getEnv() might be costly for remote host
                                 }
-                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
+                                extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
                             }
                             if (extPath != null) {
                                 path.append(":" + extPath); // NOI18N
@@ -639,7 +650,7 @@ public class MakeActionProvider implements ActionProvider {
                                 if (cancelled.get()) {
                                     return; // getEnv() might be costly for remote host
                                 }
-                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
+                                extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
                             }
                             if (extPath != null) {
                                 path.append(":" + extPath); // NOI18N
@@ -656,7 +667,7 @@ public class MakeActionProvider implements ActionProvider {
                         if (cancelled.get()) {
                             return; // getEnv() might be costly for remote host
                         }
-                        if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
+                        if (HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null) {
                                 runProfile = conf.getProfile().clone();
@@ -1287,30 +1298,30 @@ public class MakeActionProvider implements ActionProvider {
         return pi.fileExists(path) || pi.isWindows() && pi.fileExists(path+".lnk") || pi.findCommand(path) != null; // NOI18N
     }
 
-    private static String getExePath(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
-        String buildResult = conf.getMakefileConfiguration().getOutput().getValue();
-
-        if (buildResult == null || buildResult.length() == 0) {
-            return buildResult;
-        }
-
-        List<String> paths = new ArrayList<String>();
-        if (isAbsolutePath(conf, buildResult)) {
-            paths.add(buildResult);
-        }
-        paths.add(conf.getBaseDir());
-        paths.addAll(mcd.getSourceRoots());
-
-        for (String dir : paths) {
-            dir = dir.replace("\\", "/");  // NOI18N
-            String path = dir + '/' + buildResult; // gdb *requires* forward slashes!
-            File file = new File(path);
-            if (file.exists()) {
-                return path;
-            }
-        }
-        return "";
-    }
+//    private static String getExePath(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
+//        String buildResult = conf.getMakefileConfiguration().getOutput().getValue();
+//
+//        if (buildResult == null || buildResult.length() == 0) {
+//            return buildResult;
+//        }
+//
+//        List<String> paths = new ArrayList<String>();
+//        if (isAbsolutePath(conf, buildResult)) {
+//            paths.add(buildResult);
+//        }
+//        paths.add(conf.getBaseDir());
+//        paths.addAll(mcd.getSourceRoots());
+//
+//        for (String dir : paths) {
+//            dir = dir.replace("\\", "/");  // NOI18N
+//            String path = dir + '/' + buildResult; // gdb *requires* forward slashes!
+//            File file = new File(path);
+//            if (file.exists()) {
+//                return path;
+//            }
+//        }
+//        return "";
+//    }
 
     private static boolean isAbsolutePath(MakeConfiguration conf, String path) {
         if (conf.getPlatform().getValue() == PlatformTypes.PLATFORM_WINDOWS) {
@@ -1330,4 +1341,28 @@ public class MakeActionProvider implements ActionProvider {
         }
         return bundle.getString(s);
     }
+
+    private abstract static class CancellableTask implements Runnable, Cancellable {
+
+        protected abstract void runImpl();
+
+        public final void run() {
+            thread = Thread.currentThread();
+            if (!cancelled.get()) {
+                runImpl();
+            }
+        }
+
+        public boolean cancel() {
+            cancelled.set(true);
+            if (thread != null) { // we never set it back to null => no sync
+                thread.interrupt();
+            }
+            return true;
+        }
+
+        private volatile Thread thread;
+        protected final AtomicBoolean cancelled = new AtomicBoolean(false);
+    }
+
 }

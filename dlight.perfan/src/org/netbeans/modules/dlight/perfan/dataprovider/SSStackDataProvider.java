@@ -38,17 +38,22 @@
  */
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
+import java.io.InterruptedIOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import org.netbeans.modules.dlight.perfan.util.TasksCachedProcessor;
 import org.netbeans.modules.dlight.perfan.util.Computable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
@@ -57,10 +62,15 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
+import org.netbeans.modules.dlight.perfan.storage.impl.FunctionStatistic;
 import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
+import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.openide.util.Lookup;
 
 /**
  * This class suppose to be thread-safe.
@@ -86,9 +96,10 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 class SSStackDataProvider implements StackDataProvider {
 
     private static final Logger log = DLightLogger.getLogger(SSStackDataProvider.class);
+    private static Pattern linesCommandPattern = Pattern.compile("^([a-zA-Z_][^,]*), line ([0-9]+) in \"(.*)\""); // NOI18N
     private final Computable<HotSpotFunctionsFetcherParams, List<FunctionCall>> hotSpotFunctionsFetcher =
             new TasksCachedProcessor<HotSpotFunctionsFetcherParams, List<FunctionCall>>(new HotSpotFunctionsFetcher(), true);
-    private List<FunctionMetric> metricsList = Arrays.asList(
+    private final List<FunctionMetric> metricsList = Arrays.asList(
             TimeMetric.UserFuncTimeExclusive,
             TimeMetric.UserFuncTimeInclusive,
             TimeMetric.SyncWaitCallInclusive,
@@ -96,6 +107,10 @@ class SSStackDataProvider implements StackDataProvider {
             MemoryMetric.LeakBytesMetric,
             MemoryMetric.LeaksCountMetric);
     private PerfanDataStorage storage;
+
+    public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
 
     private static enum CC_MODE {
 
@@ -115,7 +130,7 @@ class SSStackDataProvider implements StackDataProvider {
     }
 
     public List<FunctionCallTreeTableNode> getTableView(List<Column> columns, List<Column> orderBy, int limit) {
-        return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getHotSpotFunctions(columns, orderBy, limit));
+        return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getFunctionCalls(columns, orderBy, limit));
     }
 
     public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path) {
@@ -154,11 +169,24 @@ class SSStackDataProvider implements StackDataProvider {
         return Collections.emptyList();
     }
 
+    public List<FunctionCall> getFunctionCalls(final List<Column> columns, final List<Column> orderBy, final int limit) {
+        List<FunctionCall> result = Collections.emptyList();
+
+        try {
+            result = hotSpotFunctionsFetcher.compute(
+                    new HotSpotFunctionsFetcherParams("lines", columns, orderBy, limit)); // NOI18N
+        } catch (InterruptedException ex) {
+            log.fine("HotSpotFunctionsFetcher interrupted"); // NOI18N
+        }
+
+        return result;
+    }
+
     public List<FunctionCall> getHotSpotFunctions(
             final List<Column> columns, final List<Column> orderBy, final int limit) {
 
         try {
-            return hotSpotFunctionsFetcher.compute(new HotSpotFunctionsFetcherParams(columns, orderBy, limit));
+            return hotSpotFunctionsFetcher.compute(new HotSpotFunctionsFetcherParams("lines", columns, orderBy, limit));//NOI18N
         } catch (InterruptedException ex) {
             log.fine("HotSpotFunctionsFetcher interrupted."); // NOI18N
         }
@@ -185,21 +213,61 @@ class SSStackDataProvider implements StackDataProvider {
         if (storage instanceof PerfanDataStorage) {
             this.storage = (PerfanDataStorage) storage;
         } else {
-            String msg = "Attempt to attach SSStackDataProvider to storage " +
+            String msg = "Attempt to attach SSStackDataProvider to storage " + // NOI18N
                     "'" + storage + "'"; // NOI18N
 
             throw new IllegalArgumentException(msg);
         }
     }
 
+    public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
+        //temporary decision
+        //we should get here SourceFileInfoProvider
+        if (functionCall instanceof FunctionCallImpl) {
+            FunctionCallImpl functionCallImpl = (FunctionCallImpl) functionCall;
+            if (functionCallImpl.hasOffset()) {
+                if (!functionCallImpl.hasSourceFileDefined()) {
+                    FunctionStatistic fStatistic = storage.getFunctionStatistic(functionCall.getFunction().getName());
+                    if (fStatistic != null) {
+                        functionCallImpl.setSourceFile(fStatistic.getSourceFile());
+                    }
+                }
+                if (functionCallImpl.hasSourceFileDefined()) {
+                    return new SourceFileInfo(functionCallImpl.getSourceFile(), (int) functionCallImpl.getOffset(), 0);
+                }
+            }
+        }
+        Collection<? extends SourceFileInfoProvider> sourceInforFileProviders =
+                Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
+
+        if (sourceInforFileProviders.isEmpty()) {
+            return null;
+        }
+        Iterator<? extends SourceFileInfoProvider> iterator = sourceInforFileProviders.iterator();
+        while (iterator.hasNext()) {
+            SourceFileInfoProvider provider = iterator.next();
+            try {
+                // TODO: pass meaningful values for offset and executable
+                final SourceFileInfo lineInfo = provider.fileName(functionCall.getFunction().getName(), functionCall.getOffset(), this.storage.getInfo());
+                if (lineInfo != null && lineInfo.isSourceKnown()) {
+                    return lineInfo;
+                }
+            } catch (SourceFileInfoProvider.SourceFileInfoCannotBeProvided e) {
+            }
+        }
+        return null;
+
+    }
+
     private static class HotSpotFunctionsFetcherParams {
 
+        private final String command;
         private final List<Column> columns;
         private final List<Column> orderBy;
         private final int limit;
         private final Metrics metrics;
 
-        public HotSpotFunctionsFetcherParams(
+        HotSpotFunctionsFetcherParams(String command,
                 final List<Column> columns,
                 final List<Column> orderBy,
                 final int limit) {
@@ -211,11 +279,19 @@ class SSStackDataProvider implements StackDataProvider {
             if (columns.isEmpty()) {
                 throw new IllegalArgumentException("HotSpotFunctionsFetcherParams: empty columns list!"); // NOI18N
             }
-
+            if (command == null) {
+                this.command = "functions"; // NOI18N
+            } else {
+                this.command = command;
+            }
             this.columns = columns;
             this.orderBy = orderBy == null ? Arrays.asList(columns.get(0)) : orderBy;
             this.limit = limit;
             this.metrics = Metrics.constructFrom(columns, orderBy);
+        }
+
+        boolean isDefaultCommand() {
+            return "functions".equals(command); // NOI18N
         }
 
         @Override
@@ -246,14 +322,24 @@ class SSStackDataProvider implements StackDataProvider {
         }
 
         public List<FunctionCall> compute(HotSpotFunctionsFetcherParams taskArguments) throws InterruptedException {
-            log.fine("Started to fetch Hot Spot Functions"); // NOI18N
+            log.finest("Started to fetch Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
 
             Metrics metrics = taskArguments.metrics;
 
-            String[] er_result = storage.getTopFunctions(
-                    metrics, taskArguments.limit);
+            String[] er_result = null;
 
-            if (er_result == null || er_result.length == 0) {
+            try {
+                er_result = storage.getTopFunctions(taskArguments.command, metrics, taskArguments.limit);
+            } catch (InterruptedException ex) {
+                log.finest("Fetching Interrupted! Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
+                return null;
+            }
+
+            if (er_result == null) {
+                return null;
+            }
+
+            if (er_result.length == 0) {
                 return Collections.emptyList();
             }
 
@@ -264,8 +350,28 @@ class SSStackDataProvider implements StackDataProvider {
             Column primarySortColumn = taskArguments.orderBy.get(0);
 
             for (int i = 0; i < limit; i++) {
+                int lineNumber = -1;
+                String fileName = null;
                 String[] info = er_result[i].split("[ \t]+", colCount); // NOI18N
                 String name = info[colCount - 1];
+                if (!taskArguments.isDefaultCommand()) {
+                    //parse
+                    if ("lines".equals(taskArguments.command)) { // NOI18N
+                        //if name.startsWith< will skip
+                        if (name.startsWith("<")) { // NOI18N
+                            continue;
+                        }
+                        Matcher match = linesCommandPattern.matcher(name);
+                        if (match.matches()) {
+                            name = match.group(1);
+                            lineNumber = Integer.valueOf(match.group(2));
+                            fileName = match.group(3);
+                        }
+
+                    }
+
+
+                }
                 Function f = new FunctionImpl(name, name.hashCode());
 
                 Map<FunctionMetric, Object> metricsValues =
@@ -273,23 +379,36 @@ class SSStackDataProvider implements StackDataProvider {
 
                 // Will skip function if value of primary sorting metric == 0
                 boolean skipFunction = false;
-                
+
                 for (int midx = 0; midx < colCount - 1; midx++) {
                     Column col = taskArguments.columns.get(midx);
                     String colName = col.getColumnName();
                     Class colClass = col.getColumnClass();
                     FunctionMetric metric = getMetricInstance(colName);
-
+                    boolean isPrimaryColumn = col.equals(primarySortColumn);
                     Object value = info[midx];
                     try {
                         Number nvalue = df.parse(info[midx]);
-
                         if (Integer.class == colClass) {
+                            if (isPrimaryColumn && nvalue.intValue() == 0) {
+                                skipFunction = true;
+                            }
                             value = new Integer(nvalue.intValue());
                         } else if (Double.class == colClass) {
+                            if (isPrimaryColumn && nvalue.doubleValue() == 0) {
+                                skipFunction = true;
+                            }
                             value = new Double(nvalue.doubleValue());
                         } else if (Float.class == colClass) {
+                            if (isPrimaryColumn && nvalue.floatValue() == 0) {
+                                skipFunction = true;
+                            }
                             value = new Float(nvalue.floatValue());
+                        } else if (Long.class == colClass) {
+                            if (isPrimaryColumn && nvalue.longValue() == 0) {
+                                skipFunction = true;
+                            }
+                            value = new Long(nvalue.longValue());
                         }
 
                     } catch (ParseException ex) {
@@ -299,7 +418,10 @@ class SSStackDataProvider implements StackDataProvider {
                 }
 
                 if (!skipFunction) {
-                    FunctionCallImpl fc = new FunctionCallImpl(f, metricsValues);
+                    FunctionCallImpl fc = new FunctionCallImpl(f, lineNumber, metricsValues);
+                    if (fileName != null) {
+                        fc.setFileName(fileName);
+                    }
                     result.add(fc);
                 }
             }

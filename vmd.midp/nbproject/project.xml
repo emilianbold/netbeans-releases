@@ -404,9 +404,11 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.vmd.midp.actions</package>
                 <package>org.netbeans.modules.vmd.midp.analyzer</package>
                 <package>org.netbeans.modules.vmd.midp.codegen</package>
+                <package>org.netbeans.modules.vmd.midp.codegen.ui</package>
                 <package>org.netbeans.modules.vmd.midp.components</package>
                 <package>org.netbeans.modules.vmd.midp.components.categories</package>
                 <package>org.netbeans.modules.vmd.midp.components.commands</package>
+                <package>org.netbeans.modules.vmd.midp.components.databinding</package>
                 <package>org.netbeans.modules.vmd.midp.components.displayables</package>
                 <package>org.netbeans.modules.vmd.midp.components.elements</package>
                 <package>org.netbeans.modules.vmd.midp.components.general</package>

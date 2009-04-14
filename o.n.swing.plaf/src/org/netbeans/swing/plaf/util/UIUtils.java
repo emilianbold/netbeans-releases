@@ -77,6 +77,13 @@ public final class UIUtils {
         return lfID.endsWith("Windows"); //NOI18N
     }
     
+    /** Finds if GTK LF is active.
+     * @return true if GTK LF is active, false otherwise */
+    public static boolean isGtkLF () {
+        String lfID = UIManager.getLookAndFeel().getID();
+        return lfID.startsWith("GTK"); //NOI18N
+    }
+    
     /** Finds if windows LF with XP theme is active.
      * @return true if windows LF and XP theme is active, false otherwise */
     public static boolean isXPLF () {

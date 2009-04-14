@@ -260,15 +260,13 @@ public final class MacroExpanderFactory {
 
             String soext;
 
-            if ("Windows".equals(hi.os)) { // NOI18N
+            if (hi.os.startsWith("Windows")) { // NOI18N
                 soext = "dll"; // NOI18N
-            }
-
-            if ("Darwin".equals(hi.os)) { // NOI18N
+            } else if ("Mac_OS_X".equals(hi.os)) { // NOI18N
                 soext = "dylib"; // NOI18N
+            } else {
+                soext = "so"; // NOI18N
             }
-
-            soext = "so"; // NOI18N
 
             predefinedMacros.put("osname", hi.os); // NOI18N
             predefinedMacros.put("platform", platform); // NOI18N
@@ -329,7 +327,7 @@ public final class MacroExpanderFactory {
         public HostInfo call() throws Exception {
             try {
                 String os = HostInfoUtils.getOS(execEnv);
-                String platform = HostInfoUtils.getPlatform(execEnv);
+                String platform = HostInfoUtils.getCpuType(execEnv);
                 String hostIsaBits = HostInfoUtils.getIsaBits(execEnv);
 
                 return new HostInfo(platform, os, hostIsaBits);

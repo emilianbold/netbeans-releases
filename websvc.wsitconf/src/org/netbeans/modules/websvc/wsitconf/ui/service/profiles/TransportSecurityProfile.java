@@ -51,6 +51,8 @@ import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -63,8 +65,7 @@ import org.openide.DialogDisplayer;
  * @author Martin Grebac
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile.class)
-public class TransportSecurityProfile extends ProfileBase 
-        implements ClientDefaultsFeature,ServiceDefaultsFeature {
+public class TransportSecurityProfile extends ProfileBase implements ClientDefaultsFeature {
     
     public int getId() {
         return 30;
@@ -113,21 +114,19 @@ public class TransportSecurityProfile extends ProfileBase
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
         ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);
     }
-
-    public void setServiceDefaults(WSDLComponent component, Project p) {
-        ProprietarySecurityPolicyModelHelper.clearValidators(component);
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
-    }
     
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
         if (ProprietarySecurityPolicyModelHelper.isAnyValidatorSet(component)) return false;
         return true;
     }
  
-    public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
-        if (ProprietarySecurityPolicyModelHelper.isAnyValidatorSet(component)) return false;
-        return true;
+    @Override
+    public void profileSelected(WSDLComponent component, boolean updateServiceUrl, ConfigVersion configVersion) {
+        ProfilesModelHelper pmh = ProfilesModelHelper.getInstance(configVersion);
+        pmh.setSecurityProfile(component, getDisplayName(), updateServiceUrl);
+        ProprietarySecurityPolicyModelHelper.clearValidators(component);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
     }
 
 }

@@ -5,12 +5,19 @@ function myfunction(){
 
 var myvariable="variable";
 
-
+x = "foo";
+y = x;
 
 /**CC
-cons|
-const
-const
+y.cha
+charCodeAt(index) : Number
+y.charCodeAt(index)
+*/
+
+/**CC
+de|
+debugger
+debugger
 */
 
 /**CC

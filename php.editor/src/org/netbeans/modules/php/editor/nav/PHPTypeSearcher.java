@@ -43,7 +43,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.Icon;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -71,7 +70,7 @@ public class PHPTypeSearcher implements IndexSearcher {
     //TODO: no supported: came cases, regular expressions in queries (needs improve PHPIndex methods)
     public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind kind, Helper helper) {
         // XXX: use PHP specific path ids
-        PHPIndex index = PHPIndex.get(GsfUtilities.getRoots(
+        PHPIndex index = PHPIndex.get(QuerySupport.findRoots(
                 project, Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP),
                 Collections.<String>emptySet()));
 
@@ -94,7 +93,7 @@ public class PHPTypeSearcher implements IndexSearcher {
 
     public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind kind, Helper helper) {
         // XXX: use PHP specific path ids
-        PHPIndex index = PHPIndex.get(GsfUtilities.getRoots(
+        PHPIndex index = PHPIndex.get(QuerySupport.findRoots(
                 project, Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP),
                 Collections.<String>emptySet()));
 

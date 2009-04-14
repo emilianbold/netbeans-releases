@@ -64,5 +64,5 @@ public final class MasterURLMapper extends URLMapper {
 
     public URL getURL(final FileObject fo, final int type) {
         return delegate.getURL(fo, type);
-    }        
+    }
 }

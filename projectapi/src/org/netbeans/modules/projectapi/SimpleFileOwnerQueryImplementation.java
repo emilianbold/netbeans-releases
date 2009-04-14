@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -65,6 +66,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
@@ -210,9 +212,13 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                 URI i = new URI(name);
                 deserializedExternalOwners.put(i, URLMapper.findFileObject(u));
             }
-            NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners").removeNode();
         } catch (Exception ex) {
-            Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName()).log(Level.WARNING, null, ex);
+            Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName()).log(Level.INFO, null, ex);
+        }
+        try {
+            NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners").removeNode();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     

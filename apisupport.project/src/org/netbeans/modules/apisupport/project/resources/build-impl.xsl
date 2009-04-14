@@ -57,6 +57,13 @@ made subject to such option by the copyright holder.
                                                   /p:project/p:configuration/nbmproject3:data/nbmproject3:code-name-base"/>
         <project name="{$codenamebase}-impl">
             <xsl:attribute name="basedir">..</xsl:attribute>
+            <fail message="Please build using Ant 1.7.1 or higher.">
+                <condition>
+                    <not>
+                        <antversion atleast="1.7.1"/>
+                    </not>
+                </condition>
+            </fail>
             <xsl:choose>
                 <xsl:when test="/p:project/p:configuration/nbmproject2:data/nbmproject2:suite-component |
                                 /p:project/p:configuration/nbmproject3:data/nbmproject3:suite-component">

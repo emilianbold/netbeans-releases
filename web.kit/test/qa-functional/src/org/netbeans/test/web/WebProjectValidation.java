@@ -41,6 +41,7 @@
 
 package org.netbeans.test.web;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -49,6 +50,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
@@ -74,6 +76,7 @@ import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewWebProjectServerSettingsStepOperator;
 import org.netbeans.jellytools.NewWebProjectSourcesStepOperator;
 import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
@@ -81,6 +84,7 @@ import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -133,15 +137,16 @@ public class WebProjectValidation extends J2eeTestCase {
     
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation.class);
-        conf = addServerTests(J2eeTestCase.Server.TOMCAT, conf, 
-              "testPreconditions", "testNewWebProject", "testRegisterTomcat",
-              "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
-              "testCompileAllJSP", "testCompileJSP",
-              "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
-              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
-              "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
-              "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
-               /*"testJSPNavigator", "testHTMLNavigator" */);
+        conf = addServerTests(J2eeTestCase.Server.TOMCAT, conf,
+                "testPreconditions", "testNewWebProject", "testRegisterTomcat",
+                "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
+                "testCompileAllJSP", "testCompileJSP",
+                "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
+                "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+                "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
+                "testJSPNavigator", "testHTMLNavigator",
+                "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
+                );
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
@@ -156,18 +161,6 @@ public class WebProjectValidation extends J2eeTestCase {
         return Manager.normalizeFile(dataDir);
     }
 
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        //junit.textui.TestRunner.run(suite());
-        //WebProjectValidation val = new WebProjectValidation("test");
-        //val.setUp();
-        //val.testStartServer();
-        
-        // run only selected test case
-        //junit.textui.TestRunner.run(new MyModuleValidation("testT2"));
-    }
-    
     @Override
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
@@ -178,11 +171,6 @@ public class WebProjectValidation extends J2eeTestCase {
         JemmyProperties.setCurrentTimeout(
                 "DialogWaiter.WaitDialogTimeout",180000);
         server = ServerInstance.getDefault();
-        
-        // extend Tomcat running check timeout
-        //        TomcatManager tomcatManager = getTomcatManager();
-        //        tomcatManager.getInstanceProperties().setProperty(
-        //                TomcatProperties.PROP_RUNNING_CHECK_TIMEOUT, "8000");
     }
     
     @Override
@@ -210,7 +198,9 @@ public class WebProjectValidation extends J2eeTestCase {
         connection = url.openConnection();
         try {
             connection.connect();
-            fail("Connection to http://localhost:8025 established, but tomcat should not be running.");
+            //server is running -> try to stop it
+            server.stop();
+            verifyServerIsStopped();
         } catch (ConnectException e) {  }
         initDisplayer();
     }
@@ -587,10 +577,8 @@ public class WebProjectValidation extends J2eeTestCase {
         //compareReferenceFiles();
     }
     
-    public void testCreateTagHandler() {
+    public void testCreateTagHandler() throws InterruptedException {
         new ActionNoBlock("File|New File", null).perform();
-        // WORKAROUND
-        new EventTool().waitNoEvent(1000);
         WizardOperator newFileWizard = new WizardOperator("New File");
         new JComboBoxOperator(newFileWizard).selectItem(PROJECT_NAME);
         new Node(new JTreeOperator(newFileWizard), "Web").select();
@@ -603,14 +591,13 @@ public class WebProjectValidation extends J2eeTestCase {
         JComboBoxOperator pkg = new JComboBoxOperator(newFileWizard,1);
         pkg.clearText();
         pkg.typeText("tags");
+        newFileWizard.btNext().waitComponentEnabled();
         newFileWizard.next();
-        new JButtonOperator(newFileWizard).push();
+        new JButtonOperator(newFileWizard, "Browse").push();
         NbDialogOperator dialog = new NbDialogOperator("Browse Files");
         new Node(new JTreeOperator(dialog),"Web Pages|WEB-INF|tlds|MyTags.tld").select();
         new JButtonOperator(dialog,"Select File").push();
         newFileWizard.finish();
-        // HACK
-        new Node(phelper.getSourceNode(), "tags|MyTag.java");
         // check class is opened in Editor and then close it
         EditorOperator editor = new EditorOperator("MyTag.java");
         editor.replace("// out.println(\"    </blockquote>\");", getTagHandlerCode());
@@ -619,7 +606,7 @@ public class WebProjectValidation extends J2eeTestCase {
         ref(Util.dumpProjectView(PROJECT_NAME));
         //compareReferenceFiles();
     }
-    
+
     protected String getTagHandlerCode() {
         return "out.print(\"TagOutput\"); \n";
     }
@@ -693,6 +680,20 @@ public class WebProjectValidation extends J2eeTestCase {
         assertEquals("NAVIGATION TARGET", 325, caretPosition);
         EditorOperator.closeDiscardAll();
     }
+
+    private void dumpNode(TreeModel model, Object node, int offset) {
+        for (int i = 0; i < offset; i++) {
+            getLog().print("\t");
+        }
+        getLog().println(node.toString());
+        if (model.isLeaf(node)){
+            return;
+        }
+        for (int i = 0; i < model.getChildCount(node); i++) {
+            Object object = model.getChild(node, i);
+            dumpNode(model, object, offset + 1);
+        }
+    }
     
     private void open(String fileName)throws Exception{
         DataObject dataObj = DataObject.find(FileUtil.toFileObject(new File(getDataDir(), fileName)));
@@ -722,8 +723,10 @@ public class WebProjectValidation extends J2eeTestCase {
         NavigatorOperator navigatorOperator = NavigatorOperator.invokeNavigator();
         assertNotNull(navigatorOperator);
         JTreeOperator treeOperator = navigatorOperator.getTree();
-        Object root = treeOperator.getRoot();
+        TreeModel model = treeOperator.getModel();
+        Object root = model.getRoot();
         assertNotNull(root);
+        dumpNode(model, root, 0);
         assertEquals(1, treeOperator.getChildCount(root));
         Object htmlChild = treeOperator.getChild(root, 0);//HTML
         assertNotNull(htmlChild);
@@ -741,7 +744,7 @@ public class WebProjectValidation extends J2eeTestCase {
         assertFalse("move in document", finalCaretPossition == startCaretPos);
         return finalCaretPossition;
     }
-    
+
     public void testRunHTML() {
         initDisplayer();
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
@@ -792,14 +795,7 @@ public class WebProjectValidation extends J2eeTestCase {
     
     public void testStopServer() throws Exception {
         server.stop();
-        //try { Thread.currentThread().sleep(5000); } catch (InterruptedException e) {}
-        URL url = server.getServerURL();
-        URLConnection connection = url.openConnection();
-        try {
-            connection.connect();
-            fail("Connection to: "+url+" established, but the server" +
-                    " should not be running.");
-        } catch (ConnectException e) {  }
+        verifyServerIsStopped();
     }
     
     public void testStartServer() throws Exception {
@@ -868,13 +864,25 @@ public class WebProjectValidation extends J2eeTestCase {
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
         }
     }
-    
+
+    public void waitBuildSuccessfulInActualTab() {
+        final OutputOperator oo = new OutputOperator();
+        oo.waitState(new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+                return oo.getText().contains(BUILD_SUCCESSFUL);
+            }
+            public String getDescription() {
+                return("\"" + BUILD_SUCCESSFUL + "\" text");
+            }
+        });
+    }
+
     public void waitBuildSuccessful() {
         OutputTabOperator console = new OutputTabOperator(PROJECT_NAME);
         console.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
         console.waitText(BUILD_SUCCESSFUL);
     }
-    
+
     public void initDisplayer() {
         if (urlDisplayer == null) {
             urlDisplayer = TestURLDisplayer.getInstance();
@@ -912,7 +920,7 @@ public class WebProjectValidation extends J2eeTestCase {
             throw new JemmyException("Cannot install Jemmy Queue.", ex);
         }
     }
-    
+
     private static class ServerInstance {
         private String host;
         private int serverPort;
@@ -960,6 +968,16 @@ public class WebProjectValidation extends J2eeTestCase {
         public void start() {
             getServerNode().start();
         }
+    }
+
+    private void verifyServerIsStopped() throws IOException {
+        URL url = server.getServerURL();
+        URLConnection connection = url.openConnection();
+        try {
+            connection.connect();
+            fail("Connection to: "+url+" established, but the server" +
+                    " should not be running.");
+        } catch (ConnectException e) {  }
     }
 }
 

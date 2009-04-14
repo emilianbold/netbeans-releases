@@ -187,8 +187,16 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testStaticVariable() throws Exception {
         // See IZ136481
-        performTest("static_variable.c", 4, 16, "static_variable.h", 2, 1);
-        performTest("static_variable.c", 5, 15, "static_variable.h", 1, 1);
+        performTest("static_variable.c", 5, 16, "static_variable.h", 2, 1);
+        performTest("static_variable.c", 6, 15, "static_variable.h", 1, 1);
+        // See IZ151730: Unresolved static variable in header included after its definition
+        performTest("static_variable.h", 2, 40, "static_variable.c", 1, 1);
+    }
+
+    public void testStaticFunctions() throws Exception {
+        // IZ#151751: Unresolved usage of function name as pointer for static member initialization
+        performTest("static_function.c", 26, 10, "static_function.c", 17, 1);
+        performTest("static_function.c", 11, 30, "static_function.c", 2, 1);
     }
 
     public void testIZ131555() throws Exception {
@@ -589,6 +597,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ151588() throws Exception {
         // IZ#151588 : Unresolved element of array in case of complex index
         performTest("IZ151588.cc", 11, 26, "IZ151588.cc", 3, 5);
+    }
+
+    public void testIZ161901() throws Exception {
+        // IZ#161901 : unresolved friend class forward
+        performTest("IZ161901.cc", 3, 22, "IZ161901.cc", 3, 5);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

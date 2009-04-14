@@ -85,16 +85,6 @@ public class KenaiRESTTest {
     // TODO: verify all fields
     }
 
-    @Test
-    public void testParseProjectList() throws Exception {
-        System.out.println("testParseProjectList");
-        PojsonLoad pl = PojsonLoad.create();
-        JsonListProjects plist = pl.load(Utils.project_list_json, JsonListProjects.class);
-        assertNull(plist.prev);
-        assertNotNull(plist.next);
-        assertEquals(plist.projects.length, 10);
-    // TODO: verify all fields
-    }
 
     @Test
     public void testGetProject() throws Exception {

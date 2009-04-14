@@ -46,20 +46,29 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -80,6 +89,7 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class CommentsPanel extends JPanel {
+    private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
     private final static String STACKTRACE_ATTRIBUTE = "stacktrace"; // NOI18N
     private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
@@ -94,20 +104,61 @@ public class CommentsPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
-                    JTextPane pane = (JTextPane)e.getSource();
-                    StyledDocument doc = pane.getStyledDocument();
-                    Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                    AttributeSet as = elem.getAttributes();
-                    StackTraceAction stacktraceAction = (StackTraceAction) as.getAttribute(STACKTRACE_ATTRIBUTE);
-                    if (stacktraceAction != null) {
-                        stacktraceAction.openStackTrace(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()));
-                    }
-                    IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
-                    if (issueAction != null) {
-                        issueAction.openIssue(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()));
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        openStackTrace(e, false);
+                        Element elem = element(e);
+                        AttributeSet as = elem.getAttributes();
+                        IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
+                        if (issueAction != null) {
+                            issueAction.openIssue(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()));
+                        }
                     }
                 } catch(Exception ex) {
                     Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                showMenu(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                showMenu(e);
+            }
+
+            private void showMenu(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    try {
+                        Element elem = element(e);
+                        String stackFrame = elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset());
+                        JPopupMenu menu = new JPopupMenu();
+                        menu.add(new StackTraceAction(stackFrame, false));
+                        menu.add(new StackTraceAction(stackFrame, true));
+                        menu.show((JTextPane)e.getSource(), e.getX(), e.getY());
+                    } catch(Exception ex) {
+                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+
+            private Element element(MouseEvent e) {
+                JTextPane pane = (JTextPane)e.getSource();
+                StyledDocument doc = pane.getStyledDocument();
+                return doc.getCharacterElement(pane.viewToModel(e.getPoint()));
+            }
+
+            private void openStackTrace(MouseEvent e, boolean showHistory) {
+                Element elem = element(e);
+                AttributeSet as = elem.getAttributes();
+                StackTraceAction stacktraceAction = (StackTraceAction) as.getAttribute(STACKTRACE_ATTRIBUTE);
+                if (stacktraceAction != null) {
+                    try {
+                        StackTraceAction.openStackTrace(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()), showHistory);
+                    } catch(Exception ex) {
+                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                    }
                 }
             }
 
@@ -138,9 +189,17 @@ public class CommentsPanel extends JPanel {
         GroupLayout.SequentialGroup verticalGroup = layout.createSequentialGroup();
         verticalGroup.addContainerGap();
         layout.setVerticalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(verticalGroup));
-        addSection(layout, issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER), issue.getFieldValue(BugzillaIssue.IssueField.CREATION), horizontalGroup, verticalGroup, true);
+        DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT);
+        String creationTxt = issue.getFieldValue(BugzillaIssue.IssueField.CREATION);
+        try {
+            Date creation = dateTimeFormat.parse(creationTxt);
+            creationTxt = format.format(creation);
+        } catch (ParseException pex) {
+            Bugzilla.LOG.log(Level.INFO, null, pex);
+        }
+        addSection(layout, issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER), creationTxt, horizontalGroup, verticalGroup, true);
         for (BugzillaIssue.Comment comment : issue.getComments()) {
-            String when = DateFormat.getDateTimeInstance().format(comment.getWhen());
+            String when = format.format(comment.getWhen());
             addSection(layout, comment.getText(), comment.getWho(), when, horizontalGroup, verticalGroup, false);
         }
         verticalGroup.addContainerGap();
@@ -194,6 +253,10 @@ public class CommentsPanel extends JPanel {
 
     private void setupTextPane(JTextPane textPane, String comment) {
         StyledDocument doc = textPane.getStyledDocument();
+        Caret caret = textPane.getCaret();
+        if (caret instanceof DefaultCaret) {
+            ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+        }
 
         // Stack traces
         List<StackTraceSupport.StackTracePosition> stacktraces = StackTraceSupport.find(comment);
@@ -284,9 +347,30 @@ public class CommentsPanel extends JPanel {
         return replyListener;
     }
 
-    private static class StackTraceAction {
-        void openStackTrace(String text) {
-            StackTraceSupport.findAndOpen(text);
+    private static class StackTraceAction extends AbstractAction {
+        private String stackFrame;
+        private boolean showHistory;
+
+        StackTraceAction() {
+        }
+
+        StackTraceAction(String stackFrame, boolean showHistory) {
+            this.stackFrame = stackFrame;
+            this.showHistory = showHistory;
+            String name = NbBundle.getMessage(StackTraceAction.class, showHistory ? "CommentsPanel.StackTraceAction.showHistory" : "CommentsPanel.StackTraceAction.open"); // NOI18N
+            putValue(Action.NAME, name);
+        }
+
+        static void openStackTrace(String text, boolean showHistory) {
+            if (showHistory) {
+                StackTraceSupport.findAndShowHistory(text);
+            } else {
+                StackTraceSupport.findAndOpen(text);
+            }
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            openStackTrace(stackFrame, showHistory);
         }
     }
 

@@ -251,15 +251,19 @@ made subject to such option by the copyright holder.
                 <file name="projectTab_tc.wstcref" url="projects.wstcref">
                     <attr name="position" intvalue="200"/>
                 </file>
-                <file name="runtime.wstcref" url="runtime-override.wstcref">
-                    <attr name="position" intvalue="500"/>
-                </file>
             </folder>
         </folder>    
             
         <folder name="Components">
-	    <file name="projectTabLogical_tc.settings" url="projectsLogical.settings"/>
+            <file name="projectTabLogical_tc.settings" url="projectsLogical.settings"/>
             <file name="projectTab_tc.settings" url="projects.settings"/>
+        </folder>
+
+        <folder name="Groups">
+            <folder name="OpenedProjects">
+                <file name="projectTabLogical_tc.wstcgrp" url="projectsLogical.wstcgrp"/>
+                <file name="projectTab_tc.wstcgrp" url="projects.wstcgrp"/>
+            </folder>
         </folder>
         
     </folder>

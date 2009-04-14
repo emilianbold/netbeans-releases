@@ -42,6 +42,7 @@
 package org.netbeans.modules.groovy.editor.api.elements;
 
 import org.codehaus.groovy.ast.ModuleNode;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -53,8 +54,8 @@ public class AstRootElement extends AstElement {
     private final FileObject fileObject;
     private final ModuleNode moduleNode;
 
-    public AstRootElement(FileObject fo, ModuleNode moduleNode) {
-        super(moduleNode);
+    public AstRootElement(FileObject fo, GroovyParserResult info, ModuleNode moduleNode) {
+        super(info, moduleNode);
         this.fileObject = fo;
         this.moduleNode = moduleNode;
     }

@@ -44,16 +44,18 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Jan Becicka
  */
-public class KenaiProjectTest {
+public class KenaiProjectTest extends NbTestCase {
 
     static String UNITTESTUNIQUENAME = "golden-project-1";
 
-    public KenaiProjectTest() {
+    public KenaiProjectTest(String s) {
+        super(s);
     }
 
     @BeforeClass
@@ -65,6 +67,7 @@ public class KenaiProjectTest {
     }
 
     @Before
+    @Override
     public void setUp() {
         try {
             System.setProperty("kenai.com.url","http://testkenai.com");
@@ -79,7 +82,13 @@ public class KenaiProjectTest {
     @Test
     public void testForRepositorySvn() throws Exception {
         System.out.println("forRepositorySvn");
-        KenaiFeature[] features = Kenai.getDefault().getProject(UNITTESTUNIQUENAME).getFeatures(KenaiService.Type.SOURCE);
+        KenaiProject proj = null;
+        try {
+            proj = Kenai.getDefault().getProject(UNITTESTUNIQUENAME);
+        } catch (KenaiException e) {
+            fail("Project " + UNITTESTUNIQUENAME + " not found - testForRepository fails");
+        }
+        KenaiFeature[] features = proj.getFeatures(KenaiService.Type.SOURCE);
         String uri = "";
         for (int i = 0; i < features.length; i++) {
             KenaiFeature kenaiFeature = features[i];
@@ -97,7 +106,13 @@ public class KenaiProjectTest {
     @Test
     public void testForRepositoryHg() throws Exception {
         System.out.println("forRepositoryHg");
-        KenaiFeature[] features = Kenai.getDefault().getProject(UNITTESTUNIQUENAME).getFeatures(KenaiService.Type.SOURCE);
+        KenaiProject proj = null;
+        try {
+            proj = Kenai.getDefault().getProject(UNITTESTUNIQUENAME);
+        } catch (KenaiException e) {
+            fail("Project " + UNITTESTUNIQUENAME + " not found - testForRepository fails");
+        }
+        KenaiFeature[] features = proj.getFeatures(KenaiService.Type.SOURCE);
         String uri = "";
         for (int i = 0; i < features.length; i++) {
             KenaiFeature kenaiFeature = features[i];
@@ -112,7 +127,8 @@ public class KenaiProjectTest {
 
     @Test
     public void testCheckName() throws KenaiException, MalformedURLException {
-        assert KenaiProject.checkName("non-existing-project") == null;
-        assert KenaiProject.checkName(UNITTESTUNIQUENAME).equals("Name has already been taken");
+        assertNull(KenaiProject.checkName("non-existing-project"));
+        assertNotNull("Project does not exist, but it should...", KenaiProject.checkName(UNITTESTUNIQUENAME));
+        assertTrue(KenaiProject.checkName(UNITTESTUNIQUENAME).equals("Name has already been taken"));
     }
 }

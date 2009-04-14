@@ -458,20 +458,17 @@ public abstract class URLMapper {
             return retURL;
         }
 
-        private static URL toURL(File fFile, FileObject fo)
-        throws MalformedURLException {
-            URL retVal = null;
-
-            if (fo.isFolder() && !fo.isValid()) {
-                String urlDef = fFile.toURI().toURL().toExternalForm();
-                String pathSeparator = "/"; //NOI18N
-
+        private static URL toURL(File fFile, FileObject fo) throws MalformedURLException {
+            URL retVal = fFile.toURI().toURL();
+            if (retVal != null && fo.isFolder()) {
+                // #155742,160333 - URL for folder must always end with slash
+                final String urlDef = retVal.toExternalForm();
+                final String pathSeparator = "/";//NOI18N
                 if (!urlDef.endsWith(pathSeparator)) {
                     retVal = new URL(urlDef + pathSeparator);
                 }
             }
-
-            return (retVal == null) ? fFile.toURI().toURL() : retVal;
+            return retVal;
         }
 
         private static File findFileInRepository(FileObject fo) {

@@ -27,11 +27,12 @@ public abstract class Dashboard {
     public abstract void setUser( LoginHandle login );
 
     /**
-     * Add a Kenai project which current user isn't member of to the Dashboard.
+     * Add a Kenai project to the Dashboard.
      * @param project
-     * @see ActionsFactory.getOpenNonMemberProjectAction
+     * @param isMemberProject True if current kenai user is project's owner or observer.
+     * @see ProjectAccessor#getOpenNonMemberProjectAction()
      */
-    public abstract void addProject( ProjectHandle project );
+    public abstract void addProject( ProjectHandle project, boolean isMemberProject );
 
     public abstract void removeProject( ProjectHandle project );
 

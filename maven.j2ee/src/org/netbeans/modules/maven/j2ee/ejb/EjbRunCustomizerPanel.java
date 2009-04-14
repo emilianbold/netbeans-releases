@@ -41,6 +41,8 @@ package org.netbeans.modules.maven.j2ee.ejb;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
@@ -88,7 +90,12 @@ public class EjbRunCustomizerPanel extends javax.swing.JPanel {
         String[] ids = Deployment.getDefault().getServerInstanceIDs(new Object[]{J2eeModule.EJB});
         Collection<Wrapper> col = new ArrayList<Wrapper>();
 //        Wrapper selected = null;
-        col.add(new Wrapper(ExecutionChecker.DEV_NULL));
+        SessionContent sc = project.getLookup().lookup(SessionContent.class);
+        if (sc != null && sc.getServerInstanceId() != null) {
+            col.add(new Wrapper(ExecutionChecker.DEV_NULL, sc.getServerInstanceId()));
+        } else {
+            col.add(new Wrapper(ExecutionChecker.DEV_NULL));
+        }
         for (int i = 0; i < ids.length; i++) {
             Wrapper wr = new Wrapper(ids[i]);
             col.add(wr);
@@ -110,6 +117,15 @@ public class EjbRunCustomizerPanel extends javax.swing.JPanel {
         //any save of teh project shall effectively caus ethe module server change..
         POHImpl poh = project.getLookup().lookup(POHImpl.class);
         poh.hackModuleServerChange();
+
+        // USG logging
+        Object obj = comServer.getSelectedItem();
+        if (obj != null) {
+            LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_MAVEN_SERVER");  //NOI18N
+            record.setLoggerName(POHImpl.USG_LOGGER_NAME);
+            record.setParameters(new Object[] { obj.toString() });
+            POHImpl.USG_LOGGER.log(record);
+        }
     }
 
     /** This method is called from within the constructor to

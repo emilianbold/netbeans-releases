@@ -87,4 +87,15 @@ public final class CsmReferenceSupport {
         }
         return out;
     }
+
+    public static CharSequence getContextLine(CsmReference ref) {
+        CsmFile csmFile = ref.getContainingFile();
+        int stToken = ref.getStartOffset();
+        int endToken = ref.getEndOffset();
+        CharSequence out = CsmDisplayUtilities.getContextLine(csmFile, stToken, endToken);
+        if (out == null) {
+            out = ref.getText();
+        }
+        return out;
+    }
 }

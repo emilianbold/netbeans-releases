@@ -738,6 +738,7 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
             if (packageFO != null) {
                 Templates.setTargetFolder(settings, packageFO);
             } else {
+                Templates.setTargetFolder(settings, null);
                 settings.putProperty(WizardProperties.TARGET_PACKAGE, getPackage());
             }
         } catch (IOException ex) {

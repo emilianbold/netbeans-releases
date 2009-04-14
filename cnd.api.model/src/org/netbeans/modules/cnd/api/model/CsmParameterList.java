@@ -52,7 +52,7 @@ import java.util.Collection;
  * CsmParameterList object is offsetable starting at "(" and ending at ")"
  * @author Vladimir Voskresensky
  */
-public interface CsmParameterList<T, K> extends CsmOffsetable {
+public interface CsmParameterList<K> extends CsmOffsetable {
     /**
      * returns collection of parameter objects between "(" and ")"
      * @return

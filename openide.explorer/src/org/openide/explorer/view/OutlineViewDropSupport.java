@@ -73,9 +73,6 @@ import javax.swing.tree.TreePath;
 final class OutlineViewDropSupport implements DropTargetListener, Runnable {
     final static protected int FUSSY_POINTING = 3;
     final static private int DELAY_TIME_FOR_EXPAND = 1000;
-    final static private int SHIFT_DOWN = -1;
-    final static private int SHIFT_RIGHT = 0;//10;
-    final static private int SHIFT_LEFT = 0;//15;
 
     /** true if support is active, false otherwise */
     boolean active = false;
@@ -83,12 +80,14 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
     /** Drop target asociated with the table */
     DropTarget dropTarget;
+    private DropTarget outerDropTarget;
 
     /** Node area which we were during
     * DnD operation. */
     Rectangle lastNodeArea;
     private int upperNodeIdx = -1;
     private int lowerNodeIdx = -1;
+    private int dropIndex = -1;
 
     /** Swing Timer for expand node's parent with delay time. */
     Timer timer;
@@ -123,6 +122,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         log("dragEnter " + dtde); // NOI18N
         checkStoredGlassPane();
 
+        dropIndex = -1;
         // set a status and cursor of dnd action
         doDragOver(dtde);
     }
@@ -135,6 +135,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         // this check make dragOver/Enter more robust
         checkStoredGlassPane();
 
+        dropIndex = -1;
         // set a status and cursor of dnd action
         doDragOver(dtde);
     }
@@ -171,6 +172,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         
         if (row == -1) {
             // #64469: Can't drop into empty explorer area
+            dropIndex = -1;
             dropNode = view.manager.getRootContext ();
             if (canDrop(dropNode, dropAction)) {
                 // ok, root accept
@@ -186,15 +188,15 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
         // if I haven't any node for drop then reject drop
         if (dropNode == null) {
+            dropIndex = -1;
             dtde.rejectDrag();
             removeDropLine();
 
             return;
         }
-
+        boolean isParentNodeDrop = false;
         Rectangle nodeArea = table.getCellRect(row, column, false);
         log("nodeArea == " + nodeArea); // NOI18N
-        int endPointX = nodeArea.x + nodeArea.width;
         if (nodeArea != null) {
             pointAt = DragDropUtilities.NODE_CENTRAL;
 
@@ -207,6 +209,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
                     if (dropNode.getParentNode() != null) {
                         log("dropNode is parent 1"); // NOI18N
                         dropNode = dropNode.getParentNode();
+                        isParentNodeDrop = true;
                     }
                 }
             } else if (p.y >= ((nodeArea.y + nodeArea.height) - FUSSY_POINTING)) {
@@ -219,18 +222,15 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
                     // point bellow node
                     pointAt = DragDropUtilities.NODE_DOWN;
 
-                    TreePath downPath = view.getOutline().getLayoutCache().getPathForRow(
-                        view.getOutline().convertRowIndexToModel(row+1));
                     // drop candidate is parent
                     if (dropNode.getParentNode() != null) {
                         log("dropNode is parent 2"); // NOI18N
                         dropNode = dropNode.getParentNode();
+                        isParentNodeDrop = true;
                     }
                 }
             }
         }
-
-        endPointX = endPointX + SHIFT_RIGHT;
 
         // 2.b. check index cookie
         Index indexCookie = dropNode.getCookie (Index.class);
@@ -239,9 +239,24 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
             if (pointAt == DragDropUtilities.NODE_UP) {
                 lowerNodeIdx = indexCookie.indexOf(getNodeForDrop(p));
                 upperNodeIdx = lowerNodeIdx - 1;
+                dropIndex = lowerNodeIdx;
             } else if (pointAt == DragDropUtilities.NODE_DOWN) {
                 upperNodeIdx = indexCookie.indexOf(getNodeForDrop(p));
                 lowerNodeIdx = upperNodeIdx + 1;
+                dropIndex = lowerNodeIdx;
+            } else {
+                dropIndex = indexCookie.indexOf(getNodeForDrop(p));
+            }
+        } else if( isParentNodeDrop ) {
+            //try to guess the drop index from row indexes
+            TreePath path = view.getOutline().getLayoutCache().getPathForRow(
+                    view.getOutline().convertRowIndexToModel(row));
+            if( null != path ) {
+                TreePath parentPath = path.getParentPath();
+                if( null != parentPath ) {
+                    int parentRow = view.getOutline().getLayoutCache().getRowForPath(parentPath);
+                    dropIndex = row-parentRow;
+                }
             }
         }
 
@@ -282,28 +297,18 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         } else {
             // line and selection of parent if any
             if (pointAt == DragDropUtilities.NODE_UP) {
-                Line2D line = new Double(
-                        nodeArea.x - SHIFT_LEFT, nodeArea.y + SHIFT_DOWN, endPointX, nodeArea.y + SHIFT_DOWN
-                    );
+                Line2D line = new Double( 0, nodeArea.y, table.getWidth(), nodeArea.y );
                 convertBoundsAndSetDropLine(line);
 
                 // enlagre node area with area for line
-                Rectangle lineArea = new Rectangle(
-                        nodeArea.x - SHIFT_LEFT, (nodeArea.y + SHIFT_DOWN) - 3, endPointX - nodeArea.x + SHIFT_LEFT, 5
-                    );
+                Rectangle lineArea = new Rectangle( 0, nodeArea.y - 5, table.getWidth(), 10 );
                 nodeArea = (Rectangle) nodeArea.createUnion(lineArea);
             } else {
-                Line2D line = new Double(
-                        nodeArea.x - SHIFT_LEFT, nodeArea.y + nodeArea.height + SHIFT_DOWN, endPointX,
-                        nodeArea.y + nodeArea.height + SHIFT_DOWN
-                    );
+                Line2D line = new Double( 0, nodeArea.y + nodeArea.height, table.getWidth(), nodeArea.y + nodeArea.height );
                 convertBoundsAndSetDropLine(line);
 
                 // enlagre node area with area for line
-                Rectangle lineArea = new Rectangle(
-                        nodeArea.x - SHIFT_LEFT, nodeArea.y + nodeArea.height, endPointX - nodeArea.x + SHIFT_LEFT,
-                        SHIFT_DOWN + 3
-                    );
+                Rectangle lineArea = new Rectangle( 0, nodeArea.y + nodeArea.height - 5, table.getWidth(), 10 );
                 nodeArea = (Rectangle) nodeArea.createUnion(lineArea);
             }
         }
@@ -339,7 +344,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
      * because some parts was not repainted correctly.
      * @param Rectangle r rectangle which will be repainted.*/
     private void repaint(Rectangle r) {
-        table.repaint(r.x - 5, r.y - 5, r.width + 10, r.height + 10);
+        table.getParent().repaint(r.x - 5, r.y - 5, r.width + 10, r.height + 10);
     }
 
     /** Converts line's bounds by the bounds of the root pane. Drop glass pane
@@ -394,6 +399,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
     /** User exits the dragging */
     public void dragExit(DropTargetEvent dte) {
+        dropIndex = -1;
         stopDragging();
     }
 
@@ -599,7 +605,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         }
 
         // get paste types for given transferred transferable
-        PasteType pt = null;//TODO DragDropUtilities.getDropType(n, trans, dropAction);
+        PasteType pt =  DragDropUtilities.getDropType(n, trans, dropAction, dropIndex);
 
         return (pt != null);
     }
@@ -716,7 +722,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
                         dropNode,
                         ExplorerDnDManager.getDefault().getDraggedTransferable(
                             (DnDConstants.ACTION_MOVE & dropAction) != 0
-                        ), dropAction, -1 //TODO dropIndex!
+                        ), dropAction, dropIndex
                     );
 
                 Node[] diffNodes = DragDropUtilities.performPaste(pt, dropNode);
@@ -745,6 +751,11 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
         this.active = active;
         getDropTarget().setActive(active);
+        //we want to support drop into scroll pane's free area and treat it as 'root node drop'
+        if( null == outerDropTarget ) {
+            outerDropTarget = new DropTarget(view.getViewport(), view.getAllowedDropActions(), this, false);
+        }
+        outerDropTarget.setActive(active);
     }
 
     /** Implementation of the runnable interface.

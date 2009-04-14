@@ -58,11 +58,11 @@ public class BugzillaConnector extends BugtrackingConnector {
     private KenaiSupport kenaiSupport;
 
     public String getDisplayName() {
-        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorName");
+        return getConnectorName();
     }
 
     public String getTooltip() {
-        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorTooltip");
+        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorTooltip");        // NOI18N
     }
     
     @Override
@@ -72,18 +72,7 @@ public class BugzillaConnector extends BugtrackingConnector {
 
     @Override
     public Repository[] getRepositories() {
-        String[] names = BugzillaConfig.getInstance().getRepositories();
-        if(names == null || names.length == 0) {
-            return new Repository[] {};
-        }
-        List<Repository> ret = new ArrayList<Repository>();
-        for (String name : names) {
-            Repository repo = BugzillaConfig.getInstance().getRepository(name);
-            if(repo != null) {
-                ret.add(repo);
-            }
-        }
-        return ret.toArray(new Repository[ret.size()]);
+        return Bugzilla.getInstance().getRepositories();
     }
 
     @Override
@@ -93,4 +82,8 @@ public class BugzillaConnector extends BugtrackingConnector {
         }
         return kenaiSupport;
     }
+
+    public static String getConnectorName() {
+        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorName");           // NOI18N
+}
 }

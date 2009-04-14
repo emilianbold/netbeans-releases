@@ -257,4 +257,5 @@
 	<mapID target="cldc.gloss_scenes" url="glossary/gloss_scenes.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.security.SecurityManagerAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.deployment.MobilityDeploymentManagerAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html"/>
+	<mapID target="org.netbeans.modules.mobility.project.deployment.MobilityDeploymentManagerPanel" url="deploy/deploy_deploying.html"/>
 </map>

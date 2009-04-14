@@ -66,10 +66,6 @@ public class J2SESetup extends JellyTestCase {
         }
     }
 
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
-    }
-
     public void testOpenFoldersProject() {
 
         try {
@@ -87,6 +83,12 @@ public class J2SESetup extends JellyTestCase {
             Exceptions.printStackTrace(ex);
         }
     }
+
+/* 162133
+    public void testCloseTaskWindow() {
+        CommonUtilities.closeTaskWindow();
+    }
+*/
 
     public void testCloseMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();
