@@ -88,6 +88,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private final List<Line> lines = new ArrayList<Line>();
     private static String functionName = "";
     private static String fileName = "";
+    private String address = "";
     private boolean withSource = true;
     private boolean opened = false;
     private boolean opening = false;
@@ -119,7 +120,11 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
 
     private boolean cancelled = false;
-    
+
+    private static enum RequestMode {FILE, ADDRESS, NONE};
+
+    private RequestMode requestMode = RequestMode.FILE;
+
     public Disassembly(GdbDebugger debugger) {
         this.debugger = debugger;
         debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
@@ -128,12 +133,19 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     protected void cancel() {
         cancelled = true;
     }
-    
+
     public void update(String msg) {
         assert msg.startsWith(RESPONSE_HEADER) : "Invalid asm response message"; // NOI18N
         cancelled = false;
 
         Dialog dialog = null;
+
+        CallStackFrame frame = debugger.getCurrentCallStackFrame();
+        if (frame == null) {
+            return;
+        }
+
+        String currentAddr = debugger.getCurrentCallStackFrame().getAddr();
 
         synchronized (lines) {
             lines.clear();
@@ -225,13 +237,13 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                     // read instruction in this line
                     int idx = text.getLineNo();
                     Line line = new Line(msg, addressPos, nameSet ? idx : idx+1);
-                    if (!nameSet) {
+                    if (!nameSet && currentAddr.equals(line.address)) {
                         functionName = line.function;
                         dobj.getNodeDelegate().setDisplayName(getHeader());
                         text.addLine(functionName + "()\n"); // NOI18N
                         nameSet = true;
                     }
-                    if (functionName.equals(line.function)) {
+                    if (!nameSet || functionName.equals(line.function)) {
                         lines.add(line);
                         text.addLine(line + "\n"); // NOI18N
                     }
@@ -378,20 +390,41 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         if (!opened) {
             return;
         }
-        // reload disassembler if needed
         CallStackFrame frame = debugger.getCurrentCallStackFrame();
         if (frame == null) {
             return;
         }
-        if (force || getAddressLine(frame.getAddr()) == -1) {
-            fileName = frame.getFullname();
-            if (fileName != null && fileName.length() > 0) {
-                debugger.getGdbProxy().data_disassemble(fileName, frame.getLineNumber(), withSource);
-            } else {
-                // if filename is not known - just disassemble using address
-                debugger.getGdbProxy().data_disassemble(1000, withSource);
+        String curAddress = frame.getAddr();
+        if (curAddress == null || curAddress.length() == 0) {
+            return;
+        }
+
+        if (!curAddress.equals(address)) {
+            requestMode = RequestMode.FILE;
+        }
+
+        if (requestMode == RequestMode.NONE) {
+            return;
+        }
+
+        if (force || getAddressLine(curAddress) == -1) {
+            fileName = frame.getOriginalFullName();
+            if ((fileName == null || fileName.length() == 0) && requestMode == RequestMode.FILE) {
+                requestMode = RequestMode.ADDRESS;
+            }
+            switch (requestMode) {
+                case FILE:
+                    debugger.getGdbProxy().data_disassemble(fileName, frame.getLineNumber(), withSource);
+                    requestMode = RequestMode.ADDRESS;
+                    break;
+                case ADDRESS:
+                    debugger.getGdbProxy().data_disassemble(1000, withSource);
+                    requestMode = RequestMode.NONE;
+                    break;
             }
         }
+
+        address = curAddress;
     }
     
     public static FileObject getFileObject() {
