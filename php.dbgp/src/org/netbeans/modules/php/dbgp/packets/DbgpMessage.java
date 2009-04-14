@@ -308,7 +308,9 @@ public abstract class DbgpMessage {
             return null;
         }
         try {
-            Document doc = BUILDER.parse( new ByteArrayInputStream( bytes ) );
+            InputSource is = new InputSource(new ByteArrayInputStream( bytes ));
+            is.setEncoding("UTF-8");
+            Document doc = BUILDER.parse( is );
             return doc.getDocumentElement();
         }
         catch (SAXException e) {
