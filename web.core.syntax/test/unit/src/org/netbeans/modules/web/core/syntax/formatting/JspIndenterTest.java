@@ -198,6 +198,10 @@ public class JspIndenterTest extends TestBase2 {
         reformatFileContents("testfilesformatting/case008.jsp",new IndentPrefs(4,4));
     }
 
+    public void testFormattingCase009() throws Exception {
+        reformatFileContents("testfilesformatting/case009.jsp",new IndentPrefs(4,4));
+    }
+
     public void testFormattingIssue121102() throws Exception {
         reformatFileContents("testfilesformatting/issue121102.jsp",new IndentPrefs(4,4));
     }
@@ -216,6 +220,10 @@ public class JspIndenterTest extends TestBase2 {
 
     public void testFormattingIssue160103() throws Exception {
         reformatFileContents("testfilesformatting/issue160103.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingIssue160527() throws Exception {
+        reformatFileContents("testfilesformatting/issue160527.jsp",new IndentPrefs(4,4));
     }
 
     public void testIndentation() throws Exception {

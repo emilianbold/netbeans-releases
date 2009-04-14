@@ -96,6 +96,20 @@ public final class ConnectionManager {
     private ConnectionManager() {
         JSch.setConfig("PreferredAuthentications", "password,keyboard-interactive"); // NOI18N
         jsch = new JSch();
+
+        if (log.isLoggable(Level.FINEST)) {
+            JSch.setLogger(new com.jcraft.jsch.Logger() {
+
+                public boolean isEnabled(int level) {
+                    return true;
+                }
+
+                public void log(int level, String message) {
+                    log.log(Level.FINEST, "JSCH: " + message); // NOI18N
+                }
+            });
+        }
+
         connecting = false;
 
         try {
