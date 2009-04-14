@@ -196,6 +196,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 if (isWindows) {
                     String path = env.get("PATH"); // NOI18N
                     env.put("PATH", WindowsSupport.getInstance().normalizeAllPaths(path)); // NOI18N
+                    env.put("PATH", "/bin:$PATH"); // NOI18N
                 }
 
                 File envFile = new File(envFileName);

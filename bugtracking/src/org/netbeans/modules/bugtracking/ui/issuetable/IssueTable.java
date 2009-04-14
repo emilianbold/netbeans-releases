@@ -329,10 +329,11 @@ public class IssueTable implements MouseListener, AncestorListener {
                 seenCell.setIcon(!ps.getValue() ? seenValueIcon : null);
                 renderer = seenCell;
             }
+            Issue issue = null;
             if(query.isSaved() && value instanceof IssueNode.IssueProperty) {
                 IssueProperty p = (IssueNode.IssueProperty) value;
                 try {
-                    Issue issue = p.getIssue();
+                    issue = p.getIssue();
                     if(!query.contains(issue)) {
                         format = issueObsoleteFormat;
                         if(isSelected) {
@@ -366,9 +367,12 @@ public class IssueTable implements MouseListener, AncestorListener {
             if(renderer == null) {
                 renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
+
             if(isSelected) {
                 format = null;
-                foreground = Color.WHITE;
+                if(issue != null && issue.wasSeen()) {
+                    foreground = Color.WHITE;
+                }
             } else {
                 background = row % 2 != 0 ? unevenLineColor : Color.WHITE;
                 foreground = defaultForegroundColor;
