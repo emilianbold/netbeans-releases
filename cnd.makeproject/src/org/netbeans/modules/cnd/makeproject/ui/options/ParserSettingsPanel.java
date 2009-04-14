@@ -56,7 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.ui.options.IsChangedListener;
@@ -149,7 +149,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
 
         if (allCS.size() == 0) {
             // localhost only mode (either cnd.remote is not installed or no devhosts were specified
-            for (CompilerSet cs : getCompilerSetManager(ExecutionEnvironmentFactory.getLocalExecutionEnvironment()).getCompilerSets()) {
+            for (CompilerSet cs : getCompilerSetManager(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
                 CompilerSetPresenter csp = new CompilerSetPresenter(cs, cs.getName());
                 if (csToSelect == cs) {
                     toSelect = csp;

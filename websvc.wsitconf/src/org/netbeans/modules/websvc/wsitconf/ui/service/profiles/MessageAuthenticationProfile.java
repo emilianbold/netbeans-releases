@@ -45,9 +45,11 @@ import java.awt.Dialog;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.wsitconf.spi.features.AdvancedSecurityFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ValidatorsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
@@ -80,7 +82,7 @@ import org.openide.DialogDisplayer;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile.class)
 public class MessageAuthenticationProfile extends ProfileBase 
-        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature {
+        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature,ValidatorsFeature, AdvancedSecurityFeature {
 
     private static final String DEFAULT_USERNAME = "wsit";
     private static final String DEFAULT_PASSWORD = "wsitPassword";

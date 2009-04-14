@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.Dimension;
@@ -47,6 +46,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,34 +56,43 @@ public class RepairPanel extends JPanel {
 
     private static final int MARGIN = 2;
     private final JLabel label;
-    private final JButton button;
+    private JButton button;
 
-    public RepairPanel(ActionListener action) {
+    public RepairPanel(ValidationStatus status, ActionListener action) {
         setOpaque(false);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(Box.createVerticalGlue());
-        label = new JLabel("<html><center>" + NbBundle.getMessage(RepairPanel.class, "RepairPanel.Label.Text") + "</center></html>");//NOI18N
+        //String text = NbBundle.getMessage(RepairPanel.class, "RepairPanel.Label.Text");
+        String text = status == null ?  NbBundle.getMessage(RepairPanel.class, "RepairPanel.Label.Text") : status.getReason();
+      
+        label = new JLabel("<html><center>" + text + "</center></html>");//NOI18N
         label.setAlignmentX(0.5f);
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setVerticalAlignment(SwingConstants.TOP);
         label.setForeground(GraphConfig.TEXT_COLOR);
-        label.setToolTipText(NbBundle.getMessage(RepairPanel.class, "RepairPanel.Label.Tooltip", NbBundle.getMessage(RepairPanel.class, "RepairPanel.Repair.Text")));//NOI18N
+        if (!status.isKnown()){
+            label.setToolTipText(NbBundle.getMessage(RepairPanel.class, "RepairPanel.Label.Tooltip", text));//NOI18N
+        }else{
+            label.setToolTipText(text);
+        }
         add(label);
         add(Box.createVerticalStrut(MARGIN));
-        button = new JButton(NbBundle.getMessage(RepairPanel.class, "RepairPanel.Repair.Text"));//NOI18N
-        button.setAlignmentX(0.5f);
-        button.addActionListener(action);
-        add(button);
+        if (!status.isKnown()){
+            button = new JButton(NbBundle.getMessage(RepairPanel.class, "RepairPanel.Repair.Text"));//NOI18N
+            button.setAlignmentX(0.5f);
+            button.addActionListener(action);
+            add(button);            
+        }
         add(Box.createVerticalGlue());
+        
     }
 
     @Override
     public void doLayout() {
         Dimension size = new Dimension(getWidth(), Math.min(
-                getHeight() - button.getPreferredSize().height - MARGIN, label.getMinimumSize().height));
+                getHeight() - (button == null ? 0 : button.getPreferredSize().height) - MARGIN, label.getMinimumSize().height));
         label.setMaximumSize(size);
         label.setPreferredSize(size);
         super.doLayout();
     }
-
 }
