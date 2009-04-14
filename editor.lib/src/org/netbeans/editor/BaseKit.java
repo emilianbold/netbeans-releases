@@ -847,6 +847,7 @@ public class BaseKit extends DefaultEditorKit {
                    removeSelectionActionDef,
                    undoActionDef,
                    redoActionDef,
+                   new ActionFactory.ToggleLineNumbersAction(),
 
                    // Self test actions
                    //      new EditorDebug.SelfTestAction(),
