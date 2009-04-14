@@ -81,6 +81,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
             // TODO - find way to get uri fragment from GlassfishInstanceProvider
             //ServerUtilities t = ServerUtilities.getEe6Utilities();
             String[] allowed;
+            // FIXME -- these strings should come from some constant place
             String v3Root = System.getProperty("org.glassfish.v3ee6.installRoot");
             if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures")) ||
                 (null != v3Root && v3Root.trim().length() > 0) ) {
@@ -101,7 +102,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
      * @return
      */
     public static synchronized DeploymentFactory createEe6() {
-        //ServerUtilities t = ServerUtilities.getEe6Utilities();
+        // FIXME -- these strings should come from some constant place
         String v3Root = System.getProperty("org.glassfish.v3ee6.installRoot");
         if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures")) ||
             (null != v3Root && v3Root.trim().length() > 0) ) {
