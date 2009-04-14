@@ -40,10 +40,8 @@
  */
 package org.netbeans.jellytools;
 
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.junit.NbTest;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test PluginsOperator.
  *
@@ -66,7 +64,7 @@ public class PluginsOperatorTest extends JellyTestCase {
     }
     
     public static final String[] tests = new String[] {
-"testInvoke",
+        "testInvoke",
         "testInstall",
         "testUninstall",
         "testDeactivate",
@@ -99,7 +97,8 @@ public class PluginsOperatorTest extends JellyTestCase {
         System.out.println("### " + getName() + " ###");
     }
     private static PluginsOperator pluginsOper;
-    private static final String SOURCE_BROWSER_LABEL = "netbeans.org Source Browser"; //NOI18N
+    
+    private static final String TEST_PLUGIN = "Clearcase"; //NOI18N
 
     /** Test of invoke method. */
     public void testInvoke() {
@@ -113,8 +112,8 @@ public class PluginsOperatorTest extends JellyTestCase {
      */
     public void testInstall() {
         pluginsOper.selectAvailablePlugins();
-        pluginsOper.search(SOURCE_BROWSER_LABEL);
-        pluginsOper.install(SOURCE_BROWSER_LABEL);
+        pluginsOper.search(TEST_PLUGIN);
+        pluginsOper.install(TEST_PLUGIN);
     }
 
     /** Test uninstallation
@@ -128,7 +127,7 @@ public class PluginsOperatorTest extends JellyTestCase {
         pluginsOper.selectInstalled();
         pluginsOper.selectPlugins(new String[]{
             "Java",
-            SOURCE_BROWSER_LABEL
+            TEST_PLUGIN
         });
         pluginsOper.uninstall();
         pluginsOper.installer().cancel();
@@ -143,7 +142,7 @@ public class PluginsOperatorTest extends JellyTestCase {
      */
     public void testDeactivate() {
         pluginsOper.selectInstalled();
-        pluginsOper.selectPlugin(SOURCE_BROWSER_LABEL);
+        pluginsOper.selectPlugin(TEST_PLUGIN);
         pluginsOper.deactivate();
         pluginsOper.installer().cancel();
     }

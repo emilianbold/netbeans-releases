@@ -2010,7 +2010,8 @@ public class ActionFactory {
     }
 
     /** Switch visibility of line numbers in editor */
-    @EditorActionRegistration(name = BaseKit.toggleLineNumbersAction)
+    //@EditorActionRegistration(name = BaseKit.toggleLineNumbersAction)
+    // Registration in createActions() due to getPopupMenuItem()
     public static class ToggleLineNumbersAction extends LocalBaseAction {
 
         static final long serialVersionUID =-3502499718130556526L;
