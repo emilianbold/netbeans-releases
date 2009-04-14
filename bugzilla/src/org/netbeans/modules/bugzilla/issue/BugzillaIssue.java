@@ -759,6 +759,14 @@ public class BugzillaIssue extends Issue {
         return seenAtributes;
     }
 
+    private String getMappedValue(TaskAttribute a, String key) {
+        TaskAttribute ma = a.getMappedAttribute(key);
+        if(ma != null) {
+            return ma.getValue();
+        }
+        return null;
+    }
+
     class Comment {
         private final Date when;
         private final String who;
@@ -768,7 +776,7 @@ public class BugzillaIssue extends Issue {
         public Comment(TaskAttribute a) {
             Date d = null;
             try {
-                String s = a.getMappedAttribute(TaskAttribute.COMMENT_DATE).getValue();
+                String s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
                 if(s != null && !s.trim().equals("")) {                         // NOI18N
                     d = CC_DATE_FORMAT.parse(s);
                 }
@@ -786,8 +794,9 @@ public class BugzillaIssue extends Issue {
                 author = authorAttr.getValue();
             }
             who = author;
-            number = Long.parseLong(a.getMappedAttribute(TaskAttribute.COMMENT_NUMBER).getValues().get(0));// XXX value or values?
-            text = a.getMappedAttribute(TaskAttribute.COMMENT_TEXT).getValue();
+            String n = getMappedValue(a, TaskAttribute.COMMENT_NUMBER);
+            number = n != null ? Long.parseLong(n) : null;
+            text = getMappedValue(a, TaskAttribute.COMMENT_TEXT);
         }
 
         public Long getNumber() {
@@ -824,7 +833,7 @@ public class BugzillaIssue extends Issue {
             id = ta.getValue();
             Date d = null;
             try {
-                String s = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_DATE).getValue();
+                String s = getMappedValue(ta, TaskAttribute.ATTACHMENT_DATE);
                 if(s != null && !s.trim().equals("")) {                         // NOI18N
                     d = CC_DATE_FORMAT.parse(s);
                 }
@@ -832,10 +841,9 @@ public class BugzillaIssue extends Issue {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
             }
             date = d;
-            filename = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_FILENAME).getValue();
-            desc = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION).getValues().get(0);// XXX value or values?
+            filename = getMappedValue(ta, TaskAttribute.ATTACHMENT_FILENAME);
+            desc = getMappedValue(ta, TaskAttribute.ATTACHMENT_DESCRIPTION);
 
-            // XXX value or values?
             String who = null;
             TaskAttribute authorAttr = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_AUTHOR);
             if(authorAttr != null) {
@@ -846,11 +854,11 @@ public class BugzillaIssue extends Issue {
                 who = authorAttr.getValue();
             }
             author = who;
-            contentType = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_CONTENT_TYPE).getValue();
-            isDeprected = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_IS_DEPRECATED).getValue();
-            isPatch = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_IS_PATCH).getValue();
-            size = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_SIZE).getValue();
-            url = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_URL).getValue();
+            contentType = getMappedValue(ta, TaskAttribute.ATTACHMENT_CONTENT_TYPE);
+            isDeprected = getMappedValue(ta, TaskAttribute.ATTACHMENT_IS_DEPRECATED);
+            isPatch = getMappedValue(ta, TaskAttribute.ATTACHMENT_IS_PATCH);
+            size = getMappedValue(ta, TaskAttribute.ATTACHMENT_SIZE);
+            url = getMappedValue(ta, TaskAttribute.ATTACHMENT_URL);
         }
 
         public String getAuthor() {

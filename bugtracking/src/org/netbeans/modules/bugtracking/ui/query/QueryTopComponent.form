@@ -48,7 +48,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="panel" alignment="0" pref="746" max="32767" attributes="3"/>
+                  <Component id="panel" alignment="0" pref="799" max="32767" attributes="3"/>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="repoPanel" max="32767" attributes="2"/>
@@ -61,7 +61,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="repoPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
-                      <Component id="panel" pref="346" max="32767" attributes="0"/>
+                      <Component id="panel" pref="348" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -81,6 +81,9 @@
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="ff" green="ff" id="EditorPane.background" palette="3" red="ff" type="palette"/>
+                </Property>
+                <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="newButton"/>
                 </Property>
               </Properties>
 
@@ -130,16 +133,6 @@
               </Layout>
               <SubComponents>
                 <Component class="javax.swing.JComboBox" name="repositoryComboBox">
-                  <Properties>
-                    <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                      <StringArray count="4">
-                        <StringItem index="0" value="Item 1"/>
-                        <StringItem index="1" value="Item 2"/>
-                        <StringItem index="2" value="Item 3"/>
-                        <StringItem index="3" value="Item 4"/>
-                      </StringArray>
-                    </Property>
-                  </Properties>
                 </Component>
                 <Container class="javax.swing.JPanel" name="queriesPanel">
                   <Properties>

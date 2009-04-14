@@ -58,7 +58,7 @@ public class BugzillaConnector extends BugtrackingConnector {
     private KenaiSupport kenaiSupport;
 
     public String getDisplayName() {
-        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorName");           // NOI18N
+        return getConnectorName();
     }
 
     public String getTooltip() {
@@ -82,4 +82,8 @@ public class BugzillaConnector extends BugtrackingConnector {
         }
         return kenaiSupport;
     }
+
+    public static String getConnectorName() {
+        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorName");           // NOI18N
+}
 }

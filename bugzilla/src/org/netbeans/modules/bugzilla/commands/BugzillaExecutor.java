@@ -90,19 +90,20 @@ public class BugzillaExecutor {
             cmd.setErrorMessage(null);
 
         } catch (CoreException ce) {
+            Bugzilla.LOG.log(Level.FINE, null, ce);
+
             ExceptionHandler handler = ExceptionHandler.createHandler(ce, this, repository);
-            if(handler != null) {
+            assert handler != null;
 
-                String msg = handler.getMessage();
+            String msg = handler.getMessage();
 
-                cmd.setFailed(true);
-                cmd.setErrorMessage(msg);
+            cmd.setFailed(true);
+            cmd.setErrorMessage(msg);
 
-                if(handleExceptions) {
-                    if(handler.handle()) {
-                        // execute again
-                        execute(cmd);
-                    }
+            if(handleExceptions) {
+                if(handler.handle()) {
+                    // execute again
+                    execute(cmd);
                 }
             }
             return;
@@ -114,13 +115,14 @@ public class BugzillaExecutor {
             cmd.setErrorMessage(ioe.getMessage());
 
             if(!handleExceptions) {
+                Bugzilla.LOG.log(Level.FINE, null, ioe);
                 return;
             }
 
             handleIOException(ioe);
         } catch(RuntimeException re) {
             Throwable t = re.getCause();
-            if(t instanceof InterruptedException) {
+            if(t instanceof InterruptedException || !handleExceptions) {
                 Bugzilla.LOG.log(Level.FINE, null, t);
             } else {
                 Bugzilla.LOG.log(Level.SEVERE, null, re);
