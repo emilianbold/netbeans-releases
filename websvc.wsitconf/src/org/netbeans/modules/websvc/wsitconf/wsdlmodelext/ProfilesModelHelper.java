@@ -51,8 +51,10 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfileRegistry;
+import org.netbeans.modules.websvc.wsitconf.spi.features.AdvancedSecurityFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ValidatorsFeature;
 import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
 import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.TrustElement;
@@ -451,6 +453,16 @@ public class ProfilesModelHelper {
             return ((ClientDefaultsFeature)p).isClientDefaultSetupUsed(binding, (Binding)serviceBinding, project);
         }
         return false;
+    }
+
+    public static boolean isValidatorsSupported(String profile) {
+        SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
+        return (p instanceof ValidatorsFeature);
+    }
+
+    public static boolean isAdvancedSecuritySupported(String profile) {
+        SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
+        return (p instanceof AdvancedSecurityFeature);
     }
     
     public static void setClientDefaults(String profile, Binding binding, WSDLComponent serviceBinding, Project project) {
