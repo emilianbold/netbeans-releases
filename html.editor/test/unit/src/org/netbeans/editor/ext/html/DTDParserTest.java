@@ -98,7 +98,7 @@ public class DTDParserTest extends TestBase {
 
 //        dumpContent(c);
 
-        assertEqual(Content.EMPTY_CONTENT, c.reduce("TR");
+        assertEquals(Content.EMPTY_CONTENT, c.reduce("TR"));
 
       }
 
