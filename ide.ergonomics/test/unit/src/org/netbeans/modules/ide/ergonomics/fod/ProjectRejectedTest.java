@@ -40,9 +40,11 @@
 package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.awt.Dialog;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -56,6 +58,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -63,6 +66,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
+import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -71,17 +76,15 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ProjectFalsePositiveTest extends NbTestCase implements PropertyChangeListener {
+public class ProjectRejectedTest extends NbTestCase {
     FileObject root;
     private static final InstanceContent ic = new InstanceContent();
 
     static {
         FeatureManager.assignFeatureTypesLookup(new AbstractLookup(ic));
     }
-    private int change;
     
-    
-    public ProjectFalsePositiveTest(String testName) {
+    public ProjectRejectedTest(String testName) {
         super(testName);
     }
 
@@ -90,7 +93,7 @@ public class ProjectFalsePositiveTest extends NbTestCase implements PropertyChan
 
         return NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
-            addTest(ProjectFalsePositiveTest.class).
+            addTest(ProjectRejectedTest.class).
             gui(false)
         );
     }
@@ -108,8 +111,8 @@ public class ProjectFalsePositiveTest extends NbTestCase implements PropertyChan
 
         FeatureInfo info = FeatureInfo.create(
             "cluster",
-            ProjectFalsePositiveTest.class.getResource("FeatureInfo.xml"),
-            ProjectFalsePositiveTest.class.getResource("TestBundle.properties")
+            ProjectRejectedTest.class.getResource("FeatureInfo.xml"),
+            ProjectRejectedTest.class.getResource("TestBundle.properties")
         );
         ic.add(info);
         
@@ -135,7 +138,7 @@ public class ProjectFalsePositiveTest extends NbTestCase implements PropertyChan
         super.tearDown();
     }
 
-    public void testRecognizeDocBookProject() throws Exception {
+    public void testRecognizeDocBookProjectButCannotOpenIt() throws Exception {
         FileObject prjFO1 = root.getFileObject("1st");
         FileObject prjFO2 = root.getFileObject("2nd");
 
@@ -146,56 +149,50 @@ public class ProjectFalsePositiveTest extends NbTestCase implements PropertyChan
         assertTrue("Recognized as project", ProjectManager.getDefault().isProject(prjFO2));
         Project p2 = ProjectManager.getDefault().findProject(prjFO2);
         assertNotNull("Project found", p2);
-        
+
         ProjectOpenedHook open = p.getLookup().lookup(ProjectOpenedHook.class);
         assertNotNull("Open hook found", open);
 
         ProjectInformation info = p.getLookup().lookup(ProjectInformation.class);
         assertNotNull("Info about icon", info);
         assertNotNull("Icon provided", info.getIcon());
-        info.addPropertyChangeListener(this);
-
-        assertNull("No test factory in project", p.getLookup().lookup(TestFactory.class));
-        assertNull("No test factory in project", p2.getLookup().lookup(TestFactory.class));
 
         TestFactory.recognize.add(prjFO1);
+        TestFactory.ex = new IOException("No!");
         OpenProjects.getDefault().open(new Project[] { p }, false);
-        
+
         assertEquals("No Dialog currently created", 0, DD.cnt);
-        
+
         List<Project> arr = Arrays.asList(OpenProjects.getDefault().openProjects().get());
         assertEquals("However one instance is there", 1, arr.size());
         Project newP = arr.get(0).getLookup().lookup(Project.class);
         if (p == newP) {
             fail("New project is made available, not old: " + newP);
         }
-        assertEquals("Right type", TestFactory.class, newP.getClass());
-        TestFactory tf = (TestFactory)newP;
-        assertEquals("Open hook called", 1, tf.opened);
 
-        assertEquals("Project info changed", 1, change);
-        assertEquals("One listener attached", 1, tf.listenerCount);
-        assertEquals("Info delegates", "x", info.getName());
-        assertEquals("Info delegates2", "y", info.getDisplayName());
-        assertEquals("Info delegates icon", null, info.getIcon());
-
-        OpenProjects.getDefault().close (new Project[] { newP });
-        if (OpenProjects.getDefault().getOpenProjects().length != 0) {
-            fail("All projects shall be closed: " + Arrays.asList(OpenProjects.getDefault().getOpenProjects()));
+        Class<?> brokenClass = Class.forName("org.netbeans.modules.ide.ergonomics.fod.BrokenProject");
+        assertEquals("The project is marked as broken", brokenClass, newP.getClass());
+        ProjectInformation pi = newP.getLookup().lookup(ProjectInformation.class);
+        assertNotNull("Info present", pi);
+        if (!pi.getDisplayName().contains("(broken)")) {
+            fail("Display name shall indicate that it is broken: " + pi.getDisplayName());
+        }
+        LogicalViewProvider lvp = newP.getLookup().lookup(LogicalViewProvider.class);
+        assertNotNull("We have logical view provider", lvp);
+        Node n = lvp.createLogicalView();
+        if (!n.getDisplayName().contains("(broken)")) {
+            fail("Display name shall indicate that it is broken: " + n.getDisplayName());
         }
 
-        assertNotNull("Test factory in opened project", p.getLookup().lookup(TestFactory.class));
-        assertFalse("No longer suspected to be project",
-            ProjectManager.getDefault().isProject(p2.getProjectDirectory())
+        assertEquals("Same icons",
+            ImageUtilities.image2Icon(n.getIcon(BeanInfo.ICON_COLOR_16x16)),
+            pi.getIcon()
         );
-        assertNull("Lookup of the false possitive project", p2.getLookup().lookup(Object.class));
+        assertEquals("Project is in lookup", newP, n.getLookup().lookup(Project.class));
+
+
+        OpenProjects.getDefault().close(new Project[] { newP });
     }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        change++;
-    }
-
-
 
     public static final class DD extends DialogDisplayer {
         static int cnt = 0;

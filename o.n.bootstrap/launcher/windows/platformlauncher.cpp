@@ -89,7 +89,8 @@ const char *PlatformLauncher::IDE_MAIN_CLASS = "org/netbeans/Main";
 
 PlatformLauncher::PlatformLauncher()
     : separateProcess(false)
-    , suppressConsole(false) {
+    , suppressConsole(false)
+    , heapDumpPathOptFound(false) {
 }
 
 PlatformLauncher::PlatformLauncher(const PlatformLauncher& orig) {
@@ -263,6 +264,9 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
             cpAfter += argv[++i];
         } else if (strncmp("-J", argv[i], 2) == 0) {
             javaOptions.push_back(argv[i] + 2);
+            if (strncmp(argv[i] + 2, OPT_HEAP_DUMP_PATH, strlen(OPT_HEAP_DUMP_PATH)) == 0) {
+                heapDumpPathOptFound = true;
+            }
         } else {
             if (strcmp(argv[i], "-h") == 0
                     || strcmp(argv[i], "-help") == 0
@@ -459,10 +463,12 @@ void PlatformLauncher::prepareOptions() {
     option = OPT_HEAP_DUMP;
     javaOptions.push_back(option);
 
-    option = OPT_HEAP_DUMP_PATH;
-    option += userDir;
-    option += HEAP_DUMP_PATH;
-    javaOptions.push_back(option);
+    if (!heapDumpPathOptFound) {
+        option = OPT_HEAP_DUMP_PATH;
+        option += userDir;
+        option += HEAP_DUMP_PATH;
+        javaOptions.push_back(option);
+    }
 
     string proxy, nonProxy, socksProxy;
     if (!findHttpProxyFromEnv(proxy)) {

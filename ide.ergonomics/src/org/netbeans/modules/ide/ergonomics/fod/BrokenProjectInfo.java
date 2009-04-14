@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,36 +31,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.languages.sh;
+package org.netbeans.modules.ide.ergonomics.fod;
 
-import java.util.Collection;
-
-import java.util.EnumSet;
-import org.netbeans.spi.lexer.LanguageHierarchy;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
-
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.UIManager;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
 
 /**
  *
- * @author Jan Jancura
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ShLanguageHierarchy extends LanguageHierarchy<ShTokenId> {
+final class BrokenProjectInfo implements HyperlinkListener {
 
-    protected synchronized Collection<ShTokenId> createTokenIds () {
-        return EnumSet.allOf (ShTokenId.class);
+    static JEditorPane getErrorPane(String reason) {
+        JEditorPane errorLabel = new JEditorPane();
+        JLabel infoLabel = new JLabel();
+
+        errorLabel.setContentType("text/html"); // NOI18N
+        errorLabel.setEditable(false);
+        errorLabel.setForeground(UIManager.getDefaults().getColor("nb.errorForeground"));
+        errorLabel.setRequestFocusEnabled(false);
+        errorLabel.setBackground(infoLabel.getBackground());
+        errorLabel.setFont(infoLabel.getFont());
+
+        errorLabel.addHyperlinkListener(new BrokenProjectInfo());
+
+        errorLabel.setText(reason);
+        
+        return errorLabel;
     }
 
-    protected Lexer<ShTokenId> createLexer (LexerRestartInfo<ShTokenId> info) {
-        return new ShLexer (info);
+    public static void showInfo(BrokenProject prj) {
+        NotifyDescriptor nd = new NotifyDescriptor.Message(getErrorPane(prj.msg));
+        DialogDisplayer.getDefault().notify(nd);
     }
-
-    protected String mimeType () {
-        return "text/sh";
+    
+    public void hyperlinkUpdate(HyperlinkEvent evt) {
+        if (HyperlinkEvent.EventType.ACTIVATED == evt.getEventType()) {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(evt.getURL());
+        }
     }
 }
-
-
-
