@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.glassfish.common.wizards;
 
+import java.io.File;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -50,7 +51,7 @@ import static org.junit.Assert.*;
  *
  * @author vkraemer
  */
-public class RetrieverTest {
+public class RetrieverTest implements Retriever.Updater {
 
     public RetrieverTest() {
     }
@@ -69,6 +70,61 @@ public class RetrieverTest {
 
     @After
     public void tearDown() {
+    }
+
+    @Test
+    public void testRun() {
+        File f = new File("zzzssszzzq");
+        Retriever r;
+        message = "";
+        status = "";
+        r = new Retriever(f,"http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",
+                "http://java.net/download/",
+                "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
+                "glassfishv3");
+        r.run();
+        assert message.startsWith("Download & Install completed in") : message;
+        assert status.equals("")  : status ;
+        message = "";
+        status = "";
+        // bad location source url -- falls back to the default url
+        r = new Retriever(f,"http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.tx",
+                "http://java.net/download/",
+                "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
+                "glassfishv3");
+        r.run();
+        assert message.startsWith("Download & Install completed in") : message;
+        assert status.equals("")  : status ;
+        message = "";
+        status = "";
+        // bad url prefix
+        r = new Retriever(f,"http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",
+                "http://java.tent/download/",
+                "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
+                "glassfishv3");
+        r.run();
+        assert message.startsWith("Invalid URL: http://java.tent/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip") : message;
+        assert status.equals("I/O Exception: java.tent")  : status ;
+        message = "";
+        status = "";
+        // bad url prefix
+        r = new Retriever(f,"http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt",
+                "http://java.tent/download/",
+                "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
+                "glassfishv3");
+        r.run();
+        assert message.startsWith("Invalid URL: http://java.tent/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip") : message;
+        assert status.equals("I/O Exception: java.tent")  : status ;
+        message = "";
+        status = "";
+        // bad url prefix
+        r = new Retriever(f,"http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.tx",
+                "http://java.tent/download/",
+                "http://java.net/download/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip", this,
+                "glassfishv3");
+        r.run();
+        assert message.startsWith("Invalid URL: http://download.java.net/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip") : message;
+        assert status.equals("I/O Exception: http://download.java.net/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip")  : status ;
     }
 
     /**
@@ -141,6 +197,19 @@ public class RetrieverTest {
         expResult = "216 hours, 2 minutes, 58 seconds";
         result = Retriever.getDurationString(time);
         assertEquals(expResult, result);
+    }
+
+    private String message = "";
+    public void updateMessageText(String msg) {
+        message = msg;
+    }
+
+    private String status = "";
+    public void updateStatusText(String status) {
+        this.status = status;
+    }
+
+    public void clearCancelState() {
     }
 
 }
