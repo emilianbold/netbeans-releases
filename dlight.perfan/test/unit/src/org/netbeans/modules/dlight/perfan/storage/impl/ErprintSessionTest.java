@@ -48,7 +48,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Exceptions;
 
 /**
@@ -83,7 +83,8 @@ public class ErprintSessionTest {
      */
 //    @Test
     public void setMetricsTest() throws Exception {
-        final ErprintSession session = new ErprintSession(new ExecutionEnvironment(), "/", "/var/tmp/dlightExperiment_31.er/");
+        final ErprintSession session = new ErprintSession(ExecutionEnvironmentFactory.getLocal(),
+                "/", "/var/tmp/dlightExperiment_31.er/");
         String[] funcs = session.getHotFunctions(null, 10, 0, false);
         for (String f : funcs) {
             System.out.println(f);
@@ -93,7 +94,8 @@ public class ErprintSessionTest {
 
     @Test
     public void testGetExperimentStatistics() throws Exception {
-        final ErprintSession session = new ErprintSession(new ExecutionEnvironment(), "/", "/var/tmp/dlightExperiment_31.er/");
+        final ErprintSession session = new ErprintSession(ExecutionEnvironmentFactory.getLocal(),
+                "/", "/var/tmp/dlightExperiment_31.er/");
         int threadsNum = 20;
 
         final CyclicBarrier startSignal = new CyclicBarrier(threadsNum + 1);

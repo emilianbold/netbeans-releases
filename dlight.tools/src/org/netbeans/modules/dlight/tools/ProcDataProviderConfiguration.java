@@ -36,53 +36,29 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.tools;
 
-package org.netbeans.modules.cnd.remote.server;
-
-import java.awt.Dialog;
-import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
-import org.netbeans.modules.cnd.ui.options.ServerListDisplayerEx;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.Arrays;
+import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 
 /**
- * ServerListDisplayer implementation
- * @author Vladimir Kvashin
+ * @author Alexey Vladykin
  */
-@ServiceProvider(service = ServerListDisplayer.class)
-public class RemoteServerListDisplayer extends ServerListDisplayerEx {
+public class ProcDataProviderConfiguration implements IndicatorDataProviderConfiguration {
 
-    @Override
-    protected boolean showServerListDialogImpl() {
-        ToolsCacheManager cacheManager = new ToolsCacheManager();
-        if (showServerListDialog(cacheManager)) {
-            cacheManager.applyChanges();
-            return true;
-        } else {
-            return false;
-        }
+    public static final String ID = "ProcDataProvider_ID"; // NOI18N
+
+    public static final DataTableMetadata CPU_TABLE = new DataTableMetadata(
+            "proc_cpu", Arrays.asList( // NOI18N
+            new Column("utime", Float.class), // NOI18N
+            new Column("stime", Float.class))); // NOI18N
+
+    public ProcDataProviderConfiguration() {
     }
 
-    @Override
-    protected boolean showServerListDialogImpl(ToolsCacheManager cacheManager) {
-        EditServerListDialog dlg = new EditServerListDialog(cacheManager);
-        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true,
-                    DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
-        dlg.setDialogDescriptor(dd);
-        dd.addPropertyChangeListener(dlg);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            cacheManager.setHosts(dlg.getHosts());
-            cacheManager.setDefaultIndex(dlg.getDefaultIndex());
-            return true;
-        } else {
-            return false;
-        }
+    public String getID() {
+        return ID;
     }
-
 }

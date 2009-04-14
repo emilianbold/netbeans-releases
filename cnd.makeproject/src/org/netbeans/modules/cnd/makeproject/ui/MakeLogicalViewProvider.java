@@ -1182,7 +1182,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         }
                     }
                 }
-            } else if (type == DnDConstants.ACTION_COPY) {
+            } else if (type == DnDConstants.ACTION_COPY || type == DnDConstants.ACTION_NONE) {
                 // Copy&Paste
                 if (toFolder.getProject() == viewItemNode.getFolder().getProject()) {
                     if ((IpeUtils.isPathAbsolute(item.getPath()) || item.getPath().startsWith("..")) && !toFolder.isDiskFolder()) { // NOI18N

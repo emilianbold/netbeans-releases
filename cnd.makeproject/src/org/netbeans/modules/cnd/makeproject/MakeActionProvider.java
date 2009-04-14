@@ -87,7 +87,7 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -516,7 +516,7 @@ public class MakeActionProvider implements ActionProvider {
                         runSyncProfile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
 
                         MakeConfiguration syncConf = (MakeConfiguration) conf.clone();
-                        syncConf.setDevelopmentHost(new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.getLocalExecutionEnvironment())); // rsync should be ran only locally
+                        syncConf.setDevelopmentHost(new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.getLocal())); // rsync should be ran only locally
                         ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                                 project,
                                 actionEvent,
@@ -1080,7 +1080,7 @@ public class MakeActionProvider implements ActionProvider {
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
             boolean validated, AtomicBoolean cancelled) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(conf.getDevelopmentHost().getName());
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(conf.getDevelopmentHost().getName());
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
         String csname;
