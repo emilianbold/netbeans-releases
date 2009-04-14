@@ -834,6 +834,7 @@ public class BaseKit extends DefaultEditorKit {
     */
     protected Action[] createActions() {
         return new Action[] {
+                   // new DefaultKeyTypedAction() - overriden in ExtKit
                    insertBreakActionDef,
                    insertTabActionDef,
                    deletePrevCharActionDef,
@@ -956,7 +957,7 @@ public class BaseKit extends DefaultEditorKit {
 
 
     /** Default typed action */
-    @EditorActionRegistration(name = defaultKeyTypedAction)
+//    @EditorActionRegistration(name = defaultKeyTypedAction)
     public static class DefaultKeyTypedAction extends LocalBaseAction {
 
         static final long serialVersionUID =3069164318144463899L;

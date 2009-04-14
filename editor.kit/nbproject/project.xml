@@ -41,12 +41,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.languages.bat</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.languages.diff</code-name-base>
                     <run-dependency>
                         <specification-version>1.4</specification-version>
@@ -54,12 +48,6 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.languages.manifest</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.languages.sh</code-name-base>
                     <run-dependency>
                         <specification-version>1.3</specification-version>
                     </run-dependency>
