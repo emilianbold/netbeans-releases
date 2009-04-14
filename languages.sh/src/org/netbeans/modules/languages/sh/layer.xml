@@ -73,10 +73,10 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    <!--<folder name="Loaders">
+    <folder name="Loaders">
         <folder name="text">
             <folder name="sh">
-                <folder name="Actions">
+                <!--<folder name="Actions">
                     <file name="org-openide-actions-CopyAction.instance">
                         <attr name="position" intvalue="400"/>
                     </file>
@@ -124,11 +124,12 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
-                </folder>
+                </folder>-->
                 <folder name="Factories">
-                    <file name="DiffDataLoader.instance">
+                    <file name="ShDataLoader.instance">
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.languages.sh.ShDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="position" intvalue="1000"/>
                         <attr name="mimeType" stringvalue="text/sh"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/sh/sh_script_16.png"/>
                     </file>
@@ -136,5 +137,5 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    -->
+    
 </filesystem>
