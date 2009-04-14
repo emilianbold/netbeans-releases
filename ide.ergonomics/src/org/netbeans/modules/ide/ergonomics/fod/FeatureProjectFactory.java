@@ -360,6 +360,8 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
                         throw new IllegalStateException("New project shall be found! " + p); // NOI18N
                     }
                     delegate.associate(p);
+                } catch (IOException ex) {
+                    error = ex.getLocalizedMessage();
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
