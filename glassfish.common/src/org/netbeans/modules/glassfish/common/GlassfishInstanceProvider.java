@@ -72,15 +72,15 @@ import org.openide.util.NbPreferences;
 public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
-    private volatile static GlassfishInstanceProvider singleton;
-    private volatile static GlassfishInstanceProvider singletonEe6;
+    private volatile static GlassfishInstanceProvider preludeProvider;
+    private volatile static GlassfishInstanceProvider ee6Provider;
 
     public static GlassfishInstanceProvider getEe6() {
         String v3Root = System.getProperty("org.glassfish.v3ee6.installRoot");
         if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures")) ||
                (null != v3Root && v3Root.trim().length() > 0) ) {
-            if (singletonEe6 == null) {
-                singletonEe6 = new GlassfishInstanceProvider(new String[] {"deployer:gfv3ee6"},
+            if (ee6Provider == null) {
+                ee6Provider = new GlassfishInstanceProvider(new String[] {"deployer:gfv3ee6"},
                         new String[] {"/GlassFishEE6/Instances"},
                         "GlassFish v3", "org.glassfish.v3ee6.installRoot",
                         "GlassFish v3 Domain",
@@ -92,12 +92,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         new String[0], true);
             }
         }
-        return singletonEe6;
+        return ee6Provider;
     }
 
     public static GlassfishInstanceProvider getPrelude() {
         if ("true".equals(System.getProperty("org.glassfish.v3.disablePreludeSupport"))) {
-            return singleton;
+            return preludeProvider;
         }
         String[] uriFragments;
         String[] instanceDirs;
@@ -110,8 +110,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             uriFragments = new String[] { "deployer:gfv3" };
             instanceDirs = new String[] { "/GlassFish/Instances" };
         }
-        if(singleton == null) {
-            singleton = new GlassfishInstanceProvider(uriFragments, instanceDirs,
+        if(preludeProvider == null) {
+            preludeProvider = new GlassfishInstanceProvider(uriFragments, instanceDirs,
                     "GlassFish v3 Prelude", "org.glassfish.v3.installRoot",
                         "GlassFish v3 Prelude Domain",
                         "Personal GlassFish v3 Prelude Domain",
@@ -120,7 +120,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         "last-install-root", new String[0],
                         new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" }, false);
         }
-        return singleton;
+        return preludeProvider;
     }
     
     private final Map<String, GlassfishInstance> instanceMap = 
@@ -161,7 +161,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
 
     public static synchronized boolean initialized() {
-        return singleton != null || singletonEe6 != null;
+        return preludeProvider != null || ee6Provider != null;
     }
 
     public static Logger getLogger() {
@@ -371,7 +371,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         }
         RegisteredDDCatalog catalog = getDDCatalog();
         if (null != catalog) {
-            if (this.equals(singleton)) {
+            if (this.equals(preludeProvider)) {
                 catalog.registerPreludeRunTimeDDCatalog(this);
             } else {
                 catalog.registerEE6RunTimeDDCatalog(this);
