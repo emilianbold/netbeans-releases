@@ -140,8 +140,10 @@ public class ConfigurationPanel extends JPanel {
         downloadButton = new JButton();
         progressPanel = new JPanel();
 
+        errorLabel.setBackground(infoLabel.getBackground());
         errorLabel.setContentType(NbBundle.getMessage(ConfigurationPanel.class, "ConfigurationPanel.errorLabel.contentType")); // NOI18N
         errorLabel.setEditable(false);
+        errorLabel.setFont(infoLabel.getFont());
         errorLabel.setForeground(UIManager.getDefaults().getColor("nb.errorForeground"));
         errorLabel.setText(NbBundle.getMessage(ConfigurationPanel.class, "ConfigurationPanel.errorLabel.text")); // NOI18N
         errorLabel.setRequestFocusEnabled(false);
@@ -293,13 +295,6 @@ public class ConfigurationPanel extends JPanel {
                     progressPanel.add(errorLabel);
                 }
             });
-        }
-    }
-
-    private static class HlinkListener implements HyperlinkListener {
-
-        public void hyperlinkUpdate(HyperlinkEvent e) {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }
