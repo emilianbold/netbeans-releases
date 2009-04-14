@@ -69,6 +69,8 @@ import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.openide.nodes.Node;
 
+//TODO: update this class - there's no classic view anymore
+
 /**
  * Provides access to the Options window and it's subcomponents.
  * Use PropertySheet class to access properties. 

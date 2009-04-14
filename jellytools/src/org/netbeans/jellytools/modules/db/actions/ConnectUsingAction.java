@@ -53,7 +53,7 @@ public class ConnectUsingAction extends ActionNoBlock {
     /** creates new "Connect Using ..." action */
     public ConnectUsingAction() {
         super(null,Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+                "org.netbeans.modules.db.explorer.action.Bundle",
                 "ConnectUsing"));
     }
 }

@@ -47,7 +47,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.RuntimeTabOperator;
 
-/** Node representing "Databases > Drivers" node in Runtime tab.
+/** Node representing "Databases > Drivers" node in Services tab.
  * <p>
  * Usage:<br>
  * <pre>
@@ -61,8 +61,8 @@ import org.netbeans.jellytools.RuntimeTabOperator;
 public class DriversNode extends Node {
     static final String TREE_PATH = DatabasesNode.TREE_PATH+"|"+
             Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
-                "NDN_Drivers");
+            "org.netbeans.modules.db.explorer.node.Bundle",
+            "DriverListNode_DISPLAYNAME");
     private static final Action addDriverAction = new AddDriverAction();
 
     /** Finds "Databases > Drivers" node */

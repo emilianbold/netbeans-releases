@@ -147,7 +147,7 @@ public class FormDesignerOperator extends TopComponentOperator {
         if(_tbSelectionMode == null) {
             _tbSelectionMode = new JToggleButtonOperator(findParentTopComponent(), new ToolTipChooser(
                                     Bundle.getString("org.netbeans.modules.form.Bundle", 
-                                                     "CTL_SelectionMode")));
+                                                     "CTL_SelectionButtonHint")));
         }
         return(_tbSelectionMode);
     }
@@ -159,7 +159,7 @@ public class FormDesignerOperator extends TopComponentOperator {
         if(_tbConnectionMode == null) {
             _tbConnectionMode = new JToggleButtonOperator(findParentTopComponent(), new ToolTipChooser(
                                     Bundle.getString("org.netbeans.modules.form.Bundle", 
-                                                     "CTL_ConnectionMode")));
+                                                     "CTL_ConnectionButtonHint")));
         }
         return(_tbConnectionMode);
     }

@@ -110,6 +110,7 @@ private:
 private:
     bool separateProcess;
     bool suppressConsole;
+    bool heapDumpPathOptFound;
     std::string platformDir;
     std::string userDir;
     std::string clusters;
