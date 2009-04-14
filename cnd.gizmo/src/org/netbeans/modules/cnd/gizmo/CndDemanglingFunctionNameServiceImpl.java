@@ -75,7 +75,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
     private final String dem_util_path;
     private static final String GNU_FAMILIY = "gc++filt"; //NOI18N
     private static final String SS_FAMILIY = "dem"; //NOI18N
-    private static final String EQUALS_EQUALS = "==";
+    private static final String EQUALS_EQUALS = "=="; //NOI18N
 
     CndDemanglingFunctionNameServiceImpl() {
         Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
