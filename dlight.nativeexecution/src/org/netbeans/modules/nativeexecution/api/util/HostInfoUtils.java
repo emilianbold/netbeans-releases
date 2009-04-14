@@ -119,7 +119,7 @@ public final class HostInfoUtils {
             }
 
             NativeProcessBuilder npb = new NativeProcessBuilder(
-                    execEnv, cmd_test).setArguments("-f", fname); // NOI18N
+                    execEnv, cmd_test).setArguments("-e", fname); // NOI18N
 
             try {
                 fileExists = npb.call().waitFor() == 0;

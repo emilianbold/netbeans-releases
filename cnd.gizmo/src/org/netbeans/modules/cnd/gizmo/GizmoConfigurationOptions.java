@@ -73,6 +73,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     private static final String LL_MONITOR = "LLTool";//NOI18N
     private static final String DTRACE = "DTrace";//NOI18N
     private static final String PRSTAT_INDICATOR = "prstat";//NOI18N
+    private static final String PROC_READER = "ProcReader";//NOI18N
     private Project currentProject;
     private boolean areCollectorsTurnedOn = false;
     private boolean profileOnRun = true;
@@ -132,13 +133,14 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
        
         DLightCollectorString = DTRACE;
-        DLightIndicatorDPStrings = Arrays.asList(PRSTAT_INDICATOR, DTRACE);
+        DLightIndicatorDPStrings = Arrays.asList(PROC_READER, PRSTAT_INDICATOR, DTRACE);
 
         if (hasSunStudio && currentProvider == GizmoOptions.DataProvider.SUN_STUDIO) {//NOI18N
             DLightCollectorString = SUNSTUDIO;
             DLightIndicatorDPStrings = new ArrayList<String>();
             DLightIndicatorDPStrings.add(SUNSTUDIO);
             DLightIndicatorDPStrings.add(PRSTAT_INDICATOR);
+            DLightIndicatorDPStrings.add(PROC_READER);
         } else {
 
             ExecutionEnvironment execEnv = ((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment();
@@ -153,7 +155,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
                 String osName = HostInfoUtils.getOS(execEnv);
                 if (osName.indexOf("Linux") != -1 || osName.equals("MacOS")){//NOI18N
                     DLightCollectorString = LL_MONITOR;
-                    DLightIndicatorDPStrings = Arrays.asList(LL_MONITOR);
+                    DLightIndicatorDPStrings = Arrays.asList(PROC_READER, LL_MONITOR);
                 }
             } catch (ConnectException ex) {
                 //Exceptions.printStackTrace(ex);
