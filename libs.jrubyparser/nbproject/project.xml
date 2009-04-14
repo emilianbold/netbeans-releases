@@ -58,8 +58,9 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.ruby</friend>
-                <friend>org.netbeans.modules.ruby.hints</friend>
                 <friend>org.netbeans.modules.ruby.extrahints</friend>
+                <friend>org.netbeans.modules.ruby.hints</friend>
+                <friend>org.netbeans.modules.ruby.project</friend>
                 <friend>org.netbeans.modules.ruby.refactoring</friend>
                 <package>org.jrubyparser</package>
                 <package>org.jrubyparser.ast</package>
