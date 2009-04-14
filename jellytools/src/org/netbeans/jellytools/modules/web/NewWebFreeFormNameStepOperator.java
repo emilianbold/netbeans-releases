@@ -178,7 +178,7 @@ public class NewWebFreeFormNameStepOperator extends WizardOperator {
         if (_btBrowse==null) {
             String browse = Bundle.getStringTrimmed(
                     "org.netbeans.modules.ant.freeform.ui.Bundle",
-                    "BTN_BasicProjectInfoPanel_browseProjectLocation"); //XXX
+                    "BTN_BasicProjectInfoPanel_browseProjectLocation"); //XXX what's xxx?
             _btBrowse = new JButtonOperator(this, browse);
         }
         return _btBrowse;
@@ -191,7 +191,7 @@ public class NewWebFreeFormNameStepOperator extends WizardOperator {
         if (_btBrowse2==null) {
             String browse = Bundle.getStringTrimmed(
                     "org.netbeans.modules.ant.freeform.ui.Bundle",
-                    "BTN_BasicProjectInfoPanel_browseProjectLocation"); //XXX
+                    "BTN_BasicProjectInfoPanel_browseProjectLocation"); //XXX what's xxx?
             _btBrowse2 = new JButtonOperator(this, browse, 1);
         }
         return _btBrowse2;
@@ -232,7 +232,7 @@ public class NewWebFreeFormNameStepOperator extends WizardOperator {
         if (_btBrowse3==null) {
             String browse = Bundle.getStringTrimmed(
                     "org.netbeans.modules.ant.freeform.ui.Bundle",
-                    "BTN_BasicProjectInfoPanel_browseProjectLocation"); //XXX
+                    "BTN_BasicProjectInfoPanel_browseProjectLocation"); //XXX what's xxx?
             _btBrowse3 = new JButtonOperator(this, browse, 2);
         }
         return _btBrowse3;
