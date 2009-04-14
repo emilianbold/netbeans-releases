@@ -67,6 +67,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -80,6 +81,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
@@ -331,9 +333,24 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
+    public static void checkForChangedName(final Project project) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
+                Node root = findProjectNode(rootNode, project);
+                if (root != null) {
+                    ProjectInformation pi = ProjectUtils.getInformation(project);
+                    if (pi != null) { // node will check whether it equals...
+                        root.setDisplayName(pi.getDisplayName());
+                    }
+                }
+            }
+        });
+    }
+
     public static void checkForChangedItems(final Project project, final Folder folder, final Item item) {
         SwingUtilities.invokeLater(new Runnable() {
-
+            
             public void run() {
                 if (item == null) {
                     checkForChangedItems(project);
@@ -436,6 +453,22 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         return new LoadingNode();
     }
 
+
+    private String getShortDescription() {
+        String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
+
+        MakeConfigurationDescriptor mkd = getMakeConfigurationDescriptor();
+        MakeConfiguration conf = (MakeConfiguration) mkd.getConfs().getActive();
+        final DevelopmentHostConfiguration devHost = conf.getDevelopmentHost();
+        if (devHost.isLocalhost()) {
+            return NbBundle.getMessage(MakeLogicalViewProvider.class,
+                    "HINT_project_root_node", prjDirDispName);
+        } else {
+            return NbBundle.getMessage(MakeLogicalViewProvider.class,
+                    "HINT_project_root_node_on_host", prjDirDispName, devHost.getDisplayName(true));
+        }
+    }
+
     private static class LoadingNode extends AbstractNode {
 
         public LoadingNode() {
@@ -531,8 +564,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public String getShortDescription() {
-            String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
-            return NbBundle.getMessage(MakeLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName);
+            return MakeLogicalViewProvider.this.getShortDescription();
         }
         /*
          * Something in the folder has changed
@@ -544,6 +576,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             updateAnnotationFiles();
             fireIconChange();
             fireOpenedIconChange();
+            fireDisplayNameChange(null, null);
         }
 
         @Override
@@ -775,8 +808,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public String getShortDescription() {
-            String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
-            return NbBundle.getMessage(MakeLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName);
+            return MakeLogicalViewProvider.this.getShortDescription();
         }
     }
 

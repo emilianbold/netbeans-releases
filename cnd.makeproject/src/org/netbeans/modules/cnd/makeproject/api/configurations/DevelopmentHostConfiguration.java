@@ -87,11 +87,19 @@ public class DevelopmentHostConfiguration {
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {
-        return ExecutionEnvironmentFactory.fromString(getName());
+        return servers.get(value);
     }
 
     public String getDisplayName(boolean displayIfNotFound) {
         String out = getName();
+        if (displayIfNotFound && !isOnline()) {
+            out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
+        }
+        return out;
+    }
+
+    public String getHostDisplayName(boolean displayIfNotFound) {
+        String out = getExecutionEnvironment().getHost();
         if (displayIfNotFound && !isOnline()) {
             out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
         }
