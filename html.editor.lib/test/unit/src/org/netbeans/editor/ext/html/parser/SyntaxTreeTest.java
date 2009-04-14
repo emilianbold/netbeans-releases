@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.editor.ext.html.parser;
 
 import java.io.BufferedReader;
@@ -57,9 +56,10 @@ import org.netbeans.junit.MockServices;
  * @author tomslot
  */
 public class SyntaxTreeTest extends TestBase {
+
     private static final LanguagePath languagePath = LanguagePath.get(HTMLTokenId.language());
-    
-    public SyntaxTreeTest(){
+
+    public SyntaxTreeTest() {
         super("SyntaxTreeTest");
     }
 
@@ -73,23 +73,23 @@ public class SyntaxTreeTest extends TestBase {
         testSyntaxTree("trivial.html");
     }
 
-    public void testEmptyTags() throws Exception{
+    public void testEmptyTags() throws Exception {
         testSyntaxTree("emptyTags.html");
     }
 
-    public void testList() throws Exception{
+    public void testList() throws Exception {
         testSyntaxTree("list.html");
     }
 
-    public void testTable() throws Exception{
+    public void testTable() throws Exception {
         testSyntaxTree("table.html");
     }
 
-    public void testTagCrossing() throws Exception{
+    public void testTagCrossing() throws Exception {
         testSyntaxTree("tagCrossing.html");
     }
 
-    public void testMissingEndTag() throws Exception{
+    public void testMissingEndTag() throws Exception {
         testSyntaxTree("missingEndTag.html");
     }
 
@@ -98,7 +98,6 @@ public class SyntaxTreeTest extends TestBase {
 //    public void testIssue145821() throws Exception{
 //        testSyntaxTree("issue145821.html");
 //    }
-
     public void testIssue127786() throws Exception {
         testSyntaxTree("issue127786.html");
     }
@@ -121,11 +120,27 @@ public class SyntaxTreeTest extends TestBase {
         assertAST("<html><head><title></title><script></script></head><body></body></html>");
         assertAST("<table><tr><tr></table>");
     }
-    
+
+    public void testIssue162576() throws Exception {
+        String code = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"" +
+                "\"http://www.w3.org/TR/html4/strict.dtd\">" +
+                "<form>" +
+                "<fieldset title=\"requestMethod\">" +
+                "<legend>requestMethod</legend>" +
+                "<input>" +
+                "</fieldset>" +
+                "</form>";
+
+//        SyntaxTree.DEBUG = true;
+
+        assertAST(code);
+
+    }
+
     private void testSyntaxTree(String testCaseName) throws Exception {
         String documentContent = readStringFromFile(new File(
                 getTestFilesDir(), testCaseName));
-        
+
         BaseDocument doc = createDocument();
         doc.insertString(0, documentContent, null);
         HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
@@ -138,7 +153,7 @@ public class SyntaxTreeTest extends TestBase {
         getRef().print(root.toString());
         compareReferenceFiles();
     }
-    
+
     private void assertAST(String code) throws Exception {
         BaseDocument doc = createDocument();
         doc.insertString(0, code, null);
@@ -153,26 +168,25 @@ public class SyntaxTreeTest extends TestBase {
 //        System.out.println(root);
     }
 
-    
     private String readStringFromFile(File file) throws IOException {
         StringBuffer buff = new StringBuffer();
-        
+
         BufferedReader rdr = new BufferedReader(new FileReader(file));
-        
+
         String line;
-        
-        try{
-            while ((line = rdr.readLine()) != null){
+
+        try {
+            while ((line = rdr.readLine()) != null) {
                 buff.append(line + "\n");
             }
-        } finally{
+        } finally {
             rdr.close();
         }
-        
+
         return buff.toString();
     }
-    
-    private File getTestFilesDir(){
+
+    private File getTestFilesDir() {
         return new File(new File(getDataDir(), "input"), "SyntaxTreeTest");
     }
 }

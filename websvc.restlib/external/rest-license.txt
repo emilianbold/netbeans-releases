@@ -1,6 +1,6 @@
 Name: Rest
-Version: ?
-OSR: ?
+Version: 2.1
+OSR: Sun
 License: CDDL-1.0
 Files: rest.zip, jersey-api-doc.jar, jsr311-api-doc.jar
 

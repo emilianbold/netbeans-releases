@@ -51,11 +51,14 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.project.CatalogUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
@@ -63,6 +66,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
+import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportImpl;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -166,14 +170,23 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
 
                     clientNode.getJaxWsModel().write();
                 }
-                // copy resources to WEB-INF[META-INF]/wsdl/client/${clientName}
+                // copy resources to WEB-INF[META-INF]/wsdl/
                 FileObject sourceRoot = getNode().getLookup().lookup(FileObject.class);
                 Project project = FileOwnerQuery.getOwner(srcRoot);
-                if (project.getLookup().lookup(J2eeModuleProvider.class) != null) {
-                    FileObject xmlResorcesFo = support.getLocalWsdlFolderForClient(clientName, false);
-                    if (xmlResorcesFo != null) {
-                        FileObject wsdlFolder = getWsdlFolderForClient(support, clientName);
-                        WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);
+                FileObject xmlResorcesFo = support.getLocalWsdlFolderForClient(clientName, false);
+                if (xmlResorcesFo != null) {
+                    FileObject webInfWsdlFolder = support.getWsdlFolder(true);
+                    if (webInfWsdlFolder != null) {
+                        try {
+                            FileObject jaxWsCatalog = webInfWsdlFolder.getParent().getFileObject("jax-ws-catalog.xml"); //NOI18N
+                            FileObject catalog = project.getProjectDirectory().getFileObject(JAXWSClientSupportImpl.CATALOG_FILE);
+                            if (jaxWsCatalog != null && catalog != null) {
+                                CatalogUtils.copyCatalogEntriesForClient(catalog, jaxWsCatalog, clientName);
+                            }
+                            WSUtils.copyFiles(xmlResorcesFo, webInfWsdlFolder);
+                        } catch (IOException ex) {
+                            Logger.getLogger(JaxWsClientChildren.class.getName()).log(Level.INFO, "Cannot copy files to "+webInfWsdlFolder, ex);
+                        }
                     }
                 }
             } catch (URISyntaxException ex) {
@@ -266,21 +279,21 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
         return wsdlModel;
     }
 
-    private FileObject getWsdlFolderForClient(JAXWSClientSupport support, String name) throws IOException {
-        FileObject globalWsdlFolder = support.getWsdlFolder(true);
-        FileObject oldWsdlFolder = globalWsdlFolder.getFileObject("client/" + name);
-        if (oldWsdlFolder != null) {
-            FileLock lock = oldWsdlFolder.lock();
-            try {
-                oldWsdlFolder.delete(lock);
-            } finally {
-                lock.releaseLock();
-            }
-        }
-        FileObject clientWsdlFolder = globalWsdlFolder.getFileObject("client"); //NOI18N
-        if (clientWsdlFolder == null) {
-            clientWsdlFolder = globalWsdlFolder.createFolder("client");
-        } //NOI18N
-        return clientWsdlFolder.createFolder(name);
-    }
+//    private FileObject getWsdlFolderForClient(JAXWSClientSupport support, String name) throws IOException {
+//        FileObject globalWsdlFolder = support.getWsdlFolder(true);
+//        FileObject oldWsdlFolder = globalWsdlFolder.getFileObject("client/" + name);
+//        if (oldWsdlFolder != null) {
+//            FileLock lock = oldWsdlFolder.lock();
+//            try {
+//                oldWsdlFolder.delete(lock);
+//            } finally {
+//                lock.releaseLock();
+//            }
+//        }
+//        FileObject clientWsdlFolder = globalWsdlFolder.getFileObject("client"); //NOI18N
+//        if (clientWsdlFolder == null) {
+//            clientWsdlFolder = globalWsdlFolder.createFolder("client");
+//        } //NOI18N
+//        return clientWsdlFolder.createFolder(name);
+//    }
 }
