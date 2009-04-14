@@ -134,7 +134,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         DLightCollectorString = DTRACE;
         DLightIndicatorDPStrings = Arrays.asList(PRSTAT_INDICATOR, DTRACE);
 
-        if (hasSunStudio && currentProvider == GizmoOptions.DataProvider.SUN_STUDIO) {//NOI18N
+        if (currentProvider == GizmoOptions.DataProvider.SUN_STUDIO) {//NOI18N
             DLightCollectorString = SUNSTUDIO;
             DLightIndicatorDPStrings = new ArrayList<String>();
             DLightIndicatorDPStrings.add(SUNSTUDIO);
