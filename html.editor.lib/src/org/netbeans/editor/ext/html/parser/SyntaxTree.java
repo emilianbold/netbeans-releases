@@ -190,9 +190,12 @@ public class SyntaxTree {
 
                         } else {
                             //non-html tag, report error
-                            String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_TAG",
-                                    new Object[]{openTag.name()});
-                            openTag.addErrorMessage(errorMessage);
+                            //but only if the tagname doesn't contain prefix e.g. <ui:composion> for facelets
+                            if(!openTag.name().contains(":")) {
+                                String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_TAG",
+                                        new Object[]{openTag.name()});
+                                openTag.addErrorMessage(errorMessage);
+                            }
                         }
                     }
                     //<<< end of error checks
