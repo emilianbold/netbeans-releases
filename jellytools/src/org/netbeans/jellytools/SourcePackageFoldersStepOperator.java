@@ -76,15 +76,15 @@ public class SourcePackageFoldersStepOperator extends NewProjectWizardOperator {
     private JButtonOperator _btRemove;
     private JLabelOperator _lblOnlineError;
     private JTableOperator _tblSourcePackageFolders;
-    
-        
+           
     
     /** Tries to find "Specify folders containing source packages." JLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblSpecifyFolders() {
         if (_lblSpecifyFolders==null) {
-            _lblSpecifyFolders = new JLabelOperator(this, "Specify folders containing source packages.");//TODO I18N
+            String specifyFolders = Bundle.getString("org.netbeans.modules.java.freeform.ui.Bundle", "LBL_SourceFoldersPanel_jLabel1");
+            _lblSpecifyFolders = new JLabelOperator(this, specifyFolders);// I18N
         }
         return _lblSpecifyFolders;
     }
@@ -94,7 +94,8 @@ public class SourcePackageFoldersStepOperator extends NewProjectWizardOperator {
      */
     public JLabelOperator lblSourcePackageFolders() {
         if (_lblSourcePackageFolders==null) {
-            _lblSourcePackageFolders = new JLabelOperator(this, "Source Package Folders:");//TODO I18N
+            String sourcePackageFolders = Bundle.getString("org.netbeans.modules.java.freeform.ui.Bundle", "LBL_SourceFoldersPanel_jLabel2");
+            _lblSourcePackageFolders = new JLabelOperator(this, sourcePackageFolders);//I18N
         }
         return _lblSourcePackageFolders;
     }
@@ -104,7 +105,8 @@ public class SourcePackageFoldersStepOperator extends NewProjectWizardOperator {
      */
     public JLabelOperator lblSourceLevel() {
         if (_lblSourceLevel==null) {
-            _lblSourceLevel = new JLabelOperator(this, "Source Level:");//TODO I18N
+            String sourcePackageFolders = Bundle.getString("org.netbeans.modules.java.freeform.ui.Bundle", "LBL_SourceFoldersPanel_jLabel3");
+            _lblSourceLevel = new JLabelOperator(this, sourcePackageFolders);// I18N
         }
         return _lblSourceLevel;
     }
@@ -124,7 +126,8 @@ public class SourcePackageFoldersStepOperator extends NewProjectWizardOperator {
      */
     public JButtonOperator btAddFolder() {
         if (_btAddFolder==null) {
-            _btAddFolder = new JButtonOperator(this, "Add Folder...");//TODO I18N
+            String addFolder = Bundle.getString("org.netbeans.modules.java.freeform.ui.Bundle", "BTN_SourceFoldersPanel_addFolder");
+            _btAddFolder = new JButtonOperator(this, addFolder);// I18N
         }
         return _btAddFolder;
     }
@@ -134,7 +137,8 @@ public class SourcePackageFoldersStepOperator extends NewProjectWizardOperator {
      */
     public JButtonOperator btRemove() {
         if (_btRemove==null) {
-            _btRemove = new JButtonOperator(this, "Remove");//TODO I18N
+            String remove = Bundle.getString("org.netbeans.modules.java.freeform.ui.Bundle", "BTN_SourceFoldersPanel_removeFolder");
+            _btRemove = new JButtonOperator(this, remove);// I18N
         }
         return _btRemove;
     }
