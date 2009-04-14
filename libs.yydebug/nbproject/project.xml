@@ -46,9 +46,10 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.libs.yydebug</code-name-base>
             <module-dependencies/>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.libs.jrubyparser</friend>
                 <package>jay.yydebug</package>
-            </public-packages>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/yydebug-1.0.2.jar</runtime-relative-path>
                 <binary-origin>external/yydebug-1.0.2.jar</binary-origin>

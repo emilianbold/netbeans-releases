@@ -56,14 +56,18 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.ruby</friend>
+                <friend>org.netbeans.modules.ruby.hints</friend>
+                <friend>org.netbeans.modules.ruby.extrahints</friend>
+                <friend>org.netbeans.modules.ruby.refactoring</friend>
                 <package>org.jrubyparser</package>
                 <package>org.jrubyparser.ast</package>
                 <package>org.jrubyparser.lexer</package>
                 <package>org.jrubyparser.parser</package>
                 <package>org.jrubyparser.rewriter</package>
                 <package>org.jrubyparser.rewriter.utils</package>
-            </public-packages>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jruby-parser-0.1.jar</runtime-relative-path>
                 <binary-origin>external/jruby-parser-0.1.jar</binary-origin>
