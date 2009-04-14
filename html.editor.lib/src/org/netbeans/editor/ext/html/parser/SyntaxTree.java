@@ -38,6 +38,7 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,6 +46,7 @@ import java.util.Locale;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.ContentModel;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
+import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
 import org.openide.util.NbBundle;
 
 /**
@@ -53,7 +55,7 @@ import org.openide.util.NbBundle;
  */
 public class SyntaxTree {
 
-    static boolean DEBUG = false;
+    static boolean DEBUG = false; //for unit testing
 
     public static AstNode makeTree(List<SyntaxElement> elements, DTD dtd) {
         assert elements != null;
@@ -84,7 +86,7 @@ public class SyntaxTree {
 
                 Element currentNodeDtdElement = dtd.getElement(tagName.toUpperCase(Locale.ENGLISH));
                 ContentModel contentModel = null;
-                String errorMessage = null;
+                Collection<String> errorMessages = new ArrayList<String>(2);
 
                 if (currentNodeDtdElement != null) {
                     if (lastNode != null) {
@@ -96,11 +98,11 @@ public class SyntaxTree {
                             if (!lastNode.isResolved()) {
                                 String expectedElements = elementsToString(lastNode.getUnresolvedElements());
                                 //some mandatory content unresolved, report error
-                                errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
-                                        new Object[]{currentNodeDtdElement.getName(), expectedElements});
+                                errorMessages.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
+                                        new Object[]{currentNodeDtdElement.getName(), expectedElements}));
 
                                 if(DEBUG) {
-                                    System.out.println(lastNode.isResolved() ? "Node resolved, ok." : "NODE NOT RESOLVED! Missing " + expectedElements);
+                                    System.out.println("NODE NOT RESOLVED! Missing " + expectedElements);
                                 }
                             }
 
@@ -114,6 +116,9 @@ public class SyntaxTree {
 
                         }
                     }
+
+                    //check tag attributes
+                    errorMessages.addAll(checkTagAttributes((SyntaxElement.Tag)element, currentNodeDtdElement));
 
                     //create DTD content for this node
                     contentModel = currentNodeDtdElement.getContentModel();
@@ -131,8 +136,10 @@ public class SyntaxTree {
                 AstNode openingTagNode = new AstNode(tagName, AstNode.NodeType.OPEN_TAG,
                         element.offset(), openingTagEndOffset);
 
-                if (errorMessage != null) {
-                    openingTagNode.addErrorMessage(errorMessage);
+                if (errorMessages != null) {
+                    for (String emsg : errorMessages) {
+                        openingTagNode.addErrorMessage(emsg);
+                    }
                 }
                 newTagNode.addChild(openingTagNode);
             } else if (element.type() == SyntaxElement.TYPE_ENDTAG) {
@@ -167,8 +174,9 @@ public class SyntaxTree {
                         AstNode openTag = lastNode.children().get(0);
                         assert openTag.type() == AstNode.NodeType.OPEN_TAG : "Unexpected tag type: " + openTag.type();
 
+                        Element dtdElement = dtd.getElement(openTag.name().toUpperCase(Locale.ENGLISH));
                         //check if the tag content is resolved (only for html tags)
-                        if (dtd.getElement(openTag.name().toUpperCase(Locale.ENGLISH)) != null) {
+                        if (dtdElement != null) {
                             if (!lastNode.isResolved()) {
                                 //some mandatory content unresolved, report error to the open tag
                                 String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG",
@@ -176,6 +184,10 @@ public class SyntaxTree {
  
                                 openTag.addErrorMessage(errorMessage);
                             }
+
+                            //check tag attributes
+                            openTag.addErrorMessages(checkTagAttributes((SyntaxElement.Tag)element, dtdElement));
+
                         } else {
                             //non-html tag, report error
                             String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_TAG",
@@ -210,6 +222,21 @@ public class SyntaxTree {
 
         removeNLastNodes(nodeStack.size() - 1, nodeStack);
         return root;
+    }
+
+    private static Collection<String> checkTagAttributes(SyntaxElement.Tag element, Element dtdElement) {
+        Collection<String> errmsgs = new ArrayList<String>(3);
+        //check attributes
+        List<TagAttribute> existingAttrs = element.getAttributes();
+
+        for (TagAttribute ta : existingAttrs) {
+            if (dtdElement.getAttribute(ta.getName()) == null) {
+                //unknown attribute
+                errmsgs.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE",
+                        new Object[]{ta.getName(), element.getName()}));
+            }
+        }
+        return errmsgs;
     }
 
     private static String elementsToString(Collection<Element> elements) {

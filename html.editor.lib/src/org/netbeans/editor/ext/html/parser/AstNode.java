@@ -154,6 +154,13 @@ public class AstNode {
         errorMessages.add(message);
     }
 
+    public synchronized void addErrorMessages(Collection<String> messages) {
+        if(errorMessages == null) {
+            errorMessages = new ArrayList<String>(2);
+        }
+        errorMessages.addAll(messages);
+    }
+
     public List<String> getErrorMessages() {
         return errorMessages == null ? Collections.<String>emptyList() : errorMessages;
     }
