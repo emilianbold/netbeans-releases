@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.glassfish.javaee.db.ResourcesHelper;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -104,11 +105,9 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
             }
         }
 
-        // !PW FIXME needs to throw exception when conflicting resources are found.
-
-//        for(File resourceDir: resourceDirList) {
-//            registerResourceDir(resourceDir);
-//        }
+        for (File resourceDir : resourceDirList) {
+            ResourcesHelper.registerResourceDir(resourceDir, dm);
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -152,7 +151,7 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
 
         DuplicateAOFinder aoFinder = new DuplicateAOFinder(name);
         DuplicateConnectorFinder connFinder = new DuplicateConnectorFinder(name);
-        ConnectorConnectionPoolFinder cpFinder = new ConnectorConnectionPoolFinder();
+        ConnectorPoolFinder cpFinder = new ConnectorPoolFinder();
 
         File xmlFile = new File(resourceDir, "sun-resources.xml");
         if(xmlFile.exists()) {
@@ -188,7 +187,7 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
     private static final String ATTR_POOL_NAME = "name";
     
     private static final String AO_TAG_1 =
-            "    <admin-object-resource enabled=\"true\" object-type=\"user\" ";
+            "    <admin-object-resource enabled=\"true\" ";
     private static final String ATTR_RESTYPE =
             " res-type";
     private static final String AO_TAG_2 =
@@ -218,7 +217,7 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
     }
 
     private static final String CONNECTOR_POOL_TAG_1 =
-            "    <connector-connection-pool enabled=\"true\" object-type=\"user\" ";
+            "    <connector-connection-pool ";
     private static final String ATTR_CONN_DEFINITION =
             " connection-definition-name";
     private static final String CONNECTOR_POOL_TAG_2 =
@@ -241,7 +240,7 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
     }
 
     private static final String CONNECTOR_TAG_1 =
-            "    <connector-resource ";
+            "    <connector-resource enabled=\"true\" ";
     private static final String CONNECTOR_TAG_2 =
             " />\n";
     public static void createConnector(File sunResourcesXml, String jndiName, String poolName) throws IOException {
@@ -267,12 +266,10 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
 
         //<admin-object-resource
             //enabled="true"
-            //object-type="user"
             //jndi-name="jms/testQ"
             //res-type="javax.jms.Queue"
             //res-adapter="jmsra"
            //</admin-object-resource>
-
         @Override
         public void readAttributes(String qname, Attributes attributes) throws SAXException {
             String type = attributes.getValue("object-type");
@@ -283,11 +280,12 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
             }
             String jndiName = attributes.getValue("jndi-name");
             String resType = attributes.getValue("res-type");
+            String resadapter = attributes.getValue("res-adapter");
             if(jndiName != null && jndiName.length() > 0 &&
                     resType != null && resType.length() > 0) {
                 // add to admin object resource list
                 resourceMap.put(jndiName,
-                        new AdminObjectResource(jndiName, resType));
+                        new AdminObjectResource(jndiName, resType, resadapter));
             }
         }
     }
@@ -296,14 +294,12 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
 
         private final String jndiName;
         private final String resType;
+        private final String resAdapter;
 
-        public AdminObjectResource(String jndiName) {
-            this(jndiName, "");
-        }
-
-        public AdminObjectResource(String jndiName, String resType) {
+        public AdminObjectResource(String jndiName, String resType, String resAdapter) {
             this.jndiName = jndiName;
             this.resType = resType;
+            this.resAdapter = resAdapter;
         }
 
         public String getJndiName() {
@@ -312,6 +308,10 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
 
         public String getResType() {
             return resType;
+        }
+
+        public String getResAdapter() {
+            return resAdapter;
         }
     }
 
@@ -383,7 +383,7 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
         }
     }
 
-    private static class ConnectorConnectionPoolFinder extends TreeParser.NodeReader {
+    private static class ConnectorPoolFinder extends TreeParser.NodeReader {
 
         private Map<String, String> properties = null;
         private Map<String, ConnectorPool> pools = new HashMap<String, ConnectorPool>();
@@ -391,11 +391,12 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
         @Override
         public void readAttributes(String qname, Attributes attributes) throws SAXException {
             properties = new HashMap<String, String>();
-
-            String poolName = attributes.getValue("pool-name");
+            String poolName = attributes.getValue("name");
             if(poolName != null && poolName.length() > 0) {
                 if(!pools.containsKey(poolName)) {
-                    properties.put("pool-name", poolName);
+                    properties.put("name", poolName);
+                    properties.put("raname", attributes.getValue("resource-adapter-name"));
+                    properties.put("conndefname", attributes.getValue("connection-definition-name"));
                 } else {
                     Logger.getLogger("glassfish-javaee").log(Level.WARNING,
                             "Duplicate pool-names defined for JDBC Connection Pools.");
@@ -411,10 +412,11 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
 
         @Override
         public void endNode(String qname) throws SAXException {
-            String poolName = properties.get("pool-name");
+            String poolName = properties.get("name");
             ConnectorPool pool = new ConnectorPool(
                     poolName,
-                    properties.get("raname")
+                    properties.get("raname"),
+                    properties.get("conndefname")
                     );
             pools.put(poolName, pool);
         }
@@ -432,11 +434,13 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
     private static class ConnectorPool {
 
         private final String poolName;
-        private final String raname;
+        private final String raName;
+        private final String conndefName;
 
-        public ConnectorPool(String poolName, String raname) {
+        public ConnectorPool(String poolName, String raname, String conndefname) {
             this.poolName = poolName;
-            this.raname = raname;
+            this.raName = raname;
+            this.conndefName = conndefname;
         }
 
         public String getPoolName() {
@@ -444,7 +448,11 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
         }
 
         public String getRaName() {
-            return raname;
+            return raName;
+        }
+
+        public String getConndefName() {
+            return conndefName;
         }
     }
 }
