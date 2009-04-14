@@ -296,10 +296,11 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
         }
         // iterate over stack state and generated indent command for current line:
-        MarkupItem prevItem = null;
+        List<MarkupItem> prevItems = new ArrayList<MarkupItem>();
         for (int i=lastUnprocessedItem; i< fileStack.size(); i++) {
             MarkupItem item = fileStack.get(i);
             assert !item.processed : item;
+            boolean addToPrevItems = true;
             if (i+1 == fileStack.size() && inOpeningTagAttributes) {
                 // if we are in tag attributes then last stack item must
                 // be opening tag which has to be ignored for now, eg.:
@@ -317,12 +318,15 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 // eliminate opening and closing sequence on one line:
                 IndentCommand ic = new IndentCommand(item.openingTag ? IndentCommand.Type.INDENT : IndentCommand.Type.RETURN,
                     lineStartOffset);
-                addIndentationCommand(iis, ic, item, prevItem);
+                addToPrevItems = addIndentationCommand(iis, ic, item, prevItems);
             }
             if (updateState) {
                 item.processed = true;
             }
-            prevItem = item;
+            // only add item to list of previous items if it was not removed
+            if (addToPrevItems) {
+                prevItems.add(item);
+            }
         }
         if (inOpeningTagAttributes) {
             IndentCommand ii = new IndentCommand(IndentCommand.Type.CONTINUE, lineStartOffset);
@@ -336,7 +340,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         }
     }
 
-    private void addIndentationCommand(List<IndentCommand> iis, IndentCommand ic, MarkupItem item, MarkupItem prevItem) {
+    private boolean addIndentationCommand(List<IndentCommand> iis, IndentCommand ic, MarkupItem item, List<MarkupItem> prevItems) {
+        MarkupItem prevItem = prevItems.size() > 0 ? prevItems.get(prevItems.size()-1) : null;
         if (ic.getType() == IndentCommand.Type.RETURN && iis.size() > 0 && prevItem != null) {
             IndentCommand prev = iis.get(iis.size()-1);
             if (prev.getType() == IndentCommand.Type.INDENT &&
@@ -345,10 +350,13 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 // tag was opened and closed on the same line and therfore do
                 // not generate INDENT and RETURN commands for them;
                 iis.remove(iis.size()-1);
-                return;
+                // update also prevItems:
+                prevItems.remove(prevItems.size()-1);
+                return false;
             }
         }
         iis.add(ic);
+        return true;
     }
 
     @Override

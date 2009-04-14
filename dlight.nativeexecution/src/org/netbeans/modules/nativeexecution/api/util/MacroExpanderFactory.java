@@ -327,7 +327,7 @@ public final class MacroExpanderFactory {
         public HostInfo call() throws Exception {
             try {
                 String os = HostInfoUtils.getOS(execEnv);
-                String platform = HostInfoUtils.getPlatform(execEnv);
+                String platform = HostInfoUtils.getCpuType(execEnv);
                 String hostIsaBits = HostInfoUtils.getIsaBits(execEnv);
 
                 return new HostInfo(platform, os, hostIsaBits);

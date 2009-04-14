@@ -37,76 +37,74 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html;
+package org.netbeans.modules.nativeexecution.api;
 
-import java.util.Set;
-import org.netbeans.editor.ext.html.dtd.*;
-import org.netbeans.editor.ext.html.dtd.DTD.Content;
-import org.netbeans.editor.ext.html.dtd.DTD.Element;
-import org.netbeans.modules.html.editor.NbReaderProvider;
-import org.netbeans.modules.html.editor.test.TestBase;
-import static org.junit.Assert.*;
+import org.netbeans.modules.nativeexecution.PlatformAccessor;
 
 /**
+ * Describes a platform - operating system and hardware
+ * of the local or remote host.
  *
- * @author marekfukala
+ * @author Vladimir Kvashin
  */
-public class DTDParserTest extends TestBase {
+public final class Platform {
 
-    private static final String FALLBACK_DOCTYPE = "-//W3C//DTD HTML 4.01//EN";  // NOI18N
+//    public static final Platform DUMMY = new Platform(HardwareType.UNKNOWN, OSType.UNKNOWN);
 
-    public DTDParserTest() {
-        super(DTDParserTest.class.getName());
+    public enum OSType {
+
+        SOLARIS,
+        LINUX,
+        MACOSX,
+        WINDOWS,
+        GENUNIX,
+        UNKNOWN;
+
+        public boolean isUnix() {
+            switch(this) {
+                case GENUNIX:
+                case LINUX:
+                case MACOSX:
+                case SOLARIS:
+                    return true;
+                case WINDOWS:
+                    return false;
+                case UNKNOWN:
+                    return false;
+                default:
+                    throw new IllegalStateException("Unexpected OSType: " + this); //NOI18N
+            }
+        }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        NbReaderProvider.setupReaders();
+    public enum HardwareType {
+        X86,
+        SPARC,
+        UNKNOWN
     }
 
-
-    public void testDTDParser_HTML_BODY_Elements() {
-        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
-        assertNotNull(dtd);
-
-        Element htmlElement = dtd.getElement("HTML");
-        assertNotNull(htmlElement);
-
-        Element headElement = dtd.getElement("HEAD");
-        assertNotNull(headElement);
-
-        Content c = htmlElement.getContentModel().getContent();
-        assertTrue(c.getPossibleElements().contains(headElement));
-
-        c = c.reduce("HEAD");
-
-        Element bodyElement = dtd.getElement("BODY");
-        assertNotNull(bodyElement);
-
-        assertTrue(c.getPossibleElements().contains(bodyElement));
+    public OSType getOSType() {
+        return oSType;
     }
 
-      public void testTable() {
-        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
-        assertNotNull(dtd);
+    public HardwareType getHardwareType() {
+        return hardwareType;
+    }
 
-        Element el = dtd.getElement("TABLE");
-        assertNotNull(el);
+    private final HardwareType hardwareType;
+    private final OSType oSType;
 
-        Content c = el.getContentModel().getContent();
+    private Platform(HardwareType hardwareType, OSType oSType) {
+        this.hardwareType = hardwareType;
+        this.oSType = oSType;
+    }
 
-//        dumpContent(c);
-
-        assertEquals(Content.EMPTY_CONTENT, c.reduce("TR"));
-
-      }
-
-//      private void dumpContent(Content c) {
-//          for(Object obj : c.getPossibleElements()) {
-//            Element e = (Element)obj;
-//            System.out.println(e);
-//        }
-//      }
+    static {
+        PlatformAccessor.setDefault(new PlatformAccessor() {
+            protected Platform createImpl(HardwareType hardwareType, OSType oSType) {
+                return new Platform(hardwareType, oSType);
+            }
+        });
+    }
 
 }
