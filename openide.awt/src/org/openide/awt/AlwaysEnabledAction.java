@@ -84,12 +84,9 @@ implements PropertyChangeListener, ContextAwareAction {
                 actionDelegate.putValue(propertyName, value);
             } else {
                 if (!delegateValue.equals(value)) { // Values differ
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.warning("Value of property \"" + propertyName +
-                                "\" of AlwaysEnabledAction is \"" +
-                                value + "\" but delegate has \"" + delegateValue +
-                                "\"\ndelegate:" + delegate + '\n');
-                    }
+                    LOG.log(Level.FINE, "Value of property \"{0}\" of AlwaysEnabledAction " +
+                            "is \"{1}\" but delegate {2} has \"{3}\"",
+                            new Object[] {propertyName, value, delegate, delegateValue});
                 }
             }
         } // else either both values are null or
