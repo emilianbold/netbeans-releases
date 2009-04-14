@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
@@ -67,7 +67,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         String sh = null;
 
         try {
-            sh = HostInfoUtils.getShell(new ExecutionEnvironment());
+            sh = HostInfoUtils.getShell(ExecutionEnvironmentFactory.getLocal());
         } catch (ConnectException ex) {
         }
 

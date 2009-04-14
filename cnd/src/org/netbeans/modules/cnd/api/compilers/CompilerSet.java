@@ -47,7 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -468,7 +468,7 @@ public class CompilerSet {
                 return tool;
             }
         }
-        return compilerProvider.createCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(),
+        return compilerProvider.createCompiler(ExecutionEnvironmentFactory.getLocal(),
                 CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
     }
     
@@ -486,7 +486,7 @@ public class CompilerSet {
         }
         Tool t;
         // Fixup: all tools should go here ....
-        t = compilerProvider.createCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(),
+        t = compilerProvider.createCompiler(ExecutionEnvironmentFactory.getLocal(),
                 getCompilerFlavor(), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
         t.setCompilerSet(this);
         synchronized( tools ) { // synchronize this only unpredictable tools modification

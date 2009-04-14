@@ -51,7 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.execution.OutputWindowWriter;
 import org.netbeans.modules.cnd.execution.Unbuffer;
@@ -136,7 +136,7 @@ public class NativeExecutor implements Runnable {
             String actionName,
             boolean parseOutputForErrors,
             boolean showInput) {
-        this(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), runDir, executable,
+        this(ExecutionEnvironmentFactory.getLocal(), runDir, executable,
                 arguments, envp, tabName, actionName, parseOutputForErrors, showInput, false);
     }
     
