@@ -488,4 +488,20 @@
 <!-- Collaboration csh topics-->
 <mapID target="org.netbeans.modules.kenai.ui.NameAndLicenseWizardPanel" url="collab/csh/new_kenai_project1.html" />
 <mapID target="org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanel" url="collab/csh/new_kenai_project2.html" />
+
+<!-- Issue tracking csh topics-->
+<mapID target="org.netbeans.modules.bugzilla.repository.RepositoryController" url="collab/csh/issues_create_tracker.html" />
+<mapID target="org.netbeans.modules.bugzilla.util.KeywordsPanel" url="collab/csh/issues_select_keyword.html" />
+<mapID target="org.netbeans.modules.bugzilla.commands.HtmlPanel" url="collab/csh/issues_html_response.html" />
+<mapID target="org.netbeans.modules.bugzilla.query.savePanel" url="collab/csh/issues_save_query.html" />
+
+<!-- Issue tracking csh topic for parameter dialog in vcs commit dialog -->
+<mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="collab/csh/issues_vcs_parameterformat.html" />
+
+<!-- Issue tracking csh topic for Options window -->
+<mapID target="org.netbeans.modules.bugzilla.options.BugzillaOptionsController" url="collab/csh/issues_options.html" />
+
+
+
+
 </map>
