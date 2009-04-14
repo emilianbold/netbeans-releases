@@ -37,25 +37,44 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.compilers;
+package org.netbeans.modules.cnd.ui.options;
 
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
+import org.openide.util.Lookup;
 
 /**
- * Displayes Edit Servers List dialog.
- *
- * Initially it was created as a replacement of the show() method
- * of the ServerList class (ServerList is a model, so it shouldn't be mixed with UI)
- *
- * Now it's moved to o.n.m.c.api.compilers package because
- * both its signature and implementation is connected too tightly with
- * CompilerSet, CompilerSetManager, ToolsCacheManager, etc.
- *
- * This should be redesigned, and this class should be moved to o.n.m.c.api.remote.
+ * Two modules - cnd.remote and cnd.core -
+ * knows more about displaying server list dialog:
+ * they share ToolsCacheManager.
+ * That's why we had to extend ServerListDisplayer.
  *
  * @author Vladimir Kvashin
  */
-public interface ServerListDisplayer {
+public abstract class ServerListDisplayerEx extends ServerListDisplayer {
 
-    public boolean showServerListDialog(ToolsCacheManager cacheManager);
+    /**
+     * Displays server list dialog.
+     * Allows to add, remove or modify servers in the list
+     * @return true in the case user pressed OK, otherwise
+     */
+    protected abstract boolean showServerListDialogImpl(ToolsCacheManager cacheManager);
+
+    public static boolean showServerListDialog(ToolsCacheManager cacheManager) {
+        ServerListDisplayer displayer = Lookup.getDefault().lookup(ServerListDisplayer.class);
+        if (displayer != null) {
+            if (displayer instanceof ServerListDisplayerEx) {
+                return ((ServerListDisplayerEx) displayer).showServerListDialogImpl(cacheManager);
+            } else {
+                Logger.getLogger("cnd.remote.logger").warning( //NOI18N
+                        displayer.getClass().getName() + "should extend " + //NOI18N
+                        ServerListDisplayerEx.class.getSimpleName()); 
+                return false;
+            }
+        } else {
+            Logger.getLogger("cnd.remote.logger").warning( //NOI18N
+                    "Can not find " + ServerListDisplayerEx.class.getSimpleName()); //NOI18N
+            return false;
+        }
+    }
 }
