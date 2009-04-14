@@ -53,7 +53,8 @@ import org.openide.awt.HtmlBrowser;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class BrokenProjectInfo implements HyperlinkListener {
-    public static void showInfo(BrokenProject prj) {
+
+    static JEditorPane getErrorPane(String reason) {
         JEditorPane errorLabel = new JEditorPane();
         JLabel infoLabel = new JLabel();
 
@@ -66,11 +67,16 @@ final class BrokenProjectInfo implements HyperlinkListener {
 
         errorLabel.addHyperlinkListener(new BrokenProjectInfo());
 
-        errorLabel.setText(prj.msg);
+        errorLabel.setText(reason);
+        
+        return errorLabel;
+    }
 
-        NotifyDescriptor nd = new NotifyDescriptor.Message(errorLabel);
+    public static void showInfo(BrokenProject prj) {
+        NotifyDescriptor nd = new NotifyDescriptor.Message(getErrorPane(prj.msg));
         DialogDisplayer.getDefault().notify(nd);
     }
+    
     public void hyperlinkUpdate(HyperlinkEvent evt) {
         if (HyperlinkEvent.EventType.ACTIVATED == evt.getEventType()) {
             HtmlBrowser.URLDisplayer.getDefault().showURL(evt.getURL());
