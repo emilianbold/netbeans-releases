@@ -53,7 +53,7 @@ import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
- * Handles "Add JDBC Driver" dialog.<br>
+ * Handles "New JDBC Driver" dialog.<br>
  * Usage:
  * <pre>
  *      DriversNode.invoke().addDriver();
@@ -70,9 +70,9 @@ public class AddJDBCDriverOperator extends NbDialogOperator {
     /** Creates new AddJDBCDriverOperator that can handle it.
      */
     public AddJDBCDriverOperator() {
-        // "Add JDBC Driver"
+        // "New JDBC Driver"
         super(Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+                "org.netbeans.modules.db.explorer.action.Bundle",
                 "AddDriverDialogTitle"));
     }
 
@@ -97,8 +97,8 @@ public class AddJDBCDriverOperator extends NbDialogOperator {
     public JLabelOperator lblDriverFiles() {
         if (_lblDriverFiles==null) {
             _lblDriverFiles = new JLabelOperator(this,Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
-                "DriverFiles"));
+                "org.netbeans.modules.db.explorer.dlg.Bundle",
+                "AddDriverDriverFile"));
         }
         return _lblDriverFiles;
     }
@@ -120,7 +120,7 @@ public class AddJDBCDriverOperator extends NbDialogOperator {
     public JButtonOperator btAdd() {
         if (_btAdd == null) {
             _btAdd = new JButtonOperator(this, Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+                "org.netbeans.modules.db.explorer.dlg.Bundle",
                 "AddDriverDriverAdd"));
         }
         return _btAdd;
@@ -132,7 +132,7 @@ public class AddJDBCDriverOperator extends NbDialogOperator {
     public JButtonOperator btRemove() {
         if (_btRemove==null) {
             _btRemove = new JButtonOperator(this, Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+                "org.netbeans.modules.db.explorer.dlg.Bundle",
                 "AddDriverDriverRemove"));
         }
         return _btRemove;
@@ -144,7 +144,7 @@ public class AddJDBCDriverOperator extends NbDialogOperator {
     public JLabelOperator lblDriverClass() {
         if (_lblDriverClass==null) {
             _lblDriverClass = new JLabelOperator(this, Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+                "org.netbeans.modules.db.explorer.dlg.Bundle",
                 "AddDriverDriverClass"));
         }
         return _lblDriverClass;
@@ -167,7 +167,7 @@ public class AddJDBCDriverOperator extends NbDialogOperator {
     public JButtonOperator btFind() {
         if (_btFind==null) {
             _btFind = new JButtonOperator(this, Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+                "org.netbeans.modules.db.explorer.dlg.Bundle",
                 "AddDriverDriverFind"));
         }
         return _btFind;
@@ -179,7 +179,7 @@ public class AddJDBCDriverOperator extends NbDialogOperator {
     public JLabelOperator lblName() {
         if (_lblName==null) {
             _lblName = new JLabelOperator(this, Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+                "org.netbeans.modules.db.explorer.dlg.Bundle",
                 "AddDriverDriverName"));
         }
         return _lblName;
