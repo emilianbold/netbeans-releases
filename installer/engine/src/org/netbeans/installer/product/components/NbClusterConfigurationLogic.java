@@ -146,6 +146,24 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
                         e);
             }
         }
+
+        // update the update_tracking files information //////////////////////////////
+        for (String clusterName: clusterNames) {
+            try {
+                progress.setDetail(ResourceUtils.getString(
+                        NbClusterConfigurationLogic.class,
+                        "NCCL.install.netbeans.update.tracking", // NOI18N
+                        clusterName));
+
+                NetBeansUtils.updateTrackingFilesInfo(nbLocation, clusterName);
+            } catch (IOException e) {
+                throw new InstallationException(ResourceUtils.getString(
+                        NbClusterConfigurationLogic.class,
+                        "NCCL.install.error.netbeans.update.tracking", // NOI18N
+                        clusterName),
+                        e);
+            }
+        }
         
         // add the product id to the productid file /////////////////////////////////
         try {
