@@ -1316,6 +1316,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     private static int getCalulatedIndexOfPreviousIndent(List<IndentCommand> indentations, int shift) {
         int balance = 1;
         int i = indentations.size();
+        if (i == 0) {
+            return -1;
+        }
         do {
             i--;
             if (indentations.get(i).getType() == IndentCommand.Type.RETURN) {
@@ -1390,11 +1393,12 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     // command NO_CHANGE from line 01. That one is going to be
                     // used as base for indentation of line 04
                     int index = getCalulatedIndexOfPreviousIndent(allCommands, -1);
-
-                    // use indentation of found command and override any indent
-                    // calculated so far
-                    indentation = allCommands.get(index).getCalculatedIndentation();
-                    thisLineIndent = 0;
+                    if (index != -1) {
+                        // use indentation of found command and override any indent
+                        // calculated so far
+                        indentation = allCommands.get(index).getCalculatedIndentation();
+                        thisLineIndent = 0;
+                    }
                     break;
 
                 case DO_NOT_INDENT_THIS_LINE:
