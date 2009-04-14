@@ -24,6 +24,7 @@ import org.netbeans.modules.nativeexecution.PlatformAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.Platform;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.WindowsSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -390,6 +391,8 @@ public final class HostInfoUtils {
 
         ChannelExec echannel = null;
         ExecEnvInfo info = new ExecEnvInfo();
+        info.cpuType = info.instructionSet = info.os = info.shell = "unknown"; //NOI18N
+        info.tmpDirBase = "/tmp";
         Platform.HardwareType hardwareType = Platform.HardwareType.UNKNOWN;
         Platform.OSType oSType = Platform.OSType.UNKNOWN;
 
@@ -413,7 +416,7 @@ public final class HostInfoUtils {
             String str;
             int lineno = 0;
             while ((str = reader.readLine()) != null) {
-                switch (lineno) {
+                switch (lineno) {                    
                     case 0:
                         String uname_s = str.trim();
                         if (uname_s.contains("_NT-")) { // NOI18N catches Cygwin and MinGW
@@ -446,6 +449,11 @@ public final class HostInfoUtils {
                 lineno++;
             }
             echannel.getExitStatus();
+            if (lineno < 3) {
+                Logger.getInstance().warning(
+                        String.format("Error getting remote host info for %s: %d lines instead of %d\n", //NOI18N
+                        execEnv, lineno, 3));
+            }
         } catch (JSchException ex) {
             Exceptions.printStackTrace(ex);
             return null;
