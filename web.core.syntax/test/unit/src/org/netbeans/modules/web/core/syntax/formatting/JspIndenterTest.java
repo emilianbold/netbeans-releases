@@ -293,6 +293,10 @@ public class JspIndenterTest extends TestBase2 {
 //            "<a href=\"${path}\">^</a>",
 //            "<a href=\"${path}\">\n    ^\n</a>", null);
 
-    }
+// broken: html indenter eliminates SCRIPT tags and previous line (containing wrongly formatted JS)
+//         is then used to calcualte line-adjustment causing wrong indentation:
+//        insertNewline("<html>\n    <head>\n        <script type=\"text/javascript\">\n            function a() {\n                <%%>\n            }\n        </script>^",
+//                      "<html>\n    <head>\n        <script type=\"text/javascript\">\n            function a() {\n                <%%>\n            }\n        </script>\n        ^", null);
+   }
 
 }
