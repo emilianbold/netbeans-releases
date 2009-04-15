@@ -41,26 +41,30 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <terminaldefinition xmlns="http://www.netbeans.org/ns/nativeexecution-terminal-definition/1">
-    <terminal id="gnome-terminal"/>
-    <validation>
-        <platforms>solaris,linux</platforms>
-    </validation>
-    <command stringvalue="gnome-terminal"/>
-    <searchpaths>
-        <path>/usr/bin</path>
-        <path>/bin</path>
-        <path>/opt/gnome/bin</path>
-        <path>/usr/openwin/bin</path>
-        <path>/usr/X/bin</path>
-        <path>/usr/X11/bin</path>
-        <path>/usr/X11R6/bin</path>
-    </searchpaths>
-    <arguments>
-        <arg>--hide-menubar</arg>
-        <arg>--disable-factory</arg>
-        <arg>--title=$title</arg>
-        <arg>--execute</arg>
-        <arg>$@</arg>
-    </arguments>
+    <terminal id="konsole">
+        <validation>
+            <platforms>solaris,linux</platforms>
+            <test command="$self --version | grep &quot;^Konsole: 1.*&quot;"/>
+        </validation>
+        <command stringvalue="konsole"/>
+        <searchpaths>
+            <path>/usr/bin</path>
+            <path>/bin</path>
+            <path>/opt/kde/bin</path>
+            <path>/opt/kde3/bin</path>
+            <path>/opt/kde4/bin</path>
+            <path>/usr/openwin/bin</path>
+            <path>/usr/X/bin</path>
+            <path>/usr/X11/bin</path>
+            <path>/usr/X11R6/bin</path>
+        </searchpaths>
+        <arguments>
+            <arg>--nomenubar</arg>
+            <arg>--notabbar</arg>
+            <arg>-T $title</arg>
+            <arg>-e</arg>
+            <arg>$@</arg>
+        </arguments>
+    </terminal>
 </terminaldefinition>
 

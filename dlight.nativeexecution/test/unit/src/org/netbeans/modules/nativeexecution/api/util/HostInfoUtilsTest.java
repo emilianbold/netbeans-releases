@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.util.Arrays;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -155,6 +156,26 @@ public class HostInfoUtilsTest extends NbTestCase {
         assertTrue(platform.getHardwareType().toString().contains(hardwareTypeShouldContain));
         assertTrue(platform.getOSType().toString().contains(osTypeShouldContain));
     }
+
+    @Test
+    public void testSearchFile() throws Exception {
+        System.out.println("Test searchFile()"); // NOI18N
+        ExecutionEnvironment env = new ExecutionEnvironment();
+        String result = null;
+
+        result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "/bin", "/usr/bin"), "rm", true); // NOI18N
+        assertNotNull(result);
+
+        result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "/bin", "/usr/bin"), "rm", false); // NOI18N
+        assertNotNull(result);
+
+        result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath"), "ls", true); // NOI18N
+        assertNotNull(result);
+
+        result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath"), "ls", false); // NOI18N
+        assertNull(result);
+    }
+
     
 //    private void testLoggers() {
 //        Logger logger = Logger.getAnonymousLogger();

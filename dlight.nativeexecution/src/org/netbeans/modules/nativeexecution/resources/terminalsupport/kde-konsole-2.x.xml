@@ -41,24 +41,36 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <terminaldefinition xmlns="http://www.netbeans.org/ns/nativeexecution-terminal-definition/1">
-    <terminal id="konsole" platforms="solaris,linux"/>
-    <searchpaths>
-        <path>/usr/bin</path>
-        <path>/bin</path>
-        <path>/opt/kde/bin</path>
-        <path>/opt/kde3/bin</path>
-        <path>/opt/kde4/bin</path>
-        <path>/usr/openwin/bin</path>
-        <path>/usr/X/bin</path>
-        <path>/usr/X11/bin</path>
-        <path>/usr/X11R6/bin</path>
-    </searchpaths>
-    <command stringvalue="konsole"/>
-    <arguments>
-        <arg>--notabbar</arg>
-        <arg>-T $title</arg>
-        <arg>-e</arg>
-        <arg>$@</arg>
-    </arguments>
+    <terminal id="konsole">
+        <validation>
+            <platforms>solaris,linux</platforms>
+            <test command="$self --version | grep &quot;^Konsole: 2.*&quot;"/>
+        </validation>
+        <command stringvalue="konsole"/>
+        <searchpaths>
+            <path>/usr/bin</path>
+            <path>/bin</path>
+            <path>/opt/kde/bin</path>
+            <path>/opt/kde3/bin</path>
+            <path>/opt/kde4/bin</path>
+            <path>/usr/openwin/bin</path>
+            <path>/usr/X/bin</path>
+            <path>/usr/X11/bin</path>
+            <path>/usr/X11R6/bin</path>
+        </searchpaths>
+        <arguments>
+            <!-- 
+            <arg>- -nofork</arg>
+            -->
+            <arg>--title</arg>
+            <arg>$title</arg>
+            <arg>-p</arg>
+            <arg>ShowMenuBar=false</arg>
+            <arg>-p</arg>
+            <arg>TabBarMode=0</arg>
+            <arg>-e</arg>
+            <arg>$@</arg>
+        </arguments>
+    </terminal>
 </terminaldefinition>
 
