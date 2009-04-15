@@ -49,6 +49,7 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementa
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.SourceAnalyser;
 import org.openide.filesystems.FileObject;
 
@@ -71,7 +72,7 @@ class JavaParsingContext {
     }
 
     public JavaParsingContext(final FileObject root, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath) throws IOException {
-        cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath, null, true, false, false);
         sourceLevel = SourceLevelQuery.getSourceLevel(root);
         filter = JavaFileFilterQuery.getFilter(root);
         encoding = FileEncodingQuery.getEncoding(root);
