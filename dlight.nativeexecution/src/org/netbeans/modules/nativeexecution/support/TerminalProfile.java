@@ -47,6 +47,7 @@ public final class TerminalProfile {
     private String command;
     private List<String> arguments = new ArrayList<String>();
     private List<String> searchPaths = new ArrayList<String>();
+    private List<String> validationCommands = new ArrayList<String>();
     private String id;
     private String platforms;
 
@@ -55,6 +56,14 @@ public final class TerminalProfile {
 
     public void addArgument(String arg) {
         this.arguments.add(arg);
+    }
+
+    public void addValidationCommand(String command) {
+        validationCommands.add(command);
+    }
+
+    public List<String> getValidationCommands() {
+        return validationCommands;
     }
 
     public String getID() {

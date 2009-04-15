@@ -128,7 +128,7 @@ public class NativeTaskTest {
 
     @Test
     public void simpleTest() {
-        ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal"); // NOI18N
+        ExternalTerminal term = ExternalTerminalProvider.getTerminal(new ExecutionEnvironment(), "gnome-terminal"); // NOI18N
         NativeProcessBuilder npb = new NativeProcessBuilder(new ExecutionEnvironment(), "ls").useExternalTerminal(term); // NOI18N
         StringWriter result = new StringWriter();
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));
@@ -283,7 +283,7 @@ public class NativeTaskTest {
             }
         };
 
-        ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal").setTitle("My favorite title"); // NOI18N
+        ExternalTerminal term = ExternalTerminalProvider.getTerminal(new ExecutionEnvironment(), "gnome-terminal").setTitle("My favorite title"); // NOI18N
         NativeProcessBuilder npb = new NativeProcessBuilder(ee, cmd).setArguments("1", "2").addEnvironmentVariable("MY_VAR", "/temp/xx/$platform").setWorkingDirectory("/tmp").addNativeProcessListener(l).useExternalTerminal(term); // NOI18N
         ExecutionDescriptor descr = new ExecutionDescriptor().outLineBased(true).outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
 

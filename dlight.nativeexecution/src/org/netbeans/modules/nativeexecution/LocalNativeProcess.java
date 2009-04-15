@@ -83,7 +83,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     protected void create() throws Throwable {
         try {
             if (Utilities.isWindows() && shell == null) {
-                throw new IOException(loc("LocalNativeProcess.shellNotFound.text")); // NOI18N
+                throw new IOException(loc("NativeProcess.shellNotFound.text")); // NOI18N
             }
 
             // Get working directory ....
