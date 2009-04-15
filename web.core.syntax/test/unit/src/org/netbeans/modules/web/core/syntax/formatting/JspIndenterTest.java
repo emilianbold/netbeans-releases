@@ -52,6 +52,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.core.GsfIndentTaskFactory;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
@@ -61,6 +62,7 @@ import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.java.source.parsing.ClassParserFactory;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
 import org.netbeans.modules.web.core.syntax.JspKit;
 import org.netbeans.modules.web.core.syntax.gsf.JspEmbeddingProvider;
@@ -100,6 +102,7 @@ public class JspIndenterTest extends TestBase2 {
         TestLanguageProvider.register(HTMLTokenId.language());
         TestLanguageProvider.register(JspTokenId.language());
         TestLanguageProvider.register(JavaTokenId.language());
+        TestLanguageProvider.register(JsTokenId.language());
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory);
@@ -111,6 +114,8 @@ public class JspIndenterTest extends TestBase2 {
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, new JavacParserFactory(), new ClassParserFactory());
         ExpressionLanguageIndentTaskFactory elReformatFactory = new ExpressionLanguageIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-el"), elReformatFactory);
+        GsfIndentTaskFactory jsFactory = new GsfIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/javascript"), jsFactory);
     }
 
     @Override
@@ -224,6 +229,10 @@ public class JspIndenterTest extends TestBase2 {
 
     public void testFormattingIssue160527() throws Exception {
         reformatFileContents("testfilesformatting/issue160527.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingIssue162017() throws Exception {
+        reformatFileContents("testfilesformatting/issue162017.jsp",new IndentPrefs(4,4));
     }
 
     public void testIndentation() throws Exception {

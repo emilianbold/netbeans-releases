@@ -176,7 +176,9 @@ public class HtmlParserResult extends ParserResult {
                                     Severity.WARNING); //NOI18N
                             _errors.add(error);
 
-                        } else if (node.type() == AstNode.NodeType.TAG || node.type() == AstNode.NodeType.OPEN_TAG) {
+                        } else if (node.type() == AstNode.NodeType.TAG || 
+                                node.type() == AstNode.NodeType.OPEN_TAG ||
+                                node.type() == AstNode.NodeType.ENDTAG) {
 
                             if (node.getErrorMessages().size() > 0) {
                                 StringBuffer b = new StringBuffer();

@@ -52,11 +52,13 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.eecommon.api.DomainEditor;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
+import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager.AddResourcesCommand;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -66,6 +68,9 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
  * @author Nitya Doraisamy
  */
 public class ResourcesHelper {
+    private static final TimeUnit TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
+    private static final int TIMEOUT = 1000;
+    
     public static void addSampleDatasource(J2eeModule module) {
         File f = module.getResourceDirectory();
         if(null != f && f.exists()){
@@ -169,4 +174,84 @@ public class ResourcesHelper {
             query = cmd.toString();
         }
     }
+
+    public static final class CreateAdminObjectCommand extends ServerCommand {
+
+       public CreateAdminObjectCommand(final String name, final String raname, final String restype, final String properties) {
+            super("create-admin-object"); // NOI18N
+            StringBuilder cmd = new StringBuilder(128); // NOI18N
+            if ((name != null && name.length() > 0) &&
+                    (restype != null && restype.length() > 0) &&
+                    (raname != null && raname.length() > 0)) {
+                cmd.append("enabled=" + "true");
+                cmd.append(PARAM_SEPARATOR + "restype=" + restype); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "raname=" + restype); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "properties=" + raname); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "jndi_name" + "=");
+                cmd.append(name);
+                query = cmd.toString();
 }
+        }
+    }
+
+    public static final class CreateConnectorConnectionPoolCommand extends ServerCommand {
+
+        public CreateConnectorConnectionPoolCommand(final String name, final String raname, final String conndefnname, final String poolname, final String properties) {
+            super("create-connector-connection-pool"); // NOI18N
+            StringBuilder cmd = new StringBuilder(128);
+            if ((name != null && name.length() > 0) &&
+                    (raname != null && raname.length() > 0) &&
+                    (conndefnname != null && conndefnname.length() > 0)) {
+                cmd.append("raname=" + raname); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "connectiondefinition=" + conndefnname); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "properties=" + properties); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "poolname" + "=");
+                cmd.append(name);
+                query = cmd.toString();
+            }
+        }
+    }   
+
+    public static final class CreateConnectorCommand extends ServerCommand {
+
+        public CreateConnectorCommand(final String name, final String poolname, final String properties) {
+            super("create-connector-resource"); // NOI18N
+            StringBuilder cmd = new StringBuilder(128);
+            if ((name != null && name.length() > 0) &&
+                    (poolname != null && poolname.length() > 0)) {
+                cmd.append("enabled=" + "true");
+                cmd.append(PARAM_SEPARATOR + "poolname=" + poolname); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "properties=" + properties); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "jndi_name" + "=");
+                cmd.append(name);
+                query = cmd.toString();
+            }
+        }
+    }
+
+    public static boolean registerResourceDir(File resourceDir, Hk2DeploymentManager dm) throws ConfigurationException {
+        boolean succeeded = false;
+        File sunResourcesXml = new File(resourceDir, "sun-resources.xml");
+        if(sunResourcesXml.exists()) {
+            GlassfishModule commonSupport = dm.getCommonServerSupport();
+            AddResourcesCommand cmd = new AddResourcesCommand(sunResourcesXml.getAbsolutePath());
+            Future<OperationState> result = commonSupport.execute(cmd);
+            try {
+                if(result.get(TIMEOUT, TIMEOUT_UNIT) == OperationState.COMPLETED) {
+                    succeeded = true;
+                }
+            } catch (TimeoutException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
+            } catch (ExecutionException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
+            }
+        }
+        return succeeded;
+    }
+}
+

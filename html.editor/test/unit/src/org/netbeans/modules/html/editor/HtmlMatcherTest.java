@@ -109,44 +109,44 @@ public class HtmlMatcherTest extends TestBase {
     }
     
     public void testForward() throws Exception {
-        setDocumentText("<html><body> nazdar </body> </html>");
+        setDocumentText("<p><a> nazdar </a> </p>");
         //               0123456789012345678901234567890123456789
         //               0         1         2         3
         BracesMatcher matcher = createMatcher(0, false, 1);
-        assertOrigin(0, 6, matcher);
-        assertMatch(28, 35, matcher);
+        assertOrigin(0, 3, matcher);
+        assertMatch(19, 23, matcher);
         
-        matcher = createMatcher(6, false, 1);
-        assertOrigin(6, 12, matcher);
-        assertMatch(20, 27, matcher);
+        matcher = createMatcher(4, false, 1);
+        assertOrigin(3, 6, matcher);
+        assertMatch(14, 18, matcher);
         
     }
     
     public void testBackward() throws Exception {
-        setDocumentText("<html><body> nazdar </body> </html>");
+        setDocumentText("<p><a> nazdar </a> </p>");
         //               0123456789012345678901234567890123456789
         //               0         1         2         3
-        BracesMatcher matcher = createMatcher(28, false, 1);
-        assertOrigin(28, 35, matcher);
-        assertMatch(0, 5, 5, 6, matcher);
+        BracesMatcher matcher = createMatcher(15, false, 1);
+        assertOrigin(14, 18, matcher);
+        assertMatch(3, 5, 5, 6, matcher);
         
         matcher = createMatcher(20, false, 1);
-        assertOrigin(20, 27, matcher);        
-        assertMatch(6, 11, 11, 12, matcher);
+        assertOrigin(19, 23, matcher);
+        assertMatch(0, 2, 2, 3, matcher);
         
     }
 
     public void testBoundaries() throws Exception {
-        setDocumentText("<html><body></body></html>");
+        setDocumentText("<p><a></a></p>");
         //               0123456789012345678901234567890123456789
         //               0         1         2         3
-        BracesMatcher matcher = createMatcher(12, false, 1);
-        assertOrigin(12, 19, matcher);
-        assertMatch(6, 11, 11, 12, matcher);
+        BracesMatcher matcher = createMatcher(10, false, 1);
+        assertOrigin(10, 14, matcher);
+        assertMatch(0, 2, 2, 3, matcher);
         
-        matcher = createMatcher(19, false, 1);
-        assertOrigin(19, 26, matcher);
-        assertMatch(0, 5, 5, 6, matcher);
+        matcher = createMatcher(6, false, 1);
+        assertOrigin(6, 10, matcher);
+        assertMatch(3, 5, 5, 6, matcher);
         
     }
     
