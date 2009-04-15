@@ -165,6 +165,11 @@ public class HtmlIndenterTest extends TestBase2 {
         format(
             "<div style=\"\"",
             "<div style=\"\"", null);
+
+        // #162199
+        format(
+            "</body>",
+            "</body>", null);
     }
 
     public void testFormattingHTML() throws Exception {
