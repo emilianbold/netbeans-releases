@@ -111,8 +111,11 @@ public class WSStackUtils {
     }
     
     public boolean isJsr109OldSupported() {
-        if(j2eePlatform != null && getServerType(project) == ServerType.GLASSFISH) {
-            return true;       
+        if (j2eePlatform != null) {
+            if  (getServerType(project) == ServerType.GLASSFISH ||
+                    getServerType(project) == ServerType.GLASSFISH_V3) {
+                return true;
+            }
 //            WSStack wsStack = getWsStack(WSStack.STACK_JAX_RPC);
 //            return wsStack != null && wsStack.getSupportedTools().contains(WSStack.TOOL_WSCOMPILE);
         }
