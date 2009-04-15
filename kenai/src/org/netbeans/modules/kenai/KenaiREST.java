@@ -373,7 +373,7 @@ public class KenaiREST extends KenaiImpl {
         }
 
         if (resp.getResponseCode() != 200) {
-            throw new KenaiException("Authentication failed");
+            throw new KenaiException("Authentication failed", resp.getDataAsString());
         }
     }
 //        DateFormat df = new SimpleDateFormat("y-M-d'T'H:m:s'Z'");

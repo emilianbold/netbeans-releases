@@ -153,7 +153,7 @@ public class ActionProviderImpl implements ActionProvider {
         return supp.toArray(new String[0]);
     }
 
-    public void invokeAction(String action, Lookup lookup) {
+    public void invokeAction(final String action, final Lookup lookup) {
         if (COMMAND_DELETE.equals(action)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return;
@@ -172,6 +172,15 @@ public class ActionProviderImpl implements ActionProvider {
             return;
         }
 
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    ActionProviderImpl.this.invokeAction(action, lookup);
+                }
+
+            });
+            return;
+        }
         //TODO if order is important, use the lookupmerger
         Collection<? extends ActionConvertor> convertors = project.getLookup().lookupAll(ActionConvertor.class);
         String convertedAction = null;

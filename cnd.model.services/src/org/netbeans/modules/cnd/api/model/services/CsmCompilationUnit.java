@@ -36,65 +36,58 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
 
-import java.util.ArrayList;
-import java.util.List;
+package org.netbeans.modules.cnd.api.model.services;
+
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
+ * compilation unit description
+ * @author Vladimir Voskresensky
  */
-public final class TerminalProfile {
-    private String command;
-    private List<String> arguments = new ArrayList<String>();
-    private List<String> searchPaths = new ArrayList<String>();
-    private List<String> validationCommands = new ArrayList<String>();
-    private String id;
-    private String platforms;
-
-    public TerminalProfile() {
+public final class CsmCompilationUnit {
+    private final CharSequence startPath;
+    private final CsmFile startFile;
+    private final CsmProject startProject;
+    private CsmCompilationUnit(CsmProject startProject, CharSequence path, CsmFile startFile) {
+        assert startProject != null;
+        assert path != null;
+        this.startPath = FilePathCache.getManager().getString(path);
+        this.startProject = startProject;
+        this.startFile = startFile;
     }
 
-    public void addArgument(String arg) {
-        this.arguments.add(arg);
+    public static CsmCompilationUnit createCompilationUnit(CsmFile file) {
+        return createCompilationUnit(file.getProject(), file.getAbsolutePath(), file);
     }
 
-    public void addValidationCommand(String command) {
-        validationCommands.add(command);
+    public static CsmCompilationUnit createCompilationUnit(CsmProject startProject, CharSequence path, CsmFile startFile) {
+        return new CsmCompilationUnit(startProject, path, startFile);
     }
 
-    public List<String> getValidationCommands() {
-        return validationCommands;
+    /**
+     * returns start project
+     * @return start project (never null)
+     */
+    public CsmProject getStartProject() {
+        return startProject;
     }
 
-    public String getID() {
-        return id;
+    /**
+     * start file if project still contains it
+     * @return start file (could be null)
+     */
+    public CsmFile getStartFile() {
+        return startFile;
     }
 
-    public void setCommand(String command) {
-        this.command = command.trim();
-    }
-
-    public void setID(String id) {
-        this.id = id;
-    }
-
-    public void setSupportedPlatforms(String platforms) {
-        this.platforms = platforms;
-    }
-
-    public String getCommand() {
-        return command;
-    }
-
-    public void addSearchPath(String path) {
-        searchPaths.add(path);
-    }
-
-    public List<String> getSearchPaths() {
-        return searchPaths;
-    }
-
-    public List<String> getArguments() {
-        return arguments;
+    /**
+     * path of start file
+     * @return file path (never null)
+     */
+    public CharSequence getStartFilePath() {
+        return startPath;
     }
 }
