@@ -196,7 +196,7 @@ public final class HostInfoUtils {
      * Returns string that identifies OS installed on the host specified by the
      * <tt>execEnv</tt>.
      * For localhost it just returns <tt>System.getProperty("os.name")</tt>,
-     * for remote one - the result of <tt>/bin/uname -s</tt> command execution.
+     * for remote one - the result of <tt>uname -s</tt> command execution.
      *
      * @param execEnv <tt>ExecutionEnvironment</tt>
      * @return string that identifies OS installed on the host specified by the
@@ -366,12 +366,14 @@ public final class HostInfoUtils {
         if ("".equals(isalist) && info.shell != null) { // NOI18N
             String testcmd;
             if ("SunOS".equals(info.os)) { // NOI18N
-                testcmd = "/usr/bin/isalist | /bin/egrep \"sparcv9|amd64\""; // NOI18N
+                testcmd = "isalist | egrep \"sparcv9|amd64\""; // NOI18N
             } else {
                 testcmd = "uname -a | egrep x86_64"; // NOI18N
             }
 
             ProcessBuilder pb = new ProcessBuilder(info.shell, "-c", testcmd); // NOI18N
+            pb.environment().put("PATH", "/bin:/usr/bin"); // NOI18N
+            
             try {
                 Process testProcess = pb.start();
                 int status = testProcess.waitFor();
