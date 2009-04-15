@@ -47,7 +47,7 @@ public final class HostInfoUtils {
             Collections.synchronizedMap(new WeakHashMap<String, Boolean>());
     private static final Map<ExecutionEnvironment, ExecEnvInfo> execEnvInfo =
             Collections.synchronizedMap(new WeakHashMap<ExecutionEnvironment, ExecEnvInfo>());
-    private static final String cmd_test = "/bin/test"; // NOI18N
+    private static final String cmd_test = "test"; // NOI18N
 
 
     static {
@@ -357,7 +357,7 @@ public final class HostInfoUtils {
         if (Utilities.isWindows()) {
             info.shell = WindowsSupport.getInstance().getShell();
         } else {
-            info.shell = "/bin/sh"; // NOI18N
+            info.shell = "sh"; // NOI18N
         }
 
         // IZ#160260 - cannot always relay on sun.cpu.isalist
@@ -368,7 +368,7 @@ public final class HostInfoUtils {
             if ("SunOS".equals(info.os)) { // NOI18N
                 testcmd = "/usr/bin/isalist | /bin/egrep \"sparcv9|amd64\""; // NOI18N
             } else {
-                testcmd = "/bin/uname -a | /bin/egrep x86_64"; // NOI18N
+                testcmd = "uname -a | egrep x86_64"; // NOI18N
             }
 
             ProcessBuilder pb = new ProcessBuilder(info.shell, "-c", testcmd); // NOI18N
@@ -461,7 +461,7 @@ public final class HostInfoUtils {
             command.append("uname -s &&"); // NOI18N
             command.append("test \"unknown\" = `uname -p` && uname -m || uname -p && "); // NOI18N
             command.append("test \"SunOS\" = `uname -s` && isainfo -b || uname -a | grep x86_64 || echo 32 && "); // NOI18N
-            command.append("ls /bin/sh 2>/dev/null || ls /usr/bin/sh 2>/dev/null"); // NOI18N
+            command.append("ls sh 2>/dev/null || ls /usr/bin/sh 2>/dev/null"); // NOI18N
 
             synchronized (session) {
                 echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
@@ -534,7 +534,7 @@ public final class HostInfoUtils {
             while (true) {
                 synchronized (session) {
                     echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-                    echannel.setCommand("/bin/mkdir -p " + tmpDirBase + " && test -w " + tmpDirBase); // NOI18N
+                    echannel.setCommand("mkdir -p " + tmpDirBase + " && test -w " + tmpDirBase); // NOI18N
                     echannel.connect();
                 }
 
