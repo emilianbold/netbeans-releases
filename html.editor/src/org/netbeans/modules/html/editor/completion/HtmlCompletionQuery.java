@@ -477,9 +477,10 @@ public class HtmlCompletionQuery {
                 } else {
                     stack.push(tagName); //non-html tag, store it with the original case
                 }
-            } else if (elem.getType() == SyntaxElement.TYPE_TAG) { //now </ and > are returned as SyntaxElement.TAG so I need to filter them  NOI18N
+            } else if (elem.getType() == SyntaxElement.TYPE_TAG) {
                 if (((SyntaxElement.Tag) elem).isEmpty()) {
-                    continue; // ignore empty Tags - they are like start and imediate end
+                    //ignore empty tags: <div/>
+                    continue;
                 }
 
                 String tagName = ((SyntaxElement.Named) elem).getName();
@@ -488,7 +489,7 @@ public class HtmlCompletionQuery {
                 if (tag != null) {
                     tagName = tag.getName();
 
-                    if (tag.isEmpty() && tag.hasOptionalEnd()) {
+                    if (tag.isEmpty()) {
                         continue; //forbidden end tag
                     }
                 }
