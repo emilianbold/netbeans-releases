@@ -50,7 +50,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -179,7 +179,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
     private static String getDisplayString() {
         if (displayString == null) {
             try {
-                String localDisplay = PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocalExecutionEnvironment()).getEnv().get("DISPLAY"); //NOI18N
+                String localDisplay = PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocal()).getEnv().get("DISPLAY"); //NOI18N
                 if (localDisplay == null) {
                     localDisplay = ":.0"; //NOI18N
                 }

@@ -209,7 +209,14 @@ public class Retriever implements Runnable {
             setDownloadState(STATUS_FAILED, "Badly formed URL", ex); // NOI18N
         } catch(IOException ex) {
             Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);  //NOI18N
+            Logger.getLogger("glassfish").log(Level.FINE, "backupDir =="+backupDir);  //NOI18N
+            Logger.getLogger("glassfish").log(Level.FINE, "connection == "+connection);  //NOI18N
+            Logger.getLogger("glassfish").log(Level.FINE, "in == "+in);  //NOI18N
             setDownloadState(STATUS_FAILED, "I/O Exception", ex); // NOI18N
+            updateMessage(
+                    in != null ?
+                        NbBundle.getMessage(Retriever.class, "MSG_FileProblem", connection.getURL()) :
+                        NbBundle.getMessage(Retriever.class, "MSG_InvalidUrl", connection.getURL()));
         } catch(RuntimeException ex) {
             Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);  //NOI18N
             setDownloadState(STATUS_FAILED, "Runtime Exception", ex); // NOI18N

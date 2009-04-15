@@ -20,8 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
+import org.netbeans.modules.nativeexecution.PlatformAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.Platform;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.WindowsSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -116,7 +119,7 @@ public final class HostInfoUtils {
             }
 
             NativeProcessBuilder npb = new NativeProcessBuilder(
-                    execEnv, cmd_test).setArguments("-f", fname); // NOI18N
+                    execEnv, cmd_test).setArguments("-e", fname); // NOI18N
 
             try {
                 fileExists = npb.call().waitFor() == 0;
@@ -157,8 +160,18 @@ public final class HostInfoUtils {
      * @throws java.net.ConnectException if host, identified by this execution
      * environment is not connected.
      */
-    public static String getPlatform(final ExecutionEnvironment execEnv)
+    public static String getCpuType(final ExecutionEnvironment execEnv)
             throws ConnectException {
+        ExecEnvInfo info = getHostInfo(execEnv);
+        return info.cpuType;
+    }
+
+    /**
+     * Returns a platform for the given execution environment
+     * @param execEnv execution environment to return platform for
+     * @return an instance of Platform that corresponds the given environment
+     */
+    public static Platform getPlatform(ExecutionEnvironment execEnv) throws ConnectException {
         ExecEnvInfo info = getHostInfo(execEnv);
         return info.platform;
     }
@@ -230,10 +243,57 @@ public final class HostInfoUtils {
         }
     }
 
+    /**
+     * Returns HardwareType that corresponds the given string
+     * where string is in the case of local host -
+     * what System.getProperty("os.arch") returned;
+     * for remote host:
+     * what uname -p returned
+     * @param os_arch
+     * @return
+     */
+    private static Platform.HardwareType getHardwareType(String os_arch) {
+        if ("i386".equals(os_arch) || // NOI18N
+            "i686".equals(os_arch) || // NOI18N
+            "x86_64".equals(os_arch) || // NOI18N
+            "amd64".equals(os_arch) || // NOI18N
+            "athlon".equals(os_arch)) { // NOI18N
+            return Platform.HardwareType.X86;
+        } else if ("sparc".equals(os_arch)) {
+            return Platform.HardwareType.X86;
+        } else {
+            return Platform.HardwareType.UNKNOWN;
+        }
+    }
+
+    /** Gets OSType for local host */
+    private static Platform.OSType getLocalOsType() {
+        if (Utilities.isWindows()) {
+            return Platform.OSType.WINDOWS;
+        } else {
+            switch (Utilities.getOperatingSystem()) {
+                case Utilities.OS_LINUX:
+                    return Platform.OSType.LINUX;
+                case Utilities.OS_SOLARIS:
+                    return Platform.OSType.SOLARIS;
+                case Utilities.OS_MAC:
+                    return Platform.OSType.MACOSX;
+                default:
+                    if (Utilities.isUnix()) {
+                        return Platform.OSType.GENUNIX;
+                    } else {
+                        return Platform.OSType.UNKNOWN;
+                    }
+            }
+        }
+    }
+
     private static ExecEnvInfo getLocalHostInfo() {
         ExecEnvInfo info = new ExecEnvInfo();
         info.os = System.getProperty("os.name").replaceAll(" ", "_"); // NOI18N
-        info.platform = System.getProperty("os.arch"); // NOI18N
+        String arch = System.getProperty("os.arch"); // NOI18N
+        info.cpuType = arch;
+        info.platform = PlatformAccessor.createNew(getHardwareType(arch), getLocalOsType());
 
         if (Utilities.isWindows()) {
             info.shell = WindowsSupport.getInstance().getShell();
@@ -331,19 +391,23 @@ public final class HostInfoUtils {
 
         ChannelExec echannel = null;
         ExecEnvInfo info = new ExecEnvInfo();
+        info.cpuType = info.instructionSet = info.os = info.shell = "unknown"; //NOI18N
+        info.tmpDirBase = "/tmp"; // NOI18N
+        Platform.HardwareType hardwareType = Platform.HardwareType.UNKNOWN;
+        Platform.OSType oSType = Platform.OSType.UNKNOWN;
 
         try {
             StringBuilder command = new StringBuilder();
 
-            command.append("U=`ls /bin/uname 2>/dev/null || ls /usr/bin/uname 2>/dev/null` &&"); // NOI18N
-            command.append("O=`$U -s` && /bin/echo $O &&"); // NOI18N
-            command.append("P=`$U -p` && test 'unknown' = $P && $U -m || echo $P &&"); // NOI18N
-            command.append("test 'SunOS' = $O && /bin/isainfo -b || $U -a | grep x86_64 || echo 32 &&"); // NOI18N
-            command.append("/bin/ls /bin/sh 2>/dev/null || /bin/ls /usr/bin/sh 2>/dev/null"); // NOI18N
+            command.append("uname -s &&"); // NOI18N
+            command.append("test \"unknown\" = `uname -p` && uname -m || uname -p && "); // NOI18N
+            command.append("test \"SunOS\" = `uname -s` && isainfo -b || uname -a | grep x86_64 || echo 32 && "); // NOI18N
+            command.append("ls /bin/sh 2>/dev/null || ls /usr/bin/sh 2>/dev/null"); // NOI18N
 
             synchronized (session) {
                 echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-                echannel.setCommand(command.toString());
+                echannel.setEnv("PATH", "/bin:/usr/bin"); // NOI18N
+                echannel.setCommand("sh -c '" + command.toString() + "'"); // NOI18N
                 echannel.connect();
             }
 
@@ -352,19 +416,29 @@ public final class HostInfoUtils {
             String str;
             int lineno = 0;
             while ((str = reader.readLine()) != null) {
-                switch (lineno) {
+                switch (lineno) {                    
                     case 0:
                         String uname_s = str.trim();
                         if (uname_s.contains("_NT-")) { // NOI18N catches Cygwin and MinGW
                             info.os = "Windows"; // NOI18N
+                            oSType = Platform.OSType.WINDOWS;
                         } else if (uname_s.equals("Darwin")) { // NOI18N
                             info.os = "Mac_OS_X"; // NOI18N
+                            oSType = Platform.OSType.MACOSX;
+                        } else if (uname_s.equals("SunOS")) { // NOI18N
+                            info.os = uname_s;
+                            oSType = Platform.OSType.SOLARIS;
+                        } else if (uname_s.equals("Linux")) { // NOI18N
+                            info.os = uname_s;
+                            oSType = Platform.OSType.LINUX;
                         } else {
+                            oSType = Platform.OSType.GENUNIX;
                             info.os = uname_s;
                         }
                         break;
                     case 1:
-                        info.platform = str.trim().toLowerCase();
+                        info.cpuType = str.trim().toLowerCase();
+                        hardwareType = getHardwareType(info.cpuType);
                         break;
                     case 2:
                         info.instructionSet = str.trim().toLowerCase();
@@ -374,8 +448,12 @@ public final class HostInfoUtils {
                 }
                 lineno++;
             }
-
             echannel.getExitStatus();
+            if (lineno < 3) {
+                Logger.getInstance().warning(
+                        String.format("Error getting remote host info for %s: %d lines instead of %d\n", //NOI18N
+                        execEnv, lineno, 3));
+            }
         } catch (JSchException ex) {
             Exceptions.printStackTrace(ex);
             return null;
@@ -386,6 +464,7 @@ public final class HostInfoUtils {
             if (echannel != null) {
                 echannel.disconnect();
             }
+            info.platform = PlatformAccessor.createNew(hardwareType, oSType);
         }
 
         // find-out tmpdir
@@ -435,14 +514,16 @@ public final class HostInfoUtils {
     private static class ExecEnvInfo {
 
         String os;
-        String platform;
+        String cpuType;
         String instructionSet;
         String shell;
         String tmpDirBase;
+        Platform platform;
 
         @Override
         public String toString() {
-            return "os = " + os + "; platform = " + platform + "; instructionSet = " + instructionSet; // NOI18N
+            return "os = " + os + "; cpuType = " + cpuType + "; instructionSet = " + // NOI18N
+                    instructionSet + "; platform = " + platform; // NOI18N
         }
     }
 }

@@ -47,6 +47,8 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jellytools.properties.TestNode;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
 
 /** Tests of all custom editors which reside in package org.netbeans.jellytools.properties.editors.
  *
@@ -58,6 +60,23 @@ public class CustomEditorOperatorsTest extends org.netbeans.jellytools.JellyTest
     /** Node with all customizable properties */
     private static TestNode testNode;
 
+     public static final String[] tests = {
+       /* "testStringCustomEditorOperator",
+        "testStringArrayCustomEditorOperator",
+        "testPointCustomEditorOperator",
+        "testDimensionCustomEditorOperator",
+        "testRectangleCustomEditorOperator",
+        "testColorCustomEditorOperator",
+        "testFontCustomEditorOperator",
+        "testFileCustomEditorOperator",
+        "testClasspathCustomEditorOperator",
+        "testProcessDescriptorCustomEditorOperator",*/
+        "testServiceTypeCustomEditorOperator",   
+        // TODO: Fix IconEditor test
+        // "testIconCustomEditorOperator",
+        "testClose"
+    };
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -67,8 +86,8 @@ public class CustomEditorOperatorsTest extends org.netbeans.jellytools.JellyTest
     
     /** method used for explicit testsuite definition
      */
-    public static junit.framework.Test suite() {
-        return new TestSuite();
+    public static NbTestSuite suite() {
+        //return new TestSuite();
         /*
         junit.framework.TestSuite suite = new org.netbeans.junit.NbTestSuite();
         suite.addTest(new CustomEditorOperatorsTest("testStringCustomEditorOperator"));
@@ -108,6 +127,8 @@ public class CustomEditorOperatorsTest extends org.netbeans.jellytools.JellyTest
         //"testIconCustomEditorOperator",
         "testClose");
          */
+
+        return (NbTestSuite) NbModuleSuite.create(NbModuleSuite.createConfiguration(CustomEditorOperatorsTest.class).addTest(tests));
     }
     
     
@@ -324,9 +345,9 @@ public class CustomEditorOperatorsTest extends org.netbeans.jellytools.JellyTest
         editor.ok();
         assertEquals("test process test arguments", p.getValue());
     }
-    
+
     /** Test of org.netbeans.jellytools.properties.editors.IconCustomEditorOperator. */
-    public void testIconCustomEditorOperator() {
+   /* public void testIconCustomEditorOperator() {
         Property p=new Property(new PropertySheetOperator(TestNode.NODE_NAME), "Icon");
         p.openEditor();
         IconCustomEditorOperator editor = new IconCustomEditorOperator("Icon");
@@ -345,6 +366,7 @@ public class CustomEditorOperatorsTest extends org.netbeans.jellytools.JellyTest
         editor.ok();
         assertTrue("Editor doesn't save value after OK.", p.getValue().indexOf("iconFile")>-1);
     }
+    */
     
     /** Close property sheet. */
     public void testClose() {

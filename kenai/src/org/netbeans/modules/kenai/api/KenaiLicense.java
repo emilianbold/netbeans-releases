@@ -65,14 +65,26 @@ public final class KenaiLicense {
         }
     }
 
+    /**
+     * Getter for display name
+     * @return display name
+     */
     public String getDisplayName() {
         return displayName;
     }
 
+    /**
+     * Geter license name
+     * @return license name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * getter for uri of this license
+     * @return license uri
+     */
     public URI getUri() {
         return uri;
     }

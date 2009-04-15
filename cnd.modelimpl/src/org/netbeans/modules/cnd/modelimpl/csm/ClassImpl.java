@@ -44,15 +44,13 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
-import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
-import org.netbeans.modules.cnd.api.model.util.UIDs;
-import org.netbeans.modules.cnd.modelimpl.csm.DeclarationsContainer;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -373,9 +371,28 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             if (child != null &&
                     (child.getType() == CPPTokenTypes.LITERAL_struct ||
                     child.getType() == CPPTokenTypes.LITERAL_class)) {
-                CsmNamespace scope = getContainingFile().getProject().getGlobalNamespace();
-                cfd = super.createForwardClassDeclaration(ast, null, (FileImpl) getContainingFile(), scope);
-                ((NamespaceImpl) scope).addDeclaration(cfd);
+                // check if we want to have class forward
+                // we don't want for AA::BB names
+                AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+                CharSequence[] nameParts = AstRenderer.getNameTokens(qid);
+                if (nameParts != null && nameParts.length == 1) {
+                    // also we don't want for templates references
+                    AST templStart = TemplateUtils.getTemplateStart(ast.getFirstChild());
+                    if (templStart == null) {
+                        CsmScope scope = ClassImpl.this.getScope();
+                        while (!CsmKindUtilities.isNamespace(scope) && CsmKindUtilities.isScopeElement(scope)) {
+                            scope = ((CsmScopeElement)scope).getScope();
+                        }
+                        if (!CsmKindUtilities.isNamespace(scope)) {
+                            scope = getContainingFile().getProject().getGlobalNamespace();
+                        }
+                        cfd = super.createForwardClassDeclaration(ast, null, (FileImpl) getContainingFile(), scope);
+                        if (true) { // always put in repository, because it's an element of global NS
+                            RepositoryUtils.put(cfd);
+                        }
+                        ((NamespaceImpl) scope).addDeclaration(cfd);
+                    }
+                }
             }
             return new FriendClassImpl(firstChild, cfd, (FileImpl) getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
         }
@@ -513,7 +530,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         public ClassMemberForwardDeclaration(CsmClass containingClass, AST ast, CsmVisibility curentVisibility, boolean register) {
             super(ast, containingClass.getContainingFile(), register);
             visibility = curentVisibility;
-            containerUID = UIDs.get(containingClass);
+            containerUID = UIDCsmConverter.declarationToUID(containingClass);
             if (register) {
                 registerInProject();
             }
@@ -563,10 +580,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
         @Override
         public CsmClass getCsmClass() {
-            CsmClass cls = null;
-            if (classDefinition != null) {
-                cls = classDefinition.getObject();
-            }
+            CsmClass cls = UIDCsmConverter.UIDtoClass(classDefinition);
             // we need to replace i.e. ForwardClass stub
             if (cls != null && cls.isValid() && !ForwardClass.isForwardClass(cls)) {
                 return cls;
@@ -580,15 +594,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         @Override
         protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
             CsmClass cls = super.createForwardClassIfNeed(ast, scope, registerInProject);
+            classDefinition = UIDCsmConverter.declarationToUID(cls);
             if (cls != null) {
-                classDefinition = UIDs.get(cls);
                 RepositoryUtils.put(this);
             }
             return cls;
         }
 
         public void setCsmClass(CsmClass cls) {
-            classDefinition = cls == null ? null : UIDs.get(cls);
+            classDefinition = UIDCsmConverter.declarationToUID(cls);
         }
 
         @Override

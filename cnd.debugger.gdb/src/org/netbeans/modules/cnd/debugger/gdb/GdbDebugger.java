@@ -72,7 +72,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
@@ -227,7 +227,7 @@ public class GdbDebugger implements PropertyChangeListener {
         threadsViewInit();
         this.disassembly = new Disassembly(this);
         shareTab = null;
-        execEnv = ExecutionEnvironmentFactory.getLocalExecutionEnvironment();
+        execEnv = ExecutionEnvironmentFactory.getLocal();
     }
 
     public ContextProvider getLookup() {
@@ -1678,13 +1678,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 if (frame != null) {
                     map = GdbUtils.createMapFromString(frame);
                     String fullname = map.get("fullname"); // NOI18N
-                    if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() && fullname != null && fullname.charAt(0) == '/') {
-                        if (fullname.length() >= 5 && fullname.startsWith("/usr/")) { // NOI18N
-                            fullname = CompilerSetManager.getCygwinBase() + fullname.substring(4);
-                        } else {
-                            fullname = CompilerSetManager.getCygwinBase() + fullname;
-                        }
-                    }
+                    fullname = checkCygwinLibs(fullname);
                     String line = map.get("line"); // NOI18N
                     if (fullname != null && line != null) {
                         lastStop = fullname + ":" + line; // NOI18N
@@ -1718,6 +1712,17 @@ public class GdbDebugger implements PropertyChangeListener {
             gdb.stack_list_frames();
             setStopped();
         }
+    }
+
+    public String checkCygwinLibs(String path) {
+        if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() && path != null && path.charAt(0) == '/') {
+            if (path.length() >= 5 && path.startsWith("/usr/")) { // NOI18N
+                return CompilerSetManager.getCygwinBase() + path.substring(4);
+            } else {
+                return CompilerSetManager.getCygwinBase() + path;
+            }
+        }
+        return path;
     }
 
     private void signalReceived(Map<String, String> map) {
@@ -2121,13 +2126,7 @@ public class GdbDebugger implements PropertyChangeListener {
                         log.finest("GD.stackUpdate: Setting fullname from runDirectory + file"); // NOI18N
                     }
                 }
-                if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() && fullname != null && fullname.charAt(0) == '/') {
-                    if (fullname.length() >= 5 && fullname.startsWith("/usr/")) { // NOI18N
-                        fullname = CompilerSetManager.getCygwinBase() + fullname.substring(4);
-                    } else {
-                        fullname = CompilerSetManager.getCygwinBase() + fullname;
-                    }
-                }
+                //fullname = checkCygwinLibs(fullname);
 
                 callstack.add(i, new CallStackFrame(this, func, file, fullname, lnum, addr, i, from));
             }

@@ -376,7 +376,7 @@ org.netbeans.editor.ext.ExtKit.BuildPopupMenuAction
 org.netbeans.editor.ext.ExtKit.ShowPopupMenuAction
 org.netbeans.editor.ext.ExtKit.BuildToolTipAction
 org.netbeans.editor.ext.ExtKit.ToggleCaseIdentifierBeginAction
-org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction
+#org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction
 org.netbeans.editor.ext.ExtKit.CompletionShowAction
 org.netbeans.editor.ext.ExtKit.AllCompletionShowAction
 org.netbeans.editor.ext.ExtKit.DocumentationShowAction

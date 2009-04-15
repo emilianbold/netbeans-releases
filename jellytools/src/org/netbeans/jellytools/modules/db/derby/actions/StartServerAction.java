@@ -45,7 +45,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 
 
-/** Used to call "Tools | Java DB Database | Start Server" menu item.
+/** Used to call "Start Server" popup menu item.
  * @see org.netbeans.jellytools.actions.Action
  * @author Martin.Schovanek@sun.com
  */
@@ -53,8 +53,8 @@ public class StartServerAction extends ActionNoBlock {
 
     /** creates new "Start Server" action */
     public StartServerAction() {
-        super(Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools")+"|"
-                +Bundle.getStringTrimmed("org.netbeans.modules.derby.Bundle", "LBL_DerbyDatabase")+"|"
-                +Bundle.getStringTrimmed("org.netbeans.modules.derby.Bundle", "LBL_StartAction"), null);
+        super(null, Bundle.getStringTrimmed(
+                "org.netbeans.modules.derby.Bundle",
+                "LBL_StartAction"));
     }
 }

@@ -54,6 +54,7 @@ import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Build failed or was unstable.
@@ -83,25 +84,29 @@ class ProblemNotification implements ActionListener {
         return NbBundle.getMessage(ProblemNotification.class, failed ? "ProblemNotification.description.failed" : "ProblemNotification.description.unstable");
     }
 
-    public void actionPerformed(ActionEvent e) {
-        for (HudsonJobBuild b : job.getBuilds()) {
-            if (b.getNumber() == build) {
-                if (failed) {
-                    new ShowBuildConsole(b).actionPerformed(e);
-                } else if (b.getMavenModules().isEmpty()) {
-                    new ShowFailures(b).actionPerformed(e);
-                } else {
-                    for (HudsonMavenModuleBuild module : b.getMavenModules()) {
-                        switch (module.getColor()) {
-                        case yellow:
-                        case yellow_anime:
-                            new ShowFailures(module).actionPerformed(e);
+    public void actionPerformed(final ActionEvent e) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                for (HudsonJobBuild b : job.getBuilds()) {
+                    if (b.getNumber() == build) {
+                        if (failed) {
+                            new ShowBuildConsole(b).actionPerformed(e);
+                        } else if (b.getMavenModules().isEmpty()) {
+                            new ShowFailures(b).actionPerformed(e);
+                        } else {
+                            for (HudsonMavenModuleBuild module : b.getMavenModules()) {
+                                switch (module.getColor()) {
+                                case yellow:
+                                case yellow_anime:
+                                    new ShowFailures(module).actionPerformed(e);
+                                }
+                            }
                         }
+                        break;
                     }
                 }
-                break;
             }
-        }
+        });
     }
 
     private Priority getPriority() {

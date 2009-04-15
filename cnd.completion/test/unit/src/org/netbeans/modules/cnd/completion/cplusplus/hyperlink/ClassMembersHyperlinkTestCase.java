@@ -50,6 +50,14 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ162280() throws Exception {
+        // IZ#162280: Inaccuracy tests: regression in Boost and Vlc
+        performTest("iz162280.cpp", 33, 20, "iz162280.cpp", 30, 9);
+        performTest("iz162280.cpp", 33, 30, "iz162280.cpp", 30, 9);
+        performTest("iz162280.cpp", 35, 15, "iz162280.cpp", 30, 9);
+        performTest("iz162280.cpp", 35, 25, "iz162280.cpp", 27, 9);
+    }
+
     public void testIZ149685() throws Exception {
         // IZ#149685: Multi-level class declarations not recognized by ide
         performTest("iz149685.cpp", 8, 30, "iz149685.cpp", 6, 13);

@@ -841,18 +841,21 @@ abstract public class CsmCompletionQuery {
         return cls;
         }*/
         private CsmType resolveType(CsmCompletionExpression exp) {
-            Context ctx = (Context) clone();
-            ctx.setFindType(true);
-            // when resolve type use full scope of search
-            QueryScope old = ctx.compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
-            CsmType typ = null;
-            try {
-                if (ctx.resolveExp(exp)) {
-                    typ = ctx.lastType;
+            CsmType typ = exp.getCachedType();
+            if (typ == null) {
+                Context ctx = (Context) clone();
+                ctx.setFindType(true);
+                // when resolve type use full scope of search
+                QueryScope old = ctx.compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
+                try {
+                    if (ctx.resolveExp(exp)) {
+                        typ = ctx.lastType;
+                    }
+                } finally {
+                    exp.cacheType(typ);
+                    // restore old
+                    ctx.compResolver.setResolveScope(old);
                 }
-            } finally {
-                // restore old
-                ctx.compResolver.setResolveScope(old);
             }
             return typ;
         }
@@ -1809,6 +1812,30 @@ abstract public class CsmCompletionQuery {
                                             }
                                             return (lastType != null);
                                         }
+                                    }
+                                } else if (lastNamespace != null) {
+                                    CsmNamespace curNs = lastNamespace;
+                                    lastNamespace = null;
+                                    List<CsmNamespace> res = finder.findNestedNamespaces(curNs, mtdName, openingSource, false); // find matching nested namespaces
+                                    for (CsmNamespace csmNamespace : res) {
+                                        lastNamespace = csmNamespace;
+                                        break;
+                                    }
+                                    List<CsmObject> elems = finder.findNamespaceElements(curNs, mtdName, openingSource, false, false); // matching classes
+//                                    elems.addAll(finder.findStaticNamespaceElements(lastNamespace, mtdName, openingSource)); // matching static elements
+                                    for (CsmObject obj: elems) {
+                                        if (CsmKindUtilities.isFunction(obj)) {
+                                            mtdList.add((CsmFunction)obj);
+                                        } else if (CsmKindUtilities.isTypedef(obj)) {
+                                            lastType = ((CsmTypedef)obj).getType();
+                                            break;
+                                        } else if (CsmKindUtilities.isClassifier(obj)) {
+                                            lastType = CsmCompletion.getType((CsmClassifier)obj, 0, false, 0);
+                                            break;
+                                        }
+                                    }
+                                    if (findType && mtdList.isEmpty()) {
+                                        return lastType != null || lastNamespace != null;
                                     }
                                 }
                             }

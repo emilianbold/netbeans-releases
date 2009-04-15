@@ -76,8 +76,10 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Query.Filter;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
+import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
@@ -126,7 +128,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private Task task;
 
     private final BugzillaRepository repository;
-    private BugzillaQuery query;
+    protected BugzillaQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss, EEE MMM d yyyy"); // NOI18N
     private NotifyListener notifyListener;
@@ -657,7 +659,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
                         BugzillaConfig.getInstance().setLastChangeFrom(lastChageFrom);
                     }
-                    refresh();
+                    refreshIntern(false);
                 } finally {
                     panel.setQueryRunning(false);
                     task = null;
@@ -666,28 +668,35 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
+    public void autoRefresh() {
+        onRefresh(true);
+    }
+
     public void onRefresh() {
+        onRefresh(false);
+    }
+
+    private void onRefresh(final boolean auto) {
         post(new Runnable() {
             public void run() {
                 panel.setQueryRunning(true);
                 try {
-                    refresh();
+                    refreshIntern(auto);
                 } finally {
                     panel.setQueryRunning(false);
                     task = null;
                 }
             }
-
         });        
     }
 
-    public void refresh() {
+    private void refreshIntern(boolean autoRefresh) {
         if (panel.urlPanel.isVisible()) {
             // XXX check url format etc...
             // XXX what if there is a different host in queries repository as in the url?
-            query.refresh(panel.urlTextField.getText());
+            query.refresh(panel.urlTextField.getText(), autoRefresh);
         } else {
-            query.refresh(getUrlParameters());
+            query.refresh(getUrlParameters(), autoRefresh);
         }
     }
 
@@ -728,13 +737,23 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void onAutoRefresh() {
         final boolean autoRefresh = panel.refreshCheckBox.isSelected();
         BugzillaConfig.getInstance().setQueryAutoRefresh(query.getDisplayName(), autoRefresh);
+        logAutoRefreshEvent(autoRefresh);
         if(autoRefresh) {
             scheduleForRefresh();
         } else {
             repository.stopRefreshing(query);
         }
     }
-    
+
+    protected void logAutoRefreshEvent(boolean autoRefresh) {
+        BugtrackingUtil.logAutoRefreshEvent(
+            BugzillaConnector.getConnectorName(),
+            query.getDisplayName(),
+            false,
+            autoRefresh
+        );
+    }
+
     private void remove() {
         if (task != null) {
             task.cancel();

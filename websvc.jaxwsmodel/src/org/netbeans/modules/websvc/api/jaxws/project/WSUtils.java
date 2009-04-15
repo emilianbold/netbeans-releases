@@ -307,8 +307,13 @@ public class WSUtils {
                 if (folder == null) {
                     folder = targetFolder.createFolder(children[i].getNameExt());
                 }
+                // recursive call
                 copyFiles(children[i],folder);
             } else {
+                FileObject oldFile = targetFolder.getFileObject(children[i].getName(), children[i].getExt());
+                if (oldFile != null) {
+                    oldFile.delete();
+                }
                 children[i].copy(targetFolder, children[i].getName(), children[i].getExt());
             }
         }

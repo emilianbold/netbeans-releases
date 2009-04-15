@@ -112,7 +112,7 @@ public class NewWebProjectSourcesStepOperator extends NewProjectWizardOperator {
             _btBrowseWebPages = new JButtonOperator(this,
                     Bundle.getStringTrimmed(
                     "org.netbeans.modules.web.project.ui.wizards.Bundle",
-                    "LBL_NWP1_BrowseLocation_Button"), 0);
+                    "LBL_NWP1_BrowseLocation_Button3"), 0);
         }
         return _btBrowseWebPages;
     }
@@ -151,7 +151,7 @@ public class NewWebProjectSourcesStepOperator extends NewProjectWizardOperator {
             _btBrowseLibraries = new JButtonOperator(this,
                     Bundle.getStringTrimmed(
                     "org.netbeans.modules.web.project.ui.wizards.Bundle",
-                    "LBL_NWP1_BrowseLocation_Button"), 1);
+                    "LBL_NWP1_BrowseLocation_Button3"), 1);
         }
         return _btBrowseLibraries;
     }

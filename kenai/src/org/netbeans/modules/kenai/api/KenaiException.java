@@ -94,7 +94,7 @@ public class KenaiException extends IOException {
 
     /**
      * get error response as string
-     * @return
+     * @return returns string representation of server response
      */
     public String getAsString() {
         return errorResponse;
@@ -103,7 +103,7 @@ public class KenaiException extends IOException {
     /**
      * get status according to
      * <a href="http://kenai.com/projects/kenai/pages/API#Errors">spec</a>
-     * @return
+     * @return status
      */
     public String getStatus() {
         if (status==null)
@@ -114,7 +114,7 @@ public class KenaiException extends IOException {
     /**
      * get errors according to
      * <a href="http://kenai.com/projects/kenai/pages/API#Errors">spec</a>
-     * @return
+     * @return keay-value map of errors
      */
     public Map<String,String> getErrors() {
         if (errors==null)

@@ -83,21 +83,7 @@ public class PropertyTest extends JellyTestCase {
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
-    public static NbTestSuite suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PropertyTest("testGetName"));
-        suite.addTest(new PropertyTest("testGetValue"));
-        suite.addTest(new PropertyTest("testGetShortDescription"));
-        suite.addTest(new PropertyTest("testOpenEditor"));
-        suite.addTest(new PropertyTest("testSetDefaultValue"));
-        suite.addTest(new PropertyTest("testGetRendererName"));
-        suite.addTest(new PropertyTest("testCanEditAsText"));
-        suite.addTest(new PropertyTest("testIsEnabled"));
-        suite.addTest(new PropertyTest("testClose"));
-        suite.addTest(new PropertyTest("testSetValue"));
-        return suite;
-         */
+    public static NbTestSuite suite() {        
         return (NbTestSuite) createModuleTest(PropertyTest.class, 
         tests);
     }
@@ -207,6 +193,8 @@ public class PropertyTest extends JellyTestCase {
     }
     
     /** Test of setValue method */
+    //TODO write a new setValue test
+    /*
     public void testSetValue() {
         OptionsOperator optionsOperator = OptionsOperator.invoke();
         optionsOperator.switchToClassicView();
@@ -245,5 +233,5 @@ public class PropertyTest extends JellyTestCase {
         } finally {
             printPso.close();
         }
-    }
+    }*/
 }

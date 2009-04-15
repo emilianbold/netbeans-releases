@@ -70,5 +70,13 @@ public class KillableProcessTest extends NbTestCase {
         processor.processLine(line);
         latch.await(10, TimeUnit.MILLISECONDS);
         assertEquals(6116, processor.getPid());
+
+        latch = new CountDownLatch(1);
+        line = "cmd /c \"\"C:\\Program Files (x86)\\Java stuff\\Grails-1.1\\bin\\grails.bat\" dev run-app REM NB:0D:\\sandbox\\web-app\"  7596       ";
+        processor = new KillableProcess.PidLineProcessor(latch,
+                "run-app", "0D:\\sandbox\\web-app");
+        processor.processLine(line);
+        latch.await(10, TimeUnit.MILLISECONDS);
+        assertEquals(7596, processor.getPid());
     }
 }

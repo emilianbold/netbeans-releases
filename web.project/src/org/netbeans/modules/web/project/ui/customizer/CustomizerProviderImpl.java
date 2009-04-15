@@ -46,14 +46,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider2;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.customizer.ProjectSharability;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -66,9 +72,9 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Hrebejk, Radko Najman
  */
-public class CustomizerProviderImpl implements CustomizerProvider2 {
+public class CustomizerProviderImpl implements CustomizerProvider2, ProjectSharability {
     
-    private final Project project;
+    private final WebProject project;
     private final UpdateHelper updateHelper;
     private final PropertyEvaluator evaluator;
     private final ReferenceHelper refHelper;
@@ -83,7 +89,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
     private static Map<Project,Dialog> project2Dialog = new HashMap<Project,Dialog>(); 
     
     public CustomizerProviderImpl(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
-        this.project = project;
+        this.project = (WebProject)project;
         this.updateHelper = updateHelper;
         this.evaluator = evaluator;
         this.refHelper = refHelper;
@@ -105,7 +111,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
             return;
         }
         else {
-            WebProjectProperties uiProperties = new WebProjectProperties((WebProject) project, updateHelper, evaluator, refHelper);
+            WebProjectProperties uiProperties = new WebProjectProperties(project, updateHelper, evaluator, refHelper);
             Lookup context = Lookups.fixed(new Object[] {
                 project,
                 uiProperties,
@@ -123,7 +129,41 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
             project2Dialog.put(project, dialog);
             dialog.setVisible(true);
         }
-    }    
+    }
+
+    public boolean isSharable() {
+        return project.getAntProjectHelper().isSharableProject();
+    }
+
+    public void makeSharable() {
+        WebProjectProperties uiProperties = new WebProjectProperties(project, updateHelper, evaluator, refHelper);
+        if (project.getAntProjectHelper().isSharableProject()) {
+            assert false : "Project "+project+" is already sharable.";
+            return;
+        }
+        final String serverLibraryName[] = new String[1];
+        boolean res = CustomizerLibraries.makeSharable(uiProperties, serverLibraryName);
+        if (res) {
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run()  {
+                    try {
+                        EditableProperties ep = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        String value = ep.getProperty(ProjectProperties.JAVAC_CLASSPATH);
+                        if (value.length() > 0) {
+                            value += ":";
+                        }
+                        value += "${libs." + serverLibraryName[0] + "." + "classpath" + "}";
+                        ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, value);
+                        ProjectManager.getDefault().saveProject(project);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                        return;
+                    }
+                }
+            });
+        }
+        return;
+    }
         
     private class StoreListener implements ActionListener {
     
