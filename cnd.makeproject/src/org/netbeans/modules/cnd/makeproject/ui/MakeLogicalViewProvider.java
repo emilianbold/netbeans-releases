@@ -462,10 +462,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         final DevelopmentHostConfiguration devHost = conf.getDevelopmentHost();
         if (devHost.isLocalhost()) {
             return NbBundle.getMessage(MakeLogicalViewProvider.class,
-                    "HINT_project_root_node", prjDirDispName);
+                    "HINT_project_root_node", prjDirDispName); // NOI18N
         } else {
             return NbBundle.getMessage(MakeLogicalViewProvider.class,
-                    "HINT_project_root_node_on_host", prjDirDispName, devHost.getDisplayName(true));
+                    "HINT_project_root_node_on_host", prjDirDispName, devHost.getDisplayName(true)); // NOI18N
         }
     }
 
