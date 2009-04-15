@@ -685,8 +685,10 @@ public class GdbProxy {
         engine.stopSending();
 
         // we need to finish all unfinished requests
-        for (CommandBuffer cb : map.values()) {
-            cb.error("gdb finished"); //NOI18N
+        synchronized (map) {
+            for (CommandBuffer cb : map.values()) {
+                cb.error("gdb finished"); //NOI18N
+            }
         }
     }
 } /* End of public class GdbProxy */
