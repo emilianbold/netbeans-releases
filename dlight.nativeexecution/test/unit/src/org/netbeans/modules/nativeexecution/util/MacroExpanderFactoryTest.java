@@ -91,7 +91,7 @@ public class MacroExpanderFactoryTest {
 //    @Test
     public void testGetExpander_ExecutionEnvironment_String() {
         System.out.println("getExpander"); // NOI18N
-//        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "brighton.russia.sun.com");
+//        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "brighton.russia.sun.com");
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
 //        ConnectionManager.getInstance().getConnectToAction(execEnv, null).invoke();
         MacroExpander expander = MacroExpanderFactory.getExpander(execEnv, "SunStudio"); // NOI18N

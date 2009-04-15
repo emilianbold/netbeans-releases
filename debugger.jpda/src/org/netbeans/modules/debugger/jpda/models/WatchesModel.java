@@ -124,7 +124,7 @@ public class WatchesModel implements TreeModel {
             
             // 2) create JPDAWatches for Watches
             int i, k = fws.length;
-            JPDAWatch[] jws = new JPDAWatch [k + 1];
+            JPDAWatch[] jws = new JPDAWatch [k]; // new JPDAWatch [k + 1];
             for (i = 0; i < k; i++) {
                 
                 JPDAWatchEvaluating jw = watchToValue.get(fws[i]);
@@ -136,7 +136,7 @@ public class WatchesModel implements TreeModel {
                 
                 // The actual expressions are computed on demand in JPDAWatchEvaluating
             }
-            jws[k] = EMPTY_WATCH;
+            //jws[k] = EMPTY_WATCH;
             
             if (listener == null)
                 listener = new Listener (this, debugger);

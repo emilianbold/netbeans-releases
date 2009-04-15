@@ -134,12 +134,12 @@ public class LLDataCollector
                 if (agentLibraryLocal != null) {
                     CommonTasksSupport.uploadFile(
                             agentLibraryLocal.getAbsolutePath(), env,
-                            getRemotePath(env, agentLibraryLocal), 644, null).get();
+                            getRemotePath(env, agentLibraryLocal), 0644, null).get();
                 }
                 File monitorExecutableLocal = locateMonitorExecutable(env);
                 CommonTasksSupport.uploadFile(
                         monitorExecutableLocal.getAbsolutePath(), env,
-                        getRemotePath(env, agentLibraryLocal), 755, null).get();
+                        getRemotePath(env, monitorExecutableLocal), 0755, null).get();
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
@@ -177,6 +177,11 @@ public class LLDataCollector
         if (env.isLocal()) {
             return localPath.getAbsolutePath();
         } else {
+            try{
+                return HostInfoUtils.getTempDir(env) + localPath.getName();
+            }catch(ConnectException ex){
+
+            }
             return "/tmp/" + localPath.getName(); // NOI18N
         }
     }

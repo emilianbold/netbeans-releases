@@ -36,65 +36,57 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
 
-import java.util.ArrayList;
-import java.util.List;
+package org.netbeans.modules.cnd.makeproject;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
+ *
+ * @author vita
  */
-public final class TerminalProfile {
-    private String command;
-    private List<String> arguments = new ArrayList<String>();
-    private List<String> searchPaths = new ArrayList<String>();
-    private List<String> validationCommands = new ArrayList<String>();
-    private String id;
-    private String platforms;
+@ServiceProvider(service=org.netbeans.modules.parsing.spi.indexing.PathRecognizer.class)
+public class MakeProjectPaths extends PathRecognizer {
 
-    public TerminalProfile() {
+    public static final String SOURCES = "org.netbeans.modules.cnd.makeproject/SOURCES"; //NOI18N
+
+    // -----------------------------------------------------------------------
+    // PathRecognizer implementation
+    // -----------------------------------------------------------------------
+
+    @Override
+    public Set<String> getSourcePathIds() {
+        return Collections.<String>singleton(SOURCES);
     }
 
-    public void addArgument(String arg) {
-        this.arguments.add(arg);
+    @Override
+    public Set<String> getLibraryPathIds() {
+        return null;
     }
 
-    public void addValidationCommand(String command) {
-        validationCommands.add(command);
+    @Override
+    public Set<String> getBinaryLibraryPathIds() {
+        return null;
     }
 
-    public List<String> getValidationCommands() {
-        return validationCommands;
+    @Override
+    public Set<String> getMimeTypes() {
+        return MIME_TYPES;
     }
 
-    public String getID() {
-        return id;
-    }
+    // -----------------------------------------------------------------------
+    // private implementation
+    // -----------------------------------------------------------------------
 
-    public void setCommand(String command) {
-        this.command = command.trim();
-    }
-
-    public void setID(String id) {
-        this.id = id;
-    }
-
-    public void setSupportedPlatforms(String platforms) {
-        this.platforms = platforms;
-    }
-
-    public String getCommand() {
-        return command;
-    }
-
-    public void addSearchPath(String path) {
-        searchPaths.add(path);
-    }
-
-    public List<String> getSearchPaths() {
-        return searchPaths;
-    }
-
-    public List<String> getArguments() {
-        return arguments;
-    }
+    private static final Set<String> MIME_TYPES = new HashSet<String>(Arrays.asList(new String[] {
+        "text/x-h", "text/x-c++", "text/x-c", "text/x-fortran",
+        "text/x-make", "text/sh", "text/bat", "text/x-visu",
+        "text/x-lex", "text/x-yacc", "text/x-asm", "text/qtui+xml",
+        "text/qtresource+xml", "text/qttranslation+xml"
+    }));
 }
