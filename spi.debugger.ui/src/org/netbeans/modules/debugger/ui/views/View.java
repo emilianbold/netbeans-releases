@@ -42,7 +42,10 @@
 package org.netbeans.modules.debugger.ui.views;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -51,6 +54,7 @@ import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import org.netbeans.spi.viewmodel.Models;
 
 import org.openide.util.ImageUtilities;
@@ -115,11 +119,16 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
             JToolBar toolBar = new JToolBar(JToolBar.VERTICAL);
             toolBar.setFloatable(false);
             toolBar.setRollover(true);
-            toolBar.setBorderPainted(false);
+            toolBar.setBorderPainted(true);
             if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
                 toolBar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
             }
-            //toolBar.setLayout(new GridBagLayout());
+            toolBar.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                    javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1,
+                    javax.swing.UIManager.getDefaults().getColor("Separator.background")),
+                    javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1,
+                    javax.swing.UIManager.getDefaults().getColor("Separator.foreground"))));
+            toolBar.setPreferredSize(new Dimension(26, 10));
             add(toolBar, BorderLayout.WEST);
             buttonsPane = toolBar;
         } else {

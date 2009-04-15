@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,40 +31,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.jaxrpc.dev.wizard;
+package org.netbeans.modules.cnd.makeproject;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.websvc.api.support.ServiceCreator;
-import org.netbeans.modules.websvc.core.ProjectInfo;
-import org.netbeans.modules.websvc.spi.support.ServiceCreatorProvider;
-import org.openide.WizardDescriptor;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Peter Liu
+ * @author vita
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.ServiceCreatorProvider.class)
-public class JaxRpcServiceCreatorProvider implements ServiceCreatorProvider {
-    
-    /** Creates a new instance of JaxRpcServiceCreatorProvider */
-    public JaxRpcServiceCreatorProvider() {
+@ServiceProvider(service=org.netbeans.modules.parsing.spi.indexing.PathRecognizer.class)
+public class MakeProjectPaths extends PathRecognizer {
+
+    public static final String SOURCES = "org.netbeans.modules.cnd.makeproject/SOURCES"; //NOI18N
+
+    // -----------------------------------------------------------------------
+    // PathRecognizer implementation
+    // -----------------------------------------------------------------------
+
+    @Override
+    public Set<String> getSourcePathIds() {
+        return Collections.<String>singleton(SOURCES);
     }
-    
-    public ServiceCreator getServiceCreator(Project project, WizardDescriptor wiz) {
-        ProjectInfo projectInfo = new ProjectInfo(project);
-        int projectType = projectInfo.getProjectType();
-     
-        if (!Util.isJavaEE5orHigher(project) &&
-                   (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) {
-               if ((!projectInfo.isJsr109Supported() && projectType == ProjectInfo.WEB_PROJECT_TYPE && !projectInfo.isJsr109oldSupported())) {
-                   return null;
-               } else {
-                   return new JaxRpcServiceCreator(project, projectInfo, wiz);
-               }
-        }
+
+    @Override
+    public Set<String> getLibraryPathIds() {
         return null;
     }
+
+    @Override
+    public Set<String> getBinaryLibraryPathIds() {
+        return null;
+    }
+
+    @Override
+    public Set<String> getMimeTypes() {
+        return MIME_TYPES;
+    }
+
+    // -----------------------------------------------------------------------
+    // private implementation
+    // -----------------------------------------------------------------------
+
+    private static final Set<String> MIME_TYPES = new HashSet<String>(Arrays.asList(new String[] {
+        "text/x-h", "text/x-c++", "text/x-c", "text/x-fortran",
+        "text/x-make", "text/sh", "text/bat", "text/x-visu",
+        "text/x-lex", "text/x-yacc", "text/x-asm", "text/qtui+xml",
+        "text/qtresource+xml", "text/qttranslation+xml"
+    }));
 }
