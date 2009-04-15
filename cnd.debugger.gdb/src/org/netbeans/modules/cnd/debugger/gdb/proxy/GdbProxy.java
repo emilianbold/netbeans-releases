@@ -144,6 +144,11 @@ public class GdbProxy {
     public void addSymbolFile(String path, String addr) {
         engine.sendCommand("add-symbol-file " + path + " " + addr); // NOI18N
     }
+
+    public CommandBuffer core(String core) {
+//        return engine.sendCommand("-target-attach " + pid); // NOI18N - no implementaion
+        return engine.sendCommandEx("core " + core); // NOI18N
+    }
     
     /** Attach to a running program */
     public CommandBuffer target_attach(String pid) {
