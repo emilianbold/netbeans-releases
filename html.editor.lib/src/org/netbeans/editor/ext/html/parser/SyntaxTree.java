@@ -118,7 +118,7 @@ public class SyntaxTree {
                             lastNode.setEndOffset(element.offset());
                             nodeStack.removeLast();
 
-                            //hmm, the last node didn't resolved this tag, lets try its parent
+                            //hmm, the last node didn't resolve this tag, lets try its parent
                             AstNode parentNode = nodeStack.getLast();
                             if(!parentNode.isResolved()) {
                                 //an attempt to reduce the current node within its parent
