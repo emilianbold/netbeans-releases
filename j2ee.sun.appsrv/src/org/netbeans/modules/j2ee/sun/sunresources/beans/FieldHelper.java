@@ -113,11 +113,13 @@ public class FieldHelper {
     
     public static String getOptionNameFromValue(Field urlField, String connUrl) {
         String vendorName = ""; //NOI18N
-        OptionValuePair[] options = urlField.getFieldValue().getOptionValuePair();
-        for (int i = 0; i < options.length; i++) {
-            String condUrl = options[i].getConditionalValue();
-            if(connUrl.indexOf(condUrl) != -1){
-                return options[i].getOptionName();
+        if ((connUrl != null) && (!connUrl.equals(""))) { //NOI18N
+            OptionValuePair[] options = urlField.getFieldValue().getOptionValuePair();
+            for (int i = 0; i < options.length; i++) {
+                String condUrl = options[i].getConditionalValue();
+                if (connUrl.indexOf(condUrl) != -1) {
+                    return options[i].getOptionName();
+                }
             }
         }
         return vendorName;

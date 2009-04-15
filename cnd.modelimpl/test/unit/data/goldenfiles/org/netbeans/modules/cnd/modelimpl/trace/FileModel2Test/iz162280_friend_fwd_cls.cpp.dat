@@ -111,7 +111,6 @@ NAMESPACE boost (boost)
             FRIENDS:
                 CLASS_FRIEND_DECLARATION detail::pickle_suite_registration [14:13/264-14:19/270] FriendClassImpl
                     REFERENCED CLASS: S:boost::python::detail::pickle_suite_registration
-        CLASS_FORWARD_DECLARATION detail::pickle_suite_registration [14:13/264-14:61/312]
         NAMESPACE DEFINITIONS for detail (boost::python::detail) 
             iz162280_friend_fwd_cls.cpp  [5:9/79-7:10/153]
             iz162280_friend_fwd_cls.cpp  [34:9/711-39:10/867]

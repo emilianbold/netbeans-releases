@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
+import org.openide.util.NbBundle;
 
 /**
  * Abstraction of commands for V3 server administration
@@ -296,7 +297,7 @@ public class Commands {
         }
 
         private boolean skipResource(String r) {
-            return false;
+            return r.equals(NbBundle.getMessage(Commands.class, "nothingToList")); //NOI18N
         }
     
     };

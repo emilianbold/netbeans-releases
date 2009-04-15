@@ -48,16 +48,14 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.api.compilers.ServerListDisplayer;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
@@ -126,11 +124,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         managePlatformsItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ToolsCacheManager cacheManager = new ToolsCacheManager();
-                ServerListDisplayer d = Lookup.getDefault().lookup(ServerListDisplayer.class);
-                if (d != null && d.showServerListDialog(cacheManager)) {
-                    cacheManager.applyChanges();
-                }
+                ServerListDisplayer.showServerListDialog();
             }
         });
     }
@@ -144,7 +138,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
                 MakeConfiguration mconf = (MakeConfiguration) jmi.getClientProperty(CONF);
                 if (mconf != null && hkey != null) {
                     DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(
-                            ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
+                            ExecutionEnvironmentFactory.fromString(hkey));
                     mconf.setDevelopmentHost(dhc);
                     mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
                 }

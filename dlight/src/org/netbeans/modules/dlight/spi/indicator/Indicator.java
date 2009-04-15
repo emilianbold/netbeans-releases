@@ -130,11 +130,11 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         if (indicatorRepairActionProvider == null || e.getSource() != indicatorRepairActionProvider){
             return;
         }
-        boolean needRepair = indicatorRepairActionProvider.needRepair();
+        boolean needRepair = indicatorRepairActionProvider.needRepair() || !indicatorRepairActionProvider.getValidationStatus().isValid();
         if (!needRepair){
             indicatorRepairActionProvider.removeChangeListener(this);
         }
-        repairNeeded(indicatorRepairActionProvider.needRepair());
+        repairNeeded(needRepair);
     }
 
 

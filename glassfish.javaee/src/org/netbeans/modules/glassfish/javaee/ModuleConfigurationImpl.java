@@ -47,12 +47,15 @@ import org.netbeans.modules.glassfish.javaee.db.ResourcesHelper;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.EjbResourceConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -68,6 +71,7 @@ public class ModuleConfigurationImpl implements
         ContextRootConfiguration,
         DeploymentPlanConfiguration,
         DatasourceConfiguration,
+        MessageDestinationConfiguration,
         EjbResourceConfiguration
 {
     
@@ -165,6 +169,34 @@ public class ModuleConfigurationImpl implements
 
     public void bindEjbReferenceForEjb(String ejbName, String ejbType, String referenceName, String jndiName) throws ConfigurationException {
         config.bindEjbReferenceForEjb(ejbName, ejbType, referenceName, jndiName);
+    }
+
+    public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
+        return config.getMessageDestinations();
+ }
+
+    public boolean supportsCreateMessageDestination() {
+        return config.supportsCreateMessageDestination();
+    }
+
+    public MessageDestination createMessageDestination(String name, Type type) throws UnsupportedOperationException, ConfigurationException {
+        return config.createMessageDestination(name, type);
+    }
+
+    public void bindMdbToMessageDestination(String mdbName, String name, Type type) throws ConfigurationException {
+        config.bindMdbToMessageDestination(mdbName, name, type);
+    }
+
+    public String findMessageDestinationName(String mdbName) throws ConfigurationException {
+        return config.findMessageDestinationName(mdbName);
+    }
+
+    public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, String destName, Type type) throws ConfigurationException {
+        config.bindMessageDestinationReference(referenceName, connectionFactoryName, destName, type);
+    }
+
+    public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType, String referenceName, String connectionFactoryName, String destName, Type type) throws ConfigurationException {
+        config.bindMessageDestinationReferenceForEjb(ejbName, ejbType, referenceName, connectionFactoryName, destName, type);
     }
 
  }
