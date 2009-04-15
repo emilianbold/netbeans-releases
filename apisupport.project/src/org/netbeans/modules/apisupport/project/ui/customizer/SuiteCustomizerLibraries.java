@@ -419,7 +419,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         Set<String> disabledModules = new TreeSet<String>();
         List<ClusterInfo> clusterPath = new ArrayList<ClusterInfo>();
 
-        boolean oldPlaf = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() < NbPlatform.HARNESS_VERSION_67;
+        boolean oldPlaf = getProperties().getActivePlatform().getHarnessVersion() < NbPlatform.HARNESS_VERSION_67;
 
         for (ClusterNode e : libChildren.platformNodes) {
             if (e.isEnabled()) {
