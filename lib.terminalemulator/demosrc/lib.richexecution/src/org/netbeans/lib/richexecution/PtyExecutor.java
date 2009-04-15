@@ -61,7 +61,7 @@ import org.netbeans.lib.richexecution.Pty.Mode;
  * as {@link java.lang.ProcessBuilder} would.
  * @author ivan
  */
-public class PtyExecutor {
+public final class PtyExecutor {
     private static String setpgrpCmd = null;
     private Mode mode = Mode.REGULAR;
 

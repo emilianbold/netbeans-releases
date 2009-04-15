@@ -177,6 +177,7 @@ class Terminal extends JFrame implements Runnable {
 
     private void applyTermOptions(boolean initial) {
         Font font = term.getFont();
+        /* OLD
         if (font != null) {
             Font newFont = new Font(font.getName(),
                                     font.getStyle(),
@@ -188,6 +189,9 @@ class Terminal extends JFrame implements Runnable {
                                     termOptions.getFontSize());
             term.setFont(newFont);
         }
+        */
+        term.setFixedFont(true);
+        term.setFont(termOptions.getFont());
 
         term.setBackground(termOptions.getBackground());
         term.setForeground(termOptions.getForeground());

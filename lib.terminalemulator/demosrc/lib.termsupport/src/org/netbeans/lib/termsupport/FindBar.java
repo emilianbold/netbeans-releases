@@ -239,8 +239,13 @@ public final class FindBar extends JPanel {
         // Adjust the view to reflect the model
         updating = true;
         try {
-            findText.setText(state.getPattern());
-            error(state.getStatus(), false);
+            if (state != null) {
+                findText.setText(state.getPattern());
+                error(state.getStatus(), false);
+            } else {
+                findText.setText("");
+                error(FindState.Status.OK, false);
+            }
         } finally {
             updating = false;
         }

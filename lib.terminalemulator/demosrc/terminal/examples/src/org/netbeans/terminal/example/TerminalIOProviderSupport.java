@@ -33,16 +33,16 @@ import org.openide.windows.OutputWriter;
  */
 public final class TerminalIOProviderSupport {
 
-    public static IOProvider getIOProvider() {
+    public static IOProvider getIOProviderClassic() {
         IOProvider iop = null;
 
         Lookup lookup = Lookup.getDefault();
         Collection<? extends IOProvider> ioProviders =
             lookup.lookupAll(IOProvider.class);
         if (ioProviders.size() == 0) {
-            System.out.printf("IOProviderActionSupport.getTermIOProvider() lookupAll yielded no results\n");
+            System.out.printf("IOProviderActionSupport.getTermIOProviderClassic() lookupAll yielded no results\n");
         } else {
-            System.out.printf("IOProviderActionSupport.getTermIOProvider():\n");
+            System.out.printf("IOProviderActionSupport.getTermIOProviderClassic():\n");
             for (IOProvider iopCandidate : ioProviders) {
                 System.out.printf("\tIOProvider: %s\n", iopCandidate);
                 if (iopCandidate instanceof TerminalIOProvider)
@@ -50,6 +50,16 @@ public final class TerminalIOProviderSupport {
             }
         }
 
+        if (iop == null) {
+            System.out.printf("IOProviderActionSupport.getTermIOProviderClassic() couldn't find our provider\n");
+            iop = IOProvider.getDefault();
+        }
+        return iop;
+    }
+
+    public static IOProvider getIOProvider() {
+        IOProvider iop = null;
+        iop = IOProvider.get("Terminal");       // NOI18N
         if (iop == null) {
             System.out.printf("IOProviderActionSupport.getTermIOProvider() couldn't find our provider\n");
             iop = IOProvider.getDefault();
@@ -92,50 +102,83 @@ public final class TerminalIOProviderSupport {
         Reader fromIO = io.getIn();
         io.select();
 
-        //
-        // Create a pty, handle window size changes
-        //
-        final Pty pty;
-        try {
-            pty = Pty.create(Pty.Mode.REGULAR);
-        } catch (PtyException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
+        /* LATER
+        if (false) {
+            // Adds a line discipline so newlines etc work correctly
+            TerminalIOProviderSupport.setInternal(io, true);
+
+            if (IOColorLines.isSupported(io))
+                IOColorLines.println(io, "Hello", null, true, Color.red);
+
+            if (IOColorPrint.isSupported(io)) {
+                IOColorPrint.print(io, "Hello in red\n", Color.red);
+
+                IOColorPrint.print(io, "Hello ", Color.blue);
+                IOColorPrint.print(io, "in ", Color.yellow);
+                IOColorPrint.print(io, "rainbow\n", Color.green);
+
+                IOColorPrint.print(io, "Hello ", Color.blue.darker());
+                IOColorPrint.print(io, "in ", Color.yellow.darker());
+                IOColorPrint.print(io, "dark rainbow\n", Color.green.darker());
+            }
+
+            // Take out line discipline -- doesn't really work.
+            // TerminalIOProviderSupport.setInternal(io, false);
         }
+        */
 
-        Term term = null;
-        if (tio != null) {
-            term = tio.term();
-            term.addListener(new TermListener() {
-                public void sizeChanged(Dimension cells, Dimension pixels) {
-                    pty.masterTIOCSWINSZ(cells.height, cells.width,
-                                         pixels.height, pixels.width);
-                }
-            });
+        /* LATER
+        if (IOExecution.isSupported(io)) {
+            IOExecution.executeCommand(io, cmd);
+        } else
+        */
+        {
+
+            //
+            // Create a pty, handle window size changes
+            //
+            final Pty pty;
+            try {
+                pty = Pty.create(Pty.Mode.REGULAR);
+            } catch (PtyException ex) {
+                Exceptions.printStackTrace(ex);
+                return;
+            }
+
+            Term term = null;
+            if (tio != null) {
+                term = tio.term();
+                term.addListener(new TermListener() {
+                    public void sizeChanged(Dimension cells, Dimension pixels) {
+                        pty.masterTIOCSWINSZ(cells.height, cells.width,
+                                             pixels.height, pixels.width);
+                    }
+                });
+            }
+
+            //
+            // Create a program and process
+            //
+            Program program = new Command(cmd);
+            if (term != null) {
+                Map<String, String> env = program.environment();
+                env.put("TERM", term.getEmulation());
+            }
+            PtyExecutor executor = new PtyExecutor();
+            executor.start(program, pty);
+
+            //
+            // connect them up
+            //
+
+            // Hmm, what's the difference between the PtyProcess io streams
+            // and the Pty's io streams?
+            // Nothing.
+            OutputStream pin = pty.getOutputStream();
+            InputStream pout = pty.getInputStream();
+
+            IOShuttle shuttle = new IOShuttle(pin, pout, toIO, fromIO);
+            shuttle.run();
         }
-
-        //
-        // Create a program and process
-        //
-        Program program = new Command(cmd);
-        if (term != null) {
-            Map<String, String> env = program.environment();
-            env.put("TERM", term.getEmulation());
-        }
-        PtyExecutor executor = new PtyExecutor();
-        executor.start(program, pty);
-
-        // 
-        // connect them up
-        //
-
-        // Hmm, what's the difference between the PtyProcess io streams
-        // and the Pty's io streams?
-        // Nothing.
-        OutputStream pin = pty.getOutputStream();
-        InputStream pout = pty.getInputStream();
-
-        IOShuttle shuttle = new IOShuttle(pin, pout, toIO, fromIO);
-        shuttle.run();
     }
 }

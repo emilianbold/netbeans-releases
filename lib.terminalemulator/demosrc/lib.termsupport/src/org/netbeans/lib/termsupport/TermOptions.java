@@ -76,6 +76,7 @@ public class TermOptions {
     public void resetToDefault() {
 	final Font controlFont = UIManager.getFont("controlFont");// NOI18N
 	fontSize = (controlFont == null)? 12: controlFont.getSize();
+        font = new Font("monospaced", Font.PLAIN, fontSize);
 	foreground = Color.black;
 	background = Color.white;
 	selectionBackground =
@@ -101,6 +102,7 @@ public class TermOptions {
      */
     public TermOptions makeCopy() {
 	TermOptions copy = new TermOptions();
+	copy.font= this.font;
 	copy.fontSize = this.fontSize;
 	copy.tabSize = this.tabSize;
 	copy.historySize = this.historySize;
@@ -118,6 +120,7 @@ public class TermOptions {
      * Assign the values in 'that' to 'this'.
      */
     public void assign (TermOptions that) {
+	this.font= that.font;
 	this.fontSize = that.fontSize;
 	this.tabSize = that.tabSize;
 	this.historySize = that.historySize;
@@ -188,15 +191,36 @@ public class TermOptions {
 
 
     /*
+     * Font property
+     */
+    public static final String PROP_FONT = "font"; // NOI18N
+
+    private Font font;
+
+    public Font getFont() {
+	return font;
+    }
+    public void setFont(Font font) {
+	if (this.font!= font) {
+	    this.font= font;
+	    dirty = true;
+	    pcs.firePropertyChange(null, null, null);
+	}
+    }
+
+    /*
      * Font size property.
      */
     public static final String PROP_FONT_SIZE = "fontSize"; // NOI18N
 
     private int fontSize;
 
+    /*
+     TMP
     public int getFontSize() {
 	return fontSize;
     } 
+     */
     public void setFontSize(int fontSize) {
 	if (this.fontSize != fontSize) {
 	    this.fontSize = fontSize;

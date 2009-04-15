@@ -49,7 +49,7 @@ package org.netbeans.lib.richexecution;
  * This enum helps with customization of behaviour.
  * @author ivan
  */
-public enum Platform {
+enum Platform {
 
     Other,
 
@@ -103,7 +103,7 @@ public enum Platform {
 
     /**
      * Returns the platform string used for finding helper executables.
-     * @return
+     * @return One of "linux-intel", "solaris-sparc", "solaris-intel", "mac-intel" or null.
      */
     public String platform() {
 	switch (get()) {
