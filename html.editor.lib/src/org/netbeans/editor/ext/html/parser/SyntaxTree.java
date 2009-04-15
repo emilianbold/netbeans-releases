@@ -104,6 +104,14 @@ public class SyntaxTree {
                                 if(DEBUG) {
                                     System.out.println("NODE NOT RESOLVED! Missing " + expectedElements);
                                 }
+                            } else {
+                                //check if the node we are going to close have required end tag
+                                //if so show an error
+                                Element lastDtdElement = dtd.getElement(lastNode.name().toUpperCase(Locale.ENGLISH));
+                                if(lastDtdElement != null && !lastDtdElement.hasOptionalEnd()) {
+                                    lastNode.addErrorMessage(NbBundle.getMessage(SyntaxTree.class, "MSG_MISSING_ENDTAG",
+                                        new Object[]{lastDtdElement.getName()}));
+                                }
                             }
 
                             //close the previous node

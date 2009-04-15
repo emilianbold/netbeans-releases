@@ -61,6 +61,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -129,7 +130,8 @@ public class NativeTaskTest {
     @Test
     public void simpleTest() {
         ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal"); // NOI18N
-        NativeProcessBuilder npb = new NativeProcessBuilder(new ExecutionEnvironment(), "ls").useExternalTerminal(term); // NOI18N
+        NativeProcessBuilder npb = new NativeProcessBuilder(
+                ExecutionEnvironmentFactory.getLocal(), "ls").useExternalTerminal(term); // NOI18N
         StringWriter result = new StringWriter();
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));
         ExecutionService execService = ExecutionService.newService(
@@ -187,7 +189,7 @@ public class NativeTaskTest {
 
         private String demangle() {
             String nameToDemangle;
-            final ExecutionEnvironment env = new ExecutionEnvironment();
+            final ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
             final String dem_util_path = "/usr/sfw/bin/gc++filt"; // NOI18N
 
             if (str.indexOf("`") != -1 && str.indexOf("+") != -1) { // NOI18N

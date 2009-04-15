@@ -36,26 +36,23 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.tools.impl;
 
-package org.netbeans.modules.cnd.api.compilers;
-
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Displayes Edit Servers List dialog.
- *
- * Initially it was created as a replacement of the show() method
- * of the ServerList class (ServerList is a model, so it shouldn't be mixed with UI)
- *
- * Now it's moved to o.n.m.c.api.compilers package because
- * both its signature and implementation is connected too tightly with
- * CompilerSet, CompilerSetManager, ToolsCacheManager, etc.
- *
- * This should be redesigned, and this class should be moved to o.n.m.c.api.remote.
- *
- * @author Vladimir Kvashin
+ * @author Alexey Vladykin
  */
-public interface ServerListDisplayer {
+@ServiceProvider(service = IndicatorDataProviderFactory.class)
+public class ProcDataProviderFactory implements IndicatorDataProviderFactory<ProcDataProviderConfiguration> {
 
-    public boolean showServerListDialog(ToolsCacheManager cacheManager);
+    public String getID() {
+        return ProcDataProviderConfiguration.ID;
+    }
+
+    public ProcDataProvider create(ProcDataProviderConfiguration configuration) {
+        return new ProcDataProvider(configuration);
+    }
 }

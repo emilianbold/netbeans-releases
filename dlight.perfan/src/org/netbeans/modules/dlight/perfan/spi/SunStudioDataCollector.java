@@ -276,7 +276,7 @@ public class SunStudioDataCollector
                 }
 
                 if (notFound) {
-                    validationStatus = ValidationStatus.invalidStatus("No SunStudio Found"); //NOI18N
+                    validationStatus = ValidationStatus.invalidStatus("No SunStudio Found, use link http://developers.sun.com/sunstudio/ to download latest SunStudio"); //NOI18N
                     return validationStatus;
                 }
 

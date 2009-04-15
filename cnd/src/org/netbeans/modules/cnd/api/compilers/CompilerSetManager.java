@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.AlternativePath;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolDescriptor;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -191,7 +191,7 @@ public class CompilerSetManager {
     }
 
     public static CompilerSetManager getDefault() {
-        return getDefault(ExecutionEnvironmentFactory.getLocalExecutionEnvironment());
+        return getDefault(ExecutionEnvironmentFactory.getLocal());
     }
 
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
@@ -664,7 +664,7 @@ public class CompilerSetManager {
                             CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
                             CompilerSetReporter.report("CSM_LFTC"); //NOI18N
                             log.fine("CSM.initRemoteCompileSets: platform = " + platform);
-                            getPreferences().putInt(CSM + ExecutionEnvironmentFactory.getHostKey(executionEnvironment) +
+                            getPreferences().putInt(CSM + ExecutionEnvironmentFactory.toString(executionEnvironment) +
                                     SET_PLATFORM, platform);
                             while (provider.hasMoreCompilerSets()) {
                                 String data = provider.getNextCompilerSetData();
@@ -1160,13 +1160,13 @@ public class CompilerSetManager {
 
     /** TODO: deprecate and remove */
     public static String getDefaultDevelopmentHost() {
-        return ExecutionEnvironmentFactory.getHostKey(getDefaultExecutionEnvironment());
+        return ExecutionEnvironmentFactory.toString(getDefaultExecutionEnvironment());
     }
 
     public static ExecutionEnvironment getDefaultExecutionEnvironment() {
         ServerList registry = Lookup.getDefault().lookup(ServerList.class);
         if (registry == null) {
-            return ExecutionEnvironmentFactory.getLocalExecutionEnvironment();
+            return ExecutionEnvironmentFactory.getLocal();
         } else {
             return registry.getDefaultRecord().getExecutionEnvironment();
         }
@@ -1204,7 +1204,7 @@ public class CompilerSetManager {
     public void saveToDisk() {
         if (!sets.isEmpty() && getPlatform() != PlatformTypes.PLATFORM_GENERIC) {
             getPreferences().putDouble(CSM + VERSION, csm_version);
-            String executionEnvironmentKey = ExecutionEnvironmentFactory.getHostKey(executionEnvironment);
+            String executionEnvironmentKey = ExecutionEnvironmentFactory.toString(executionEnvironment);
             getPreferences().putInt(CSM + executionEnvironmentKey + NO_SETS, sets.size());
             getPreferences().putInt(CSM + executionEnvironmentKey + SET_PLATFORM, getPlatform());
             int setCount = 0;
@@ -1235,7 +1235,7 @@ public class CompilerSetManager {
         if (version == 1.0 && env.isLocal()) {
             return restoreFromDisk10();
         }
-        String executionEnvironmentKey = ExecutionEnvironmentFactory.getHostKey(env);
+        String executionEnvironmentKey = ExecutionEnvironmentFactory.toString(env);
         int noSets = getPreferences().getInt(CSM + executionEnvironmentKey + NO_SETS, -1);
         if (noSets < 0) {
             return null;
@@ -1332,16 +1332,16 @@ public class CompilerSetManager {
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavor.toFlavor(toolFlavorName, PlatformTypes.getDefaultPlatform());
                 }
-                Tool tool = getCompilerProvider().createCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(),
+                Tool tool = getCompilerProvider().createCompiler(ExecutionEnvironmentFactory.getLocal(),
                         toolFlavor, toolKind, "", toolDisplayName, toolPath); //NOI18N
                 tool.setName(toolName);
                 cs.addTool(tool);
             }
-            completeCompilerSet(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), cs, css);
+            completeCompilerSet(ExecutionEnvironmentFactory.getLocal(), cs, css);
             css.add(cs);
         }
         CompilerSetManager csm = new CompilerSetManager(
-                ExecutionEnvironmentFactory.getLocalExecutionEnvironment(),
+                ExecutionEnvironmentFactory.getLocal(),
                 css, computeLocalPlatform());
         return csm;
     }

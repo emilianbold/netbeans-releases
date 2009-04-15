@@ -51,7 +51,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
@@ -240,7 +240,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             List<String> command = new ArrayList<String>();
 
             if (isWindows) {
-                String shell = HostInfoUtils.getShell(new ExecutionEnvironment());
+                String shell = HostInfoUtils.getShell(ExecutionEnvironmentFactory.getLocal());
                 command.add(shell);
                 command.add("-c"); // NOI18N
                 command.add("/bin/kill -" + signal + " " + getPID()); // NOI18N

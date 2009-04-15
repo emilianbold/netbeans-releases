@@ -72,7 +72,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
@@ -227,7 +227,7 @@ public class GdbDebugger implements PropertyChangeListener {
         threadsViewInit();
         this.disassembly = new Disassembly(this);
         shareTab = null;
-        execEnv = ExecutionEnvironmentFactory.getLocalExecutionEnvironment();
+        execEnv = ExecutionEnvironmentFactory.getLocal();
     }
 
     public ContextProvider getLookup() {
