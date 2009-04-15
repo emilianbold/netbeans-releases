@@ -50,6 +50,8 @@
                 <file name="x-c" url="resources/cplusplus/CExample"/>
                 <file name="x-fortran" url="resources/fortran/FExample"/>
                 <file name="x-make" url="resources/makefile/MakeExample"/>
+		<file name="sh" url="resources/sh/ShExample.sh"/>
+		<file name="bat" url="resources/bat/BatExample.bat"/>
             </folder>
         </folder>
     </folder>
@@ -57,6 +59,30 @@
     <folder name="Editors">
 
         <folder name="text">
+		<folder name="sh">
+			<folder name="FontsColors">
+				<folder name="NetBeans">
+					<folder name="Defaults">
+						<file name="FontAndColors.xml" url="resources/sh/FontAndColors.xml">
+							<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.sh.Bundle"/>
+						</file>
+					</folder>
+				</folder>
+			</folder>
+			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.sh.Bundle"/>
+		</folder>
+		<folder name="bat">
+			<folder name="FontsColors">
+				<folder name="NetBeans">
+					<folder name="Defaults">
+						<file name="FontAndColors.xml" url="resources/bat/FontAndColors.xml">
+							<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.bat.Bundle"/>
+						</file>
+					</folder>
+				</folder>
+			</folder>
+			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.bat.Bundle"/>
+		</folder>
             <folder name="x-cpp-preprocessor">
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-cnd-editor-cplusplus-CppBracesMatcher.instance">
