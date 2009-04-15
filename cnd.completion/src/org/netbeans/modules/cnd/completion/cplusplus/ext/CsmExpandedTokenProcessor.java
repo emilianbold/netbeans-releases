@@ -112,7 +112,7 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
     }
 
     public boolean isMacro(Token token, int tokenOffset) {
-        return Character.isJavaIdentifierStart(token.text().charAt(0)) && ReferencesSupport.findMacro(macros, tokenOffset) != null;
+        return CndLexerUtilities.isCppIdentifierStart(token.text().charAt(0)) && ReferencesSupport.findMacro(macros, tokenOffset) != null;
     }
 
     public boolean token(Token<CppTokenId> token, int tokenOffset) {

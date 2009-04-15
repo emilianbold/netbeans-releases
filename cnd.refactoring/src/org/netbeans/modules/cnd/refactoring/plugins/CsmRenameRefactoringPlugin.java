@@ -46,6 +46,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Position.Bias;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -69,7 +70,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * The actual Renaming refactoring work for C/C++. The skeleton (name checks etc.) based
@@ -106,7 +106,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
             return fastCheckProblem;
         }
         
-        if (!Utilities.isJavaIdentifier(newName)) {
+        if (!CndLexerUtilities.isCppIdentifier(newName)) {
             String s = getString("ERR_InvalidIdentifier"); //NOI18N
             String msg = new MessageFormat(s).format(
                     new Object[] {newName}
