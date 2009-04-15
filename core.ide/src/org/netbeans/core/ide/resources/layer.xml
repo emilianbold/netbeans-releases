@@ -126,6 +126,11 @@ made subject to such option by the copyright holder.
             <folder name="OpenedProjects">
                 <file name="services.wstcgrp" url="services.wstcgrp"/>
             </folder>
+            <file name="InitialLayout.wsgrp" url="InitialLayout.wsgrp"/>
+            <!-- TopComponents in this group are opened when Start Page is closed.-->
+            <folder name="InitialLayout">
+                <file name="services.wstcgrp" url="services.wstcgrp"/>
+            </folder>
         </folder>
     </folder>
 </filesystem>
