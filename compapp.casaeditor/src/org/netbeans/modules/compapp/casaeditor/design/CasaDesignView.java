@@ -81,6 +81,17 @@ public class CasaDesignView {
         mScroller = new JScrollPane();
         mScroller.getVerticalScrollBar().setUnitIncrement(30);
         mScroller.getHorizontalScrollBar().setUnitIncrement(20);
+
+        // #138971
+        LookAndFeel laf = UIManager.getLookAndFeel();
+        String lafID = laf.getID();
+        System.out.println("LnF is " + lafID);
+        if (lafID.equals("GTK")  // NOI18N
+//                || lafID.equals("Nimbus")
+                || "true".equalsIgnoreCase(System.getProperty("casa.scrollbars.always"))) { // NOI18N
+            mScroller.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+            mScroller.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        }
         
         final CasaWrapperModel model = mDataObject.getEditorSupport().getModel(); 
         if (model != null) {
