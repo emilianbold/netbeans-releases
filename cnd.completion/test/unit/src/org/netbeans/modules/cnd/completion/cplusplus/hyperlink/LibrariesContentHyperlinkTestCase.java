@@ -194,4 +194,10 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#155122: Completion doesn't work for Qt examples
         performTest("src/qt_usage.cc", 8, 25, "sys_include/QtDecls.h", 4, 5);
     }
+
+    public void test154851() throws Exception {
+        // IZ#154851 : Code completion (assistant) failed if using forward reference
+        performTest("src/iz154851.cc", 5, 9, "sys_include/iz154851_2.h", 2, 1);
+        performTest("src/iz154851.cc", 6, 7, "sys_include/iz154851_2.h", 4, 5);
+    }
 }
