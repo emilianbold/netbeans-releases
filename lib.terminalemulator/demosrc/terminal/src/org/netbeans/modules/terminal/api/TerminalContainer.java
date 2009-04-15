@@ -112,8 +112,10 @@ public final class TerminalContainer extends JComponent {
                     Terminal terminal = (Terminal) component;
                     setButtons(terminal.getActions());
                     setFindBar(terminal.getFindState());
+                    terminal.callBacks().selected();
                 } else {
                     setButtons(new Action[0]);
+                    setFindBar(null);
                 }
             }
         });
@@ -183,7 +185,7 @@ public final class TerminalContainer extends JComponent {
 
     private void setFindBar(FindState findState) {
         findBar.setState(findState);
-        if (findState.isVisible()) {
+        if (findState != null && findState.isVisible()) {
             add(findBar, BorderLayout.SOUTH);
         } else {
             remove(findBar);
@@ -239,12 +241,16 @@ public final class TerminalContainer extends JComponent {
         }
     }
 
-    void reaped(final Terminal who) {
+    /**
+     * Remove who from this.
+     * Mostly manages whether we have tabs and the TopComponents title and such
+     */
+    void removeTerminal(final Terminal who) {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    reaped(who);
+                    removeTerminal(who);
                 }
             });
             return;
@@ -295,5 +301,35 @@ public final class TerminalContainer extends JComponent {
         findBar.setState(findState);
         add(findBar, BorderLayout.SOUTH);
         validate();
+    }
+
+    /**
+     * Handle delegation from containing TopComponent.
+     */
+    public void componentActivated() {
+        Component component;
+        if (component0 != null)
+            component = component0;
+        else
+            component = tabbedPane.getSelectedComponent();
+        if (component instanceof Terminal) {
+            Terminal terminal = (Terminal) component;
+            terminal.callBacks().activated();
+        }
+    }
+
+    /**
+     * Handle delegation from containing TopComponent.
+     */
+    public void componentDeactivated() {
+        Component component;
+        if (component0 != null)
+            component = component0;
+        else
+            component = tabbedPane.getSelectedComponent();
+        if (component instanceof Terminal) {
+            Terminal terminal = (Terminal) component;
+            terminal.callBacks().deactivated();
+        }
     }
 }

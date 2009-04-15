@@ -6,6 +6,7 @@
 package org.netbeans.modules.terminal.ioprovider;
 
 import javax.swing.Action;
+import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
@@ -33,7 +34,14 @@ import org.openide.windows.OutputWriter;
  * </pre>
  * @author ivan
  */
+
+
 public final class TerminalIOProvider extends IOProvider {
+    @Override
+    public String getName() {
+        return "Terminal";      // NOI18N
+    }
+
     @Override
     public InputOutput getIO(String name, Action[] additionalActions) {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -41,7 +49,11 @@ public final class TerminalIOProvider extends IOProvider {
 
     @Override
     public InputOutput getIO(String name, boolean newIO) {
-        return new TerminalInputOutput(name);
+        IOContainer ioContainer = null;
+        if (true)
+            ioContainer = IOContainer.getDefault();
+        return new TerminalInputOutput(name, ioContainer);
+
     }
 
     /**

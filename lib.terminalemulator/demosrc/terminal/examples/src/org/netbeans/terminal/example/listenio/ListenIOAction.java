@@ -52,6 +52,7 @@ public final class ListenIOAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         // Get a Term-based IOPRovider
         IOProvider iop = TerminalIOProviderSupport.getIOProvider();
+        // IOProvider iop = TerminalIOProviderSupport.getIOProviderClassic();
 
         InputOutput io = iop.getIO("TermIOProvider hyperlinks", true);
 
