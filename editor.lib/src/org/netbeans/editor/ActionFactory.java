@@ -201,12 +201,13 @@ public class ActionFactory {
     }
      */
 
-    @EditorActionRegistration(name = BaseKit.removePreviousWordAction)
+    // Disabled annotations due to overriding by camel-case actions in GSF (no concrete mimetype)
+//    @EditorActionRegistration(name = BaseKit.removePreviousWordAction)
     public static class RemoveWordPreviousAction extends LocalBaseAction {
 
         public RemoveWordPreviousAction() {
-            super(MAGIC_POSITION_RESET
-                  | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+            super(BaseKit.removePreviousWordAction,
+                    MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
@@ -238,11 +239,13 @@ public class ActionFactory {
         }
     }
 
-    @EditorActionRegistration(name = BaseKit.removeNextWordAction)
+    // Disabled annotations due to overriding by camel-case actions in GSF (no concrete mimetype)
+//    @EditorActionRegistration(name = BaseKit.removeNextWordAction)
     public static class RemoveWordNextAction extends LocalBaseAction {
 
         public RemoveWordNextAction() {
-            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+            super(BaseKit.removeNextWordAction,
+                    MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
