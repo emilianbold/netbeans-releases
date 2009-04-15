@@ -135,7 +135,8 @@ public class KenaiServiceTest extends NbTestCase {
                 // Fail test if a service wasn't found
                 if (!found) {
                     System.out.println("NOT FOUND");
-                    fail("Service with name [" + goldenServiceName + "] of type [" + goldenServiceType + "] was not returned from the server.");
+                    fail("Service with name [" + goldenServiceName + "] of type [" + goldenServiceType + "] was not returned from the server (or Kenai API is not able to recognize the service).\n" +
+                            "Check what is in the kenaiService variable.");
                 }
             }
         } catch (Throwable e) {
