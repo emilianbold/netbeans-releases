@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,56 +36,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.profiler;
+package org.netbeans.lib.profiler.heap;
 
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
-import org.netbeans.api.project.Project;
-import org.openide.util.Lookup;
+import javax.swing.BoundedRangeModel;
+import javax.swing.DefaultBoundedRangeModel;
+
 
 /**
- *
- * @author mkleint
+ * @author Tomas Hurka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=72)
-public class ProfilerActionsProvider extends AbstractMavenActionsProvider {
-    final private Set<String> supportedTypes = new HashSet<String>() {
-        {
-            add(NbMavenProject.TYPE_JAR);
-            add(NbMavenProject.TYPE_WAR);
-            add(NbMavenProject.TYPE_EJB);
-            add(NbMavenProject.TYPE_NBM);
-            add(NbMavenProject.TYPE_NBM_APPLICATION);
+public final class HeapProgress {
+    
+    public static final int PROGRESS_MAX = 1000;
+    private static ThreadLocal progressThreadLocal = new ThreadLocal();
+    
+    private HeapProgress() {
+        
+    }
+    
+    public static BoundedRangeModel getProgress() {
+        BoundedRangeModel model = (BoundedRangeModel) progressThreadLocal.get();
+        
+        if (model == null) {
+            model = new DefaultBoundedRangeModel(0,0,0,PROGRESS_MAX);
+            progressThreadLocal.set(model);
         }
-    };
-
-    @Override
-    public boolean isActionEnable(String action, Project project, Lookup lookup) {
-        if (!(action.equals("profile") || action.equals("profile-single") || action.equals("profile-tests"))) {
-            return false;
+        return model;
+    }
+    
+    static void progress(long counter, long startOffset, long value, long endOffset) {
+        // keep this method short so that it can be inlined 
+        if (counter % 100000 == 0) {
+            progress(value, endOffset, startOffset);
         }
-        NbMavenProject mavenprj = project.getLookup().lookup(NbMavenProject.class);
-        String type = mavenprj.getPackagingType();
-        if (supportedTypes.contains(type)) {
-            return super.isActionEnable(action, project, lookup);
-        }
-        return false;
     }
 
-    @Override
-    protected InputStream getActionDefinitionStream() {
-            String path = "/org/netbeans/modules/maven/profiler/ActionMappings.xml"; //NOI18N
-            InputStream in = getClass().getResourceAsStream(path);
-            assert in != null : "no instream for " + path; //NOI18N
-            return in;
+    private static void progress(final long value, final long endOffset, final long startOffset) {
+        BoundedRangeModel model = (BoundedRangeModel) progressThreadLocal.get();
+        if (model != null) {
+            long val = PROGRESS_MAX*(value - startOffset)/(endOffset - startOffset);
+            model.setValue((int)val);
+        }
+    }
+    
+    static void progressFinish() {
+        BoundedRangeModel model = (BoundedRangeModel) progressThreadLocal.get();
+        if (model != null) {
+            model.setValue(PROGRESS_MAX);
+            progressThreadLocal.remove();
+        }
     }
 }
