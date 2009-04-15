@@ -453,6 +453,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             List l;
             CallStackFrame[] theCachedFrames = null;
                 int max = ThreadReferenceWrapper.frameCount(threadReference);
+                if (to < 0) to = max; // Fight strange negative frame counts from http://www.netbeans.org/issues/show_bug.cgi?id=162448
                 from = Math.min(from, max);
                 to = Math.min(to, max);
                 if (to - from > 1) {  /*TODO: Frame caching cause problems with invalid frames. Some fix is necessary...
