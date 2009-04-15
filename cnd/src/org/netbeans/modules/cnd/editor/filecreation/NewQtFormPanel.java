@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.editor.filecreation;
 import java.awt.Component;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -89,7 +90,7 @@ public class NewQtFormPanel extends CndPanel {
             setErrorMessage(""); // NOI18N
             return false;
         }
-        if (!org.openide.util.Utilities.isJavaIdentifier(getGui().getFormName())) {
+        if (!CndLexerUtilities.isCppIdentifier(getGui().getFormName())) {
             setErrorMessage(NbBundle.getMessage(NewQtFormPanel.class, "MSG_not_valid_formname")); // NOI18N
             return false;
         }
