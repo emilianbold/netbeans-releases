@@ -56,9 +56,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -83,6 +86,8 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openidex.search.FileObjectFilter;
+import org.openidex.search.SearchInfoFactory;
 /**
  *
  * @author Andrei Badea, Petr Hrebejk
@@ -418,6 +423,50 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                     files.add(fd);
                     LOGGER.finer("Found: " + file.getPath() + ", project=" + project + ", currentProject=" + currentProject + ", preferred=" + preferred);
                 }
+                //PENDING Now we have to search folders which not included in Search API
+                Project[] projects = OpenProjects.getDefault().getOpenProjects();
+                Enumeration <? extends FileObject> projectFolders;
+                Collection <? extends FileObject> allFolders = new ArrayList<FileObject>();
+                final FileObjectFilter[] filters = new FileObjectFilter[]{SearchInfoFactory.VISIBILITY_FILTER, SearchInfoFactory.SHARABILITY_FILTER};
+                for (Project p : projects) {
+                    //Add src root dir to the list
+                    if (!roots.contains(p.getProjectDirectory()))
+                        ((Collection<FileObject>)allFolders).add(p.getProjectDirectory());
+                    projectFolders = p.getProjectDirectory().getFolders(false);
+                    while (projectFolders.hasMoreElements()) {
+                        FileObject current = projectFolders.nextElement();
+                        if (!roots.contains(current) && checkAgainstFilters(current, filters)) {
+                            ((Collection<FileObject>)allFolders).add(current);
+                            Enumeration <? extends FileObject> currentFolders = current.getFolders(true);
+                            while( currentFolders.hasMoreElements())
+                                ((Collection<FileObject>)allFolders).add(currentFolders.nextElement());
+                        }
+                    }
+                }
+                //Looking for matching files in all found folders
+                for (FileObject folder: allFolders) {
+                    assert folder.isFolder();
+                    Enumeration<? extends FileObject> filesInFolder = folder.getData(false);
+                    while (filesInFolder.hasMoreElements()) {
+                        FileObject file = filesInFolder.nextElement();
+                        if (file.isFolder()) continue;
+
+                        if (isMatchedFileObject(searchType, file, text)) {
+                            Project project = FileOwnerQuery.getOwner(file);
+                            boolean preferred = project != null && currentProject != null ? project.getProjectDirectory() == currentProject.getProjectDirectory() : false;
+                            String relativePath = file.getPath();
+                            relativePath = relativePath.substring(0,relativePath.length()-file.getNameExt().length());
+                            relativePath = relativePath.substring(project.getProjectDirectory().getPath().length()+1,relativePath.length());
+                            FileDescription fd = new FileDescription(
+                                file,
+                                relativePath,
+                                project,
+                                preferred
+                            );
+                            files.add(fd);
+                        }
+                    }
+                }
                 Collections.sort(files, new FileDescription.FDComarator(panel.isPreferedProject(), panel.isCaseSensitive()));
                 return files;
             } catch (IOException ioe) {
@@ -465,7 +514,143 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 //            }
         }
     } // End of Worker class
-    
+
+    private boolean isMatchedFileObject(QuerySupport.Kind searchType, FileObject file, String text) {
+        boolean isMatched = false;
+        switch (searchType) {
+            case EXACT: {
+                isMatched = file.getNameExt().equals(text);
+                break;
+            }
+            case PREFIX: {
+                if (text.length() == 0) {
+                    isMatched = true;
+                } else {
+                    isMatched = file.getNameExt().startsWith(text);
+                }
+                break;
+            }
+            case CASE_INSENSITIVE_PREFIX: {
+                if (text.length() == 0) {
+                    isMatched = true;
+                } else {
+                    isMatched = file.getNameExt().toLowerCase().startsWith(text.toLowerCase());
+                }
+                break;
+            }
+            case CAMEL_CASE: {
+                if (text.length() == 0) {
+                    throw new IllegalArgumentException ();
+                }
+                {
+                    StringBuilder sb = new StringBuilder();
+                    String prefix = null;
+                    int lastIndex = 0;
+                    int index;
+                    do {
+                        index = findNextUpper(text, lastIndex + 1);
+                        String token = text.substring(lastIndex, index == -1 ? text.length(): index);
+                        if ( lastIndex == 0 ) {
+                            prefix = token;
+                        }
+                        sb.append(token);
+                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
+                        lastIndex = index;
+                    }
+                    while(index != -1);
+
+                    final Pattern pattern = Pattern.compile(sb.toString());
+                    Matcher m = pattern.matcher(file.getNameExt());
+                    isMatched = m.matches();
+                }
+                break;
+
+            }
+
+            case CASE_INSENSITIVE_REGEXP:
+                if (text.length() == 0) {
+                    throw new IllegalArgumentException ();
+                } else {
+                    if (Character.isJavaIdentifierStart(text.charAt(0))) {
+                        Pattern pattern = Pattern.compile(text,Pattern.CASE_INSENSITIVE);
+                        Matcher m = pattern.matcher(file.getNameExt());
+                        isMatched = m.matches();
+                    }
+                    else {
+                        Pattern pattern = Pattern.compile(text,Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+                        Matcher m = pattern.matcher(file.getNameExt());
+                        isMatched = m.matches();
+                    }
+                    break;
+                }
+            case REGEXP:
+                if (text.length() == 0) {
+                    throw new IllegalArgumentException ();
+                } else {
+                    if (Character.isJavaIdentifierStart(text.charAt(0))) {
+                        final Pattern pattern = Pattern.compile(text);
+                        Matcher m = pattern.matcher(file.getNameExt());
+                        isMatched = m.matches();
+                    }
+                    else {
+                        final Pattern pattern = Pattern.compile(text,Pattern.DOTALL);
+                        Matcher m = pattern.matcher(file.getNameExt());
+                        isMatched = m.matches();
+                    }
+                    break;
+                }
+
+            case CASE_INSENSITIVE_CAMEL_CASE: {
+                if (text.length() == 0) {
+                    throw new IllegalArgumentException ();
+                }
+                {
+                    StringBuilder sb = new StringBuilder();
+                    String prefix = null;
+                    int lastIndex = 0;
+                    int index;
+                    do {
+                        index = findNextUpper(text, lastIndex + 1);
+                        String token = text.substring(lastIndex, index == -1 ? text.length(): index);
+                        if ( lastIndex == 0 ) {
+                            prefix = token;
+                        }
+                        sb.append(token);
+                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
+                        lastIndex = index;
+                    }
+                    while(index != -1);
+
+                    final Pattern pattern = Pattern.compile(sb.toString(),Pattern.CASE_INSENSITIVE);
+                    Matcher m = pattern.matcher(file.getNameExt());
+                    isMatched = m.matches();
+                }
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException (searchType.toString());
+
+        }
+        return isMatched;
+    }//checkMatch
+    private static int findNextUpper(String text, int offset ) {
+
+        for( int i = offset; i < text.length(); i++ ) {
+            if ( Character.isUpperCase(text.charAt(i)) ) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private boolean checkAgainstFilters(FileObject folder, FileObjectFilter[] filters) {
+        assert folder.isFolder();
+        for (FileObjectFilter filter: filters) {
+            if (filter.traverseFolder(folder) == FileObjectFilter.DO_NOT_TRAVERSE)
+                return false;
+        }
+        return true;
+    }
     private class DialogButtonListener implements ActionListener {
         
         private FileSearchPanel panel;

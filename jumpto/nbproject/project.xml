@@ -180,6 +180,15 @@ Contributor(s): Andrei Badea
                         <specification-version>6.14</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openidex.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>3</release-version>
+                        <specification-version>3.20</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
