@@ -38,18 +38,21 @@
  */
 package org.netbeans.modules.nativeexecution.util;
 
+import java.io.IOException;
 import java.security.acl.NotOwnerException;
 import java.util.Arrays;
+import java.util.concurrent.CancellationException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.nativeexecution.NativeExecutionTest;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupportProvider;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -81,13 +84,21 @@ public class SolarisPrivilegesSupportTest extends NativeExecutionTest {
      */
     @Test
     public void test() {
-        SolarisPrivilegesSupport sps = SolarisPrivilegesSupportProvider.getSupportFor(ExecutionEnvironmentFactory.getLocal());
-        System.out.println(sps.getExecutionPrivileges());
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "blackbox.russia.sun.com"); // NOI18N
         try {
-            sps.requestPrivileges(Arrays.asList("dtrace_kernel"), true); // NOI18N
-        } catch (NotOwnerException ex) {
-            Exceptions.printStackTrace(ex);
+            ConnectionManager.getInstance().connectTo(execEnv);
+            SolarisPrivilegesSupport sps = SolarisPrivilegesSupportProvider.getSupportFor(execEnv);
+            System.out.println(sps.getExecutionPrivileges());
+            try {
+                sps.requestPrivileges(Arrays.asList("dtrace_kernel"), true); // NOI18N
+            } catch (NotOwnerException ex) {
+                System.out.println(ex);
+            }
+            System.out.println(sps.getExecutionPrivileges());
+        } catch (IOException ex) {
+            System.out.println(ex);
+        } catch (CancellationException ex) {
+            System.out.println(ex);
         }
-        System.out.println(sps.getExecutionPrivileges());
     }
 }

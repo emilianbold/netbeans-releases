@@ -60,7 +60,7 @@ public final class FetchPrivilegesTask implements Computable<ExecutionEnvironmen
     public List<String> compute(ExecutionEnvironment execEnv) {
         /*
          * To find out actual privileges that tasks will have use
-         * > /bin/ppriv -v $$ | /bin/grep [IL]
+         * > ppriv -v $$ | grep [IL]
          *
          * and return intersection of list of I (inherit) and L (limit)
          * privileges...

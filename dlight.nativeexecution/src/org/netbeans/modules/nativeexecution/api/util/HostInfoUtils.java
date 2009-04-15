@@ -318,8 +318,8 @@ public final class HostInfoUtils {
                 "amd64".equals(os_arch) || // NOI18N
                 "athlon".equals(os_arch)) { // NOI18N
             return Platform.HardwareType.X86;
-        } else if ("sparc".equals(os_arch)) {
-            return Platform.HardwareType.X86;
+        } else if ("sparc".equals(os_arch)) { // NOI18N
+            return Platform.HardwareType.SPARC;
         } else {
             return Platform.HardwareType.UNKNOWN;
         }
@@ -463,7 +463,7 @@ public final class HostInfoUtils {
             command.append("uname -s &&"); // NOI18N
             command.append("test \"unknown\" = `uname -p` && uname -m || uname -p && "); // NOI18N
             command.append("test \"SunOS\" = `uname -s` && isainfo -b || uname -a | grep x86_64 || echo 32 && "); // NOI18N
-            command.append("ls sh 2>/dev/null || ls /usr/bin/sh 2>/dev/null"); // NOI18N
+            command.append("/bin/ls /bin/sh 2>/dev/null || /bin/ls /usr/bin/sh 2>/dev/null"); // NOI18N
 
             synchronized (session) {
                 echannel = (ChannelExec) session.openChannel("exec"); // NOI18N

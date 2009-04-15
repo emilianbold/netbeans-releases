@@ -92,11 +92,13 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             if (!isWindows) {
                 try {
-                    new ProcessBuilder("/bin/chmod", "+x", runScript).start().waitFor(); // NOI18N
+                    ProcessBuilder pb = new ProcessBuilder("chmod", "+x", runScript); // NOI18N
+                    pb.environment().put("PATH", "/bin:/usr/bin"); // NOI18N
+                    pb.start().waitFor();
                 } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
+//                    Exceptions.printStackTrace(ex);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+//                    Exceptions.printStackTrace(ex);
                 }
             } else {
                 runScript = runScript.replaceAll("\\\\", "/"); // NOI18N
