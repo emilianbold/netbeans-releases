@@ -213,6 +213,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             return false;
         } catch (IllegalThreadStateExceptionWrapper itsex) {
             return false;
+        } catch (IndexOutOfBoundsException ioobex) {
+            return false; // No frame exists?
         }
         Location loc = LocatableWrapper.location(sf);
         Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();

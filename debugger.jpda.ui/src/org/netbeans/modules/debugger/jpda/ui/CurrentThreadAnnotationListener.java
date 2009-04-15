@@ -422,23 +422,27 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     private class AllThreadsAnnotator implements Runnable, PropertyChangeListener {
         
         private boolean active = true;
-        private JPDADebugger debugger;
-        private Map<JPDAThread, Object> threadAnnotations = new HashMap<JPDAThread, Object>();
-        private Set<JPDAThread> threadsToAnnotate = new HashSet<JPDAThread>();
-        private Map<JPDAThread, FutureAnnotation> futureAnnotations = new HashMap<JPDAThread, FutureAnnotation>();
-        private Set<Object> annotationsToRemove = new HashSet<Object>();
-        private RequestProcessor.Task task;
+        private final JPDADebugger debugger;
+        private final Map<JPDAThread, Object> threadAnnotations = new HashMap<JPDAThread, Object>();
+        private final Set<JPDAThread> threadsToAnnotate = new HashSet<JPDAThread>();
+        private final Map<JPDAThread, FutureAnnotation> futureAnnotations = new HashMap<JPDAThread, FutureAnnotation>();
+        private final Set<Object> annotationsToRemove = new HashSet<Object>();
+        private final RequestProcessor.Task task;
         
         public AllThreadsAnnotator(JPDADebugger debugger) {
             this.debugger = debugger;
+            RequestProcessor rp;
             try {
-                RequestProcessor rp = ((Session) debugger.getClass().getMethod("getSession").invoke(debugger)).
+                rp = ((Session) debugger.getClass().getMethod("getSession").invoke(debugger)).
                         lookupFirst(null, RequestProcessor.class);
-                if (rp == null) return ; // Session is finishing
-                task = rp.create(this);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
+                rp = null;
+            }
+            if (rp != null) {
                 task = rp.create(this);
+            } else {
+                task = CurrentThreadAnnotationListener.this.rp.create(this);
             }
 
             //System.err.println("AllThreadsAnnotator("+Integer.toHexString(debugger.hashCode())+").NEW");

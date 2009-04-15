@@ -795,7 +795,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 File exefile = new File(exepath);
                 if (exefile.exists()) {
                     String path = getPathFromSymlink(pathfile.getAbsolutePath());
-                    if (path.equals(exefile.getAbsolutePath())) {
+                    if (comparePaths(path, exefile.getAbsolutePath())) {
                         return true;
                     }
                 }
@@ -2053,12 +2053,15 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private static boolean isAbsolute(MakeConfiguration conf, String path) {
-        int platform = conf.getPlatform().getValue();
-        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+        if (getDevelopmentHostPlatform(conf) == PlatformTypes.PLATFORM_WINDOWS) {
             return path.length() > 2 && path.charAt(1) == ':' && path.charAt(2) == '/';
         } else {
             return path.length() > 0 && path.charAt(0) == '/';
         }
+    }
+
+    private static int getDevelopmentHostPlatform(MakeConfiguration conf) {
+        return HostInfoProvider.getPlatform(conf.getDevelopmentHost().getExecutionEnvironment());
     }
 
     /**
@@ -2070,26 +2073,23 @@ public class GdbDebugger implements PropertyChangeListener {
      * @return true iff the input parameters get an executable
      */
     private static boolean isExecutableOrSharedLibrary(MakeConfiguration conf, String path) {
-        File file;
-        int platform = conf.getPlatform().getValue();
-
         if (conf.isApplicationConfiguration() || conf.isDynamicLibraryConfiguration()) {
             return true;
         } else if (conf.isMakefileConfiguration()) {
-            if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            if (getDevelopmentHostPlatform(conf) == PlatformTypes.PLATFORM_WINDOWS) {
                 if (path.endsWith(".dll")) { // NOI18N
                     return false;
                 } else if (!path.endsWith(".exe")) { // NOI18N
                     path = path + ".exe"; // NOI18N
                 }
-                file = new File(path);
+                File file = new File(path);
                 if (file.exists()) {
                     return true;
                 }
             }
-            file = new File(path);
+            File file = new File(path);
             if (file.exists()) {
-                String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(file));
+                String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(FileUtil.normalizeFile(file)));
                 if (mime_type != null && mime_type.startsWith("application/x-exe")) { // NOI18N
                     return true;
                 }
