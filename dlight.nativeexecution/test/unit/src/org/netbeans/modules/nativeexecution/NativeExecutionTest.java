@@ -36,58 +36,49 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.util;
 
-import java.security.acl.NotOwnerException;
-import java.util.Arrays;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.netbeans.modules.nativeexecution.NativeExecutionTest;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
-import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupportProvider;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.nativeexecution;
 
-/**
- *
- * @author ak119685
- */
-public class SolarisPrivilegesSupportTest extends NativeExecutionTest {
+import java.io.File;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
-    public SolarisPrivilegesSupportTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    /**
-     * Test of getInstance method, of class SolarisPrivilegesSupportImpl.
-     */
-    @Test
-    public void test() {
-        SolarisPrivilegesSupport sps = SolarisPrivilegesSupportProvider.getSupportFor(ExecutionEnvironmentFactory.getLocal());
-        System.out.println(sps.getExecutionPrivileges());
-        try {
-            sps.requestPrivileges(Arrays.asList("dtrace_kernel"), true); // NOI18N
-        } catch (NotOwnerException ex) {
-            Exceptions.printStackTrace(ex);
+public class NativeExecutionTest {
+    static {
+        String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
+        File junitWorkdir = new File(System.getProperty("nbjunit.workdir")); // NOI18N
+        
+        while (true) {
+            String dirName = junitWorkdir.getName();
+            junitWorkdir = junitWorkdir.getParentFile();
+            if ("dlight.nativeexecution".equals(dirName) || "".equals(dirName)) { // NOI18N
+                break;
+            }
         }
-        System.out.println(sps.getExecutionPrivileges());
+
+        File dlightDir = new File(junitWorkdir, "nbbuild/netbeans/dlight1"); // NOI18N
+        System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + ":" + dirs); // NOI18N
+
+        Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
+        log.setLevel(Level.ALL);
+
+        log.addHandler(new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                System.err.printf("%s [%s]: %s\n", record.getLevel(), record.getLoggerName(), record.getMessage());
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+
+            }
+        });
     }
 }

@@ -44,12 +44,7 @@ import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -58,9 +53,9 @@ import org.junit.Test;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.TaskFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.Exceptions;
 import static org.junit.Assert.*;
 
@@ -68,30 +63,8 @@ import static org.junit.Assert.*;
  *
  * @author ak119685
  */
-public class LocalNativeProcessTest {
+public class LocalNativeProcessTest extends NativeExecutionTest {
     ExecutionEnvironment execEnv;
-
-    static {
-        Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
-        log.setLevel(Level.ALL);
-        
-        log.addHandler(new Handler() {
-
-            @Override
-            public void publish(LogRecord record) {
-                System.err.println(record.getLoggerName() + ": " + record.getMessage());
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() throws SecurityException {
-
-            }
-        });
-    }
 
     public LocalNativeProcessTest() {
     }
