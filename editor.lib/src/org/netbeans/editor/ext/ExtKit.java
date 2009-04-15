@@ -393,7 +393,13 @@ public class ExtKit extends BaseKit {
             if (a instanceof BaseAction) {
                 itemText = ((BaseAction)a).getPopupMenuText(target);
             } else {
-                itemText = actionName;
+                itemText = (String) a.getValue("popupText");
+                if (itemText == null) {
+                    itemText = (String) a.getValue("menuText");
+                    if (itemText == null) {
+                        itemText = actionName;
+                    }
+                }
             }
             return itemText;
         }

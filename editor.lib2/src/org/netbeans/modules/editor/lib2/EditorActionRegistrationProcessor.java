@@ -175,30 +175,17 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
         // Resolve short description bundle key
         String shortDescription = annotation.shortDescription();
         if (shortDescription.length() > 0) {
-            BundleHandler bundleHandler = new BundleHandler(actionName, className);
-            String key;
             if ("BY_ACTION_NAME".equals(shortDescription)) {
-                // Leave bundlePkg and bundleName null
-                key = actionName;
-            } else {
-                key = bundleHandler.parseKey(shortDescription);
+                shortDescription = "#" + actionName;
             }
-            bundleHandler.initBundle(processingEnv);
-            bundleHandler.verifyBundleKey(key);
-            shortDescription = bundleHandler.completeKey(key);
             file.bundlevalue(Action.SHORT_DESCRIPTION, shortDescription);
         }
 
         // Resolve menu text bundle key
         String menuText = annotation.menuText();
         if (menuText.length() > 0) {
-            BundleHandler bundleHandler = new BundleHandler(actionName, className);
-            String key = bundleHandler.parseKey(menuText);
-            bundleHandler.initBundle(processingEnv);
-            bundleHandler.verifyBundleKey(key);
-            menuText = bundleHandler.completeKey(key);
             file.bundlevalue("menuText", menuText);
-        } else if (shortDescription.length() > 0) { // Use shortDesc (already verified)
+        } else if (shortDescription.length() > 0) { // Use shortDesc instead
             menuText = shortDescription;
             file.bundlevalue("menuText", menuText);
         }
@@ -206,13 +193,8 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
         // Resolve popup menu text bundle key
         String popupText = annotation.popupText();
         if (popupText.length() > 0) {
-            BundleHandler bundleHandler = new BundleHandler(actionName, className);
-            String key = bundleHandler.parseKey(popupText);
-            bundleHandler.initBundle(processingEnv);
-            bundleHandler.verifyBundleKey(key);
-            popupText = bundleHandler.completeKey(key);
             file.bundlevalue("popupText", popupText);
-        } else if (menuText.length() > 0) { // Use shortDesc (already verified)
+        } else if (menuText.length() > 0) { // Use menuText instead
             popupText = menuText;
             file.bundlevalue("popupText", popupText);
         }
@@ -224,102 +206,6 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
             file.newvalue("delegate", className);
         }
         file.write();
-    }
-
-    private static final class BundleHandler {
-
-        private static BundleHandler lastHandler;
-
-        String bundlePkg;
-
-        String bundleName;
-
-        ResourceBundle bundle;
-
-        final String actionName;
-
-        final String actionClassName;
-
-        BundleHandler(String actionName, String actionClassName) {
-            this.actionName = actionName;
-            this.actionClassName = actionClassName;
-        }
-
-        String parseKey(String keyDescription) throws LayerGenerationException {
-            String key;
-            if (keyDescription.startsWith("#")) {
-                // Leave bundlePkg and bundleName null
-                key = keyDescription.substring(1);
-            } else { // Full spec "bundle#key"
-                int hashIndex = keyDescription.indexOf('#');
-                if (hashIndex == -1) {
-                    throw new LayerGenerationException("Annotation \"" + actionName + // NOI18N
-                            ", class=" + actionClassName + // NOI18N
-                            ": bundle key description does not contain '#': " + keyDescription);
-                }
-                // Bundle-pkg.bundle-name format
-                bundlePkg = keyDescription.substring(0, hashIndex);
-                int lastDotIndex = bundlePkg.lastIndexOf('.');
-                if (lastDotIndex == -1) {
-                    lastDotIndex = 0;
-                }
-                bundleName = bundlePkg.substring(lastDotIndex + 1);
-                bundlePkg = bundlePkg.substring(0, lastDotIndex);
-                key = keyDescription.substring(hashIndex + 1);
-            }
-            return key;
-        }
-
-        void initBundle(ProcessingEnvironment processingEnv) throws LayerGenerationException {
-            if (bundlePkg == null) { // Use common bundle in action's package
-                assert (bundleName == null);
-                int lastDotIndex = actionClassName.lastIndexOf('.');
-                if (lastDotIndex == -1) // no dots
-                    lastDotIndex = 0;
-                bundlePkg = actionClassName.substring(0, lastDotIndex);
-                bundleName = "Bundle";
-            }
-            if (lastHandler != null &&
-                bundlePkg.equals(lastHandler.bundlePkg) &&
-                bundleName.equals(lastHandler.bundleName))
-            {
-                bundle = lastHandler.bundle;
-                bundlePkg = lastHandler.bundlePkg;
-                bundleName = lastHandler.bundleName;
-
-            }
-            assert (bundlePkg != null && bundleName != null);
-            try {
-                String bundleNameSuffix = bundleName + ".properties";
-                javax.tools.FileObject bundleFileObject = processingEnv.getFiler().getResource(
-                        StandardLocation.SOURCE_PATH, bundlePkg, bundleNameSuffix);
-                bundle = new PropertyResourceBundle(bundleFileObject.openInputStream());
-            } catch (IOException ex) {
-//            ex.printStackTrace(); // Print the queried file
-                throw new LayerGenerationException("Action annotation \"" + actionName + // NOI18N
-                        "\", class=" + actionClassName + // NOI18N
-                        ": Bundle \"" + bundlePkg + '.' + bundleName + // NOI18N
-                        "\" not found."); // NOI18N
-            }
-
-            lastHandler = this;
-        }
-
-        void verifyBundleKey(String key) throws LayerGenerationException {
-            try {
-                bundle.getString(key); // would throw MissingResourceException
-            } catch (MissingResourceException ex) {
-                throw new LayerGenerationException("Action annotation \"" + actionName + // NOI18N
-                        "\", class=" + actionClassName + // NOI18N
-                        ": Bundle \"" + bundlePkg + '.' + bundleName + // NOI18N
-                        "\" does not contain key \"" + key + '"'); // NOI18N
-            }
-        }
-
-        String completeKey(String key) {
-            return bundlePkg + '.' + bundleName + '#' + key;
-        }
-
     }
 
 }
