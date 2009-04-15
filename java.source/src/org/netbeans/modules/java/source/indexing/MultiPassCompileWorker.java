@@ -240,11 +240,6 @@ final class MultiPassCompileWorker extends CompileWorker {
                     for (JavaFileObject generated : jt.generate(types)) {
                         if (generated instanceof OutputFileObject) {
                             previous.createdFiles.add(((OutputFileObject) generated).getFile());
-                            String path = ((OutputFileObject)generated).getPath();
-                            File f = new File(FileObjects.stripExtension(path) + '.' + FileObjects.SIG);
-                            if (f.exists()) {
-                                f.delete();
-                            }
                         } else {
                             // presumably should not happen
                         }
