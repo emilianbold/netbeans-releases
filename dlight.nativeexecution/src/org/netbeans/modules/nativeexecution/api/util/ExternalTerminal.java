@@ -197,12 +197,12 @@ public final class ExternalTerminal {
         StringBuilder cmd = new StringBuilder();
 
         for (String s : searchPaths) {
-            cmd.append("/bin/ls " + s + "/" + command + " || "); // NOI18N
+            cmd.append("ls " + s + "/" + command + " || "); // NOI18N
         }
 
         cmd.append("which " + command); // NOI18N
 
-        String shell = "/bin/sh"; // NOI18N
+        String shell = "sh"; // NOI18N
 
         try {
             shell = HostInfoUtils.getShell(execEnv);
