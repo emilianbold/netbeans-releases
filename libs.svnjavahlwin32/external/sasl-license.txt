@@ -1,4 +1,4 @@
-Name: Apache Portable Runtime
+Name: SASL Library
 Version: 2.1.x
 Description: Security and authentication library
 License: CyrusLicensing
