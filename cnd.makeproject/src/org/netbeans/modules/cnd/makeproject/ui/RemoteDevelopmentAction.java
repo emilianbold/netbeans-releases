@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -50,10 +51,12 @@ import javax.swing.JSeparator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
+import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.util.NbBundle;
@@ -65,6 +68,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
      */
     private static final String HOST_KEY = "org.netbeans.modules.cnd.makeproject.ui.RemoteHost"; // NOI18N
     private static final String CONF = "org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration"; // NOI18N
+    private static final String PROJECT = "org.netbeans.modules.cnd.makeproject.api.configurations.MakeProject"; // NOI18N
     private JMenu subMenu;
     private Project project;
 
@@ -114,6 +118,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             subMenu.add(jmi);
             jmi.putClientProperty(HOST_KEY, hkey);
             jmi.putClientProperty(CONF, mconf);
+            jmi.putClientProperty(PROJECT, project);
             jmi.addActionListener(jmiActionListener);
         }
 
@@ -141,6 +146,10 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
                             ExecutionEnvironmentFactory.fromString(hkey));
                     mconf.setDevelopmentHost(dhc);
                     mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
+                    Object o = jmi.getClientProperty(PROJECT);
+                    assert (o instanceof Project);
+                    NativeProjectProvider npp = ((Project) o).getLookup().lookup(NativeProjectProvider.class);
+                    npp.propertyChange(new PropertyChangeEvent(this, Configurations.PROP_ACTIVE_CONFIGURATION, null, mconf));
                 }
             }
 
