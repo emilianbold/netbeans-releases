@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.ruby.elements;
 
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.Node;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 
