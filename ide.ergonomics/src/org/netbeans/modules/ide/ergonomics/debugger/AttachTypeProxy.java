@@ -45,7 +45,6 @@ import java.util.concurrent.Callable;
 import javax.swing.JComponent;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
-import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.netbeans.spi.debugger.ui.AttachType;
@@ -159,10 +158,8 @@ public class AttachTypeProxy extends AttachType implements Controller, Callable<
     private Controller getRealController() {
         Controller controller = null;
         if (delegate != null) {
-             controller = delegate.getController();
-             if (controller == null && (delegate.getCustomizer() instanceof Controller)) {
-                 controller = (Controller) delegate.getCustomizer();
-             }
+            JComponent c = delegate.getCustomizer();
+            controller = delegate.getController();
         }
         return controller;
     }
