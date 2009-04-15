@@ -24,6 +24,7 @@ import org.netbeans.modules.nativeexecution.PlatformAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.Platform;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.WindowsSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -118,7 +119,7 @@ public final class HostInfoUtils {
             }
 
             NativeProcessBuilder npb = new NativeProcessBuilder(
-                    execEnv, cmd_test).setArguments("-f", fname); // NOI18N
+                    execEnv, cmd_test).setArguments("-e", fname); // NOI18N
 
             try {
                 fileExists = npb.call().waitFor() == 0;
@@ -390,21 +391,23 @@ public final class HostInfoUtils {
 
         ChannelExec echannel = null;
         ExecEnvInfo info = new ExecEnvInfo();
+        info.cpuType = info.instructionSet = info.os = info.shell = "unknown"; //NOI18N
+        info.tmpDirBase = "/tmp"; // NOI18N
         Platform.HardwareType hardwareType = Platform.HardwareType.UNKNOWN;
         Platform.OSType oSType = Platform.OSType.UNKNOWN;
 
         try {
             StringBuilder command = new StringBuilder();
 
-            command.append("U=`ls /bin/uname 2>/dev/null || ls /usr/bin/uname 2>/dev/null` &&"); // NOI18N
-            command.append("O=`$U -s` && /bin/echo $O &&"); // NOI18N
-            command.append("P=`$U -p` && test 'unknown' = $P && $U -m || echo $P &&"); // NOI18N
-            command.append("test 'SunOS' = $O && /bin/isainfo -b || $U -a | grep x86_64 || echo 32 &&"); // NOI18N
-            command.append("/bin/ls /bin/sh 2>/dev/null || /bin/ls /usr/bin/sh 2>/dev/null"); // NOI18N
+            command.append("uname -s &&"); // NOI18N
+            command.append("test \"unknown\" = `uname -p` && uname -m || uname -p && "); // NOI18N
+            command.append("test \"SunOS\" = `uname -s` && isainfo -b || uname -a | grep x86_64 || echo 32 && "); // NOI18N
+            command.append("ls /bin/sh 2>/dev/null || ls /usr/bin/sh 2>/dev/null"); // NOI18N
 
             synchronized (session) {
                 echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-                echannel.setCommand(command.toString());
+                echannel.setEnv("PATH", "/bin:/usr/bin"); // NOI18N
+                echannel.setCommand("sh -c '" + command.toString() + "'"); // NOI18N
                 echannel.connect();
             }
 
@@ -413,7 +416,7 @@ public final class HostInfoUtils {
             String str;
             int lineno = 0;
             while ((str = reader.readLine()) != null) {
-                switch (lineno) {
+                switch (lineno) {                    
                     case 0:
                         String uname_s = str.trim();
                         if (uname_s.contains("_NT-")) { // NOI18N catches Cygwin and MinGW
@@ -446,6 +449,11 @@ public final class HostInfoUtils {
                 lineno++;
             }
             echannel.getExitStatus();
+            if (lineno < 3) {
+                Logger.getInstance().warning(
+                        String.format("Error getting remote host info for %s: %d lines instead of %d\n", //NOI18N
+                        execEnv, lineno, 3));
+            }
         } catch (JSchException ex) {
             Exceptions.printStackTrace(ex);
             return null;

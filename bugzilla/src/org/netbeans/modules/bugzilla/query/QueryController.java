@@ -128,7 +128,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private Task task;
 
     private final BugzillaRepository repository;
-    private BugzillaQuery query;
+    protected BugzillaQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss, EEE MMM d yyyy"); // NOI18N
     private NotifyListener notifyListener;
@@ -737,14 +737,23 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void onAutoRefresh() {
         final boolean autoRefresh = panel.refreshCheckBox.isSelected();
         BugzillaConfig.getInstance().setQueryAutoRefresh(query.getDisplayName(), autoRefresh);
-        BugtrackingUtil.logAutoRefreshEvent(BugzillaConnector.getConnectorName(), autoRefresh);
+        logAutoRefreshEvent(autoRefresh);
         if(autoRefresh) {
             scheduleForRefresh();
         } else {
             repository.stopRefreshing(query);
         }
     }
-    
+
+    protected void logAutoRefreshEvent(boolean autoRefresh) {
+        BugtrackingUtil.logAutoRefreshEvent(
+            BugzillaConnector.getConnectorName(),
+            query.getDisplayName(),
+            false,
+            autoRefresh
+        );
+    }
+
     private void remove() {
         if (task != null) {
             task.cancel();

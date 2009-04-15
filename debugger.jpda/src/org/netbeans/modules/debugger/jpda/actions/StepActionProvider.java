@@ -187,6 +187,23 @@ implements Executor {
         try {
             // 1) init info about current state & remove old
             //    requests in the current thread
+            // We have to assure that the thread is suspended so that we
+            // do not randomly resume threads
+            while (!resumeThread.isSuspended()) {
+                // The thread is not suspended, release the lock so that others
+                // can process what they want with the resumed thread...
+                lock.unlock();
+                Thread.yield();
+                try {
+                    Thread.sleep(100); // Wait for a moment
+                } catch (InterruptedException iex) {}
+                lock.lock(); // Take the lock again to repeat the test
+                if (!resumeThread.isSuspended() && !resumeThread.isInStep() && !resumeThread.isMethodInvoking()) {
+                    // Explicitely suspend the thread if it's not in a step
+                    // or in a method invocation:
+                    resumeThread.suspend();
+                }
+            }
             resumeThread.waitUntilMethodInvokeDone();
             ThreadReference tr = resumeThread.getThreadReference ();
             removeStepRequests (tr);
@@ -386,9 +403,11 @@ implements Executor {
             if (ssverbose)
                 System.out.println("\nSS:  SMART STEPPING START! ********** ");
             if (smartSteppingStepOut) {
-                getStepIntoActionProvider ().doAction(ActionsManager.ACTION_STEP_OUT);
+                // Assure that the action does not resume anything. Resume is done by Operator.
+                getStepIntoActionProvider ().runAction(ActionsManager.ACTION_STEP_OUT, false);
             } else {
-                getStepIntoActionProvider ().doAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO);
+                // Assure that the action does not resume anything. Resume is done by Operator.
+                getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false);
             }
             //S ystem.out.println("/nStepAction.exec end - resume");
             return true; // resume

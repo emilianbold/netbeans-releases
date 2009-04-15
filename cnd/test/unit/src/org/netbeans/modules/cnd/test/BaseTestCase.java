@@ -50,7 +50,7 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.cplusplus.HKit;
@@ -216,7 +216,7 @@ public abstract class BaseTestCase extends NbTestCase {
 
     protected String getHKey(){
         assert execEnv != null : "Run canTestRemote() before any remote development tests logic."; //NOI18N
-        return ExecutionEnvironmentFactory.getHostKey(execEnv);
+        return ExecutionEnvironmentFactory.toString(execEnv);
     }
 
     protected ExecutionEnvironment getExecutionEnvironment() {
@@ -238,7 +238,7 @@ public abstract class BaseTestCase extends NbTestCase {
                 int n = ui.indexOf('@');
                 String remotePassword = ui.substring(m+1, n);
                 String remoteHKey = ui.substring(0,m) + ui.substring(n);
-                execEnv = ExecutionEnvironmentFactory.getExecutionEnvironment(remoteHKey);
+                execEnv = ExecutionEnvironmentFactory.fromString(remoteHKey);
                 RemoteUserInfo rui = RemoteUserInfoAccessor.getDefault().get(execEnv);
                 if (rui == null) {
                     System.err.println("There is no valid RemoteUserInfoAccessor.");
@@ -249,7 +249,7 @@ public abstract class BaseTestCase extends NbTestCase {
             } else {
                 String remoteHKey = ui;
                 System.err.println("mode 1. hkey: " + remoteHKey );
-                execEnv = ExecutionEnvironmentFactory.getExecutionEnvironment(remoteHKey);
+                execEnv = ExecutionEnvironmentFactory.fromString(remoteHKey);
             }
             return true;
         }

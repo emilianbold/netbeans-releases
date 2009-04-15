@@ -357,7 +357,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 Children.SortedArray modules = new Children.SortedArray();
                 modules.setComparator(MODULES_COMPARATOR);
                 // enablement for pre-6.7 modules, for cluster path it gets resolved in load cluster.path section below
-                boolean enabled = newPlaf || SingleModuleProperties.clusterMatch(enabledClusters, clusterDirectory.getName());
+                boolean enabled = (newPlaf && enabledClusters.isEmpty()) || SingleModuleProperties.clusterMatch(enabledClusters, clusterDirectory.getName());
                 ClusterInfo ci = ClusterInfo.create(clusterDirectory, true, enabled);
                 cluster = new ClusterNode(ci, modules);
                 clusterToNode.put(clusterDirectory, cluster);
@@ -396,6 +396,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 }
                 extClustersLoaded = true;
             }
+        } else {
+            extClustersLoaded = true;   // so that doUpdateDependencyWarnings is called even with empty cluster.path
         }
         libChildren.setMergedKeys();
     }

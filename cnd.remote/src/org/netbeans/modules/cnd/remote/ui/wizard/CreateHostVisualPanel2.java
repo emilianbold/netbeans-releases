@@ -52,7 +52,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetReporter;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
@@ -242,7 +242,7 @@ public final class CreateHostVisualPanel2 extends JPanel {
     private Runnable runOnFinish = null;
 
     private ExecutionEnvironment getExecutionEnvironment() {
-        return ExecutionEnvironmentFactory.getExecutionEnvironment(getLoginName(), hostname, port);
+        return ExecutionEnvironmentFactory.createNew(getLoginName(), hostname, port);
     }
 
     private void revalidateRecord(String password, boolean rememberPassword) {

@@ -138,6 +138,11 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
                 DataObject dobj = DataObject.find(fo);
                 EditorCookie ec = dobj.getCookie(EditorCookie.class);
                 doc = ec.getDocument();
+                if (doc == null) {
+                    try {
+                        doc = ec.openDocument();
+                    } catch (java.io.IOException ioex) {}
+                }
             } catch (DataObjectNotFoundException ex) {
             }
         }
@@ -146,17 +151,23 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
             return null;
         }
 
+        @Override
         protected void addAnnotation(Annotation anno) {
             synchronized(DebuggerAnnotation.class) {
-                OffsetsBag bag = getHighlightsBag(doc);
-                bag.addHighlight(start, end, attrs);
+                if (doc != null) {
+                    OffsetsBag bag = getHighlightsBag(doc);
+                    bag.addHighlight(start, end, attrs);
+                }
             }
         }
 
+        @Override
         protected void removeAnnotation(Annotation anno) {
             synchronized(DebuggerAnnotation.class) {
-                OffsetsBag bag = getHighlightsBag(doc);
-                bag.removeHighlights(start, end, true);
+                if (doc != null) {
+                    OffsetsBag bag = getHighlightsBag(doc);
+                    bag.removeHighlights(start, end, true);
+                }
             }
         }
 
