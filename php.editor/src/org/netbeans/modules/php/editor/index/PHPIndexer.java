@@ -719,8 +719,6 @@ public final class PHPIndexer extends EmbeddingIndexer {
         public int getIndexVersion() {
             return VERSION;
         }
-        private FileObject cachedFo;
-        private boolean cachedIndexable;
 
         private boolean isIndexable(Indexable indexable, Snapshot snapshot) {
             // Cannot call file.getFileObject().getMIMEType() here for several reasons:
