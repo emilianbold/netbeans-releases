@@ -3,7 +3,7 @@ License: Apache-2.0
 OSR: 4300
 Description: Java API for handling Windows ini file format
 Origin: http://ini4j.sourceforge.net/
-Version: 0.2.6
+Version: 0.4.1
 
                                  Apache License
                            Version 2.0, January 2004
