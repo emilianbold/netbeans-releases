@@ -288,7 +288,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         public void run(ResultIterator ri) throws Exception {
             if (ri.getSnapshot().getMimeType().equals(RubyUtils.RUBY_MIME_TYPE)) {
                 ParserResult parserResult = AstUtilities.getParseResult(ri.getParserResult());
-                org.jruby.nb.ast.Node root = AstUtilities.getRoot(parserResult);
+                org.jrubyparser.ast.Node root = AstUtilities.getRoot(parserResult);
                 if (root != null) {
                     RubyElementCtx ctx = new RubyElementCtx(parserResult, caret);
                     if (ctx.getSimpleName() != null) {
@@ -352,7 +352,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         public void run(ResultIterator ri) throws ParseException {
             if (ri.getSnapshot().getMimeType().equals(RubyUtils.RUBY_MIME_TYPE)) {
                 ParserResult parserResult = AstUtilities.getParseResult(ri.getParserResult());
-                org.jruby.nb.ast.Node root = AstUtilities.getRoot(parserResult);
+                org.jrubyparser.ast.Node root = AstUtilities.getRoot(parserResult);
                 if (root != null) {
                     Element element = AstElement.create(parserResult, root);
                     RubyElementCtx fileCtx = new RubyElementCtx(root, root, element, RubyUtils.getFileObject(parserResult), parserResult);
@@ -409,7 +409,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         public void run(ResultIterator ri) throws ParseException {
             if (ri.getSnapshot().getMimeType().equals(RubyUtils.RUBY_MIME_TYPE)) {
                 RubyParseResult parserResult = AstUtilities.getParseResult(ri.getParserResult());
-                org.jruby.nb.ast.Node root = AstUtilities.getRoot(parserResult);
+                org.jrubyparser.ast.Node root = AstUtilities.getRoot(parserResult);
                 if (root != null) {
                     if (parserResult != null) {
                         AnalysisResult ar = parserResult.getStructure();
@@ -419,7 +419,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                             // In Java, we look for a class with the name corresponding to the file.
                             // It's not as simple in Ruby.
                             AstElement element = els.get(0);
-                            org.jruby.nb.ast.Node node = element.getNode();
+                            org.jrubyparser.ast.Node node = element.getNode();
                             RubyElementCtx representedObject = new RubyElementCtx(
                                     root, node, element, RubyUtils.getFileObject(parserResult), parserResult);
                             representedObject.setNames(element.getFqn(), element.getName());
