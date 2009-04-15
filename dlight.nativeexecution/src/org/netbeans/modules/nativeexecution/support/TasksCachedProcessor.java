@@ -102,8 +102,8 @@ public final class TasksCachedProcessor<P, R>
                     cache.remove(arg, f);
                     throw new CancellationException();
                 } else {
-                    System.err.println("!!! " + e.getMessage());
-                    e.printStackTrace(System.err);
+                    Logger.getInstance().fine("!!! " + e.getMessage()); // NOI18N
+//                    e.printStackTrace(System.err);
                 }
             } finally {
                 if (removeOnCompletion) {

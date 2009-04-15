@@ -120,17 +120,17 @@ public final class ExternalTerminalProvider {
                 if (validationCommands == null || validationCommands.isEmpty()) {
                     return t;
                 }
-                
+
                 for (String command : validationCommands) {
                     try {
                         if (command.contains("$self")) { // NOI18N
                             String executable = terminalInfo.getExecutable(t, execEnv);
-                            
+
                             if (executable == null) {
                                 // Makes no sense to continue...
                                 return null;
                             }
-                            
+
                             command = command.replaceAll("\\$self", executable); // NOI18N
                         }
 
@@ -285,7 +285,7 @@ public final class ExternalTerminalProvider {
                     return Context.validation_platform;
                 }
 
-                if ("test".equals(name)) {
+                if ("test".equals(name)) { // NOI18N
                     info.addValidationCommand(attributes.getValue("command")); // NOI18N
                     return Context.validation_test;
                 }
