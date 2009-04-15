@@ -2595,7 +2595,7 @@ public class GdbDebugger implements PropertyChangeListener {
             }
             ver = Double.parseDouble(msg.substring(0, last));
         } catch (Exception ex) {
-            log.warning("GdbDebugger: Failed to parse version string [" + ex.getClass().getName() + "]");
+            log.warning("GdbDebugger: Failed to parse version string (" + msg + ") [" + ex.getClass().getName() + "]");
             if (msg.contains("6.5")) { // NOI18N
                 ver = 6.5;
             } else if (msg.contains("6.6")) { // NOI18N
@@ -2607,6 +2607,7 @@ public class GdbDebugger implements PropertyChangeListener {
             } else {
                 log.warning("GdbDebugger: Failed to guess version string");
             }
+            log.warning("GdbDebugger: guessed version: " + ver);
         }
         return ver;
     }
