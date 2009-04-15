@@ -181,6 +181,14 @@ public class WelcomeComponent extends TopComponent {
             }
         }
     }
+
+    @Override
+    protected void componentClosed() {
+        super.componentClosed();
+        TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("InitialLayout"); //NOI18N
+        if( null != group )
+            group.open();
+    }
     
     @Override protected void componentHidden() {
         super.componentHidden();
