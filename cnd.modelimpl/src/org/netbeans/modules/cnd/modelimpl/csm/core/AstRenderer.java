@@ -1660,7 +1660,7 @@ public class AstRenderer {
      */
     private boolean isExpressionLikeDeclaration(AST ast, CsmScope scope) {
         AST type = ast.getFirstChild();
-        if (type.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
+        if (type != null && type.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
             AST name = type.getFirstChild();
             if (name != null) {
                 if (isVariableOrFunctionName(name, false)) {

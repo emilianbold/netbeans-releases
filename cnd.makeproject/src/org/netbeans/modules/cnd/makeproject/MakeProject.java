@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -674,6 +675,12 @@ public final class MakeProject implements Project, AntProjectListener {
 
         public String getDisplayName() {
             String name = MakeProject.this.getName();
+
+            DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
+            if (devHost != null && ! devHost.isLocalhost()) {
+                name = NbBundle.getMessage(getClass(), "PRJ_DISPLAY_NAME",
+                        name, devHost.getHostDisplayName(false));
+            }
             return name;
         }
 
@@ -857,17 +864,21 @@ public final class MakeProject implements Project, AntProjectListener {
         }
     }
 
-    class RemoteProjectImpl implements RemoteProject {
-
-        public String getDevelopmentHost() {
-            if (projectDescriptorProvider.gotDescriptor()) {
-                MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
-                MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
-                if (conf != null) {
-                    return conf.getDevelopmentHost().getName();
-                }
+    private DevelopmentHostConfiguration getDevelopmentHostConfiguration() {
+        if (projectDescriptorProvider.gotDescriptor()) {
+            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
+            if (conf != null) {
+                return conf.getDevelopmentHost();
             }
-            return null;
+        }
+        return null;
+    }
+
+    class RemoteProjectImpl implements RemoteProject {
+        public String getDevelopmentHost() {
+            DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
+            return (devHost == null) ? null : devHost.getName();
         }
     }
 

@@ -126,7 +126,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.weighty = 1.0;
         outerPanel.add(myListEditorPanel, gridBagConstraints);
         instructionsTextArea.setBackground(instructionPanel.getBackground());
-        setPreferredSize(new java.awt.Dimension(700, 350));
+        setPreferredSize(new java.awt.Dimension(700, 450));
 
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         env.addPropertyChangeListener(this);
