@@ -193,6 +193,11 @@ public class SyntaxTree {
                                 openTag.addErrorMessage(errorMessage);
                             }
 
+                            //test if the tag is empty - if so the and tag is forbidden
+                            if(dtdElement.isEmpty()) {
+                                closingTag.addErrorMessage(NbBundle.getMessage(SyntaxTree.class, "MSG_FORBIDDEN_ENDTAG"));
+                            }
+
                             //check tag attributes
                             openTag.addErrorMessages(checkTagAttributes((SyntaxElement.Tag)element, dtdElement));
 
