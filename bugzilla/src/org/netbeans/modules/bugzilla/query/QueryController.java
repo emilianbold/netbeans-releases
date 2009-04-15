@@ -874,16 +874,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 handle.finish();
                 handle = null;
             }
-            final int size = query.getSize();
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     enableFields(true);
                     panel.setQueryRunning(false);
                     panel.setLastRefresh(getLastRefresh());
-                    panel.showNoContentPanel(false);
-                    if(size == 0) {
-                        panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {0})); // NOI18N // XXX
-                    }
+                    panel.showNoContentPanel(false);                    
                 }
             });
         }
@@ -908,21 +904,29 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
 
         public void notifyData(final Issue issue) {
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    panel.showNoContentPanel(false);
-                    if(query.contains(issue)) {
-                        panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {++counter})); // NOI18N // XXX
-                    }
-                }
-            });
+            setIssueCount(++counter);
         }
 
         public void started() {
             counter = 0;
+            setIssueCount(counter);
         }
 
         public void finished() { }
+
+        private void setIssueCount(final int count) {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    panel.tableSummaryLabel.setText(
+                            NbBundle.getMessage(
+                                QueryController.class,
+                                "LBL_MatchingIssues",
+                                new Object[] { count }
+                            )
+                    );
+                }
+            });
+        }
     }
 
 }
