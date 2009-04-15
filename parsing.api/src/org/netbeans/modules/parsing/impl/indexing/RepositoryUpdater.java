@@ -168,7 +168,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
      *   being reindexed due to ordinary change events (eg. when classpath roots are
      *   added/removed, file is modified, editor tabs are switched, etc).
      */
-    public void addIndexingJob(URL rootUrl, Collection<? extends URL> fileUrls, boolean followUpJob, boolean wait) {
+    public void addIndexingJob(URL rootUrl, Collection<? extends URL> fileUrls, boolean followUpJob, boolean checkEditor, boolean wait) {
         assert rootUrl != null;
 
         FileObject root = URLMapper.findFileObject(rootUrl);
@@ -194,10 +194,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
 
             if (files.size() > 0) {
-                flw = new FileListWork(rootUrl, files, followUpJob);
+                flw = new FileListWork(rootUrl, files, followUpJob, checkEditor);
             }
         } else {
-            flw = new FileListWork(rootUrl, followUpJob);
+            flw = new FileListWork(rootUrl, followUpJob, checkEditor);
         }
 
         if (flw != null) {
@@ -291,7 +291,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             root = getOwningSourceRoot(fo);
 
             if (root != null) {
-                scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
+                scheduleWork(new FileListWork(root, Collections.singleton(fo), false, false), false);
                 processed = true;
             }
         }
@@ -314,7 +314,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot (fo);
             if (root != null) {
-                scheduleWork(new FileListWork(root, Collections.singleton(fo), false), false);
+                scheduleWork(new FileListWork(root, Collections.singleton(fo), false, false), false);
                 processed = true;
             }
         }
@@ -354,7 +354,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             scheduleWork(new DeleteWork(root, oldFilePath.toString()), false);
 
             if (VisibilityQuery.getDefault().isVisible(newFile) && newFile.isData()) {
-                scheduleWork(new FileListWork(root, Collections.singleton(newFile), false), false);
+                scheduleWork(new FileListWork(root, Collections.singleton(newFile), false, false), false);
             }
             processed = true;
         }
@@ -430,7 +430,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                             FileListWork job = jobs.get(root);
                             if (job == null) {
-                                job = new FileListWork(root, Collections.singleton(f), false);
+                                job = new FileListWork(root, Collections.singleton(f), false, true);
                                 jobs.put(root, job);
                             } else {
                                 job.addFile(f);
@@ -482,7 +482,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     for(CustomIndexerFactory factory : customIndexerFactories) {
                         try {
                             Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
-                                    factory.getIndexerName(), factory.getIndexVersion(), null, false);
+                                    factory.getIndexerName(), factory.getIndexVersion(), null, false, true);
                             factory.filesDirty(dirty, ctx);
                         } catch (IOException ex) {
                             LOGGER.log(Level.WARNING, null, ex);
@@ -492,7 +492,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     for(EmbeddingIndexerFactory factory : embeddingIndexerFactories) {
                         try {
                             Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root), root,
-                                    factory.getIndexerName(), factory.getIndexVersion(), null, false);
+                                    factory.getIndexerName(), factory.getIndexVersion(), null, false, true);
                             factory.filesDirty(dirty, ctx);
                         } catch (IOException ex) {
                             LOGGER.log(Level.WARNING, null, ex);
@@ -501,7 +501,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 } else {
                     // an odd event, maybe we could just ignore it
                     try {
-                        addIndexingJob(root, Collections.singleton(f.getURL()), false, false);
+                        addIndexingJob(root, Collections.singleton(f.getURL()), false, true, false);
                     } catch (FileStateInvalidException ex) {
                         LOGGER.log(Level.WARNING, null, ex);
                     }
@@ -636,14 +636,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         private final AtomicBoolean cancelled = new AtomicBoolean(false);
         private final boolean followUpJob;
+        private final boolean checkForEditorModifications;
         private final CountDownLatch latch;
         private ProgressHandle progressHandle = null;
 
-        private int allLanguagesParsersCount = -1;
-        private int allLanguagesTasksCount = -1;
+//        private int allLanguagesParsersCount = -1;
+//        private int allLanguagesTasksCount = -1;
 
-        protected Work(boolean followUpJob) {
+        protected Work(boolean followUpJob, boolean checkForEditorModifications) {
             this.followUpJob = followUpJob;
+            this.checkForEditorModifications = checkForEditorModifications;
             this.latch = new CountDownLatch(1);
         }
 
@@ -694,12 +696,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
 
                 for (CustomIndexerFactory factory : customIndexerFactories) {
-                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob);
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkForEditorModifications);
                     factory.filesDeleted(deleted, ctx);
                 }
 
                 for(EmbeddingIndexerFactory factory : embeddingIndexerFactories) {
-                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob);
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkForEditorModifications);
                     factory.filesDeleted(deleted, ctx);
                 }
             } finally {
@@ -748,7 +750,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         }
 
                         supportsEmbeddings &= b;
-                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob);
+                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkForEditorModifications);
                         transactionContexts.add(ctx);
 
                         // some CustomIndexers (eg. java) need to know about roots even when there
@@ -772,7 +774,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             //Then use slow gsf like indexers
                             LOGGER.log(Level.FINE, "Using EmbeddingIndexers for {0}", indexables); //NOI18N
 
-                            final SourceIndexer si = new SourceIndexer(root, cacheRoot, followUpJob);
+                            final SourceIndexer si = new SourceIndexer(root, cacheRoot, followUpJob, checkForEditorModifications);
                             si.index(indexables, transactionContexts);
                         } else {
                             if (LOGGER.isLoggable(Level.FINE)) {
@@ -902,16 +904,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final URL root;
         private final Collection<FileObject> files;
 
-        public FileListWork (URL root, boolean followUpJob) {
-            super(followUpJob);
+        public FileListWork (URL root, boolean followUpJob, boolean checkEditor) {
+            super(followUpJob, checkEditor);
 
             assert root != null;
             this.root = root;
             this.files = null;
         }
 
-        public FileListWork (URL root, Collection<FileObject> files, boolean followUpJob) {
-            super(followUpJob);
+        public FileListWork (URL root, Collection<FileObject> files, boolean followUpJob, boolean checkEditor) {
+            super(followUpJob, checkEditor);
             
             assert root != null;
             assert files != null && files.size() > 0;
@@ -955,7 +957,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final String relativePath;
 
         public DeleteWork (URL root, String relativePath) {
-            super(false);
+            super(false, false);
             
             assert root != null;
             assert relativePath != null;
@@ -991,7 +993,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final Map<URL, List<URL>> scannedRoots2Dependencies;
 
         public RefreshIndicies(Set<String> indexerMimeTypes, CustomIndexerFactory indexerFactory, Map<URL, List<URL>> scannedRoots2Depencencies) {
-            super(false);
+            super(false, false);
             this.indexerMimeTypes = indexerMimeTypes;
             this.indexerFactory = indexerFactory;
             this.scannedRoots2Dependencies = scannedRoots2Depencencies;
@@ -1015,7 +1017,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         LinkedList<Context> transactionContexts = new LinkedList<Context>();
                         try {
                             for(String mimeType : resources.keySet()) {
-                                final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, indexerFactory.getIndexerName(), indexerFactory.getIndexVersion(), null, false);
+                                final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, indexerFactory.getIndexerName(), indexerFactory.getIndexVersion(), null, false, false);
                                 transactionContexts.add(ctx);
 
                                 // some CustomIndexers (eg. java) need to know about roots even when there
@@ -1058,7 +1060,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final Set<URL> scannedBinaries;
 
         public RootsWork (Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> scannedBinaries) {
-            super(false);
+            super(false, false);
             this.scannedRoots2Dependencies = scannedRoots2Depencencies;
             this.scannedBinaries = scannedBinaries;
         }
@@ -1240,7 +1242,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     }
 
                     for(BinaryIndexerFactory f : factories) {
-                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false);
+                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false);
                         transactionContexts.add(ctx);
 
                         final BinaryIndexer indexer = f.createIndexer();

@@ -80,7 +80,7 @@ public abstract class SPIAccessor {
 
     public abstract  Context createContext (final FileObject indexFolder, final URL rootURL,
             String indexerName, int indexerVersion, IndexFactoryImpl factory,
-            boolean followUpJob) throws IOException;
+            boolean followUpJob, boolean checkForEditorModifications) throws IOException;
 
     public abstract void context_attachIndexingSupport(Context context, IndexingSupport support);
 

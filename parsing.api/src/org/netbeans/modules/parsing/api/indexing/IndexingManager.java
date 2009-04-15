@@ -88,7 +88,7 @@ public final class IndexingManager {
      *   be reindexed.
      */
     public void refreshIndex(URL root, Collection<? extends URL> files) {
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false);
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, false);
     }
 
     /**
@@ -106,7 +106,7 @@ public final class IndexingManager {
      *   be reindexed.
      */
     public void refreshIndexAndWait(URL root, Collection<? extends URL> files) {
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, true);
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, true);
     }
 
     /**
