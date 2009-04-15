@@ -96,7 +96,7 @@ public class SyntaxTree {
                             //current node cannot be present inside its parent
 
                             if (!lastNode.isResolved()) {
-                                String expectedElements = elementsToString(lastNode.getUnresolvedElements());
+                                String expectedElements = elementsToString(lastNode.getAllPossibleElements());
                                 //some mandatory content unresolved, report error
                                 errorMessages.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
                                         new Object[]{currentNodeDtdElement.getName(), expectedElements}));
@@ -117,6 +117,13 @@ public class SyntaxTree {
                             //close the previous node
                             lastNode.setEndOffset(element.offset());
                             nodeStack.removeLast();
+
+                            //hmm, the last node didn't resolved this tag, lets try its parent
+                            AstNode parentNode = nodeStack.getLast();
+                            if(!parentNode.isResolved()) {
+                                //an attempt to reduce the current node within its parent
+                                parentNode.reduce(currentNodeDtdElement);
+                            }
 
                             if(DEBUG) {
                                 System.out.println("Closing tag " + lastNode.name() + " by the end of this tag!");
@@ -188,7 +195,7 @@ public class SyntaxTree {
                             if (!lastNode.isResolved()) {
                                 //some mandatory content unresolved, report error to the open tag
                                 String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG",
-                                        new Object[]{elementsToString(lastNode.getUnresolvedElements())});
+                                        new Object[]{elementsToString(lastNode.getAllPossibleElements())});
  
                                 openTag.addErrorMessage(errorMessage);
                             }
