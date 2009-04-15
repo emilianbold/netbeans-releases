@@ -119,6 +119,13 @@ public abstract class CsmFileInfoQuery {
 
     /**
      *
+     * @param file any file
+     * @return compilation units for file which includes context offset (at least with one element)
+     */
+    public abstract Collection<CsmCompilationUnit> getCompilationUnits(CsmFile file, int contextOffset);
+
+    /**
+     *
      * @param file file
      * @return list of broken include directives in file
      */
@@ -190,5 +197,10 @@ public abstract class CsmFileInfoQuery {
         public boolean hasBrokenIncludes(CsmFile file) {
             return false;
         }
-    } 
+
+        @Override
+        public Collection<CsmCompilationUnit> getCompilationUnits(CsmFile file, int offset) {
+            return Collections.singleton(CsmCompilationUnit.createCompilationUnit(file));
+        }
+    }
 }
