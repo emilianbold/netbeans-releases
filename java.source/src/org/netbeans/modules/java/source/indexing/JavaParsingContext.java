@@ -71,8 +71,8 @@ class JavaParsingContext {
         sa = uq != null ? uq.getSourceAnalyser() : null;
     }
 
-    public JavaParsingContext(final FileObject root, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath) throws IOException {
-        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath, null, true, false, false);
+    public JavaParsingContext(final FileObject root, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath, boolean checkForModifications) throws IOException {
+        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath, null, !checkForModifications, false, false);
         sourceLevel = SourceLevelQuery.getSourceLevel(root);
         filter = JavaFileFilterQuery.getFilter(root);
         encoding = FileEncodingQuery.getEncoding(root);
