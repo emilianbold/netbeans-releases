@@ -53,18 +53,34 @@ public final class KenaiService {
         this.sli=sli;
     }
 
+    /**
+     * Getter for service description
+     * @return service description
+     */
     public String getDescription() {
         return sli.description;
     }
 
+    /**
+     * Getter for service name
+     * @return service name
+     */
     public String getName() {
         return sli.name;
     }
 
+    /**
+     * getter for service display name
+     * @return service display name
+     */
     public String getDisplayName() {
         return sli.display_name;
     }
 
+    /**
+     * Getter for service type
+     * @return type of this service
+     */
     public Type getType() {
         return Type.forId(sli.type);
     }
@@ -74,6 +90,9 @@ public final class KenaiService {
         return "KenaiService " + getName();
     }
 
+    /**
+     * Well known name of services
+     */
     public static final class Names {
         public static final String SUBVERSION = "subversion";
         public static final String MERCURIAL = "mercurial";
@@ -84,6 +103,9 @@ public final class KenaiService {
         public static final String EXTERNAL_ISSUES = "external_issues";
     }
 
+    /**
+     * Service types
+     */
     public static enum Type {
 
         FORUM("forum"),

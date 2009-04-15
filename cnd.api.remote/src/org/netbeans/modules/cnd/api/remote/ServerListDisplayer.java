@@ -37,52 +37,37 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.server;
+package org.netbeans.modules.cnd.api.remote;
 
-import java.awt.Dialog;
-import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
-import org.netbeans.modules.cnd.ui.options.ServerListDisplayerEx;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.logging.Logger;
+import org.openide.util.Lookup;
 
 /**
- * ServerListDisplayer implementation
+ * Displayes Edit Servers List dialog.
+ *
+ * It was created as a replacement of the show() method
+ * of the ServerList class (ServerList is a model, so it shouldn't be mixed with UI)
+ *
  * @author Vladimir Kvashin
  */
-@ServiceProvider(service = ServerListDisplayer.class)
-public class RemoteServerListDisplayer extends ServerListDisplayerEx {
+public abstract class ServerListDisplayer {
 
-    @Override
-    protected boolean showServerListDialogImpl() {
-        ToolsCacheManager cacheManager = new ToolsCacheManager();
-        if (showServerListDialog(cacheManager)) {
-            cacheManager.applyChanges();
-            return true;
+    public static boolean showServerListDialog() {
+        ServerListDisplayer displayer = Lookup.getDefault().lookup(ServerListDisplayer.class);
+        if (displayer != null) {
+            return displayer.showServerListDialogImpl();
         } else {
+            Logger.getLogger("cnd.remote.logger").warning( //NOI18N
+                    "Can not find " + ServerListDisplayer.class.getSimpleName()); //NOI18N
             return false;
         }
     }
 
-    @Override
-    protected boolean showServerListDialogImpl(ToolsCacheManager cacheManager) {
-        EditServerListDialog dlg = new EditServerListDialog(cacheManager);
-        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true,
-                    DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
-        dlg.setDialogDescriptor(dd);
-        dd.addPropertyChangeListener(dlg);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            cacheManager.setHosts(dlg.getHosts());
-            cacheManager.setDefaultIndex(dlg.getDefaultIndex());
-            return true;
-        } else {
-            return false;
-        }
-    }
+    /**
+     * Displays server list dialog.
+     * Allows to add, remove or modify servers in the list
+     * @return true in the case user pressed OK, otherwise
+     */
+    protected abstract boolean showServerListDialogImpl();
 
 }

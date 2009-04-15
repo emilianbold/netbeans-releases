@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,66 +37,75 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.glassfish.javaee;
 
-package org.netbeans.modules.kenai.api;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.kenai.LicensesListData.LicensesListItem;
+import java.io.File;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
 /**
  *
- * @author Jan Becicka
+ * @author Nitya Doraisamy
  */
-public final class KenaiLicense {
-
+public class SunMessageDestination implements MessageDestination {
     private String name;
-    private String displayName;
-    private URI uri;
+    private Type type;
+    private File resourceDir;
 
-    KenaiLicense(LicensesListItem lli) {
-        this.name=lli.name;
-        this.displayName=lli.display_name;
-        try {
-            this.uri = new URI(lli.license_uri);
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(KenaiLicense.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public SunMessageDestination(String name, Type type) {
+        this(name, type, null);
+    }
+    
+    public SunMessageDestination(String name, Type type, File resourceDir) {
+        this.name = name;
+        this.type = type;
+        this.resourceDir = resourceDir;
     }
 
-    /**
-     * Getter for display name
-     * @return display name
-     */
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    /**
-     * Geter license name
-     * @return license name
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * getter for uri of this license
-     * @return license uri
-     */
-    public URI getUri() {
-        return uri;
+    public Type getType() {
+        return type;
+    }
+   
+    File getResourceDir() {
+        return resourceDir;
+    }
+
+    void setResourceDir(File resourceDir) {
+        this.resourceDir = resourceDir;
     }
 
     @Override
     public String toString() {
-        return "KenaiLicense " + getName();
+        return "[ " + name + " : " + type.toString() + " ]";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SunMessageDestination other = (SunMessageDestination) obj;
+        if (this.name == null || !this.name.equals(other.name)) {
+            return false;
+        }
+        if (this.type == null || !this.type.equals(other.type)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 41 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 41 * hash + (this.type != null ? this.type.hashCode() : 0);
+        return hash;
     }
 }
