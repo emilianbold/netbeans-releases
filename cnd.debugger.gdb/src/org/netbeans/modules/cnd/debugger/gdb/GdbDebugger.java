@@ -795,7 +795,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 File exefile = new File(exepath);
                 if (exefile.exists()) {
                     String path = getPathFromSymlink(pathfile.getAbsolutePath());
-                    if (path.equals(exefile.getAbsolutePath())) {
+                    if (comparePaths(path, exefile.getAbsolutePath())) {
                         return true;
                     }
                 }
