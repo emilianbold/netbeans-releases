@@ -267,7 +267,7 @@ abstract public class CsmCompletion {
         if (cls == null) {
             return null;
         }
-        return new BaseType(getSimpleClass(cls), pointerDepth, reference, arrayDepth);
+        return new BaseType(cls, pointerDepth, reference, arrayDepth);
     }
 
     public static class SimpleClass implements CsmClassifier {
@@ -567,7 +567,11 @@ abstract public class CsmCompletion {
         }
 
         public CsmFile getContainingFile() {
-            return null;
+            if (CsmKindUtilities.isOffsetable(clazz)) {
+                return ((CsmOffsetable)clazz).getContainingFile();
+            } else {
+                return null;
+            }
         }
 
         public int getStartOffset() {

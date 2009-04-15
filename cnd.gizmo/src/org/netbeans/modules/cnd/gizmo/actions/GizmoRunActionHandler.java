@@ -131,7 +131,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             if (termPath != null) {
                 String termBaseName = IpeUtils.getBaseName(termPath);
                 if (ExternalTerminalProvider.getSupportedTerminalIDs().contains(termBaseName)) {
-                    targetConf.useExternalTerminal(ExternalTerminalProvider.getTerminal(termBaseName));
+                    targetConf.useExternalTerminal(ExternalTerminalProvider.getTerminal(execEnv, termBaseName));
                 }
             }
         }
