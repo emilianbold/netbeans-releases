@@ -137,7 +137,7 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
     }
 
     private void runGetIndiciesTask() {
-        final List[] data = IndexBuilder.getDefault().getIndices();
+        final List[] data = IndexBuilder.getDefault().getIndices(true);
         final List<String> names = data[0]; // List<String>
         final List<FileObject> indices = data[1]; // List<FileObject>
 

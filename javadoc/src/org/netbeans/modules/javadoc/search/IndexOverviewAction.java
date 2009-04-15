@@ -139,7 +139,15 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
 //        }
         
         public void getPopupMenu2() {
-            List[] data = IndexBuilder.getDefault().getIndices();
+            List[] data = IndexBuilder.getDefault().getIndices(false);
+            if (data == null) {
+                // do not block EDT in case inices are not computed yet
+                itemHash = 0;
+                removeAll();
+                add(new MoreReferencesMenuItem());
+                return;
+            }
+            
             int newHash = computeDataHash(data);
             if (newHash != itemHash) {
                 if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
