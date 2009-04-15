@@ -46,20 +46,25 @@
 package org.netbeans.modules.cnd.debugger.gdb.ui;
 
 import java.io.File;
-import java.io.FileFilter;
-import javax.swing.JFileChooser;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.debugger.gdb.attach.GdbAttachPanel;
+import org.netbeans.modules.cnd.debugger.gdb.attach.GdbAttachPanel.ProjectCBItem;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author eu155513
+ * @author Egor Ushakov
  */
 public class SelectCorePanel extends javax.swing.JPanel {
 
     /** Creates new form SelectCorePanel */
     public SelectCorePanel() {
         initComponents();
+        GdbAttachPanel.fillProjectsCombo(projectCB);
     }
 
     /** This method is called from within the constructor to
@@ -74,6 +79,8 @@ public class SelectCorePanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         corePathText = new javax.swing.JTextField();
         coreBrowseButton = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        projectCB = new javax.swing.JComboBox();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(SelectCorePanel.class, "SelectCorePanel.jLabel1.text")); // NOI18N
 
@@ -84,17 +91,24 @@ public class SelectCorePanel extends javax.swing.JPanel {
             }
         });
 
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(SelectCorePanel.class, "SelectCorePanel.jLabel2.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel1)
+                    .add(jLabel2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(corePathText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 337, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(coreBrowseButton)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(corePathText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 337, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(coreBrowseButton))
+                    .add(projectCB, 0, 429, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -105,7 +119,11 @@ public class SelectCorePanel extends javax.swing.JPanel {
                     .add(jLabel1)
                     .add(corePathText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(coreBrowseButton))
-                .addContainerGap(68, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(projectCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -119,11 +137,24 @@ public class SelectCorePanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_coreBrowseButtonActionPerformed
 
+    public String getCorePath() {
+        return corePathText.getText();
+    }
+
+    public ProjectInformation getProjectInformation() {
+        ProjectCBItem pi = (ProjectCBItem) projectCB.getSelectedItem();
+        if (pi == null) {
+            return null;
+        }
+        return pi.getProjectInformation();
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton coreBrowseButton;
     private javax.swing.JTextField corePathText;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JComboBox projectCB;
     // End of variables declaration//GEN-END:variables
 
 }

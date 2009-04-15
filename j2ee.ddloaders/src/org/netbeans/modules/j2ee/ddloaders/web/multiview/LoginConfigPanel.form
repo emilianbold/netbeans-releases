@@ -27,17 +27,16 @@
                   <Component id="digestRB" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="clientCertRB" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="basicRB" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="formRB" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="realmNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="loginPageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="errorPageLabel" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="errorPageTF" pref="201" max="32767" attributes="0"/>
-                          <Component id="realmNameTF" alignment="0" pref="201" max="32767" attributes="0"/>
                           <Component id="loginPageTF" alignment="0" pref="201" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -46,7 +45,11 @@
                           <Component id="loginPageBrowseButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="formRB" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="realmNameLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="realmNameTF" pref="327" max="32767" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -64,11 +67,6 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="basicRB" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="realmNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="realmNameTF" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
               <Component id="formRB" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -81,6 +79,11 @@
                   <Component id="errorPageBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="errorPageLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="errorPageTF" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="realmNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="realmNameTF" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>

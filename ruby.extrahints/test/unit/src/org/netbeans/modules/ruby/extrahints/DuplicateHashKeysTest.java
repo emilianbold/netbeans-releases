@@ -80,8 +80,8 @@ public class DuplicateHashKeysTest extends HintTestBase {
         checkHints(this, createRule(), "testfiles/element.rb", null);
     }
 
-    public void testNoPositives() throws Exception {
-        try {
+        public void testNoPositives() throws Exception {
+            try {
             parseErrorsOk = true;
             Set<String> exceptions = new HashSet<String>();
 

@@ -73,6 +73,9 @@ public abstract class ExternalTerminalAccessor {
         return DEFAULT;
     }
 
+    public abstract String getExecutable(final ExternalTerminal terminal,
+            final ExecutionEnvironment execEnv);
+
     public abstract TerminalProfile getTerminalProfile(final ExternalTerminal terminal);
 
     public abstract String getPrompt(final ExternalTerminal terminal);

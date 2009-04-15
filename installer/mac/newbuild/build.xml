@@ -92,7 +92,7 @@ Microsystems, Inc. All Rights Reserved.
                                          apisupport(javase), profiler(javase), java(javase), harness(javase),
                                          ruby(ruby),                                       
                                          php(php), 
-                                         enterprise(javaee), identity(javaee), xml(javaee), groovy(javaee),
+                                         enterprise(javaee), identity(javaee), groovy(javaee),
                                          webcommon(webcommon),
                                          ergonomics(ergonomics),
                                          ide(baseide), nb6.0-etc(baseide), platform(baseide)"/>        
