@@ -79,6 +79,8 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -99,7 +101,9 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.TopologicalSortException;
 
 /**
@@ -123,6 +127,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (state == State.CREATED) {
             state = State.STARTED;
             LOGGER.fine("Initializing..."); //NOI18N
+            this.indexingActivityInterceptors = Lookup.getDefault().lookupResult(IndexingActivityInterceptor.class);
             PathRegistry.getDefault().addPathRegistryListener(this);
             FileUtil.addFileChangeListener(this);
             EditorRegistry.addPropertyChangeListener(this);
@@ -241,10 +246,17 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
     }
 
-    public Map<URL,List<URL>> getDependencies () {
-        return new HashMap<URL, List<URL>> (this.scannedRoots2Dependencies);
+    public void refreshAll() {
+        scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries), false);
     }
-    
+
+    public synchronized IndexingController getController() {
+        if (controller == null) {
+            controller = new Controller();
+        }
+        return controller;
+    }
+
     // -----------------------------------------------------------------------
     // PathRegistryListener implementation
     // -----------------------------------------------------------------------
@@ -280,6 +292,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     // -----------------------------------------------------------------------
 
     public void fileFolderCreated(FileEvent fe) {
+        if (!authorize(fe)) {
+            return;
+        }
+        
         //In ideal case this should do nothing,
         //but in Netbeans newlly created folder may
         //already contain files
@@ -307,6 +323,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void fileChanged(FileEvent fe) {
+        if (!authorize(fe)) {
+            return;
+        }
+
         boolean processed = false;
         FileObject fo = fe.getFile();
         URL root = null;
@@ -326,6 +346,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void fileDeleted(FileEvent fe) {
+        if (!authorize(fe)) {
+            return;
+        }
+
         final FileObject fo = fe.getFile();
         final URL root = getOwningSourceRoot (fo);
         boolean processed = false;
@@ -343,6 +367,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void fileRenamed(FileRenameEvent fe) {
+        if (!authorize(fe)) {
+            return;
+        }
+        
         final FileObject newFile = fe.getFile();
         final String oldNameExt = fe.getExt().length() == 0 ? fe.getName() : fe.getName() + "." + fe.getExt(); //NOI18N
         final URL root = getOwningSourceRoot(newFile);
@@ -354,7 +382,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             scheduleWork(new DeleteWork(root, oldFilePath.toString()), false);
 
             if (VisibilityQuery.getDefault().isVisible(newFile) && newFile.isData()) {
-                scheduleWork(new FileListWork(root, Collections.singleton(newFile), false, false), false);
+                // delaying of this task was just copied from the old java.source RepositoryUpdater
+                RequestProcessor.getDefault().create(new Runnable() {
+                    public void run() {
+                        scheduleWork(new FileListWork(root, Collections.singleton(newFile), false, false), false);
+                    }
+                }).schedule(FILE_LOCKS_DELAY);
             }
             processed = true;
         }
@@ -519,7 +552,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Logger TEST_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests"); //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test"); //NOI18N
-
+    private static final boolean noRootsScan = Boolean.getBoolean("netbeans.indexing.noRootsScan"); //NOI18N
+    private static final int FILE_LOCKS_DELAY = org.openide.util.Utilities.isWindows() ? 2000 : 1000;
     private static final String PROP_LAST_SEEN_VERSION = RepositoryUpdater.class.getName() + "-last-seen-document-version"; //NOI18N
     
     private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new HashMap<URL, List<URL>>());
@@ -530,6 +564,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private volatile Task worker;
 
     private volatile Reference<Document> activeDocumentRef = null;
+    private Lookup.Result<? extends IndexingActivityInterceptor> indexingActivityInterceptors = null;
+    private IndexingController controller;
 
     private RepositoryUpdater () {
         // no-op
@@ -622,6 +658,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
         return null;
+    }
+
+    private boolean authorize(FileEvent event) {
+        Collection<? extends IndexingActivityInterceptor> interceptors = indexingActivityInterceptors.allInstances();
+        for(IndexingActivityInterceptor i : interceptors) {
+            if (i.authorizeFileSystemEvent(event) == IndexingActivityInterceptor.Authorization.IGNORE) {
+                return false;
+            }
+        }
+        return true;
     }
 
 // we have to handle *all* mime types because of eg. tasklist indexer or goto-file indexer
@@ -985,7 +1031,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     } // End of DeleteWork class
 
-
     private static class RefreshIndicies extends Work {
 
         private final Set<String> indexerMimeTypes;
@@ -1204,8 +1249,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 
                 final long tmStart = System.currentTimeMillis();
                 try {
-                    updateProgress(binary);
-                    scanBinary (binary);
+                    if (!noRootsScan) {
+                        updateProgress(binary);
+                        scanBinary (binary);
+                    }
                     ctx.scannedBinaries.add(binary);
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
@@ -1271,8 +1318,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                 final long tmStart = System.currentTimeMillis();
                 try {
-                    updateProgress(source);
-                    scanSource (source);
+                    if (!noRootsScan) {
+                        updateProgress(source);
+                        scanSource (source);
+                    }
                     ctx.scannedRoots.add(source);
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
@@ -1325,16 +1374,26 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             synchronized (todo) {
                 assert work != null;
                 if (!allCancelled) {
-                    if (wait && Utilities.holdsParserLock()) {
-                        enforceWork = true;
-                    } else {
+                      if (wait && Utilities.holdsParserLock()) {
+                        if (protectedMode == 0) {
+                            enforceWork = true;
+                        } else {
+//                            LOGGER.log(Level.FINE, "Won't enforce {0} when in protected mode", work); //NOI18N
+//                            wait = false;
+                            // nobody should actually call schedule(work, true) from
+                            // within a UserTask, SchedulerTask or Indexer
+                            throw new IllegalStateException("Won't enforce " + work + " when in protected mode"); //NOI18N
+                        }
+                    }
+
+                    if (!enforceWork) {
                         if (workInProgress != null) {
                             workInProgress.cancelBy(work);
                         }
 
                         LOGGER.log(Level.FINE, "Scheduling {0}", work);
                         todo.add(work);
-                        if (!scheduled) {
+                        if (!scheduled && protectedMode == 0) {
                             scheduled = true;
                             Utilities.scheduleSpecialTask(this);
                         }
@@ -1381,7 +1440,62 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         public boolean isWorking() {
             synchronized (todo) {
-                return scheduled;
+                return scheduled || protectedMode > 0;
+            }
+        }
+
+        public void enterProtectedMode() {
+            synchronized (todo) {
+                protectedMode++;
+            }
+        }
+
+        public void exitProtectedMode(Runnable followupTask) {
+            synchronized (todo) {
+                if (protectedMode <= 0) {
+                    throw new IllegalStateException("Calling exitProtectedMode without enterProtectedMode"); //NOI18N
+                }
+
+                // stash the followup task, we will run all of them when exiting the protected mode
+                if (followupTask != null) {
+                    if (followupTasks == null) {
+                        followupTasks = new LinkedList<Runnable>();
+                    }
+                    followupTasks.add(followupTask);
+                }
+
+                protectedMode--;
+                if (protectedMode == 0) {
+                    // in normal mode again, restart all delayed jobs
+                    final List<Runnable> tasks = followupTasks;
+
+                    // delaying of these tasks was just copied from the old java.source RepositoryUpdater
+                    RequestProcessor.getDefault().create(new Runnable() {
+                        public void run() {
+                            schedule(new Work(false, false) {
+                                protected @Override void getDone() {
+                                    if (tasks != null) {
+                                        for(Runnable task : tasks) {
+                                            try {
+                                                task.run();
+                                            } catch (ThreadDeath td) {
+                                                throw td;
+                                            } catch (Throwable t) {
+                                                LOGGER.log(Level.WARNING, null, t);
+                                            }
+                                        }
+                                    }
+                                }
+                            }, false);
+                        }
+                    }).schedule(FILE_LOCKS_DELAY);
+                }
+            }
+        }
+
+        public boolean isInProtectedMode() {
+            synchronized (todo) {
+                return protectedMode > 0;
             }
         }
 
@@ -1444,6 +1558,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private volatile Work workInProgress = null;
         private boolean scheduled = false;
         private boolean allCancelled = false;
+        private int protectedMode = 0;
+        private List<Runnable> followupTasks = null;
 
         private void _run() {
             ProgressHandle progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class, "MSG_BackgroundCompileStart")); //NOI18N
@@ -1470,7 +1586,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private Work getWork () {
             synchronized (todo) {
                 Work w;
-                if (todo.size() > 0) {
+                if (protectedMode == 0 && todo.size() > 0) {
                     w = todo.remove(0);
                 } else {
                     w = null;
@@ -1518,6 +1634,35 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             cycleDetector = new Stack<URL>();
         }
     } // End of DependenciesContext class
+
+    private final class Controller extends IndexingController {
+
+        public Controller() {
+            super();
+            RepositoryUpdater.this.start(false);
+        }
+        
+        @Override
+        public void enterProtectedMode() {
+            getWorker().enterProtectedMode();
+        }
+
+        @Override
+        public void exitProtectedMode(Runnable followUpTask) {
+            getWorker().exitProtectedMode(followUpTask);
+        }
+
+        @Override
+        public boolean isInProtectedMode() {
+            return getWorker().isInProtectedMode();
+        }
+
+        @Override
+        public Map<URL, List<URL>> getRootDependencies() {
+            return new HashMap<URL, List<URL>>(RepositoryUpdater.this.scannedRoots2Dependencies);
+        }
+
+    } // End of Controller class
 
     // -----------------------------------------------------------------------
     // Methods for tests
