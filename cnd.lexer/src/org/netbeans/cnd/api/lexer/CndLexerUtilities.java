@@ -164,16 +164,37 @@ public final class CndLexerUtilities {
         return null;
     }
 
+    public static boolean isCppIdentifier(CharSequence id) {
+        if (id == null) {
+            return false;
+        }
+
+        if (id.length() == 0) {
+            return false;
+        }
+
+        if (!(isCppIdentifierStart(id.charAt(0)))) {
+            return false;
+        }
+
+        for (int i = 1; i < id.length(); i++) {
+            if (!(isCppIdentifierPart(id.charAt(i)))) {
+                return false;
+            }
+        }
+        return getDefatultFilter(true).check(id) == null && getDefatultFilter(false).check(id) == null;
+    }
+
     public static boolean isCppIdentifierStart(char ch) {
         return Character.isJavaIdentifierStart(ch);
     }
 
-    public static boolean isCppIdentifierStart(int codePoint) {
-        return Character.isJavaIdentifierStart(codePoint);
-    }
-
     public static boolean isCppIdentifierPart(char ch) {
         return Character.isJavaIdentifierPart(ch);
+    }
+
+    public static boolean isCppIdentifierStart(int codePoint) {
+        return Character.isJavaIdentifierStart(codePoint);
     }
 
     public static boolean isCppIdentifierPart(int codePoint) {
