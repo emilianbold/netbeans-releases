@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -69,6 +70,7 @@ import org.openide.util.Utilities;
 public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
+    private final static String shell;
     private final static String dorunScript;
     private final static boolean isWindows;
     private final static boolean isMacOS;
@@ -102,6 +104,15 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         }
 
         dorunScript = runScript;
+
+        String sh = null;
+
+        try {
+            sh = HostInfoUtils.getShell(ExecutionEnvironmentFactory.getLocal());
+        } catch (ConnectException ex) {
+        }
+
+        shell = sh;
     }
 
     public TerminalLocalNativeProcess(
@@ -115,6 +126,10 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         try {
             if (dorunScript == null) {
                 throw new IOException(loc("TerminalLocalNativeProcess.dorunNotFound.text")); // NOI18N
+            }
+
+            if (Utilities.isWindows() && shell == null) {
+                throw new IOException(loc("NativeProcess.shellNotFound.text")); // NOI18N
             }
 
             final String commandLine = info.getCommandLine();
@@ -240,7 +255,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             List<String> command = new ArrayList<String>();
 
             if (isWindows) {
-                String shell = HostInfoUtils.getShell(ExecutionEnvironmentFactory.getLocal());
                 command.add(shell);
                 command.add("-c"); // NOI18N
                 command.add("/bin/kill -" + signal + " " + getPID()); // NOI18N
@@ -337,6 +351,27 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     private void waitPID(Process termProcess, File pidFile) throws IOException {
         while (!isInterrupted()) {
+            /**
+             * The following sleep appears after an attempt to support konsole
+             * KDE4. This was done to give some time for external process to
+             * write information about process' PID to the pidfile and not to
+             * get to termProcess.exitValue() too eraly...
+             * Currently there are no means on KDE4 to start konsole in
+             * 'not-background' mode.
+             * An attempt to use --nofork fails when start konsole from jvm
+             * (see http://www.nabble.com/Can%27t-use---nofork-for-KUniqueApplications-from-another-kde-process-td21047022.html)
+             * So termProcess exits immediately...
+             *
+             * Also this sleep is justifable because this doesn't make any sense
+             * to check for a pid file too often.
+             *
+             */
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                continue;
+            }
+
             if (pidFile.exists() && pidFile.length() > 0) {
                 InputStream pidIS = new FileInputStream(pidFile);
                 readPID(pidIS);
@@ -345,7 +380,19 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             }
 
             try {
-                termProcess.exitValue();
+                int result = termProcess.exitValue();
+
+                if (result != 0) {
+                    log.info(loc("TerminalLocalNativeProcess.terminalFailed.text")); // NOI18N
+                    BufferedReader br = new BufferedReader(new InputStreamReader(termProcess.getErrorStream()));
+                    String s = br.readLine();
+                    while (s != null) {
+                        log.info("- " + s); // NOI18N
+                        s = br.readLine();
+                    }
+
+                }
+
                 // No exception - means process is finished..
                 interrupt();
             } catch (IllegalThreadStateException ex) {

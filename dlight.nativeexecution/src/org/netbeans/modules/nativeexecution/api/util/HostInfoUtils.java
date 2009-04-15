@@ -14,8 +14,10 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -38,12 +40,14 @@ public final class HostInfoUtils {
      * String constant that can be used to identify a localhost.
      */
     public static final String LOCALHOST = "127.0.0.1"; // NOI18N
+    private static final java.util.logging.Logger log = Logger.getInstance();
+
     private static final List<String> myIPAdresses = new ArrayList<String>();
     private static final Map<String, Boolean> filesExistenceHash =
             Collections.synchronizedMap(new WeakHashMap<String, Boolean>());
     private static final Map<ExecutionEnvironment, ExecEnvInfo> execEnvInfo =
             Collections.synchronizedMap(new WeakHashMap<ExecutionEnvironment, ExecEnvInfo>());
-    private static final String cmd_test = "/bin/test"; // NOI18N
+    private static final String cmd_test = "test"; // NOI18N
 
 
     static {
@@ -131,6 +135,61 @@ public final class HostInfoUtils {
         filesExistenceHash.put(key, fileExists);
 
         return fileExists;
+    }
+
+    public static String searchFile(ExecutionEnvironment execEnv,
+            List<String> searchPaths, String file, boolean searchInUserPaths) {
+        NativeProcessBuilder npb;
+        BufferedReader br;
+        String line;
+        Process p;
+
+        try {
+            String shell = HostInfoUtils.getShell(execEnv);
+
+            if (shell == null) {
+                return null;
+            }
+
+            List<String> sp = new ArrayList<String>(searchPaths);
+
+            if (searchInUserPaths) {
+                npb = new NativeProcessBuilder(execEnv, shell).setArguments("-c", "echo $PATH"); // NOI18N
+                p = npb.call();
+                p.waitFor();
+                br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                line = br.readLine();
+
+                if (line != null) {
+                    sp.addAll(Arrays.asList(line.split("[;:]"))); // NOI18N
+                }
+            }
+
+            StringBuilder cmd = new StringBuilder();
+
+            for (Iterator<String> i = sp.iterator(); i.hasNext();) {
+                cmd.append("/bin/ls " + i.next() + "/" + file); // NOI18N
+                if (i.hasNext()) {
+                    cmd.append(" || "); // NOI18N
+                }
+            }
+
+            npb = new NativeProcessBuilder(execEnv, shell).setArguments("-c", cmd.toString()); // NOI18N
+            p = npb.call();
+            p.waitFor();
+            br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            line = br.readLine();
+            
+            return (line == null || "".equals(line.trim())) ? null : line.trim(); // NOI18N
+        } catch (IOException ex) {
+            log.finest("Exception in searchFile() " + ex.toString()); // NOI18N
+        } catch (InterruptedException ex) {
+            log.finest("Exception in searchFile() " + ex.toString()); // NOI18N
+        }
+
+        log.finest("File " + file + " not found"); // NOI18N
+        
+        return null;
     }
 
     /**
@@ -254,10 +313,10 @@ public final class HostInfoUtils {
      */
     private static Platform.HardwareType getHardwareType(String os_arch) {
         if ("i386".equals(os_arch) || // NOI18N
-            "i686".equals(os_arch) || // NOI18N
-            "x86_64".equals(os_arch) || // NOI18N
-            "amd64".equals(os_arch) || // NOI18N
-            "athlon".equals(os_arch)) { // NOI18N
+                "i686".equals(os_arch) || // NOI18N
+                "x86_64".equals(os_arch) || // NOI18N
+                "amd64".equals(os_arch) || // NOI18N
+                "athlon".equals(os_arch)) { // NOI18N
             return Platform.HardwareType.X86;
         } else if ("sparc".equals(os_arch)) {
             return Platform.HardwareType.X86;
@@ -298,18 +357,18 @@ public final class HostInfoUtils {
         if (Utilities.isWindows()) {
             info.shell = WindowsSupport.getInstance().getShell();
         } else {
-            info.shell = "/bin/sh"; // NOI18N
+            info.shell = "sh"; // NOI18N
         }
 
         // IZ#160260 - cannot always relay on sun.cpu.isalist
         String isalist = System.getProperty("sun.cpu.isalist"); // NOI18N
 
-        if ("".equals(isalist)) { // NOI18N
+        if ("".equals(isalist) && info.shell != null) { // NOI18N
             String testcmd;
             if ("SunOS".equals(info.os)) { // NOI18N
                 testcmd = "/usr/bin/isalist | /bin/egrep \"sparcv9|amd64\""; // NOI18N
             } else {
-                testcmd = "/bin/uname -a | /bin/egrep x86_64"; // NOI18N
+                testcmd = "uname -a | egrep x86_64"; // NOI18N
             }
 
             ProcessBuilder pb = new ProcessBuilder(info.shell, "-c", testcmd); // NOI18N
@@ -402,7 +461,7 @@ public final class HostInfoUtils {
             command.append("uname -s &&"); // NOI18N
             command.append("test \"unknown\" = `uname -p` && uname -m || uname -p && "); // NOI18N
             command.append("test \"SunOS\" = `uname -s` && isainfo -b || uname -a | grep x86_64 || echo 32 && "); // NOI18N
-            command.append("ls /bin/sh 2>/dev/null || ls /usr/bin/sh 2>/dev/null"); // NOI18N
+            command.append("ls sh 2>/dev/null || ls /usr/bin/sh 2>/dev/null"); // NOI18N
 
             synchronized (session) {
                 echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
@@ -475,7 +534,7 @@ public final class HostInfoUtils {
             while (true) {
                 synchronized (session) {
                     echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-                    echannel.setCommand("/bin/mkdir -p " + tmpDirBase + " && test -w " + tmpDirBase); // NOI18N
+                    echannel.setCommand("mkdir -p " + tmpDirBase + " && test -w " + tmpDirBase); // NOI18N
                     echannel.connect();
                 }
 

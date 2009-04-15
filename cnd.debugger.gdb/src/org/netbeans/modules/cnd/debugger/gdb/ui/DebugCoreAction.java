@@ -41,14 +41,25 @@ package org.netbeans.modules.cnd.debugger.gdb.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import org.netbeans.modules.cnd.debugger.gdb.DebuggerStartException;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 public final class DebugCoreAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         SelectCorePanel panel = new SelectCorePanel();
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(DebugCoreAction.class, "SELECT_CORE_TITLE")); // NOI18N
-        DialogDisplayer.getDefault().notify(dd);
+        if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+            try {
+                GdbDebugger.debugCore(panel.getCorePath(), panel.getProjectInformation());
+            } catch (DebuggerStartException dse) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(DebugCoreAction.class,
+                       "ERR_UnexpectedDebugCoreFailure", panel.getCorePath()))); // NOI18N
+            }
+        }
     }
 }

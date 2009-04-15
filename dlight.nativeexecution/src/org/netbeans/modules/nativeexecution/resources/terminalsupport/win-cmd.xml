@@ -41,7 +41,10 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <terminaldefinition xmlns="http://www.netbeans.org/ns/nativeexecution-terminal-definition/1">
-    <terminal id="cmd.exe" platforms="windows"/>
+    <terminal id="cmd.exe"/>
+    <validation>
+        <platforms>windows</platforms>
+    </validation>
     <command stringvalue="cmd.exe"/>
     <arguments>
         <arg>/Q</arg>

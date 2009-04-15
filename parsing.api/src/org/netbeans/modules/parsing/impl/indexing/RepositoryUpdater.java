@@ -150,6 +150,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         return getWorker().isWorking();
     }
 
+    public boolean waitUntilFinished(long timeout) throws InterruptedException {
+        return getWorker().waitUntilFinished(timeout);
+    }
+
     /**
      * Schedules new job for indexing files under a root. This method forcible
      * reindexes all files in the job without checking timestamps.
@@ -797,6 +801,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         protected abstract void getDone();
 
+        protected boolean isCancelledBy(Work newWork) {
+            return false;
+        }
+
         protected final boolean isCancelled() {
             return cancelled.get();
         }
@@ -819,6 +827,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         public final void cancel() {
             cancelled.set(true);
+        }
+
+        public final void cancelBy(Work newWork) {
+            if (isCancelledBy(newWork)) {
+                cancelled.set(true);
+            }
         }
 
         private final boolean canBeParsed(String mimeType) {
@@ -1056,15 +1070,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 final List<URL> newRoots = new LinkedList<URL>();
                 newRoots.addAll(PathRegistry.getDefault().getSources());
                 newRoots.addAll(PathRegistry.getDefault().getLibraries());
-                newRoots.addAll(PathRegistry.getDefault().getUnknownRoots());
 
-                ctx.newBinaries.addAll(PathRegistry.getDefault().getBinaryLibraries());
-                for (Iterator<URL> it = ctx.newBinaries.iterator(); it.hasNext();) {
+                ctx.newBinariesToScan.addAll(PathRegistry.getDefault().getBinaryLibraries());
+                for (Iterator<URL> it = ctx.newBinariesToScan.iterator(); it.hasNext(); ) {
                     if (ctx.oldBinaries.remove(it.next())) {
                         it.remove();
                     }
                 }
-                ctx.newBinaries.removeAll(ctx.oldBinaries);
                 newRoots.addAll(PathRegistry.getDefault().getUnknownRoots());
 
                 final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();
@@ -1073,30 +1085,40 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     findDependencies (url, depGraph, ctx, PathRecognizerRegistry.getDefault().getLibraryIds(), PathRecognizerRegistry.getDefault().getBinaryLibraryIds());
                 }
                 
-                ctx.newRoots.addAll(org.openide.util.Utilities.topologicalSort(depGraph.keySet(), depGraph));
-                Collections.reverse(ctx.newRoots);
+                ctx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(depGraph.keySet(), depGraph));
+                Collections.reverse(ctx.newRootsToScan);
 
                 scanBinaries(ctx);
                 scanSources(ctx);
-                ctx.scannedRoots2Deps.putAll(depGraph);
-                for (URL url : ctx.oldRoots) {
-                    ctx.scannedRoots2Deps.remove(url);
-                }
-                ctx.scannedBinaries.removeAll(ctx.oldBinaries);
+
+                depGraph.keySet().retainAll(ctx.scannedRoots);
+                scannedRoots2Dependencies.putAll(depGraph);
+                scannedRoots2Dependencies.keySet().removeAll(ctx.oldRoots);
+                
+                scannedBinaries.addAll(ctx.scannedBinaries);
+                scannedBinaries.removeAll(ctx.oldBinaries);
             } catch (final TopologicalSortException tse) {
                 final IllegalStateException ise = new IllegalStateException ();
                 throw (IllegalStateException) ise.initCause(tse);
             }
         }
-        
-        private void findDependencies(
+
+        protected @Override boolean isCancelledBy(Work newWork) {
+            boolean b = newWork instanceof RootsWork;
+            if (b && LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Cancelling " + this + ", because of " + newWork); //NOI18N
+            }
+            return b;
+        }
+
+        private static void findDependencies(
                 final URL rootURL,
                 final Map<URL, List<URL>> depGraph,
                 DependenciesContext ctx,
                 final Set<String> libraryClassPathIds,
                 final Set<String> binaryLibraryClassPathIds)
         {
-            if (ctx.useInitialState && ctx.scannedRoots2Deps.containsKey(rootURL)) {
+            if (ctx.useInitialState && ctx.initialRoots2Deps.containsKey(rootURL)) {
                 ctx.oldRoots.remove(rootURL);
                 return;
             }
@@ -1155,8 +1177,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             else {
                                 //What does it mean?
                                 if (ctx.useInitialState) {
-                                    if (!ctx.scannedBinaries.contains(url)) {
-                                        ctx.newBinaries.add (url);
+                                    if (!ctx.initialBinaries.contains(url)) {
+                                        ctx.newBinariesToScan.add (url);
                                     }
                                     ctx.oldBinaries.remove(url);
                                 }
@@ -1173,7 +1195,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         private void scanBinaries (final DependenciesContext ctx) {
             assert ctx != null;
-            for (URL binary : ctx.newBinaries) {
+            for (URL binary : ctx.newBinariesToScan) {
                 if (isCancelled()) {
                     break;
                 }
@@ -1193,7 +1215,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     LOGGER.fine(String.format("Indexing of: %s took: %d ms", binary.toExternalForm(), time)); //NOI18N
                 }
             }
-            TEST_LOGGER.log(Level.FINEST, "scanBinary", ctx.newBinaries);       //NOI18N
+            TEST_LOGGER.log(Level.FINEST, "scanBinary", ctx.newBinariesToScan);       //NOI18N
         }
 
         private void scanBinary(URL root) throws IOException {
@@ -1240,7 +1262,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         private void scanSources  (final DependenciesContext ctx) {
             assert ctx != null;
-            for (URL source : ctx.newRoots) {
+            for (URL source : ctx.newRootsToScan) {
                 if (isCancelled()) {
                     break;
                 }
@@ -1249,6 +1271,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 try {
                     updateProgress(source);
                     scanSource (source);
+                    ctx.scannedRoots.add(source);
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
                 } finally {
@@ -1259,7 +1282,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     LOGGER.fine(String.format("Indexing of: %s took: %d ms", source.toExternalForm(), time)); //NOI18N
                 }
             }
-            TEST_LOGGER.log(Level.FINEST, "scanSources", ctx.newRoots);         //NOI18N
+            TEST_LOGGER.log(Level.FINEST, "scanSources", ctx.newRootsToScan);         //NOI18N
         }
 
         private void scanSource (URL root) throws IOException {
@@ -1303,6 +1326,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     if (wait && Utilities.holdsParserLock()) {
                         enforceWork = true;
                     } else {
+                        if (workInProgress != null) {
+                            workInProgress.cancelBy(work);
+                        }
+
                         LOGGER.log(Level.FINE, "Scheduling {0}", work);
                         todo.add(work);
                         if (!scheduled) {
@@ -1356,6 +1383,26 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
 
+        // returns false when timed out
+        public boolean waitUntilFinished(long timeout) throws InterruptedException {
+            if (Utilities.holdsParserLock()) {
+                throw new IllegalStateException("Can't wait for indexing to finish from inside a running parser task"); //NOI18N
+            }
+
+            synchronized (todo) {
+                while (scheduled) {
+                    if (timeout > 0) {
+                        todo.wait(timeout);
+                        return !scheduled;
+                    } else {
+                        todo.wait();
+                    }
+                }
+            }
+
+            return true;
+        }
+
         // -------------------------------------------------------------------
         // ParserResultTask implementation
         // -------------------------------------------------------------------
@@ -1382,6 +1429,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             } finally {
                 synchronized (todo) {
                     scheduled = false;
+                    todo.notifyAll();
                 }
             }
         }
@@ -1433,26 +1481,39 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     private static final class DependenciesContext {
 
+        private final Map<URL, List<URL>> initialRoots2Deps;
+        private final Set<URL> initialBinaries;
+
         private final Set<URL> oldRoots;
         private final Set<URL> oldBinaries;
-        private final Map<URL, List<URL>> scannedRoots2Deps;
+
+        private final List<URL> newRootsToScan;
+        private final Set<URL> newBinariesToScan;
+
+        private final Set<URL> scannedRoots;
         private final Set<URL> scannedBinaries;
+
         private final Stack<URL> cycleDetector;
-        private final List<URL> newRoots;
-        private final Set<URL> newBinaries;
         private final boolean useInitialState;
 
         public DependenciesContext (final Map<URL, List<URL>> scannedRoots2Deps, final Set<URL> scannedBinaries, boolean useInitialState) {
             assert scannedRoots2Deps != null;
             assert scannedBinaries != null;
-            this.scannedRoots2Deps = scannedRoots2Deps;
-            this.scannedBinaries = scannedBinaries;
+            
+            this.initialRoots2Deps = Collections.unmodifiableMap(scannedRoots2Deps);
+            this.initialBinaries = Collections.unmodifiableSet(scannedBinaries);
+
+            this.oldRoots = new HashSet<URL> (scannedRoots2Deps.keySet());
+            this.oldBinaries = new HashSet<URL> (scannedBinaries);
+
+            this.newRootsToScan = new ArrayList<URL>();
+            this.newBinariesToScan = new HashSet<URL>();
+
+            this.scannedRoots = new HashSet<URL>();
+            this.scannedBinaries = new HashSet<URL>();
+
             this.useInitialState = useInitialState;
             cycleDetector = new Stack<URL>();
-            oldRoots = new HashSet<URL> (scannedRoots2Deps.keySet());
-            oldBinaries = new HashSet<URL> (scannedBinaries);
-            this.newRoots = new ArrayList<URL>();
-            this.newBinaries = new HashSet<URL>();
         }
     } // End of DependenciesContext class
 

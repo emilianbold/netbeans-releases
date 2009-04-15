@@ -122,6 +122,14 @@ final public class ExecutionEnvironment {
     }
 
     /**
+     * Gets a string representation of the environment to show in the UI
+     * @return a string representation of the environment for showing in UI
+     */
+    public String getDisplayName() {
+        return isLocal() ? "localhost" : toString();
+    }
+
+    /**
      * Returns string representation of this <tt>ExecutionEnvironment</tt> in
      * form <tt>user@host[:port]</tt>.
      * @return string representation of this <tt>ExecutionEnvironment</tt> in

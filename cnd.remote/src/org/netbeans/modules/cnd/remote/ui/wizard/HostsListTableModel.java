@@ -187,7 +187,7 @@ class HostsListTableModel extends AbstractTableModel {
                     // let's be paranoiac
                     return;
                 }
-                if (ip[0] == 127 && ip[1] == 0 && ip[2] == 0 && ip[2] == 1) {
+                if (ip[0] == 127 && ip[1] == 0 && ip[2] == 0 && ip[3] == 1) {
                     // a workaround for #160258
                     return;
                 }
