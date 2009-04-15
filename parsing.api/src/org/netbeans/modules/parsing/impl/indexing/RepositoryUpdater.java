@@ -682,17 +682,25 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         private final AtomicBoolean cancelled = new AtomicBoolean(false);
         private final boolean followUpJob;
-        private final boolean checkForEditorModifications;
+        private final boolean checkEditor;
         private final CountDownLatch latch;
         private ProgressHandle progressHandle = null;
 
 //        private int allLanguagesParsersCount = -1;
 //        private int allLanguagesTasksCount = -1;
 
-        protected Work(boolean followUpJob, boolean checkForEditorModifications) {
+        protected Work(boolean followUpJob, boolean checkEditor) {
             this.followUpJob = followUpJob;
-            this.checkForEditorModifications = checkForEditorModifications;
+            this.checkEditor = checkEditor;
             this.latch = new CountDownLatch(1);
+        }
+
+        protected final boolean isFollowUpJob() {
+            return followUpJob;
+        }
+        
+        protected final boolean hasToCheckEditor() {
+            return checkEditor;
         }
 
         protected final void updateProgress(String message) {
@@ -742,12 +750,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
 
                 for (CustomIndexerFactory factory : customIndexerFactories) {
-                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkForEditorModifications);
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor);
                     factory.filesDeleted(deleted, ctx);
                 }
 
                 for(EmbeddingIndexerFactory factory : embeddingIndexerFactories) {
-                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkForEditorModifications);
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor);
                     factory.filesDeleted(deleted, ctx);
                 }
             } finally {
@@ -796,7 +804,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         }
 
                         supportsEmbeddings &= b;
-                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkForEditorModifications);
+                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor);
                         transactionContexts.add(ctx);
 
                         // some CustomIndexers (eg. java) need to know about roots even when there
@@ -820,7 +828,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             //Then use slow gsf like indexers
                             LOGGER.log(Level.FINE, "Using EmbeddingIndexers for {0}", indexables); //NOI18N
 
-                            final SourceIndexer si = new SourceIndexer(root, cacheRoot, followUpJob, checkForEditorModifications);
+                            final SourceIndexer si = new SourceIndexer(root, cacheRoot, followUpJob, checkEditor);
                             si.index(indexables, transactionContexts);
                         } else {
                             if (LOGGER.isLoggable(Level.FINE)) {
@@ -850,6 +858,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         protected abstract void getDone();
 
         protected boolean isCancelledBy(Work newWork) {
+            return false;
+        }
+
+        public boolean absorb(Work newWork) {
             return false;
         }
 
@@ -977,7 +989,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             files.add(f);
         }
 
-        public @Override void getDone() {
+        protected @Override void getDone() {
 //            updateProgress(root);
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
@@ -995,12 +1007,28 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             TEST_LOGGER.log(Level.FINEST, "filelist"); //NOI18N
         }
 
+        public @Override boolean absorb(Work newWork) {
+            if (newWork instanceof FileListWork) {
+                FileListWork nflw = (FileListWork) newWork;
+                if (nflw.root.equals(root)
+                    && nflw.isFollowUpJob() == isFollowUpJob()
+                    && nflw.hasToCheckEditor() == hasToCheckEditor()
+                ) {
+                    files.addAll(nflw.files);
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(this + ", root=" + root + " absorbed: " + nflw.files); //NOI18N
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
     } // End of FileListWork
 
     private static final class DeleteWork extends Work {
 
         private final URL root;
-        private final String relativePath;
+        private final Set<String> relativePaths = new HashSet<String>();
 
         public DeleteWork (URL root, String relativePath) {
             super(false, false);
@@ -1008,9 +1036,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             assert root != null;
             assert relativePath != null;
             this.root = root;
-            this.relativePath = relativePath;
+            this.relativePaths.add(relativePath);
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("DeleteWork: root=" + root + ", file=" + relativePath);
+                LOGGER.fine("DeleteWork: root=" + root + ", files=" + relativePaths);
             }
         }
 
@@ -1021,12 +1049,29 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         public @Override void getDone() {
 //            updateProgress(root);
             try {
-                final Collection<Indexable> indexables = Collections.singleton(SPIAccessor.getInstance().create(new DeletedIndexable (root, relativePath)));
+                final Collection<Indexable> indexables = new LinkedList<Indexable>();
+                for(String path : relativePaths) {
+                    indexables.add(SPIAccessor.getInstance().create(new DeletedIndexable (root, path)));
+                }
                 delete(indexables, root);
                 TEST_LOGGER.log(Level.FINEST, "delete"); //NOI18N
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);
             }
+        }
+
+        public @Override boolean absorb(Work newWork) {
+            if (newWork instanceof DeleteWork) {
+                DeleteWork ndw = (DeleteWork) newWork;
+                if (ndw.root.equals(root)) {
+                    relativePaths.addAll(ndw.relativePaths);
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(this + ", root=" + root + " absorbed: " + ndw.relativePaths); //NOI18N
+                    }
+                    return true;
+                }
+            }
+            return false;
         }
 
     } // End of DeleteWork class
@@ -1391,8 +1436,24 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             workInProgress.cancelBy(work);
                         }
 
-                        LOGGER.log(Level.FINE, "Scheduling {0}", work);
-                        todo.add(work);
+                        // coalesce ordinary jobs
+                        boolean absorbed = false;
+                        if (!wait) {
+                            for(Work w : todo) {
+                                if (w.absorb(work)) {
+                                    absorbed = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!absorbed) {
+                            LOGGER.log(Level.FINE, "Scheduling {0}", work); //NOI18N
+                            todo.add(work);
+                        } else {
+                            LOGGER.log(Level.FINE, "Work absorbed {0}", work); //NOI18N
+                        }
+                        
                         if (!scheduled && protectedMode == 0) {
                             scheduled = true;
                             Utilities.scheduleSpecialTask(this);
@@ -1447,6 +1508,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         public void enterProtectedMode() {
             synchronized (todo) {
                 protectedMode++;
+                LOGGER.log(Level.FINE, "Entering protected mode: {0}", protectedMode); //NOI18N
             }
         }
 
@@ -1465,6 +1527,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
 
                 protectedMode--;
+                LOGGER.log(Level.FINE, "Exiting protected mode: {0}", protectedMode); //NOI18N
+
                 if (protectedMode == 0) {
                     // in normal mode again, restart all delayed jobs
                     final List<Runnable> tasks = followupTasks;
@@ -1489,6 +1553,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             }, false);
                         }
                     }).schedule(FILE_LOCKS_DELAY);
+                    LOGGER.log(Level.FINE, "Protected mode exited, scheduling postprocess tasks: {0}", tasks); //NOI18N
                 }
             }
         }
