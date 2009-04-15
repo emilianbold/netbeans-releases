@@ -651,16 +651,22 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                     }
                 }
 
-                // note, must be called before node removing edges to work correctly
-                node.getDuplicatesOrConflicts().removeAll(toExclude);
-
                 List<ArtifactGraphEdge> edges2Exclude = new ArrayList<ArtifactGraphEdge>();
                 Collection<ArtifactGraphEdge> incoming = findNodeEdges(node, false, true);
+                ArtifactGraphNode sourceNode = null;
                 for (ArtifactGraphEdge age : incoming) {
-                    if (toExclude.contains(age.getTarget())) {
-                        edges2Exclude.add(age);
+                    sourceNode = getEdgeSource(age);
+                    if (sourceNode != null) {
+                        for (DependencyNode dn : fixContent.conflictParents) {
+                            if (sourceNode.represents(dn)) {
+                                edges2Exclude.add(age);
+                            }
+                        }
                     }
                 }
+
+                // note, must be called before node removing edges to work correctly
+                node.getDuplicatesOrConflicts().removeAll(toExclude);
 
                 for (ArtifactGraphEdge age : edges2Exclude) {
                     removeEdge(age);
