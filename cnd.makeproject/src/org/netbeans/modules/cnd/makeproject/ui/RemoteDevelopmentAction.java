@@ -49,7 +49,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -59,6 +58,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PlatformConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -144,8 +144,12 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
                 MakeConfiguration mconf = (MakeConfiguration) jmi.getClientProperty(CONF);
                 if (mconf != null && execEnv != null) {
                     DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(execEnv);
+                    DevelopmentHostConfiguration oldDhc = mconf.getDevelopmentHost();
                     mconf.setDevelopmentHost(dhc);
                     mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
+                    PlatformConfiguration platformConfiguration = mconf.getPlatform();
+                    platformConfiguration.propertyChange(new PropertyChangeEvent(
+                            jmi, DevelopmentHostConfiguration.PROP_DEV_HOST, oldDhc, dhc));
                     Object o = jmi.getClientProperty(PROJECT);
                     assert (o instanceof Project);
                     NativeProjectProvider npp = ((Project) o).getLookup().lookup(NativeProjectProvider.class);
