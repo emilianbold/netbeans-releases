@@ -42,9 +42,7 @@ package org.netbeans.modules.project.uiapi;
 
 import java.awt.CardLayout;
 import java.io.File;
-import java.util.ArrayList;
 import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -284,7 +282,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         if (alsoRenameFolder.isSelected()) {
             projectFolderFile = new File(location, projectName.getText());
         } else {
-            projectFolderFile = new File(location, project.getProjectDirectory().getName());
+            projectFolderFile = new File(location, project.getProjectDirectory().getNameExt());
         }
         
         projectFolder.setText(projectFolderFile.getAbsolutePath());

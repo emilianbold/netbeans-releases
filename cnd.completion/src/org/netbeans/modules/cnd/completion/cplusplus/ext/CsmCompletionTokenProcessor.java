@@ -636,7 +636,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
             }
         }
 
-        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER || tokenID == CppTokenId.SIZEOF) {
+        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER 
+                || tokenID == CppTokenId.SIZEOF
+                || tokenID == CppTokenId.TYPEID) {
             // change preproc identifier into normal identifier
             // to simplify handling of result expression
             tokenID = CppTokenId.IDENTIFIER;
@@ -830,8 +832,6 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
 //                        if (topID == GENERIC_WILD_CHAR)
 //                            break;
 
-                    case TYPEID:
-                        kwdType = null;
                     case IDENTIFIER: // identifier found e.g. 'a'
                          {
                             switch (topID) {
