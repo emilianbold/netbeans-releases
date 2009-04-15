@@ -108,7 +108,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         String sh = null;
 
         try {
-            sh = HostInfoUtils.getShell(new ExecutionEnvironment());
+            sh = HostInfoUtils.getShell(ExecutionEnvironmentFactory.getLocal());
         } catch (ConnectException ex) {
         }
 
@@ -255,7 +255,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             List<String> command = new ArrayList<String>();
 
             if (isWindows) {
-                String shell = HostInfoUtils.getShell(ExecutionEnvironmentFactory.getLocal());
                 command.add(shell);
                 command.add("-c"); // NOI18N
                 command.add("/bin/kill -" + signal + " " + getPID()); // NOI18N

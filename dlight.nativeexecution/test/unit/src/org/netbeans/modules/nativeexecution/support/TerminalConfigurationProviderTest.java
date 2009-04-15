@@ -44,7 +44,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 
@@ -75,7 +75,7 @@ public class TerminalConfigurationProviderTest {
 
     @Test
     public void testProvider() throws InterruptedException {
-        ExternalTerminal term = ExternalTerminalProvider.getTerminal(new ExecutionEnvironment(), "konsole"); // NOI18N
+        ExternalTerminal term = ExternalTerminalProvider.getTerminal(ExecutionEnvironmentFactory.getLocal(), "konsole"); // NOI18N
 
         System.out.println(term.toString());
     }

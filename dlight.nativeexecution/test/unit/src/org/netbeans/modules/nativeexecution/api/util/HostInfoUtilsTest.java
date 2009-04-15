@@ -150,7 +150,7 @@ public class HostInfoUtilsTest extends NbTestCase {
 
     private void testGetPlatform(String host, String user, int port, String passwd, 
             String osTypeShouldContain, String hardwareTypeShouldContain) throws Exception {
-        ExecutionEnvironment env = new ExecutionEnvironment(user, host, port);
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(user, host, port);
         ConnectionManager.getInstance().connectTo(env, passwd.toCharArray(), true);
         Platform platform = HostInfoUtils.getPlatform(env);
         assertTrue(platform.getHardwareType().toString().contains(hardwareTypeShouldContain));
@@ -160,7 +160,7 @@ public class HostInfoUtilsTest extends NbTestCase {
     @Test
     public void testSearchFile() throws Exception {
         System.out.println("Test searchFile()"); // NOI18N
-        ExecutionEnvironment env = new ExecutionEnvironment();
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
         String result = null;
 
         result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "/bin", "/usr/bin"), "rm", true); // NOI18N

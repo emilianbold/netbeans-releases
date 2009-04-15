@@ -251,7 +251,7 @@ public class NativeTaskTest {
         System.out.println("run"); // NOI18N
 
         final ExecutionEnvironment ee =
-                new ExecutionEnvironment("ak119685", "localhost", 22); // NOI18N
+                ExecutionEnvironmentFactory.createNew("ak119685", "localhost", 22); // NOI18N
 
 //        MacroExpander macroExpander = MacroExpanderFactory.getExpander(ee);
 //        try {
@@ -285,7 +285,7 @@ public class NativeTaskTest {
             }
         };
 
-        ExternalTerminal term = ExternalTerminalProvider.getTerminal(new ExecutionEnvironment(), "gnome-terminal").setTitle("My favorite title"); // NOI18N
+        ExternalTerminal term = ExternalTerminalProvider.getTerminal(ExecutionEnvironmentFactory.getLocal(), "gnome-terminal").setTitle("My favorite title"); // NOI18N
         NativeProcessBuilder npb = new NativeProcessBuilder(ee, cmd).setArguments("1", "2").addEnvironmentVariable("MY_VAR", "/temp/xx/$platform").setWorkingDirectory("/tmp").addNativeProcessListener(l).useExternalTerminal(term); // NOI18N
         ExecutionDescriptor descr = new ExecutionDescriptor().outLineBased(true).outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
 
