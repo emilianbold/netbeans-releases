@@ -83,14 +83,21 @@ DWORD is2003() {
 DWORD isVista() {
     DWORD id, major, minor, type;
     getOSVersion(& id, & major, & minor, & type);
-    return (id == VER_PLATFORM_WIN32_NT && major == 6 && type == VER_NT_WORKSTATION) ? 1 : 0;
+    return (id == VER_PLATFORM_WIN32_NT && major == 6 && minor == 0 && type == VER_NT_WORKSTATION) ? 1 : 0;
 }
 
 DWORD is2008() {
     DWORD id, major, minor, type;
     getOSVersion(& id, & major, & minor, & type);
-    return (id == VER_PLATFORM_WIN32_NT && major == 6 && type != VER_NT_WORKSTATION) ? 1 : 0;
+    return (id == VER_PLATFORM_WIN32_NT && major == 6 && (minor == 0 || minor == 1) && type != VER_NT_WORKSTATION) ? 1 : 0;
 }
+
+DWORD is7() {
+    DWORD id, major, minor, type;
+    getOSVersion(& id, & major, & minor, & type);
+    return (id == VER_PLATFORM_WIN32_NT && major == 6 && minor == 1 && type == VER_NT_WORKSTATION) ? 1 : 0;
+}
+
 typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
 LPFN_ISWOW64PROCESS fnIsWow64Process;
 
