@@ -282,6 +282,10 @@ public class InfoCommand extends SvnCommand {
 	public SVNNodeKind getNodeKind() {
             return SVNNodeKind.fromString(infoMap.get(INFO_NODEKIND));
 	}
+
+        public int getDepth() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
 //    Path: file
