@@ -50,9 +50,7 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TreeTableOperator;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.AttachDialogOperator;
@@ -69,16 +67,14 @@ import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.openide.util.Exceptions;
 
 /** Test of web application debugging. Manual test specification is here:
  * http://qa.netbeans.org/modules/webapps/promo-f/jspdebug/jspdebug-testspec.html
@@ -142,6 +138,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         // start to track Main Window status bar
         stt.start();
         // increase timeout to 60 seconds when waiting for status bar text
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 1000);
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
     }
     
@@ -167,14 +164,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
                 System.out.println(ex.getMessage());
             }
         }
-        // check missing target server dialog is shown    
-        // "Open Project"
-        String openProjectTitle = Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "MSG_Broken_Server_Title");
-        boolean needToSetServer = false;
-        if(JDialogOperator.findJDialog(openProjectTitle, true, true) != null) {
-            new NbDialogOperator(openProjectTitle).close();
-            needToSetServer = true;
-        }
         // Set as Main Project
         String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
@@ -188,11 +177,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
         String displayBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_CustomizeRun_DisplayBrowser_JCheckBox");
         new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
-        /*if(needToSetServer) {
-            // set default server
-            new JComboBoxOperator(propertiesDialogOper).setSelectedIndex(0);
-        }
-        */
         // confirm properties dialog
         propertiesDialogOper.ok();
         // if setting default server, it scans server jars; otherwise it continues immediatelly
@@ -342,7 +326,8 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         assertTrue("Refresh action on server node should be enabled when stopped at breakpoint.", new RefreshAction().isEnabled(serverNode));
         
         Utils.finishDebugger();
-        serverNode.stop();
+        verifyServerNode(serverNode);
+        J2eeServerNode.invoke(Utils.DEFAULT_SERVER).stop();
         // start debugger again
         new DebugProjectAction().perform();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
@@ -350,7 +335,18 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         stt.waitText("index.jsp:"+line);
         Utils.finishDebugger();
     }
+
+    static void verifyActiveNode(Node node){
+        try{
+            node.select();
+        }catch (TimeoutExpiredException e){}
+    }
     
+    static void verifyServerNode(J2eeServerNode serverNode){
+        verifyActiveNode(serverNode);
+        assertTrue("Refresh action on server node should be allways enabled.", new RefreshAction().isEnabled(serverNode));
+        new RefreshAction().perform(serverNode);
+    }
     /** Start another session.
      * - start to debug main project from main menu
      * - wait until debugger stops at previously set breakpoint
@@ -438,7 +434,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
             }
         }).waitAction(eoBean);
         // when issue 52506 fixed use proper name
-        so.makeCurrent("name");
+        so.makeCurrent("MainTestApplication");
         // wait pointer in editor (three annotations there)
         new Waiter(new Waitable() {
             public Object actionProduced(Object editorOper) {
@@ -461,7 +457,10 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
      */
     public void testStopServer() {
         J2eeServerNode serverNode = new J2eeServerNode(Utils.DEFAULT_SERVER);
-        serverNode.stop();
+        verifyServerNode(serverNode);
+        if (serverNode.getServerState() != J2eeServerNode.STATE_STOPPED){
+            serverNode.stop();
+        }
     }
     
     /** Sometimes is opened an information dialog with the following message:
