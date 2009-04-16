@@ -206,4 +206,8 @@ public class ParserSvnInfo implements ISVNInfo{
     public File getBasePropertyFile() {
         return basePropertiesFile;        
     }
+
+    public int getDepth() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
