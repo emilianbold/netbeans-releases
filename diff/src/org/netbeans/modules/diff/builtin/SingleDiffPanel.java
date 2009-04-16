@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.diff.builtin;
 
+import java.awt.Container;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
@@ -280,6 +281,10 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         modified = temp;
         try {
             refreshController();
+            Container c = getParent();
+            if (c != null) {
+                c.setName(getName());
+            }
         } catch (IOException e) {
             Logger.getLogger(SingleDiffPanel.class.getName()).log(Level.SEVERE, "", e); // elegant, nice and simple exception logging
         }
