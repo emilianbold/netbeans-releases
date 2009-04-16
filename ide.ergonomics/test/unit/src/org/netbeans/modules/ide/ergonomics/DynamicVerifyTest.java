@@ -67,6 +67,7 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(FilesAndAttributesCheck.class, "testGetAllTemplates", "testCheckAllTemplatesPretest").
             addTest(DebuggerAttachTypesCheck.class, "testGetAllDebuggers").
             addTest(ServersNodeActionsCheck.class, "testGetAll", "testCheckAllPretest").
+            addTest(MenuProfileActionsCheck.class, "testGetAll", "testCheckAllPretest").
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
@@ -79,6 +80,7 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(FilesAndAttributesCheck.class, "testCheckAllTemplatesReal").
             addTest(DebuggerAttachTypesCheck.class, "testGetAllDebuggersReal").
             addTest(ServersNodeActionsCheck.class, "testCheckAllReal").
+            addTest(MenuProfileActionsCheck.class, "testCheckAllReal").
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").

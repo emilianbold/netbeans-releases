@@ -43,6 +43,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JDialog;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.ide.ergonomics.Utilities;
+import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -65,7 +66,8 @@ public class FeatureAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         FeatureInfo info = FoDFileSystem.getInstance().whichProvides(fo);
-        boolean success = Utilities.featureDialog(info, (String)fo.getAttribute("displayName"), "Kuk");
+        String n = Actions.cutAmpersand((String)fo.getAttribute("displayName")); // NOI18N
+        boolean success = Utilities.featureDialog(info, n, n);
         if (!success) {
             return;
         }
