@@ -77,7 +77,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
     private final ASTNode leafParent;
 
     public VariableScopeVisitor(SourceUnit sourceUnit, AstPath path, BaseDocument doc, int cursorOffset) {
-        super(sourceUnit, path, doc, cursorOffset);
+        super(sourceUnit, path, doc, cursorOffset, true);
         this.leafParent = path.leafParent();
     }
 
