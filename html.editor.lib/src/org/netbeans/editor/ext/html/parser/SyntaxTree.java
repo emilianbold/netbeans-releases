@@ -113,8 +113,10 @@ public class SyntaxTree {
                                 //current node cannot be present inside its parent
 
                                 if (!lastNode.isResolved()) {
-                                    String expectedElements = elementsToString(lastNode.getAllPossibleElements());
+                                    //the parent node is not resolved we cannot close it
                                     //some mandatory content unresolved, report error
+                                    
+                                    String expectedElements = elementsToString(lastNode.getAllPossibleElements());
                                     errorMessages.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
                                             new Object[]{currentNodeDtdElement.getName(), expectedElements}));
 
@@ -122,30 +124,43 @@ public class SyntaxTree {
                                         System.out.println("NODE NOT RESOLVED! Missing " + expectedElements);
                                     }
                                 } else {
+                                    //the parent node is resolved so can be possibly closed
+
                                     //check if the node we are going to close have required end tag
                                     //if so show an error
                                     Element lastDtdElement = dtd.getElement(lastNode.name().toUpperCase(Locale.ENGLISH));
                                     if (lastDtdElement != null && !lastDtdElement.hasOptionalEnd()) {
-                                        lastNode.addErrorMessage(NbBundle.getMessage(SyntaxTree.class, "MSG_MISSING_ENDTAG",
-                                                new Object[]{lastDtdElement.getName()}));
+                                        //the last node need an end tag => error
+                                        Collection<Element> possibleElems = lastNode.getAllPossibleElements();
+                                        if(possibleElems.isEmpty()) {
+                                            errorMessages.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG_NO_EXPECTED_CONTENT",
+                                                    new Object[]{currentNodeDtdElement.getName()}));
+                                        } else {
+                                            String expectedElements = elementsToString(possibleElems);
+                                            errorMessages.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
+                                                    new Object[]{currentNodeDtdElement.getName(), expectedElements}));
+                                        }
+                                    } else {
+                                        //the last node has optional end tag, can be closed
+
+                                        //close the previous node
+                                        lastNode.setEndOffset(element.offset());
+                                        nodeStack.removeLast();
+
+                                        //hmm, the last node didn't resolve this tag, lets try its parent
+                                        AstNode parentNode = nodeStack.getLast();
+                                        if (!parentNode.isResolved()) {
+                                            //an attempt to reduce the current node within its parent
+                                            parentNode.reduce(currentNodeDtdElement);
+                                        }
+
+                                        if (DEBUG) {
+                                            System.out.println("Closing tag " + lastNode.name() + " by the end of this tag!");
+                                        }
                                     }
+
+
                                 }
-
-                                //close the previous node
-                                lastNode.setEndOffset(element.offset());
-                                nodeStack.removeLast();
-
-                                //hmm, the last node didn't resolve this tag, lets try its parent
-                                AstNode parentNode = nodeStack.getLast();
-                                if (!parentNode.isResolved()) {
-                                    //an attempt to reduce the current node within its parent
-                                    parentNode.reduce(currentNodeDtdElement);
-                                }
-
-                                if (DEBUG) {
-                                    System.out.println("Closing tag " + lastNode.name() + " by the end of this tag!");
-                                }
-
                             }
                         }
 
@@ -171,9 +186,7 @@ public class SyntaxTree {
                         element.offset(), openingTagEndOffset);
 
                 if (errorMessages != null) {
-                    for (String emsg : errorMessages) {
-                        openingTagNode.addErrorMessage(emsg);
-                    }
+                    openingTagNode.addErrorMessages(errorMessages);
                 }
                 newTagNode.addChild(openingTagNode);
             } else if (element.type() == SyntaxElement.TYPE_ENDTAG) {
@@ -285,14 +298,17 @@ public class SyntaxTree {
 
     private static String elementsToString(Collection<Element> elements) {
         StringBuffer b = new StringBuffer();
-        for(Element e: elements) {
+        for (Element e : elements) {
             b.append('<');
             b.append(e.getName());
             b.append('>');
             b.append(", ");
         }
 
-        b.delete(b.length() - 2, b.length()); //strip last delimiters
+        if(b.length() > 0) {
+            //strip last delimiters
+            b.delete(b.length() - 2, b.length());
+        }
 
         return b.toString();
     }
