@@ -30,11 +30,12 @@ package org.netbeans.modules.ruby.hints;
 import org.netbeans.modules.ruby.RubyTestBase;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
@@ -101,8 +102,19 @@ public abstract class HintTestBase extends RubyTestBase {
 
 
     protected void assertNoJRubyMatches(Rule hint, Set<String> exceptions) throws Exception {
-        List<FileObject> files = findJRubyRubyFiles();
-        assertTrue(files.size() > 0);
+        List<FileObject> jrubyFiles = findJRubyRubyFiles();
+        // running this assertion with 2500+ files is slow and causes OOMEs, and
+        // probably does not have much value over running with 500
+        // files, hence I'm reducing the list size (not using subList 
+        // to get a better sample of the original files - may not make too much sense
+        // but here we go anyway)
+        List<FileObject> files = new ArrayList<FileObject>(jrubyFiles.size() / 4);
+        for (int i = 0; i < jrubyFiles.size(); i++) {
+            if (i % 4 == 0) {
+                files.add(jrubyFiles.get(i));
+            }
+        }
+        assertTrue(files.size() > 50);
         
         Set<String> fails = new HashSet<String>();
         for (FileObject fileObject : files) {

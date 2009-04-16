@@ -1,9 +1,10 @@
-Name: Ini4J
+Name: SVNClientAdapter Library
+Version: 1.6.0
+Description: Integration library for subversion client
 License: Apache-2.0
-OSR: 4300
-Description: Java API for handling Windows ini file format
-Origin: http://ini4j.sourceforge.net/
-Version: 0.2.6
+OSR: 4077
+Origin: http://subclipse.tigris.org/svnClientAdapter.html
+
 
                                  Apache License
                            Version 2.0, January 2004

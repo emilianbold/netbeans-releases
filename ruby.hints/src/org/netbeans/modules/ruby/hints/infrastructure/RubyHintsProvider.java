@@ -34,9 +34,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Map;
 import java.util.Set;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.common.IRubyWarnings.ID;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.IRubyWarnings.ID;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
@@ -236,7 +236,7 @@ public class RubyHintsProvider implements HintsProvider {
                 }
 
                 Node node = it.next();
-                applyRules(manager, context, node.nodeId, node, path, suggestions, result);
+                applyRules(manager, context, node.getNodeType(), node, path, suggestions, result);
             }
         } finally {
             context.doc.readUnlock();
@@ -309,7 +309,7 @@ public class RubyHintsProvider implements HintsProvider {
     
     private void scan(HintsManager manager, RuleContext context, Node node, AstPath path, Map<NodeType,List<RubyAstRule>> hints, 
             List<Hint> result) {
-        applyRules(manager, context, node.nodeId, node, path, hints, result);
+        applyRules(manager, context, node.getNodeType(), node, path, hints, result);
         
         List<Node> list = node.childNodes();
 

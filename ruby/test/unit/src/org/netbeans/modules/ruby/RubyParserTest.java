@@ -42,7 +42,7 @@
 package org.netbeans.modules.ruby;
 
 import java.util.Collections;
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.Node;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -122,7 +122,7 @@ public class RubyParserTest extends RubyTestBase {
     }
 
     public void testPartial2() throws Exception {
-        checkParseTree("testfiles/broken2.rb", "Foo.new.^", "CallNoArgNode");
+        checkParseTree("testfiles/broken2.rb", "Foo.new.^", "CallNode");
     }
 
     public void testPartial3() throws Exception {
