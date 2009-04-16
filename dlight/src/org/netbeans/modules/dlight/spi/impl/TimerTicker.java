@@ -146,6 +146,6 @@ public final class TimerTicker
 
     @Override
     public String getName() {
-        return "Timer";
+        return "Timer"; //NOI18N
     }
 }

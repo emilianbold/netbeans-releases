@@ -23,7 +23,7 @@ import org.openide.util.lookup.ServiceProviders;
 @ServiceProviders({@ServiceProvider(service=DataProviderFactory.class), @ServiceProvider(service=VisualizerDataProviderFactory.class)})
 public final class SQLTableDataProviderFactory implements DataProviderFactory {
 
-    private final Collection<DataModelScheme> providedSchemas = Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:table"));
+    private final Collection<DataModelScheme> providedSchemas = Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:table")); //NOI18N
 
     public DataProvider create() {
         return new SQLTableDataProvider();

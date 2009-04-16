@@ -129,21 +129,21 @@ public final class MultipleDtraceDataCollector extends IndicatorDataProvider<Mul
 
     private File mergeScripts() {
         try {
-            File output = File.createTempFile("dlight", ".d");
+            File output = File.createTempFile("dlight", ".d"); // NOI18N
             BufferedWriter w = new BufferedWriter(new FileWriter(output));
             try {
-                w.write("#!/usr/sbin/dtrace -Cs\n");
+                w.write("#!/usr/sbin/dtrace -Cs\n"); // NOI18N
                 for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
                     DtraceDataCollector ddc = entry.getValue();
                     BufferedReader r = new BufferedReader(new FileReader(ddc.getLocalScriptPath()));
                     try {
                         for (String line = r.readLine(); line != null; line = r.readLine()) {
-                            if (!line.startsWith("#!")) {
-                                w.write(line.replaceAll("(printf\\(\")", "$1" + entry.getKey()));
-                                w.write('\n');
+                            if (!line.startsWith("#!")) { // NOI18N
+                                w.write(line.replaceAll("(printf\\(\")", "$1" + entry.getKey())); // NOI18N
+                                w.write('\n'); // NOI18N
                             }
                         }
-                        w.write('\n');
+                        w.write('\n'); // NOI18N
                     } finally {
                         r.close();
                     }
