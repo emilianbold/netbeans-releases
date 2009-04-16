@@ -67,6 +67,7 @@ import javax.swing.event.ChangeListener;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -309,7 +310,8 @@ public class STSWizard implements TemplateWizard.Iterator {
 
         project = Templates.getProject(wiz);
 
-        boolean wizardEnabled = Util.isJavaEE5orHigher(project) && ServerUtils.isGlassfish(project);
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory()); // only web module supported for now
+        boolean wizardEnabled = Util.isJavaEE5orHigher(project) && ServerUtils.isGlassfish(project) && (wm != null);
 
         versionPanel = new STSVersionPanel(wiz);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
