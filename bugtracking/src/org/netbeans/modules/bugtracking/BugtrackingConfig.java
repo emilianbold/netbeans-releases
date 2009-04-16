@@ -50,7 +50,7 @@ public class BugtrackingConfig {
 
     private static BugtrackingConfig instance = null;
     private static final String ARCHIVED_TTL  = "bugtracking.archived_time_to_live";      // NOI18N
-    private static long DEAFULT_ARCHIVED_TTL  = 7; // days
+    private static long DEFAULT_ARCHIVED_TTL  = 7; // days
 
     private BugtrackingConfig() { }
 
@@ -70,7 +70,7 @@ public class BugtrackingConfig {
     }
 
     public long getArchivedIssuesTTL() {
-        return getPreferences().getLong(ARCHIVED_TTL, DEAFULT_ARCHIVED_TTL);
+        return getPreferences().getLong(ARCHIVED_TTL, DEFAULT_ARCHIVED_TTL);
     }
 
 }
