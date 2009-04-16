@@ -202,4 +202,21 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("src/iz154851.cc", 5, 9, "sys_include/iz154851_2.h", 2, 1);
         performTest("src/iz154851.cc", 6, 7, "sys_include/iz154851_2.h", 4, 5);
     }
+
+    public static class Failed extends HyperlinkBaseTestCase {
+
+        @Override
+        protected Class getTestCaseDataClass() {
+            return BasicHyperlinkTestCase.class;
+        }
+
+        public Failed(String testName) {
+            super(testName, true);
+        }
+
+        public void test160829() throws Exception {
+            // IZ#160829 : [code model, navigation] Unresolved types
+            performTest("sys_include/iz160829_2.h", 4, 11, "src/iz160829.h", 2, 1);
+        }
+    }
 }
