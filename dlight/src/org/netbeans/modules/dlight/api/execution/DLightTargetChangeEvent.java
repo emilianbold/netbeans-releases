@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,29 +34,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.dlight.api.execution;
 
-/**
- * Listen for starting and finishing of {@link  org.netbeans.modules.dlight.api.execution.DLightTarget}.
- */
-public interface DLightTargetListener {
+import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 
-  /**
-   * Invoked when target state is changed 
-   */
-  public void targetStateChanged(DLightTargetChangeEvent event);
-//  /**
-//   * Invoked when targed is started
-//   * @param target target started
-//   */
-//  public void targetStarted(DLightTarget target);
-//
-//  /**
-//   * Invoked when target is finished
-//   * @param target target finished
-//   */
-//  public void targetFinished(DLightTarget target);
+public class DLightTargetChangeEvent {
+    public final DLightTarget target;
+    public final DLightTarget.State state;
+    public final Integer status;
+
+    public DLightTargetChangeEvent(DLightTarget target, State state, Integer status) {
+        this.target = target;
+        this.state = state;
+        this.status = status;
+    }
 }
