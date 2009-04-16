@@ -151,7 +151,7 @@ public class OutputFileManager extends CachingFileManager {
                 activeRoot = new File (URI.create(this.cp.entries().get(index).getURL().toExternalForm()));
             }
             String baseName = className.replace('.', File.separatorChar);       //NOI18N
-            String nameStr = baseName + '.' + (outputRoot != null ? FileObjects.SIG : FileObjects.CLASS);
+            String nameStr = baseName + '.' + FileObjects.SIG;
             int nameComponentIndex = nameStr.lastIndexOf(File.separatorChar);            
             if (nameComponentIndex != -1) {
                 String pathComponent = nameStr.substring(0, nameComponentIndex);

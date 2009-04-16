@@ -167,8 +167,8 @@ public class HtmlParserResult extends ParserResult {
                             }
 
                             Error error =
-                                    new DefaultError("unmatched_tag",
-                                    NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"),
+                                    new DefaultError("unmatched_tag",//NOI18N
+                                    NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"),//NOI18N
                                     null,
                                     getSnapshot().getSource().getFileObject(),
                                     node.startOffset(),
@@ -176,7 +176,9 @@ public class HtmlParserResult extends ParserResult {
                                     Severity.WARNING); //NOI18N
                             _errors.add(error);
 
-                        } else if (node.type() == AstNode.NodeType.TAG || node.type() == AstNode.NodeType.OPEN_TAG) {
+                        } else if (node.type() == AstNode.NodeType.TAG || 
+                                node.type() == AstNode.NodeType.OPEN_TAG ||
+                                node.type() == AstNode.NodeType.ENDTAG) {
 
                             if (node.getErrorMessages().size() > 0) {
                                 StringBuffer b = new StringBuffer();
@@ -190,7 +192,7 @@ public class HtmlParserResult extends ParserResult {
 
                                 //some error in the node, report
                                 Error error =
-                                        new DefaultError("tag_error",
+                                        new DefaultError("tag_error", //NOI18N
                                         b.toString(),
                                         null,
                                         getSnapshot().getSource().getFileObject(),

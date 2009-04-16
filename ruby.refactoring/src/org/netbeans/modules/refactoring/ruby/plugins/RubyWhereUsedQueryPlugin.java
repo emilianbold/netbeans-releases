@@ -47,18 +47,18 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.text.Document;
-import org.jruby.nb.ast.AliasNode;
-import org.jruby.nb.ast.ArgumentNode;
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.DAsgnNode;
-import org.jruby.nb.ast.DVarNode;
-import org.jruby.nb.ast.LocalAsgnNode;
-import org.jruby.nb.ast.LocalVarNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.SymbolNode;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.AliasNode;
+import org.jrubyparser.ast.ArgumentNode;
+import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.DAsgnNode;
+import org.jrubyparser.ast.DVarNode;
+import org.jrubyparser.ast.LocalAsgnNode;
+import org.jrubyparser.ast.LocalVarNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.SymbolNode;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -490,7 +490,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     elements.add(refactoring, WhereUsedElement.create(matchCtx));
                 }
-            } else*/ if (node.nodeId == NodeType.ALIASNODE) {
+            } else*/ if (node.getNodeType() == NodeType.ALIASNODE) {
                 AliasNode an = (AliasNode)node;
                 if (an.getNewName().equals(name) || an.getOldName().equals(name)) {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
@@ -501,7 +501,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 
                 // Methods, attributes, etc.
                 // TODO - be more discriminating on the filetype
-                switch (node.nodeId) {
+                switch (node.getNodeType()) {
                 case DEFNNODE:
                 case DEFSNODE:
                     if (((MethodDefNode)node).getName().equals(name)) {
@@ -590,7 +590,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 }
             } else {
                 // Classes, modules, constants, etc.
-                switch (node.nodeId) {
+                switch (node.getNodeType()) {
                 case COLON2NODE: {
                     Colon2Node c2n = (Colon2Node)node;
                     if (c2n.getName().equals(name)) {
@@ -623,7 +623,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         
         /** Search for local variables in local scope */
         private void findLocal(RubyElementCtx searchCtx, RubyElementCtx fileCtx, Node node, String name) {
-            switch (node.nodeId) {
+            switch (node.getNodeType()) {
             case ARGUMENTNODE:
                 // TODO - check parent and make sure it's not a method of the same name?
                 // e.g. if I have "def foo(foo)" and I'm searching for "foo" (the parameter),

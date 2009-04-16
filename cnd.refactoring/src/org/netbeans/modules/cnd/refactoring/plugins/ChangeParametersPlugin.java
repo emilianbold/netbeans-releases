@@ -47,6 +47,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenProcessor;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -74,7 +75,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Refactoring used for changing method signature. It changes method declaration
@@ -140,7 +140,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
                 if ((s == null || s.length() < 1)) {
                     p = createProblem(p, true, newParMessage("ERR_parname")); // NOI18N
                 } else {
-                    if (!Utilities.isJavaIdentifier(s.toString())) {
+                    if (!CndLexerUtilities.isCppIdentifier(s)) {
                         p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_InvalidIdentifier", s)); // NOI18N
                     }
                 }

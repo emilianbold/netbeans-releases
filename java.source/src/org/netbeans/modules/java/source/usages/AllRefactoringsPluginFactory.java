@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavaSourceSupportAccessor;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
@@ -60,7 +61,7 @@ import org.openide.filesystems.FileObject;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=90)
 public class AllRefactoringsPluginFactory implements RefactoringPluginFactory {
 
-    private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AllRefactoringsPluginFactory.class.getName());
     
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         return new RefactoringPluginImpl();
@@ -86,12 +87,14 @@ public class AllRefactoringsPluginFactory implements RefactoringPluginFactory {
             refactoringElements.getSession().addProgressListener(new ProgressListener() {
                 public void start(ProgressEvent event) {
                     LOGGER.log(Level.FINE, "Refactoring started, locking RepositoryUpdater");
-                    RepositoryUpdater.getDefault().lockRU();
+//                    RepositoryUpdater.getDefault().lockRU();
+                    IndexingController.getDefault().enterProtectedMode();
                 }
                 public void step(ProgressEvent event) {}
                 public void stop(ProgressEvent event) {
                     LOGGER.log(Level.FINE, "Refactoring finished, unlocking RepositoryUpdater");
-                    RepositoryUpdater.getDefault().unlockRU(new Runnable() {
+//                    RepositoryUpdater.getDefault().unlockRU(new Runnable() {
+                    IndexingController.getDefault().exitProtectedMode(new Runnable() {
                         public void run() {
                             LOGGER.log(Level.FINE, "Refreshing editor panes:");
                             for (FileObject f : JavaSourceSupportAccessor.ACCESSOR.getVisibleEditorsFiles()) {

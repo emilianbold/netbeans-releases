@@ -96,12 +96,12 @@ class ArticlesAndNews extends RSSFeedReaderPanel {
         JPanel panel = new JPanel( new GridBagLayout() );
         panel.setOpaque(false);
 
-        panel.add( news, new GridBagConstraints(0,1,1,1,0.0,0.0,
-                GridBagConstraints.SOUTHWEST,GridBagConstraints.HORIZONTAL,
-                new Insets(5,5,0,5),0,0) );
-        panel.add( new JLabel(), new GridBagConstraints(1,1,1,1,1.0,0.0,
+        panel.add( new JLabel(), new GridBagConstraints(0,1,1,1,1.0,0.0,
                 GridBagConstraints.CENTER,GridBagConstraints.HORIZONTAL,
                 new Insets(5,5,0,5),0,0) );
+        panel.add( news, new GridBagConstraints(1,1,1,1,0.0,0.0,
+                GridBagConstraints.SOUTHWEST,GridBagConstraints.HORIZONTAL,
+                new Insets(5,5,0,15),0,0) );
         panel.add( articles, new GridBagConstraints(2,1,1,1,0.0,0.0,
                 GridBagConstraints.SOUTHEAST,GridBagConstraints.HORIZONTAL,
                 new Insets(5,5,0,5),0,0) );

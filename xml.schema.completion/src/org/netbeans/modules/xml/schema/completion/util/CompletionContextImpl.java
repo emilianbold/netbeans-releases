@@ -636,7 +636,7 @@ public class CompletionContextImpl extends CompletionContext {
                 CompletionModel cm = provider.getCompletionModel(new java.net.URI(temp), false);
                 populateModelMap(cm);
             } catch (Exception ex) {
-                logger.log(Level.WARNING, ex.getMessage());
+                logger.log(Level.INFO, null, ex);
                 //continue with the next one.
                 continue;
             }

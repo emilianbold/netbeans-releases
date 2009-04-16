@@ -280,6 +280,9 @@ public interface DTD {
     public static interface ContentLeaf extends Content {
         /** get the Element of this leaf Content */
         public Element getElement();
+
+        /** @return name of the leaf element. */
+        public String getElementName();
     }
     
     /** ContentNode is node of content tree, contains one operator (either unary

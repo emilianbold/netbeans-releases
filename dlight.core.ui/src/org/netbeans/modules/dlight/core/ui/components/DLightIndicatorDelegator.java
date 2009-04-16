@@ -53,7 +53,7 @@ public final class DLightIndicatorDelegator implements IndicatorComponentDelegat
     }
 
     public void sessionAdded(DLightSession newSession) {
-        System.out.println("Session added");
+        //System.out.println("Session added");
     }
 
     public void sessionRemoved(DLightSession removedSession) {

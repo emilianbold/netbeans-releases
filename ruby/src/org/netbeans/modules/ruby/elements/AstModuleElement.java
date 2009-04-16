@@ -2,9 +2,9 @@ package org.netbeans.modules.ruby.elements;
 
 import java.util.Set;
 
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.ModuleNode;
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.ModuleNode;
+import org.jrubyparser.ast.Node;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 
