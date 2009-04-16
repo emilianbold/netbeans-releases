@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
@@ -60,8 +59,12 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.util.Exceptions;
@@ -116,7 +119,7 @@ public class IntroduceHint implements AstRule {
         if (lineBegin != -1 && lineEnd != -1) {
             IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(doc, lineBegin, lineEnd);
             phpParseResult.getProgram().accept(introduceFixVisitor);
-            InstanceCreationVariableFix variableFix = introduceFixVisitor.getInstanceCreationVariableFix();
+            IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
             if (variableFix != null) {
                 hints.add(new Hint(IntroduceHint.this, getDisplayName(),
                         context.parserResult.getSnapshot().getSource().getFileObject(), variableFix.getOffsetRange(),
@@ -143,23 +146,38 @@ public class IntroduceHint implements AstRule {
         private int lineBegin;
         private int lineEnd;
         private BaseDocument doc;
-        private InstanceCreationVariableFix variableFix;
+        private IntroduceFix fix;
         private List<Variable> variables;
-        private Stack<ClassInstanceCreation> stack;
 
         IntroduceFixVisitor(BaseDocument doc, int lineBegin, int lineEnd) {
             this.doc = doc;
             this.lineBegin = lineBegin;
             this.lineEnd = lineEnd;
             this.variables = new ArrayList<Variable>();
-            this.stack = new Stack<ClassInstanceCreation>();
         }
 
         @Override
         public void scan(ASTNode node) {
-            if (node != null && (isBefore(node.getStartOffset(), lineEnd) || variableFix != null)) {
+            if (node != null && (isBefore(node.getStartOffset(), lineEnd) || fix != null)) {
                 super.scan(node);
             }
+        }
+
+        @Override
+        public void visit(ExpressionStatement node) {
+            if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
+                Expression expression = node.getExpression();
+                if (expression instanceof ClassInstanceCreation) {
+                    fix = new InstanceCreationVariableFix(doc, (ClassInstanceCreation) expression);
+                } else if (expression instanceof MethodInvocation) {
+                    fix = new MethodInvocationVariableFix(doc, (MethodInvocation) expression);
+                } else if (expression instanceof FunctionInvocation) {
+                    fix = new FunctionInvocationVariableFix(doc, (FunctionInvocation) expression);
+                } else if (expression instanceof StaticMethodInvocation) {
+                    fix = new StaticMethodInvocationVariableFix(doc, (StaticMethodInvocation) expression);
+                }
+            }
+            super.visit(node);
         }
 
         @Override
@@ -168,55 +186,42 @@ public class IntroduceHint implements AstRule {
             super.visit(node);
         }
 
-        @Override
-        public void visit(Assignment node) {
-            if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
-                if (node.getRightHandSide() instanceof ClassInstanceCreation) {
-                    this.stack.push((ClassInstanceCreation) node.getRightHandSide());
-                }
-            }
-            super.visit(node);
-        }
-
-        @Override
-        public void visit(ClassInstanceCreation node) {
-            boolean assignmentExists = false;
-            if (!this.stack.isEmpty()) {
-                ClassInstanceCreation fromStack = this.stack.pop();
-                if (node.equals(fromStack)) {
-                    assignmentExists = true;
-                }
-            }
-            if (!assignmentExists && isInside(node.getStartOffset(), lineBegin, lineEnd)) {
-                variableFix = new InstanceCreationVariableFix(doc, node);
-            }
-            super.visit(node);
-        }
-
         /**
          * @return or null
          */
-        public InstanceCreationVariableFix getInstanceCreationVariableFix() {
-            if (variableFix != null) {
-                variableFix.setVariables(variables);
+        public IntroduceFix getIntroduceFix() {
+            if (fix != null) {
+                fix.setVariables(variables);
             }
-            return variableFix;
+            return fix;
         }
     }
 
-    private class InstanceCreationVariableFix implements HintFix {
+    public abstract class IntroduceFix implements HintFix {
 
-        private BaseDocument doc;
-        private ClassInstanceCreation instanceCreation;
-        private List<Variable> variables;
+        BaseDocument doc;
+        ASTNode node;
+        List<Variable> variables;
 
-        InstanceCreationVariableFix(BaseDocument doc, ClassInstanceCreation instanceCreation) {
+        public IntroduceFix(BaseDocument doc, ASTNode node) {
             this.doc = doc;
-            this.instanceCreation = instanceCreation;
+            this.node = node;
         }
 
         OffsetRange getOffsetRange() {
-            return new OffsetRange(instanceCreation.getStartOffset(), instanceCreation.getEndOffset());
+            return new OffsetRange(node.getStartOffset(), node.getEndOffset());
+        }
+
+        public boolean isInteractive() {
+            return false;
+        }
+
+        public boolean isSafe() {
+            return true;
+        }
+
+        public void setVariables(List<Variable> variables) {
+            this.variables = variables;
         }
 
         public String getDescription() {
@@ -224,8 +229,8 @@ public class IntroduceHint implements AstRule {
         }
 
         public void implement() throws Exception {
-            int textOffset = getTextOffset(instanceCreation);
-            String variableName = getVariableName(instanceCreation);
+            int textOffset = getTextOffset();
+            String variableName = getVariableName();
             EditList edits = new EditList(doc);
             edits.replace(textOffset, 0, String.format("$%s = ", variableName), true, 0);//NOI18N
             edits.apply();
@@ -237,28 +242,42 @@ public class IntroduceHint implements AstRule {
             }
         }
 
-        public boolean isSafe() {
-            return true;
+        protected int getTextOffset() {
+            return node.getStartOffset();
         }
 
-        public boolean isInteractive() {
-            return false;
+        abstract String getVariableName();
+
+        String adjustName(String name) {
+            if (name == null) {
+                return null;
+            }
+
+            String shortName = null;
+
+            if (name.startsWith("get") && name.length() > 3) {
+                shortName = name.substring(3);
+            }
+
+            if (name.startsWith("is") && name.length() > 2) {
+                shortName = name.substring(2);
+            }
+
+            if (shortName != null) {
+                return firstToLower(shortName);
+            }
+
+            return name;
         }
 
-        private int getTextOffset(ClassInstanceCreation instanceCreation) {
-            return instanceCreation.getStartOffset();
-        }
-
-        private String getVariableName(ClassInstanceCreation instanceCreation) {
-            String guessName = CodeUtils.extractClassName(instanceCreation.getClassName());
-            guessName = firstToLower(guessName);
+        String getVariableName(String guessName) {
+            guessName = adjustName(firstToLower(guessName));
             String proposedName = guessName;
             int incr = -1;
             boolean cont = true;
-
             while (cont) {
                 if (incr != -1) {
-                    proposedName = String.format("%s%d", guessName, incr);//NOI18N
+                    proposedName = String.format("%s%d", guessName, incr); //NOI18N
                 }
                 cont = false;
                 for (Variable variable : variables) {
@@ -266,23 +285,67 @@ public class IntroduceHint implements AstRule {
                     if (varName != null) {
                         if (variable.isDollared()) {
                             varName = varName.substring(1);
-                        }
-                        if (proposedName.equals(varName)) {
-                            incr++;
-                            cont = true;
-                            break;
+                            if (proposedName.equals(varName)) {
+                                incr++;
+                                cont = true;
+                                break;
+                            }
                         }
                     }
                 }
             }
             return proposedName;
         }
+    }
 
-        /**
-         * @param variables the variables to set
-         */
-        public void setVariables(List<Variable> variables) {
-            this.variables = variables;
+    private class InstanceCreationVariableFix extends IntroduceFix {
+
+        InstanceCreationVariableFix(BaseDocument doc, ClassInstanceCreation instanceCreation) {
+            super(doc, instanceCreation);
+        }
+
+        protected String getVariableName() {
+            ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
+            String guessName = CodeUtils.extractClassName(instanceCreation.getClassName());
+            return getVariableName(guessName);
+        }
+    }
+
+    private class StaticMethodInvocationVariableFix extends IntroduceFix {
+        StaticMethodInvocationVariableFix(BaseDocument doc, StaticMethodInvocation methodInvocation) {
+            super(doc, methodInvocation);
+        }
+
+        protected String getVariableName() {
+            StaticMethodInvocation methodInvocation = (StaticMethodInvocation) node;
+            String guessName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
+            return getVariableName(guessName);
+        }
+    }
+
+    private class MethodInvocationVariableFix extends IntroduceFix {
+
+        MethodInvocationVariableFix(BaseDocument doc, MethodInvocation methodInvocation) {
+            super(doc, methodInvocation);
+        }
+
+        protected String getVariableName() {
+            MethodInvocation methodInvocation = (MethodInvocation) node;
+            String guessName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
+            return getVariableName(guessName);
+        }
+    }
+
+    private class FunctionInvocationVariableFix extends IntroduceFix {
+
+        FunctionInvocationVariableFix(BaseDocument doc, FunctionInvocation functionInvocation) {
+            super(doc, functionInvocation);
+        }
+
+        protected String getVariableName() {
+            FunctionInvocation functionInvocation = (FunctionInvocation) node;
+            String guessName = CodeUtils.extractFunctionName(functionInvocation);
+            return getVariableName(guessName);
         }
     }
 
