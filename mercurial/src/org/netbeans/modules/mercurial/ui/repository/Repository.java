@@ -225,19 +225,6 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         updateVisibility();
     }
 
-    public void storeRecentUrls() {
-        HgModuleConfig.getDefault().setRecentUrls(getRecentUrls());
-    }
-    
-    private List<RepositoryConnection> getRecentUrls() {
-        ComboBoxModel model = repositoryPanel.urlComboBox.getModel();
-        List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(model.getSize());
-        for (int i = 0; i < model.getSize(); i++) {
-            ret.add((RepositoryConnection)model.getElementAt(i));
-        }
-        return ret;
-    }
-    
     private JTextComponent getUrlComboEditor() {
         Component editor = repositoryPanel.urlComboBox.getEditor().getEditorComponent();
         JTextComponent textEditor = (JTextComponent) editor;
@@ -250,24 +237,6 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         repositoryPanel.userTextField.setEditable(editable);        
         repositoryPanel.proxySettingsButton.setEnabled(editable);        
         //repositoryPanel.savePasswordCheckBox.setEnabled(editable);        
-    }
-    
-    public void storeConfigValues() {
-        RepositoryConnection rc = getSelectedRC();        
-        if(rc==null) {
-            return; // uups 
-        }
-        
-        //try {
-            //SVNUrl repositoryUrl = rc.getSvnUrl();
-            //if(repositoryUrl.getProtocol().startsWith("svn+")) { // NOI18N
-            //    SvnConfigFiles.getInstance().setExternalCommand(getTunnelName(repositoryUrl.getProtocol()), repositoryPanel.tunnelCommandTextField.getText());
-            //}    
-        //} catch (MalformedURLException mue) {
-            // should not happen
-        //    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); 
-        //}
-        
     }
     
     public void insertUpdate(DocumentEvent e) {
@@ -366,15 +335,6 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                 //dcbm.setSelectedItem(urlString);                                                
                 refresh((RepositoryConnection)dcbm.getElementAt(idx));                
             } 
-            if(urlString.startsWith("svn+")) { // NOI18N
-                String tunnelName = getTunnelName(urlString).trim();
-                if( repositoryPanel.tunnelCommandTextField.getText().trim().equals("") &&  // NOI18N
-                    tunnelName != null && 
-                    !tunnelName.equals("") )  // NOI18N
-                {
-                    //repositoryPanel.tunnelCommandTextField.setText(SvnConfigFiles.getInstance().getExternalCommand(tunnelName));
-                } 
-            }     
             
             editedrc.setUsername(repositoryPanel.userTextField.getText());
             editedrc.setPassword(new String(repositoryPanel.userPasswordField.getPassword()));
@@ -460,14 +420,6 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         return SSH_URL_HELP;
     }
             
-    private String getTunnelName(String urlString) {
-        int idx = urlString.indexOf(":", 4); // NOI18N
-        if(idx < 0) {
-            idx = urlString.length();
-        }
-        return urlString.substring(4, idx);
-    }
-    
     /**
      * Load selected root from Swing structures (from arbitrary thread).
      * @return null on failure
