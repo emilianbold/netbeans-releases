@@ -106,6 +106,10 @@ public class KenaiServiceTest extends NbTestCase {
         }
     }
 
+    public void setServicesChecker(ServicesChecker sc) throws KenaiException {
+        servicesChecker = sc;
+        services = Kenai.getDefault().getServices();
+    }
 
     /**
      * Test if a kenai service contained in the golden file also exists in the list returned by the server
@@ -185,5 +189,4 @@ public class KenaiServiceTest extends NbTestCase {
             fail("An unknown exception occured, printing stacktrace and failing.");
         }
     }
-
 }
