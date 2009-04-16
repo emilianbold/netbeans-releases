@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.lexer;
 
+import org.netbeans.cnd.api.lexer.BatTokenId;
 import java.util.Collection;
 
 import java.util.EnumSet;

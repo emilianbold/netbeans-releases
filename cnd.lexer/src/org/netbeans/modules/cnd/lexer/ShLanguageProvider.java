@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.lexer;
 
+import org.netbeans.cnd.api.lexer.ShTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
