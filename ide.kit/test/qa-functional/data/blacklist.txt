@@ -38,6 +38,7 @@ org.netbeans.modules.profiler.projectsupport.AbstractProjectLookupProvider
 org.netbeans.modules.profiler.utilities.Visitable
 org.netbeans.modules.profiler.utilities.Visitor
 org.netbeans.modules.profiler.actions.CompareSnapshotsAction
+org.netbeans.modules.profiler.actions.AttachAction
 
 org.netbeans.lib.profiler.results.BaseCallGraphBuilder
 org.netbeans.lib.profiler.results.CCTProvider
