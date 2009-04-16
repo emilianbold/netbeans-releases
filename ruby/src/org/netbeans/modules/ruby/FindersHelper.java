@@ -46,10 +46,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.SymbolNode;
+import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.SymbolNode;
 
 /**
  * A helper class for generating signatures for various ActiveRecord

@@ -46,20 +46,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
-import org.jruby.nb.ast.AliasNode;
-import org.jruby.nb.ast.ArgsNode;
-import org.jruby.nb.ast.ArgumentNode;
-import org.jruby.nb.ast.BlockArgNode;
-import org.jruby.nb.ast.DAsgnNode;
-import org.jruby.nb.ast.DVarNode;
-import org.jruby.nb.ast.ForNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.LocalAsgnNode;
-import org.jruby.nb.ast.LocalVarNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.AliasNode;
+import org.jrubyparser.ast.ArgsNode;
+import org.jrubyparser.ast.ArgumentNode;
+import org.jrubyparser.ast.BlockArgNode;
+import org.jrubyparser.ast.DAsgnNode;
+import org.jrubyparser.ast.DVarNode;
+import org.jrubyparser.ast.ForNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.LocalAsgnNode;
+import org.jrubyparser.ast.LocalVarNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
@@ -70,7 +70,7 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
 
 /**
  * Walk through the JRuby AST and note interesting things
- * @todo Use the org.jruby.nb.ast.visitor.NodeVisitor interface
+ * @todo Use the org.jrubyparser.ast.visitor.NodeVisitor interface
  * @todo Do mixins and includes trip up my unused private method detection code?
  * @todo Treat toplevel methods as private?
  * @todo Show unused highlighting for unused class variables:
@@ -179,7 +179,7 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
     @SuppressWarnings("fallthrough")
     private void annotate(Node node, Map<OffsetRange,Set<ColoringAttributes>> highlights, AstPath path,
         List<String> parameters, boolean isParameter) {
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
         case ARGSNODE: {
             isParameter = true;
             break;
@@ -294,10 +294,10 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
         List<Node> nodes = node.childNodes();
 
         for (Node c : nodes) {
-            if (c.nodeId == NodeType.ARGSNODE) {
+            if (c.getNodeType() == NodeType.ARGSNODE) {
                 ArgsNode an = (ArgsNode)c;
 
-                if (an.getRequiredArgsCount() > 0) {
+                if (an.getRequiredCount() > 0) {
                     List<Node> args = an.childNodes();
 
                     for (Node arg : args) {
@@ -305,12 +305,12 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
                             List<Node> args2 = arg.childNodes();
 
                             for (Node arg2 : args2) {
-                                if (arg2.nodeId == NodeType.ARGUMENTNODE) {
+                                if (arg2.getNodeType() == NodeType.ARGUMENTNODE) {
                                     if (usedParameterNames.contains(((ArgumentNode)arg2).getName())) {
                                         OffsetRange range = AstUtilities.getRange(arg2);
                                         highlights.put(range, ColoringAttributes.PARAMETER_SET);
                                     }
-                                } else if (arg2.nodeId == NodeType.LOCALASGNNODE) {
+                                } else if (arg2.getNodeType() == NodeType.LOCALASGNNODE) {
                                     if (usedParameterNames.contains(((LocalAsgnNode)arg2).getName())) {
                                         OffsetRange range = AstUtilities.getNameRange(arg2);
                                         highlights.put(range, ColoringAttributes.PARAMETER_SET);
@@ -322,8 +322,8 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
                 }
 
                 // Rest args
-                if (an.getRestArgNode() != null) {
-                    ArgumentNode bn = an.getRestArgNode();
+                if (an.getRest() != null) {
+                    ArgumentNode bn = an.getRest();
 
                     if (usedParameterNames.contains(bn.getName())) {
                         OffsetRange range = AstUtilities.getRange(bn);
@@ -332,8 +332,8 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
                 }
 
                 // Block args
-                if (an.getRestArgNode() != null) {
-                    ArgumentNode bn = an.getRestArgNode();
+                if (an.getRest() != null) {
+                    ArgumentNode bn = an.getRest();
 
                     if (usedParameterNames.contains(bn.getName())) {
                         OffsetRange range = AstUtilities.getRange(bn);
@@ -342,8 +342,8 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
                 }
 
                 // Block args
-                if (an.getBlockArgNode() != null) {
-                    BlockArgNode bn = an.getBlockArgNode();
+                if (an.getBlock() != null) {
+                    BlockArgNode bn = an.getBlock();
 
                     if (usedParameterNames.contains(bn.getName())) {
                         OffsetRange range = AstUtilities.getRange(bn);
@@ -359,10 +359,10 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
         List<Node> nodes = node.childNodes();
 
         for (Node c : nodes) {
-            if (c.nodeId == NodeType.ARGSNODE) {
+            if (c.getNodeType() == NodeType.ARGSNODE) {
                 ArgsNode an = (ArgsNode)c;
 
-                if (an.getRequiredArgsCount() > 0) {
+                if (an.getRequiredCount() > 0) {
                     List<Node> args = an.childNodes();
 
                     for (Node arg : args) {
@@ -370,12 +370,12 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
                             List<Node> args2 = arg.childNodes();
 
                             for (Node arg2 : args2) {
-                                if (arg2.nodeId == NodeType.ARGUMENTNODE) {
+                                if (arg2.getNodeType() == NodeType.ARGUMENTNODE) {
                                     if (names.contains(((ArgumentNode)arg2).getName())) {
                                         OffsetRange range = AstUtilities.getRange(arg2);
                                         highlights.put(range, ColoringAttributes.UNUSED_SET);
                                     }
-                                } else if (arg2.nodeId == NodeType.LOCALASGNNODE) {
+                                } else if (arg2.getNodeType() == NodeType.LOCALASGNNODE) {
                                     if (names.contains(((LocalAsgnNode)arg2).getName())) {
                                         OffsetRange range = AstUtilities.getNameRange(arg2);
                                         highlights.put(range, ColoringAttributes.UNUSED_SET);
@@ -387,8 +387,8 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
                 }
 
                 // Rest args
-                if (an.getRestArgNode() != null) {
-                    ArgumentNode bn = an.getRestArgNode();
+                if (an.getRest() != null) {
+                    ArgumentNode bn = an.getRest();
 
                     if (names.contains(bn.getName())) {
                         OffsetRange range = AstUtilities.getRange(bn);
@@ -396,8 +396,8 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
                     }
                 }
 
-                if (an.getBlockArgNode() != null) {
-                    BlockArgNode bn = an.getBlockArgNode();
+                if (an.getBlock() != null) {
+                    BlockArgNode bn = an.getBlock();
 
                     if (names.contains(bn.getName())) {
                         OffsetRange range = AstUtilities.getRange(bn);
@@ -409,9 +409,9 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
     }
 
     private boolean isUsedInMethod(Node node, String targetName, boolean isParameter) {
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
         case LOCALVARNODE: {
-            if (node.nodeId == NodeType.LOCALVARNODE) {
+            if (node.getNodeType() == NodeType.LOCALVARNODE) {
                 String name = ((LocalVarNode)node).getName();
 
                 if (targetName.equals(name)) {
@@ -464,7 +464,7 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
             // The "outer" foo here is unused - we shouldn't
             // recurse into method bodies when doing unused detection
             // foo = 1; def bar; foo = 2; print foo; end;
-            if (child.nodeId == NodeType.DEFSNODE || child.nodeId == NodeType.DEFNNODE) {
+            if (child.getNodeType() == NodeType.DEFSNODE || child.getNodeType() == NodeType.DEFNNODE) {
                 continue;
             }
 
