@@ -50,15 +50,15 @@ import org.netbeans.api.lexer.TokenId;
  */
 public enum BatTokenId implements TokenId {
 
-    KEYWORD ("keyword"),
-    COMMAND ("command"),
-    OPERATOR ("operator"),
-    NUMBER ("number"),
-    WHITESPACE ("whitespace"),
-    IDENTIFIER ("identifier"),
-    STRING ("string"),
-    COMMENT ("comment"),
-    ERROR ("error");
+    KEYWORD ("keyword"), // NOI18N
+    COMMAND ("command"), // NOI18N
+    OPERATOR ("operator"), // NOI18N
+    NUMBER ("number"), // NOI18N
+    WHITESPACE ("whitespace"), // NOI18N
+    IDENTIFIER ("identifier"), // NOI18N
+    STRING ("string"), // NOI18N
+    COMMENT ("comment"), // NOI18N
+    ERROR ("error"); // NOI18N
 
     private String  name;
     

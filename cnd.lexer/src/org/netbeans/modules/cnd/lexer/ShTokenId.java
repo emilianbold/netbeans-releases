@@ -50,16 +50,16 @@ import org.netbeans.api.lexer.TokenId;
  */
 public enum ShTokenId implements TokenId {
 
-    KEYWORD ("keyword"),
-    COMMAND ("command"),
-    OPERATOR ("operator"),
-    LABEL ("label"),
-    WHITESPACE ("whitespace"),
-    NUMBER ("number"),
-    STRING ("string"),
-    IDENTIFIER ("identifier"),
-    COMMENT ("comment"),
-    ERROR ("error");
+    KEYWORD ("keyword"), // NOI18N
+    COMMAND ("command"), // NOI18N
+    OPERATOR ("operator"), // NOI18N
+    LABEL ("label"), // NOI18N
+    WHITESPACE ("whitespace"), // NOI18N
+    NUMBER ("number"), // NOI18N
+    STRING ("string"), // NOI18N
+    IDENTIFIER ("identifier"), // NOI18N
+    COMMENT ("comment"), // NOI18N
+    ERROR ("error"); // NOI18N
 
     private String  name;
     

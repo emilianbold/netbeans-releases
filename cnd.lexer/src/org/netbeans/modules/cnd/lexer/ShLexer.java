@@ -59,428 +59,428 @@ class ShLexer implements Lexer<ShTokenId> {
     private static Set<String> commands = new HashSet<String> ();
 
     static {
-        keywords.add ("aux");
-        keywords.add ("alias");
-        keywords.add ("argv");
-        keywords.add ("autologout");
-        keywords.add ("break");
-        keywords.add ("case");
-        keywords.add ("continue");
-        keywords.add ("do");
-        keywords.add ("done");
-        keywords.add ("elif");
-        keywords.add ("else");
-        keywords.add ("end");
-        keywords.add ("endif");
-        keywords.add ("endsw");
-        keywords.add ("esac");
-        keywords.add ("exit");
-        keywords.add ("fi");
-        keywords.add ("for");
-        keywords.add ("function");
-        keywords.add ("history");
-        keywords.add ("if");
-        keywords.add ("ignoreeof");
-        keywords.add ("in");
-        keywords.add ("noclobber");
-        keywords.add ("path");
-        keywords.add ("prompt");
-        keywords.add ("return");
-        keywords.add ("select");
-        keywords.add ("set");
-        keywords.add ("setenv");
-        keywords.add ("shift");
-        keywords.add ("switch");
-        keywords.add ("term");
-        keywords.add ("then");
-        keywords.add ("trap");
-        keywords.add ("unalias");
-        keywords.add ("unset");
-        keywords.add ("until");
-        keywords.add ("while");
-        keywords.add ("source");
-        keywords.add ("alias");
-        keywords.add ("bg");
-        keywords.add ("bind");
-        keywords.add ("break");
-        keywords.add ("builtin");
-        keywords.add ("cd");
-        keywords.add ("command");
-        keywords.add ("compgen");
-        keywords.add ("complete");
-        keywords.add ("continue");
-        keywords.add ("dirs");
-        keywords.add ("disown");
-        keywords.add ("echo");
-        keywords.add ("enable");
-        keywords.add ("eval");
-        keywords.add ("exec");
-        keywords.add ("exit");
-        keywords.add ("fc");
-        keywords.add ("fg");
-        keywords.add ("getopts");
-        keywords.add ("hash");
-        keywords.add ("help");
-        keywords.add ("history");
-        keywords.add ("jobs");
-        keywords.add ("kill");
-        keywords.add ("let");
-        keywords.add ("logout");
-        keywords.add ("popd");
-        keywords.add ("printf");
-        keywords.add ("pushd");
-        keywords.add ("pwd");
-        keywords.add ("return");
-        keywords.add ("set");
-        keywords.add ("shift");
-        keywords.add ("shopt");
-        keywords.add ("suspend");
-        keywords.add ("test");
-        keywords.add ("times");
-        keywords.add ("trap");
-        keywords.add ("type");
-        keywords.add ("ulimit");
-        keywords.add ("umask");
-        keywords.add ("unalias");
-        keywords.add ("wait");
+        keywords.add ("aux"); // NOI18N
+        keywords.add ("alias"); // NOI18N
+        keywords.add ("argv"); // NOI18N
+        keywords.add ("autologout"); // NOI18N
+        keywords.add ("break"); // NOI18N
+        keywords.add ("case"); // NOI18N
+        keywords.add ("continue"); // NOI18N
+        keywords.add ("do"); // NOI18N
+        keywords.add ("done"); // NOI18N
+        keywords.add ("elif"); // NOI18N
+        keywords.add ("else"); // NOI18N
+        keywords.add ("end"); // NOI18N
+        keywords.add ("endif"); // NOI18N
+        keywords.add ("endsw"); // NOI18N
+        keywords.add ("esac"); // NOI18N
+        keywords.add ("exit"); // NOI18N
+        keywords.add ("fi"); // NOI18N
+        keywords.add ("for"); // NOI18N
+        keywords.add ("function"); // NOI18N
+        keywords.add ("history"); // NOI18N
+        keywords.add ("if"); // NOI18N
+        keywords.add ("ignoreeof"); // NOI18N
+        keywords.add ("in"); // NOI18N
+        keywords.add ("noclobber"); // NOI18N
+        keywords.add ("path"); // NOI18N
+        keywords.add ("prompt"); // NOI18N
+        keywords.add ("return"); // NOI18N
+        keywords.add ("select"); // NOI18N
+        keywords.add ("set"); // NOI18N
+        keywords.add ("setenv"); // NOI18N
+        keywords.add ("shift"); // NOI18N
+        keywords.add ("switch"); // NOI18N
+        keywords.add ("term"); // NOI18N
+        keywords.add ("then"); // NOI18N
+        keywords.add ("trap"); // NOI18N
+        keywords.add ("unalias"); // NOI18N
+        keywords.add ("unset"); // NOI18N
+        keywords.add ("until"); // NOI18N
+        keywords.add ("while"); // NOI18N
+        keywords.add ("source"); // NOI18N
+        keywords.add ("alias"); // NOI18N
+        keywords.add ("bg"); // NOI18N
+        keywords.add ("bind"); // NOI18N
+        keywords.add ("break"); // NOI18N
+        keywords.add ("builtin"); // NOI18N
+        keywords.add ("cd"); // NOI18N
+        keywords.add ("command"); // NOI18N
+        keywords.add ("compgen"); // NOI18N
+        keywords.add ("complete"); // NOI18N
+        keywords.add ("continue"); // NOI18N
+        keywords.add ("dirs"); // NOI18N
+        keywords.add ("disown"); // NOI18N
+        keywords.add ("echo"); // NOI18N
+        keywords.add ("enable"); // NOI18N
+        keywords.add ("eval"); // NOI18N
+        keywords.add ("exec"); // NOI18N
+        keywords.add ("exit"); // NOI18N
+        keywords.add ("fc"); // NOI18N
+        keywords.add ("fg"); // NOI18N
+        keywords.add ("getopts"); // NOI18N
+        keywords.add ("hash"); // NOI18N
+        keywords.add ("help"); // NOI18N
+        keywords.add ("history"); // NOI18N
+        keywords.add ("jobs"); // NOI18N
+        keywords.add ("kill"); // NOI18N
+        keywords.add ("let"); // NOI18N
+        keywords.add ("logout"); // NOI18N
+        keywords.add ("popd"); // NOI18N
+        keywords.add ("printf"); // NOI18N
+        keywords.add ("pushd"); // NOI18N
+        keywords.add ("pwd"); // NOI18N
+        keywords.add ("return"); // NOI18N
+        keywords.add ("set"); // NOI18N
+        keywords.add ("shift"); // NOI18N
+        keywords.add ("shopt"); // NOI18N
+        keywords.add ("suspend"); // NOI18N
+        keywords.add ("test"); // NOI18N
+        keywords.add ("times"); // NOI18N
+        keywords.add ("trap"); // NOI18N
+        keywords.add ("type"); // NOI18N
+        keywords.add ("ulimit"); // NOI18N
+        keywords.add ("umask"); // NOI18N
+        keywords.add ("unalias"); // NOI18N
+        keywords.add ("wait"); // NOI18N
 
-        keywords.add ("export");
-        keywords.add ("unset");
-        keywords.add ("declare");
-        keywords.add ("typeset");
-        keywords.add ("local");
-        keywords.add ("read");
-        keywords.add ("readonly");
+        keywords.add ("export"); // NOI18N
+        keywords.add ("unset"); // NOI18N
+        keywords.add ("declare"); // NOI18N
+        keywords.add ("typeset"); // NOI18N
+        keywords.add ("local"); // NOI18N
+        keywords.add ("read"); // NOI18N
+        keywords.add ("readonly"); // NOI18N
 
-        keywords.add ("arch");
-        keywords.add ("awk");
-        keywords.add ("bash");
-        keywords.add ("bunzip2");
-        keywords.add ("bzcat");
-        keywords.add ("bzcmp");
-        keywords.add ("bzdiff");
-        keywords.add ("bzegrep");
-        keywords.add ("bzfgrep");
-        keywords.add ("bzgrep");
-        keywords.add ("bzip2");
-        keywords.add ("bzip2recover");
-        keywords.add ("bzless");
-        keywords.add ("bzmore");
-        keywords.add ("cat");
-        keywords.add ("chattr");
-        keywords.add ("chgrp");
-        keywords.add ("chmod");
-        keywords.add ("chown");
-        keywords.add ("chvt");
-        keywords.add ("cp");
-        keywords.add ("date");
-        keywords.add ("dd");
-        keywords.add ("deallocvt");
-        keywords.add ("df");
-        keywords.add ("dir");
-        keywords.add ("dircolors");
-        keywords.add ("dmesg");
-        keywords.add ("dnsdomainname");
-        keywords.add ("domainname");
-        keywords.add ("du");
-        keywords.add ("dumpkeys");
-        keywords.add ("echo");
-        keywords.add ("ed");
-        keywords.add ("egrep");
-        keywords.add ("false");
-        keywords.add ("fgconsole");
-        keywords.add ("fgrep");
-        keywords.add ("fuser");
-        keywords.add ("gawk");
-        keywords.add ("getkeycodes");
-        keywords.add ("gocr");
-        keywords.add ("grep");
-        keywords.add ("groups");
-        keywords.add ("gunzip");
-        keywords.add ("gzexe");
-        keywords.add ("gzip");
-        keywords.add ("hostname");
-        keywords.add ("igawk");
-        keywords.add ("install");
-        keywords.add ("kbd_mode");
-        keywords.add ("kbdrate");
-        keywords.add ("killall");
-        keywords.add ("last");
-        keywords.add ("lastb");
-        keywords.add ("link");
-        keywords.add ("ln");
-        keywords.add ("loadkeys");
-        keywords.add ("loadunimap");
-        keywords.add ("login");
-        keywords.add ("ls");
-        keywords.add ("lsattr");
-        keywords.add ("lsmod");
-        keywords.add ("lsmod.old");
-        keywords.add ("mapscrn");
-        keywords.add ("mesg");
-        keywords.add ("mkdir");
-        keywords.add ("mkfifo");
-        keywords.add ("mknod");
-        keywords.add ("mktemp");
-        keywords.add ("more");
-        keywords.add ("mount");
-        keywords.add ("mv");
-        keywords.add ("nano");
-        keywords.add ("netstat");
-        keywords.add ("nisdomainname");
-        keywords.add ("openvt");
-        keywords.add ("pgawk");
-        keywords.add ("pidof");
-        keywords.add ("ping");
-        keywords.add ("ps");
-        keywords.add ("pstree");
-        keywords.add ("pwd");
-        keywords.add ("rbash");
-        keywords.add ("readlink");
-        keywords.add ("red");
-        keywords.add ("resizecons");
-        keywords.add ("rm");
-        keywords.add ("rmdir");
-        keywords.add ("run-parts");
-        keywords.add ("sash");
-        keywords.add ("sed");
-        keywords.add ("setfont");
-        keywords.add ("setkeycodes");
-        keywords.add ("setleds");
-        keywords.add ("setmetamode");
-        keywords.add ("setserial");
-        keywords.add ("sh");
-        keywords.add ("showkey");
-        keywords.add ("shred");
-        keywords.add ("sleep");
-        keywords.add ("ssed");
-        keywords.add ("stat");
-        keywords.add ("stty");
-        keywords.add ("su");
-        keywords.add ("sync");
-        keywords.add ("tar");
-        keywords.add ("tempfile");
-        keywords.add ("touch");
-        keywords.add ("true");
-        keywords.add ("umount");
-        keywords.add ("uname");
-        keywords.add ("unicode_start");
-        keywords.add ("unicode_stop");
-        keywords.add ("unlink");
-        keywords.add ("utmpdump");
-        keywords.add ("uuidgen");
-        keywords.add ("vdir");
-        keywords.add ("wall");
-        keywords.add ("wc");
-        keywords.add ("ypdomainname");
-        keywords.add ("zcat");
-        keywords.add ("zcmp");
-        keywords.add ("zdiff");
-        keywords.add ("zegrep");
-        keywords.add ("zfgrep");
-        keywords.add ("zforce");
-        keywords.add ("zgrep");
-        keywords.add ("zless");
-        keywords.add ("zmore");
-        keywords.add ("znew");
-        keywords.add ("zsh");
-        keywords.add ("aclocal");
-        keywords.add ("aconnect");
-        keywords.add ("aplay");
-        keywords.add ("apm");
-        keywords.add ("apmsleep");
-        keywords.add ("apropos");
-        keywords.add ("ar");
-        keywords.add ("arecord");
-        keywords.add ("as");
-        keywords.add ("as86");
-        keywords.add ("autoconf");
-        keywords.add ("autoheader");
-        keywords.add ("automake");
-        keywords.add ("awk");
-        keywords.add ("basename");
-        keywords.add ("bc");
-        keywords.add ("bison");
-        keywords.add ("c++");
-        keywords.add ("cal");
-        keywords.add ("cat");
-        keywords.add ("cc");
-        keywords.add ("cdda2wav");
-        keywords.add ("cdparanoia");
-        keywords.add ("cdrdao");
-        keywords.add ("cd-read");
-        keywords.add ("cdrecord");
-        keywords.add ("chfn");
-        keywords.add ("chgrp");
-        keywords.add ("chmod");
-        keywords.add ("chown");
-        keywords.add ("chroot");
-        keywords.add ("chsh");
-        keywords.add ("clear");
-        keywords.add ("cmp");
-        keywords.add ("co");
-        keywords.add ("col");
-        keywords.add ("comm");
-        keywords.add ("cp");
-        keywords.add ("cpio");
-        keywords.add ("cpp");
-        keywords.add ("cut");
-        keywords.add ("dc");
-        keywords.add ("dd");
-        keywords.add ("df");
-        keywords.add ("diff");
-        keywords.add ("diff3");
-        keywords.add ("dir");
-        keywords.add ("dircolors");
-        keywords.add ("directomatic");
-        keywords.add ("dirname");
-        keywords.add ("du");
-        keywords.add ("env");
-        keywords.add ("expr");
-        keywords.add ("fbset");
-        keywords.add ("file");
-        keywords.add ("find");
-        keywords.add ("flex");
-        keywords.add ("flex++");
-        keywords.add ("fmt");
-        keywords.add ("free");
-        keywords.add ("ftp");
-        keywords.add ("funzip");
-        keywords.add ("fuser");
-        keywords.add ("g++");
-        keywords.add ("gawk");
-        keywords.add ("gc");
-        keywords.add ("gcc");
-        keywords.add ("gdb");
-        keywords.add ("getent");
-        keywords.add ("getopt");
-        keywords.add ("gettext");
-        keywords.add ("gettextize");
-        keywords.add ("gimp");
-        keywords.add ("gimp-remote");
-        keywords.add ("gimptool");
-        keywords.add ("gmake");
-        keywords.add ("gs");
-        keywords.add ("head");
-        keywords.add ("hexdump");
-        keywords.add ("id");
-        keywords.add ("install");
-        keywords.add ("join");
-        keywords.add ("kill");
-        keywords.add ("killall");
-        keywords.add ("ld");
-        keywords.add ("ld86");
-        keywords.add ("ldd");
-        keywords.add ("less");
-        keywords.add ("lex");
-        keywords.add ("ln");
-        keywords.add ("locate");
-        keywords.add ("lockfile");
-        keywords.add ("logname");
-        keywords.add ("lp");
-        keywords.add ("lpr");
-        keywords.add ("ls");
-        keywords.add ("lynx");
-        keywords.add ("m4");
-        keywords.add ("make");
-        keywords.add ("man");
-        keywords.add ("mkdir");
-        keywords.add ("mknod");
-        keywords.add ("msgfmt");
-        keywords.add ("mv");
-        keywords.add ("namei");
-        keywords.add ("nasm");
-        keywords.add ("nawk");
-        keywords.add ("nice");
-        keywords.add ("nl");
-        keywords.add ("nm");
-        keywords.add ("nm86");
-        keywords.add ("nmap");
-        keywords.add ("nohup");
-        keywords.add ("nop");
-        keywords.add ("od");
-        keywords.add ("passwd");
-        keywords.add ("patch");
-        keywords.add ("pcregrep");
-        keywords.add ("pcretest");
-        keywords.add ("perl");
-        keywords.add ("perror");
-        keywords.add ("pidof");
-        keywords.add ("pr");
-        keywords.add ("printf");
-        keywords.add ("procmail");
-        keywords.add ("prune");
-        keywords.add ("ps2ascii");
-        keywords.add ("ps2epsi");
-        keywords.add ("ps2frag");
-        keywords.add ("ps2pdf");
-        keywords.add ("ps2ps");
-        keywords.add ("psbook");
-        keywords.add ("psmerge");
-        keywords.add ("psnup");
-        keywords.add ("psresize");
-        keywords.add ("psselect");
-        keywords.add ("pstops");
-        keywords.add ("rcs");
-        keywords.add ("rev");
-        keywords.add ("rm");
-        keywords.add ("scp");
-        keywords.add ("sed");
-        keywords.add ("seq");
-        keywords.add ("setterm");
-        keywords.add ("shred");
-        keywords.add ("size");
-        keywords.add ("size86");
-        keywords.add ("skill");
-        keywords.add ("slogin");
-        keywords.add ("snice");
-        keywords.add ("sort");
-        keywords.add ("sox");
-        keywords.add ("split");
-        keywords.add ("ssh");
-        keywords.add ("ssh-add");
-        keywords.add ("ssh-agent");
-        keywords.add ("ssh-keygen");
-        keywords.add ("ssh-keyscan");
-        keywords.add ("stat");
-        keywords.add ("strings");
-        keywords.add ("strip");
-        keywords.add ("sudo");
-        keywords.add ("suidperl");
-        keywords.add ("sum");
-        keywords.add ("tac");
-        keywords.add ("tail");
-        keywords.add ("tee");
-        keywords.add ("test");
-        keywords.add ("tr");
-        keywords.add ("uniq");
-        keywords.add ("unlink");
-        keywords.add ("unzip");
-        keywords.add ("updatedb");
-        keywords.add ("updmap");
-        keywords.add ("uptime");
-        keywords.add ("users");
-        keywords.add ("vmstat");
-        keywords.add ("w");
-        keywords.add ("wc");
-        keywords.add ("wget");
-        keywords.add ("whatis");
-        keywords.add ("whereis");
-        keywords.add ("which");
-        keywords.add ("who");
-        keywords.add ("whoami");
-        keywords.add ("write");
-        keywords.add ("xargs");
-        keywords.add ("yacc");
-        keywords.add ("yes");
-        keywords.add ("zip");
-        keywords.add ("zsoelim");
-        keywords.add ("dcop");
-        keywords.add ("kdialog");
-        keywords.add ("kfile");
-        keywords.add ("xhost");
-        keywords.add ("xmodmap");
-        keywords.add ("xset");
+        keywords.add ("arch"); // NOI18N
+        keywords.add ("awk"); // NOI18N
+        keywords.add ("bash"); // NOI18N
+        keywords.add ("bunzip2"); // NOI18N
+        keywords.add ("bzcat"); // NOI18N
+        keywords.add ("bzcmp"); // NOI18N
+        keywords.add ("bzdiff"); // NOI18N
+        keywords.add ("bzegrep"); // NOI18N
+        keywords.add ("bzfgrep"); // NOI18N
+        keywords.add ("bzgrep"); // NOI18N
+        keywords.add ("bzip2"); // NOI18N
+        keywords.add ("bzip2recover"); // NOI18N
+        keywords.add ("bzless"); // NOI18N
+        keywords.add ("bzmore"); // NOI18N
+        keywords.add ("cat"); // NOI18N
+        keywords.add ("chattr"); // NOI18N
+        keywords.add ("chgrp"); // NOI18N
+        keywords.add ("chmod"); // NOI18N
+        keywords.add ("chown"); // NOI18N
+        keywords.add ("chvt"); // NOI18N
+        keywords.add ("cp"); // NOI18N
+        keywords.add ("date"); // NOI18N
+        keywords.add ("dd"); // NOI18N
+        keywords.add ("deallocvt"); // NOI18N
+        keywords.add ("df"); // NOI18N
+        keywords.add ("dir"); // NOI18N
+        keywords.add ("dircolors"); // NOI18N
+        keywords.add ("dmesg"); // NOI18N
+        keywords.add ("dnsdomainname"); // NOI18N
+        keywords.add ("domainname"); // NOI18N
+        keywords.add ("du"); // NOI18N
+        keywords.add ("dumpkeys"); // NOI18N
+        keywords.add ("echo"); // NOI18N
+        keywords.add ("ed"); // NOI18N
+        keywords.add ("egrep"); // NOI18N
+        keywords.add ("false"); // NOI18N
+        keywords.add ("fgconsole"); // NOI18N
+        keywords.add ("fgrep"); // NOI18N
+        keywords.add ("fuser"); // NOI18N
+        keywords.add ("gawk"); // NOI18N
+        keywords.add ("getkeycodes"); // NOI18N
+        keywords.add ("gocr"); // NOI18N
+        keywords.add ("grep"); // NOI18N
+        keywords.add ("groups"); // NOI18N
+        keywords.add ("gunzip"); // NOI18N
+        keywords.add ("gzexe"); // NOI18N
+        keywords.add ("gzip"); // NOI18N
+        keywords.add ("hostname"); // NOI18N
+        keywords.add ("igawk"); // NOI18N
+        keywords.add ("install"); // NOI18N
+        keywords.add ("kbd_mode"); // NOI18N
+        keywords.add ("kbdrate"); // NOI18N
+        keywords.add ("killall"); // NOI18N
+        keywords.add ("last"); // NOI18N
+        keywords.add ("lastb"); // NOI18N
+        keywords.add ("link"); // NOI18N
+        keywords.add ("ln"); // NOI18N
+        keywords.add ("loadkeys"); // NOI18N
+        keywords.add ("loadunimap"); // NOI18N
+        keywords.add ("login"); // NOI18N
+        keywords.add ("ls"); // NOI18N
+        keywords.add ("lsattr"); // NOI18N
+        keywords.add ("lsmod"); // NOI18N
+        keywords.add ("lsmod.old"); // NOI18N
+        keywords.add ("mapscrn"); // NOI18N
+        keywords.add ("mesg"); // NOI18N
+        keywords.add ("mkdir"); // NOI18N
+        keywords.add ("mkfifo"); // NOI18N
+        keywords.add ("mknod"); // NOI18N
+        keywords.add ("mktemp"); // NOI18N
+        keywords.add ("more"); // NOI18N
+        keywords.add ("mount"); // NOI18N
+        keywords.add ("mv"); // NOI18N
+        keywords.add ("nano"); // NOI18N
+        keywords.add ("netstat"); // NOI18N
+        keywords.add ("nisdomainname"); // NOI18N
+        keywords.add ("openvt"); // NOI18N
+        keywords.add ("pgawk"); // NOI18N
+        keywords.add ("pidof"); // NOI18N
+        keywords.add ("ping"); // NOI18N
+        keywords.add ("ps"); // NOI18N
+        keywords.add ("pstree"); // NOI18N
+        keywords.add ("pwd"); // NOI18N
+        keywords.add ("rbash"); // NOI18N
+        keywords.add ("readlink"); // NOI18N
+        keywords.add ("red"); // NOI18N
+        keywords.add ("resizecons"); // NOI18N
+        keywords.add ("rm"); // NOI18N
+        keywords.add ("rmdir"); // NOI18N
+        keywords.add ("run-parts"); // NOI18N
+        keywords.add ("sash"); // NOI18N
+        keywords.add ("sed"); // NOI18N
+        keywords.add ("setfont"); // NOI18N
+        keywords.add ("setkeycodes"); // NOI18N
+        keywords.add ("setleds"); // NOI18N
+        keywords.add ("setmetamode"); // NOI18N
+        keywords.add ("setserial"); // NOI18N
+        keywords.add ("sh"); // NOI18N
+        keywords.add ("showkey"); // NOI18N
+        keywords.add ("shred"); // NOI18N
+        keywords.add ("sleep"); // NOI18N
+        keywords.add ("ssed"); // NOI18N
+        keywords.add ("stat"); // NOI18N
+        keywords.add ("stty"); // NOI18N
+        keywords.add ("su"); // NOI18N
+        keywords.add ("sync"); // NOI18N
+        keywords.add ("tar"); // NOI18N
+        keywords.add ("tempfile"); // NOI18N
+        keywords.add ("touch"); // NOI18N
+        keywords.add ("true"); // NOI18N
+        keywords.add ("umount"); // NOI18N
+        keywords.add ("uname"); // NOI18N
+        keywords.add ("unicode_start"); // NOI18N
+        keywords.add ("unicode_stop"); // NOI18N
+        keywords.add ("unlink"); // NOI18N
+        keywords.add ("utmpdump"); // NOI18N
+        keywords.add ("uuidgen"); // NOI18N
+        keywords.add ("vdir"); // NOI18N
+        keywords.add ("wall"); // NOI18N
+        keywords.add ("wc"); // NOI18N
+        keywords.add ("ypdomainname"); // NOI18N
+        keywords.add ("zcat"); // NOI18N
+        keywords.add ("zcmp"); // NOI18N
+        keywords.add ("zdiff"); // NOI18N
+        keywords.add ("zegrep"); // NOI18N
+        keywords.add ("zfgrep"); // NOI18N
+        keywords.add ("zforce"); // NOI18N
+        keywords.add ("zgrep"); // NOI18N
+        keywords.add ("zless"); // NOI18N
+        keywords.add ("zmore"); // NOI18N
+        keywords.add ("znew"); // NOI18N
+        keywords.add ("zsh"); // NOI18N
+        keywords.add ("aclocal"); // NOI18N
+        keywords.add ("aconnect"); // NOI18N
+        keywords.add ("aplay"); // NOI18N
+        keywords.add ("apm"); // NOI18N
+        keywords.add ("apmsleep"); // NOI18N
+        keywords.add ("apropos"); // NOI18N
+        keywords.add ("ar"); // NOI18N
+        keywords.add ("arecord"); // NOI18N
+        keywords.add ("as"); // NOI18N
+        keywords.add ("as86"); // NOI18N
+        keywords.add ("autoconf"); // NOI18N
+        keywords.add ("autoheader"); // NOI18N
+        keywords.add ("automake"); // NOI18N
+        keywords.add ("awk"); // NOI18N
+        keywords.add ("basename"); // NOI18N
+        keywords.add ("bc"); // NOI18N
+        keywords.add ("bison"); // NOI18N
+        keywords.add ("c++"); // NOI18N
+        keywords.add ("cal"); // NOI18N
+        keywords.add ("cat"); // NOI18N
+        keywords.add ("cc"); // NOI18N
+        keywords.add ("cdda2wav"); // NOI18N
+        keywords.add ("cdparanoia"); // NOI18N
+        keywords.add ("cdrdao"); // NOI18N
+        keywords.add ("cd-read"); // NOI18N
+        keywords.add ("cdrecord"); // NOI18N
+        keywords.add ("chfn"); // NOI18N
+        keywords.add ("chgrp"); // NOI18N
+        keywords.add ("chmod"); // NOI18N
+        keywords.add ("chown"); // NOI18N
+        keywords.add ("chroot"); // NOI18N
+        keywords.add ("chsh"); // NOI18N
+        keywords.add ("clear"); // NOI18N
+        keywords.add ("cmp"); // NOI18N
+        keywords.add ("co"); // NOI18N
+        keywords.add ("col"); // NOI18N
+        keywords.add ("comm"); // NOI18N
+        keywords.add ("cp"); // NOI18N
+        keywords.add ("cpio"); // NOI18N
+        keywords.add ("cpp"); // NOI18N
+        keywords.add ("cut"); // NOI18N
+        keywords.add ("dc"); // NOI18N
+        keywords.add ("dd"); // NOI18N
+        keywords.add ("df"); // NOI18N
+        keywords.add ("diff"); // NOI18N
+        keywords.add ("diff3"); // NOI18N
+        keywords.add ("dir"); // NOI18N
+        keywords.add ("dircolors"); // NOI18N
+        keywords.add ("directomatic"); // NOI18N
+        keywords.add ("dirname"); // NOI18N
+        keywords.add ("du"); // NOI18N
+        keywords.add ("env"); // NOI18N
+        keywords.add ("expr"); // NOI18N
+        keywords.add ("fbset"); // NOI18N
+        keywords.add ("file"); // NOI18N
+        keywords.add ("find"); // NOI18N
+        keywords.add ("flex"); // NOI18N
+        keywords.add ("flex++"); // NOI18N
+        keywords.add ("fmt"); // NOI18N
+        keywords.add ("free"); // NOI18N
+        keywords.add ("ftp"); // NOI18N
+        keywords.add ("funzip"); // NOI18N
+        keywords.add ("fuser"); // NOI18N
+        keywords.add ("g++"); // NOI18N
+        keywords.add ("gawk"); // NOI18N
+        keywords.add ("gc"); // NOI18N
+        keywords.add ("gcc"); // NOI18N
+        keywords.add ("gdb"); // NOI18N
+        keywords.add ("getent"); // NOI18N
+        keywords.add ("getopt"); // NOI18N
+        keywords.add ("gettext"); // NOI18N
+        keywords.add ("gettextize"); // NOI18N
+        keywords.add ("gimp"); // NOI18N
+        keywords.add ("gimp-remote"); // NOI18N
+        keywords.add ("gimptool"); // NOI18N
+        keywords.add ("gmake"); // NOI18N
+        keywords.add ("gs"); // NOI18N
+        keywords.add ("head"); // NOI18N
+        keywords.add ("hexdump"); // NOI18N
+        keywords.add ("id"); // NOI18N
+        keywords.add ("install"); // NOI18N
+        keywords.add ("join"); // NOI18N
+        keywords.add ("kill"); // NOI18N
+        keywords.add ("killall"); // NOI18N
+        keywords.add ("ld"); // NOI18N
+        keywords.add ("ld86"); // NOI18N
+        keywords.add ("ldd"); // NOI18N
+        keywords.add ("less"); // NOI18N
+        keywords.add ("lex"); // NOI18N
+        keywords.add ("ln"); // NOI18N
+        keywords.add ("locate"); // NOI18N
+        keywords.add ("lockfile"); // NOI18N
+        keywords.add ("logname"); // NOI18N
+        keywords.add ("lp"); // NOI18N
+        keywords.add ("lpr"); // NOI18N
+        keywords.add ("ls"); // NOI18N
+        keywords.add ("lynx"); // NOI18N
+        keywords.add ("m4"); // NOI18N
+        keywords.add ("make"); // NOI18N
+        keywords.add ("man"); // NOI18N
+        keywords.add ("mkdir"); // NOI18N
+        keywords.add ("mknod"); // NOI18N
+        keywords.add ("msgfmt"); // NOI18N
+        keywords.add ("mv"); // NOI18N
+        keywords.add ("namei"); // NOI18N
+        keywords.add ("nasm"); // NOI18N
+        keywords.add ("nawk"); // NOI18N
+        keywords.add ("nice"); // NOI18N
+        keywords.add ("nl"); // NOI18N
+        keywords.add ("nm"); // NOI18N
+        keywords.add ("nm86"); // NOI18N
+        keywords.add ("nmap"); // NOI18N
+        keywords.add ("nohup"); // NOI18N
+        keywords.add ("nop"); // NOI18N
+        keywords.add ("od"); // NOI18N
+        keywords.add ("passwd"); // NOI18N
+        keywords.add ("patch"); // NOI18N
+        keywords.add ("pcregrep"); // NOI18N
+        keywords.add ("pcretest"); // NOI18N
+        keywords.add ("perl"); // NOI18N
+        keywords.add ("perror"); // NOI18N
+        keywords.add ("pidof"); // NOI18N
+        keywords.add ("pr"); // NOI18N
+        keywords.add ("printf"); // NOI18N
+        keywords.add ("procmail"); // NOI18N
+        keywords.add ("prune"); // NOI18N
+        keywords.add ("ps2ascii"); // NOI18N
+        keywords.add ("ps2epsi"); // NOI18N
+        keywords.add ("ps2frag"); // NOI18N
+        keywords.add ("ps2pdf"); // NOI18N
+        keywords.add ("ps2ps"); // NOI18N
+        keywords.add ("psbook"); // NOI18N
+        keywords.add ("psmerge"); // NOI18N
+        keywords.add ("psnup"); // NOI18N
+        keywords.add ("psresize"); // NOI18N
+        keywords.add ("psselect"); // NOI18N
+        keywords.add ("pstops"); // NOI18N
+        keywords.add ("rcs"); // NOI18N
+        keywords.add ("rev"); // NOI18N
+        keywords.add ("rm"); // NOI18N
+        keywords.add ("scp"); // NOI18N
+        keywords.add ("sed"); // NOI18N
+        keywords.add ("seq"); // NOI18N
+        keywords.add ("setterm"); // NOI18N
+        keywords.add ("shred"); // NOI18N
+        keywords.add ("size"); // NOI18N
+        keywords.add ("size86"); // NOI18N
+        keywords.add ("skill"); // NOI18N
+        keywords.add ("slogin"); // NOI18N
+        keywords.add ("snice"); // NOI18N
+        keywords.add ("sort"); // NOI18N
+        keywords.add ("sox"); // NOI18N
+        keywords.add ("split"); // NOI18N
+        keywords.add ("ssh"); // NOI18N
+        keywords.add ("ssh-add"); // NOI18N
+        keywords.add ("ssh-agent"); // NOI18N
+        keywords.add ("ssh-keygen"); // NOI18N
+        keywords.add ("ssh-keyscan"); // NOI18N
+        keywords.add ("stat"); // NOI18N
+        keywords.add ("strings"); // NOI18N
+        keywords.add ("strip"); // NOI18N
+        keywords.add ("sudo"); // NOI18N
+        keywords.add ("suidperl"); // NOI18N
+        keywords.add ("sum"); // NOI18N
+        keywords.add ("tac"); // NOI18N
+        keywords.add ("tail"); // NOI18N
+        keywords.add ("tee"); // NOI18N
+        keywords.add ("test"); // NOI18N
+        keywords.add ("tr"); // NOI18N
+        keywords.add ("uniq"); // NOI18N
+        keywords.add ("unlink"); // NOI18N
+        keywords.add ("unzip"); // NOI18N
+        keywords.add ("updatedb"); // NOI18N
+        keywords.add ("updmap"); // NOI18N
+        keywords.add ("uptime"); // NOI18N
+        keywords.add ("users"); // NOI18N
+        keywords.add ("vmstat"); // NOI18N
+        keywords.add ("w"); // NOI18N
+        keywords.add ("wc"); // NOI18N
+        keywords.add ("wget"); // NOI18N
+        keywords.add ("whatis"); // NOI18N
+        keywords.add ("whereis"); // NOI18N
+        keywords.add ("which"); // NOI18N
+        keywords.add ("who"); // NOI18N
+        keywords.add ("whoami"); // NOI18N
+        keywords.add ("write"); // NOI18N
+        keywords.add ("xargs"); // NOI18N
+        keywords.add ("yacc"); // NOI18N
+        keywords.add ("yes"); // NOI18N
+        keywords.add ("zip"); // NOI18N
+        keywords.add ("zsoelim"); // NOI18N
+        keywords.add ("dcop"); // NOI18N
+        keywords.add ("kdialog"); // NOI18N
+        keywords.add ("kfile"); // NOI18N
+        keywords.add ("xhost"); // NOI18N
+        keywords.add ("xmodmap"); // NOI18N
+        keywords.add ("xset"); // NOI18N
     }
 
     private LexerRestartInfo<ShTokenId> info;
