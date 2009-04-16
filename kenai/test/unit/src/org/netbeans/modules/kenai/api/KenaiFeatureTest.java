@@ -68,6 +68,11 @@ public class KenaiFeatureTest {
     public void testType() {
         System.out.println("getType");
         assert Type.forId("foo").equals(Type.UNKNOWN);
+        assert Type.forId("forum").equals(Type.FORUM);
+        assert Type.forId("downloads").equals(Type.DOWNLOADS);
+        assert Type.forId("issues").equals(Type.ISSUES);
+        assert Type.forId("wiki").equals(Type.WIKI);
+        assert Type.forId("chat").equals(Type.CHAT);
     }
 }
 
