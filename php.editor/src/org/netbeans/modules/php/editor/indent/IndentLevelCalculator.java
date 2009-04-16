@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -70,12 +71,12 @@ import org.openide.util.Exceptions;
  */
 public class IndentLevelCalculator extends DefaultTreePathVisitor {
 
-    private Map<Integer, Integer> indentLevels;
+    private Map<Position, Integer> indentLevels;
     private int indentSize;
     private int continuationIndentSize;
     private BaseDocument doc;
 
-    public IndentLevelCalculator(Document doc, Map<Integer, Integer> indentLevels) {
+    public IndentLevelCalculator(Document doc, Map<Position, Integer> indentLevels) {
         this.indentLevels = indentLevels;
         this.doc = (BaseDocument) doc;
         CodeStyle codeStyle = CodeStyle.get(doc);
@@ -276,6 +277,10 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         Integer existingIndent = indentLevels.get(offset);
 
         int newIndent = existingIndent == null ? indent : indent + existingIndent;
-        indentLevels.put(offset, newIndent);
+        try {
+            indentLevels.put(doc.createPosition(offset), newIndent);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }
