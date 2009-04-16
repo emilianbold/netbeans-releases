@@ -68,12 +68,15 @@ public class STSVersionPanelUI extends javax.swing.JPanel {
         // detect and fill appropriate config options
         WSStackVersion wsStackVersion = WSITConfigProvider.getDefault().getHighestWSStackVersion(project);
         for (ConfigVersion cfgVersion : ConfigVersion.values()) {
-            if ((wsStackVersion == null) && (cfgVersion.isSupported(wsStackVersion))) {
+            if ((wsStackVersion != null) && (cfgVersion.isSupported(wsStackVersion))) {
                 supportedConfigVersions.add(cfgVersion);
                 versionCombo.addItem(cfgVersion);
             }
         }
 
+        if (versionCombo.getItemCount() <= 0) {
+            versionCombo.addItem(ConfigVersion.getDefault());
+        }
         versionCombo.setSelectedIndex(versionCombo.getItemCount() - 1);
     }
 
