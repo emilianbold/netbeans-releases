@@ -53,8 +53,10 @@ public final class IntroduceAction extends HintAction {
     private IntroduceAction(IntroduceKind type) {
         this.type = type;
         putValue(NAME, getActionName(type));
-        putValue(SHORT_DESCRIPTION, getMenuItemText(type));
-        putValue("PopupMenuText", getMenuItemText(type)); // NOI18N
+        String displayText = getMenuItemText(type);
+        putValue(SHORT_DESCRIPTION,displayText);
+        putValue("PopupMenuText",displayText); // NOI18N
+        putValue("menuText",displayText); // NOI18N
     }
 //    @Override
 //    public Object getValue(String key) {
@@ -155,82 +157,5 @@ public final class IntroduceAction extends HintAction {
                 return null;
         }
     }
-
-//    public static MainMenuAction createMenuVariable() {
-//        return new GlobalAction(IntroduceKind.CREATE_VARIABLE);
-//    }
-//
-//    public static MainMenuAction createMenuConstant() {
-//        return new GlobalAction(IntroduceKind.CREATE_CONSTANT);
-//    }
-//
-//    public static MainMenuAction createMenuField() {
-//        return new GlobalAction(IntroduceKind.CREATE_FIELD);
-//    }
-//
-//    public static MainMenuAction createMenuMethod() {
-//        return new GlobalAction(IntroduceKind.CREATE_METHOD);
-//    }
-//
-//
-//    public static final class GlobalAction extends MainMenuAction implements Presenter.Popup {
-//
-//        private final JMenuItem menuPresenter;
-//        private final JMenuItem popupPresenter;
-//        private IntroduceKind type;
-//
-//        public GlobalAction(IntroduceKind type) {
-//            super();
-//            this.type = type;
-//            this.menuPresenter = new JMenuItem(getMenuItemText());
-//            this.popupPresenter = new JMenuItem();
-//            setMenu();
-//        }
-//
-//        @Override
-//        protected void setMenu() {
-//            super.setMenu();
-//            popupPresenter.setAction(getActionByName(getActionName()));
-//            Mnemonics.setLocalizedText(popupPresenter, getMenuItemText());
-//        }
-//
-//        protected String getMenuItemText() {
-//            switch (type) {
-//                case CREATE_CONSTANT:
-//                    return NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceConstantAction");
-//                case CREATE_VARIABLE:
-//                    return NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceVariableAction");
-//                case CREATE_FIELD:
-//                    return NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceFieldAction");
-//                case CREATE_METHOD:
-//                    return NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceMethodAction");
-//                default:
-//                    return null;
-//            }
-//        }
-//
-//        protected String getActionName() {
-//            switch (type) {
-//                case CREATE_CONSTANT:
-//                    return INTRODUCE_CONSTANT;
-//                case CREATE_VARIABLE:
-//                    return INTRODUCE_VARIABLE;
-//                case CREATE_FIELD:
-//                    return INTRODUCE_FIELD;
-//                case CREATE_METHOD:
-//                    return INTRODUCE_METHOD;
-//                default:
-//                    return null;
-//            }
-//        }
-//
-//        public JMenuItem getMenuPresenter() {
-//            return menuPresenter;
-//        }
-//
-//        public JMenuItem getPopupPresenter() {
-//            return popupPresenter;
-//        }
-//    }
 }
  
