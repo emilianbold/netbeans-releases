@@ -45,12 +45,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jruby.nb.ast.HashNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.StrNode;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.HashNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.StrNode;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
@@ -88,42 +88,38 @@ public class DuplicateHashKeys extends RubyAstRule {
         AstPath path = context.path;
         ParserResult info = context.parserResult;
 
-        // Note - we're placing both Strings and ByteList instances into this
-        // Set<CharSequence>. A String and a ByteList will never be equal. That's
-        // intentional. ByteLists correspond to actual string keys, and Strings correspond
-        // to symbol keys - and these are NOT equal, e.g. you can have both
-        //  "a" and :a as keys in a map and thee are not duplicates!
-        Set<CharSequence> names = new HashSet<CharSequence>();
-        Set<CharSequence> duplicateNames = null;
+        // you can have both "a" and :a as keys in a map and thee are not duplicates!
+        Set<HashKey> keys = new HashSet<HashKey>();
+        Set<HashKey> duplicateKeys = null;
         HashNode hash = (HashNode) node;
         ListNode list = hash.getListNode();
         List<Node> children = list.childNodes();
         for (int i = 0, n = children.size(); i < n; i += 2) { // +=2: Skip value nodes
             Node keyNode = children.get(i);
-            CharSequence name = getKeyString(keyNode);
-            if (name != null) {
-                if (names.contains(name)) {
+            HashKey key = getHashKey(keyNode);
+            if (key != null) {
+                if (keys.contains(key)) {
                     // Error!
-                    if (duplicateNames == null) {
-                        duplicateNames = new HashSet<CharSequence>();
+                    if (duplicateKeys == null) {
+                        duplicateKeys = new HashSet<HashKey>(5);
                     }
-                    duplicateNames.add(name);
+                    duplicateKeys.add(key);
                 } else {
-                    names.add(name);
+                    keys.add(key);
                 }
             }
         }
 
-        if (duplicateNames != null) {
+        if (duplicateKeys != null) {
             for (int i = 0, n = children.size(); i < n; i += 2) { // +=2: Skip value nodes
                 Node keyNode = children.get(i);
-                CharSequence name = getKeyString(keyNode);
-                if (name != null && duplicateNames.contains(name)) {
+                HashKey key = getHashKey(keyNode);
+                if (key != null && duplicateKeys.contains(key)) {
                     OffsetRange astRange = AstUtilities.getNameRange(keyNode);
                     OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
                     if (lexRange != null) {
                         List<HintFix> fixList = Collections.emptyList();
-                        String displayName = NbBundle.getMessage(DuplicateHashKeys.class, "DuplicateHashName", name);
+                        String displayName = NbBundle.getMessage(DuplicateHashKeys.class, "DuplicateHashName", key.getValue());
                         Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), lexRange, fixList, 1000);
                         result.add(desc);
 
@@ -133,14 +129,13 @@ public class DuplicateHashKeys extends RubyAstRule {
         }
     }
 
-    private CharSequence getKeyString(Node keyNode) {
-        if (keyNode.nodeId == NodeType.SYMBOLNODE) {
-            //return ":"+((INameNode)keyNode).getName(); // NOI18N
-            return ((INameNode)keyNode).getName();
-        } else if (keyNode.nodeId == NodeType.STRNODE) {
-            return ((StrNode)keyNode).getValue();
+    private HashKey getHashKey(Node keyNode) {
+        NodeType type = keyNode.getNodeType();
+        if (type == NodeType.SYMBOLNODE) {
+            return new HashKey(((INameNode)keyNode).getName(), type);
+        } else if (type == NodeType.STRNODE) {
+            return new HashKey(((StrNode)keyNode).getValue(), type);
         }
-
         return null;
     }
 
@@ -170,5 +165,53 @@ public class DuplicateHashKeys extends RubyAstRule {
 
     public JComponent getCustomizer(Preferences node) {
         return null;
+    }
+
+    private static final class HashKey {
+
+        private final String value;
+        private final NodeType type;
+
+        public HashKey(String value, NodeType type) {
+            this.value = value;
+            this.type = type;
+        }
+
+        public NodeType getType() {
+            return type;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final HashKey other = (HashKey) obj;
+            if ((this.value == null) ? (other.value != null) : !this.value.equals(other.value)) {
+                return false;
+            }
+            if (this.type != other.type) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 53 * hash + (this.value != null ? this.value.hashCode() : 0);
+            hash = 53 * hash + (this.type != null ? this.type.hashCode() : 0);
+            return hash;
+        }
+
+
+
     }
 }

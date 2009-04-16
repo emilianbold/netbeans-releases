@@ -49,17 +49,18 @@ import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- *
  * @author gordonp
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.compilers.CompilerSetProvider.class)
 public class RemoteCompilerSetProvider implements CompilerSetProvider {
     
     private CompilerSetScriptManager manager;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
-    private ExecutionEnvironment env;
+    private final ExecutionEnvironment env;
 
-    public void init(ExecutionEnvironment env) {
+    /*package-local*/ RemoteCompilerSetProvider(ExecutionEnvironment env) {
+        if (env == null) {
+            throw new IllegalArgumentException("ExecutionEnvironment should not be null"); //NOI18N
+        }
         this.env = env;
         manager = new CompilerSetScriptManager(env);
         manager.runScript();
@@ -96,7 +97,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
         return SystemIncludesUtils.createLoader(env, sets);
     }
 
-    public String[] getCompilerSetData(ExecutionEnvironment env, String path) {
+    public String[] getCompilerSetData(String path) {
         RemoteCommandSupport rcs = new RemoteCommandSupport(env,
                 CompilerSetScriptManager.SCRIPT + " " + path); //NOI18N
         if (rcs.run() == 0) {

@@ -511,6 +511,8 @@ public class SvnConfigFiles implements PreferenceChangeListener {
             // ignore
         } catch (IOException ex) {
             Subversion.LOG.log(Level.INFO, null, ex)     ;
+        } catch (Exception ex) {
+            Subversion.LOG.log(Level.INFO, "exception in Ini4j, system file not loaded: " + filePath, ex);
         }
 
         if(system == null) {
@@ -525,6 +527,8 @@ public class SvnConfigFiles implements PreferenceChangeListener {
             // just doesn't exist - ignore
         } catch (IOException ex) {
             Subversion.LOG.log(Level.INFO, null, ex)     ;
+        } catch (Exception ex) {
+            Subversion.LOG.log(Level.INFO, "exception in Ini4j, global file not loaded: " + getGlobalConfigPath() + "/" + fileName, ex);
         }
          
         if(global != null) {

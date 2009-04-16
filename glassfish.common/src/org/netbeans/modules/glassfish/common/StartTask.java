@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
@@ -69,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -206,7 +208,28 @@ public class StartTask extends BasicTask<OperationState> {
             
             // if we are profiling, we need to lie about the status?
             if (null != jvmArgs) {
-                return fireOperationStateChanged(OperationState.COMPLETED, 
+                // try to sync the states after the profiler attaches
+                RequestProcessor.getDefault().post(new Runnable () {
+
+                    public void run() {
+                        while (!CommonServerSupport.isRunning(support.getHostName(), support.getHttpPortNumber())) {
+                            try {
+                                Thread.sleep(200);
+                            } catch (InterruptedException ex) {
+                                //Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            public void run() {
+                                    support.refresh();
+                                                    
+                            }
+
+                        });
+                    }
+                });
+                return fireOperationStateChanged(OperationState.COMPLETED,
                         "MSG_SERVER_STARTED", instanceName); // NOI18N
             }
         }

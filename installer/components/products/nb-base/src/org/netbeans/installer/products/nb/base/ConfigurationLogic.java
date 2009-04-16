@@ -87,12 +87,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final Product product = getProduct();
         final File installLocation = product.getInstallationLocation();
         final FilesList filesList = product.getInstalledFiles();
-        final File binSubdir = new File(installLocation, BIN_SUBDIR);
-        final File etcSubdir = new File(installLocation, ETC_SUBDIR);
-        final File platformCluster = new File(installLocation, PLATFORM_CLUSTER);
-        final File nbCluster = new File(installLocation, NB_CLUSTER);
-        final File ideCluster = new File(installLocation, IDE_CLUSTER);
-
+        
         /////////////////////////////////////////////////////////////////////////////
         final File jdkHome = new File(
                 product.getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY));
@@ -114,14 +109,29 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.netbeans.clusters")); // NOI18N
-
-            NetBeansUtils.addCluster(installLocation, PLATFORM_CLUSTER);
-            NetBeansUtils.addCluster(installLocation, NB_CLUSTER);
-            NetBeansUtils.addCluster(installLocation, IDE_CLUSTER);
+            for (String clusterName: CLUSTERS) {
+                NetBeansUtils.addCluster(installLocation, clusterName);
+            }
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.netbeans.clusters"), // NOI18N
                     e);
+        }
+
+         // update the update_tracking files information //////////////////////////////
+        for (String clusterName: CLUSTERS) {
+            try {
+                progress.setDetail(getString(
+                        "CL.install.netbeans.update.tracking", // NOI18N
+                        clusterName));
+
+                NetBeansUtils.updateTrackingFilesInfo(installLocation, clusterName);
+            } catch (IOException e) {
+                throw new InstallationException(getString(
+                        "CL.install.error.netbeans.update.tracking", // NOI18N
+                        clusterName),
+                        e);
+            }
         }
 
         /////////////////////////////////////////////////////////////////////////////
@@ -458,6 +468,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
 
         try {
+            final File nbCluster = NetBeansUtils.getNbCluster(installLocation);
             filesList.add(new File(nbCluster,"servicetag/registration.xml"));
             filesList.add(new File(nbCluster,"servicetag/servicetag"));
             filesList.add(new File(nbCluster,"servicetag"));
@@ -557,12 +568,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         //remove cluster/update files
         try {
             progress.setDetail(getString("CL.uninstall.update.files")); // NOI18N
-            String[] clusterNames = new String[]{
-               PLATFORM_CLUSTER,
-               IDE_CLUSTER,
-               NB_CLUSTER
-            };          
-            for(String cluster : clusterNames) {
+            for(String cluster : CLUSTERS) {
                File updateDir = new File(installLocation, cluster + File.separator + "update");
                if ( updateDir.exists()) {
                     FileUtils.deleteFile(updateDir, true);
@@ -717,10 +723,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String NB_CLUSTER  =
             "{nb-cluster}"; // NOI18N
     public static final String IDE_CLUSTER =
-            "{ide-cluster}"; // NOI18N    
-    
-    public static final String PLATFORM_UID =
-            "nb-platform"; // NOI18N
+            "{ide-cluster}"; // NOI18N
+    public static final String WEBSVCCOMMON_CLUSTER =
+            "{websvccommon-cluster}"; // NOI18N
+    public static final String [] CLUSTERS = new String [] {
+        PLATFORM_CLUSTER,
+        NB_CLUSTER,
+        IDE_CLUSTER,
+        WEBSVCCOMMON_CLUSTER};
     
     public static final String EXECUTABLE_WINDOWS =
             BIN_SUBDIR + "/netbeans.exe"; // NOI18N

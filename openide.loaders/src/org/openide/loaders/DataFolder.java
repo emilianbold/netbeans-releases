@@ -1340,9 +1340,16 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 //convert them to DataObjects and create PasteTypes for them
                 List<Transferable> transferables = new ArrayList<Transferable>( files.size() );
                 for(File f: files) {
+                    if (f.getName().length() == 0) {
+                        continue;
+                    }
                     Transferable nodeTransferable = createNodeTransferable( f );
-                    if( null != nodeTransferable )
+                    if (null != nodeTransferable) {
                         transferables.add( nodeTransferable );
+                    }
+                }
+                if (transferables.size() == 0) {
+                    return;
                 }
                 ExTransferable.Multi multi = new ExTransferable.Multi(
                         transferables.toArray(new Transferable[transferables.size()]) );

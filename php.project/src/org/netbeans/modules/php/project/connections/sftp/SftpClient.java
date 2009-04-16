@@ -54,7 +54,9 @@ import java.awt.Insets;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,6 +81,7 @@ import org.openide.windows.OutputWriter;
  */
 public class SftpClient implements RemoteClient {
     private static final Logger LOGGER = Logger.getLogger(SftpClient.class.getName());
+    private static final Map<Integer, String> PASSWORDS = new HashMap<Integer, String>();
 
     private static final SftpLogger DEV_NULL_LOGGER = new DevNullLogger();
     private final SftpConfiguration configuration;
@@ -120,6 +123,16 @@ public class SftpClient implements RemoteClient {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("Login as " + username);
         }
+        if (!PhpProjectUtils.hasText(identityFile) && !PhpProjectUtils.hasText(password)) {
+            password = PASSWORDS.get(configuration.hashCode());
+            if (password == null) {
+                PasswordPanel passwordPanel = new PasswordPanel(configuration.getDisplayName(), username);
+                if (passwordPanel.open()) {
+                    password = passwordPanel.getPassword();
+                    PASSWORDS.put(configuration.hashCode(), password);
+                }
+            }
+        }
 
         JSch jsch = null;
         Channel channel = null;
@@ -145,6 +158,8 @@ public class SftpClient implements RemoteClient {
             sftpClient = (ChannelSftp) channel;
 
         } catch (JSchException exc) {
+            // remove password from a memory storage
+            PASSWORDS.remove(configuration.hashCode());
             disconnect();
             LOGGER.log(Level.FINE, "Exception while connecting", exc);
             throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotConnect", configuration.getHost()), exc);
@@ -520,12 +535,7 @@ public class SftpClient implements RemoteClient {
         }
 
         public boolean promptPassword(String message) {
-            PasswordPanel passwordPanel = new PasswordPanel(configurationName, userName);
-            boolean ok = passwordPanel.open();
-            if (ok) {
-                passwd = passwordPanel.getPassword();
-            }
-            return ok;
+            return true;
         }
 
         public void showMessage(String message) {

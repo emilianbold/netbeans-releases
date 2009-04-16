@@ -554,6 +554,7 @@ public class CslJar extends JarWithModuleAttributes {
             if (mimeType.equals("text/x-ruby") || // NOI18N
                     mimeType.equals("text/x-css") || // NOI18N
                     mimeType.equals("text/x-groovy") || // NOI18N
+                    mimeType.equals("text/x-json") || //NOI18N
                     mimeType.equals("text/javascript")) { // NOI18N
                 setFileAttribute(doc, gotoFolder, "SystemFileSystem.localizingBundle", STRINGVALUE, "org.netbeans.modules.csl.core.Bundle");
             } else {

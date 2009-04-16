@@ -264,6 +264,10 @@ made subject to such option by the copyright holder.
                 <file name="projectTabLogical_tc.wstcgrp" url="projectsLogical.wstcgrp"/>
                 <file name="projectTab_tc.wstcgrp" url="projects.wstcgrp"/>
             </folder>
+            <folder name="InitialLayout">
+                <file name="projectTabLogical_tc.wstcgrp" url="projectsLogical.wstcgrp"/>
+                <file name="projectTab_tc.wstcgrp" url="projects.wstcgrp"/>
+            </folder>
         </folder>
         
     </folder>

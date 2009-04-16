@@ -52,6 +52,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1082,11 +1083,11 @@ public class CompletionHandler implements CodeCompletionHandler {
             return false;
         }
 
-        List<ASTNode> result = new ArrayList<ASTNode>();
+        Map<String, ASTNode> result = new HashMap<String, ASTNode>();
         getLocalVars(scope, result, request);
 
         if (!result.isEmpty()) {
-            for (ASTNode node : result) {
+            for (ASTNode node : result.values()) {
                 String varName = ((Variable) node).getName();
                 LOG.log(Level.FINEST, "Node found: {0}", varName); // NOI18N
 
@@ -1289,7 +1290,7 @@ public class CompletionHandler implements CodeCompletionHandler {
      * @param result
      * @param request
      */
-    private void getLocalVars(ASTNode node, List<ASTNode> result, CompletionRequest request) {
+    private void getLocalVars(ASTNode node, Map<String, ASTNode> result, CompletionRequest request) {
         // if we are dealing with a closure, we retrieve the local vars differently
 
         if (node instanceof ClosureExpression) {
@@ -1297,58 +1298,39 @@ public class CompletionHandler implements CodeCompletionHandler {
 
             if (closure.isParameterSpecified()) {
                 LOG.log(Level.FINEST, "We do have Parameters...");
-                Parameter params[] = closure.getParameters();
+                Parameter[] params = closure.getParameters();
 
                 for (int i = 0; i < params.length; i++) {
                     Parameter parameter = params[i];
                     LOG.log(Level.FINEST, "Parameter: {0}", parameter.getName());
-                    result.add(parameter);
+                    // FIXME is the text right choice ?
+                    result.put(parameter.getName(), parameter);
                 }
 
 
             } else {
                 LOG.log(Level.FINEST, "Closure without parameters, have to put it in list");
-                result.add(new VariableExpression("it"));
+                // FIXME is the text right choice ?
+                result.put("it", new VariableExpression("it"));
+            }
+        } else {
+            if (node instanceof Variable) {
+                String name = ((Variable) node).getName();
+                if (!result.containsKey(name) && name.length() > 0) {
+                    result.put(name, node);
+                }
             }
 
+            List<ASTNode> list = AstUtilities.children(node);
+            for (ASTNode child : list) {
+                // if we are running in script-mode, which means starting at the root
+                // we neighter recurse into MethodNodes nor closures.
+                if (request.scriptMode && (child instanceof MethodNode || child instanceof ClosureExpression)) {
+                    continue;
+                }
 
-            return;
-        }
-
-        if (node instanceof Variable) {
-            addIfNotInList(result, node);
-        }
-
-        List<ASTNode> list = AstUtilities.children(node);
-        for (ASTNode child : list) {
-            // if we are running in script-mode, which means starting at the root
-            // we neighter recurse into MethodNodes nor closures.
-            if (request.scriptMode && (child instanceof MethodNode || child instanceof ClosureExpression)) {
-                continue;
+                getLocalVars(child, result, request);
             }
-
-            getLocalVars(child, result, request);
-
-        }
-    }
-
-    /**
-     * Add a ASTNode to a list of node's in case it is not already in.
-     * @param result
-     * @param node
-     */
-    private void addIfNotInList(List<ASTNode> result, ASTNode node) {
-
-        String nodeName = node.getText();
-
-        for (ASTNode testnode : result) {
-            if (testnode.getText().equals(nodeName)) {
-                return;
-            }
-        }
-
-        if (nodeName.length() > 0) {
-            result.add(node);
         }
     }
 

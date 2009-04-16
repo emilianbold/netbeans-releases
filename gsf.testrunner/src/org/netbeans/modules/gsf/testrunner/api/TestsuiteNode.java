@@ -43,7 +43,6 @@ package org.netbeans.modules.gsf.testrunner.api;
 
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
@@ -57,6 +56,19 @@ import org.openide.util.NbBundle;
  * @author Marian Petras, Erno Mononen
  */
 public class TestsuiteNode extends AbstractNode {
+
+    /**
+     * The max number of output lines to display in the tooltip.
+     */
+    private static final int MAX_TOOLTIP_LINES = Integer.getInteger("testrunner.max.tooltip.lines", 30); //NOI18N
+    /**
+     * The max line length to display in the tooltip.
+     */
+    private static final int MAX_TOOLTIP_LINE_LENGTH = Integer.getInteger("testrunner.max.tooltip.line.length", 200); //NOI18N
+    /**
+     * The system property for enabling/disabling tooltips.
+     */
+    static final boolean DISPLAY_TOOLTIPS = Boolean.valueOf(System.getProperty("testrunner.display.tooltips", "true"));//NOI18N
 
     protected String suiteName;
     protected Report report;
@@ -109,9 +121,20 @@ public class TestsuiteNode extends AbstractNode {
         if (lines.isEmpty()) {
             result.append("<i>" + NbBundle.getMessage(TestsuiteNode.class, "MSG_NoOutput") + "</i>"); //NOI18N
         } else {
-            for (Iterator<OutputLine> it = lines.iterator(); it.hasNext();) {
-                result.append(it.next().getLine());
-                if (it.hasNext()) {
+            for (int i = 0; i < lines.size(); i++) {
+                if (i > MAX_TOOLTIP_LINES) {
+                    result.append("<br><i>" +
+                            NbBundle.getMessage(TestsuiteNode.class, "MSG_MoreOutput", lines.size() - i) + "</i>"); //NOI18N
+                    break;
+                }
+                String line = lines.get(i).getLine();
+                int orgLength = line.length();
+                if (orgLength > MAX_TOOLTIP_LINE_LENGTH) {
+                    line = line.substring(0, MAX_TOOLTIP_LINE_LENGTH);
+                    line = line.concat("<i> " + NbBundle.getMessage(TestsuiteNode.class, "MSG_CharsOmitted", orgLength - MAX_TOOLTIP_LINE_LENGTH) + "</i>"); //NOI18N
+                }
+                result.append(line);
+                if (i < lines.size()) {
                     result.append("<br>"); //NOI18N
                 }
             }
@@ -151,7 +174,9 @@ public class TestsuiteNode extends AbstractNode {
         
         setDisplayName();
         setChildren(new TestsuiteNodeChildren(report, filtered));
-        setShortDescription(toTooltipText(getOutput()));
+        if (DISPLAY_TOOLTIPS) {
+            setShortDescription(toTooltipText(getOutput()));
+        }
         fireIconChange();
     }
     

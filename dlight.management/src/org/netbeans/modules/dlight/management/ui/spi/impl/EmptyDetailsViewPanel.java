@@ -127,9 +127,9 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
                     p.add(new JLabel(status.getReason()));
 
                 }
-                JLabel label = new JLabel(c.getValidationStatus().getReason());
-                label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-                p.add(label);
+//                JLabel label = new JLabel(c.getValidationStatus().getReason());
+//                label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+//                p.add(label);
                 repairPanel.add(p);
                 panelsList.add(p);
                 panels.put(c, panelsList.indexOf(p));

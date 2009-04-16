@@ -215,7 +215,8 @@ public class ExtKit extends BaseKit {
 
     protected @Override Action[] createActions() {
         ArrayList<Action> actions = new ArrayList<Action>();
-        
+
+        actions.add(new ExtDefaultKeyTypedAction());
         actions.add(replaceActionDef);
         actions.add(gotoActionDef);
 // XXX: remove
@@ -392,7 +393,13 @@ public class ExtKit extends BaseKit {
             if (a instanceof BaseAction) {
                 itemText = ((BaseAction)a).getPopupMenuText(target);
             } else {
-                itemText = actionName;
+                itemText = (String) a.getValue("popupText");
+                if (itemText == null) {
+                    itemText = (String) a.getValue("menuText");
+                    if (itemText == null) {
+                        itemText = actionName;
+                    }
+                }
             }
             return itemText;
         }
@@ -1010,10 +1017,10 @@ public class ExtKit extends BaseKit {
 
 
     // Completion customized actions
-    @EditorActionRegistration(
-            name = defaultKeyTypedAction,
-            shortDescription = editorBundleHash + defaultKeyTypedAction
-    )
+//    @EditorActionRegistration(
+//            name = defaultKeyTypedAction,
+//            shortDescription = editorBundleHash + defaultKeyTypedAction
+//    )
     public static class ExtDefaultKeyTypedAction extends DefaultKeyTypedAction {
 
         static final long serialVersionUID =5273032708909044812L;

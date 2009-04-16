@@ -51,7 +51,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.Constants;
@@ -173,6 +175,10 @@ public class ResizeGestureRecognizer implements AWTEventListener {
             return;
         }
         MouseEvent evt = (MouseEvent)aWTEvent;
+        //#162118: When mouse is over main menu ignore event
+        if ((evt.getSource() instanceof JPopupMenu) || (evt.getSource() instanceof JMenuItem)) {
+            return;
+        }
         if (evt.getID() == MouseEvent.MOUSE_MOVED) {
             boolean noModif = evt.getModifiersEx() == 0;
             if (noModif && isInResizeArea(evt)) {

@@ -331,7 +331,7 @@ public class PHPIndex {
     static String getClusterUrl() {
         if (clusterUrl == null) {
             File f =
-                    InstalledFileLocator.getDefault().locate("modules/org-netbeans-modules-javascript-editing.jar", null, false); // NOI18N
+                    InstalledFileLocator.getDefault().locate("modules/org-netbeans-modules-php-editor.jar", null, false); // NOI18N
 
             if (f == null) {
                 throw new RuntimeException("Can't find cluster");

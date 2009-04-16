@@ -230,9 +230,9 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
     }
 
     public boolean isEnabled () {
-        boolean res = false;
+        boolean res = true;
         for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
-            res |= impl.isEnabled ();
+            res &= impl.isEnabled ();
         }
         return res;
     }

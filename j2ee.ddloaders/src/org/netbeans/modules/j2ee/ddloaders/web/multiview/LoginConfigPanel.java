@@ -93,12 +93,13 @@ public class LoginConfigPanel extends SectionInnerPanel {
             String authMethod = loginConfig.getAuthMethod();
             updateVisualState(authMethod);
             
-            if (authMethod.equals(BASIC)) {
-                realmNameTF.setText(loginConfig.getRealmName());
-            } else if (authMethod.equals(FORM)) {
+            if (authMethod.equals(FORM)) {
                 FormLoginConfig formLoginConfig = loginConfig.getFormLoginConfig();
                 loginPageTF.setText(formLoginConfig.getFormLoginPage());
                 errorPageTF.setText(formLoginConfig.getFormErrorPage());
+            }
+
+            if (!authMethod.equals(NONE)) {
                 realmNameTF.setText(loginConfig.getRealmName());
             }
         }
@@ -115,44 +116,39 @@ public class LoginConfigPanel extends SectionInnerPanel {
     }
     
     private void updateVisualState(final String state) {
-        if (state.equals(BASIC)) {
-            basicRB.setSelected(true);
-            realmNameLabel.setEnabled(true);
-            realmNameTF.setEnabled(true);
-            loginPageLabel.setEnabled(false);
-            loginPageTF.setEnabled(false);
-            loginPageBrowseButton.setEnabled(false);
-            errorPageLabel.setEnabled(false);
-            errorPageTF.setEnabled(false);
-            errorPageBrowseButton.setEnabled(false);
-        } else if (state.equals(FORM)) {
-            formRB.setSelected(true);
-            realmNameLabel.setEnabled(true);
-            realmNameTF.setEnabled(true);
-            loginPageLabel.setEnabled(true);
-            loginPageTF.setEnabled(true);
-            loginPageBrowseButton.setEnabled(true);
-            errorPageLabel.setEnabled(true);
-            errorPageTF.setEnabled(true);
-            errorPageBrowseButton.setEnabled(true);
-        } else {
-            if (state.equals(NONE)) {
-                noneRB.setSelected(true);
-            } else if (state.equals(DIGEST)) {
-                digestRB.setSelected(true);
-            } else if (state.equals(CLIENT_CERT)) {
-                clientCertRB.setSelected(true);
-            }
-            
-            realmNameLabel.setEnabled(false);
-            realmNameTF.setEnabled(false);
-            loginPageLabel.setEnabled(false);
-            loginPageTF.setEnabled(false);
-            loginPageBrowseButton.setEnabled(false);
-            errorPageLabel.setEnabled(false);
-            errorPageTF.setEnabled(false);
-            errorPageBrowseButton.setEnabled(false);
+        boolean loginPages = false;
+        boolean realm = true;
+
+        if (state.equals(NONE)) {
+            noneRB.setSelected(true);
+            realm = false;
         }
+        else if (state.equals(DIGEST)) {
+            digestRB.setSelected(true);
+        }
+        else if (state.equals(CLIENT_CERT)) {
+            clientCertRB.setSelected(true);
+        }
+        else if (state.equals(BASIC)) {
+            basicRB.setSelected(true);
+        }
+        else if (state.equals(FORM)) {
+            formRB.setSelected(true);
+            loginPages = true;
+        }
+        else {
+            noneRB.setSelected(true);
+            realm = false;
+        }
+            
+        realmNameLabel.setEnabled(realm);
+        realmNameTF.setEnabled(realm);
+        loginPageLabel.setEnabled(loginPages);
+        loginPageTF.setEnabled(loginPages);
+        loginPageBrowseButton.setEnabled(loginPages);
+        errorPageLabel.setEnabled(loginPages);
+        errorPageTF.setEnabled(loginPages);
+        errorPageBrowseButton.setEnabled(loginPages);
     }
     
     public void linkButtonPressed(Object obj, String id) {
@@ -236,10 +232,10 @@ public class LoginConfigPanel extends SectionInnerPanel {
                 loginConfig.setAuthMethod(authMethod);
                 
                 // Revive any previously set values.
-                if (authMethod.equals(BASIC)) {
+                if (!authMethod.equals(NONE)) {
                     loginConfig.setRealmName(realmNameTF.getText());
-                } else if (authMethod.equals(FORM)) {
-                    loginConfig.setRealmName(realmNameTF.getText());
+                }
+                if (authMethod.equals(FORM)) {
                     FormLoginConfig formLoginConfig = getFormLoginConfig();
                     formLoginConfig.setFormLoginPage(loginPageTF.getText());
                     formLoginConfig.setFormErrorPage(errorPageTF.getText());
@@ -401,22 +397,24 @@ public class LoginConfigPanel extends SectionInnerPanel {
                     .add(digestRB)
                     .add(clientCertRB)
                     .add(basicRB)
+                    .add(formRB)
                     .add(layout.createSequentialGroup()
                         .add(17, 17, 17)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(realmNameLabel)
                             .add(loginPageLabel)
                             .add(errorPageLabel))
                         .add(4, 4, 4)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(errorPageTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, realmNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, loginPageTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(errorPageBrowseButton)
                             .add(loginPageBrowseButton)))
-                    .add(formRB))
+                    .add(layout.createSequentialGroup()
+                        .add(realmNameLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(realmNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -431,10 +429,6 @@ public class LoginConfigPanel extends SectionInnerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(basicRB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(realmNameLabel)
-                    .add(realmNameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(formRB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -446,6 +440,10 @@ public class LoginConfigPanel extends SectionInnerPanel {
                     .add(errorPageBrowseButton)
                     .add(errorPageLabel)
                     .add(errorPageTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(realmNameLabel)
+                    .add(realmNameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents

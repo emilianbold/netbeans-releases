@@ -100,9 +100,9 @@ public final class RefactoringContextActionsProvider
         return new RefactoringContextActionsProvider(fileObjectList);
     }
 
-    public JComponent[] getMenuItems() {
+    public JComponent[] getMenuItems(boolean reset) {
         assert EventQueue.isDispatchThread();
-        if (menuItems == null) {
+        if (menuItems == null || reset) {
             List<JComponent> l = createMenuItems();
             menuItems = l.toArray(new JComponent[l.size()]);
         }

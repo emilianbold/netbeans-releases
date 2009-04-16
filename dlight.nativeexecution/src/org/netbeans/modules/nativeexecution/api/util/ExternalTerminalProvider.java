@@ -38,14 +38,19 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.io.IOException;
 import org.netbeans.modules.nativeexecution.support.*;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Stack;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.modules.nativeexecution.ExternalTerminalAccessor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -66,8 +71,10 @@ import org.xml.sax.helpers.DefaultHandler;
 public final class ExternalTerminalProvider {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
-    private static HashMap<String, TerminalProfile> hash =
-            new HashMap<String, TerminalProfile>();
+    private static final HashMap<String, List<TerminalProfile>> profiles =
+            new HashMap<String, List<TerminalProfile>>();
+    private static final HashMap<ExecutionEnvironment, TerminalProfile> hash =
+            new HashMap<ExecutionEnvironment, TerminalProfile>();
 
 
     static {
@@ -90,16 +97,62 @@ public final class ExternalTerminalProvider {
      *
      * @see #getSupportedTerminalIDs()
      */
-    public static ExternalTerminal getTerminal(String id) {
-        TerminalProfile ti = hash.get(id);
+    public static ExternalTerminal getTerminal(ExecutionEnvironment execEnv, String id) {
+        synchronized (hash) {
+            TerminalProfile terminalProfile = hash.get(execEnv);
 
-        if (ti == null) {
-            throw new IllegalArgumentException("Unsupported terminal type"); // NOI18N
+            if (terminalProfile != null) {
+                return new ExternalTerminal(terminalProfile);
+            }
+
+            List<TerminalProfile> terminalProfiles = profiles.get(id);
+
+            if (terminalProfiles == null) {
+                throw new IllegalArgumentException("Unsupported terminal type"); // NOI18N
+            }
+
+            ExternalTerminalAccessor terminalInfo = ExternalTerminalAccessor.getDefault();
+
+            for (TerminalProfile p : terminalProfiles) {
+                ExternalTerminal t = new ExternalTerminal(p);
+                List<String> validationCommands = p.getValidationCommands();
+
+                if (validationCommands == null || validationCommands.isEmpty()) {
+                    return t;
+                }
+
+                for (String command : validationCommands) {
+                    try {
+                        if (command.contains("$self")) { // NOI18N
+                            String executable = terminalInfo.getExecutable(t, execEnv);
+
+                            if (executable == null) {
+                                // Makes no sense to continue...
+                                return null;
+                            }
+
+                            command = command.replaceAll("\\$self", executable); // NOI18N
+                        }
+
+                        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, HostInfoUtils.getShell(execEnv));
+                        npb = npb.setArguments("-c", command); // NOI18N
+                        Process pr = npb.call();
+                        int result = pr.waitFor();
+                        if (result == 0) {
+                            hash.put(execEnv, p);
+                            return t;
+                        }
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    } catch (IOException ex) {
+                        // may continue...
+                    }
+                }
+            }
+
+            return null;
         }
-
-        ExternalTerminal result = new ExternalTerminal(ti);
-
-        return result;
     }
 
     /**
@@ -108,7 +161,7 @@ public final class ExternalTerminalProvider {
      * @return collection of all suported terminals IDs.
      */
     public static Collection<String> getSupportedTerminalIDs() {
-        return hash.keySet();
+        return profiles.keySet();
     }
 
     private static void init() {
@@ -205,22 +258,44 @@ public final class ExternalTerminalProvider {
             if (cont != Context.root) {
                 elementEnded(cont, accumulator.toString());
             } else {
-                hash.put(info.getID(), info);
+                List<TerminalProfile> list = profiles.get(info.getID());
+                if (list == null) {
+                    list = new ArrayList<TerminalProfile>();
+                    profiles.put(info.getID(), list);
+                }
+
+                list.add(info);
             }
         }
 
         public Context elementStarted(String name, Attributes attributes) {
+            Context parentContext = context.lastElement();
+
             if ("terminal".equals(name)) { // NOI18N
                 info.setID(attributes.getValue("id")); // NOI18N
-                info.setSupportedPlatforms(attributes.getValue("platforms")); // NOI18N
                 return Context.terminal;
+            }
+
+            if ("validation".equals(name)) { // NOI18N
+                return Context.validation;
+            }
+
+            if (parentContext == Context.validation) {
+                if ("platforms".equals(name)) { // NOI18N
+                    return Context.validation_platform;
+                }
+
+                if ("test".equals(name)) { // NOI18N
+                    info.addValidationCommand(attributes.getValue("command")); // NOI18N
+                    return Context.validation_test;
+                }
             }
 
             if ("searchpaths".equals(name)) { // NOI18N
                 return Context.searchpaths;
             }
 
-            if (context.lastElement() == Context.searchpaths &&
+            if (parentContext == Context.searchpaths &&
                     "path".equals(name)) { // NOI18N
                 return Context.searchpath;
             }
@@ -239,7 +314,7 @@ public final class ExternalTerminalProvider {
                 return Context.arguments;
             }
 
-            if (context.lastElement() == Context.arguments &&
+            if (parentContext == Context.arguments &&
                     "arg".equals(name)) { // NOI18N
                 return Context.argument;
             }
@@ -251,6 +326,9 @@ public final class ExternalTerminalProvider {
             switch (context) {
                 case argument:
                     info.addArgument(text);
+                    break;
+                case validation_platform:
+                    info.setSupportedPlatforms(text);
                     break;
                 case searchpath:
                     info.addSearchPath(text);
@@ -268,6 +346,9 @@ public final class ExternalTerminalProvider {
         searchpaths,
         searchpath,
         arguments,
-        argument
+        argument,
+        validation,
+        validation_platform,
+        validation_test,
     }
 }

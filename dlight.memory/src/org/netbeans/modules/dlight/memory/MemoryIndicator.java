@@ -101,7 +101,7 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
     @Override
     protected void repairNeeded(boolean needed) {
         if (needed) {
-            final RepairPanel repairPanel = new RepairPanel(new ActionListener() {
+            final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus(), new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     final Future<Boolean> result = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {

@@ -146,55 +146,50 @@ final class TransferFilterTable extends JTable {
 
     @Override
     protected JTableHeader createDefaultTableHeader() {
-        return TransferFilterTableHeader.create(this);
+        return new TransferFilterTableHeader();
     }
 
-    private static final class TransferFilterTableHeader extends JTableHeader {
-        private static final long serialVersionUID = 195246681443014165L;
+    private final class TransferFilterTableHeader extends JTableHeader {
+        private static final long serialVersionUID = 19524897514214165L;
 
-        private final SortColumnHeaderRenderer sortingRenderer;
+        private SortColumnHeaderRenderer sortingRenderer;
         int selectedRow = -1;
 
-        private TransferFilterTableHeader(TransferFilterTable table) {
-            super(table.getColumnModel());
-            setTable(table);
-            sortingRenderer = new SortColumnHeaderRenderer((TransferFileTableModel) getTable().getModel(), getDefaultRenderer());
-            setDefaultRenderer(sortingRenderer);
-        }
+        TransferFilterTableHeader() {
+            super(TransferFilterTable.this.getColumnModel());
+            setTable(TransferFilterTable.this);
 
-        public static JTableHeader create(TransferFilterTable table) {
-            final TransferFilterTableHeader tableHeader = new TransferFilterTableHeader(table);
-            tableHeader.addMouseListener(new MouseAdapter() {
+            addMouseListener(new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    tableHeader.setSelectedRow();
+                    setSelectedRow();
                 }
 
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    assert tableHeader.sortingRenderer != null : "Sorting renderer cannot be null.";
+                    assert sortingRenderer != null : "Sorting renderer cannot be null.";
 
-                    TransferFileUnit selectedUnit = tableHeader.getSelectedUnit();
+                    TransferFileUnit selectedUnit = getSelectedUnit();
 
-                    int column = tableHeader.getTable().columnAtPoint(e.getPoint());
-                    tableHeader.sortingRenderer.setSorting(column);
-                    tableHeader.repaint();
+                    int column = getTable().columnAtPoint(e.getPoint());
+                    sortingRenderer.setSorting(column);
+                    repaint();
 
-                    tableHeader.scroolToUnit(selectedUnit);
+                    scroolToUnit(selectedUnit);
                 }
             });
-            ((TransferFileTableModel) tableHeader.getTable().getModel()).addUpdateUnitListener(new TransferFileTableChangeListener() {
+            getModel().addUpdateUnitListener(new TransferFileTableChangeListener() {
                 public void updateUnitsChanged() {
-                    tableHeader.setSelectedRow();
-                    TransferFileUnit selectedUnit = tableHeader.getSelectedUnit();
-                    tableHeader.sortingRenderer.sort();
-                    tableHeader.scroolToUnit(selectedUnit);
+                    assert sortingRenderer != null : "Sorting renderer cannot be null.";
+                    setSelectedRow();
+                    TransferFileUnit selectedUnit = getSelectedUnit();
+                    sortingRenderer.sort();
+                    scroolToUnit(selectedUnit);
                 }
                 public void filterChanged() {
                 }
             });
-            tableHeader.setReorderingAllowed(false);
-            return tableHeader;
+            setReorderingAllowed(false);
         }
 
         @Override
@@ -206,6 +201,15 @@ final class TransferFilterTable extends JTable {
             super.setDraggedColumn(aColumn);
         }
 
+        @Override
+        public void setDefaultRenderer(TableCellRenderer defaultRenderer) {
+            if (!(defaultRenderer instanceof SortColumnHeaderRenderer)) {
+                sortingRenderer = new SortColumnHeaderRenderer(getModel(), defaultRenderer);
+                defaultRenderer = sortingRenderer;
+            }
+            super.setDefaultRenderer(defaultRenderer);
+        }
+
         void setSelectedRow() {
             selectedRow = getTable().getSelectedRow();
         }
@@ -213,9 +217,9 @@ final class TransferFilterTable extends JTable {
         // preserve selected row in order to scroll to it
         TransferFileUnit getSelectedUnit() {
             TransferFileUnit selectedUnit = null;
-            TransferFileTableModel model = (TransferFileTableModel) getTable().getModel();
+            TransferFileTableModel m = getModel();
             if (selectedRow != -1) {
-                selectedUnit = model.getUnitAtRow(selectedRow);
+                selectedUnit = m.getUnitAtRow(selectedRow);
             }
             return selectedUnit;
         }
@@ -224,12 +228,16 @@ final class TransferFilterTable extends JTable {
             if (selectedUnit == null) {
                 return;
             }
-            TransferFileTableModel model = (TransferFileTableModel) getTable().getModel();
-            int newRow = model.getRowForUnit(selectedUnit);
+            TransferFileTableModel m = getModel();
+            int newRow = m.getRowForUnit(selectedUnit);
             assert newRow != -1 : String.format("Previoulsy selecte unit %s has to be found.", selectedUnit);
             getTable().getSelectionModel().setSelectionInterval(newRow, newRow);
             Rectangle rect = getTable().getCellRect(newRow, 0, true);
             getTable().scrollRectToVisible(rect);
+        }
+
+        private TransferFileTableModel getModel() {
+            return (TransferFileTableModel) TransferFilterTable.this.getModel();
         }
     }
 }
