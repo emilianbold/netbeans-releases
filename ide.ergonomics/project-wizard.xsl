@@ -35,14 +35,27 @@
                 <xsl:apply-templates mode="actions"/>
             </xsl:element>
         </xsl:element>
-        <xsl:call-template 
-            name="actions-definition"
-        >
-            <xsl:with-param
-                name="originalFile"
-                select="file/attr[@name='originalFile']"
-            />
-        </xsl:call-template>
+        <xsl:for-each select="file/attr[@name='originalFile']">
+            <xsl:call-template name="actions-definition">
+                <xsl:with-param name="originalFile" select="."/>
+            </xsl:call-template>
+        </xsl:for-each>
+    </xsl:template>
+
+    <xsl:template match="filesystem/folder[@name='Menu']/folder[@name='Profile']">
+        <xsl:element name="folder">
+            <xsl:attribute name="name">Menu</xsl:attribute>
+            <xsl:element name="folder">
+                <xsl:attribute name="name">Profile</xsl:attribute>
+                <xsl:apply-templates mode="actions" select="attr"/>
+                <xsl:apply-templates mode="actions" select="file[attr[@name='ergonomics' and @boolvalue='true']]"/>
+            </xsl:element>
+        </xsl:element>
+        <xsl:for-each select="file/attr[@name='originalFile' and ../attr[@name='ergonomics' and @boolvalue='true']]">
+            <xsl:call-template name="actions-definition">
+                <xsl:with-param name="originalFile" select="."/>
+            </xsl:call-template>
+        </xsl:for-each>
     </xsl:template>
 
     <xsl:template match="filesystem/folder[@name='Services']/folder[@name='AntBasedProjectTypes']">
@@ -173,10 +186,12 @@
 
     <xsl:template name="actions-definition">
         <xsl:param name="originalFile"/>
-        <xsl:call-template name="actions-definition-impl">
-            <xsl:with-param name="path" select="$originalFile/@stringvalue"/>
-            <xsl:with-param name="query" select="'filesystem'"/>
-        </xsl:call-template>
+        <xsl:for-each select=".">
+            <xsl:call-template name="actions-definition-impl">
+                <xsl:with-param name="path" select="$originalFile/@stringvalue"/>
+                <xsl:with-param name="query" select="'filesystem'"/>
+            </xsl:call-template>
+        </xsl:for-each>
     </xsl:template>
 
     <xsl:template name="actions-definition-impl">

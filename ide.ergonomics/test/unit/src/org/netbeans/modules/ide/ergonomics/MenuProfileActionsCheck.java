@@ -41,6 +41,7 @@ package org.netbeans.modules.ide.ergonomics;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -58,19 +59,19 @@ import org.openide.util.Enumerations;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ServersNodeActionsCheck extends NbTestCase {
+public class MenuProfileActionsCheck extends NbTestCase {
 
-    public ServersNodeActionsCheck(String name) {
+    public MenuProfileActionsCheck(String name) {
         super(name);
     }
 
     public void testGetAll() throws Exception {
         clearWorkDir();
        
-        FileObject orig = FileUtil.getConfigFile("Servers/Actions");
+        FileObject orig = FileUtil.getConfigFile("Menu/Profile");
         assertNotNull("actions folder is there", orig);
 
-        Enumeration<? extends FileObject> nodes = orig.getChildren(true);
+        Enumeration<? extends FileObject> nodes = Enumerations.singleton(orig);
         class VisitOriginalFile implements Enumerations.Processor<FileObject,FileObject> {
             public FileObject process(FileObject fo, Collection<FileObject> toAdd) {
                 Object attr = fo.getAttribute("originalFile");
@@ -79,6 +80,9 @@ public class ServersNodeActionsCheck extends NbTestCase {
                     assertNotNull("Original file for " + attr + " found", originalFile);
                     toAdd.add(originalFile);
                 }
+                if (fo.isFolder()) {
+                    toAdd.addAll(Arrays.asList(fo.getChildren()));
+                }
                 return fo;
             }
         }
@@ -86,9 +90,21 @@ public class ServersNodeActionsCheck extends NbTestCase {
 
         StringBuilder errors = new StringBuilder();
         Enumeration<? extends FileObject> en = Enumerations.queue(nodes, new VisitOriginalFile());
+        int all = 0;
         while (en.hasMoreElements()) {
             FileObject fo = en.nextElement();
+            if (fo.isFolder()) {
+                if (all > 0) {
+                    continue;
+                }
+                // check the root folder for its attributes
+            } else {
+                if (fo.getPath().startsWith("Menu/Profile/") && !Boolean.TRUE.equals(fo.getAttribute("ergonomics"))) {
+                    continue;
+                }
+            }
 
+            all++;
             int cnt = 0;
             Enumeration<String> allAttributes = fo.getAttributes();
             while (allAttributes.hasMoreElements()) {
@@ -121,10 +137,13 @@ public class ServersNodeActionsCheck extends NbTestCase {
         if (errors.length() > 0) {
             fail(errors.toString());
         }
+        if (all < 4) {
+            fail("Not enough suitable files found under profiler menu: " + all);
+        }
     }
-    private static final String dynName = "serversnodedynamic/name/";
-    private static final String dynVery = "serversnodedynamic/verify/";
-    private static final String dynAttr = "serversnodedynamic/attr/";
+    private static final String dynName = "menuprofiledynamic/name/";
+    private static final String dynVery = "menuprofiledynamic/verify/";
+    private static final String dynAttr = "menuprofiledynamic/attr/";
 
     public void testCheckAllPretest() throws Exception {
         testCheckAllReal();
@@ -177,13 +196,15 @@ public class ServersNodeActionsCheck extends NbTestCase {
 
                 if (attr == null) {
                     errors.append("Attribute " + name + " present in orig on " + fo + " but null in clone\n");
+                    continue;
                 }
 
                 if (name.equals("iconResource") || name.equals("iconBase")) {
-                    attr = Thread.currentThread().getContextClassLoader().getResource((String)attr);
-                    if (!(attr instanceof URL)) {
-                        errors.append(attr + " attr for " + fo + " shall exist "  + attr + "\n");
+                    Object val = Thread.currentThread().getContextClassLoader().getResource((String)attr);
+                    if (!(val instanceof URL)) {
+                        errors.append(name + " attr for " + fo + " shall exist "  + attr + "\n");
                     }
+                    attr = val;
                 }
                 
                 if (attr instanceof URL) {
