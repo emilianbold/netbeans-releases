@@ -37,56 +37,15 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject;
+package org.netbeans.modules.hudson.maven;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
-import org.openide.util.lookup.ServiceProvider;
+import java.beans.PropertyDescriptor;
+import java.beans.SimpleBeanInfo;
 
-/**
- *
- * @author vita
- */
-@ServiceProvider(service=org.netbeans.modules.parsing.spi.indexing.PathRecognizer.class)
-public class MakeProjectPaths extends PathRecognizer {
+public class JellyTagSchemaCatalogBeanInfo extends SimpleBeanInfo {
 
-    public static final String SOURCES = "org.netbeans.modules.cnd.makeproject/SOURCES"; //NOI18N
-
-    // -----------------------------------------------------------------------
-    // PathRecognizer implementation
-    // -----------------------------------------------------------------------
-
-    @Override
-    public Set<String> getSourcePathIds() {
-        return Collections.<String>singleton(SOURCES);
+    public @Override PropertyDescriptor[] getPropertyDescriptors() {
+        return new PropertyDescriptor[0];
     }
 
-    @Override
-    public Set<String> getLibraryPathIds() {
-        return null;
-    }
-
-    @Override
-    public Set<String> getBinaryLibraryPathIds() {
-        return null;
-    }
-
-    @Override
-    public Set<String> getMimeTypes() {
-        return MIME_TYPES;
-    }
-
-    // -----------------------------------------------------------------------
-    // private implementation
-    // -----------------------------------------------------------------------
-
-    private static final Set<String> MIME_TYPES = new HashSet<String>(Arrays.asList(new String[] {
-        "text/x-h", "text/x-c++", "text/x-c", "text/x-fortran", // NOI18N
-        "text/x-make", "text/sh", "text/bat", "text/x-visu", // NOI18N
-        "text/x-lex", "text/x-yacc", "text/x-asm", "text/qtui+xml", // NOI18N
-        "text/qtresource+xml", "text/qttranslation+xml" // NOI18N
-    }));
 }
