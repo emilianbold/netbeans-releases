@@ -144,7 +144,7 @@ public class SunStudioDataCollector
                 SunStudioDCConfiguration.c_iSync,
                 SunStudioDCConfiguration.c_iSyncn));
 
-        memInfoTable = new DataTableMetadata("SunStudioMemDetailedData",
+        memInfoTable = new DataTableMetadata("SunStudioMemDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_leakCount,
                 SunStudioDCConfiguration.c_leakSize));

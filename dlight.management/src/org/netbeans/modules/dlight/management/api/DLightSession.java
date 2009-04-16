@@ -134,6 +134,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     }
 
     void cleanVisualizers() {
+        if (visualizers == null){
+            return;
+        }
         visualizers.clear();
         visualizers = null;
     }
@@ -396,7 +399,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                                     subscribedIndicators.add(i);
                                 }
                                 target.addTargetListener(idp);
-                                log.info("I have subscribed indicator " + i + " to indicatorDataProvider " + idp);
+                                log.info("I have subscribed indicator " + i + " to indicatorDataProvider " + idp); // NOI18N
                             }
                         }
                     }
@@ -435,7 +438,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 }
             } else {
                 // Cannot find storage for this collector!
-                log.severe("Cannot find storage for collector " + toolCollector);
+                log.severe("Cannot find storage for collector " + toolCollector); // NOI18N
             }
 
             target.addTargetListener(toolCollector);
@@ -561,7 +564,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
     private void assertState(SessionState expectedState) {
         if (this.state != expectedState) {
-            throw new IllegalStateException("Session is in illegal state " + this.state + "; Must be in " + expectedState);
+            throw new IllegalStateException("Session is in illegal state " + this.state + "; Must be in " + expectedState); // NOI18N
         }
     }
 

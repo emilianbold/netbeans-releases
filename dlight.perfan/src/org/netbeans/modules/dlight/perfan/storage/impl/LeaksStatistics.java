@@ -68,7 +68,7 @@ public final class LeaksStatistics {
 ////                    return null;
 //                        continue;
 //                    }
-            if (line.startsWith("Leak #")) {
+            if (line.startsWith("Leak #")) { // NOI18N
                 //we are here,:: PARSE and create statistics
                 //parse line
 

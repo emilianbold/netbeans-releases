@@ -202,9 +202,9 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
             int pid = ((AttachableTarget)target).getPID();
             String os = HostInfoUtils.getOS(env);
             Engine engine;
-            if ("Linux".equals(os)) {
+            if ("Linux".equals(os)) { // NOI18N
                 engine = new ProcDataProviderLinux(this);
-            } else if ("SunOS".equals(os)) {
+            } else if ("SunOS".equals(os)) { // NOI18N
                 engine = new ProcDataProviderSolaris(this, env);
             } else {
                 DLightLogger.instance.severe("Called ProcDataProvider.targetStarted() on unsupported OS"); // NOI18N
