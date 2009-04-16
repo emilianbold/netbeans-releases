@@ -73,6 +73,7 @@ public abstract class SharedRubyProjectProperties {
     public static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
     public static final String JAVAC_CLASSPATH = "javac.classpath"; // NOI18N
     public static final String RAKE_ARGS = "rake.args"; // NOI18N
+    // if you change the value, update also o.n.m.ruby.RubyParser
     public static final String JVM_ARGS = "jvm.args"; // NOI18N
     public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N

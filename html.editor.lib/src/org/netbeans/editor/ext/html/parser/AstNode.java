@@ -147,6 +147,14 @@ public class AstNode {
         }
     }
 
+    Collection<Element> getAllPossibleElements() {
+        Collection<Element> col = new ArrayList<Element>();
+        col.addAll((Collection<Element>)content.getPossibleElements());
+        col.addAll(contentModel.getIncludes());
+        col.removeAll(contentModel.getExcludes());
+        return col;
+    }
+
     public synchronized void addErrorMessage(String message) {
         if(errorMessages == null) {
             errorMessages = new ArrayList<String>(2);

@@ -35,9 +35,9 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.lexer.yacc.ISourcePosition;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.SourcePosition;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -110,8 +110,8 @@ public class ExpandSameLineDef extends RubyAstRule {
         BaseDocument doc = context.doc;
 
         // Look for use of deprecated fields
-        if (node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE || node.nodeId == NodeType.CLASSNODE) {
-            ISourcePosition pos = node.getPosition();
+        if (node.getNodeType() == NodeType.DEFNNODE || node.getNodeType() == NodeType.DEFSNODE || node.getNodeType() == NodeType.CLASSNODE) {
+            SourcePosition pos = node.getPosition();
             try {
                 if (doc == null) {
                     // Run on a file that was just closed
@@ -173,12 +173,12 @@ public class ExpandSameLineDef extends RubyAstRule {
         }
 
         public String getDescription() {
-            String code = path.leaf().nodeId == NodeType.DEFNNODE ? "def" : "class";
+            String code = path.leaf().getNodeType() == NodeType.DEFNNODE ? "def" : "class";
             return NbBundle.getMessage(ExpandSameLineDef.class, "ExpandLineFix", code);
         }
         
         private void findLineBreaks(Node node, Set<Integer> offsets) {
-            if (node.nodeId == NodeType.NEWLINENODE) {
+            if (node.getNodeType() == NodeType.NEWLINENODE) {
                 offsets.add(node.getPosition().getStartOffset());
             }
             List<Node> list = node.childNodes();
@@ -210,7 +210,7 @@ public class ExpandSameLineDef extends RubyAstRule {
 
         public EditList getEditList() throws Exception {
             BaseDocument doc = context.doc;
-            ISourcePosition pos = path.leaf().getPosition();
+            SourcePosition pos = path.leaf().getPosition();
             int startOffset = pos.getStartOffset();
             int endOffset = pos.getEndOffset();
             if (endOffset > doc.getLength()) {

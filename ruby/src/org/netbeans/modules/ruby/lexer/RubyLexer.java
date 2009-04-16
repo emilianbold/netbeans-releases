@@ -42,17 +42,18 @@ package org.netbeans.modules.ruby.lexer;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 
-import org.jruby.nb.common.NullWarnings;
-import org.jruby.nb.lexer.yacc.InputStreamLexerSource;
-import org.jruby.nb.lexer.yacc.LexerSource;
-import org.jruby.nb.lexer.yacc.RubyYaccLexer;
-import org.jruby.nb.lexer.yacc.RubyYaccLexer.LexState;
-import org.jruby.nb.lexer.yacc.StrTerm;
-import org.jruby.nb.lexer.yacc.StringTerm;
-import org.jruby.nb.lexer.yacc.SyntaxException;
-import org.jruby.nb.parser.Tokens;
+import org.jrubyparser.IRubyWarnings;
+import org.jrubyparser.SourcePosition;
+import org.jrubyparser.lexer.Lexer.LexState;
+import org.jrubyparser.lexer.LexerSource;
+import org.jrubyparser.lexer.ReaderLexerSource;
+import org.jrubyparser.lexer.StrTerm;
+import org.jrubyparser.lexer.StringTerm;
+import org.jrubyparser.lexer.SyntaxException;
+import org.jrubyparser.parser.Tokens;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -85,7 +86,7 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
     /** This is still not working; I wonder if release() is called correctly at all times...*/
     private static final boolean REUSE_LEXERS = false;
     private static RubyLexer cached;
-    private final RubyYaccLexer lexer;
+    private final org.jrubyparser.lexer.Lexer lexer;
     private LexerSource lexerSource;
     private boolean inRegexp;
     private LexerInput input;
@@ -95,7 +96,7 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
     private boolean inEmbedded;
 
     private RubyLexer(LexerRestartInfo<RubyTokenId> info) {
-        lexer = new RubyYaccLexer();
+        lexer = new org.jrubyparser.lexer.Lexer();
         // XXX Do something at scan time about illegal characters?
         lexer.setWarnings(new NullWarnings());
         lexer.setPreserveSpaces(true);
@@ -121,14 +122,15 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
         tokenFactory = info.tokenFactory();
 
         String fileName = "unknown";
-        //Reader lexerReader = new LexerInputReader(input);
-        InputStream lexerInput = new LexerInputStream(input);
+        Reader lexerReader = new LexerInputReader(input);
+//        InputStream lexerInput = new LexerInputStream(input);
 
         // We don't need IDE positions during pure syntax lexing; that's only needed during
         // parsing for AST nodes
         //lexerSource = new LexerSource(fileName, lexerReader, 0, false);
         //lexerSource = LexerSource.getSource(fileName, lexerInput, null, null);
-        lexerSource = new InputStreamLexerSource(fileName, lexerInput, null, 0, false);
+        //XXX: jruby-parser
+        lexerSource = new ReaderLexerSource(fileName, lexerReader, 0);
 
         lexer.setSource(lexerSource);
 
@@ -603,7 +605,7 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
         private int localState;
         private final LexState lexState;
         private Object strTermState;
-        private final RubyYaccLexer.HeredocContext heredocContext;
+        private final org.jrubyparser.lexer.Lexer.HeredocContext heredocContext;
 
         JRubyLexerRestartInfo(RubyLexer rubyLexer) {
             strTerm = rubyLexer.lexer.getStrTerm();
@@ -830,4 +832,33 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
             return c;
         }
     }
+
+    /**
+     * A Warnings implementation which silently ignores everything.
+     */
+    private static class NullWarnings implements IRubyWarnings {
+
+        public boolean isVerbose() {
+            return false;
+        }
+
+        public void warn(ID id, String message, Object... data) {
+        }
+
+        public void warning(ID id, String message, Object... data) {
+        }
+
+        public void warn(ID id, String fileName, int lineNumber, String message, Object... data) {
+        }
+
+        public void warning(ID id, String fileName, int lineNumber, String message, Object... data) {
+        }
+
+        public void warn(ID arg0, SourcePosition arg1, String arg2, Object... arg3) {
+        }
+
+        public void warning(ID arg0, SourcePosition arg1, String arg2, Object... arg3) {
+        }
+    }
+
 }

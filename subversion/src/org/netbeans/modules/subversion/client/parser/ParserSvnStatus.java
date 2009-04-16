@@ -46,6 +46,7 @@ import java.lang.UnsupportedOperationException;
 import java.net.MalformedURLException;
 import java.util.Date;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
@@ -212,6 +213,18 @@ public class ParserSvnStatus implements ISVNStatus {
     public boolean isSwitched() {
         // TODO implement me
         throw new UnsupportedOperationException("not implemented yet");             // NOI18N
+    }
+
+    public boolean hasTreeConflict() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public SVNConflictDescriptor getConflictDescriptor() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isFileExternal() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }
