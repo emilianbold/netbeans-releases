@@ -86,7 +86,7 @@ import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.IOProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
-import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.cnd.debugger.gdb.utils.WinPath;
 import org.netbeans.modules.cnd.execution.Unbuffer;

@@ -177,12 +177,12 @@ public final class CompletionSupport implements DocumentListener {
         this.contextOffset = offset;
     }
 
-    private int doc2context(int docPos) {
+    public int doc2context(int docPos) {
         int offset = this.contextOffset == NOT_INITIALIZED ? docPos : this.contextOffset;
         offset = CsmMacroExpansion.getOffsetInOriginalText(getDocument(), offset);
         return offset;
     }
-    
+
     protected void setLastSeparatorOffset(int lastSeparatorOffset) {
         this.lastSeparatorOffset = lastSeparatorOffset;
     }

@@ -201,6 +201,16 @@ public abstract class DLightTarget {
     }
 
     /**
+     * Returns target exit code or <code>-1</code> if exit code is unknown
+     * (e.g. target is not started yet, target was terminated manually).
+     * If target is still running, waits until target if finished.
+     *
+     * @return target exit code
+     * @throws InterruptedException  if target execution is interrupted
+     */
+    public abstract int getExitCode() throws InterruptedException;
+
+    /**
      * This service should be implemented to run target along
      * with DLightTarget implementation
      * @param <T> target to execute

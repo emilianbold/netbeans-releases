@@ -44,6 +44,7 @@ import org.openide.util.Lookup;
 
 /**
  * Settings of colors for normal, error, hyperlink, important hyperlink lines.
+ * Change is global for text past and future.
  * <p>
  * Client usage:
  * <pre>
@@ -108,6 +109,15 @@ public abstract class IOColors {
         if (ioc != null) {
             ioc.setColor(type, color);
         }
+    }
+
+    /**
+     * Checks whether this feature is supported for provided IO
+     * @param io IO to check on
+     * @return true if supported
+     */
+    public static boolean isSupported(InputOutput io) {
+        return find(io) != null;
     }
 
     /**
