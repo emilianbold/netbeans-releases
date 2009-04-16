@@ -274,7 +274,7 @@ public class SyntaxTree {
         List<TagAttribute> existingAttrs = element.getAttributes();
 
         for (TagAttribute ta : existingAttrs) {
-            if (dtdElement.getAttribute(ta.getName()) == null) {
+            if (dtdElement.getAttribute(ta.getName().toLowerCase(Locale.ENGLISH)) == null) {
                 //unknown attribute
                 errmsgs.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE",
                         new Object[]{ta.getName(), element.getName()}));
