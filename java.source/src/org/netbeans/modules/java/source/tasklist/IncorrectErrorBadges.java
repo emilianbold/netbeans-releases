@@ -79,19 +79,25 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
 
     public void run(CompilationInfo info) {
         if (DISABLE) {
+            if (LOG.isLoggable(Level.FINE))
+                LOG.log(Level.FINE, "Badges are disabled.");
             return ;
         }
         
         if (RepositoryUpdater.getDefault().isRULocked()) {
+            if (LOG.isLoggable(Level.FINE))
+                LOG.log(Level.FINE, "RepositoryUpdater is locked. Can't continue");
             return ;
         }
         
         if (invocationCount++ > 1) {
+            if (LOG.isLoggable(Level.INFO))
+                LOG.log(Level.INFO, "We are already running. Invocation count is greater than 0");
             return ;
         }
         
         try {
-            for (Diagnostic d : info.getDiagnostics()) {
+            for (Diagnostic<?> d : info.getDiagnostics()) {
                 if (d.getKind() == Kind.ERROR) {
                     return ;
                 }
