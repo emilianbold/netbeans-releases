@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  */
 public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
 
-    public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/includeview/resources/tree.png"; // NOI18N
+    public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/macroview/resources/macroexpansion.png"; // NOI18N
     private transient ExplorerManager explorerManager = new ExplorerManager();
 
     /** Creates new form MacroExpansionPanel. */
