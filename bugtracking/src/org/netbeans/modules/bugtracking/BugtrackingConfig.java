@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,47 +34,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.api;
+package org.netbeans.modules.bugtracking;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.kenai.api.KenaiService.Type;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Jan Becicka
+ * @author Tomas Stupka
  */
-public class KenaiFeatureTest extends NbTestCase {
+public class BugtrackingConfig {
 
-    public KenaiFeatureTest(String s) {
-        super(s);
+    private static BugtrackingConfig instance = null;
+    private static final String ARCHIVED_TTL  = "bugtracking.archived_time_to_live";      // NOI18N
+    private static long DEFAULT_ARCHIVED_TTL  = 7; // days
+
+    private BugtrackingConfig() { }
+
+    public static BugtrackingConfig getInstance() {
+        if(instance == null) {
+            instance = new BugtrackingConfig();
+        }
+        return instance;
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
+    public Preferences getPreferences() {
+        return NbPreferences.forModule(BugtrackingConfig.class);
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
+    public void setArchivedIssuesTTL(int l) {
+        getPreferences().putLong(ARCHIVED_TTL, l);
     }
 
-    /**
-     * Test of getName method, of class KenaiFeature.
-     */
-    @Test
-    public void testType() {
-        System.out.println("getType");
-        assert Type.forId("foo").equals(Type.UNKNOWN);
-        assert Type.forId("forum").equals(Type.FORUM);
-        assert Type.forId("downloads").equals(Type.DOWNLOADS);
-        assert Type.forId("issues").equals(Type.ISSUES);
-        assert Type.forId("wiki").equals(Type.WIKI);
-        assert Type.forId("chat").equals(Type.CHAT);
+    public long getArchivedIssuesTTL() {
+        return getPreferences().getLong(ARCHIVED_TTL, DEFAULT_ARCHIVED_TTL);
     }
+
 }
-

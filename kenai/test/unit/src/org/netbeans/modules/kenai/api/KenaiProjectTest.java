@@ -66,6 +66,10 @@ public class KenaiProjectTest extends NbTestCase {
     public static void tearDownClass() throws Exception {
     }
 
+    public void setProjectName(String name) {
+        UNITTESTUNIQUENAME = name;
+    }
+
     @Before
     @Override
     public void setUp() {
@@ -92,7 +96,7 @@ public class KenaiProjectTest extends NbTestCase {
         String uri = "";
         for (int i = 0; i < features.length; i++) {
             KenaiFeature kenaiFeature = features[i];
-            if (kenaiFeature.getDisplayName().contains("Svn")) {
+            if (kenaiFeature.getLocation().toString().toLowerCase().contains("svn")) {
                 uri = kenaiFeature.getLocation().toString();
                 break;
             }
@@ -116,7 +120,7 @@ public class KenaiProjectTest extends NbTestCase {
         String uri = "";
         for (int i = 0; i < features.length; i++) {
             KenaiFeature kenaiFeature = features[i];
-            if (kenaiFeature.getDisplayName().contains("Hg")) {
+            if (kenaiFeature.getLocation().toString().toLowerCase().contains("hg")) {
                 uri = kenaiFeature.getLocation().toString();
                 break;
             }
