@@ -134,6 +134,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     }
 
     void cleanVisualizers() {
+        if (visualizers == null){
+            return;
+        }
         visualizers.clear();
         visualizers = null;
     }
