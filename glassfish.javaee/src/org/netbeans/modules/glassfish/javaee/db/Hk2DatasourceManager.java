@@ -167,7 +167,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         return succeeded;
     }
     
-    private static final class AddResourcesCommand extends ServerCommand {
+    public static final class AddResourcesCommand extends ServerCommand {
 
         public AddResourcesCommand(String sunResourcesXmlPath) {
             super("add-resources"); // NOI18N

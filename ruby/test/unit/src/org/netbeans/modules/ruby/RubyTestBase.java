@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.Node;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.ruby.platform.RubyInstallation;

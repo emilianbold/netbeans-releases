@@ -71,7 +71,8 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     private final Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.InstalledTableModel");
     
     private static String col0, col1, col2, col3;
-    
+    private boolean twoViews = true;
+
     /** Creates a new instance of InstalledTableModel
      * @param units 
      */
@@ -81,6 +82,21 @@ public class InstalledTableModel extends UnitCategoryTableModel {
 
     public final void setUnits (List<UpdateUnit> units) {    
         setData(Utilities.makeInstalledCategories (units));
+    }
+
+    final void setUnits(List<UpdateUnit> units, List<UpdateUnit> features) {
+        if (features.isEmpty()) {
+            setUnits(units);
+            twoViews = false;
+        } else {
+            setUnits(features);
+            twoViews = true;
+        }
+    }
+
+    @Override
+    boolean supportsTwoViews() {
+        return twoViews;
     }
 
     @Override

@@ -56,6 +56,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenProcessor;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -89,7 +90,6 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -226,8 +226,8 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
     
     private Problem fastCheckParameters(String getter, String setter) {
         
-        if ((getter != null && !Utilities.isJavaIdentifier(getter))
-                || (setter != null && !Utilities.isJavaIdentifier(setter))
+        if ((getter != null && !CndLexerUtilities.isCppIdentifier(getter))
+                || (setter != null && !CndLexerUtilities.isCppIdentifier(setter))
                 || (getter == null && setter == null)) {
             // user doesn't use valid java identifier, it cannot be used
             // as getter/setter name

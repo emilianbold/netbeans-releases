@@ -18,7 +18,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       parse_resolv_conf:METHOD:[PUBLIC, STATIC]:ESCAPED{parse_resolv_conf}(PARAMETERS{ESCAPED{filename}}):
       resolv:METHOD:[PUBLIC]:ESCAPED{resolv}(PARAMETERS{ESCAPED{name}}):
       search:FIELD:[]:ESCAPED{search}:
-      single?:METHOD:[PUBLIC]:ESCAPED{single?}<font color='#777777'> : ESCAPED{Hash, NilClass, _unknown_}</font>:
+      single?:METHOD:[PUBLIC]:ESCAPED{single?}<font color='#777777'> : ESCAPED{Hash, NilClass, Unknown}</font>:
     DNSThreadGroup:CONSTANT:[]:ESCAPED{DNSThreadGroup}<font color='#777777'> : ESCAPED{ThreadGroup}</font>:
     DecodeError:CLASS:[]:ESCAPED{DecodeError}:
     EncodeError:CLASS:[]:ESCAPED{EncodeError}:
@@ -37,14 +37,14 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       ==:METHOD:[PUBLIC]:ESCAPED{==}(PARAMETERS{ESCAPED{other}}):
       MessageDecoder:CLASS:[]:ESCAPED{MessageDecoder}:
         data:FIELD:[]:ESCAPED{data}:
-        get_bytes:METHOD:[PUBLIC]:ESCAPED{get_bytes}(PARAMETERS{ESCAPED{len}})<font color='#777777'> : ESCAPED{Array, _unknown_}</font>:
+        get_bytes:METHOD:[PUBLIC]:ESCAPED{get_bytes}(PARAMETERS{ESCAPED{len}})<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
         get_label:METHOD:[PUBLIC]:ESCAPED{get_label}<font color='#777777'> : ESCAPED{Str}</font>:
-        get_labels:METHOD:[PUBLIC]:ESCAPED{get_labels}(PARAMETERS{ESCAPED{limit}})<font color='#777777'> : ESCAPED{Array, _unknown_}</font>:
-        get_length16:METHOD:[PUBLIC]:ESCAPED{get_length16}<font color='#777777'> : ESCAPED{Array, _unknown_}</font>:
+        get_labels:METHOD:[PUBLIC]:ESCAPED{get_labels}(PARAMETERS{ESCAPED{limit}})<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
+        get_length16:METHOD:[PUBLIC]:ESCAPED{get_length16}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
         get_name:METHOD:[PUBLIC]:ESCAPED{get_name}<font color='#777777'> : ESCAPED{Name}</font>:
         get_question:METHOD:[PUBLIC]:ESCAPED{get_question}<font color='#777777'> : ESCAPED{Array}</font>:
         get_rr:METHOD:[PUBLIC]:ESCAPED{get_rr}<font color='#777777'> : ESCAPED{Array}</font>:
-        get_string:METHOD:[PUBLIC]:ESCAPED{get_string}<font color='#777777'> : ESCAPED{Array, _unknown_}</font>:
+        get_string:METHOD:[PUBLIC]:ESCAPED{get_string}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
         get_string_list:METHOD:[PUBLIC]:ESCAPED{get_string_list}:
         get_unpack:METHOD:[PUBLIC]:ESCAPED{get_unpack}(PARAMETERS{ESCAPED{template}}):
         index:FIELD:[]:ESCAPED{index}:
@@ -72,10 +72,10 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       answer:ATTRIBUTE:[]:ESCAPED{answer}:
       authority:ATTRIBUTE:[]:ESCAPED{authority}:
       decode:METHOD:[PUBLIC, STATIC]:ESCAPED{decode}(PARAMETERS{ESCAPED{m}}):
-      each_additional:METHOD:[PUBLIC]:ESCAPED{each_additional}<font color='#777777'> : ESCAPED{Array, _unknown_}</font>:
-      each_answer:METHOD:[PUBLIC]:ESCAPED{each_answer}<font color='#777777'> : ESCAPED{Array, _unknown_}</font>:
-      each_authority:METHOD:[PUBLIC]:ESCAPED{each_authority}<font color='#777777'> : ESCAPED{Array, _unknown_}</font>:
-      each_question:METHOD:[PUBLIC]:ESCAPED{each_question}<font color='#777777'> : ESCAPED{Array, _unknown_}</font>:
+      each_additional:METHOD:[PUBLIC]:ESCAPED{each_additional}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
+      each_answer:METHOD:[PUBLIC]:ESCAPED{each_answer}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
+      each_authority:METHOD:[PUBLIC]:ESCAPED{each_authority}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
+      each_question:METHOD:[PUBLIC]:ESCAPED{each_question}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
       each_resource:METHOD:[PUBLIC]:ESCAPED{each_resource}:
       encode:METHOD:[PUBLIC]:ESCAPED{encode}:
       id:ATTRIBUTE:[]:ESCAPED{id}:
@@ -89,7 +89,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       rd:ATTRIBUTE:[]:ESCAPED{rd}:
       tc:ATTRIBUTE:[]:ESCAPED{tc}:
     Name:CLASS:[]:ESCAPED{Name}:
-      ==:METHOD:[PUBLIC]:ESCAPED{==}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{FalseClass, _unknown_}</font>:
+      ==:METHOD:[PUBLIC]:ESCAPED{==}(PARAMETERS{ESCAPED{other}})<font color='#777777'> : ESCAPED{FalseClass, Unknown}</font>:
       []:METHOD:[PUBLIC]:ESCAPED{[]}(PARAMETERS{ESCAPED{i}}):
       absolute:FIELD:[]:ESCAPED{absolute}:
       absolute?:METHOD:[PUBLIC]:ESCAPED{absolute?}<font color='#777777'> : ESCAPED{TrueClass}</font>:
@@ -347,9 +347,9 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
   ResolvError:CLASS:[]:ESCAPED{ResolvError}:
   ResolvTimeout:CLASS:[]:ESCAPED{ResolvTimeout}:
   each_address:METHOD:[PUBLIC, STATIC]:ESCAPED{each_address}(PARAMETERS{ESCAPED{name}, ESCAPED{&block}}):
-  each_address:METHOD:[PUBLIC]:ESCAPED{each_address}(PARAMETERS{ESCAPED{name}})<font color='#777777'> : ESCAPED{Array, _unknown_}</font>:
+  each_address:METHOD:[PUBLIC]:ESCAPED{each_address}(PARAMETERS{ESCAPED{name}})<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
   each_name:METHOD:[PUBLIC, STATIC]:ESCAPED{each_name}(PARAMETERS{ESCAPED{address}, ESCAPED{&proc}}):
-  each_name:METHOD:[PUBLIC]:ESCAPED{each_name}(PARAMETERS{ESCAPED{address}})<font color='#777777'> : ESCAPED{Array, _unknown_}</font>:
+  each_name:METHOD:[PUBLIC]:ESCAPED{each_name}(PARAMETERS{ESCAPED{address}})<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
   getaddress:METHOD:[PUBLIC, STATIC]:ESCAPED{getaddress}(PARAMETERS{ESCAPED{name}}):
   getaddress:METHOD:[PUBLIC]:ESCAPED{getaddress}(PARAMETERS{ESCAPED{name}}):
   getaddresses:METHOD:[PUBLIC, STATIC]:ESCAPED{getaddresses}(PARAMETERS{ESCAPED{name}}):

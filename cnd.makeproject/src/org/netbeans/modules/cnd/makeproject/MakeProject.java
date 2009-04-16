@@ -51,12 +51,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
@@ -70,11 +77,16 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
@@ -93,12 +105,14 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openidex.search.SearchInfo;
 import org.w3c.dom.Element;
@@ -136,6 +150,9 @@ public final class MakeProject implements Project, AntProjectListener {
     private Set<String> cppExtensions = MakeProject.createExtensionSet();
     private String sourceEncoding = null;
 
+    private final MakeSources sources;
+    private final MutableCP sourcepath;
+
     public MakeProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
@@ -143,6 +160,8 @@ public final class MakeProject implements Project, AntProjectListener {
         refHelper = new ReferenceHelper(helper, aux, eval);
         projectDescriptorProvider = new ConfigurationDescriptorProvider(helper.getProjectDirectory());
         genFilesHelper = new GeneratedFilesHelper(helper);
+        sources = new MakeSources(this, helper);
+        sourcepath = new MutableCP(sources);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
         thisMP = this;
@@ -223,7 +242,7 @@ public final class MakeProject implements Project, AntProjectListener {
                     new ProjectXmlSavedHookImpl(),
                     new ProjectOpenedHookImpl(),
                     new MakeSharabilityQuery(FileUtil.toFile(getProjectDirectory())),
-                    new MakeSources(this, helper),
+                    sources,
                     new AntProjectHelperProvider(),
                     projectDescriptorProvider,
                     new MakeProjectConfigurationProvider(this, projectDescriptorProvider),
@@ -674,6 +693,12 @@ public final class MakeProject implements Project, AntProjectListener {
 
         public String getDisplayName() {
             String name = MakeProject.this.getName();
+
+            DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
+            if (devHost != null && ! devHost.isLocalhost()) {
+                name = NbBundle.getMessage(getClass(), "PRJ_DISPLAY_NAME",
+                        name, devHost.getHostDisplayName(false));
+            }
             return name;
         }
 
@@ -766,6 +791,8 @@ public final class MakeProject implements Project, AntProjectListener {
                 openedTasks = null;
             }
 
+            GlobalPathRegistry.getDefault().register(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+
 //            /* Don't do this for two reasons: semantically it is wrong (IZ 115314) and it is dangerous (IZ 118575)
 //            ConfigurationDescriptor projectDescriptor = null;
 //            int count = 15;
@@ -809,6 +836,8 @@ public final class MakeProject implements Project, AntProjectListener {
                 projectDescriptorProvider.getConfigurationDescriptor().save(NbBundle.getMessage(MakeProject.class, "ProjectNotSaved"));
                 projectDescriptorProvider.getConfigurationDescriptor().closed();
             }
+
+            GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
         }
     }
 
@@ -857,17 +886,21 @@ public final class MakeProject implements Project, AntProjectListener {
         }
     }
 
-    class RemoteProjectImpl implements RemoteProject {
-
-        public String getDevelopmentHost() {
-            if (projectDescriptorProvider.gotDescriptor()) {
-                MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
-                MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
-                if (conf != null) {
-                    return conf.getDevelopmentHost().getName();
-                }
+    private DevelopmentHostConfiguration getDevelopmentHostConfiguration() {
+        if (projectDescriptorProvider.gotDescriptor()) {
+            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
+            if (conf != null) {
+                return conf.getDevelopmentHost();
             }
-            return null;
+        }
+        return null;
+    }
+
+    class RemoteProjectImpl implements RemoteProject {
+        public String getDevelopmentHost() {
+            DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
+            return (devHost == null) ? null : devHost.getName();
         }
     }
 
@@ -884,4 +917,72 @@ public final class MakeProject implements Project, AntProjectListener {
             return null;
         }
     }
+
+    private static final class MutableCP implements ClassPathImplementation, ChangeListener {
+
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private final MakeSources sources;
+        private List<PathResourceImplementation> resources = null;
+        private long eventId = 0;
+        private ClassPath [] classpath = null;
+
+        public MutableCP(MakeSources sources) {
+            this.sources = sources;
+            this.sources.addChangeListener(WeakListeners.change(this, this.sources));
+        }
+
+        public List<? extends PathResourceImplementation> getResources() {
+            final long currentEventId;
+            synchronized (this) {
+                if (resources != null) {
+                    return resources;
+                }
+                currentEventId = eventId;
+            }
+
+            List<PathResourceImplementation> list = new LinkedList<PathResourceImplementation>();
+            SourceGroup [] groups = sources.getSourceGroups("generic"); // NOI18N
+            for(SourceGroup g : groups) {
+                try {
+                    list.add(ClassPathSupport.createResource(g.getRootFolder().getURL()));
+                } catch (FileStateInvalidException ex) {
+                    Logger.getLogger(MakeProject.class.getName()).log(Level.WARNING, null, ex);
+                }
+            }
+
+            synchronized (this) {
+                if (currentEventId == eventId) {
+                    resources = list;
+                    return resources;
+                } else {
+                    return list;
+                }
+            }
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            synchronized (this) {
+                resources = null;
+                eventId++;
+            }
+
+            pcs.firePropertyChange(PROP_RESOURCES, null, null);
+        }
+
+        public synchronized ClassPath [] getClassPath() {
+            if (classpath == null) {
+                classpath = new ClassPath [] { ClassPathFactory.createClassPath(this) };
+            }
+            return classpath;
+        }
+    } // End of ClassPathImplementation class
+
 }

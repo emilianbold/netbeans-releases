@@ -74,7 +74,7 @@ public class JaxWsServiceCreatorProvider implements ServiceCreatorProvider {
                 return new JaxWsServiceCreator(projectInfo, wiz, false);
             } else if (!Util.isJavaEE5orHigher(project) &&
                        (projectType == ProjectInfo.WEB_PROJECT_TYPE)) {
-                       if (!(projectInfo.isJsr109Supported()/* || projectInfo.isJsr109oldSupported()*/)) {                   
+                       if (!(projectInfo.isJsr109Supported() || projectInfo.isJsr109oldSupported())) {                   
                            boolean addLibraries = !projectInfo.isWsgenSupported() || !projectInfo.isWsimportSupported();
                            return new JaxWsServiceCreator(projectInfo, wiz, addLibraries);
                        } 

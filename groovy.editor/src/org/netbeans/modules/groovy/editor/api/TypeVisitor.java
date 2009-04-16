@@ -51,17 +51,11 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.VariableScope;
-import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ClosureListExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.syntax.Types;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -75,29 +69,25 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 public class TypeVisitor extends ClassCodeVisitorSupport {
 
     protected final SourceUnit sourceUnit;
-    protected final AstPath path;
-    protected final ASTNode leaf;
-    protected final BaseDocument doc;
-    protected final int cursorOffset;
-    private ClassNode guessedType;
-    private boolean leafReached = false; // flag saying if visiting reached the node that we are investigating
 
-    public TypeVisitor(SourceUnit sourceUnit, AstPath path, BaseDocument doc, int cursorOffset) {
+    protected final AstPath path;
+
+    protected final ASTNode leaf;
+
+    protected final BaseDocument doc;
+    
+    protected final int cursorOffset;
+
+    private final boolean visitOtherClasses;
+
+    public TypeVisitor(SourceUnit sourceUnit, AstPath path, BaseDocument doc,
+            int cursorOffset, boolean visitOtherClasses) {
         this.sourceUnit = sourceUnit;
         this.path = path;
         this.leaf = path.leaf();
         this.doc = doc;
         this.cursorOffset = cursorOffset;
-    }
-
-    /**
-     * Tries to guess the type from the last assignment expression before actual
-     * position of the leaf
-     *
-     * @return guessed type or null if there is no way to calculate it
-     */
-    public ClassNode getGuessedType() {
-        return guessedType;
+        this.visitOtherClasses = visitOtherClasses;
     }
 
     @Override
@@ -106,10 +96,6 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
     }
 
     public void collect() {
-
-        guessedType = null;
-        leafReached = false;
-
         TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, cursorOffset);
         if (ts == null) {
             return;
@@ -172,9 +158,11 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
             }
         }
 
-        ModuleNode moduleNode = (ModuleNode) path.root();
-        for (Object object : moduleNode.getClasses()) {
-            visitClass((ClassNode)object);
+        if (visitOtherClasses) {
+            ModuleNode moduleNode = (ModuleNode) path.root();
+            for (Object object : moduleNode.getClasses()) {
+                visitClass((ClassNode) object);
+            }
         }
         // XXX it seems to me that this is not needed, it is just causing whole visitor
         // to run twice, but it needs to be checked again for scripts maybe?
@@ -185,41 +173,16 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
     }
 
     /**
-     * Children can override this if it has special requirement on selected token
+     * Children can override this if it has special requirement on selected token.
      */
     protected boolean isValidToken(Token<? extends GroovyTokenId> token) {
         return true;
     }
 
     /**
-     * Children can override this to do extra things with method/constructor parameters
+     * Children can override this to do extra things with method/constructor parameters.
      */
     protected void visitParameters(Parameter[] parameters, Variable variable) {
-    }
-
-    @Override
-    public void visitBinaryExpression(BinaryExpression expression) {
-        // have a look at assignment and try to get type from its right side
-        Expression leftExpression = expression.getLeftExpression();
-        if (leftExpression instanceof VariableExpression) {
-            if (leftExpression == leaf) {
-                leafReached = true;
-            }
-            if (!leafReached && expression.getOperation().isA(Types.EQUAL) && sameVariableName(leaf, leftExpression)) {
-                Expression rightExpression = expression.getRightExpression();
-                if (rightExpression instanceof ConstantExpression && !rightExpression.getText().equals("null")) { // NOI18N
-                    guessedType = ((ConstantExpression) rightExpression).getType();
-                } else if (rightExpression instanceof ConstructorCallExpression) {
-                    guessedType = ((ConstructorCallExpression) rightExpression).getType();
-                }
-            }
-        }
-        super.visitBinaryExpression(expression);
-    }
-
-    private static boolean sameVariableName(ASTNode node1, ASTNode node2) {
-        return node1 instanceof VariableExpression && node2 instanceof VariableExpression &&
-                ((VariableExpression) node1).getName().equals(((VariableExpression) node2).getName());
     }
 
 }

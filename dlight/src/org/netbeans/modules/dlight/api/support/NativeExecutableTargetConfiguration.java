@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.openide.windows.InputOutput;
 
@@ -145,7 +146,7 @@ public final class NativeExecutableTargetConfiguration {
     }
 
     ExecutionEnvironment getExecutionEvnitoment() {
-        return new ExecutionEnvironment(user, host, port);
+        return ExecutionEnvironmentFactory.createNew(user, host, port);
     }
 
     ExternalTerminal getExternalTerminal(){

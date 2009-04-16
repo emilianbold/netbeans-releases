@@ -46,16 +46,17 @@ import java.util.List;
 
 import javax.swing.tree.TreeNode;
 
-import org.jruby.nb.ast.ClassNode;
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.ConstDeclNode;
-import org.jruby.nb.ast.DefnNode;
-import org.jruby.nb.ast.DefsNode;
-import org.jruby.nb.ast.GlobalVarNode;
-import org.jruby.nb.ast.ModuleNode;
-import org.jruby.nb.ast.NewlineNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.SourcePosition;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.ConstDeclNode;
+import org.jrubyparser.ast.DefnNode;
+import org.jrubyparser.ast.DefsNode;
+import org.jrubyparser.ast.GlobalVarNode;
+import org.jrubyparser.ast.ModuleNode;
+import org.jrubyparser.ast.NewlineNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.INameNode;
 import org.openide.util.Enumerations;
 
 
@@ -155,7 +156,7 @@ class AstNodeAdapter implements TreeNode {
 
     @Override
     public String toString() {
-        if (node == Node.INVALID_POSITION) {
+        if (node.getPosition() == SourcePosition.INVALID_POSITION) {
             return "INVALID_POSITION";
         }
 
@@ -224,7 +225,7 @@ class AstNodeAdapter implements TreeNode {
         if (node.isInvisible()) {
             return -1;
         }
-        if (node == Node.INVALID_POSITION) {
+        if (node.getPosition() == SourcePosition.INVALID_POSITION) {
             return -1;
         } else if (node.getPosition() != null) {
             return node.getPosition().getStartOffset();
@@ -237,7 +238,7 @@ class AstNodeAdapter implements TreeNode {
         if (node.isInvisible()) {
             return -1;
         }
-        if (node == Node.INVALID_POSITION) {
+        if (node.getPosition() == SourcePosition.INVALID_POSITION) {
             return -1;
         } else if (node.getPosition() != null) {
             return node.getPosition().getEndOffset();

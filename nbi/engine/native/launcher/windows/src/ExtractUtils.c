@@ -84,6 +84,7 @@ void skipStub(LauncherProperties * props) {
         if(is2003())  os = appendStringW(os, L"Windows 2003");
         if(isVista()) os = appendStringW(os, L"Windows Vista");
         if(is2008())  os = appendStringW(os, L"Windows 2008");
+        if(is7())     os = appendStringW(os, L"Windows 7");
 	if(IsWow64) os = appendStringW(os, L" x64");
         showMessageW(props,  os , 0);
 	FREE(os);

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.autoupdate.services;
 
+import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.updateprovider.*;
 import org.netbeans.api.autoupdate.*;
@@ -50,21 +51,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import junit.framework.Test;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
-import org.openide.modules.ModuleInfo;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Jiri Rechtacek
  */
-public class FeatureUncompleteTest extends NbTestCase
-
-{
+public class FeatureUncompleteTest extends NbTestCase {
 
     private static File catalogFile;
     private static URL catalogURL;
@@ -73,6 +75,35 @@ public class FeatureUncompleteTest extends NbTestCase
 
     public FeatureUncompleteTest (String testName) {
         super (testName);
+    }
+
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(FeatureUncompleteTest.class).gui(false)
+        );
+    }
+
+    @Override
+    protected void setUp () throws Exception {
+        super.setUp ();
+        this.clearWorkDir ();
+        TestUtils.setUserDir (getWorkDirPath ());
+        TestUtils.testInit ();
+        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "Services/MyProvider.instance");
+        fo.setAttribute("instanceCreate", new MyProvider());
+        assert Lookup.getDefault ().lookup (MyProvider.class) != null;
+        UpdateUnitProviderFactory.getDefault ().refreshProviders (null, true);
+    }
+
+    public void testUncompleteFeature () throws OperationException {
+        List<UpdateUnit> features = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.FEATURE);
+        List<UpdateUnit> modules = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
+        assertNotNull ("A feature found.", features);
+        assertEquals ("Only once feature there.", 1, features.size ());
+        UpdateUnit feature = features.get (0);
+        assertNotNull (feature + " is installed.", feature.getInstalled ());
+        assertFalse("Not all modules are enabled as such the feature shall be in " +
+                "disabled state:\n" + modules, feature.getInstalled().isEnabled());
     }
 
     public static class MyProvider implements UpdateProvider {
@@ -97,27 +128,8 @@ public class FeatureUncompleteTest extends NbTestCase
             File independentFile = new File(independentURL.getFile());
             assertTrue ("NBM data/org-yourorghere-independent.nbm exists.", independentFile.exists ());
 
-            String source = "local-downloaded";
-            List<UpdateUnit> units =  UpdateUnitProviderFactory.getDefault ().create (source, new File[] {independentFile}).
-                    getUpdateUnits (UpdateManager.TYPE.MODULE);
-            assertEquals("Only once module found.", 1, units.size());
-            
             Map<String, UpdateItem> res = InstalledModuleProvider.getDefault ().getUpdateItems ();
-            
-            ModuleUpdateUnitImpl moduleUpdateUnitImpl = (ModuleUpdateUnitImpl) Trampoline.API.impl (units.get (0));
-            assertFalse ("Non empty updates for " + units.get (0), moduleUpdateUnitImpl.getAvailableUpdates ().isEmpty ());
-            ModuleUpdateElementImpl moduleUpdateElementImpl = (ModuleUpdateElementImpl) Trampoline.API.impl (units.get (0).getAvailableUpdates ().get (0));
-            
-            ModuleInfo info = moduleUpdateElementImpl.getModuleInfo ();
-            UpdateItemImpl moreItemImpl = new InstalledModuleItem (
-                    info.getCodeNameBase (),
-                    info.getSpecificationVersion ().toString (),
-                    info,
-                    null, // XXX author
-                    null, // installed cluster
-                    null);
-            UpdateItem moreModuleItem = Utilities.createUpdateItem (moreItemImpl);
-            
+
             Set<String> deps = new HashSet<String> (items.size ());
             for (String id : items.keySet ()) {
                 String dep;
@@ -129,10 +141,7 @@ public class FeatureUncompleteTest extends NbTestCase
                 dep = moduleItem.getModuleInfo ().getCodeNameBase () + " > " + moduleItem.getSpecificationVersion ();
                 deps.add (dep);
             }
-            
-            // add more item
-            deps.add (info.getCodeNameBase () + " > " + info.getSpecificationVersion ());
-            
+
             res.put ("testFeatueVsStandaloneModules",
                     UpdateItem.createFeature (
                         "testFeatueVsStandaloneModules",
@@ -141,7 +150,6 @@ public class FeatureUncompleteTest extends NbTestCase
                         null,
                         null,
                         null));
-            res.put (info.getCodeNameBase (), moreModuleItem);
             return res;
         }
 
@@ -152,29 +160,5 @@ public class FeatureUncompleteTest extends NbTestCase
         public CATEGORY getCategory() {
             return CATEGORY.COMMUNITY;
         }
-    }
-
-    @Override
-    protected void setUp () throws Exception {
-        super.setUp ();
-        this.clearWorkDir ();
-        TestUtils.setUserDir (getWorkDirPath ());
-        TestUtils.testInit ();
-        MockServices.setServices (MyProvider.class);
-        assert Lookup.getDefault ().lookup (MyProvider.class) != null;
-        UpdateUnitProviderFactory.getDefault ().refreshProviders (null, true);
-    }
-
-    public void testUncompleteFeature () {
-        if (true) return ; // XXX
-        assertNotNull ("A feature found.", UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.FEATURE));
-        List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.FEATURE);
-        assertEquals ("Only once feature there.", 1, units.size ());
-        UpdateUnit feature = units.get (0);
-        assertNotNull (feature + " is installed.", feature.getInstalled ());
-        assertFalse (feature + " has some available updates.", feature.getAvailableUpdates ().isEmpty ());
-        assertTrue ("Some module is missing.", feature.getInstalled ().getDescription ().indexOf ("Not yet") != -1);
-        assertTrue ("NBM data/org-yourorghere-independent.nbm exists is missing", feature.getInstalled ().getDescription ().indexOf ("independent") != -1);
-    }
-    
+    } // end of MyProvider
 }

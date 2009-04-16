@@ -183,8 +183,12 @@ class HostsListTableModel extends AbstractTableModel {
             log.fine("Hosts Lookup thread started");
             try {
                 byte[] ip = InetAddress.getLocalHost().getAddress();
-                if (ip.length == 0) {
+                if (ip.length < 4) {
                     // let's be paranoiac
+                    return;
+                }
+                if (ip[0] == 127 && ip[1] == 0 && ip[2] == 0 && ip[3] == 1) {
+                    // a workaround for #160258
                     return;
                 }
                 int idxLast = ip.length - 1; // FF.FF.FF.0

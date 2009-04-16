@@ -321,8 +321,8 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
      * its Java source level must be at least 1.5
      */
     private boolean checkNonJsr109Valid(WizardDescriptor wizardDescriptor){
-        if( (!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported || 
-                (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported */)){
+        if( (!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported ) {
+//                (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported */)){
             if (Util.isSourceLevel14orLower(project)) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(WebServiceTypePanel.class, "ERR_NeedProperSourceLevel")); // NOI18N

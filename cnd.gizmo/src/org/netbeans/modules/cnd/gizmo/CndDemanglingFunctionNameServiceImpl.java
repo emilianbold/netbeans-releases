@@ -58,6 +58,7 @@ import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
 import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory.CPPCompiler;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
@@ -74,6 +75,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
     private final String dem_util_path;
     private static final String GNU_FAMILIY = "gc++filt"; //NOI18N
     private static final String SS_FAMILIY = "dem"; //NOI18N
+    private static final String EQUALS_EQUALS = "=="; //NOI18N
 
     CndDemanglingFunctionNameServiceImpl() {
         Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
@@ -81,7 +83,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         if (nPrj == null) {
             cppCompiler = CPPCompiler.GNU;
             dem_util_path = GNU_FAMILIY;
-            env = new ExecutionEnvironment();
+            env = ExecutionEnvironmentFactory.getLocal();
             return;
         }
         MakeConfiguration conf = (MakeConfiguration) ConfigurationSupport.getProjectDescriptor(project).getConfs().getActive();
@@ -97,9 +99,9 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         //String baseDir = new File(binDir).getParent();
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
         if (execEnv.isRemote()) {
-            env = new ExecutionEnvironment(execEnv.getUser(), execEnv.getHost());
+            env = ExecutionEnvironmentFactory.createNew(execEnv.getUser(), execEnv.getHost());
         } else {
-            env = new ExecutionEnvironment();
+            env = ExecutionEnvironmentFactory.getLocal();
         }
         dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
     }
@@ -111,7 +113,7 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
         } else {
             dem_util_path = SS_FAMILIY;
         }
-        env = new ExecutionEnvironment();
+        env = ExecutionEnvironmentFactory.getLocal();
     }
 
     public Future<String> demangle(String functionName) {
@@ -143,10 +145,17 @@ public class CndDemanglingFunctionNameServiceImpl implements DemanglingFunctionN
                 Future<Integer> res = execService.run();
                 try {
                     res.get();
-                    String demanled = result.toString();
+                    String demangled_name = result.toString();
+                    if (cppCompiler == CPPCompiler.SS){
+                        if (demangled_name != null && demangled_name.indexOf(EQUALS_EQUALS) != -1){
+                            demangled_name = demangled_name.substring(demangled_name.indexOf(EQUALS_EQUALS) + 2);
+                            demangled_name = demangled_name.trim();
+                        }
+                    }
+                    
                     demangled_functions.put(nameToDemangleSeq,
-                            demanled.subSequence(0, demanled.length()));
-                    return demanled;
+                            demangled_name.subSequence(0, demangled_name.length()));
+                    return demangled_name;
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (ExecutionException ex) {
