@@ -41,12 +41,14 @@ package org.netbeans.modules.kenai.ui;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
@@ -56,20 +58,26 @@ import org.openide.util.Exceptions;
  */
 public class NbProjectHandleImpl extends NbProjectHandle{
 
-    Icon icon;
-    String displayName;
+    private Icon icon;
+    private String displayName;
     URL url;
 
     NbProjectHandleImpl(Project p) throws IOException {
         displayName = ProjectUtils.getInformation(p).getDisplayName();
         icon = ProjectUtils.getInformation(p).getIcon();
-            url = p.getProjectDirectory().getURL();
+        url = p.getProjectDirectory().getURL();
+        assert displayName!=null;
+        assert icon!=null;
+        assert url!=null;
     }
 
     NbProjectHandleImpl(UnloadedProjectInformation i) {
         displayName = i.getDisplayName();
         icon = i.getIcon();
         url = i.getURL();
+        assert displayName!=null;
+        assert icon!=null;
+        assert url!=null;
     }
 
     @Override
@@ -88,7 +96,9 @@ public class NbProjectHandleImpl extends NbProjectHandle{
      */
     public Project getProject() {
         try {
-            Project project = ProjectManager.getDefault().findProject(URLMapper.findFileObject(url));
+            final FileObject fo = URLMapper.findFileObject(url);
+            Project project = ProjectManager.getDefault().findProject(fo);
+            Logger.getLogger(NbProjectHandleImpl.class.getName()).severe("Cannot find project for " + fo.getPath());
             return project;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
