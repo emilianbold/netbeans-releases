@@ -60,7 +60,7 @@ public class NbProjectHandleImpl extends NbProjectHandle{
 
     private Icon icon;
     private String displayName;
-    private URL url;
+    URL url;
 
     NbProjectHandleImpl(Project p) throws IOException {
         displayName = ProjectUtils.getInformation(p).getDisplayName();
