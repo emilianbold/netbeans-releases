@@ -92,12 +92,25 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         super(new NativeExecutableTargetExecutionService());
         this.execEnv = configuration.getExecutionEvnitoment();
         this.cmd = configuration.getCmd();
+        this.args = configuration.getArgs();
         this.workingDirectory = configuration.getWorkingDirectory();
         this.envs = new HashMap<String, String>();
         this.envs.putAll(configuration.getEnv());
-        this.externalTerminal = configuration.getExternalTerminal();
+
+        ExternalTerminal term = configuration.getExternalTerminal();
+
+        if (term != null) {
+            StringBuilder title = new StringBuilder(cmd);
+
+            for (String arg : args) {
+                title.append(" \"" + arg + '"'); // NOI18N
+            }
+
+            term = term.setTitle(title.toString());
+        }
+
+        this.externalTerminal = term;
         this.templateCMD = this.cmd;
-        this.args = configuration.getArgs();
         Map<String, String> info = configuration.getInfo();
 
         for (String name : info.keySet()) {
@@ -167,7 +180,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                     status = process.exitValue();
                     break;
             }
-            
+
             newState = state;
         }
 
