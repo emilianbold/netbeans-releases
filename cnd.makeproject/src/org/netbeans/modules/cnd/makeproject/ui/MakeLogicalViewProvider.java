@@ -571,6 +571,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             public void run() {
                 fireIconChange();
                 fireOpenedIconChange();
+                fireDisplayNameChange(null, null);
             }
         }
 
@@ -584,7 +585,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
 //            fireIconChange(); // MakeLogicalViewRootNode
 //            fireOpenedIconChange();
-            fireDisplayNameChange(null, null);
+//            fireDisplayNameChange(null, null);
         }
 
         @Override
@@ -1660,15 +1661,16 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             public void run() {
                 fireIconChange();
                 fireOpenedIconChange();
+                String displayName = getDisplayName();
+                fireDisplayNameChange(displayName, "");
+                fireDisplayNameChange("", displayName);
             }
         }
 
         public void stateChanged(ChangeEvent e) {
-            String displayName = getDisplayName();
-            // do not work:
-            //fireDisplayNameChange(displayName,displayName);
-            fireDisplayNameChange(displayName, "");
-            fireDisplayNameChange("", displayName);
+//            String displayName = getDisplayName();
+//            fireDisplayNameChange(displayName, "");
+//            fireDisplayNameChange("", displayName);
             EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
 //            fireIconChange(); // ViewItemNode
 //            fireOpenedIconChange();
