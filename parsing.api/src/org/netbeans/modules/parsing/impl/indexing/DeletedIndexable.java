@@ -60,8 +60,8 @@ public final class DeletedIndexable implements IndexableImpl {
     private final String relativePath;
 
     public DeletedIndexable (final URL root, final String relativePath) {
-        assert root != null;
-        assert relativePath != null;
+        assert root != null : "root must not be null"; //NOI18N
+        assert relativePath != null : "relativePath must not be null"; //NOI18N
         this.root = root;
         this.relativePath = relativePath;
     }

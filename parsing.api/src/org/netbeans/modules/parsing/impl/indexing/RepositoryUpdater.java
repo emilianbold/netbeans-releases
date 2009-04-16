@@ -103,6 +103,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TopologicalSortException;
 
@@ -356,7 +357,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         if (root != null &&  VisibilityQuery.getDefault().isVisible(fo) && fo.isData()
             /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
-            scheduleWork(new DeleteWork(root, fo), false);
+            String relativePath = FileUtil.getRelativePath(URLMapper.findFileObject(root), fo);
+            assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
+            scheduleWork(new DeleteWork(root, relativePath), false);
             processed = true;
         }
         
@@ -1033,17 +1036,14 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         public DeleteWork (URL root, String relativePath) {
             super(false, false);
             
-            assert root != null;
-            assert relativePath != null;
+            Parameters.notNull("root", root);
+            Parameters.notNull("relativePath", relativePath);
+            
             this.root = root;
             this.relativePaths.add(relativePath);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("DeleteWork: root=" + root + ", files=" + relativePaths);
             }
-        }
-
-        public DeleteWork (URL root, FileObject file) {
-            this(root, FileUtil.getRelativePath(URLMapper.findFileObject(root), file));
         }
 
         public @Override void getDone() {
