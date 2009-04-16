@@ -64,7 +64,7 @@ public final class WebServiceData {
      */
     public static WebServiceData getWebServiceData(Project p) {
         WebServiceDataProvider provider = p.getLookup().lookup(WebServiceDataProvider.class);
-        return p != null ? new WebServiceData(provider) : null;
+        return provider != null ? new WebServiceData(provider) : null;
     }
 
     private WebServiceData(WebServiceDataProvider wsProvider) {
