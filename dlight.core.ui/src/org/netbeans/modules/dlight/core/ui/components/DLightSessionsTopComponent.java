@@ -66,13 +66,13 @@ final class DLightSessionsTopComponent extends TopComponent
     private static DLightSessionsTopComponent instance;
     private transient DLightSessionsViewPanel view = null;
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/dlight/core/ui/resources/dlight_sessions_small.png";
-    private static final String PREFERRED_ID = "DLightSessionsTopComponent";
+    static final String ICON_PATH = "org/netbeans/modules/dlight/core/ui/resources/dlight_sessions_small.png"; // NOI18N
+    private static final String PREFERRED_ID = "DLightSessionsTopComponent"; // NOI18N
 
     private DLightSessionsTopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(DLightSessionsTopComponent.class, "CTL_DLightSessionsTopComponent"));
-        setToolTipText(NbBundle.getMessage(DLightSessionsTopComponent.class, "HINT_DLightSessionsTopComponent"));
+        setName(NbBundle.getMessage(DLightSessionsTopComponent.class, "CTL_DLightSessionsTopComponent")); // NOI18N
+        setToolTipText(NbBundle.getMessage(DLightSessionsTopComponent.class, "HINT_DLightSessionsTopComponent")); // NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
     }
 
@@ -109,15 +109,15 @@ final class DLightSessionsTopComponent extends TopComponent
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(DLightSessionsTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); // NOI18N
             return getDefault();
         }
         if (win instanceof DLightSessionsTopComponent) {
             return (DLightSessionsTopComponent) win;
         }
         Logger.getLogger(DLightSessionsTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID + // NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior."); // NOI18N
         return getDefault();
     }
 

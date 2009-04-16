@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.api.storage.types;
 
 import java.beans.PropertyEditorManager;
 import org.netbeans.modules.dlight.spi.impl.TimeEditor;
+import org.openide.util.NbBundle;
 
 /**
  * Metric value class for time interval in nanoseconds. Immutable.
@@ -49,6 +50,7 @@ import org.netbeans.modules.dlight.spi.impl.TimeEditor;
  */
 public class Time implements Comparable<Time> {
 
+    private static final String NANOSECOND = NbBundle.getMessage(Time.class, "Time.Nanosecond"); //NOI18N
     private final long nanos;
 
     /**
@@ -70,7 +72,7 @@ public class Time implements Comparable<Time> {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        buf.append(nanos).append(" nanoseconds");
+        buf.append(nanos).append(' ').append(NANOSECOND);
         return buf.toString();
     }
 
