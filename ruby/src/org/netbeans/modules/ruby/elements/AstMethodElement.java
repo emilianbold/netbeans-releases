@@ -5,10 +5,10 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jruby.nb.ast.DefnNode;
-import org.jruby.nb.ast.DefsNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.DefnNode;
+import org.jrubyparser.ast.DefsNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;

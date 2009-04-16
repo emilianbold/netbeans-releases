@@ -115,41 +115,30 @@ public final class SPSLocalImpl extends SPSCommonImpl {
     }
 
     public void requestPrivileges(List<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
-        // Construct privileges list
-        StringBuffer sb = new StringBuffer();
-
-        for (String priv : requestedPrivileges) {
-            sb.append(priv).append(","); // NOI18N
-        }
-
-        String requestedPrivs = sb.toString();
-
-        Process p = null;
-
         try {
-            p = new ProcessBuilder(privp, user, requestedPrivs, getPID()).start();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+            // Construct privileges list
+            StringBuffer sb = new StringBuffer();
 
-        if (p == null) {
-            return;
-        }
+            for (String priv : requestedPrivileges) {
+                sb.append(priv).append(","); // NOI18N
+            }
 
-        PrintWriter w = new PrintWriter(p.getOutputStream());
-        w.println(passwd);
-        w.flush();
+            Process process = new ProcessBuilder(privp, user, sb.toString(), getPID()).start();
 
-        int result = -1;
+            PrintWriter w = new PrintWriter(process.getOutputStream());
+            w.println(passwd);
+            w.flush();
 
-        try {
-            result = p.waitFor();
+            int result = process.waitFor();
+
+            if (result != 0) {
+                Logger.getInstance().fine("privp returned " + result); // NOI18N
+                throw new NotOwnerException();
+            }
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if (result != 0) {
-            Logger.getInstance().severe("doRequestLocal failed! privp returned " + result); // NOI18N
-            throw new NotOwnerException();
+            Thread.currentThread().interrupt();
+        } catch (IOException ex) {
+            Logger.getInstance().fine("IOException in requestPrivileges : " + ex); // NOI18N
         }
     }
 

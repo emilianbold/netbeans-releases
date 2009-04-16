@@ -83,7 +83,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     protected void create() throws Throwable {
         try {
             if (Utilities.isWindows() && shell == null) {
-                throw new IOException(loc("LocalNativeProcess.shellNotFound.text")); // NOI18N
+                throw new IOException(loc("NativeProcess.shellNotFound.text")); // NOI18N
             }
 
             // Get working directory ....
@@ -100,11 +100,8 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
             UnbufferSupport.initUnbuffer(info, env);
 
-            // On windows add /bin to PATH in case cygwin is not in
-            // the Path environment variable ...
-            if (isWindows) {
-                env.put("PATH", "/bin:$PATH"); // NOI18N
-            }
+            // Always prepend /bin and /usr/bin to PATH
+            env.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
 
             final ProcessBuilder pb = new ProcessBuilder(shell, "-s"); // NOI18N
 
@@ -118,7 +115,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             processError = process.getErrorStream();
             processOutput = process.getInputStream();
 
-            processInput.write("/bin/echo $$\n".getBytes()); // NOI18N
+            processInput.write("echo $$\n".getBytes()); // NOI18N
             processInput.flush();
 
             EnvWriter ew = new EnvWriter(processInput);

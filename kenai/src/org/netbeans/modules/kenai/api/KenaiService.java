@@ -113,7 +113,7 @@ public final class KenaiService {
         LISTS("lists"),
         SOURCE("scm"),
         WIKI("wiki"),
-        CHAT("chat"),
+        CHAT("instant_messenger"),
         DOWNLOADS("downloads"),
         UNKNOWN("unknown");
         private String id;
@@ -129,6 +129,8 @@ public final class KenaiService {
         public static Type forId(String id) {
             if (id.equals(SOURCE.id)) {
                 return SOURCE;
+            } else if (id.equals(CHAT.id)) {
+                return CHAT;
             } else {
                 try {
                     return Type.valueOf(id.toUpperCase());

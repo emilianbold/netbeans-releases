@@ -86,6 +86,9 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         return unitData;
     }
 
+    boolean supportsTwoViews() {
+        return false;
+    }
 
     static Map<String, Boolean> captureState(List<Unit> units) {
         Map<String,Boolean> retval = new HashMap<String, Boolean>();

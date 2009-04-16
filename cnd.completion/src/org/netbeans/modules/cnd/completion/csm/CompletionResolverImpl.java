@@ -796,11 +796,6 @@ public class CompletionResolverImpl implements CompletionResolver {
         return resolver;
     }
 
-    protected CsmProjectContentResolver createLibraryResolver(CsmProject lib) {
-        CsmProjectContentResolver libResolver = new CsmProjectContentResolver(lib, isCaseSensitive(), isSortNeeded(), isNaturalSort());
-        return libResolver;
-    }
-
     @SuppressWarnings("unchecked")
     private static Collection merge(Collection orig, Collection newList) {
         return CsmUtilities.merge(orig, newList);

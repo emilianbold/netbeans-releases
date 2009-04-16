@@ -118,8 +118,9 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
                 }
             };
             // Note: Messages come from different class bundle...
-            String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Configure_Host_Progress", record.getName());
-            ModalMessageDlg.runLongTask(mainWindow, csmWorker, null, null, NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Configure_Host"), msg);
+            String msg = NbBundle.getMessage(getClass(), "MSG_Configure_Host_Progress", record.getName());
+            final String title = NbBundle.getMessage(getClass(), "DLG_TITLE_Configure_Host", record.getExecutionEnvironment().getHost());
+            ModalMessageDlg.runLongTask(mainWindow, csmWorker, null, null, title, msg);
             propertyEnv.removeVetoableChangeListener(this);
             propertyEnv.setState(PropertyEnv.STATE_VALID);
             if (!record.isOnline()) {
