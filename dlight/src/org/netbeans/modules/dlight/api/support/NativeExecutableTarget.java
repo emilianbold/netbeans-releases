@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -170,6 +171,21 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         }
 
         notifyListeners(targetPrevState, targetNewState);
+    }
+
+    public int getExitCode() throws InterruptedException {
+//      TODO: uncomment when deadlock is fixed
+//        if (targetFutureResult != null) {
+//            try {
+//                return targetFutureResult.get();
+//            } catch (ExecutionException ex) {
+//                DLightLogger.instance.warning(ex.getMessage());
+//            } catch (Throwable t) {
+//                t.printStackTrace();
+//            }
+//        }
+//        return -1;
+        return 0;
     }
 
     public boolean canBeSubstituted() {
