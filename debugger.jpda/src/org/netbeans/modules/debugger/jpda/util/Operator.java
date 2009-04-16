@@ -273,7 +273,11 @@ public class Operator {
                             suspendedThread = debugger.getThread(tref);
                             eventAccessLock = suspendedThread.accessLock.writeLock();
                             eventAccessLock.lock();
-                            logger.fine(" event thread "+tref.name()+" is suspended = "+tref.isSuspended());
+                            if (logger.isLoggable(Level.FINE)) {
+                                try {
+                                    logger.fine(" event thread "+tref.name()+" is suspended = "+tref.isSuspended());
+                                } catch (Exception ex) {}
+                            }
                             suspendedThread.notifySuspended();
                          }
                      }
@@ -336,10 +340,14 @@ public class Operator {
                          if (exec != null)
                              try {
                                  startEventOnly = false;
-                                 ThreadReference tref = getEventThread(e);
-                                 if (tref != null) {
-                                     logger.fine(" event thread "+tref.name()+" suspend before exec = "+tref.isSuspended());
-                                     //System.err.println("\nOperator: event thread "+tref.name()+" suspend before exec = "+tref.isSuspended()+"\n");
+                                 if (logger.isLoggable(Level.FINE)) {
+                                     ThreadReference tref = getEventThread(e);
+                                     if (tref != null) {
+                                         try {
+                                            logger.fine(" event thread "+tref.name()+" suspend before exec = "+tref.isSuspended());
+                                         } catch (Exception ex) {}
+                                         //System.err.println("\nOperator: event thread "+tref.name()+" suspend before exec = "+tref.isSuspended()+"\n");
+                                     }
                                  }
                                  resume = resume & exec.exec (e);
                              } catch (VMDisconnectedException exc) {
