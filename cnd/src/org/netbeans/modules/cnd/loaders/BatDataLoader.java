@@ -40,113 +40,30 @@
  */
 package org.netbeans.modules.cnd.loaders;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import org.netbeans.editor.BaseDocument;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.DataObjectExistsException;
 
 /**
  *  Recognizes single files in the Repository as being of a certain type.
  */
-public class BatDataLoader extends CndAbstractDataLoaderExt {
+public final class BatDataLoader extends ShellDataLoader {
 
     /** Serial version number */
-    static final long serialVersionUID = -7173746465817543299L;
+    static final long serialVersionUID = 1L;
 
     /**
      *  Default constructor
      */
     public BatDataLoader() {
-        super("org.netbeans.modules.cnd.loaders.ShellDataObject"); // NOI18N
     }
 
     @Override
     protected String actionsContext() {
-        return "Loaders/text/sh/Actions/"; // NOI18N
+        return "Loaders/text/bat/Actions/"; // NOI18N
     }
 
     @Override
     protected String getMimeType() {
         return MIMENames.BAT_MIME_TYPE;
-    }
-
-    /**
-     *  Create the DataObject.
-     */
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        System.out.println (primaryFile);
-        return new ShellDataObject(primaryFile, this);
-    }
-
-    @Override
-    protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
-        return new ShellFormat(obj, primaryFile);
-    }
-
-    // Inner class: Substitute important template parameters...
-    private static class ShellFormat extends CndFormat {
-
-        public ShellFormat(MultiDataObject obj, FileObject primaryFile) {
-            super(obj, primaryFile);
-        }
-
-        // This method was taken fom base class to replace "new line" string.
-        // Shell scripts shouldn't contains "\r"
-        // API doesn't provide method to replace platform dependant "new line" string.
-        @Override
-        public FileObject createFromTemplate(FileObject f, String name) throws IOException {
-
-            // passed name already contains extension, don't append another one
-            String ext = FileUtil.getExtension(name);
-            if (ext.length() != 0) {
-                name = name.substring(0, name.length() - ext.length() - 1);
-            } else {
-                ext = getFile().getExt();
-            }
-
-            FileObject fo = f.createData(name, ext);
-            java.text.Format frm = createFormat(f, name, ext);
-            BufferedReader r = new BufferedReader(new InputStreamReader(getFile().getInputStream()));
-            try {
-                FileLock lock = fo.lock();
-                try {
-                    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(fo.getOutputStream(lock)));
-                    try {
-                        String current;
-                        while ((current = r.readLine()) != null) {
-                            w.write(frm.format(current));
-                            w.write(BaseDocument.LS_LF);
-                        }
-                    } finally {
-                        w.close();
-                    }
-                } finally {
-                    lock.releaseLock();
-                }
-            } finally {
-                r.close();
-            }
-            FileUtil.copyAttributes(getFile(), fo);
-            setTemplate(fo);
-            return fo;
-        }
-
-        // do what package-local DataObject.setTemplate (fo, false) does
-        private void setTemplate(FileObject fo) throws IOException {
-            Object o = fo.getAttribute(DataObject.PROP_TEMPLATE);
-            if ((o instanceof Boolean) && ((Boolean) o).booleanValue()) {
-                fo.setAttribute(DataObject.PROP_TEMPLATE, null);
-            }
-        }
     }
 }
