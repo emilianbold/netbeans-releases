@@ -137,6 +137,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue162126.php");
     }
 
+    public void test162785() throws Exception {
+        reformatFileContents("testfiles/formatting/issue162785.php");
+    }
+    
     public void test159339_161408() throws Exception {
         reformatFileContents("testfiles/formatting/issues_159339_161408.php");
     }
