@@ -60,7 +60,7 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
  */
 public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     private static final String[] METRO_LIBRARIES =
-        new String[] {"webservices", "javax.activation", "jaxb", "jsr109-impl"}; //NOI18N
+        new String[] {"webservices", "javax.activation", "jaxb"}; //NOI18N
     private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     
     private String gfRootStr;
@@ -96,8 +96,8 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
         if (feature == JaxWs.Feature.WSIT && isMetroInstalled()) {
             return true;
         }
-        if (feature == JaxWs.Feature.JSR109) {
-            return false;
+        if (feature == JaxWs.Feature.JSR109 && isMetroInstalled()) {
+            return true;
         }
         if (feature == JaxWs.Feature.TESTER_PAGE) return true;
         return false;   
