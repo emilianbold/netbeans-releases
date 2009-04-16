@@ -121,7 +121,10 @@ public class STSWizard implements TemplateWizard.Iterator {
         } else {
             fileName = "sts13";
         }
-        final File wsdlFile = new File(System.getProperty("netbeans.user") + File.separator + fileName + ".wsdl");
+
+        final String userDir = System.getProperty("netbeans.user") + File.separator + "config" +
+                File.separator + "WebServices" + File.separator;
+        final File wsdlFile = new File(userDir + fileName + ".wsdl");
 
         FileUtil.runAtomicAction(new Runnable() {
 
@@ -129,7 +132,7 @@ public class STSWizard implements TemplateWizard.Iterator {
                 OutputStream schemaos = null;
                 try {
                     final InputStream schemaIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/templates/sts_schema.template"); //NOI18N
-                    File schema = new File(System.getProperty("netbeans.user") + File.separator + "sts_schema.xsd");     //NOI18N
+                    File schema = new File(userDir + "sts_schema.xsd");     //NOI18N
                     schema.createNewFile();
                     schemaos = new FileOutputStream(schema);
                     FileUtil.copy(schemaIS, schemaos);
