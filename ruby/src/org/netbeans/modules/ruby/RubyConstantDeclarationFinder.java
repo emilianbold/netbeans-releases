@@ -39,10 +39,10 @@
 package org.netbeans.modules.ruby;
 
 import java.util.Set;
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.ConstDeclNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.ConstDeclNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.elements.IndexedConstant;

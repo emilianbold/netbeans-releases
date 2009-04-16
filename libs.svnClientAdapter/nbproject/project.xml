@@ -70,12 +70,12 @@ made subject to such option by the copyright holder.
                 <package>org.tigris.subversion.svnclientadapter.utils</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/svnClientAdapter-1.4.0.jar</runtime-relative-path>
-                <binary-origin>external/svnClientAdapter-1.4.0.jar</binary-origin>
+                <runtime-relative-path>ext/svnClientAdapter-1.6.0.jar</runtime-relative-path>
+                <binary-origin>external/svnClientAdapter-1.6.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/svnjavahl-1.5.0.jar</runtime-relative-path>
-                <binary-origin>external/svnjavahl-1.5.0.jar</binary-origin>
+                <runtime-relative-path>ext/svnjavahl-1.6.0.jar</runtime-relative-path>
+                <binary-origin>external/svnjavahl-1.6.0.jar</binary-origin>
             </class-path-extension>
             <!--class-path-extension>
                 <! - - HACK svnkit placeholder - - >

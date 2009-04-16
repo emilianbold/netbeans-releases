@@ -48,38 +48,38 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
-import org.jruby.nb.ast.AliasNode;
-import org.jruby.nb.ast.ArgsNode;
-import org.jruby.nb.ast.ArgumentNode;
-import org.jruby.nb.ast.BackRefNode;
-import org.jruby.nb.ast.BlockArgNode;
-import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.ClassVarAsgnNode;
-import org.jruby.nb.ast.ClassVarDeclNode;
-import org.jruby.nb.ast.ClassVarNode;
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.ConstDeclNode;
-import org.jruby.nb.ast.ConstNode;
-import org.jruby.nb.ast.DAsgnNode;
-import org.jruby.nb.ast.DVarNode;
-import org.jruby.nb.ast.FCallNode;
-import org.jruby.nb.ast.GlobalAsgnNode;
-import org.jruby.nb.ast.GlobalVarNode;
-import org.jruby.nb.ast.InstAsgnNode;
-import org.jruby.nb.ast.InstVarNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.LocalAsgnNode;
-import org.jruby.nb.ast.LocalVarNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.NthRefNode;
-import org.jruby.nb.ast.ReturnNode;
-import org.jruby.nb.ast.SymbolNode;
-import org.jruby.nb.ast.VCallNode;
-import org.jruby.nb.ast.YieldNode;
-import org.jruby.nb.ast.types.INameNode;
-import org.jruby.nb.lexer.yacc.ISourcePosition;
+import org.jrubyparser.SourcePosition;
+import org.jrubyparser.ast.AliasNode;
+import org.jrubyparser.ast.ArgsNode;
+import org.jrubyparser.ast.ArgumentNode;
+import org.jrubyparser.ast.BackRefNode;
+import org.jrubyparser.ast.BlockArgNode;
+import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.ClassVarAsgnNode;
+import org.jrubyparser.ast.ClassVarDeclNode;
+import org.jrubyparser.ast.ClassVarNode;
+import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.ConstDeclNode;
+import org.jrubyparser.ast.ConstNode;
+import org.jrubyparser.ast.DAsgnNode;
+import org.jrubyparser.ast.DVarNode;
+import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.GlobalAsgnNode;
+import org.jrubyparser.ast.GlobalVarNode;
+import org.jrubyparser.ast.InstAsgnNode;
+import org.jrubyparser.ast.InstVarNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.LocalAsgnNode;
+import org.jrubyparser.ast.LocalVarNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.NthRefNode;
+import org.jrubyparser.ast.ReturnNode;
+import org.jrubyparser.ast.SymbolNode;
+import org.jrubyparser.ast.VCallNode;
+import org.jrubyparser.ast.YieldNode;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -190,7 +190,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         // . to the end of Scanf as a CallNode, which is a weird highlight.
         // We don't want occurrences highlights that span lines.
         if (closest != null) {
-            //ISourcePosition pos = closest.getPosition();
+            //SourcePosition pos = closest.getPosition();
 
             BaseDocument doc = RubyUtils.getDocument(info);
             if (doc == null) {
@@ -521,7 +521,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             final Node node,
             final Map<OffsetRange, ColoringAttributes> highlights,
             final Result info) {
-        if (node.nodeId == NodeType.RETURNNODE) {
+        if (node.getNodeType() == NodeType.RETURNNODE) {
             OffsetRange astRange = AstUtilities.getRange(node);
             BaseDocument doc = RubyUtils.getDocument(info);
             if (doc != null) {
@@ -540,7 +540,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                 }
                 highlights.put(astRange, ColoringAttributes.MARK_OCCURRENCES);
             }
-        } else if (node.nodeId == NodeType.YIELDNODE) {
+        } else if (node.getNodeType() == NodeType.YIELDNODE) {
             // Workaround JRuby AST position error
             /* Yield in the following code has the wrong offsets in JRuby
               if component.size == 1
@@ -560,7 +560,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             // Be careful not to highlight the entire statement (which could be a giant if
             // statement spanning the whole screen); just pick the first line.
             try {
-                ISourcePosition pos = node.getPosition();
+                SourcePosition pos = node.getPosition();
 
                 OffsetRange lexRange = LexUtilities.getLexerOffsets(info, new OffsetRange(pos.getStartOffset(), pos.getEndOffset()));
                 if (lexRange != OffsetRange.NONE) {
@@ -601,7 +601,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
         } else if (node instanceof ArgsNode) {
             ArgsNode an = (ArgsNode)node;
 
-            if (an.getRequiredArgsCount() > 0) {
+            if (an.getRequiredCount() > 0) {
                 List<Node> args = an.childNodes();
 
                 for (Node arg : args) {
@@ -626,8 +626,8 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             }
 
             // Rest args
-            if (an.getRestArgNode() != null) {
-                ArgumentNode bn = an.getRestArgNode();
+            if (an.getRest() != null) {
+                ArgumentNode bn = an.getRest();
 
                 if (bn.getName().equals(name)) {
                     OffsetRange range = AstUtilities.getRange(bn);
@@ -635,8 +635,8 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                 }
             }
 
-            if (an.getBlockArgNode() != null) {
-                BlockArgNode bn = an.getBlockArgNode();
+            if (an.getBlock() != null) {
+                BlockArgNode bn = an.getBlock();
 
                 if (bn.getName().equals(name)) {
                     OffsetRange range = AstUtilities.getRange(bn);
@@ -673,7 +673,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
 
     private void highlightDynamnic(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
         case DVARNODE:
             if (((DVarNode)node).getName().equals(name)) { // Does not implement INameNode
 
@@ -708,7 +708,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
             if (child.isInvisible()) {
                 continue;
             }
-            switch (child.nodeId) {
+            switch (child.getNodeType()) {
             case ITERNODE:
             //case BLOCKNODE:
             case DEFNNODE:

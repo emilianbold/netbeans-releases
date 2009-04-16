@@ -70,12 +70,8 @@ public class SvnClientAdapterFactory {
         boolean retval = false;
         if (version != null) {
             version = version.toLowerCase();
-            if (version.startsWith("1.3") ||
-                    version.startsWith("1.4") ||
-                    version.startsWith("1.5") ||
-                    version.contains("version 1.3") ||
-                    version.contains("version 1.4") ||
-                    version.contains("version 1.5")) {
+            if (version.startsWith("1.6") ||
+                    version.contains("version 1.6")) {
                 retval = true;
             }
         }

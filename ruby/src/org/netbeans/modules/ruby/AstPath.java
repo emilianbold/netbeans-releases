@@ -48,9 +48,9 @@ import java.util.ListIterator;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.lexer.yacc.ISourcePosition;
+import org.jrubyparser.SourcePosition;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
@@ -112,7 +112,7 @@ public class AstPath implements Iterable<Node> {
      */
     public boolean contains(NodeType nodeType) {
         for (int i = 0, n = path.size(); i < n; i++) {
-            if (path.get(i).nodeId == nodeType) {
+            if (path.get(i).getNodeType() == nodeType) {
                 return true;
             }
         }
@@ -141,7 +141,7 @@ public class AstPath implements Iterable<Node> {
         if (node.isInvisible()) {
             return null;
         }
-        ISourcePosition pos = node.getPosition();
+        SourcePosition pos = node.getPosition();
         int begin = pos.getStartOffset();
         int end = pos.getEndOffset();
 
