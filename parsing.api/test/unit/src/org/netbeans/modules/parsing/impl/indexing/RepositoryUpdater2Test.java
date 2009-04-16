@@ -139,7 +139,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         Util.allMimeTypes = Collections.singleton("text/plain");
 
         ruSync.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST, 2);
-        RepositoryUpdater.getDefault().addIndexingJob(srcRoot1.getURL(), Collections.singleton(file1.getURL()), false, false);
+        RepositoryUpdater.getDefault().addIndexingJob(srcRoot1.getURL(), Collections.singleton(file1.getURL()), false, false, false);
         ruSync.await();
 
         assertEquals("Wrong number of ordinary scans", 1, indexer.cnt);
@@ -451,7 +451,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         public boolean workCancelled = false;
 
         public testShuttdown_TimedWork() {
-            super(false);
+            super(false, false);
         }
 
         protected @Override void getDone() {

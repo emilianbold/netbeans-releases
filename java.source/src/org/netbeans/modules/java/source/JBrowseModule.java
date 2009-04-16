@@ -53,7 +53,6 @@ import javax.management.ObjectName;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.LuceneIndexMBean;
 import org.netbeans.modules.java.source.usages.LuceneIndexMBeanImpl;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.util.LowMemoryNotifierMBean;
 import org.netbeans.modules.java.source.util.LowMemoryNotifierMBeanImpl;
 import org.openide.ErrorManager;
@@ -89,7 +88,6 @@ public class JBrowseModule extends ModuleInstall {
     
     public @Override boolean closing () {
         final boolean ret = super.closing();
-        RepositoryUpdater.getDefault().close();
         try {
             ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                  public Void run() throws IOException {
