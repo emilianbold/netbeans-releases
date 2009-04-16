@@ -40,6 +40,7 @@
  */
 package org.openide.explorer.view;
 
+import java.beans.PropertyVetoException;
 import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Index;
@@ -344,7 +345,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
      * because some parts was not repainted correctly.
      * @param Rectangle r rectangle which will be repainted.*/
     private void repaint(Rectangle r) {
-        table.getParent().repaint(r.x - 5, r.y - 5, r.width + 10, r.height + 10);
+        view.repaint(r.x - 5, r.y - 5, r.width + 10, r.height + 10);
     }
 
     /** Converts line's bounds by the bounds of the root pane. Drop glass pane
@@ -725,12 +726,26 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
                         ), dropAction, dropIndex
                     );
 
-                Node[] diffNodes = DragDropUtilities.performPaste(pt, dropNode);
+                final Node[] diffNodes = DragDropUtilities.performPaste(pt, dropNode);
                 ExplorerDnDManager.getDefault().setDraggedNodes(diffNodes);
 
                 // check canReorder or optionally perform it
-                if (canReorder(dropNode, diffNodes)) {
+                if (canReorder(dropNode, diffNodes) && lowerNodeIdx >= 0 && upperNodeIdx >= 0 ) {
                     performReorder(dropNode, diffNodes, lowerNodeIdx, upperNodeIdx);
+                }
+                if( diffNodes.length > 0 ) {
+                    //try to expand the parent of dropped node
+                    view.expandNode(dropNode);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            //try to select dropped node(s)
+                            try {
+                                view.manager.setSelectedNodes(diffNodes);
+                            } catch( PropertyVetoException ex ) {
+                                //ignore
+                            }
+                        }
+                    });
                 }
             }
         } finally {
