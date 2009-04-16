@@ -150,6 +150,10 @@ public class KenaiException extends IOException {
             errors = (HashMap<String, String>) toCollections.get("errors");
         } catch (IOException ex) {
             Logger.getLogger(KenaiException.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalArgumentException e) {
+            status = "unknown"; //NOI18N
+            errors = new HashMap<String, String>();
+            errors.put("generic", errorResponse); //NOI18N
         }
     }
 
