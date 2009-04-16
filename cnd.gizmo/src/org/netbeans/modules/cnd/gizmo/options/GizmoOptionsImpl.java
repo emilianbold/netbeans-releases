@@ -137,7 +137,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             if (!hasSunStudio) {
                 setDataProviderValue(DataProvider.SIMPLE);
             }
-        } else if (!"SunOS".equals(platform)) {//Windows or Whatever else
+        } else if (!"SunOS".equals(platform)) {//Windows or Whatever else //NOI18N
             dataProvider = new IntConfiguration(null, SUN_STUDIO, WINDOWS_DATA_PROVIDER_NAMES, null);
             currentDPCollection = DataProvidersCollection.WINDOWS;
 //            setDataProviderValue(DataProvider.SUN_STUDIO);
