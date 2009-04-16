@@ -45,6 +45,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
 
@@ -56,7 +57,7 @@ import org.netbeans.spi.lexer.LanguageProvider;
 public class ShLanguageProvider extends LanguageProvider {
     
     public Language<ShTokenId> findLanguage (String mimeType) {
-        if ("text/sh".equals (mimeType))
+        if (MIMENames.SHELL_MIME_TYPE.equals (mimeType))
             return new ShLanguageHierarchy ().language ();
         return null;
     }

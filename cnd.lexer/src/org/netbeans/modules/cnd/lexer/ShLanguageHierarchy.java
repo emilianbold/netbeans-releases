@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.lexer;
 import java.util.Collection;
 
 import java.util.EnumSet;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -64,7 +65,7 @@ public class ShLanguageHierarchy extends LanguageHierarchy<ShTokenId> {
     }
 
     protected String mimeType () {
-        return "text/sh";
+        return MIMENames.SHELL_MIME_TYPE;
     }
 }
 
