@@ -39,10 +39,9 @@
 
 package org.netbeans.modules.cnd.makeproject;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -76,17 +75,6 @@ public class MakeProjectPaths extends PathRecognizer {
 
     @Override
     public Set<String> getMimeTypes() {
-        return MIME_TYPES;
+        return MIMENames.CND_TEXT_MIME_TYPES;
     }
-
-    // -----------------------------------------------------------------------
-    // private implementation
-    // -----------------------------------------------------------------------
-
-    private static final Set<String> MIME_TYPES = new HashSet<String>(Arrays.asList(new String[] {
-        "text/x-h", "text/x-c++", "text/x-c", "text/x-fortran", // NOI18N
-        "text/x-make", "text/sh", "text/bat", "text/x-visu", // NOI18N
-        "text/x-lex", "text/x-yacc", "text/x-asm", "text/qtui+xml", // NOI18N
-        "text/qtresource+xml", "text/qttranslation+xml" // NOI18N
-    }));
 }

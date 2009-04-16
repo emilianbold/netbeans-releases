@@ -489,6 +489,11 @@
 <mapID target="org.netbeans.modules.kenai.ui.NameAndLicenseWizardPanel" url="collab/csh/new_kenai_project1.html" />
 <mapID target="org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanel" url="collab/csh/new_kenai_project2.html" />
 
+<!-- Issue tracking topics -->
+<mapID target="issues_trackers" url="collab/issues_about.html" />
+<mapID target="issues_workingwith" url="collab/issues_working.html" />
+<mapID target="issues_external" url="collab/issues_external.html" />
+
 <!-- Issue tracking csh topics-->
 <mapID target="org.netbeans.modules.bugzilla.repository.RepositoryController" url="collab/csh/issues_create_tracker.html" />
 <mapID target="org.netbeans.modules.bugzilla.util.KeywordsPanel" url="collab/csh/issues_select_keyword.html" />
@@ -500,8 +505,6 @@
 
 <!-- Issue tracking csh topic for Options window -->
 <mapID target="org.netbeans.modules.bugzilla.options.BugzillaOptionsController" url="collab/csh/issues_options.html" />
-
-
 
 
 </map>

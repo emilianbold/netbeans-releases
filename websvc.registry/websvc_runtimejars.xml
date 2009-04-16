@@ -55,10 +55,4 @@ made subject to such option by the copyright holder.
 <Jar file="modules/ext/jaxrpc16/saaj-api.jar"/>
 <Jar file="modules/ext/jaxrpc16/saaj-impl.jar"/>
 
-<!-- required by JDK1.4 -->
-<Jar file="modules/ext/jaxrpc16_xml/dom.jar"/>
-<Jar file="modules/ext/jaxrpc16_xml/sax.jar"/>
-<Jar file="modules/ext/jaxrpc16_xml/xalan.jar"/>
-<Jar file="modules/ext/jaxrpc16_xml/xercesImpl.jar"/>
-
 </RuntimeJars>
