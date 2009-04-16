@@ -563,7 +563,6 @@ public class CslJar extends JarWithModuleAttributes {
 
         if (!alreadyLocalized) {
             setFileAttribute(doc, gotoFolder, "displayName", BUNDLEVALUE, "org.netbeans.modules.csl.core.Bundle#generate-goto-popup");
-                    mimeType.equals("text/x-json") || //NOI18N
         }
 
         Element item;
