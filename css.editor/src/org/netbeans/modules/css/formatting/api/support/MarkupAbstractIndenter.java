@@ -241,7 +241,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             }
             return new MarkupItem(tagName, true, indentation, optionalEnd, children, empty != null ? empty.booleanValue() : false, false, false);
         } else {
-            return new MarkupItem(tagName, false, indentation, false, null, false, false, false);
+            Boolean empty = isEmptyTag(tagName);
+            return new MarkupItem(tagName, false, indentation, false, null, empty != null ? empty.booleanValue() : false, false, false);
         }
 
     }
