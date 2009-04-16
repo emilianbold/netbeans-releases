@@ -568,19 +568,28 @@ public abstract class OperationSupportImpl {
                     customElements.add ((NativeComponentUpdateElementImpl) impl);
                 }
                 assert customElements != null : "Some elements with custom installer found.";
-                progress.start(customElements.size());
+                if(progress!=null) {
+                    progress.start(customElements.size());
+                }
                 started = true;
                 int index = 0;
                 affectedModules = new HashSet<UpdateElement> ();
                 for (NativeComponentUpdateElementImpl impl : customElements) {
-                    progress.progress(NbBundle.getMessage(OperationSupportImpl.class, "OperationSupportImpl_Custom_Install", impl.getDisplayName()), ++index);
+                    if(progress!=null) {
+                        progress.progress(NbBundle.getMessage(OperationSupportImpl.class, "OperationSupportImpl_Custom_Install", impl.getDisplayName()), ++index);
+                    }
                     CustomInstaller installer = impl.getInstallInfo ().getCustomInstaller ();
                     assert installer != null : "CustomInstaller must found for " + impl.getUpdateElement ();
                     ProgressHandle handle = ProgressHandleFactory.createHandle("Installing " + impl.getDisplayName());
+                    //handle.start();
                     success = installer.install (impl.getCodeName (),
                             impl.getSpecificationVersion () == null ? null : impl.getSpecificationVersion ().toString (),
                             handle);
-                    handle.finish();
+                    try {
+                        handle.finish();
+                    } catch (IllegalStateException e) {
+                        LOGGER.log(Level.FINE, "Can`t stop progress handle, likely was not started ", e);
+                    }
                     if (success) {
                         UpdateUnitImpl unitImpl = Trampoline.API.impl (impl.getUpdateUnit ());
                         unitImpl.setInstalled (impl.getUpdateElement ());
