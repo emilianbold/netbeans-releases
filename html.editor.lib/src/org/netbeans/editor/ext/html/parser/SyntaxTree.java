@@ -178,7 +178,9 @@ public class SyntaxTree {
                         element.offset(), openingTagEndOffset, contentModel);
 
                 nodeStack.getLast().addChild(newTagNode);
-                if (!((SyntaxElement.Tag) element).isEmpty()) {
+                if (!(( (SyntaxElement.Tag) element).isEmpty() ||
+                        (currentNodeDtdElement != null && currentNodeDtdElement.isEmpty()))) {
+                    //the node is either empty by declaration or by definition
                     nodeStack.add(newTagNode);
                 }
 
@@ -237,9 +239,6 @@ public class SyntaxTree {
                                 if (dtdElement.isEmpty()) {
                                     closingTag.addErrorMessage(NbBundle.getMessage(SyntaxTree.class, "MSG_FORBIDDEN_ENDTAG"));
                                 }
-
-                                //check tag attributes
-                                openTag.addErrorMessages(checkTagAttributes((SyntaxElement.Tag) element, dtdElement));
 
                             } else {
                                 //non-html tag, report error
