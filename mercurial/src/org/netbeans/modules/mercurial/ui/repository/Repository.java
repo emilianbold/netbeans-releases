@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -313,7 +313,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         try {
             rc = getSelectedRC();            
             // check for a valid svnurl
-            rc.getHgUrl();                             
+            rc.getHgUrl();
             //if(!isSet(FLAG_ACCEPT_REVISION) && !rc.getSvnRevision().equals(SVNRevision.HEAD)) 
             //{
             //    message = NbBundle.getMessage(Repository.class, "MSG_Repository_OnlyHEADRevision"); // NOI18N
@@ -707,6 +707,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             super(v);
         }
 
+        @Override
         public void setSelectedItem(Object obj) {
             if(obj instanceof String) {
                 int idx = getIndexOf(obj);
@@ -719,6 +720,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             super.setSelectedItem(obj);
         }
 
+        @Override
         public int getIndexOf(Object obj) {
             if(obj instanceof String) {
                 obj = createNewRepositoryConnection((String)obj);                
@@ -726,6 +728,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             return super.getIndexOf(obj);
         }
 
+        @Override
         public void addElement(Object obj) {
             if(obj instanceof String) {
                 obj = createNewRepositoryConnection((String)obj);                
@@ -733,6 +736,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             super.addElement(obj);
         }
 
+        @Override
         public void insertElementAt(Object obj,int index) {
             if(obj instanceof String) {
                 String str = (String) obj;
@@ -750,6 +754,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             super.insertElementAt(obj, index);
         }         
 
+        @Override
         public void removeElement(Object obj) {
             int index = getIndexOf(obj);
             if ( index != -1 ) {
