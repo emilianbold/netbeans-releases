@@ -93,7 +93,12 @@ public final class CreateMethodFix implements Fix {
             this.inFQN = ""; //NOI18N
             Logger.getLogger(CreateMethodFix.class.getName()).warning("Target qualified name could not be resolved."); //NOI18N
         } else {
-            this.inFQN = qualifiedName.toString();
+            String qnString = qualifiedName.toString();
+            if (qnString.length() == 0) {
+                //probably an anonymous class
+                qnString = target.asType().toString();
+            }
+            this.inFQN = qnString;
         }
         this.cpInfo = info.getClasspathInfo();
         this.modifiers = modifiers;
