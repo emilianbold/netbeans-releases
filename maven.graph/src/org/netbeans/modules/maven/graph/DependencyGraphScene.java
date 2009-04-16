@@ -42,6 +42,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -63,6 +64,7 @@ import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.SelectProvider;
+import org.netbeans.api.visual.action.TwoStateHoverProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphScene;
@@ -76,12 +78,15 @@ import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.graph.FixVersionConflictPanel.FixDescription;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Exclusion;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Profile;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -100,6 +105,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private WidgetAction zoomAction = ActionFactory.createMouseCenteredZoomAction(1.1);
     private WidgetAction panAction = ActionFactory.createPanAction();
     private WidgetAction editAction = ActionFactory.createEditAction(allActionsP);
+    WidgetAction hoverAction = ActionFactory.createHoverAction(new HoverController());
 
     Action sceneZoomToFitAction = new SceneZoomToFitAction();
     Action highlitedZoomToFitAction = new HighlitedZoomToFitAction();
@@ -125,7 +131,8 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         addChild(mainLayer);
         connectionLayer = new LayerWidget(this);
         addChild(connectionLayer);
-        getActions().addAction(this.createObjectHoverAction());
+        //getActions().addAction(this.createObjectHoverAction());
+        getActions().addAction(hoverAction);
         getActions().addAction(ActionFactory.createSelectAction(allActionsP));
         getActions().addAction(zoomAction);
         getActions().addAction(panAction);
@@ -473,10 +480,9 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         }
     };
 
-    private static boolean isFixCandidate (ArtifactGraphNode node) {
+    static boolean isFixCandidate (ArtifactGraphNode node) {
         Set<DependencyNode> conf = node.getDuplicatesOrConflicts();
         ArtifactVersion nodeV = new DefaultArtifactVersion(node.getArtifact().getArtifact().getVersion());
-        ArtifactVersion curV = null;
         for (DependencyNode dn : conf) {
             if (dn.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
                 if (nodeV.compareTo(new DefaultArtifactVersion(dn.getArtifact().getVersion())) < 0) {
@@ -502,7 +508,11 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         return result;
     }
 
-    private class FixVersionConflictAction extends AbstractAction {
+    void invokeFixConflict (ArtifactGraphNode node) {
+        new FixVersionConflictAction(node).actionPerformed(null);
+    }
+
+    private class FixVersionConflictAction extends AbstractAction implements Runnable {
         private ArtifactGraphNode node;
         private Artifact nodeArtif;
 
@@ -522,6 +532,18 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 FixVersionConflictPanel.FixDescription res = fixPanel.getResult();
                 fixDependency(res);
                 updateGraph(res);
+                // save changes
+                RequestProcessor.getDefault().post(this);
+            }
+        }
+
+        /** Saves fix changes to the pom file, posted to RequestProcessor */
+        public void run() {
+            try {
+                Utilities.saveChanges(model);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                //TODO error reporting on wrong model save
             }
         }
 
@@ -629,16 +651,22 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                     }
                 }
 
-                // note, must be called before node removing edges to work correctly
-                node.getDuplicatesOrConflicts().removeAll(toExclude);
-
                 List<ArtifactGraphEdge> edges2Exclude = new ArrayList<ArtifactGraphEdge>();
                 Collection<ArtifactGraphEdge> incoming = findNodeEdges(node, false, true);
+                ArtifactGraphNode sourceNode = null;
                 for (ArtifactGraphEdge age : incoming) {
-                    if (toExclude.contains(age.getTarget())) {
-                        edges2Exclude.add(age);
+                    sourceNode = getEdgeSource(age);
+                    if (sourceNode != null) {
+                        for (DependencyNode dn : fixContent.conflictParents) {
+                            if (sourceNode.represents(dn)) {
+                                edges2Exclude.add(age);
+                            }
+                        }
                     }
                 }
+
+                // note, must be called before node removing edges to work correctly
+                node.getDuplicatesOrConflicts().removeAll(toExclude);
 
                 for (ArtifactGraphEdge age : edges2Exclude) {
                     removeEdge(age);
@@ -661,7 +689,31 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             }
         }
 
-
     } // FixVersionConflictAction
+
+    private class HoverController implements TwoStateHoverProvider {
+
+        public void unsetHovering(Widget widget) {
+            ArtifactWidget aw = findArtifactW(widget);
+            if (widget != null) {
+                aw.bulbUnhovered();
+            }
+        }
+
+        public void setHovering(Widget widget) {
+            ArtifactWidget aw = findArtifactW(widget);
+            if (aw != null) {
+                aw.bulbHovered();
+            }
+        }
+
+        private ArtifactWidget findArtifactW (Widget w) {
+            while (w != null && !(w instanceof ArtifactWidget)) {
+                w = w.getParentWidget();
+            }
+            return (ArtifactWidget)w;
+        }
+
+    }
 
 }
