@@ -52,8 +52,8 @@ public class DisconnectAction extends Action {
 
     /** creates new "Disconnect" action*/
     public DisconnectAction() {
-        super(null,Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+        super(null, Bundle.getStringTrimmed(
+                "org.netbeans.modules.db.explorer.action.Bundle",
                 "Disconnect"));
     }
 }

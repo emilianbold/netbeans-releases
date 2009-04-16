@@ -361,10 +361,12 @@ public class ResourceUtils implements WizardConstants{
          try{
              Map attributeInfos = new java.util.HashMap();
              javax.management.MBeanInfo info = mejb.getMBeanInfo(objName);
-             javax.management.MBeanAttributeInfo[] attrs = info.getAttributes();
-             for (int i=0; i<attrs.length; i++) {
-                 if(attrs[i] != null){
-                     attributeInfos.put(attrs[i].getName(), attrs[i]);
+             if (info != null) {
+                 javax.management.MBeanAttributeInfo[] attrs = info.getAttributes();
+                 for (int i = 0; i < attrs.length; i++) {
+                     if (attrs[i] != null) {
+                         attributeInfos.put(attrs[i].getName(), attrs[i]);
+                     }
                  }
              }
              return attributeInfos;

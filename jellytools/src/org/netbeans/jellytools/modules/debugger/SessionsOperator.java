@@ -46,10 +46,9 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.TreeTableOperator;
 import org.netbeans.jellytools.modules.debugger.actions.FinishAllAction;
-import org.netbeans.jellytools.modules.debugger.actions.MakeCurrentAction;
 import org.netbeans.jellytools.modules.debugger.actions.SessionsAction;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.operators.JTableOperator;
 
 /**
  * Provides access to the Sessions tom component.
@@ -103,7 +102,14 @@ public class SessionsOperator extends TopComponentOperator {
      * @param sessionName display name of session
      */
     public void makeCurrent(String sessionName) {
-        new MakeCurrentAction().perform(new Node(treeTable().tree(), sessionName));
+        JTableOperator table = new JTableOperator(this);
+        for (int i = 0; i < table.getRowCount(); i++) {
+            String text = table.getValueAt(i, 0).toString();
+            if (text.contains(sessionName)){
+                table.clickOnCell(i, 0, 2);
+                break;
+            }
+        }
     }
     
     /** SubChooser to determine OutputWindow TopComponent

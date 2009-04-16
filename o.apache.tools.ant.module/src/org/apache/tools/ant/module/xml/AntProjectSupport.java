@@ -111,7 +111,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         EditorCookie.Observable editor = editorRef == null ? null : editorRef.get();
         if (editor == null) {
             try {
-                editor = DataObject.find(file).getCookie(EditorCookie.Observable.class);
+                editor = DataObject.find(file).getLookup().lookup(EditorCookie.Observable.class);
                 if (editor != null) {
                     editor.addPropertyChangeListener(WeakListeners.propertyChange(this, editor));
                     editorRef = new WeakReference<EditorCookie.Observable>(editor);
@@ -271,7 +271,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
                     } catch (FileStateInvalidException e) {
                         assert false : e;
                     }
-                    doc = documentBuilder.parse(is);
+                    doc = documentBuilder.parse(in);
                 } finally {
                     is.close();
                 }

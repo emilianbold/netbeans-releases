@@ -65,8 +65,8 @@ public final class MacroExpansionTopComponent extends TopComponent {
     private static final String PREFERRED_ID = "MacroExpansionTopComponent"; // NOI18N
     private MacroExpansionPanel panel = null;
     private int lastDividerLocation = -1;
-    private boolean lastSyncCaret = true;
-    private boolean lastSyncContext = false;
+    private boolean lastSyncCaretAndContext = true;
+    private boolean lastLocalContext = true;
     private Document lastExpandedContextDoc = null;
 
     private MacroExpansionTopComponent() {
@@ -83,8 +83,8 @@ public final class MacroExpansionTopComponent extends TopComponent {
         lastExpandedContextDoc = expandedContextDoc;
         if (panel != null) {
             lastDividerLocation = panel.getDividerLocation();
-            lastSyncCaret = panel.isSyncCaret();
-            lastSyncContext = panel.isSyncContext();
+            lastSyncCaretAndContext = panel.isSyncCaretAndContext();
+            lastLocalContext = panel.isLocalContext();
         }
 
         panel = new MacroExpansionPanel(true);
@@ -94,9 +94,9 @@ public final class MacroExpansionTopComponent extends TopComponent {
             panel.setDividerLocation(lastDividerLocation);
         }
         panel.setLocalContext(isLocalContext());
-        panel.setSyncCaret(lastSyncCaret);
-        panel.setSyncContext(lastSyncContext);
-        if (panel.isSyncCaret()) {
+        panel.setSyncCaretAndContext(lastSyncCaretAndContext);
+        panel.setLocalContext(lastLocalContext);
+        if (panel.isSyncCaretAndContext()) {
             panel.updateCaretPosition();
         }
         removeAll();
@@ -125,17 +125,6 @@ public final class MacroExpansionTopComponent extends TopComponent {
 
     public static void setLocalContext(boolean localContext) {
         NbPreferences.forModule(MacroExpansionTopComponent.class).putBoolean("show-local-context", localContext); // NOI18N
-    }
-    /**
-     * Indicates is caret synchronization enabled or not.
-     *
-     * @return is caret synchronization enabled
-     */
-    public boolean isSyncCaret() {
-        if (panel != null) {
-            lastSyncCaret = panel.isSyncCaret();
-        }
-        return lastSyncCaret;
     }
 
     /**
@@ -231,8 +220,8 @@ public final class MacroExpansionTopComponent extends TopComponent {
         initComponents();
         if (panel != null) {
             lastDividerLocation = panel.getDividerLocation();
-            lastSyncCaret = panel.isSyncCaret();
-            lastSyncContext = panel.isSyncContext();
+            lastSyncCaretAndContext = panel.isSyncCaretAndContext();
+            lastLocalContext = panel.isLocalContext();
 
             Document doc = getExpandedContextDoc();
             if (doc != null) {

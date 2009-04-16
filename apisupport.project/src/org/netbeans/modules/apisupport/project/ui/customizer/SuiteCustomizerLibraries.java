@@ -116,6 +116,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.w3c.dom.Element;
+import sun.management.snmp.util.SnmpLoadedClassData;
 
 /**
  * Represents <em>Libraries</em> panel in Suite customizer.
@@ -357,7 +358,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 Children.SortedArray modules = new Children.SortedArray();
                 modules.setComparator(MODULES_COMPARATOR);
                 // enablement for pre-6.7 modules, for cluster path it gets resolved in load cluster.path section below
-                boolean enabled = newPlaf || SingleModuleProperties.clusterMatch(enabledClusters, clusterDirectory.getName());
+                boolean enabled = (newPlaf && enabledClusters.isEmpty()) || SingleModuleProperties.clusterMatch(enabledClusters, clusterDirectory.getName());
                 ClusterInfo ci = ClusterInfo.create(clusterDirectory, true, enabled);
                 cluster = new ClusterNode(ci, modules);
                 clusterToNode.put(clusterDirectory, cluster);
@@ -396,6 +397,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 }
                 extClustersLoaded = true;
             }
+        } else {
+            extClustersLoaded = true;   // so that doUpdateDependencyWarnings is called even with empty cluster.path
         }
         libChildren.setMergedKeys();
     }
@@ -406,6 +409,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
     
     private void refreshPlatforms() {
+        Logger logger = Logger.getLogger(SuiteCustomizerLibraries.class.getName());
+        logger.log(Level.FINE, "refreshPlatforms --> " + getProperties().getActivePlatform().getLabel());
         platformValue.setModel(new PlatformComponentFactory.NbPlatformListModel(getProperties().getActivePlatform())); // refresh
         platformValue.requestFocus();
     }
@@ -417,8 +422,13 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         Set<String> disabledModules = new TreeSet<String>();
         List<ClusterInfo> clusterPath = new ArrayList<ClusterInfo>();
 
-        boolean oldPlaf = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() < NbPlatform.HARNESS_VERSION_67;
+        boolean oldPlaf = getProperties().getActivePlatform().getHarnessVersion() < NbPlatform.HARNESS_VERSION_67;
 
+        assert refreshTask != null;
+        if (! refreshTask.isFinished()) {
+            // trying to store before nodes are up-to-date, just bail out
+            return;
+        }
         for (ClusterNode e : libChildren.platformNodes) {
             if (e.isEnabled()) {
                 if (oldPlaf)
@@ -668,6 +678,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         if (evt.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
             manager.setRootContext(waitRoot);
             store();    // restore the same enablement of clusters for new platform
+            Logger logger = Logger.getLogger(SuiteCustomizerLibraries.class.getName());
+            logger.log(Level.FINE, "platformValueItemStateChanged, setting plaf -->" + ((NbPlatform) platformValue.getSelectedItem()).getLabel());
             getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
             updateJavaPlatformEnabled();
         }

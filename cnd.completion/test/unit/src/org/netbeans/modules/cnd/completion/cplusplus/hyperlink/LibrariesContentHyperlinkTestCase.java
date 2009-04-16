@@ -193,5 +193,7 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testQtUsage() throws Exception {
         // IZ#155122: Completion doesn't work for Qt examples
         performTest("src/qt_usage.cc", 8, 25, "sys_include/QtDecls.h", 4, 5);
+        performTest("src/qt_usage.cc", 12, 25, "sys_include2/QObject.h", 4, 5);
+//        performTest("sys_include/QtDecls.h", 2, 30, "sys_include2/QObject.h", 4, 5);
     }
 }

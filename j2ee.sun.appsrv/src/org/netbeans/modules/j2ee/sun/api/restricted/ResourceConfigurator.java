@@ -565,7 +565,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         UrlData urlData = new UrlData(databaseUrl);
         String prefix = urlData.getPrefix();
         PropertyElement[] pl = connPool.getPropertyElement();
-        if(prefix.equals("jdbc:derby:")){ //NOI18N
+        if(prefix != null && prefix.equals("jdbc:derby:")){ //NOI18N
             String hostName = urlData.getHostName();
             String portNumber = urlData.getPort();
             String databaseName = urlData.getDatabaseName();

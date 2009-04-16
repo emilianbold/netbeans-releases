@@ -53,7 +53,7 @@ public class EnableDebugAction extends Action {
     /** creates new "Enable Debug" action */
     public EnableDebugAction() {
         super(null, Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+                "org.netbeans.modules.db.explorer.action.Bundle",
                 "EnableDebug"));
     }
 }

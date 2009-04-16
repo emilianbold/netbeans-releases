@@ -562,17 +562,21 @@ public class BindingPanel extends SectionInnerPanel {
             boolean trustStoreConfigRequired = true;
             boolean kerberosConfigRequired = false;
 
-            boolean validatorsRequired = true;
             boolean stsAllowed = true;
-
             boolean defaults = devDefaultsChBox.isSelected();
 
             profConfigButton.setEnabled(secSelected);
+
+            boolean validatorsSupported = false;
+            boolean advancedConfigSupported = false;
 
             if (secSelected) {
 
                 String secProfile = ProfilesModelHelper.getSecurityProfile(binding);
 
+                validatorsSupported = ProfilesModelHelper.isValidatorsSupported(secProfile);
+                advancedConfigSupported = ProfilesModelHelper.isAdvancedSecuritySupported(secProfile);
+                
                 boolean defaultsSupported = ProfilesModelHelper.isServiceDefaultSetupSupported(secProfile);
                 if (!defaultsSupported) defaults = false;
                 devDefaultsChBox.setEnabled(defaultsSupported);
@@ -597,33 +601,16 @@ public class BindingPanel extends SectionInnerPanel {
                 }
 
                 if (trustStoreConfigRequired && gf) {
-                    if (ComboConstants.PROF_USERNAME.equals(secProfile) ||
-                        ComboConstants.PROF_MUTUALCERT.equals(secProfile) ||
-                        ComboConstants.PROF_ENDORSCERT.equals(secProfile) ||
-                        ComboConstants.PROF_SAMLSENDER.equals(secProfile) ||
-                        ComboConstants.PROF_SAMLHOLDER.equals(secProfile) ||
-                        ComboConstants.PROF_STSISSUED.equals(secProfile) ||
-                        ComboConstants.PROF_STSISSUEDCERT.equals(secProfile) ||
-                        ComboConstants.PROF_STSISSUEDSUPPORTING.equals(secProfile) ||
-                        ComboConstants.PROF_STSISSUEDENDORSE.equals(secProfile)
-                        ) {
-                            trustStoreConfigRequired = false;
+                    if (ComboConstants.PROF_USERNAME.equals(secProfile)) {
+                        trustStoreConfigRequired = false;
                     }
                 }
 
-                if (validatorsRequired) {
-                    if (ComboConstants.PROF_STSISSUED.equals(secProfile) ||
-                        ComboConstants.PROF_STSISSUEDCERT.equals(secProfile) ||
-                        ComboConstants.PROF_STSISSUEDSUPPORTING.equals(secProfile) ||
-                        ComboConstants.PROF_STSISSUEDENDORSE.equals(secProfile)) {
-                            validatorsRequired = false;
-                    }
-                }
             } else {
                 devDefaultsChBox.setEnabled(false);
             }
 
-            secAdvancedButton.setEnabled(secSelected && !defaults);
+            secAdvancedButton.setEnabled(secSelected && !defaults && advancedConfigSupported);
 
             stsChBox.setEnabled(secSelected && !isFromJava && stsAllowed);
 
@@ -633,10 +620,10 @@ public class BindingPanel extends SectionInnerPanel {
             if (stsSelected) {
                 trustStoreConfigRequired = true;
                 keyStoreConfigRequired = true;
-                validatorsRequired = true;
+                validatorsSupported = true;
             }
 
-            validatorsButton.setEnabled(secSelected && !(ConfigVersion.CONFIG_1_0.equals(getUserExpectedConfigVersion()) && gf) && !defaults && validatorsRequired);
+            validatorsButton.setEnabled(secSelected && !(ConfigVersion.CONFIG_1_0.equals(getUserExpectedConfigVersion()) && gf) && !defaults && validatorsSupported);
             keyButton.setEnabled(secSelected && keyStoreConfigRequired && !defaults);
             trustButton.setEnabled(secSelected && trustStoreConfigRequired && !defaults);
             kerberosCfgButton.setEnabled(secSelected && kerberosConfigRequired && !defaults);
@@ -653,6 +640,7 @@ public class BindingPanel extends SectionInnerPanel {
             stsConfigButton.setEnabled(false);
             securityChBox.setEnabled(false);
             validatorsButton.setEnabled(false);
+            secAdvancedButton.setEnabled(false);
             keyButton.setEnabled(false);
             trustButton.setEnabled(false);
             profileInfoField.setEnabled(true);
