@@ -79,6 +79,10 @@ public class KenaiTest extends NbTestCase {
     public static void tearDownClass() throws Exception {
     }
 
+    public void setInstance() {
+        instance = Kenai.getDefault();
+    }
+
     @Before
     @Override
     public void setUp() {
@@ -214,7 +218,7 @@ public class KenaiTest extends NbTestCase {
         String name = "java-inline";
         KenaiProject prj = instance.getProject(name);
         System.out.println(prj.getWebLocation());
-        if (!prj.getWebLocation().toString().equals("http://testkenai.com/projects/java-inline")) {
+        if (!prj.getWebLocation().toString().endsWith("kenai.com/projects/java-inline")) {
             fail("Web Location of the project has changed.");
         }
     }
