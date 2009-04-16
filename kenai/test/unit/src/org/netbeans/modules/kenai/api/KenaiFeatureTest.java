@@ -42,15 +42,17 @@ package org.netbeans.modules.kenai.api;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 
 /**
  *
  * @author Jan Becicka
  */
-public class KenaiFeatureTest {
+public class KenaiFeatureTest extends NbTestCase {
 
-    public KenaiFeatureTest() {
+    public KenaiFeatureTest(String s) {
+        super(s);
     }
 
     @BeforeClass
