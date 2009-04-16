@@ -36,69 +36,22 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.util;
 
-import java.io.IOException;
-import java.security.acl.NotOwnerException;
-import java.util.Arrays;
-import java.util.concurrent.CancellationException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.netbeans.modules.nativeexecution.NativeExecutionTest;
+package org.netbeans.modules.cnd.spi.compilers;
+
+import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
-import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupportProvider;
 
 /**
- *
- * @author ak119685
+ * An SPI for creation CompilerSetProvider instances
+ * @author Vladimir Kvashin
  */
-public class SolarisPrivilegesSupportTest extends NativeExecutionTest {
-
-    public SolarisPrivilegesSupportTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
+public interface CompilerSetProviderFactoryImpl {
     /**
-     * Test of getInstance method, of class SolarisPrivilegesSupportImpl.
+     * Creates a new instance of CompilerSetProvider
+     * for the given execution environment
+     * @param execEnv execution environment to create CompilerSetProvider for
+     * @return new CompilerSetProvider instance
      */
-    @Test
-    public void test() {
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "blackbox.russia.sun.com"); // NOI18N
-        try {
-            ConnectionManager.getInstance().connectTo(execEnv);
-            SolarisPrivilegesSupport sps = SolarisPrivilegesSupportProvider.getSupportFor(execEnv);
-            System.out.println(sps.getExecutionPrivileges());
-            try {
-                sps.requestPrivileges(Arrays.asList("dtrace_kernel"), true); // NOI18N
-            } catch (NotOwnerException ex) {
-                System.out.println(ex);
-            }
-            System.out.println(sps.getExecutionPrivileges());
-        } catch (IOException ex) {
-            System.out.println(ex);
-        } catch (CancellationException ex) {
-            System.out.println(ex);
-        }
-    }
+    public CompilerSetProvider createNew(ExecutionEnvironment execEnv);
 }
