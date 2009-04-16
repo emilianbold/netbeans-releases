@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
@@ -83,15 +83,23 @@ public class DevelopmentHostConfiguration {
 
     /** TODO: deprecate and remove, see #158983 */
     public String getName() {
-        return ExecutionEnvironmentFactory.getHostKey(servers.get(value));
+        return ExecutionEnvironmentFactory.toString(servers.get(value));
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {
-        return ExecutionEnvironmentFactory.getExecutionEnvironment(getName());
+        return servers.get(value);
     }
 
     public String getDisplayName(boolean displayIfNotFound) {
         String out = getName();
+        if (displayIfNotFound && !isOnline()) {
+            out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
+        }
+        return out;
+    }
+
+    public String getHostDisplayName(boolean displayIfNotFound) {
+        String out = getExecutionEnvironment().getHost();
         if (displayIfNotFound && !isOnline()) {
             out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
         }
@@ -126,7 +134,7 @@ public class DevelopmentHostConfiguration {
     }
 
     private boolean setValueImpl(final String v, boolean firePC) {
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(v);
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(v);
         for (int i = 0; i < servers.size(); i++) {
             if (servers.get(i).equals(env)) {
                 value = i;
@@ -142,7 +150,7 @@ public class DevelopmentHostConfiguration {
     private boolean addDevelopmentHost(String host) {
         ServerList list = Lookup.getDefault().lookup(ServerList.class);
         if (list != null) {
-            list.addServer(ExecutionEnvironmentFactory.getExecutionEnvironment(host), false, false);
+            list.addServer(ExecutionEnvironmentFactory.fromString(host), false, false);
         }
         return list != null;
     }
@@ -200,7 +208,7 @@ public class DevelopmentHostConfiguration {
         List<String> l = new ArrayList<String>();
         int pos = 0;
         for (ExecutionEnvironment env : getServerEnvironments()) {
-            l.add(ExecutionEnvironmentFactory.getHostKey(env));
+            l.add(ExecutionEnvironmentFactory.toString(env));
         }
         return l.toArray(new String[l.size()]);
     }
@@ -209,7 +217,7 @@ public class DevelopmentHostConfiguration {
         if (getServerList() != null) {
             return getServerList().getEnvironments();
         }
-        return Arrays.asList(ExecutionEnvironmentFactory.getLocalExecutionEnvironment());
+        return Arrays.asList(ExecutionEnvironmentFactory.getLocal());
     }
 
     private static ServerList getServerList() {

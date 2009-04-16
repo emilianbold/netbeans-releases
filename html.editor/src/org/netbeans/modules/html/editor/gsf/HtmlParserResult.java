@@ -147,7 +147,6 @@ public class HtmlParserResult extends ParserResult {
     }
 
     private void analyzeParseResult() {
-        final DTD dtd = dtd();
         final List<Error> _errors = new ArrayList<Error>();
         AstNodeUtils.visitChildren(root(),
                 new AstNodeVisitor() {
@@ -155,9 +154,9 @@ public class HtmlParserResult extends ParserResult {
                     public void visit(AstNode node) {
                         if (node.type() == AstNode.NodeType.UNMATCHED_TAG) {
                             AstNode unmatched = node.children().get(0);
-                            if (dtd != null) {
+                            if (dtd() != null) {
                                 //check the unmatched tag according to the DTD
-                                Element element = dtd.getElement(node.name().toUpperCase(Locale.US));
+                                Element element = dtd().getElement(node.name().toUpperCase(Locale.US));
                                 if (element != null) {
                                     if (unmatched.type() == AstNode.NodeType.OPEN_TAG && element.hasOptionalEnd() /*||
                                             unmatched.type() == AstNode.NodeType.ENDTAG && element.hasOptionalStart()*/) {
@@ -176,7 +175,9 @@ public class HtmlParserResult extends ParserResult {
                                     Severity.WARNING); //NOI18N
                             _errors.add(error);
 
-                        } else if (node.type() == AstNode.NodeType.TAG || node.type() == AstNode.NodeType.OPEN_TAG) {
+                        } else if (node.type() == AstNode.NodeType.TAG || 
+                                node.type() == AstNode.NodeType.OPEN_TAG ||
+                                node.type() == AstNode.NodeType.ENDTAG) {
 
                             if (node.getErrorMessages().size() > 0) {
                                 StringBuffer b = new StringBuffer();

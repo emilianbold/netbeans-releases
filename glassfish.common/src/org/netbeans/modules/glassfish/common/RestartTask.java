@@ -44,6 +44,7 @@ package org.netbeans.modules.glassfish.common;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
@@ -157,6 +158,10 @@ public class RestartTask extends BasicTask<OperationState> {
             }
 
             // Server should be stopped. Start it.
+            Object o = support.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE, false);
+            if (GlassfishModule.PROFILE_MODE.equals(o)) {
+                support.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE, false);
+            }
             Future<OperationState> startTask = support.startServer(null);
             OperationState startResult = OperationState.FAILED;
             try {

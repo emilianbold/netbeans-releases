@@ -46,6 +46,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Exceptions;
 
 /**
@@ -78,7 +79,7 @@ public class ConnectionManagerTest {
     public void testGetConnectToAction() {
         System.out.println("getConnectToAction"); // NOI18N
 
-        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "129.159.127.94", 22); // NOI18N
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "129.159.127.94", 22); // NOI18N
         
         try {
             ConnectionManager.getInstance().connectTo(execEnv);
@@ -104,7 +105,7 @@ public class ConnectionManagerTest {
             }
         };
 
-        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "129.159.127.252", 22); // NOI18N
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "129.159.127.252", 22); // NOI18N
 
         for (int i = 0; i < threadsNum; i++) {
             final AsynchronousAction action = ConnectionManager.getInstance().getConnectToAction(execEnv, onConnect);

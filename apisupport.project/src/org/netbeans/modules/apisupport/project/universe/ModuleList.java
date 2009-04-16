@@ -690,8 +690,6 @@ public final class ModuleList {
                 File prjDir = FileUtil.toFile(prj.getProjectDirectory());
                 if (SuiteUtils.isSuite(prjDir)) {
                     // non-recursive for suites
-                    PropertyEvaluator eval = parseSuiteProperties(prjDir);
-                    File nbdestdir = resolveNbDestDir(prjDir, customNbDestDir, eval);
                     lists.add(findOrCreateModuleListFromSuiteWithoutBinaries(prjDir, customNbDestDir));
                 } else {
                     // should be standalone module
@@ -738,6 +736,13 @@ public final class ModuleList {
             nbdestdir = PropertyUtils.resolveFile(root, nbdestdirS);
         } else {
             nbdestdir = customNbDestDir;
+        }
+        if (! nbdestdir.exists()) {
+            LOG.log(Level.INFO, "Project in " + root // NOI18N
+                    + " is missing its platform '" + eval.getProperty("nbplatform.active") + "', switching to default platform");    // NOI18N
+            NbPlatform p2 = NbPlatform.getDefaultPlatform();
+            if (p2 != null)
+                nbdestdir = p2.getDestDir();
         }
         return nbdestdir;
     }

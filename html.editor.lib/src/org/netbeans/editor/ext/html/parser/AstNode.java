@@ -128,6 +128,9 @@ public class AstNode {
 //    }
 
     boolean isResolved() {
+        if(content == null) {
+            return false;
+        }
         //#PCDATA hack
         if(content.getPossibleElements().size() == 1) {
             if(content.getPossibleElements().iterator().next() == null) {
@@ -145,6 +148,14 @@ public class AstNode {
         } else {
             return null;
         }
+    }
+
+    Collection<Element> getAllPossibleElements() {
+        Collection<Element> col = new ArrayList<Element>();
+        col.addAll((Collection<Element>)content.getPossibleElements());
+        col.addAll(contentModel.getIncludes());
+        col.removeAll(contentModel.getExcludes());
+        return col;
     }
 
     public synchronized void addErrorMessage(String message) {

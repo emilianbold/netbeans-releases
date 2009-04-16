@@ -129,10 +129,17 @@ public class IndexBuilder implements Runnable, ChangeListener {
     /**
      * Get the important information from the index builder.
      * Waits for parsing to complete first, if necessary.
+     * @param blocking {@code true} in case the current thread should wait for result
      * @return two lists, one of String display names, the other of FileObject indices
+     *      or null in case it is non blocking call and result is not ready yet.
      */
-    public List[] getIndices() {
-        task.waitFinished();
+    public List[] getIndices(boolean blocking) {
+        if (blocking) {
+            task.waitFinished();
+        } else if (!task.isFinished()) {
+            return null;
+        }
+        
         if (cachedData != null) {
             List[] data = (List[])cachedData.get();
             if (data != null) {

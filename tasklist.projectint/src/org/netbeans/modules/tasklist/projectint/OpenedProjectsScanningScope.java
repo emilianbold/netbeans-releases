@@ -121,8 +121,10 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
     }
 
     public Lookup getLookup() {
-        if( null == lookup ) {
-            lookup = new AbstractLookup( lookupContent );
+        synchronized( this ) {
+            if( null == lookup ) {
+                lookup = new AbstractLookup( lookupContent );
+            }
         }
         return lookup;
     }

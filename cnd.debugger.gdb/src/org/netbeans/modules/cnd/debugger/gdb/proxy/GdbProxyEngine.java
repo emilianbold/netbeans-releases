@@ -128,6 +128,7 @@ public class GdbProxyEngine {
         getLogger().logMessage("Env[" + debuggerEnvironment.length + "]: " + // NOI18N
                 Arrays.asList(debuggerEnvironment));
         getLogger().logMessage("workingDirectory: " + workingDirectory); // NOI18N
+        getLogger().logMessage("NB version: " + System.getProperty("netbeans.buildnumber")); // NOI18N
         getLogger().logMessage("================================================"); // NOI18N
         
         if (debugger.getHostExecutionEnvironment().isLocal()) {

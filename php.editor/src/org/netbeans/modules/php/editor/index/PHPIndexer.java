@@ -698,7 +698,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
      public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
-        public static final int VERSION = 1;
+        public static final int VERSION = 2;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {
@@ -719,8 +719,6 @@ public final class PHPIndexer extends EmbeddingIndexer {
         public int getIndexVersion() {
             return VERSION;
         }
-        private FileObject cachedFo;
-        private boolean cachedIndexable;
 
         private boolean isIndexable(Indexable indexable, Snapshot snapshot) {
             // Cannot call file.getFileObject().getMIMEType() here for several reasons:

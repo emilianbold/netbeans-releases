@@ -35,10 +35,10 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
-import org.jruby.nb.ast.IArgumentNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.lexer.yacc.ISourcePosition;
+import org.jrubyparser.ast.IArgumentNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.SourcePosition;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -88,7 +88,7 @@ public class ConvertBlockType extends RubyAstRule {
         int caretOffset = context.caretOffset;
         BaseDocument doc = context.doc;
         
-        assert (node.nodeId == NodeType.ITERNODE);
+        assert (node.getNodeType() == NodeType.ITERNODE);
         try {
             int astOffset = node.getPosition().getStartOffset();
             int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
@@ -275,7 +275,7 @@ public class ConvertBlockType extends RubyAstRule {
             BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
 
-            ISourcePosition pos = node.getPosition();
+            SourcePosition pos = node.getPosition();
             int startOffset = pos.getStartOffset();
             int originalEnd = pos.getEndOffset();
             int endOffset;
@@ -400,7 +400,7 @@ public class ConvertBlockType extends RubyAstRule {
         }
 
         private void findLineBreaks(Node node, Set<Integer> offsets) {
-            if (node.nodeId == NodeType.NEWLINENODE) {
+            if (node.getNodeType() == NodeType.NEWLINENODE) {
                 // Doesn't work, need above workaround
                 //int start = node.getPosition().getStartOffset();
                 int start = findRealStart(node);
@@ -413,7 +413,7 @@ public class ConvertBlockType extends RubyAstRule {
                 if (child.isInvisible()) {
                     continue;
                 }
-                if (child.nodeId == NodeType.EVSTRNODE) {
+                if (child.getNodeType() == NodeType.EVSTRNODE) {
                     // Don't linebreak inside a #{} expression
                     continue;
                 }
@@ -650,7 +650,7 @@ public class ConvertBlockType extends RubyAstRule {
         private boolean isArgParenNecessary(AstPath path, BaseDocument doc) throws BadLocationException {
             // Look at the surrounding CallNode and see if it has arguments.
             // If so, see if it has parens. If not, return true.
-            assert path.leaf().nodeId == NodeType.ITERNODE;
+            assert path.leaf().getNodeType() == NodeType.ITERNODE;
             Node n = path.leafParent();
             if (n != null && AstUtilities.isCall(n) && n instanceof IArgumentNode && 
                     ((IArgumentNode)n).getArgsNode() != null) {

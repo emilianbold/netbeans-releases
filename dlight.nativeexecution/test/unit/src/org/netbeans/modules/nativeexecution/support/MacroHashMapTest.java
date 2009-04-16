@@ -44,7 +44,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 
@@ -79,7 +79,8 @@ public class MacroHashMapTest {
     @Test
     public void test() {
         System.out.println("put"); // NOI18N
-        MacroExpander expander = MacroExpanderFactory.getExpander(new ExecutionEnvironment());
+        MacroExpander expander = MacroExpanderFactory.getExpander(
+                ExecutionEnvironmentFactory.getLocal());
         MacroMap m = new CaseInsensitiveMacroMap(expander);
 
         m.put("PAtH", "/bin:$PATH:/home/$USER"); // NOI18N

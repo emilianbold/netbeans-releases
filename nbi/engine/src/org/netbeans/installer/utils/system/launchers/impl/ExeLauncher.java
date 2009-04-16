@@ -82,9 +82,8 @@ public class ExeLauncher extends CommonLauncher {
      */
     public static final String MIN_JAVA_VERSION_WINDOWS       = "1.5.0_03";
     public static final String MIN_JAVA_VERSION_WINDOWS_VISTA = "1.5.0_11";
-
-    /* Actually even 1.5.0_15 does not officially support Windows Server 2008 */
-    public static final String MIN_JAVA_VERSION_WINDOWS_2K8   = "1.5.0_15";
+    public static final String MIN_JAVA_VERSION_WINDOWS_2K8   = "1.5.0_17";
+    public static final String MIN_JAVA_VERSION_WINDOWS_7     = "1.5.0_19";
     
     /* IBM does not report the update number so allow to work even on 1.5.0 */
     public static final String MIN_IBM_JAVA_VERSION = "1.5.0";
@@ -94,6 +93,7 @@ public class ExeLauncher extends CommonLauncher {
     public static final String OSNAME_WINDOWS_2K = "2000";
     public static final String OSNAME_WINDOWS_2K3 = "2003";
     public static final String OSNAME_WINDOWS_2K8 = "2008";
+    public static final String OSNAME_WINDOWS_7   = "Windows 7";
     
     public ExeLauncher(LauncherProperties props) {
         super(props);
@@ -215,6 +215,8 @@ public class ExeLauncher extends CommonLauncher {
                     MIN_JAVA_VERSION_WINDOWS, null, null, OSNAME_WINDOWS_2K3, null));
             list.add(new JavaCompatibleProperties(
                     MIN_JAVA_VERSION_WINDOWS_2K8, null, null, OSNAME_WINDOWS_2K8, null));
+            list.add(new JavaCompatibleProperties(
+                    MIN_JAVA_VERSION_WINDOWS_7, null, null, OSNAME_WINDOWS_7, null));
             list.add(new JavaCompatibleProperties(
                 MIN_IBM_JAVA_VERSION, null, "IBM Corporation", null, null));
             return list;

@@ -60,6 +60,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
     //private List<JComponent> visualizerComponents = new ArrayList<JComponent>();
     //private CloseListener closeListener = new CloseListener();
     private JPanel performanceMonitorViewsArea = new JPanel();
+    private JComponent viewComponent;
     private String currentToolName;
 //    private JTabbedPane tabbedPane = null;
     //private HashMap<String, Visualizer> visualizerComponents = new HashMap<String, Visualizer>();
@@ -144,7 +145,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
     }
 
     public void setContent(String toolName, JComponent viewComponent) {
-        if (currentToolName != null && currentToolName.equals(toolName)){
+        if (currentToolName != null && currentToolName.equals(toolName) && this.viewComponent == viewComponent){//INCORRECT! should update if different component itself
             return;//DO NOTHING
         }
         currentToolName = toolName;
@@ -168,6 +169,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         //if we have it already DO NOT REMOVE - REUSE
         this.performanceMonitorViewsArea.removeAll();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.viewComponent = viewComponent;
         this.performanceMonitorViewsArea.add(viewComponent);
         this.setName(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "Details", toolName));//NOI18N
         validate();
@@ -176,6 +178,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
     public void addVisualizer(String toolName, Visualizer view) {
         setContent(toolName, view.getComponent());
+        view.refresh();
 
     }
 
@@ -189,11 +192,12 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
     }
 
     public void addContent(String toolName, JComponent viewComponent) {
-        if (currentToolName == null || !currentToolName.equals(toolName)) {
+        if (currentToolName == null || !currentToolName.equals(toolName) || this.viewComponent != viewComponent) {
             this.currentToolName = toolName;
             this.performanceMonitorViewsArea.removeAll();
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         }
+        this.viewComponent = viewComponent;
         this.performanceMonitorViewsArea.add(viewComponent);
         this.setName(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "Details", toolName));//NOI18N
         validate();

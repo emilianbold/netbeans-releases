@@ -58,6 +58,20 @@ public class SyntaxTree {
     static boolean DEBUG = false; //for unit testing
 
     public static AstNode makeTree(List<SyntaxElement> elements, DTD dtd) {
+        //disable error checking for XHTML files. We currently use the HTML 4.01 DTD
+        //for XHTML files so we cannot properly identify XHTML content problems
+
+        //"-//W3C//DTD XHTML 1.0 Strict//EN"
+        //"-//W3C//DTD XHTML 1.0 Transitional//EN"
+        //"-//W3C//DTD XHTML 1.0 Frameset//EN"
+        //"-//W3C//ENTITIES Latin 1 for XHTML//EN"
+        //"-//W3C//ENTITIES Symbols for XHTML//EN"
+        //"-//W3C//ENTITIES Special for XHTML//EN"
+
+        //TODO fix this by properly using XHTML DTD (there is a bug in DTDParser
+        //so we cannot simple parse them, fix the parser as well)
+        final boolean XHTML = dtd != null && dtd.getIdentifier().contains("XHTML"); //NOI18N
+
         assert elements != null;
         assert dtd != null;
 
@@ -80,6 +94,7 @@ public class SyntaxTree {
 
                 if (DEBUG) {
                     System.out.println("--------------------------------");
+                    System.out.println(XHTML ? "XHTML - content checking disabled!" : "");
                     System.out.println("Processing tag " + tagName);
                     System.out.println("Last open tag = " + (lastNode != null ? lastNode.name() : "<NONE>"));
                 }
@@ -88,49 +103,60 @@ public class SyntaxTree {
                 ContentModel contentModel = null;
                 Collection<String> errorMessages = new ArrayList<String>(2);
 
-                if (currentNodeDtdElement != null) {
-                    if (lastNode != null) {
-                        //check if the last open tag allows this tag as its content
-                        //if not, close the previous open tag by the end of this tag
-                        if (!lastNode.reduce(currentNodeDtdElement)) {
-                            //current node cannot be present inside its parent
+                //some error checks >>>
+                if (!XHTML) {
+                    if (currentNodeDtdElement != null) {
+                        if (lastNode != null) {
+                            //check if the last open tag allows this tag as its content
+                            //if not, close the previous open tag by the end of this tag
+                            if (!lastNode.reduce(currentNodeDtdElement)) {
+                                //current node cannot be present inside its parent
 
-                            if (!lastNode.isResolved()) {
-                                String expectedElements = elementsToString(lastNode.getUnresolvedElements());
-                                //some mandatory content unresolved, report error
-                                errorMessages.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
-                                        new Object[]{currentNodeDtdElement.getName(), expectedElements}));
+                                if (!lastNode.isResolved()) {
+                                    String expectedElements = elementsToString(lastNode.getAllPossibleElements());
+                                    //some mandatory content unresolved, report error
+                                    errorMessages.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNEXPECTED_TAG",
+                                            new Object[]{currentNodeDtdElement.getName(), expectedElements}));
 
-                                if(DEBUG) {
-                                    System.out.println("NODE NOT RESOLVED! Missing " + expectedElements);
+                                    if (DEBUG) {
+                                        System.out.println("NODE NOT RESOLVED! Missing " + expectedElements);
+                                    }
+                                } else {
+                                    //check if the node we are going to close have required end tag
+                                    //if so show an error
+                                    Element lastDtdElement = dtd.getElement(lastNode.name().toUpperCase(Locale.ENGLISH));
+                                    if (lastDtdElement != null && !lastDtdElement.hasOptionalEnd()) {
+                                        lastNode.addErrorMessage(NbBundle.getMessage(SyntaxTree.class, "MSG_MISSING_ENDTAG",
+                                                new Object[]{lastDtdElement.getName()}));
+                                    }
                                 }
-                            } else {
-                                //check if the node we are going to close have required end tag
-                                //if so show an error
-                                Element lastDtdElement = dtd.getElement(lastNode.name().toUpperCase(Locale.ENGLISH));
-                                if(lastDtdElement != null && !lastDtdElement.hasOptionalEnd()) {
-                                    lastNode.addErrorMessage(NbBundle.getMessage(SyntaxTree.class, "MSG_MISSING_ENDTAG",
-                                        new Object[]{lastDtdElement.getName()}));
+
+                                //close the previous node
+                                lastNode.setEndOffset(element.offset());
+                                nodeStack.removeLast();
+
+                                //hmm, the last node didn't resolve this tag, lets try its parent
+                                AstNode parentNode = nodeStack.getLast();
+                                if (!parentNode.isResolved()) {
+                                    //an attempt to reduce the current node within its parent
+                                    parentNode.reduce(currentNodeDtdElement);
                                 }
+
+                                if (DEBUG) {
+                                    System.out.println("Closing tag " + lastNode.name() + " by the end of this tag!");
+                                }
+
                             }
-
-                            //close the previous node
-                            lastNode.setEndOffset(element.offset());
-                            nodeStack.removeLast();
-
-                            if(DEBUG) {
-                                System.out.println("Closing tag " + lastNode.name() + " by the end of this tag!");
-                            }
-
                         }
+
+                        //check tag attributes
+                        errorMessages.addAll(checkTagAttributes((SyntaxElement.Tag) element, currentNodeDtdElement));
+
+                        //create DTD content for this node
+                        contentModel = currentNodeDtdElement.getContentModel();
                     }
-
-                    //check tag attributes
-                    errorMessages.addAll(checkTagAttributes((SyntaxElement.Tag)element, currentNodeDtdElement));
-
-                    //create DTD content for this node
-                    contentModel = currentNodeDtdElement.getContentModel();
                 }
+                //<<< end of error checks
 
                 int openingTagEndOffset = element.offset() + element.length();
                 AstNode newTagNode = new AstNode(tagName, AstNode.NodeType.TAG,
@@ -178,31 +204,38 @@ public class SyntaxTree {
                     lastNode.setEndOffset(closingTagEndOffset);
 
                     //some error checks >>>
-                    if (lastNode.type() == AstNode.NodeType.TAG) {
-                        AstNode openTag = lastNode.children().get(0);
-                        assert openTag.type() == AstNode.NodeType.OPEN_TAG : "Unexpected tag type: " + openTag.type();
+                    if (!XHTML) {
+                        if (lastNode.type() == AstNode.NodeType.TAG) {
+                            AstNode openTag = lastNode.children().get(0);
+                            assert openTag.type() == AstNode.NodeType.OPEN_TAG : "Unexpected tag type: " + openTag.type();
 
-                        Element dtdElement = dtd.getElement(openTag.name().toUpperCase(Locale.ENGLISH));
-                        //check if the tag content is resolved (only for html tags)
-                        if (dtdElement != null) {
-                            if (!lastNode.isResolved()) {
-                                //some mandatory content unresolved, report error to the open tag
-                                String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG",
-                                        new Object[]{elementsToString(lastNode.getUnresolvedElements())});
- 
-                                openTag.addErrorMessage(errorMessage);
-                            }
+                            Element dtdElement = dtd.getElement(openTag.name().toUpperCase(Locale.ENGLISH));
+                            //check if the tag content is resolved (only for html tags)
+                            if (dtdElement != null) {
+                                if (!lastNode.isResolved()) {
+                                    //some mandatory content unresolved, report error to the open tag
+                                    String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG",
+                                            new Object[]{elementsToString(lastNode.getAllPossibleElements())});
 
-                            //check tag attributes
-                            openTag.addErrorMessages(checkTagAttributes((SyntaxElement.Tag)element, dtdElement));
+                                    openTag.addErrorMessage(errorMessage);
+                                }
 
-                        } else {
-                            //non-html tag, report error
-                            //but only if the tagname doesn't contain prefix e.g. <ui:composion> for facelets
-                            if(!openTag.name().contains(":")) {
-                                String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_TAG",
-                                        new Object[]{openTag.name()});
-                                openTag.addErrorMessage(errorMessage);
+                                //test if the tag is empty - if so the and tag is forbidden
+                                if (dtdElement.isEmpty()) {
+                                    closingTag.addErrorMessage(NbBundle.getMessage(SyntaxTree.class, "MSG_FORBIDDEN_ENDTAG"));
+                                }
+
+                                //check tag attributes
+                                openTag.addErrorMessages(checkTagAttributes((SyntaxElement.Tag) element, dtdElement));
+
+                            } else {
+                                //non-html tag, report error
+                                //but only if the tagname doesn't contain prefix e.g. <ui:composion> for facelets
+                                if (!openTag.name().contains(":")) {
+                                    String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_TAG",
+                                            new Object[]{openTag.name()});
+                                    openTag.addErrorMessage(errorMessage);
+                                }
                             }
                         }
                     }
@@ -241,7 +274,7 @@ public class SyntaxTree {
         List<TagAttribute> existingAttrs = element.getAttributes();
 
         for (TagAttribute ta : existingAttrs) {
-            if (dtdElement.getAttribute(ta.getName()) == null) {
+            if (dtdElement.getAttribute(ta.getName().toLowerCase(Locale.ENGLISH)) == null) {
                 //unknown attribute
                 errmsgs.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE",
                         new Object[]{ta.getName(), element.getName()}));

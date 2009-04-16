@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import javax.swing.text.Position;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -113,8 +114,13 @@ public class PHPFormatter implements Formatter {
     }
 
     public void reformat(Context context, ParserResult info) {
-        prettyPrint(context);
-        astReformat(context, info);
+        Map<Position, Integer> indentLevels = new LinkedHashMap<Position, Integer>();
+        IndentLevelCalculator indentCalc = new IndentLevelCalculator(context.document(), indentLevels);
+        PHPParseResult phpParseResult = ((PHPParseResult) info);
+        phpParseResult.getProgram().accept(indentCalc);
+        
+        prettyPrint(context, info);
+        astReformat(context, indentLevels);
     }
 
     public int indentSize() {
@@ -444,7 +450,7 @@ public class PHPFormatter implements Formatter {
         return false;
     }
 
- private void prettyPrint(final Context context) {
+ private void prettyPrint(final Context context, final ParserResult info) {
         final BaseDocument doc = (BaseDocument) context.document();
         final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
 
@@ -456,19 +462,9 @@ public class PHPFormatter implements Formatter {
 
             public void run() {
                 final WSTransformer wsTransformer = new WSTransformer(context);
-                FileObject file = NavUtils.getFile(doc);
-                Source source = Source.create(file);
-                try {
-                    ParserManager.parse(Collections.singleton(source), new UserTask() {
-                        public void run(ResultIterator parameter) throws Exception {
-                            PHPParseResult result = (PHPParseResult) parameter.getParserResult();
-                            result.getProgram().accept(wsTransformer);
-                        }
-                    });
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-
+                PHPParseResult result = (PHPParseResult) info;
+                result.getProgram().accept(wsTransformer);
+               
                 for (WSTransformer.Replacement replacement : wsTransformer.getReplacements()){
                     if (replacement.offset() < context.startOffset()
                             || replacement.offset() > context.endOffset()){
@@ -727,7 +723,7 @@ public class PHPFormatter implements Formatter {
         return null;
     }
 
-    private void astReformat(final Context context, ParserResult info) {
+    private void astReformat(final Context context, final Map<Position, Integer> indentLevels) {
         Document document = context.document();
         int startOffset = context.startOffset();
         int endOffset = context.endOffset();
@@ -743,21 +739,7 @@ public class PHPFormatter implements Formatter {
 
             startOffset = Utilities.getRowStart(doc, startOffset);
             final int firstLine = Utilities.getLineOffset(doc, startOffset);
-            final Map<Integer, Integer> indentLevels = new LinkedHashMap<Integer, Integer>();
-            final IndentLevelCalculator indentCalc = new IndentLevelCalculator(doc, indentLevels);
-            FileObject file = NavUtils.getFile(doc);
-            Source source = Source.create(file);
-            try {
-                ParserManager.parse(Collections.singleton(source), new UserTask() {
-                    public void run(ResultIterator parameter) throws Exception {
-                        PHPParseResult result = (PHPParseResult) parameter.getParserResult();
-                        result.getProgram().accept(indentCalc);
-                    }
-                });
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
+            
             doc.runAtomic(new Runnable() {
 
                 public void run() {
@@ -766,8 +748,9 @@ public class PHPFormatter implements Formatter {
                         int numberOfLines = Utilities.getLineOffset(doc, doc.getLength() - 1);
                         Map<Integer, Integer> indentDeltaByLine = new LinkedHashMap<Integer, Integer>();
 
-                        for (int point : indentLevels.keySet()) {
-                            int indentDelta = indentLevels.get(point);
+                        for (Position pos : indentLevels.keySet()) {
+                            int indentDelta = indentLevels.get(pos);
+                            int point = pos.getOffset();
                             int lineNumber = Utilities.getLineOffset(doc, point);
                             int rowStart = Utilities.getRowStart(doc, point);
                             int firstNonWSBefore = Utilities.getFirstNonWhiteBwd(doc, point);

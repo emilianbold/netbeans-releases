@@ -182,26 +182,6 @@ public abstract class EJBProblemFinder {
         return problemsFound;
     }
     
-    private abstract class RescanTrigger{
-        private FileObject file;
-        
-        RescanTrigger(FileObject file){
-            this.file = file;
-        }
-        
-        void rescan(){
-            JavaSource javaSrc = JavaSource.forFileObject(file);
-            
-            if (javaSrc != null){
-                try{
-                    javaSrc.runUserActionTask(new ProblemFinderCompControl(file), true);
-                } catch (IOException e){
-                    LOG.log(Level.WARNING, e.getMessage(), e);
-                }
-            }
-        }
-    }
-    
     public static class ProblemFinderCompInfo extends EJBProblemFinder implements CancellableTask<CompilationInfo>{
         public ProblemFinderCompInfo(FileObject file){
             super(file);

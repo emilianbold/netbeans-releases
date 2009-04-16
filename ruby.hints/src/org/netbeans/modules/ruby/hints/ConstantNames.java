@@ -32,9 +32,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jruby.nb.ast.ConstDeclNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
+import org.jrubyparser.ast.ConstDeclNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
@@ -69,7 +69,7 @@ public class ConstantNames extends RubyAstRule {
         Node node = context.node;
         ParserResult info = context.parserResult;
 
-        assert (node.nodeId == NodeType.CONSTDECLNODE);
+        assert (node.getNodeType() == NodeType.CONSTDECLNODE);
         String name = ((ConstDeclNode)node).getName();
 
         for (int i = 0; i < name.length(); i++) {

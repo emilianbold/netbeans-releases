@@ -48,26 +48,26 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
-import org.jruby.nb.ast.ArgumentNode;
-import org.jruby.nb.ast.ClassNode;
-import org.jruby.nb.ast.ClassVarAsgnNode;
-import org.jruby.nb.ast.ClassVarDeclNode;
-import org.jruby.nb.ast.ClassVarNode;
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.DAsgnNode;
-import org.jruby.nb.ast.DVarNode;
-import org.jruby.nb.ast.GlobalAsgnNode;
-import org.jruby.nb.ast.GlobalVarNode;
-import org.jruby.nb.ast.InstAsgnNode;
-import org.jruby.nb.ast.InstVarNode;
-import org.jruby.nb.ast.LocalAsgnNode;
-import org.jruby.nb.ast.LocalVarNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.ModuleNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.SClassNode;
-import org.jruby.nb.ast.SymbolNode;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.ArgumentNode;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.ClassVarAsgnNode;
+import org.jrubyparser.ast.ClassVarDeclNode;
+import org.jrubyparser.ast.ClassVarNode;
+import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.DAsgnNode;
+import org.jrubyparser.ast.DVarNode;
+import org.jrubyparser.ast.GlobalAsgnNode;
+import org.jrubyparser.ast.GlobalVarNode;
+import org.jrubyparser.ast.InstAsgnNode;
+import org.jrubyparser.ast.InstVarNode;
+import org.jrubyparser.ast.LocalAsgnNode;
+import org.jrubyparser.ast.LocalVarNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.ModuleNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.SClassNode;
+import org.jrubyparser.ast.SymbolNode;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -154,7 +154,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     void run(ResultIterator co) throws Exception {
                         if (co.getSnapshot().getMimeType().equals(RubyUtils.RUBY_MIME_TYPE)) {
                             RubyParseResult parserResult = AstUtilities.getParseResult(co.getParserResult());
-                            org.jruby.nb.ast.Node root = parserResult.getRootNode();
+                            org.jrubyparser.ast.Node root = parserResult.getRootNode();
                             if (root != null) {
                                 AnalysisResult ar = parserResult.getStructure();
                                 List<? extends AstElement> els = ar.getElements();
@@ -163,7 +163,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                                     // In Java, we look for a class with the name corresponding to the file.
                                     // It's not as simple in Ruby.
                                     AstElement element = els.get(0);
-                                    org.jruby.nb.ast.Node node = element.getNode();
+                                    org.jrubyparser.ast.Node node = element.getNode();
                                     treePathHandle = new RubyElementCtx(root, node,
                                             element, RubyUtils.getFileObject(parserResult), parserResult);
                                     refactoring.getContext().add(co);
@@ -670,7 +670,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     
         /** Search for local variables in local scope */
         private void findLocal(RubyElementCtx searchCtx, RubyElementCtx fileCtx, Node node, String name) {
-            switch (node.nodeId) {
+            switch (node.getNodeType()) {
             case ARGUMENTNODE:
                 // TODO - check parent and make sure it's not a method of the same name?
                 // e.g. if I have "def foo(foo)" and I'm searching for "foo" (the parameter),
@@ -740,7 +740,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                 
                 // Methods, attributes, etc.
                 // TODO - be more discriminating on the filetype
-                switch (node.nodeId) {
+                switch (node.getNodeType()) {
                 case DEFNNODE:
                 case DEFSNODE: {
                     if (((MethodDefNode)node).getName().equals(name)) {
@@ -827,7 +827,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                 }
             } else {
                 // Classes, modules, constants, etc.
-                switch (node.nodeId) {
+                switch (node.getNodeType()) {
                 case COLON2NODE: {
                     Colon2Node c2n = (Colon2Node)node;
                     if (c2n.getName().equals(name)) {

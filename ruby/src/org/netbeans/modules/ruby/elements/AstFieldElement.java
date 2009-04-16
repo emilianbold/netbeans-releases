@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-import org.jruby.nb.ast.ClassVarDeclNode;
-import org.jruby.nb.ast.ClassVarNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.ClassVarDeclNode;
+import org.jrubyparser.ast.ClassVarNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
