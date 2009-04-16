@@ -67,14 +67,12 @@ import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
-import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 /**
@@ -238,9 +236,12 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             StatusDisplayer.getDefault().setStatusText(
                     getMessage(success? "Status.RunSuccessful" : "Status.RunFailed")); // NOI18N
 
-            io.getOut().println(getMessage(
-                    success? "Output.RunSuccessful" : "Output.RunFailed", // NOI18N
-                    formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
+            String time = formatTime(System.currentTimeMillis() - startTimeMillis);
+            if (success) {
+                io.getOut().println(getMessage("Output.RunSuccessful", time)); // NOI18N);
+            } else {
+                io.getErr().println(getMessage("Output.RunFailed", exitCode, time)); // NOI18N
+            }
         }
         for (ExecutionListener l : listeners) {
             l.executionFinished(exitCode);
