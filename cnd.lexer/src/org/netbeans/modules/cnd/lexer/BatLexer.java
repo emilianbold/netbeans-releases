@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.lexer;
 
+import org.netbeans.cnd.api.lexer.BatTokenId;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
@@ -59,67 +60,67 @@ class BatLexer implements Lexer<BatTokenId> {
     private static Set<String> commands = new HashSet<String> ();
 
     static {
-        keywords.add ("aux");
-        keywords.add ("call");
-        keywords.add ("choice");
-        keywords.add ("defined");
-        keywords.add ("do");
-        keywords.add ("else");
-        keywords.add ("errorlevel");
-        keywords.add ("exist");
-        keywords.add ("endlocal");
-        keywords.add ("for");
-        keywords.add ("goto");
-        keywords.add ("if");
-        keywords.add ("in");
-        keywords.add ("not");
-        keywords.add ("nul");
-        keywords.add ("set");
-        keywords.add ("setlocal");
-        keywords.add ("shift");
-        keywords.add ("prn");
-        commands.add ("assign");
-        commands.add ("attrib");
-        commands.add ("cd");
-        commands.add ("chdir");
-        commands.add ("chkdsk");
-        commands.add ("cls");
-        commands.add ("comp");
-        commands.add ("copy");
-        commands.add ("date");
-        commands.add ("defrag");
-        commands.add ("del");
-        commands.add ("deltree");
-        commands.add ("dir");
-        commands.add ("echo");
-        commands.add ("echo.");
-        commands.add ("erase");
-        commands.add ("exit");
-        commands.add ("fc");
-        commands.add ("fdisk");
-        commands.add ("find");
-        commands.add ("format");
-        commands.add ("help");
-        commands.add ("label");
-        commands.add ("md");
-        commands.add ("mem");
-        commands.add ("memmaker");
-        commands.add ("mkdir");
-        commands.add ("more");
-        commands.add ("move");
-        commands.add ("path");
-        commands.add ("pause");
-        commands.add ("ren");
-        commands.add ("rename");
-        commands.add ("rd");
-        commands.add ("rmdir");
-        commands.add ("sort");
-        commands.add ("time");
-        commands.add ("tree");
-        commands.add ("type");
-        commands.add ("undelete");
-        commands.add ("ver");
-        commands.add ("xcopy");
+        keywords.add ("aux"); // NOI18N
+        keywords.add ("call"); // NOI18N
+        keywords.add ("choice"); // NOI18N
+        keywords.add ("defined"); // NOI18N
+        keywords.add ("do"); // NOI18N
+        keywords.add ("else"); // NOI18N
+        keywords.add ("errorlevel"); // NOI18N
+        keywords.add ("exist"); // NOI18N
+        keywords.add ("endlocal"); // NOI18N
+        keywords.add ("for"); // NOI18N
+        keywords.add ("goto"); // NOI18N
+        keywords.add ("if"); // NOI18N
+        keywords.add ("in"); // NOI18N
+        keywords.add ("not"); // NOI18N
+        keywords.add ("nul"); // NOI18N
+        keywords.add ("set"); // NOI18N
+        keywords.add ("setlocal"); // NOI18N
+        keywords.add ("shift"); // NOI18N
+        keywords.add ("prn"); // NOI18N
+        commands.add ("assign"); // NOI18N
+        commands.add ("attrib"); // NOI18N
+        commands.add ("cd"); // NOI18N
+        commands.add ("chdir"); // NOI18N
+        commands.add ("chkdsk"); // NOI18N
+        commands.add ("cls"); // NOI18N
+        commands.add ("comp"); // NOI18N
+        commands.add ("copy"); // NOI18N
+        commands.add ("date"); // NOI18N
+        commands.add ("defrag"); // NOI18N
+        commands.add ("del"); // NOI18N
+        commands.add ("deltree"); // NOI18N
+        commands.add ("dir"); // NOI18N
+        commands.add ("echo"); // NOI18N
+        commands.add ("echo."); // NOI18N
+        commands.add ("erase"); // NOI18N
+        commands.add ("exit"); // NOI18N
+        commands.add ("fc"); // NOI18N
+        commands.add ("fdisk"); // NOI18N
+        commands.add ("find"); // NOI18N
+        commands.add ("format"); // NOI18N
+        commands.add ("help"); // NOI18N
+        commands.add ("label"); // NOI18N
+        commands.add ("md"); // NOI18N
+        commands.add ("mem"); // NOI18N
+        commands.add ("memmaker"); // NOI18N
+        commands.add ("mkdir"); // NOI18N
+        commands.add ("more"); // NOI18N
+        commands.add ("move"); // NOI18N
+        commands.add ("path"); // NOI18N
+        commands.add ("pause"); // NOI18N
+        commands.add ("ren"); // NOI18N
+        commands.add ("rename"); // NOI18N
+        commands.add ("rd"); // NOI18N
+        commands.add ("rmdir"); // NOI18N
+        commands.add ("sort"); // NOI18N
+        commands.add ("time"); // NOI18N
+        commands.add ("tree"); // NOI18N
+        commands.add ("type"); // NOI18N
+        commands.add ("undelete"); // NOI18N
+        commands.add ("ver"); // NOI18N
+        commands.add ("xcopy"); // NOI18N
     }
 
 
@@ -254,7 +255,7 @@ class BatLexer implements Lexer<BatTokenId> {
                         return info.tokenFactory ().createToken (BatTokenId.KEYWORD);
                     if (commands.contains (lcid))
                         return info.tokenFactory ().createToken (BatTokenId.COMMAND);
-                    if ("rem".equals (lcid)) {
+                    if ("rem".equals (lcid)) { // NOI18N
                         do {
                             i = input.read ();
                         } while (

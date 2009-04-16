@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.lexer;
+package org.netbeans.cnd.api.lexer;
 
 import org.netbeans.api.lexer.TokenId;
 
@@ -48,22 +48,21 @@ import org.netbeans.api.lexer.TokenId;
  *
  * @author Jan Jancura
  */
-public enum ShTokenId implements TokenId {
+public enum BatTokenId implements TokenId {
 
-    KEYWORD ("keyword"),
-    COMMAND ("command"),
-    OPERATOR ("operator"),
-    LABEL ("label"),
-    WHITESPACE ("whitespace"),
-    NUMBER ("number"),
-    STRING ("string"),
-    IDENTIFIER ("identifier"),
-    COMMENT ("comment"),
-    ERROR ("error");
+    KEYWORD ("keyword"), // NOI18N
+    COMMAND ("command"), // NOI18N
+    OPERATOR ("operator"), // NOI18N
+    NUMBER ("number"), // NOI18N
+    WHITESPACE ("whitespace"), // NOI18N
+    IDENTIFIER ("identifier"), // NOI18N
+    STRING ("string"), // NOI18N
+    COMMENT ("comment"), // NOI18N
+    ERROR ("error"); // NOI18N
 
     private String  name;
     
-    ShTokenId (
+    BatTokenId (
         String  name
     ) {
         this.name = name;
