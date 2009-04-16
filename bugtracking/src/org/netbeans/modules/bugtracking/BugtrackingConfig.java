@@ -50,7 +50,7 @@ public class BugtrackingConfig {
 
     private static BugtrackingConfig instance = null;
     private static final String ARCHIVED_TTL  = "bugtracking.archived_time_to_live";      // NOI18N
-    private static long DEAFULT_ARCHIVED_TTL  = 1000 * 60 * 60 * 24 * 7;
+    private static long DEAFULT_ARCHIVED_TTL  = 7; // days
 
     private BugtrackingConfig() { }
 

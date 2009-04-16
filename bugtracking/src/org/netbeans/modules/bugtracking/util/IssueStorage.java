@@ -209,7 +209,7 @@ class IssueStorage {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start reading archived query issues {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         long now = System.currentTimeMillis();
-        long ttl = BugtrackingConfig.getInstance().getArchivedIssuesTTL();
+        long ttl = BugtrackingConfig.getInstance().getArchivedIssuesTTL() * 1000 * 60 * 60 * 24;
         try {
             File folder = getNameSpaceFolder(nameSpace);
             if(!folder.exists()) return Collections.emptyMap();
