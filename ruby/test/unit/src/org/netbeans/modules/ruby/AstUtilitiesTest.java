@@ -49,21 +49,21 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jruby.nb.ast.AliasNode;
-import org.jruby.nb.ast.ArrayNode;
-import org.jruby.nb.ast.AssignableNode;
-import org.jruby.nb.ast.ClassNode;
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.DStrNode;
-import org.jruby.nb.ast.DefnNode;
-import org.jruby.nb.ast.FCallNode;
-import org.jruby.nb.ast.IterNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.ReturnNode;
-import org.jruby.nb.ast.StrNode;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.AliasNode;
+import org.jrubyparser.ast.ArrayNode;
+import org.jrubyparser.ast.AssignableNode;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.DStrNode;
+import org.jrubyparser.ast.DefnNode;
+import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.IterNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.ReturnNode;
+import org.jrubyparser.ast.StrNode;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -127,7 +127,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         Node root = getRootNode("testfiles/ape.rb");
         Node node = AstUtilities.findBySignature(root, "Ape#@dialogs");
         assertNotNull(node);
-        assertEquals(node.nodeId, NodeType.INSTASGNNODE);
+        assertEquals(node.getNodeType(), NodeType.INSTASGNNODE);
         assertEquals("@dialogs", ((INameNode)node).getName());
     }
 
@@ -135,7 +135,7 @@ public class AstUtilitiesTest extends RubyTestBase {
         Node root = getRootNode("testfiles/ape.rb");
         Node node = AstUtilities.findBySignature(root, "Ape#@@debugging");
         assertNotNull(node);
-        assertEquals(node.nodeId, NodeType.CLASSVARASGNNODE);
+        assertEquals(node.getNodeType(), NodeType.CLASSVARASGNNODE);
         assertEquals("@@debugging", ((INameNode)node).getName());
     }
 

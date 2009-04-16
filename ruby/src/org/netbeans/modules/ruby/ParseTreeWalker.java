@@ -40,7 +40,7 @@
 package org.netbeans.modules.ruby;
 
 import java.util.List;
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.Node;
 
 /**
  * A walker to iterate over a JRuby parse tree

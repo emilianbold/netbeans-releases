@@ -47,11 +47,11 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.ClassNode;
-import org.jruby.nb.ast.FCallNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
+import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -182,7 +182,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                     type = callType;
                 }
             } else { // try method chaining
-                if (target.nodeId == NodeType.CALLNODE) {
+                if (target.getNodeType() == NodeType.CALLNODE) {
                     Node receiver = ((CallNode) target).getReceiverNode();
                     type = new RubyTypeInferencer(request.createContextKnowledge()).inferType(receiver);
                 }
@@ -409,7 +409,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                     Node node = it.next();
                     if (AstUtilities.isCall(node) &&
                             name.equals(AstUtilities.getCallName(node))) {
-                        if (node.nodeId == NodeType.CALLNODE) {
+                        if (node.getNodeType() == NodeType.CALLNODE) {
                             Node argsNode = ((CallNode) node).getArgsNode();
 
                             if (argsNode != null) {
@@ -424,7 +424,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                                     anchorOffset = argsNode.getPosition().getStartOffset();
                                 }
                             }
-                        } else if (node.nodeId == NodeType.FCALLNODE) {
+                        } else if (node.getNodeType() == NodeType.FCALLNODE) {
                             Node argsNode = ((FCallNode) node).getArgsNode();
 
                             if (argsNode != null) {
@@ -439,7 +439,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                                     anchorOffset = argsNode.getPosition().getStartOffset();
                                 }
                             }
-                        } else if (node.nodeId == NodeType.VCALLNODE) {
+                        } else if (node.getNodeType() == NodeType.VCALLNODE) {
                             // We might be completing at the end of a method call
                             // and we don't have parameters yet so it just looks like
                             // a vcall, e.g.
@@ -484,13 +484,13 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
                     if (kind == QuerySupport.Kind.EXACT) {
                         // For documentation popups, don't go up through blocks
-                        if (node.nodeId == NodeType.ITERNODE || node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE) {
+                        if (node.getNodeType() == NodeType.ITERNODE || node.getNodeType() == NodeType.DEFNNODE || node.getNodeType() == NodeType.DEFSNODE) {
                             // Don't consider calls outside the current block or method (149540)
                             break;
                         }
                     }
 
-                    if (node.nodeId == NodeType.CALLNODE) {
+                    if (node.getNodeType() == NodeType.CALLNODE) {
                         final OffsetRange callRange = AstUtilities.getCallRange(node);
                         if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
                             for (int i = 0; i < 3 && it.hasNext(); i++) {
@@ -533,7 +533,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                                 break;
                             }
                         }
-                    } else if (node.nodeId == NodeType.FCALLNODE) {
+                    } else if (node.getNodeType() == NodeType.FCALLNODE) {
                         final OffsetRange callRange = AstUtilities.getCallRange(node);
                         if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
                             for (int i = 0; i < 3 && it.hasNext(); i++) {
@@ -569,7 +569,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                                 break;
                             }
                         }
-                    } else if (node.nodeId == NodeType.VCALLNODE) {
+                    } else if (node.getNodeType() == NodeType.VCALLNODE) {
                         // We might be completing at the end of a method call
                         // and we don't have parameters yet so it just looks like
                         // a vcall, e.g.
@@ -608,13 +608,13 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
             if (index != -1 && haveSanitizedComma && call != null) {
                 Node an = null;
-                if (call.nodeId == NodeType.FCALLNODE) {
+                if (call.getNodeType() == NodeType.FCALLNODE) {
                     an = ((FCallNode) call).getArgsNode();
-                } else if (call.nodeId == NodeType.CALLNODE) {
+                } else if (call.getNodeType() == NodeType.CALLNODE) {
                     an = ((CallNode) call).getArgsNode();
                 }
                 if (an != null && index < an.childNodes().size() &&
-                        an.childNodes().get(index).nodeId == NodeType.HASHNODE) {
+                        an.childNodes().get(index).getNodeType() == NodeType.HASHNODE) {
                     // We should stay within the hashnode, so counteract the
                     // index++ which follows this if-block
                     index--;

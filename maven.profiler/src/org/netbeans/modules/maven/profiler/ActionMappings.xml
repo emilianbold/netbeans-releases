@@ -76,6 +76,24 @@ made subject to such option by the copyright holder.
     </action>
 
     <action>
+        <actionName>profile</actionName>
+        <packagings>
+            <packaging>nbm</packaging>
+            <packaging>nbm-application</packaging>
+        </packagings>
+        <goals>
+            <goal>nbm:cluster</goal>
+            <goal>nbm:run-ide</goal>
+        </goals>
+        <properties>
+            <netbeans.run.params>${profiler.args} -classpath %classpath ${packageClassName}</netbeans.run.params>
+            <exec.executable>${profiler.java}</exec.executable>
+            <profiler.action>profile</profiler.action>
+            <netbeans.execution>true</netbeans.execution>
+        </properties>
+    </action>
+
+    <action>
         <actionName>profile-single</actionName>
         <packagings>
             <packaging>jar</packaging>

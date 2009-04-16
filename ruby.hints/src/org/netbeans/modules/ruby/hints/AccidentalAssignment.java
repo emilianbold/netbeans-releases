@@ -45,10 +45,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jruby.nb.ast.IfNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.IfNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
@@ -90,15 +90,15 @@ public class AccidentalAssignment extends RubyAstRule {
         IfNode ifNode = (IfNode) node;
         Node condition = ifNode.getCondition();
         if (condition != null) {
-            if (condition.nodeId == NodeType.NEWLINENODE) {
+            if (condition.getNodeType() == NodeType.NEWLINENODE) {
                 List<Node> children = condition.childNodes();
                 if (children.size() == 0) {
                     return;
                 }
                 condition = children.get(0);
             }
-            if (((condition.nodeId == NodeType.LOCALASGNNODE) && !isFirstUsage(path, condition)) ||
-               (condition.nodeId == NodeType.ATTRASSIGNNODE)) {
+            if (((condition.getNodeType() == NodeType.LOCALASGNNODE) && !isFirstUsage(path, condition)) ||
+               (condition.getNodeType() == NodeType.ATTRASSIGNNODE)) {
                 String displayName = NbBundle.getMessage(AccidentalAssignment.class,
                         "AccidentalAssignment");
                 OffsetRange range = AstUtilities.getRange(condition);
@@ -179,7 +179,7 @@ public class AccidentalAssignment extends RubyAstRule {
             BaseDocument doc = context.doc;
             OffsetRange range = AstUtilities.getNameRange(assignment);
             int endOffset = range.getEnd();
-            if (assignment.nodeId == NodeType.ATTRASSIGNNODE) {
+            if (assignment.getNodeType() == NodeType.ATTRASSIGNNODE) {
                 // Workaround: the name-range of attr nodes isn't computed 
                 // correctly so just use the LHS
                 endOffset = range.getStart();
@@ -230,7 +230,7 @@ public class AccidentalAssignment extends RubyAstRule {
                     return true;
                 }
             }
-            switch (node.nodeId) {
+            switch (node.getNodeType()) {
             case LOCALVARNODE:
                 names.add(((INameNode) node).getName());
                 break;
@@ -243,7 +243,7 @@ public class AccidentalAssignment extends RubyAstRule {
         }
 
         public boolean unvisit(Node node) {
-            switch (node.nodeId) {
+            switch (node.getNodeType()) {
             case LOCALASGNNODE:
                 names.add(((INameNode) node).getName());
                 break;

@@ -41,8 +41,8 @@ package org.netbeans.modules.ruby.hints.introduce;
 import org.netbeans.modules.ruby.ParseTreeVisitor;
 import java.util.ArrayList;
 import java.util.List;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 
 /**
  * Finder which determines if the given range in the AST represents a valid range for
@@ -58,7 +58,7 @@ class IntroduceKindFinder implements ParseTreeVisitor {
     private boolean simple = true;
 
     public boolean visit(Node node) {
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
         // I can't handle these kinds of flow control yet:
         case RETURNNODE:
         // I should be able to handle break and next if the loop which these are referring

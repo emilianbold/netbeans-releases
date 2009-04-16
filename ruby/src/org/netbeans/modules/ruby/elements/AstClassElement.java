@@ -2,11 +2,11 @@ package org.netbeans.modules.ruby.elements;
 
 import java.util.Set;
 
-import org.jruby.nb.ast.ClassNode;
-import org.jruby.nb.ast.Colon3Node;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.SClassNode;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.Colon3Node;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.SClassNode;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 
