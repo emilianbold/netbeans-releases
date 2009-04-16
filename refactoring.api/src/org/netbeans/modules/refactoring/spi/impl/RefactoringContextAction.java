@@ -82,20 +82,22 @@ public final class RefactoringContextAction extends AbstractAction implements Co
     }
 
     public JMenuItem getMenuPresenter() {
-        return new InlineMenu(context);
+        return new InlineMenu(context, false);
     }
 
     public JMenuItem getPopupPresenter() {
-        return new InlineMenu(context);
+        return new InlineMenu(context, true);
     }
 
     private static final class InlineMenu extends JMenuItem implements DynamicMenuContent {
 
         private static final JComponent[] EMPTY_CONTENT = new JComponent[0];
         private Lookup context;
+        private final boolean popup;
 
-        public InlineMenu(Lookup context) {
+        public InlineMenu(Lookup context, boolean popup) {
             this.context = context;
+            this.popup = popup;
         }
 
         public JComponent[] getMenuPresenters() {
@@ -125,7 +127,7 @@ public final class RefactoringContextAction extends AbstractAction implements Co
                     : null;
 
             if (actionProvider != null) {
-                return actionProvider.getMenuItems();
+                return actionProvider.getMenuItems(popup);
             } else {
                 return EMPTY_CONTENT;
             }

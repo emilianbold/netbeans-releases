@@ -62,6 +62,7 @@ public final class Context {
     private final String indexerName;
     private final int indexerVersion;
     private final boolean followUpJob;
+    private final boolean checkForEditorModifications;
     
     private FileObject root;
     private IndexingSupport indexingSupport;
@@ -71,7 +72,9 @@ public final class Context {
 
     Context (final FileObject indexBaseFolder,
              final URL rootURL, final String indexerName, final int indexerVersion,
-             final IndexFactoryImpl factory, boolean followUpJob) throws IOException {
+             final IndexFactoryImpl factory, boolean followUpJob,
+             final boolean checkForEditorModifications
+    ) throws IOException {
         assert indexBaseFolder != null;
         assert rootURL != null;
         assert indexerName != null;
@@ -83,6 +86,7 @@ public final class Context {
         this.followUpJob = followUpJob;
         final String path = getIndexerPath(indexerName, indexerVersion); //NOI18N
         this.indexFolder = FileUtil.createFolder(this.indexBaseFolder,path);
+        this.checkForEditorModifications = checkForEditorModifications;
     }
 
     /**
@@ -134,7 +138,7 @@ public final class Context {
      * @since 1.3
      */
     public void addSupplementaryFiles(URL root, Collection<? extends URL> files) {
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, true, false);
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, true, false, false);
     }
 
     /**
@@ -142,12 +146,31 @@ public final class Context {
      * {@link #addSupplementaryFiles(java.net.URL, java.util.Collection) } method.
      *
      * @return <code>true</code> if the indexing job was requested by <code>addSupplementaryFiles</code>,
-     *   otherwise <code>false</code>
+     *   otherwise <code>false</code>.
      *
      * @since 1.3
      */
     public boolean isSupplementaryFilesIndexing() {
         return followUpJob;
+    }
+
+    /**
+     * Notifies indexers whether they should use editor documents rather than just
+     * files. This is mostly useful for <code>CustomIndexer</code>s that may optimize
+     * their work and not try to find editor documents for their <code>Indexable</code>s.
+     *
+     * <p><code>EmbeddingIndexer</code>s can safely ignore this flag since they operate
+     * on <code>Parser.Result</code>s and <code>Snapshot</code>s, which are guaranteed
+     * to be in sync with editor documents or loaded efficiently from a file if the
+     * file is not opened in the editor.
+     *
+     * @return <code>false</code> if indexers don't have to care about possible
+     *   editor modifications or <code>true</code> otherwise.
+     * 
+     * @since 1.10
+     */
+    public boolean checkForEditorModifications() {
+        return checkForEditorModifications;
     }
 
     String getIndexerName () {

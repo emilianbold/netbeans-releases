@@ -116,7 +116,7 @@ public class HtmlIndenterTest extends TestBase2 {
         // misc broken HTML:
         format(
             "<html>\n<xbody>\n<h1>Hello World!</h1>\n<p>text\n</body>",
-            "<html>\n    <xbody>\n        <h1>Hello World!</h1>\n        <p>text\n    </body>", null);
+            "<html>\n    <xbody>\n        <h1>Hello World!</h1>\n        <p>text\n            </body>", null);
         format("<html>\n<body>\n<div>\nSome text\n<!--\n     Some comment\n       * bullet\n       * bullet2\n-->\n</div>\n</body>\n</html>\n",
                "<html>\n    <body>\n        <div>\n            Some text\n            <!--\n                 Some comment\n                   * bullet\n                   * bullet2\n            -->\n        </div>\n    </body>\n</html>\n", null);
         format("<html>\n<body>\n<pre>Some\ntext which\n  should not be formatted.\n \n </pre>\n</body>\n</html>\n",
@@ -188,6 +188,10 @@ public class HtmlIndenterTest extends TestBase2 {
         reformatFileContents("testfiles/simple03.html",new IndentPrefs(4,4));
     }
 
+    public void testFormattingHTML04() throws Exception {
+        reformatFileContents("testfiles/simple04.html",new IndentPrefs(4,4));
+    }
+
     public void testIndentation() throws Exception {
         insertNewline("<html>^</html>", "<html>\n    ^\n</html>", null);
         insertNewline("        <table>\n            <tr>\n                <td>^</td>\n            </tr>\n</table>",
@@ -227,7 +231,7 @@ public class HtmlIndenterTest extends TestBase2 {
         // misc invalid HTML doc formatting:
         insertNewline(
             "<html>\n    <xbody>\n        <h1>Hello World!</h1>\n        <p>text\n^</body>",
-            "<html>\n    <xbody>\n        <h1>Hello World!</h1>\n        <p>text\n\n    ^</body>", null);
+            "<html>\n    <xbody>\n        <h1>Hello World!</h1>\n        <p>text\n\n            ^</body>", null);
 
         // #149719
         insertNewline(

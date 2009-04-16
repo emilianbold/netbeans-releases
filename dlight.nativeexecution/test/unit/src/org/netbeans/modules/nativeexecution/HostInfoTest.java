@@ -81,7 +81,7 @@ public class HostInfoTest {
 
     @Test
     public void testGetHostInfo() {
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "129.159.127.252", 22);
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "129.159.127.252", 22); // NOI18N
         ConnectionManager cm = ConnectionManager.getInstance();
         try {
             cm.connectTo(execEnv, password.toCharArray(), false);
@@ -92,7 +92,7 @@ public class HostInfoTest {
         }
 
         try {
-            System.out.println("Tempdir is " + HostInfoUtils.getTempDir(execEnv));
+            System.out.println("Tempdir is " + HostInfoUtils.getTempDir(execEnv)); // NOI18N
         } catch (ConnectException ex) {
             Exceptions.printStackTrace(ex);
         }

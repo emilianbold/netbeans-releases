@@ -196,6 +196,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                                        new SearchBar.IncrementalSearchBackwardAction(),
                                        new ToggleToolbarAction(),
                                        new NbToggleLineNumbersAction(),
+                                       new NbGenerateGoToPopupAction(),
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
@@ -589,7 +590,8 @@ public class NbEditorKit extends ExtKit implements Callable {
         }
     }
 
-    @EditorActionRegistration(name = generateGoToPopupAction)
+    // Annotation registration disabled due to overriding in GSF kit
+//    @EditorActionRegistration(name = generateGoToPopupAction)
     public static class NbGenerateGoToPopupAction extends BaseAction {
 
         public NbGenerateGoToPopupAction() {

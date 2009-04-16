@@ -542,8 +542,8 @@ public class CompilerSetManager {
     }
 
     public List<CompilerSet> findRemoteCompilerSets(String path) {
-        final CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
-        String[] arData = provider.getCompilerSetData(executionEnvironment, path);
+        final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
+        String[] arData = provider.getCompilerSetData(path);
         List<CompilerSet> css = new ArrayList<CompilerSet>();
         if (arData != null) {
             for (String data : arData) {
@@ -635,7 +635,7 @@ public class CompilerSetManager {
         if (remoteInitialization != null) {
             return;
         }
-        final CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
+        final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
         ServerList registry = Lookup.getDefault().lookup(ServerList.class);
         assert registry != null;
         assert provider != null;
@@ -659,7 +659,6 @@ public class CompilerSetManager {
                     public void run() {
                         try {
                             CompilerSetReporter.report("CSM_ConfHost");//NOI18N
-                            provider.init(executionEnvironment); //NOI18N
                             platform = provider.getPlatform();
                             CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
                             CompilerSetReporter.report("CSM_LFTC"); //NOI18N
@@ -710,7 +709,7 @@ public class CompilerSetManager {
     }
 
     public void finishInitialization() {
-        CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
+        CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
         List<CompilerSet> setsCopy = new ArrayList<CompilerSet>(sets);
         Runnable compilerSetDataLoader = provider.createCompilerSetDataLoader(setsCopy);
         CndUtils.assertFalse(compilerSetDataLoader == null);
