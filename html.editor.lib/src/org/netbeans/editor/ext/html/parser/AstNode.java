@@ -128,6 +128,9 @@ public class AstNode {
 //    }
 
     boolean isResolved() {
+        if(content == null) {
+            return false;
+        }
         //#PCDATA hack
         if(content.getPossibleElements().size() == 1) {
             if(content.getPossibleElements().iterator().next() == null) {
