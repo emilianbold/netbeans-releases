@@ -73,14 +73,16 @@ public class SourceIndexer {
     private final URL rootURL;
     private final FileObject cache;
     private final boolean followUpJob;
+    private final boolean checkForEditorModifications;
     private final Map<String,EmbeddingIndexerFactory> embeddedIndexers = new HashMap<String, EmbeddingIndexerFactory>();
 
-    public SourceIndexer (final URL rootURL, final FileObject cache, final boolean followUpJob) {
+    public SourceIndexer(URL rootURL, FileObject cache, boolean followUpJob, boolean checkForEditorModifications) {
         assert rootURL != null;
         assert cache != null;
         this.rootURL = rootURL;
         this.cache = cache;
         this.followUpJob = followUpJob;
+        this.checkForEditorModifications = checkForEditorModifications;
     }
 
     protected void index(Iterable<? extends Indexable> files, final List<Context> transactionContexts) throws IOException {
@@ -108,7 +110,7 @@ public class SourceIndexer {
                                 if (pr != null) {
                                     final String indexerName = currentIndexerFactory.getIndexerName();
                                     final int indexerVersion = currentIndexerFactory.getIndexVersion();
-                                    final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob);
+                                    final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkForEditorModifications);
                                     transactionContexts.add(context);
 
                                     final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty, pr.getSnapshot());
