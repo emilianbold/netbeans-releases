@@ -359,7 +359,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
                             LOGGER.log(Level.INFO, "Remote On Save Fail: ", exc);
                             String message = NbBundle.getMessage(CopySupport.class, "LBL_Remote_On_Save_Fail");
                             Object continueCopying = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, JOptionPane.YES_NO_OPTION));
-                            if (!continueCopying.equals(JOptionPane.YES_OPTION)) {
+                            if (continueCopying.equals(JOptionPane.YES_OPTION)) {
                                 remoteFactoryError = true;
                                 LOGGER.log(Level.INFO, "Remote On Save  Disabled By User", exc);
                             }
