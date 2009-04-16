@@ -365,22 +365,17 @@ public final class EventSupport {
                 }
                 if (source != null) {
                     Object rawValue = evt.getNewValue();
-                    assert rawValue instanceof Boolean;
-                    if (rawValue instanceof Boolean) {
-                        final boolean value = (Boolean)rawValue;
-                        if (value) {
-                            assert this.request == null;
-                            this.request = TaskProcessor.resetState(source, false, false);
-                            SourceAccessor.getINSTANCE().getEventSupport(source).k24 = true;
-                        }
-                        else {
-                            TaskProcessor.Request _request = this.request;
-                            this.request = null;
-                            final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
-                            support.k24 = false;
-                            support.resetTask.schedule(TaskProcessor.reparseDelay);
-                            TaskProcessor.resetStateImplAsync(_request);
-                        }
+                    if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
+                        assert this.request == null;
+                        this.request = TaskProcessor.resetState(source, false, false);
+                        SourceAccessor.getINSTANCE().getEventSupport(source).k24 = true;
+                    } else {
+                        TaskProcessor.Request _request = this.request;
+                        this.request = null;
+                        final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
+                        support.k24 = false;
+                        support.resetTask.schedule(TaskProcessor.reparseDelay);
+                        TaskProcessor.resetStateImplAsync(_request);
                     }
                 }
             }
