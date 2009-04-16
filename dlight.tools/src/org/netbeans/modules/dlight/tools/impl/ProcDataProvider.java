@@ -36,9 +36,9 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.tools.impl;
 
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -52,7 +52,6 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -96,16 +95,16 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
         return NAME;
     }
 
-    public void targetStateChanged(DLightTarget target, State oldState, State newState) {
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case RUNNING:
-                targetStarted(target);
+                targetStarted(event.target);
                 break;
             case DONE:
             case FAILED:
             case STOPPED:
             case TERMINATED:
-                targetFinished(target);
+                targetFinished(event.target);
                 break;
         }
     }
@@ -144,6 +143,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
             return ValidationStatus.validStatus();
         } catch (ConnectException ex) {
             AsynchronousAction connectAction = ConnectionManager.getInstance().getConnectToAction(env, new Runnable() {
+
                 public void run() {
                     DLightManager.getDefault().revalidateSessions();
                 }
@@ -199,7 +199,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
             NativeProcessBuilder npb = new NativeProcessBuilder(env, HostInfoUtils.getShell(env));
             ExecutionDescriptor descr = new ExecutionDescriptor();
             descr = descr.inputOutput(InputOutput.NULL);
-            int pid = ((AttachableTarget)target).getPID();
+            int pid = ((AttachableTarget) target).getPID();
             String os = HostInfoUtils.getOS(env);
             Engine engine;
             if ("Linux".equals(os)) {
@@ -235,6 +235,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
      * ProcDataProvider backend.
      */
     /*package*/ static interface Engine extends InputProcessorFactory {
+
         String getCommand(int pid);
     }
 
@@ -246,7 +247,6 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
     /*package*/ void notifyIndicators(DataRow row) {
         super.notifyIndicators(Collections.singletonList(row));
     }
-
 
     private static String getMessage(String name) {
         return NbBundle.getMessage(ProcDataProvider.class, name);

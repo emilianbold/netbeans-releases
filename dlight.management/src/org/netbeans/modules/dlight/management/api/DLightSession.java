@@ -39,8 +39,8 @@
 package org.netbeans.modules.dlight.management.api;
 
 import org.netbeans.modules.dlight.api.execution.DLightSessionContext;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -97,22 +97,22 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         ANALYZE,
     }
 
-    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case RUNNING:
-                targetStarted(source);
+                targetStarted(event.target);
                 break;
             case FAILED:
-                targetFinished(source);
+                targetFinished(event.target);
                 break;
             case TERMINATED:
-                targetFinished(source);
+                targetFinished(event.target);
                 break;
             case DONE:
-                targetFinished(source);
+                targetFinished(event.target);
                 break;
             case STOPPED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
         }
     }

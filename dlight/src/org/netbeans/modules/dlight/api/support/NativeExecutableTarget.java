@@ -54,6 +54,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -83,6 +84,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private String cmd;
     private volatile Future<Integer> targetFutureResult;
     private volatile int pid = -1;
+    private volatile Integer status = null;
     private final Object stateLock = new String(NativeExecutableTarget.class.getName() + " - state lock"); // NOI18N
     private volatile State state;
 
@@ -134,14 +136,12 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             return;
         }
 
-        DLightTarget.State targetPrevState;
-        DLightTarget.State targetNewState;
         NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
         NativeProcess process = (NativeProcess) event.getSource();
 
-        synchronized (stateLock) {
-            targetPrevState = state;
+        State newState = null;
 
+        synchronized (stateLock) {
             switch (event.state) {
                 case INITIAL:
                     state = State.INIT;
@@ -164,28 +164,27 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                     break;
                 case FINISHED:
                     state = State.DONE;
+                    status = process.exitValue();
                     break;
             }
-
-            targetNewState = state;
+            
+            newState = state;
         }
 
-        notifyListeners(targetPrevState, targetNewState);
+        notifyListeners(new DLightTargetChangeEvent(this, newState, status));
     }
 
     public int getExitCode() throws InterruptedException {
-//      TODO: uncomment when deadlock is fixed
-//        if (targetFutureResult != null) {
-//            try {
-//                return targetFutureResult.get();
-//            } catch (ExecutionException ex) {
-//                DLightLogger.instance.warning(ex.getMessage());
-//            } catch (Throwable t) {
-//                t.printStackTrace();
-//            }
-//        }
-//        return -1;
-        return 0;
+        if (targetFutureResult != null) {
+            try {
+                return targetFutureResult.get();
+            } catch (ExecutionException ex) {
+                DLightLogger.instance.warning(ex.getMessage());
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
+        return -1;
     }
 
     public boolean canBeSubstituted() {
