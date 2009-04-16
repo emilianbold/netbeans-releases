@@ -941,7 +941,7 @@ public final class MakeProject implements Project, AntProjectListener {
             }
 
             List<PathResourceImplementation> list = new LinkedList<PathResourceImplementation>();
-            SourceGroup [] groups = sources.getSourceGroups("generic");
+            SourceGroup [] groups = sources.getSourceGroups("generic"); // NOI18N
             for(SourceGroup g : groups) {
                 try {
                     list.add(ClassPathSupport.createResource(g.getRootFolder().getURL()));

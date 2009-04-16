@@ -84,9 +84,9 @@ public class MakeProjectPaths extends PathRecognizer {
     // -----------------------------------------------------------------------
 
     private static final Set<String> MIME_TYPES = new HashSet<String>(Arrays.asList(new String[] {
-        "text/x-h", "text/x-c++", "text/x-c", "text/x-fortran",
-        "text/x-make", "text/sh", "text/bat", "text/x-visu",
-        "text/x-lex", "text/x-yacc", "text/x-asm", "text/qtui+xml",
-        "text/qtresource+xml", "text/qttranslation+xml"
+        "text/x-h", "text/x-c++", "text/x-c", "text/x-fortran", // NOI18N
+        "text/x-make", "text/sh", "text/bat", "text/x-visu", // NOI18N
+        "text/x-lex", "text/x-yacc", "text/x-asm", "text/qtui+xml", // NOI18N
+        "text/qtresource+xml", "text/qttranslation+xml" // NOI18N
     }));
 }
