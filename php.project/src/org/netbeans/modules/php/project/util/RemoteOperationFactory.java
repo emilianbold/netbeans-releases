@@ -214,6 +214,11 @@ final class RemoteOperationFactory extends FileOperationFactory {
         return remoteClient;
     }
 
+    @Override
+    synchronized void invalidate() {
+        remoteClient = null;
+    }
+
     protected static RemoteConfiguration getRemoteConfiguration(PhpProject project) {
         String configName = getRemoteConfigurationName(project);
         assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";

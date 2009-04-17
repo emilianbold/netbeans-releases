@@ -105,7 +105,13 @@ public class HashListConvert extends RubyAstRule {
     private static int getCommaOffset(RubyRuleContext context, ListNode listNode, int pair) {
         int prevEnd = listNode.get(2*pair).getPosition().getEndOffset();
         int nextStart = listNode.get(2*pair+1).getPosition().getStartOffset();
-        OffsetRange lexRange = LexUtilities.getLexerOffsets(context.parserResult, 
+        //XXX: there is a bug in the parser that causes it to return invalid offsets
+        // for keys in hashes that use the new 1.9 syntax (e.g. {one: "one"})
+        if (nextStart < prevEnd) {
+            return -1;
+        }
+
+        OffsetRange lexRange = LexUtilities.getLexerOffsets(context.parserResult,
                 new OffsetRange(prevEnd, nextStart));
         if (lexRange == OffsetRange.NONE) {
             return -1;

@@ -284,4 +284,9 @@ final class LocalOperationFactory extends FileOperationFactory {
     private static boolean isPairValid(Pair<FileObject, File> pair) {
         return pair != null && pair.first != null && pair.second != null;
     }
+
+    @Override
+    void invalidate() {
+        // ignored
+    }
 }
