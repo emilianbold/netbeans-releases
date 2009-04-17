@@ -759,7 +759,7 @@ public final class ModuleList {
     }
     
     private static PropertyEvaluator parseSuiteProperties(File root) throws IOException {
-        Map<String,String> predefs = NbCollections.checkedMapByCopy(System.getProperties(), String.class, String.class, false);
+        Map<String,String> predefs = NbCollections.checkedMapByCopy((Map) System.getProperties().clone(), String.class, String.class, false);
         predefs.put("basedir", root.getAbsolutePath()); // NOI18N
         PropertyProvider predefsProvider = PropertyUtils.fixedPropertyProvider(predefs);
         List<PropertyProvider> providers = new ArrayList<PropertyProvider>();
