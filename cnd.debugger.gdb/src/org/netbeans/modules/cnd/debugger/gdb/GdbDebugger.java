@@ -1142,9 +1142,8 @@ public class GdbDebugger implements PropertyChangeListener {
 
     /** Handle gdb responses starting with '*' */
     public void execAsyncOutput(int token, String msg) {
-        Map<String, String> map;
-
         if (msg.startsWith("*stopped")) { // NOI18N
+            Map<String, String> map;
             if (msg.length() > 9) {
                 map = GdbUtils.createMapFromString(msg.substring(9));
             } else {
@@ -1587,7 +1586,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * @param token The token responsible for this stop
      * @param reason A reason why program is stopped
      */
-    public void stopped(int token, Map<String, String> map) {
+    private void stopped(int token, Map<String, String> map) {
         String reason = map.get("reason"); // NOI18N
 
         if (state == State.STARTING) {
@@ -1617,7 +1616,7 @@ public class GdbDebugger implements PropertyChangeListener {
             return;
         }
 
-        log.finest("GD.stopped[" + GdbUtils.threadId() + "]:\n"); // NOI18N
+        log.finest("GD.stopped[" + GdbUtils.threadId() + "]: Reason is " + reason);
         tlog("GD.stopped: Reason is " + reason); // NOI18N
         resetThreadInfo();
         if (reason != null) {
