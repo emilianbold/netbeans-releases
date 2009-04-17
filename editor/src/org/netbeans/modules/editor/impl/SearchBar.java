@@ -221,33 +221,37 @@ public final class SearchBar extends JPanel {
                 if (actionName == null) {
                     LOG.warning("SearchBar: Null Action.NAME property of action: " + action + "\n");
                 }
-                if (actionName.equals(INCREMENTAL_SEARCH_FORWARD)) {
+                //keystroke for incremental search forward and
+                //keystroke to add standard search next navigation in search bar (by default F3 on win)
+                else if (actionName.equals(INCREMENTAL_SEARCH_FORWARD) || actionName.equals(BaseKit.findNextAction)) {
                     Action incrementalSearchForwardAction = action;
                     KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchForwardAction);
                     if (keyStrokes != null) {
                         InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
                         for(KeyStroke ks : keyStrokes) {
-                            LOG.fine("found IncrementalSearchForwardAction, " + ks); //NOI18N
-                            inputMap.put(ks, INCREMENTAL_SEARCH_FORWARD);
+                            LOG.fine("found forward search action, " + ks); //NOI18N
+                            inputMap.put(ks, actionName);
                         }
-                        getActionMap().put(INCREMENTAL_SEARCH_FORWARD,
+                        getActionMap().put(actionName,
                             new AbstractAction() {
                                 public void actionPerformed(ActionEvent e) {
                                     findNext();
                                 }
                             });
                     }
+                }
                 // Discover the keyStrokes for incremental-search-backward
-                } else if (action.getValue(Action.NAME).equals(INCREMENTAL_SEARCH_BACKWARD)) {
+                // Discover the keyStrokes for search-backward
+                else if (actionName.equals(INCREMENTAL_SEARCH_BACKWARD) || actionName.equals(BaseKit.findPreviousAction)) {
                     Action incrementalSearchBackwardAction = action;
                     KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchBackwardAction);
                     if (keyStrokes != null) {
                         InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
                         for(KeyStroke ks : keyStrokes) {
-                            LOG.fine("found IncrementalSearchBackwardAction, " + ks); //NOI18N
-                            inputMap.put(ks, INCREMENTAL_SEARCH_BACKWARD);
+                            LOG.fine("found backward search action, " + ks); //NOI18N
+                            inputMap.put(ks, actionName);
                         }
-                        getActionMap().put(INCREMENTAL_SEARCH_BACKWARD,
+                        getActionMap().put(actionName,
                             new AbstractAction() {
                                 public void actionPerformed(ActionEvent e) {
                                     findPrevious();
@@ -985,5 +989,5 @@ public final class SearchBar extends JPanel {
     
     private void switchHighlightResults() {
         prefs().putBoolean(IS_HIGHLIGHT_RESULTS, !getHighlightResults());
-    }
+    }  
 }
