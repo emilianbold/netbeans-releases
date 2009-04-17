@@ -92,7 +92,11 @@ public abstract class ContextAction extends NodeAction {
     protected abstract String getBaseName(Node[] activatedNodes);
 
     protected boolean enable(Node[] nodes) {
-        return getCachedContext(nodes).getRootFiles().length > 0;
+        File[] rootFiles = getCachedContext(nodes).getRootFiles();
+        // has at least one file as a root node -> either all rootfiles are managed or all rootfiles are unmanaged
+        // should not have mixed version and unversioned files
+        // -> action is disabled if any of the files is unmanaged
+        return rootFiles.length > 0 && SvnUtils.isManaged(rootFiles[0]);
     }
     
     /**
