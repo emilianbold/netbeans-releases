@@ -74,6 +74,9 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
         Map<String, UpdateItem> res = new HashMap<String, UpdateItem> ();
         FEATURES: for (FeatureInfo fi : FeatureManager.features()) {
+            if (!fi.isPresent()) {
+                continue;
+            }
             String prefCnb = fi.getFeatureCodeNameBase();
             if (prefCnb == null) {
                 continue;
