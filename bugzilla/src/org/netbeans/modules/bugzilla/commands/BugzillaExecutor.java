@@ -175,11 +175,11 @@ public class BugzillaExecutor {
                 if(INVALID_USERNAME_OR_PASSWORD.equals(msg) ||
                    msg.contains(INVALID_USERNAME_OR_PASSWORD))
                 {
-                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD"); // XXX bundle me
+                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD"); 
                 } else if(msg.startsWith(REPOSITORY_LOGIN_FAILURE) ||
                          (msg.startsWith(REPOSITORY) && msg.endsWith(COULD_NOT_BE_FOUND)))
                 {
-                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_UNABLE_LOGIN_TO_REPOSITORY"); // XXX replace with own bundle value
+                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_UNABLE_LOGIN_TO_REPOSITORY"); 
                 }
             }
             return null;
@@ -190,7 +190,7 @@ public class BugzillaExecutor {
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
                 if(msg.startsWith(MIDAIR_COLLISION)) {
-                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_MID-AIR_COLLISION"); // XXX bundle me
+                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_MID-AIR_COLLISION"); 
                 }
             }
             return null;

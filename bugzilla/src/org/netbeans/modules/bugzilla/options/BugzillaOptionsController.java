@@ -93,11 +93,11 @@ public final class BugzillaOptionsController extends OptionsPanelController impl
             try {
                 int i = Integer.parseInt(s);
                 if(i < 5) {
-                    panel.errorLabel.setText(NbBundle.getMessage(BugzillaOptionsController.class, "MSG_MUST_BE_GREATER_THEN_5")); // XXX bundle me
+                    panel.errorLabel.setText(NbBundle.getMessage(BugzillaOptionsController.class, "MSG_MUST_BE_GREATER_THEN_5")); 
                     return false;
                 }
             } catch (NumberFormatException e) {
-                panel.errorLabel.setText(NbBundle.getMessage(BugzillaOptionsController.class, "MSG_INVALID_VALUE")); // XXX bundle me
+                panel.errorLabel.setText(NbBundle.getMessage(BugzillaOptionsController.class, "MSG_INVALID_VALUE")); 
                 return false;
             }
         }
