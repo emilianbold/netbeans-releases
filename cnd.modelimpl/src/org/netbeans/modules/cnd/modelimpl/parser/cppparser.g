@@ -1772,16 +1772,16 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
 
 enum_specifier
 	:	LITERAL_enum
-		(	LCURLY! enumerator_list 
-            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-            | RCURLY )
+		(	LCURLY enumerator_list 
+                        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+                        | RCURLY )
 		|	id:ID     // DW 22/04/03 Suggest qualified_id here to satisfy
 				  // elaborated_type_specifier
 			{beginEnumDefinition(id.getText());}
-			(LCURLY! enumerator_list 
-                ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-                | RCURLY )
-            )
+			(LCURLY enumerator_list 
+                            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+                            | RCURLY )
+                        )
 			{endEnumDefinition();}
 		)
 	;
