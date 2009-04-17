@@ -623,9 +623,9 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             } else {
                 Map<String, Object> map = getTypeInfo().getMap();
                 if (map != null) { // a null map means we never got type information
-                    if (map.isEmpty() && v.charAt(0) != '{') {
+                    if (map.isEmpty() || v.indexOf('{') == -1) {
                         // an empty map means its a pointer to a non-struct/class/union
-                        createChildrenForPointer(t, v);
+                        addField(new AbstractField(this, '*' + getName(), t, v));
                     } else if (v.equals("<incomplete type>")) { // NOI18N
                         addField(new AbstractField(this, "", t, v)); // NOI18N
                     } else if (v.length() > 0) {
@@ -648,10 +648,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 }
             }
         }
-    }
-
-    private void createChildrenForPointer(String t, String v) {
-            addField(new AbstractField(this, '*' + getName(), t, v));
     }
 
     private void createChildrenForMultiPointer(String t) {

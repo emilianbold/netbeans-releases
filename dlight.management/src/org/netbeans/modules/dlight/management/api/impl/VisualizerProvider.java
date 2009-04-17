@@ -36,52 +36,47 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.management.api.impl;
 
 import java.util.Collection;
-import java.util.Iterator;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;
 import org.openide.util.Lookup;
 
-
-
 public final class VisualizerProvider {
-  private static VisualizerProvider instance = null;
 
-  private VisualizerProvider() {
+    private static VisualizerProvider instance = null;
 
-  }
-
-  public static final VisualizerProvider getInstance(){
-    if(instance == null){
-      instance = new VisualizerProvider();
+    private VisualizerProvider() {
     }
-    return instance;
-  }
 
+    public static final VisualizerProvider getInstance() {
+        if (instance == null) {
+            instance = new VisualizerProvider();
+        }
+        return instance;
+    }
 
-  /**
-   * Creates new Visualizer instance on the base of DataCollectorConfiguration
-   * @param configuraiton
-   * @return new instance of data collector is returned each time this method is invoked;
-   */
-   public Visualizer createVisualizer(VisualizerConfiguration configuraiton, VisualizerDataProvider provider){
-    Collection<? extends VisualizerFactory> result = Lookup.getDefault().lookupAll(VisualizerFactory.class);
-    if (result.isEmpty()){
-      return null;
+    /**
+     * Creates new Visualizer instance on the base of DataCollectorConfiguration
+     * @param configuraiton
+     * @return new instance of data collector is returned each time this method is invoked;
+     */
+    public Visualizer<?> createVisualizer(VisualizerConfiguration configuration, VisualizerDataProvider provider) {
+        Collection<? extends VisualizerFactory> result = Lookup.getDefault().lookupAll(VisualizerFactory.class);
+        if (result.isEmpty()) {
+            return null;
+        }
+        for (VisualizerFactory visualizerFactory : result) {
+            if (visualizerFactory.getID().equals(configuration.getID())) {
+                @SuppressWarnings("unchecked")
+                // Impossible to do it in checked manner. Have to rely on factory ID check.
+                Visualizer<?> visualizer = visualizerFactory.create(configuration, provider);
+                return visualizer;
+            }
+        }
+        return null;
     }
-    Iterator<? extends VisualizerFactory> iterator = result.iterator();
-    while (iterator.hasNext()){
-      VisualizerFactory visualizerFactory = iterator.next();
-      if (visualizerFactory.getID().equals(configuraiton.getID())){
-        return visualizerFactory.create(configuraiton, provider);
-      }
-    }
-    return null;
-  }
-  
 }
