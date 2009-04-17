@@ -210,9 +210,6 @@ public class EdgeWidget extends ConnectionWidget {
         DefaultArtifactVersion edgeV = new DefaultArtifactVersion(edge.getTarget().getArtifact().getVersion());
         DefaultArtifactVersion includedV = new DefaultArtifactVersion(included.getArtifact().getArtifact().getVersion());
         int ret = edgeV.compareTo(includedV);
-        /*int ret = ArtifactGraphNode.compareVersions(
-                edge.getTarget().getArtifact().getVersion(),
-                included.getArtifact().getArtifact().getVersion());*/
         return ret > 0 ? ArtifactGraphNode.CONFLICT : ret < 0 ?
             ArtifactGraphNode.POTENTIAL_CONFLICT : ArtifactGraphNode.NO_CONFLICT;
     }
