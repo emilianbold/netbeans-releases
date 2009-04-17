@@ -45,6 +45,9 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             // Setup LD_PRELOAD to load unbuffer library...
             UnbufferSupport.initUnbuffer(info, envVars);
 
+            // Always prepend /bin and /usr/bin to PATH
+            envVars.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
+
             synchronized (lock) {
                 cstreams = execCommand(session, sh + " -s"); // NOI18N
                 cstreams.in.write("echo $$\n".getBytes()); // NOI18N

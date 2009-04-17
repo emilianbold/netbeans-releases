@@ -66,6 +66,9 @@ import org.openide.util.RequestProcessor;
 @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-maven")
 public class JaxWsOpenHook extends ProjectOpenedHook {
 
+    private static final RequestProcessor METADATA_MODEL_RP =
+            new RequestProcessor("JaxWsOpenHook.MAVEN_WS_METADATA_MODEL_RP"); //NOI18N
+    
     private final Project prj;
     private PropertyChangeListener pcl;
     private NbMavenProject mavenProject;
@@ -135,7 +138,8 @@ public class JaxWsOpenHook extends ProjectOpenedHook {
         private JAXWSLightSupport jaxWsSupport;
 
         private MetadataModel<WebservicesMetadata> wsModel;
-        private RequestProcessor.Task updateJaxWsTask = RequestProcessor.getDefault().create(new Runnable() {
+
+        private RequestProcessor.Task updateJaxWsTask = METADATA_MODEL_RP.create(new Runnable() {
 
             public void run() {
                 updateJaxWs();

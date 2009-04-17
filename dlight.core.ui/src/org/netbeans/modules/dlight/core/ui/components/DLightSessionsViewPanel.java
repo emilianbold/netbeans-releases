@@ -130,7 +130,7 @@ public class DLightSessionsViewPanel extends JPanel
 
     private Models.CompoundModel initModel() {
         List<ColumnModelImpl> columns = Arrays.asList(
-                new ColumnModelImpl(stateColumnID, loc("DLightSessionsViewPanel.stateColumn.name"), String.class));
+                new ColumnModelImpl(stateColumnID, loc("DLightSessionsViewPanel.stateColumn.name"), String.class)); // NOI18N
 
         List<Model> models = new ArrayList<Model>();
         models.add(new TreeModelImpl());
@@ -285,7 +285,7 @@ public class DLightSessionsViewPanel extends JPanel
             if (node instanceof JToolTip) {
                 if (columnID.equals(stateColumnID)) {
                     // TODO:
-                    return "ToolState";
+                    return "ToolState"; // NOI18N
                 }
             }
 

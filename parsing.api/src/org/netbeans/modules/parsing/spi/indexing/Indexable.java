@@ -144,8 +144,8 @@ public final class Indexable {
         @Override
         public Context createContext(FileObject indexFolder, URL rootURL, 
                 String indexerName, int indexerVersion, IndexFactoryImpl factory,
-                boolean followUpJob) throws IOException {
-            return new Context(indexFolder, rootURL, indexerName, indexerVersion, factory, followUpJob);
+                boolean followUpJob, boolean checkForEditorModifications) throws IOException {
+            return new Context(indexFolder, rootURL, indexerName, indexerVersion, factory, followUpJob, checkForEditorModifications);
         }
 
         @Override

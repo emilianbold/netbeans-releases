@@ -44,6 +44,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
@@ -80,7 +81,7 @@ public class RemoveTaskTest {
         StringBuilder rmTaskError = new StringBuilder();
         boolean forceRemoveReadOnlyFile = false;
         String fileToRemove = "/path/to/the/file/to/remove"; // NOI18N
-        ExecutionEnvironment env = new ExecutionEnvironment();
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
 //
 //        NativeTask rmTask = CommonTasksSupport.getRemoveFileTask(
 //                env, fileToRemove, forceRemoveReadOnlyFile, rmTaskError);

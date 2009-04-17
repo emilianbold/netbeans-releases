@@ -45,19 +45,20 @@ import java.net.URL;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class FileObjectIndexable implements IndexableImpl {
+public final class FileObjectIndexable implements IndexableImpl {
 
     private final FileObject root;
     private final FileObject file;
 
     public FileObjectIndexable (final FileObject root, final FileObject file) {
-        assert root != null;
-        assert file != null;
+        Parameters.notNull("root", root); //NOI18N
+        Parameters.notNull("file", file); //NOI18N
         this.root = root;
         this.file = file;
     }
@@ -71,7 +72,9 @@ public class FileObjectIndexable implements IndexableImpl {
     }
 
     public String getRelativePath() {
-        return FileUtil.getRelativePath(root, file);
+        String path = FileUtil.getRelativePath(root, file);
+        assert path != null : "File not under root: file=" + file + ", root" + root; //NOI18N
+        return path;
     }
 
     public URL getURL() {

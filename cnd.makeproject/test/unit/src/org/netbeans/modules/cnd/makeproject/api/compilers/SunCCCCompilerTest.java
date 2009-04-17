@@ -50,7 +50,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 
 /**
@@ -96,7 +96,7 @@ public class SunCCCCompilerTest {
             System.out.println("Parse Compiler Output of SunStudio CC on Solaris");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", Platform.PLATFORM_SOLARIS_INTEL);
-        SunCCCompiler instance = new SunCCCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), flavor, Tool.CCCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin") {
+        SunCCCompiler instance = new SunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin") {
 
             @Override
             protected String normalizePath(String path) {
@@ -139,7 +139,7 @@ public class SunCCCCompilerTest {
             System.out.println("Parse Compiler Output of SunStudio C on Solaris");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", Platform.PLATFORM_SOLARIS_INTEL);
-        SunCCCompiler instance = new SunCCCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), flavor, Tool.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin") {
+        SunCCCompiler instance = new SunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin") {
 
             @Override
             protected String normalizePath(String path) {
@@ -185,7 +185,7 @@ public class SunCCCCompilerTest {
             System.out.println("Parse Compiler Output of SunStudio C on Lunix");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", Platform.PLATFORM_LINUX);
-        SunCCCompiler instance = new SunCCCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), flavor, Tool.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin") {
+        SunCCCompiler instance = new SunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin") {
 
             @Override
             protected String normalizePath(String path) {

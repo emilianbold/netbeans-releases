@@ -80,8 +80,8 @@ public class HtmlKeystrokeHandlerTest extends TestBase {
         //                   0          1         2
 
         //test tag with attribute
-        assertLogicalRanges("<b><a align='c|enter'/></b>", new int[][]{{3,22},{0,26}});
-        //                   01234567890123 4567890123456
+        assertLogicalRanges("<div><div align='c|enter'/></div>", new int[][]{{5,26},{0,32}});
+        //                   012345678901234567 890123456789012
 
     }
 

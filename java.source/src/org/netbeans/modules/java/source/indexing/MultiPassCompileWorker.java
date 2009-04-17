@@ -46,7 +46,6 @@ import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
@@ -61,7 +60,6 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.java.source.TreeLoader;
-import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.OutputFileObject;
@@ -228,7 +226,7 @@ final class MultiPassCompileWorker extends CompileWorker {
 //                            //compiledFiles are not tracked for virtual sources
 //                            compiledFiles.add(activeTuple.file);
 //                        }
-                    if (context.isSupplementaryFilesIndexing() /*&& !activeTuple.virtual*/) {
+                    if (!context.isSupplementaryFilesIndexing() /*&& !activeTuple.virtual*/) {
                         for (Map.Entry<URL, Collection<URL>> toRebuild : RebuildOraculum.findFilesToRebuild(context.getRootURI(), active.jfo.toUri().toURL(), javaContext.cpInfo, jt.getElements(), types).entrySet()) {
                             Set<URL> urls = root2Rebuild.get(toRebuild.getKey());
                             if (urls == null) {
@@ -240,11 +238,6 @@ final class MultiPassCompileWorker extends CompileWorker {
                     for (JavaFileObject generated : jt.generate(types)) {
                         if (generated instanceof OutputFileObject) {
                             previous.createdFiles.add(((OutputFileObject) generated).getFile());
-                            String path = ((OutputFileObject)generated).getPath();
-                            File f = new File(FileObjects.stripExtension(path) + '.' + FileObjects.SIG);
-                            if (f.exists()) {
-                                f.delete();
-                            }
                         } else {
                             // presumably should not happen
                         }

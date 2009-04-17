@@ -48,6 +48,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.Exceptions;
 import static org.junit.Assert.*;
@@ -80,7 +81,7 @@ public class HostInfoTest {
 
     @Test
     public void testGetHostInfo() {
-        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "129.159.127.252", 22);
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "129.159.127.252", 22); // NOI18N
         ConnectionManager cm = ConnectionManager.getInstance();
         try {
             cm.connectTo(execEnv, password.toCharArray(), false);
@@ -91,7 +92,7 @@ public class HostInfoTest {
         }
 
         try {
-            System.out.println("Tempdir is " + HostInfoUtils.getTempDir(execEnv));
+            System.out.println("Tempdir is " + HostInfoUtils.getTempDir(execEnv)); // NOI18N
         } catch (ConnectException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -107,7 +108,7 @@ public class HostInfoTest {
 
         try {
             expResult = "SunOS"; // NOI18N
-            result = HostInfoUtils.getOS(new ExecutionEnvironment("ak119685", "127.0.0.1")); // NOI18N
+            result = HostInfoUtils.getOS(ExecutionEnvironmentFactory.createNew("ak119685", "127.0.0.1")); // NOI18N
             System.out.printf("Expected result is %s, actual result is %s\n", expResult, result); // NOI18N
             assertEquals(expResult, result);
         } catch (ConnectException ex) {
@@ -157,7 +158,7 @@ public class HostInfoTest {
         boolean result;
         boolean expResult;
 
-        ExecutionEnvironment ee = new ExecutionEnvironment("ak119685", "129.159.127.252"); // NOI18N
+        ExecutionEnvironment ee = ExecutionEnvironmentFactory.createNew("ak119685", "129.159.127.252"); // NOI18N
 //        try {
 //            CharArrayWriter writer = new CharArrayWriter();
 //

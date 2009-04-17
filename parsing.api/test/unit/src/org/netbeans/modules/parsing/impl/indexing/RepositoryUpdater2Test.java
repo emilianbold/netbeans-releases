@@ -41,14 +41,22 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -56,6 +64,7 @@ import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -130,7 +139,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         Util.allMimeTypes = Collections.singleton("text/plain");
 
         ruSync.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST, 2);
-        RepositoryUpdater.getDefault().addIndexingJob(srcRoot1.getURL(), Collections.singleton(file1.getURL()), false, false);
+        RepositoryUpdater.getDefault().addIndexingJob(srcRoot1.getURL(), Collections.singleton(file1.getURL()), false, false, false);
         ruSync.await();
 
         assertEquals("Wrong number of ordinary scans", 1, indexer.cnt);
@@ -247,6 +256,165 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
     } // End of testAddIndexingJob_PathRecognizer class
 
+    public void testRootsWorkCancelling() throws Exception {
+        FileUtil.setMIMEType("txt", "text/plain");
+        final Map<URL, FileObject> url2file = new HashMap<URL, FileObject>();
+        final FileObject srcRoot1 = workDir.createFolder("src1");
+        final FileObject file1 = srcRoot1.createData("file1.txt");
+        url2file.put(srcRoot1.getURL(), srcRoot1);
+
+        final FileObject srcRoot2 = workDir.createFolder("src2");
+        final FileObject file2 = srcRoot2.createData("file2.txt");
+        url2file.put(srcRoot2.getURL(), srcRoot2);
+
+        final FileObject srcRoot3 = workDir.createFolder("src3");
+        final FileObject file3 = srcRoot3.createData("file3.txt");
+        url2file.put(srcRoot3.getURL(), srcRoot3);
+
+        MockServices.setServices(testRootsWorkCancelling_PathRecognizer.class);
+        final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
+        GlobalPathRegistry.getDefault().register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
+
+        final testRootsWorkCancelling_CustomIndexer indexer = new testRootsWorkCancelling_CustomIndexer();
+        MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer));
+        Util.allMimeTypes = Collections.singleton("text/plain");
+
+        assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
+        mcpi.addResource(srcRoot1, srcRoot2, srcRoot3);
+
+        // wait for the first root to arrive in the indexer
+        long tm = System.currentTimeMillis();
+        for( ;System.currentTimeMillis() - tm < 5000; ) {
+            if (indexer.indexedRoots.size() > 0) {
+                break;
+            } else {
+                try {
+                    Thread.sleep(345);
+                } catch (InterruptedException ex) {
+                    break;
+                }
+            }
+        }
+        assertEquals("First root should have already arrived", 1, indexer.indexedRoots.size());
+
+        // remove the other two roots from the classpath; this should trigger another RootsWork
+        url2file.keySet().removeAll(indexer.indexedRoots);
+        mcpi.removeResource(url2file.values().toArray(new FileObject[0]));
+
+        // unblock the indexer
+        indexer.blocking.set(false);
+        RepositoryUpdater.getDefault().waitUntilFinished(-1);
+
+        assertEquals("Running RootsWork wasn't cancelled by the new one: " + indexer.indexedRoots, 1, indexer.indexedRoots.size());
+        assertEquals("Wrong scanned sources", new HashSet<URL>(indexer.indexedRoots), RepositoryUpdater.getDefault().getScannedSources());
+        assertEquals("Wrong scanned binaries", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
+        assertEquals("Wrong scanned unknowns", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
+    }
+
+    public static final class testRootsWorkCancelling_PathRecognizer extends PathRecognizer {
+        public static final String SOURCEPATH = "testRootsWorkCancelling/SOURCES";
+
+        public @Override Set<String> getSourcePathIds() {
+            return Collections.<String>singleton(SOURCEPATH);
+        }
+
+        public @Override Set<String> getLibraryPathIds() {
+            return null;
+        }
+
+        public @Override Set<String> getBinaryLibraryPathIds() {
+            return null;
+        }
+
+        public @Override Set<String> getMimeTypes() {
+            return Collections.singleton("text/plain");
+        }
+    } // End of testAddIndexingJob_PathRecognizer class
+
+
+    private static final class testRootsWorkCancelling_CustomIndexer extends CustomIndexer {
+
+        public final AtomicBoolean blocking = new AtomicBoolean(true);
+        public final List<URL> indexedRoots = Collections.synchronizedList(new ArrayList<URL>());
+        
+        @Override
+        protected void index(Iterable<? extends Indexable> files, Context context) {
+            indexedRoots.add(context.getRootURI());
+            
+            for( ; blocking.get(); ) {
+                try {
+                    Thread.sleep(123);
+                } catch (InterruptedException ex) {
+                    break;
+                }
+            }
+        }
+
+    } // End of testRootsWorkCancelling_CustomIndexer class
+
+    private static final class FixedCustomIndexerFactory<T extends CustomIndexer> extends CustomIndexerFactory {
+
+        private final Class<T> customIndexerClass;
+        private final CustomIndexer customIndexerInstance;
+        private final String indexerName;
+        private final int indexerVersion;
+
+        public FixedCustomIndexerFactory(Class<T> customIndexerClass) {
+            this.customIndexerClass = customIndexerClass;
+            this.customIndexerInstance = null;
+            this.indexerName = customIndexerClass.getName();
+            this.indexerVersion = 1;
+        }
+
+        public FixedCustomIndexerFactory(CustomIndexer customIndexerInstance) {
+            this.customIndexerClass = null;
+            this.customIndexerInstance = customIndexerInstance;
+            this.indexerName = customIndexerInstance.toString();
+            this.indexerVersion = 1;
+        }
+
+        @Override
+        public CustomIndexer createIndexer() {
+            if (customIndexerInstance != null) {
+                return customIndexerInstance;
+            } else {
+                try {
+                    return customIndexerClass.newInstance();
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+        }
+
+        @Override
+        public void filesDeleted(Collection<? extends Indexable> deleted, Context context) {
+        }
+
+        @Override
+        public void filesDirty(Collection<? extends Indexable> dirty, Context context) {
+        }
+
+        @Override
+        public String getIndexerName() {
+            return indexerName;
+        }
+
+        @Override
+        public boolean supportsEmbeddedIndexers() {
+            return true;
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return indexerVersion;
+        }
+    } // End of FixedCustomIndexerFactory class
+
+
+    
+    // ---------- !!!!!! This MUST be the last test in the suite,
+    // ---------- !!!!!! because it shuts down RepositoryUpdater
+
     public void testShuttdown() throws InterruptedException {
         testShuttdown_TimedWork work1 = new testShuttdown_TimedWork();
         testShuttdown_TimedWork work2 = new testShuttdown_TimedWork();
@@ -281,9 +449,9 @@ public class RepositoryUpdater2Test extends NbTestCase {
     private static final class testShuttdown_TimedWork extends RepositoryUpdater.Work {
         public boolean getDoneCalled = false;
         public boolean workCancelled = false;
-        
+
         public testShuttdown_TimedWork() {
-            super(false);
+            super(false, false);
         }
 
         protected @Override void getDone() {
@@ -298,4 +466,5 @@ public class RepositoryUpdater2Test extends NbTestCase {
             workCancelled = isCancelled();
         }
     } // End of testShuttdown_TimedWork class
+
 }

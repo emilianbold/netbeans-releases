@@ -846,8 +846,16 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 } else if (inStr.startsWith(bundleValueMagic)) {
                     // Same here:
                     attr.addAttribute("bundlevalue", inStr.substring(bundleValueMagic.length())); // NOI18N
-                    ((TreeDocumentType)doc.getChildNodes().get(0)).setPublicId("-//NetBeans//DTD Filesystem 1.2//EN");
-                    ((TreeDocumentType)doc.getChildNodes().get(0)).setSystemId("http://www.netbeans.org/dtds/filesystem-1_2.dtd");
+                    TreeObjectList nodes = doc.getChildNodes();
+                    for (int i = 0; i < nodes.size(); i++) {
+                        Object object = nodes.get(i);
+                        if (object instanceof TreeDocumentType) {
+                            TreeDocumentType tdt = (TreeDocumentType)object;
+                            tdt.setPublicId("-//NetBeans//DTD Filesystem 1.2//EN");
+                            tdt.setSystemId("http://www.netbeans.org/dtds/filesystem-1_2.dtd");
+                            break;
+                        }
+                    }
                 } else {
                     // Regular string value.
                     // Stolen from XMLMapAttr w/ mods:

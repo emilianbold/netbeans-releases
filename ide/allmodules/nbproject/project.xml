@@ -360,10 +360,8 @@ made subject to such option by the copyright holder.
                 <project>../../kenai</project>
                 <project>../../kenai.collab</project>
                 <project>../../kenai.ui</project>
-                <project>../../languages.bat</project>
                 <project>../../languages.diff</project>
                 <project>../../languages.manifest</project>
-                <project>../../languages.sh</project>
                 <project>../../languages.yaml</project>
                 <project>../../lexer</project>
                 <project>../../lexer.editorbridge</project>

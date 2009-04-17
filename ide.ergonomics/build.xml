@@ -218,7 +218,6 @@
                 value="&lt;BODY &gt;&lt;em&gt;This feature is not yet enabled. Press Next to activate it.&lt;/em&gt;&lt;p&gt;"
              />
              <include name="*.html"/>
-             <exclude name="*_*"/>
          </replace>
     </target>
 

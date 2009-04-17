@@ -41,8 +41,8 @@
 package org.netbeans.modules.ruby;
 
 import java.util.Map;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -165,7 +165,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     }
 
 // This test doesn't work; the behavior works in the IDE but the
-// Lucene index isn't returning local symbols in the testing framework yet    
+// Lucene index isn't returning local symbols in the testing framework yet
 //    public void testComplex1() throws Exception {
 //        RubyTypeInferencer instance = getAnalyzer("types3.rb", "^caret", false);
 //        assertEquals("Product", instance.getType("@product"));
@@ -177,7 +177,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
 //    }
 
     //public void testComplex3() throws Exception {
-    //    // XXX TODO 
+    //    // XXX TODO
     //    assertFalse("Check that I do closures for each, collect, map, etc.", true);
     //    // also check to_s
     //}
@@ -210,6 +210,11 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
 
     public void testUnlessType() throws Exception {
         assertTypes("unless_type.rb", "var.i^", "var", "Array", "Hash");
+    }
+
+    public void testEqualsType() throws Exception {
+        assertTypes("equals_type.rb", "var.t^", "var", "TrueClass", "FalseClass");
+        assertTypes("equals_type.rb", "var2.t^", "var2", "TrueClass", "FalseClass");
     }
 
     public void testIfWithFailingInferenceInBranchType() throws Exception {

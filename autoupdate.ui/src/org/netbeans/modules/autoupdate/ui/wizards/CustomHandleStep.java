@@ -58,6 +58,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.OperationSupport;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 
 /**
  *
@@ -88,6 +89,13 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
     
     private static final String HEAD_CUSTOM_UNINSTALL_FAIL = "CustomHandleStep_Header_UninstallFail_Head";
     private static final String CONTENT_CUSTOM_UNINSTALL_FAIL = "CustomHandleStep_Header_UninstallFail_Content";
+
+    private static final String HEAD_CUSTOM_INSTALL_RESTART = "CustomHandleStep_Header_Install_Restart_Head";
+    private static final String CONTENT_CUSTOM_INSTALL_RESTART = "CustomHandleStep_Header_Install_Restart_Content";
+    private static final String HEAD_CUSTOM_UNINSTALL_RESTART = "CustomHandleStep_Header_Uninstall_Restart_Head";
+    private static final String CONTENT_CUSTOM_UNINSTALL_RESTART = "CustomHandleStep_Header_Uninstall_Restart_Content";
+
+    private Restarter restarter = null;
     
     private boolean isInstall = false;
     
@@ -123,11 +131,20 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
     
     private void doHandleOperation () {
         // do operation
+        restarter = null;
         if (handleOperation ()) {
             if (isInstall) {
-                presentInstallDone ();
+                if(restarter!=null) {
+                    presentInstallNeedsRestart();
+                } else {
+                    presentInstallDone ();
+                }
             } else {
-                presentUninstallDone ();
+                if(restarter!=null) {
+                    presentUninstallNeedsRestart();
+                } else {
+                    presentUninstallDone ();
+                }
             }
         } else {
             if (isInstall) {
@@ -143,6 +160,7 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
     private boolean passed = false;
     private String errorMessage = null;
     private boolean done = false;
+    private boolean wasStored = false;
     
     private boolean handleOperation () {
         final OperationSupport support = model.getCustomHandledContainer ().getSupport ();
@@ -151,7 +169,7 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
         
         Runnable performOperation = new Runnable () {
             public void run () {
-                try {
+                try {                    
                     final ProgressHandle handle = ProgressHandleFactory.createHandle (isInstall ? getBundle ("CustomHandleStep_Install_InstallingPlugins") :
                                                     getBundle ("CustomHandleStep_Uninstall_UninstallingPlugins"));
                     JComponent progressComponent = ProgressHandleFactory.createProgressComponent (handle);
@@ -161,7 +179,7 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
                     handle.setInitialDelay (0);
                     panel.waitAndSetProgressComponents (mainLabel, progressComponent, detailLabel);
 
-                    support.doOperation (handle);
+                    restarter = support.doOperation (handle);
                     passed = true;
                     panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("CustomHandleStep_Done")));
                 } catch (OperationException ex) {
@@ -199,7 +217,25 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
         model.modifyOptionsForDoClose (wd);
         panel.setBody (getBundle ("CustomHandleStep_UninstallFail_Text", msg), model.getCustomHandledComponents ());
     }
+
+    private void presentInstallNeedsRestart () {
+        component.setHeadAndContent (getBundle (HEAD_CUSTOM_INSTALL_RESTART), getBundle (CONTENT_CUSTOM_INSTALL_RESTART));
+        model.modifyOptionsForContinue(wd, isFinishPanel ());
+        if(isFinishPanel()) {
+            panel.setRestartButtonsVisible (true);
+        }
+        panel.setBody (getBundle ("CustomHandleStep_InstallDone_Text"), model.getCustomHandledComponents ());
+    }
     
+    private void presentUninstallNeedsRestart () {
+        component.setHeadAndContent (getBundle (HEAD_CUSTOM_UNINSTALL_RESTART), getBundle (CONTENT_CUSTOM_UNINSTALL_RESTART));
+        model.modifyOptionsForContinue(wd, isFinishPanel());
+        if(isFinishPanel()) {
+            panel.setRestartButtonsVisible (true);
+        }
+        panel.setBody (getBundle ("CustomHandleStep_UninstallDone_Text"), model.getCustomHandledComponents ());
+    }
+
     public HelpCtx getHelp() {
         return null;
     }
@@ -207,10 +243,54 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
     public void readSettings (WizardDescriptor wd) {
         this.wd = wd;
         this.done = false;
+        this.wasStored = false;
     }
 
     public void storeSettings (WizardDescriptor wd) {
-        model.getCustomHandledContainer ().removeAll ();
+        assert !WizardDescriptor.PREVIOUS_OPTION.equals(wd.getValue()) : "Cannot invoke Back in this case.";
+        if (wasStored) {
+            return;
+        }
+        this.wasStored = true;
+        if (WizardDescriptor.CANCEL_OPTION.equals(wd.getValue()) ||
+                WizardDescriptor.CLOSED_OPTION.equals(wd.getValue()) ||
+                WizardDescriptor.NEXT_OPTION.equals(wd.getValue())) {
+            model.getCustomHandledContainer().removeAll();
+        } else if (restarter != null) {
+            final OperationSupport support = model.getCustomHandledContainer().getSupport();
+            assert support != null : "OperationSupport cannot be null because OperationContainer " +
+                    "contains elements: " + model.getCustomHandledContainer().listAll() + " and invalid elements " + model.getCustomHandledContainer().listInvalid();
+            if (panel.restartNow()) {
+                try {
+                    support.doRestart(restarter, null);
+                } catch (OperationException x) {
+                    log.log(Level.INFO, x.getMessage(), x);
+                }
+
+            } else {
+                support.doRestartLater(restarter);
+                model.getCustomHandledContainer().removeAll();
+
+                final Runnable onMouseClick = new Runnable() {
+
+                    public void run() {
+                        try {
+                            support.doRestart(restarter, null);
+                        } catch (OperationException x) {
+                            log.log(Level.INFO, x.getMessage(), x);
+                        }
+                    }
+                };
+                InstallStep.notifyRestartNeeded(onMouseClick,
+                        getBundle(isInstall ? "CustomHandleStep_Install_RestartNeeded" : "CustomHandleStep_Uninstall_RestartNeeded"));
+                return;
+            }
+        } else {
+            if (WizardDescriptor.FINISH_OPTION.equals(wd.getValue())) {
+                model.getCustomHandledContainer().removeAll();
+            }
+
+        }
     }
 
     public boolean isValid() {

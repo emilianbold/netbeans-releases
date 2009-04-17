@@ -123,15 +123,21 @@ class Reporter < Spec::Runner::Reporter
     super
   end
 
-  def failure(example, error)
+  def example_failed(example, error)
+    report_failure(example, error)
+    super
+  end
+
+  alias_method :failure, :example_failed
+
+  private
+
+  def report_failure(example, error)
     backtrace_tweaker.tweak_backtrace(error)
     error_msg = error.message != nil ? error.message : ""
     puts "%RSPEC_TEST_FAILED% file=#{location(example)} description=#{description(example)} time=#{elapsed_time} message=#{error_msg.to_s.gsub($/, " ")} location=#{error.backtrace[0]}"
-    super
   end
-  alias_method :example_failed, :failure
 
-  private
   def example_passed(example)
     puts "%RSPEC_TEST_FINISHED% file=#{location(example)} description=#{description(example)} time=#{elapsed_time}"
     super
@@ -166,12 +172,24 @@ class Reporter < Spec::Runner::Reporter
 
   def location(example)
     location = ''
-    # 'implementation_backtrace' is deprecated in > 1.1.11, replaced with 'backtrace'
-    backtrace = example.respond_to?(:backtrace, false) ? example.backtrace : example.implementation_backtrace
+    backtrace = backtrace(example)
     if (backtrace != nil)
       location = backtrace[0] unless backtrace.length == 0
     end
     location
+  end
+
+  def backtrace(example)
+    # 'implementation_backtrace' is deprecated in > 1.1.11, replaced with 'backtrace' which in turn
+    # is deprecated in 1.2 and replaced with 'location'
+    if (example.respond_to?(:location, false))
+      return example.location
+    elsif (example.respond_to?(:backtrace, false))
+      return example.backtrace
+    elsif (example.respond_to?(:implementation_backtrace, false))
+      return example.implementation_backtrace
+    end
+    nil
   end
 
   # returns the description for the given example

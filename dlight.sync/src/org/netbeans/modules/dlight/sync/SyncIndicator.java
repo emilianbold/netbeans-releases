@@ -90,8 +90,8 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
             String locks = row.getStringValue("locks"); // NOI18N
             String threads = row.getStringValue("threads"); // NOI18N
             if (locks != null && threads != null) {
-                lastLocks = (int) Float.parseFloat(locks);
                 lastThreads = Integer.parseInt(threads);
+                lastLocks = (int) (lastThreads * Float.parseFloat(locks) / 100);
             }
         }
     }
@@ -104,7 +104,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
     @Override
     protected void repairNeeded(boolean needed) {
         if (needed) {
-            final RepairPanel repairPanel = new RepairPanel(new ActionListener() {
+            final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus(), new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     final Future<Boolean> result = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {

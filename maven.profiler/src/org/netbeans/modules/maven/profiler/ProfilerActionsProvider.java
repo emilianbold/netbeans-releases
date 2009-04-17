@@ -58,6 +58,8 @@ public class ProfilerActionsProvider extends AbstractMavenActionsProvider {
             add(NbMavenProject.TYPE_JAR);
             add(NbMavenProject.TYPE_WAR);
             add(NbMavenProject.TYPE_EJB);
+            add(NbMavenProject.TYPE_NBM);
+            add(NbMavenProject.TYPE_NBM_APPLICATION);
         }
     };
 

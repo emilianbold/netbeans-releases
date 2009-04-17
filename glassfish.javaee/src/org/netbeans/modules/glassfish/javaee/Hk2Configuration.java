@@ -41,7 +41,6 @@
 package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
@@ -58,7 +57,6 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.util.NbBundle;
 
@@ -111,17 +109,30 @@ public class Hk2Configuration extends GlassfishConfiguration implements Deployme
     // ------------------------------------------------------------------------
     @Override
     public Set<MessageDestination> getMessageDestinations() throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return Hk2MessageDestinationManager.getMessageDestinations(module.getResourceDirectory());
     }
 
     @Override
     public boolean supportsCreateMessageDestination() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        boolean enableSupport = false;
+        // FIXME -- what if the module is being deployed to a prelude domain?
+        if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures"))) {
+            enableSupport = true;
+    }
+        return enableSupport;
     }
 
     @Override
-    public MessageDestination createMessageDestination(String name, Type type) throws UnsupportedOperationException, org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public MessageDestination createMessageDestination(String name, MessageDestination.Type type) throws UnsupportedOperationException, org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        File resourceDir = module.getResourceDirectory();
+        if (resourceDir == null) {
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING,
+                    "Resource Folder " + resourceDir + " does not exist.");
+            throw new ConfigurationException(NbBundle.getMessage(
+                    ModuleConfigurationImpl.class, "ERR_NoJMSResource", name, type)); // NOI18N
+    }
+
+        return Hk2MessageDestinationManager.createMessageDestination(name, type, resourceDir);
     }
 
     // ------------------------------------------------------------------------

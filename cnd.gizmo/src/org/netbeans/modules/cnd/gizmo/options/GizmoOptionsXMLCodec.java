@@ -128,15 +128,6 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
                 xes.element(TOOL_ELEMENT, attributes);
             }
         }
-//        if (gizmoOptions.getCpu().getModified()) {
-//            xes.element(CPU_ELEMENT, "" + gizmoOptions.getCpu().getValue()); // NOI18N
-//        }
-//        if (gizmoOptions.getMemory().getModified()) {
-//            xes.element(MEMORY_ELEMENT, "" + gizmoOptions.getMemory().getValue()); // NOI18N
-//        }
-//        if (gizmoOptions.getSynchronization().getModified()) {
-//            xes.element(SYNCHRONIZATION_ELEMENT, "" + gizmoOptions.getSynchronization().getValue()); // NOI18N
-//        }
         if (gizmoOptions.getDataProvider().getModified()) {
             xes.element(DATA_PROVIDER_ELEMENT, "" + gizmoOptions.getDataProvider().getValue()); // NOI18N
         }

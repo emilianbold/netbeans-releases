@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /**
@@ -143,6 +142,11 @@ public class GdbProxy {
     
     public void addSymbolFile(String path, String addr) {
         engine.sendCommand("add-symbol-file " + path + " " + addr); // NOI18N
+    }
+
+    public CommandBuffer core(String core) {
+//        return engine.sendCommand("-target-attach " + pid); // NOI18N - no implementaion
+        return engine.sendCommandEx("core " + core); // NOI18N
     }
     
     /** Attach to a running program */
@@ -680,8 +684,10 @@ public class GdbProxy {
         engine.stopSending();
 
         // we need to finish all unfinished requests
-        for (CommandBuffer cb : map.values()) {
-            cb.error("gdb finished"); //NOI18N
+        synchronized (map) {
+            for (CommandBuffer cb : map.values()) {
+                cb.error("gdb finished"); //NOI18N
+            }
         }
     }
 } /* End of public class GdbProxy */

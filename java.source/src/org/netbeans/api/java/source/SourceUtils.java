@@ -102,7 +102,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
@@ -707,7 +707,7 @@ out:                    for (URL e : roots) {
      * @since 0.10
      */
     public static Set<URL> getDependentRoots (final URL root) {
-        final Map<URL, List<URL>> deps = RepositoryUpdater.getDefault().getDependencies ();
+        final Map<URL, List<URL>> deps = IndexingController.getDefault().getRootDependencies();
         return getDependentRootsImpl (root, deps);
     }
     

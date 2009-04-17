@@ -93,6 +93,7 @@ public class CslJar extends JarWithModuleAttributes {
     private static final String BOOLVALUE = "boolvalue"; // NOI18N
     private static final String INTVALUE = "intvalue"; // NOI18N
     private static final String STRINGVALUE = "stringvalue"; // NOI18N
+    private static final String BUNDLEVALUE = "bundlevalue"; // NOI18N
     private static final String USECUSTOMEDITORKIT = "useCustomEditorKit"; // NOI18N
     private static final String TRUE = "true"; // NOI18N
     private static final String FILESYSTEM = "filesystem"; // NOI18N
@@ -259,6 +260,7 @@ public class CslJar extends JarWithModuleAttributes {
 
                     String linePrefix = null;
                     String displayName = null;
+                    boolean hasDeclarationFinder = true; // unless we find out otherwise
 
                     try {
                         List<URL> urls = new ArrayList<URL>();
@@ -296,6 +298,11 @@ public class CslJar extends JarWithModuleAttributes {
                             if (ret != null) {
                                 displayName = ret.toString();
                             }
+                            method = clz.getMethod("getDeclarationFinder", (Class[])null); // NOI18N
+                            ret = method.invoke(o, (Object[])null);
+                            if (ret == null) {
+                                hasDeclarationFinder = false;
+                            }
                         }
                     } catch (NoClassDefFoundError ncdfe) {
                         // Not unexpected...
@@ -321,7 +328,7 @@ public class CslJar extends JarWithModuleAttributes {
 
 
                     registerLoader(doc, mimeType, displayName);
-                    registerEditorServices(doc, mimeType, cslLanguageClass, linePrefix, displayName, hasStructureScanner);
+                    registerEditorServices(doc, mimeType, cslLanguageClass, linePrefix, displayName, hasStructureScanner, hasDeclarationFinder);
                 }
             }
         }
@@ -511,14 +518,16 @@ public class CslJar extends JarWithModuleAttributes {
         createFile(doc, navigatorFolder, "org-netbeans-modules-csl-navigation-ClassMemberPanel.instance"); // NOI18N
     }
 
-    private void registerEditorServices(Document doc, String mimeType, String gsfLanguageClass, String linePrefix, String displayName, boolean hasStructureScanner) {
+    private void registerEditorServices(Document doc, String mimeType, String gsfLanguageClass, String linePrefix, String displayName, boolean hasStructureScanner, boolean hasDeclarationFinder) {
         Element mimeFolder = mkdirs(doc, "Editors/" + mimeType); // NOI18N
         // Hyperlinks
-        Element hyperlinkFolder = mkdirs(doc, "Editors/" + mimeType + "/HyperlinkProviders"); // NOI18N
-        Element file = createFile(doc, hyperlinkFolder, "GsfHyperlinkProvider.instance"); // NOI18N
-        setFileAttribute(doc, file, "instanceClass", STRINGVALUE, "org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"); // NOI18N
-        setFileAttribute(doc, file, "instanceOf", STRINGVALUE, "org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"); // NOI18N
-
+        if (hasDeclarationFinder) {
+            Element hyperlinkFolder = mkdirs(doc, "Editors/" + mimeType + "/HyperlinkProviders"); // NOI18N
+            Element file = createFile(doc, hyperlinkFolder, "GsfHyperlinkProvider.instance"); // NOI18N
+            setFileAttribute(doc, file, "instanceClass", STRINGVALUE, "org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"); // NOI18N
+            setFileAttribute(doc, file, "instanceOf", STRINGVALUE, "org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"); // NOI18N
+        }
+        
         // Code Completion
         Element completionFolder = mkdirs(doc, "Editors/" + mimeType + "/CompletionProviders"); // NOI18N
         createFile(doc, completionFolder, "org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"); // NOI18N
@@ -534,7 +543,9 @@ public class CslJar extends JarWithModuleAttributes {
         boolean alreadyPositioned = false;
         List<Element> gotoAttributes = getAttributeElements(doc, "Editors/" + mimeType + "/Popup/goto"); // NOI18N
         for (Element gotoAttribute : gotoAttributes) {
-            if (gotoAttribute.getAttribute(FILENAME).equals("SystemFileSystem.localizingBundle")) { // NOI18N
+            if (gotoAttribute.getAttribute(FILENAME).equals("SystemFileSystem.localizingBundle") || //NOI18N
+                gotoAttribute.getAttribute(FILENAME).equals("displayName") //NOI18N
+            ) {
                 alreadyLocalized = true;
             }
             if (gotoAttribute.getAttribute(FILENAME).equals("position")) { // NOI18N
@@ -551,19 +562,14 @@ public class CslJar extends JarWithModuleAttributes {
         }
 
         if (!alreadyLocalized) {
-            if (mimeType.equals("text/x-ruby") || // NOI18N
-                    mimeType.equals("text/x-css") || // NOI18N
-                    mimeType.equals("text/x-groovy") || // NOI18N
-                    mimeType.equals("text/javascript")) { // NOI18N
-                setFileAttribute(doc, gotoFolder, "SystemFileSystem.localizingBundle", STRINGVALUE, "org.netbeans.modules.csl.core.Bundle");
-            } else {
-                // This isn't correct, but is better than "goto"
-                setFileAttribute(doc, gotoFolder, "displayName", STRINGVALUE, "Navigate"); // NOI18N
-            }
+            setFileAttribute(doc, gotoFolder, "displayName", BUNDLEVALUE, "org.netbeans.modules.csl.core.Bundle#generate-goto-popup");
         }
 
-        Element item = createFile(doc, gotoFolder, "goto-declaration"); // NOI18N
-        setFileAttribute(doc, item, "position", "intvalue", "500"); // NOI18N
+        Element item;
+        if (hasDeclarationFinder) {
+            item = createFile(doc, gotoFolder, "goto-declaration"); // NOI18N
+            setFileAttribute(doc, item, "position", "intvalue", "500"); // NOI18N
+        }
 
         // Goto by linenumber
         item = createFile(doc, gotoFolder, "goto");  // NOI18N

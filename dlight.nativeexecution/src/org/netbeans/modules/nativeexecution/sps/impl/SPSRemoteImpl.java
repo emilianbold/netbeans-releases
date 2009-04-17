@@ -41,28 +41,24 @@ package org.netbeans.modules.nativeexecution.sps.impl;
 import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.security.acl.NotOwnerException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
-import org.openide.windows.InputOutput;
 
 public final class SPSRemoteImpl extends SPSCommonImpl {
 
@@ -83,29 +79,49 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             return pid;
         }
 
-        String pidScript = "/usr/bin/ptree $$|" + // NOI18N
-                "/bin/awk '/sshd$/{p=$1}END{print p}'"; // NOI18N
-
-        StringWriter result = new StringWriter();
-        NativeProcessBuilder npb =
-                new NativeProcessBuilder(execEnv, pidScript);
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
-                InputOutput.NULL);
-        descriptor = descriptor.outProcessorFactory(
-                new InputRedirectorFactory(result));
-
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "Fetch SSH PID"); // NOI18N
-
-        Future<Integer> res = execService.run();
+        NativeProcess pidFetchProcess = null;
 
         try {
-            res.get();
-            pid = result.toString();
+            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "ptree $$"); // NOI18N
+            pidFetchProcess = npb.call();
+
+            int result = pidFetchProcess.waitFor();
+
+            if (result != 0) {
+                throw new IOException("Unable to get sshd pid"); // NOI18N
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(pidFetchProcess.getInputStream()));
+            String line = br.readLine();
+            String pidCandidate = null;
+
+            while (line != null) {
+                line = line.trim();
+                if (line.endsWith("sshd")) { // NOI18N
+                    try {
+                        pidCandidate = line.substring(0, line.indexOf(' '));
+                    } catch (NumberFormatException ex) {
+                    }
+                }
+                line = br.readLine();
+            }
+
+            pid = pidCandidate;
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
+            Thread.currentThread().interrupt();
+        } catch (IOException ex) {
+            Logger.getInstance().fine(ex.toString());
+            if (pidFetchProcess != null) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(pidFetchProcess.getErrorStream()));
+                try {
+                    String line = br.readLine();
+                    while (line != null) {
+                        Logger.getInstance().fine(line);
+                        line = br.readLine();
+                    }
+                } catch (IOException ioex) {
+                }
+            }
         }
 
         return pid;

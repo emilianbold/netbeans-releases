@@ -42,6 +42,7 @@ import java.util.TreeSet;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -52,6 +53,7 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -289,8 +291,35 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
 
     @Override
+    public Collection<CsmCompilationUnit> getCompilationUnits(CsmFile file, int contextOffset) {
+        CsmCompilationUnit backup = CsmCompilationUnit.createCompilationUnit(file.getProject(), file.getAbsolutePath(), file);
+        Collection<CsmCompilationUnit> out = new ArrayList<CsmCompilationUnit>(1);
+        boolean addBackup = true;
+        if (file instanceof FileImpl) {
+            FileImpl impl = (FileImpl) file;
+            Collection<State> states = ((ProjectBase) impl.getProject()).getPreprocStates(impl);
+            for (State state : states) {
+                StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
+                ProjectBase startProject = ProjectBase.getStartProject(startEntry);
+                if (startProject != null) {
+                    CharSequence path = startEntry.getStartFile();
+                    CsmFile startFile = startProject.getFile(new File(path.toString()));
+                    if (startFile != null) {
+                        addBackup = false;
+                    }
+                    CsmCompilationUnit cu = CsmCompilationUnit.createCompilationUnit(startProject, path, startFile);
+                    out.add(cu);
+                }
+            }
+        }
+        if (addBackup) {
+            out.add(backup);
+        }
+        return out;
+    }
+
+    @Override
     public List<CsmInclude> getIncludeStack(CsmFile file) {
-        // TODO implement me
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
             APTPreprocHandler.State state = ((ProjectBase)impl.getProject()).getPreprocState(impl);

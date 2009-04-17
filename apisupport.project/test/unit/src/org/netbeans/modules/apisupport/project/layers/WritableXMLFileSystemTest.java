@@ -385,6 +385,53 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
             fail("Wrong DTD2: " + txt);
         }
     }
+
+    public void testCommentIsFirst() throws Exception {
+        String HEADER =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<!--\n" +
+                "text\n" +
+                "-->\n" +
+                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
+                "<filesystem>\n";
+        String FOOTER =
+                "</filesystem>\n";
+
+        Layer l = new Layer(
+            HEADER +
+            "    <file name=\"x\">\n" +
+            "    </file>\n" +
+            FOOTER,
+            false
+        );
+        FileSystem fs = l.read();
+        FileObject x = fs.findResource("x");
+        assertNotNull("File x found", x);
+        x.setAttribute("bv", "bundlevalue:org.netbeans.modules.apisupport.project.layers#AHOJ");
+        assertEquals("special attrs written to XML",
+                "    <file name=\"x\">\n" +
+                "        <attr name=\"bv\" bundlevalue=\"org.netbeans.modules.apisupport.project.layers#AHOJ\"/>\n" +
+                "    </file>\n",
+                l.write(HEADER, FOOTER));
+
+        Object lit = x.getAttribute("literal:bv");
+        assertEquals("Literal value is returned prefixed with bundle", "bundle:org.netbeans.modules.apisupport.project.layers#AHOJ", lit);
+
+        Object value = x.getAttribute("bv");
+        // not working:
+        //assertEquals("value is returned localized", "Hello", value);
+        // currently returns null:
+        assertNull("Current behaviour. Improve. XXX", value);
+
+        String  txt = TestBase.slurp(l.f);
+        if (txt.indexOf("-//NetBeans//DTD Filesystem 1.2//EN") == -1) {
+            fail("Wrong DTD: " + txt);
+        }
+
+        if (txt.indexOf("http://www.netbeans.org/dtds/filesystem-1_2.dtd") == -1) {
+            fail("Wrong DTD2: " + txt);
+        }
+    }
     
     public void testFolderOrder() throws Exception {
         Layer l = new Layer("");
@@ -594,8 +641,11 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
          * you should use 4-space indents and a newline after every element.
          */
         public Layer(String xml) throws Exception {
+            this(xml, true);
+        }
+        Layer(String xml, boolean wrapWithHeader) throws Exception {
             folder = makeFolder();
-            f = makeLayer(xml);
+            f = makeLayer(xml, wrapWithHeader);
         }
         /**
          * Create a layer from XML plus external file contents.
@@ -624,9 +674,13 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
                 "<filesystem>\n";
         private final String FOOTER = "</filesystem>\n";
-        private FileObject makeLayer(String xml) throws Exception {
+        private FileObject makeLayer(String xml, boolean wrapWithHeader) throws Exception {
             File file = new File(folder, "layer.xml");
-            TestBase.dump(file, HEADER + xml + FOOTER);
+            if (wrapWithHeader) {
+                TestBase.dump(file, HEADER + xml + FOOTER);
+            } else {
+                TestBase.dump(file, xml);
+            }
             return FileUtil.toFileObject(file);
         }
         /**
@@ -641,14 +695,17 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
          * The header and footer are removed for you, but not other whitespace.
          */
         public String write() throws Exception {
+            return write(HEADER, FOOTER);
+        }
+        String write(String head, String foot) throws Exception {
             cookie.save();
             String raw = TestBase.slurp(f);
 
             for (int i = 1; i <= 2; i++) {
-                String header = new String(HEADER).replace("1_1", "1_"+ i).replace("1.1", "1."+ i);
-                String footer = new String(FOOTER).replace("1_1", "1_"+ i).replace("1.1", "1."+ i);
+                String header = new String(head).replace("1_1", "1_"+ i).replace("1.1", "1."+ i);
+                String footer = new String(foot).replace("1_1", "1_"+ i).replace("1.1", "1."+ i);
                 if (raw.startsWith(header) && raw.endsWith(footer)) {
-                    return raw.substring(HEADER.length(), raw.length() - FOOTER.length());
+                    return raw.substring(head.length(), raw.length() - foot.length());
                 }
             }
             fail("unexpected header or footer in:\n" + raw);

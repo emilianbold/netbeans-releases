@@ -491,6 +491,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(2, binIndexerFactory.indexer.getCount());
     }
 
+    @RandomlyFails
     public void testFileChanges() throws Exception {
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
@@ -586,6 +587,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, eindexerFactory.indexer.getDeletedCount());
     }
 
+    @RandomlyFails
     public void testFileRenamed() throws Exception {
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
@@ -754,7 +756,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     }        
     
 
-    private static class MutableClassPathImplementation implements ClassPathImplementation {
+    public static class MutableClassPathImplementation implements ClassPathImplementation {
 
         private final List<PathResourceImplementation> res;
         private final PropertyChangeSupport support;
@@ -764,19 +766,33 @@ public class RepositoryUpdaterTest extends NbTestCase {
             support = new PropertyChangeSupport (this);
         }
 
-        public void addResource (FileObject fo) throws IOException {
-            res.add(ClassPathSupport.createResource(fo.getURL()));
+        public void addResource (FileObject... fos) throws IOException {
+            synchronized (res) {
+                for(FileObject f : fos) {
+                    res.add(ClassPathSupport.createResource(f.getURL()));
+                }
+            }
             this.support.firePropertyChange(PROP_RESOURCES,null,null);
         }
 
-        public void removeResource (FileObject fo) throws IOException {
-            URL url = fo.getURL();
-            for (Iterator<PathResourceImplementation> it = res.iterator(); it.hasNext(); ) {
-                PathResourceImplementation r = it.next();
-                if (url.equals(r.getRoots()[0])) {
-                    it.remove();
-                    this.support.firePropertyChange(PROP_RESOURCES,null,null);
+        public void removeResource (FileObject... fos) throws IOException {
+            boolean fire = false;
+
+            synchronized (res) {
+                for(FileObject f : fos) {
+                    URL url = f.getURL();
+                    for (Iterator<PathResourceImplementation> it = res.iterator(); it.hasNext(); ) {
+                        PathResourceImplementation r = it.next();
+                        if (url.equals(r.getRoots()[0])) {
+                            it.remove();
+                            fire = true;
+                        }
+                    }
                 }
+            }
+
+            if (fire) {
+                this.support.firePropertyChange(PROP_RESOURCES, null, null);
             }
         }
 
@@ -788,8 +804,10 @@ public class RepositoryUpdaterTest extends NbTestCase {
             support.addPropertyChangeListener(listener);
         }
 
-        public List<PathResourceImplementation> getResources() {
-            return res;
+        public List<? extends PathResourceImplementation> getResources() {
+            synchronized (res) {
+                return new LinkedList<PathResourceImplementation>(res);
+            }
         }
 
     }
