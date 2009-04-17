@@ -216,7 +216,10 @@ public class VariablesTableModel implements TableModel, Constants {
                         }
                     }
                     if (row instanceof ObjectVariable) {
-                        return true;
+                        // Allow to edit Strings
+                        if (!"java.lang.String".equals(((ObjectVariable) row).getType())) { // NOI18N
+                            return true;
+                        }
                     }
                     if ( row instanceof LocalVariable ||
                          row instanceof Field ||
