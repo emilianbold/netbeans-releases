@@ -46,6 +46,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.groovy.editor.completion.TypeInferenceVisitor;
 
 /**
  *
@@ -63,7 +64,7 @@ public class GroovyTypeAnalyzer {
         ASTNode closest = path.leaf();
         if (closest instanceof VariableExpression) {
             ModuleNode moduleNode = (ModuleNode) path.root();
-            TypeVisitor typeVisitor = new TypeVisitor(moduleNode.getContext(),
+            TypeInferenceVisitor typeVisitor = new TypeInferenceVisitor(moduleNode.getContext(),
                     path, document, astOffset);
             typeVisitor.collect();
             ClassNode guessedType = typeVisitor.getGuessedType();

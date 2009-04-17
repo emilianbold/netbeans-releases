@@ -122,8 +122,145 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
         //lenghth of added statement has to be the same as the length of span
         assertEquals(delta, new String("System.err.println(true);").length());
         //absolute position of span beginning
-        assertEquals(span[0], 119);
+        assertEquals(119, span[0]);
     }
+
+    /**
+     * Adds 'System.err.println(true);' statement to the method body,
+     * tags the tree and checks the marks are valid inside an inner class
+     */
+    public void testTaggingOfGeneratedMethodBodyInInnerClass() throws Exception {
+
+        // the tag
+        final String methodBodyTag = "mbody"; //NOI18N
+
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.*;\n\n" +
+            "public class Test {\n" +
+            "    class foo {" +
+            "        public void taragui() {\n" +
+            "            ;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                // finally, find the correct body and rewrite it.
+                ClassTree topClazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ClassTree clazz = (ClassTree) topClazz.getMembers().get(1);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ExpressionStatementTree statement = make.ExpressionStatement(
+                    make.MethodInvocation(
+                        Collections.<ExpressionTree>emptyList(),
+                        make.MemberSelect(
+                            make.MemberSelect(
+                                make.Identifier("System"),
+                                "err"
+                            ),
+                            "println"
+                        ),
+                        Collections.singletonList(
+                            make.Literal(Boolean.TRUE)
+                        )
+                    )
+                );
+                //tag
+                workingCopy.tag(statement, methodBodyTag);
+
+                BlockTree copy = make.addBlockStatement(method.getBody(), statement);
+                workingCopy.rewrite(method.getBody(), copy);
+            }
+
+        };
+        ModificationResult diff = testSource.runModificationTask(task);
+        diff.commit();
+        int[] span = diff.getSpan(methodBodyTag);
+        int delta = span[1] - span[0];
+        //lenghth of added statement has to be the same as the length of span
+        assertEquals(delta, new String("System.err.println(true);").length());
+        //absolute position of span beginning
+        assertEquals(165, span[0]);
+    }
+
+    /**
+     * Adds 'System.err.println(true);' statement to the method body,
+     * tags the tree and checks the marks are valid inside an annonymous class
+     */
+    public void testTaggingOfGeneratedMethodBodyInAnnonymousClass() throws Exception {
+
+        // the tag
+        final String methodBodyTag = "mbody"; //NOI18N
+
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.*;\n\n" +
+            "public class Test {\n" +
+            "    public void foo() {" +
+            "        new Runnable() {" +
+            "            public void run() {\n" +
+            "                ;\n" +
+            "            }\n" +
+            "        };\n" +
+            "    }" +
+            "}\n"
+            );
+
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                // finally, find the correct body and rewrite it.
+                ClassTree topClazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                
+                MethodTree meth = (MethodTree) topClazz.getMembers().get(1);
+                NewClassTree clazz = (NewClassTree) ((ExpressionStatementTree) meth.getBody().getStatements().get(0)).getExpression();
+                MethodTree method = (MethodTree) clazz.getClassBody().getMembers().get(1);
+                ExpressionStatementTree statement = make.ExpressionStatement(
+                    make.MethodInvocation(
+                        Collections.<ExpressionTree>emptyList(),
+                        make.MemberSelect(
+                            make.MemberSelect(
+                                make.Identifier("System"),
+                                "err"
+                            ),
+                            "println"
+                        ),
+                        Collections.singletonList(
+                            make.Literal(Boolean.TRUE)
+                        )
+                    )
+                );
+                //tag
+                workingCopy.tag(statement, methodBodyTag);
+
+                BlockTree copy = make.addBlockStatement(method.getBody(), statement);
+                workingCopy.rewrite(method.getBody(), copy);
+            }
+
+        };
+        ModificationResult diff = testSource.runModificationTask(task);
+        diff.commit();
+        int[] span = diff.getSpan(methodBodyTag);
+        int delta = span[1] - span[0];
+        //lenghth of added statement has to be the same as the length of span
+        assertEquals(delta, new String("System.err.println(true);").length());
+        //absolute position of span beginning
+        assertEquals(241, span[0]);
+    }
+
 
     public void testTaggingOfSuperCall() throws Exception {
 
@@ -172,7 +309,7 @@ public class TreeTaggingTest extends GeneratorTestMDRCompat {
         //lenghth of added statement has to be the same as the length of span
         assertEquals(delta, new String("return super.print();").length());
         //absolute position of span beginning
-        assertEquals(span[0], 123);
+        assertEquals(123, span[0]);
     }
 
     @Override

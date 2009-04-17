@@ -38,12 +38,12 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
-import java.io.IOException;
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -57,9 +57,6 @@ import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  *
@@ -67,6 +64,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
  */
 public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
+    private static Logger log = DLightLogger.getLogger(GizmoConfigurationOptions.class);
     private String DLightCollectorString = "SunStudio";//NOI18N
     private List<String> DLightIndicatorDPStrings = Arrays.asList("SunStudio");//NOI18N
     private static final String SUNSTUDIO = "SunStudio";//NOI18N
@@ -140,39 +138,23 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             DLightIndicatorDPStrings.add(SUNSTUDIO);
             DLightIndicatorDPStrings.add(PRSTAT_INDICATOR);
             DLightIndicatorDPStrings.add(PROC_READER);
-            if (!hasSunStudio) {
-                //if we are on Linux set LL
-                setForLinux();
-            }
+//            if (!hasSunStudio) {
+//                //if we are on Linux set LL, I do not think it is correct if user had selected Sun Studio in Project Properties
+//                setForLinux();
+//            }
         } else if (currentProvider == GizmoOptions.DataProvider.SIMPLE) {//On Linux - LL On Solaris Dtrace + Proc + PRSTATE
-            setForLinux();
+            log.log(Level.FINEST, "Simple Data provider is used will try to set LL monitor + proc reader");//NOI18N
+            if (!setForLinux()) {
+                log.log(Level.FINEST, "Looks like it is not linux and not MacOS platform is " + ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName());//NOI18N
+            }
 
-        } else {
+        } else {//DTRACE?
             setForLinux();
         }
     }
 
     private boolean setForLinux() {
-
-//        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-//            try {
-//                ConnectionManager.getInstance().connectTo(execEnv);
-//            } catch (IOException ex) {
-//                DLightLogger.instance.warning(ex.toString());
-//            }
-//        }
-//        try {
-//            String osName = HostInfoUtils.getOS(execEnv);
-//            if (osName.indexOf("Linux") != -1 || osName.equals("MacOS")) {//NOI18N
-//                DLightCollectorString = SUNSTUDIO;
-//                DLightIndicatorDPStrings = Arrays.asList(PROC_READER, LL_MONITOR);
-//                return true;
-//            }
-//        } catch (ConnectException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
         String platform = ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName();
-        //if there is no SS in toolchain
         if (platform.indexOf("Linux") != -1 || platform.equals("MacOS")) {//NOI18N
             DLightCollectorString = SUNSTUDIO;
             DLightIndicatorDPStrings = Arrays.asList(PROC_READER, LL_MONITOR);
@@ -214,8 +196,6 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     public boolean validateToolsRequiredUserInteraction() {
-//        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
-//        return options.getUserInteractionRequiredActionsEnabled();
         return false;
     }
 }

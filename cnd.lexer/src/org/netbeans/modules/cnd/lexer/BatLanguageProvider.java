@@ -41,10 +41,12 @@
 
 package org.netbeans.modules.cnd.lexer;
 
+import org.netbeans.cnd.api.lexer.BatTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
 
@@ -56,7 +58,7 @@ import org.netbeans.spi.lexer.LanguageProvider;
 public class BatLanguageProvider extends LanguageProvider {
     
     public Language<BatTokenId> findLanguage (String mimeType) {
-        if ("text/bat".equals (mimeType))
+        if (MIMENames.BAT_MIME_TYPE.equals (mimeType))
             return new BatLanguageHierarchy ().language ();
         return null;
     }

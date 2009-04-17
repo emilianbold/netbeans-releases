@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,14 +34,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ide.ergonomics.prof;
 
-public final class CompareSnapshotsAction extends ProxyProfilerAction {
+package org.netbeans.modules.cnd.utils;
 
-    public CompareSnapshotsAction() {
-        super("Menu/Profile/org-netbeans-modules-profiler-actions-CompareSnapshotsAction.instance"); // NOI18N
+/**
+ * An extension of Runnable that sets thread name
+ * @author Vladimir Kvashin
+ */
+public abstract class NamedRunnable implements Runnable {
+
+    private final String name;
+
+    public NamedRunnable(String name) {
+        this.name = name;
     }
 
+    @Override
+    public final void run() {
+        String oldName = Thread.currentThread().getName();
+        try {
+            Thread.currentThread().setName(name);
+            runImpl();
+        } finally {
+            // restore thread name - it might belong to the pool
+            Thread.currentThread().setName(oldName);
+        }
+    }
+
+    protected abstract void runImpl();
 }

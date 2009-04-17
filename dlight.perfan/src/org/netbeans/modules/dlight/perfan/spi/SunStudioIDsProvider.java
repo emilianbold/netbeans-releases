@@ -44,5 +44,5 @@ package org.netbeans.modules.dlight.perfan.spi;
  * @author masha
  */
 public interface SunStudioIDsProvider {
-  public static final String DATA_COLLECTOR_ID = "SunStudioDataCollectorID";
+  public static final String DATA_COLLECTOR_ID = "SunStudioDataCollectorID"; // NOI18N
 }

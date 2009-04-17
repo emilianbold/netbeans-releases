@@ -224,13 +224,14 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
             Set<String> extensionsids = new HashSet<String>();
             @SuppressWarnings("unchecked")
             List<Plugin> plgns = project.getOriginalMavenProject().getBuildPlugins();
-            for (Plugin plg : plgns) {
-                if (plg.isExtensions()) {
-                    extensionsids.add(plg.getGroupId() + ":" + plg.getArtifactId() + ":" + plg.getVersion()); //NOI18N
-                    continue;
+            if (plgns != null) {
+                for (Plugin plg : plgns) {
+                    if (plg != null && plg.isExtensions()) {
+                        extensionsids.add(plg.getGroupId() + ":" + plg.getArtifactId() + ":" + plg.getVersion()); //NOI18N
+                        continue;
+                    }
+                    //only add those with executions and goals..
                 }
-                //only add those with executions and goals..
-
             }
             String mvnVersion = MavenSettings.getCommandLineMavenVersion();
             String packaging = project.getOriginalMavenProject().getPackaging();

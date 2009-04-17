@@ -36,12 +36,55 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ide.ergonomics.prof;
 
-public final class OpenHeapWalkerAction extends ProxyProfilerAction {
+package org.netbeans.modules.groovy.editor.api.completion;
 
-    public OpenHeapWalkerAction() {
-        super("Menu/Profile/org-netbeans-modules-profiler-heapwalk-ui-OpenHeapWalkerAction.instance"); // NOI18N
+/**
+ *
+ * @author Petr Hejl
+ */
+import java.util.Map;
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
+/**
+ *
+ * @author Petr Hejl
+ */
+public class InferenceCompletionTest extends GroovyTestBase {
+
+    String TEST_BASE = "testfiles/completion/inference/";
+
+    public InferenceCompletionTest(String testName) {
+        super(testName);
+        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
+    // uncomment this to have logging from GroovyLexer
+    protected Level logLevel() {
+        // enabling logging
+        return Level.INFO;
+        // we are only interested in a single logger, so we set its level in setUp(),
+        // as returning Level.FINEST here would log from all loggers
+    }
+
+    protected @Override Map<String, ClassPath> createClassPathsForTest() {
+        Map<String, ClassPath> map = super.createClassPathsForTest();
+        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
+            FileUtil.toFileObject(getDataFile("/testfiles/completion/inference")) }));
+        return map;
+    }
+
+    public void testInference1() throws Exception {
+        checkCompletion(TEST_BASE + "Inference1.groovy", "        set.a^", true);
+    }
+
+    public void testinference2() throws Exception {
+        checkCompletion(TEST_BASE + "Inference1.groovy", "        set.t^", true);
+    }
 }

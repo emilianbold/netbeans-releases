@@ -101,17 +101,17 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         this.lookup = lookup;
         this.instanceProvider = instanceProvider;
         String hostName = updateString(ip, GlassfishModule.HOSTNAME_ATTR, GlassfishInstance.DEFAULT_HOST_NAME);
-        String glassfishRoot = updateString(ip, GlassfishModule.GLASSFISH_FOLDER_ATTR, "");
+        String glassfishRoot = updateString(ip, GlassfishModule.GLASSFISH_FOLDER_ATTR, ""); // NOI18N
         int httpPort = updateInt(ip, GlassfishModule.HTTPPORT_ATTR, GlassfishInstance.DEFAULT_HTTP_PORT);
         updateString(ip, GlassfishModule.DISPLAY_NAME_ATTR, "Bogus display name"); // NOI18N GlassfishInstance.GLASSFISH_PRELUDE_SERVER_NAME);
         updateInt(ip, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
         
         updateString(ip, GlassfishModule.DOMAINS_FOLDER_ATTR, 
-                glassfishRoot + File.separator + GlassfishInstance.DEFAULT_DOMAINS_FOLDER); // NOI18N)
+                glassfishRoot + File.separator + GlassfishInstance.DEFAULT_DOMAINS_FOLDER);
         updateString(ip,GlassfishModule.DOMAIN_NAME_ATTR, GlassfishInstance.DEFAULT_DOMAIN_NAME);
-        updateString(ip,GlassfishModule.SESSION_PRESERVATION_FLAG,"true");
-        updateString(ip,GlassfishModule.START_DERBY_FLAG,"true");
-        updateString(ip,GlassfishModule.USE_IDE_PROXY_FLAG,"true");
+        updateString(ip,GlassfishModule.SESSION_PRESERVATION_FLAG,"true"); // NOI18N
+        updateString(ip,GlassfishModule.START_DERBY_FLAG,"true");  // NOI18N
+        updateString(ip,GlassfishModule.USE_IDE_PROXY_FLAG,"true");  // NOI18N
 
         if(ip.get(GlassfishModule.URL_ATTR) == null) {
             String deployerUrl = instanceProvider.formatUri(glassfishRoot, hostName, httpPort);
@@ -210,7 +210,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         try {
             httpPort = Integer.parseInt(properties.get(HTTPPORT_ATTR));
         } catch(NumberFormatException ex) {
-            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);  // NOI18N
         }
         return httpPort;
     }
@@ -266,8 +266,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
     
     public Future<OperationState> startServer(final OperationStateListener stateListener) {
-        Logger.getLogger("glassfish").log(Level.FINEST, 
-                "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\"");
+        Logger.getLogger("glassfish").log(Level.FINEST, "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
         OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.RUNNING);
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), startServerListener, stateListener));
@@ -276,8 +275,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
 
     public Future<OperationState> startServer(final OperationStateListener stateListener, FileObject jdkRoot, String[] jvmArgs) {
-        Logger.getLogger("glassfish").log(Level.FINEST, 
-                "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\"");
+        Logger.getLogger("glassfish").log(Level.FINEST, "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
         OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.STOPPED_JVM_PROFILER);
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), jdkRoot, jvmArgs, startServerListener, stateListener));
@@ -301,8 +299,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
     
     public Future<OperationState> stopServer(final OperationStateListener stateListener) {
-        Logger.getLogger("glassfish").log(Level.FINEST, 
-                "CSS.stopServer called on thread \"" + Thread.currentThread().getName() + "\"");
+        Logger.getLogger("glassfish").log(Level.FINEST, "CSS.stopServer called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
         OperationStateListener stopServerListener = new OperationStateListener() {
             public void operationStateChanged(OperationState newState, String message) {
                 if(newState == OperationState.RUNNING) {
@@ -321,8 +318,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
 
     public Future<OperationState> restartServer(OperationStateListener stateListener) {
-        Logger.getLogger("glassfish").log(Level.FINEST,
-                "CSS.restartServer called on thread \"" + Thread.currentThread().getName() + "\"");
+        Logger.getLogger("glassfish").log(Level.FINEST, "CSS.restartServer called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new RestartTask(this, stateListener));
         RequestProcessor.getDefault().post(task);
@@ -436,12 +432,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             try {
                 instanceFO.setAttribute(name, value);
             } catch(IOException ex) {
-                Logger.getLogger("glassfish").log(Level.WARNING, 
-                        "Unable to save attribute " + name + " for " + getDeployerUri(), ex);
+                Logger.getLogger("glassfish").log(Level.WARNING, "Unable to save attribute " + name + " for " + getDeployerUri(), ex); // NOI18N
             }
         } else {
-            Logger.getLogger("glassfish").log(Level.WARNING, 
-                    "Unable to save attribute " + name + " for " + getDeployerUri());
+            Logger.getLogger("glassfish").log(Level.WARNING, "Unable to save attribute " + name + " for " + getDeployerUri()); // NOI18N
         }
     }
     
@@ -480,8 +474,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                 Future<OperationState> result = execute(command);
                 if(result.get(30, TimeUnit.SECONDS) == OperationState.COMPLETED) {
                     long end = System.nanoTime();
-                    Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() +
-                            " responded in " + (end - start)/1000000 + "ms");
+                    Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() + " responded in " + (end - start)/1000000 + "ms");  // NOI18N
                     String installRoot = getGlassfishRoot();
                     String targetInstallRoot = command.getInstallRoot();
                     if(installRoot != null && targetInstallRoot != null) {
@@ -501,11 +494,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                     break;
                 } else {
                     long end = System.nanoTime();
-                    Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() +
-                            " timed out inside server after " + (end - start)/1000000 + "ms");
+                    Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() + " timed out inside server after " + (end - start)/1000000 + "ms"); // NOI18N
                 }
             } catch(Exception ex) {
-                Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() + " timed out.", ex);
+                Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() + " timed out.", ex); // NOI18N
                 isReady = false;
                 break;
             }

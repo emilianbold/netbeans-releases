@@ -37,45 +37,40 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.test;
+package org.netbeans.modules.bugtracking;
 
-import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Sergey Grinev
+ * @author Tomas Stupka
  */
-public abstract class RemoteUserInfoAccessor {
+public class BugtrackingConfig {
 
-    private static final RemoteUserInfoAccessor EMPTY = new Empty();
+    private static BugtrackingConfig instance = null;
+    private static final String ARCHIVED_TTL  = "bugtracking.archived_time_to_live";      // NOI18N
+    private static long DEFAULT_ARCHIVED_TTL  = 7; // days
 
-    protected RemoteUserInfoAccessor() {
+    private BugtrackingConfig() { }
+
+    public static BugtrackingConfig getInstance() {
+        if(instance == null) {
+            instance = new BugtrackingConfig();
+        }
+        return instance;
     }
 
-    public abstract RemoteUserInfo get(ExecutionEnvironment env);
-
-    /** default instance */
-    private static RemoteUserInfoAccessor defaultOne;
-
-    public static synchronized RemoteUserInfoAccessor getDefault() {
-        if (defaultOne != null) {
-            return defaultOne;
-        }
-        defaultOne = Lookup.getDefault().lookup(RemoteUserInfoAccessor.class);
-        return defaultOne == null ? EMPTY : defaultOne;
+    public Preferences getPreferences() {
+        return NbPreferences.forModule(BugtrackingConfig.class);
     }
 
-    private static final class Empty extends RemoteUserInfoAccessor {
-
-        private Empty() {
-        }
-
-        @Override
-        public RemoteUserInfo get(ExecutionEnvironment env) {
-            return null;
-        }
-
+    public void setArchivedIssuesTTL(int l) {
+        getPreferences().putLong(ARCHIVED_TTL, l);
     }
+
+    public long getArchivedIssuesTTL() {
+        return getPreferences().getLong(ARCHIVED_TTL, DEFAULT_ARCHIVED_TTL);
+    }
+
 }

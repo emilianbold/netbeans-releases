@@ -67,6 +67,6 @@ public class SJMCPropertiesDescriptor implements ProjectPropertiesDescriptor {
             set = new HashSet();
             ref = new WeakReference(set);
         }
-        return set;
+        return new HashSet(set);
     }
 }

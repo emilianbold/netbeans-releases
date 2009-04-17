@@ -37,8 +37,9 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.utils;
+package org.netbeans.modules.cnd.debugger.gdb.proxy;
 
+import org.netbeans.modules.cnd.debugger.gdb.utils.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
@@ -79,7 +80,7 @@ public class CommandBuffer {
      * 
      * @return The response from a gdb command
      */
-    public String waitForCompletion() {
+    String waitForCompletion() {
         assert !Thread.currentThread().getName().equals("GdbReaderRP");
         synchronized (lock) {
             if (state == State.NONE) {
@@ -133,7 +134,7 @@ public class CommandBuffer {
         synchronized (lock) {
             state = State.OK;
             log.finest("CB.done[" + time + token + "]: Released lock on " + GdbUtils.threadId());
-            gdb.removeCB(token);
+            //gdb.removeCB(token);
             lock.notifyAll();
         }
     }
@@ -144,7 +145,7 @@ public class CommandBuffer {
             err = msg;
             state = State.ERROR;
             log.finest("CB.error[" + time + token + "]: Releasing lock on " + GdbUtils.threadId());
-            gdb.removeCB(token);
+            //gdb.removeCB(token);
             lock.notifyAll();
         }
     }

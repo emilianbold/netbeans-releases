@@ -208,15 +208,15 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
 
         interfaceButtonGroup.add(localRadio);
         localRadio.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(localRadio, "&Local");
+        org.openide.awt.Mnemonics.setLocalizedText(localRadio, org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "Iface_type_Local")); // NOI18N
         localRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         interfaceButtonGroup.add(remoteRadio);
-        org.openide.awt.Mnemonics.setLocalizedText(remoteRadio, "&Remote");
+        org.openide.awt.Mnemonics.setLocalizedText(remoteRadio, org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "Iface_type_Remote")); // NOI18N
         remoteRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         interfaceButtonGroup.add(bothRadio);
-        org.openide.awt.Mnemonics.setLocalizedText(bothRadio, "&Both");
+        org.openide.awt.Mnemonics.setLocalizedText(bothRadio, org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "Iface_type_Both")); // NOI18N
         bothRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout interfacesPanelLayout = new org.jdesktop.layout.GroupLayout(interfacesPanel);

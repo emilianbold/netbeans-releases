@@ -66,7 +66,7 @@ import org.openide.util.NbPreferences;
 
 public class CreateDomain extends Thread {
 
-    static final String PORTBASE = "portbase";
+    static final String PORTBASE = "portbase"; // NOI18N
     final private String uname;
     final private String pword;
     final private File platformLocation;
@@ -109,23 +109,20 @@ public class CreateDomain extends Thread {
         if (null != irf && irf.exists()) {
             PDCancel pdcan;
             String installRoot = irf.getAbsolutePath();
-            String asadminCmd = installRoot + File.separator +
-                    "bin" + //NOI18N
-                    File.separator +
-                    "asadmin";                                                  //NOI18N
+            String asadminCmd = installRoot + File.separator +  "bin" + File.separator +  "asadmin"; // NOI18N                                              //NOI18N
             if ("\\".equals(File.separator)) {                                  //NOI18N
                 asadminCmd = asadminCmd + ".bat";                               //NOI18N
             }
             String domain = map.get(GlassfishModule.DOMAIN_NAME_ATTR);
             String domainDir = map.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
-            File passWordFile = createTempPasswordFile(pword, "changeit");//NOI18N
+            File passWordFile = createTempPasswordFile(pword, "changeit"); //NOI18N
 
             if (passWordFile == null) {
                 return;
             }
             String arrnd[];
             
-            if ("".equals(pword)) {
+            if ("".equals(pword)) { // NOI18N
                 arrnd = new String[] {asadminCmd,
                     "create-domain", //NOI18N
                     "--domaindir", //NOI18N
@@ -157,7 +154,7 @@ public class CreateDomain extends Thread {
                 process = Runtime.getRuntime().exec(arrnd);
                 pdcan = new PDCancel(process, domainDir + File.separator + domain);
                 ph = ProgressHandleFactory.createHandle(
-                        NbBundle.getMessage(this.getClass(), "LBL_Creating_personal_domain"), // NI18N
+                        NbBundle.getMessage(this.getClass(), "LBL_Creating_personal_domain"), // NOI18N
                         pdcan);
                 ph.start();
 
@@ -181,7 +178,7 @@ public class CreateDomain extends Thread {
                 try {
                     retVal = process.waitFor();
                     if (!passWordFile.delete()) {
-                        showInformation(NbBundle.getMessage(this.getClass(), "MSG_delete_password_failed", passWordFile.getAbsolutePath()));
+                        showInformation(NbBundle.getMessage(this.getClass(), "MSG_delete_password_failed", passWordFile.getAbsolutePath())); // NOI18N
                     }
                 } catch (InterruptedException ie) {
                     retVal = -1;
@@ -227,8 +224,8 @@ public class CreateDomain extends Thread {
                 try {
                     fo.delete();
                 } catch (IOException ex) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.FINER,"",ex);
-                    showError(NbBundle.getMessage(GlassfishInstanceProvider.class, "ERR_Failed_cleanup", dirname));
+                    Logger.getLogger(this.getClass().getName()).log(Level.FINER,"",ex); // NOI18N
+                    showError(NbBundle.getMessage(GlassfishInstanceProvider.class, "ERR_Failed_cleanup", dirname));  // NOI18N
                 }
             }
             return true;

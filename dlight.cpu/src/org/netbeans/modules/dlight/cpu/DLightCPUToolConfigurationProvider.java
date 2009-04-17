@@ -73,7 +73,7 @@ public final class DLightCPUToolConfigurationProvider
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration =
             new DLightToolConfiguration(TOOL_NAME);
-        toolConfiguration.setIcon("org/netbeans/modules/dlight/cpu/resources/cpu.png");
+        toolConfiguration.setIcon("org/netbeans/modules/dlight/cpu/resources/cpu.png"); // NOI18N
 
         // SunStudio should collect data about most CPU-expensive functions
         // i.e. create a configuration that collects

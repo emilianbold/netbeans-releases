@@ -40,6 +40,7 @@
 package org.netbeans.modules.glassfish.common.nodes;
 
 import java.util.HashMap;
+import org.netbeans.modules.glassfish.common.Util;
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.DecoratorFactory;
 import org.openide.util.lookup.Lookups;
@@ -63,7 +64,7 @@ public final class DecoratorManager {
         // Find all decorator support, categorize by type.
         decoratorMap = new HashMap<String, Decorator>();;
         for (DecoratorFactory decoratorFactory : 
-                Lookups.forPath("Servers/GlassFish").lookupAll(DecoratorFactory.class)) { // NOI18N
+                Lookups.forPath(Util.GF_LOOKUP_PATH).lookupAll(DecoratorFactory.class)) {
             java.util.Map<String, Decorator> map = decoratorFactory.getAllDecorators();
             decoratorMap.putAll(map);
         }

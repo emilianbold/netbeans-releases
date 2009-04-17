@@ -56,7 +56,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position = 100)
 public final class DerbyDataStorageFactory extends SQLDataStorageFactory<DerbyDataStorage> {
 
-    static final String DERBY_DATA_STORAGE_TYPE = "db:sql:derby";
+    static final String DERBY_DATA_STORAGE_TYPE = "db:sql:derby"; // NOI18N
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
 
     public DerbyDataStorageFactory() {
