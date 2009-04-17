@@ -39,6 +39,8 @@
 package org.netbeans.modules.nativeexecution.support.ui;
 
 import java.awt.Dialog;
+import javax.swing.BorderFactory;
+import javax.swing.border.EtchedBorder;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -53,6 +55,11 @@ public class PasswordDlg extends javax.swing.JPanel {
     /** Creates new form PasswordPanel */
     public PasswordDlg() {
         initComponents();
+        // FIXUP for Mac and Ubuntu
+        tfUser.setBackground(getBackground());
+        tfUser.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+        tfHost.setBackground(getBackground());
+        tfHost.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
     }
 
     public boolean askPassword(ExecutionEnvironment execEnv) {
@@ -106,6 +113,11 @@ public class PasswordDlg extends javax.swing.JPanel {
         tfUser = new javax.swing.JTextField();
 
         tfPassword.setText(null);
+        tfPassword.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tfPasswordActionPerformed(evt);
+            }
+        });
         tfPassword.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 tfPasswordonPwdFocus(evt);
@@ -118,6 +130,7 @@ public class PasswordDlg extends javax.swing.JPanel {
         jLabel2.setLabelFor(tfPassword);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.jLabel2.text")); // NOI18N
 
+        tfHost.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         tfHost.setEditable(false);
         tfHost.setText(null);
         tfHost.setFocusable(false);
@@ -127,6 +140,7 @@ public class PasswordDlg extends javax.swing.JPanel {
         jLabel0.setLabelFor(tfHost);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel0, org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.jLabel0.text")); // NOI18N
 
+        tfUser.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         tfUser.setEditable(false);
         tfUser.setText(null);
         tfUser.setFocusable(false);
@@ -140,44 +154,36 @@ public class PasswordDlg extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel0, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 190, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel2)
-                                    .add(jLabel1))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(tfHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
-                                    .add(tfPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, tfUser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))))
-                        .add(16, 16, 16))
-                    .add(layout.createSequentialGroup()
-                        .add(cbRememberPwd)
-                        .addContainerGap(16, Short.MAX_VALUE))))
+                            .add(jLabel2)
+                            .add(jLabel1)
+                            .add(jLabel0, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(tfUser)
+                            .add(tfHost)
+                            .add(tfPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 253, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(cbRememberPwd))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(20, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel0)
                     .add(tfUser, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(tfHost, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(tfHost, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(tfPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(cbRememberPwd)
-                .addContainerGap(10, Short.MAX_VALUE))
+                .addContainerGap())
         );
-
-        layout.linkSize(new java.awt.Component[] {tfHost, tfPassword}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         tfPassword.getAccessibleContext().setAccessibleName("null");
         tfPassword.getAccessibleContext().setAccessibleDescription("null");
@@ -192,6 +198,10 @@ public class PasswordDlg extends javax.swing.JPanel {
     private void tfPasswordonPwdFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfPasswordonPwdFocus
         tfPassword.selectAll();
 }//GEN-LAST:event_tfPasswordonPwdFocus
+
+    private void tfPasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfPasswordActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tfPasswordActionPerformed
 
     private static String loc(String key, Object... params) {
         return NbBundle.getMessage(PasswordDlg.class, key, params);
