@@ -500,7 +500,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         DefaultDetailsViewEmptyContentProvider() {
             p = new JPanel();
             p.setLayout(new BorderLayout());
-            p.add(new JLabel("no data..."), BorderLayout.CENTER);
+            p.add(new JLabel(loc("DLightManager.noData")), BorderLayout.CENTER); //NOI18N
 
         }
 
