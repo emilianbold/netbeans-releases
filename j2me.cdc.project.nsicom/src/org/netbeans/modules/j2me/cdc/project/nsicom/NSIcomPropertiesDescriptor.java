@@ -77,7 +77,7 @@ public class NSIcomPropertiesDescriptor implements ProjectPropertiesDescriptor {
             set.add(new PropertyDescriptor(PROP_REMOTE_APP, true, DefaultPropertyParsers.STRING_PARSER,  "\\My Documents\\NetBeans Applications")); //NOI18N
             ref = new WeakReference(set);
         }
-        return set;
+        return new HashSet(set);
     }
 
 }

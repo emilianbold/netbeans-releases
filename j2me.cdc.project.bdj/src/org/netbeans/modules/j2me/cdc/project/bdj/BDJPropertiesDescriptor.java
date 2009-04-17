@@ -85,7 +85,8 @@ public class BDJPropertiesDescriptor implements ProjectPropertiesDescriptor {
             set.add(new PropertyDescriptor(PROP_DEPLOYMENT_DIR, true, DefaultPropertyParsers.FILE_REFERENCE_PARSER,  "${build.dir}/deploy")); //NOI18N
             ref = new WeakReference(set);
         }
-        return set;
+        //Defensive copy - getting CMEs when creating new configurations
+        return new HashSet(set);
     }
 
 }
