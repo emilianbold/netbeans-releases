@@ -51,6 +51,6 @@ public class PercentageGraph extends Graph {
 
     @Override
     protected String formatValue(int value) {
-        return String.format("%3d%%", value);
+        return String.format("%3d%%", value); // NOI18N
     }
 }

@@ -86,7 +86,7 @@ final class ConfigurationData {
     int idx = prevPath.lastIndexOf('/');
     prevPath = (idx >= 0) ? prevPath.substring(0, idx) : null;
     
-    return get(prevPath == null ? null : prevPath.concat("/"), key);
+    return get(prevPath == null ? null : prevPath.concat("/"), key); //NOI18N
   }
 
   /**
