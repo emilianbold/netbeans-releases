@@ -40,14 +40,35 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Project">
+            <file name="org-netbeans-modules-maven-graph-ShowGraphAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-maven-pom+xml">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-maven-graph-ShowGraphAction2-separatorAfter.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="213"/>
+                    </file>
+                    <file name="org-netbeans-modules-maven-graph-ShowGraphAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-maven-graph-ShowGraphAction.instance"/>
+                        <attr name="position" intvalue="113"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-maven">
             <folder name="DependenciesActions">
-                <file name="org-netbeans-modules-maven-graph-ShowGraphAction.instance"/>
+                <file name="org-netbeans-modules-maven-graph-ShowGraphAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-maven-graph-ShowGraphAction.instance"/>
+                </file>
             </folder>
         </folder>
     </folder>

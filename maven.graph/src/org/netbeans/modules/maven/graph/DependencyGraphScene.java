@@ -236,12 +236,12 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         childrenEdges.addAll(findNodeEdges(node, true, false));
 
         // primary path
-        addPathToRoot(node.getArtifact(), primaryPathEdges, importantNodes);
+        addPathToRoot(node, primaryPathEdges, importantNodes);
 
         // other important paths
         List<DependencyNode> representants = new ArrayList<DependencyNode>(node.getDuplicatesOrConflicts());
         for (DependencyNode curRep : representants) {
-            addPathToRoot(curRep, otherPathsEdges, importantNodes);
+            addPathToRoot(curRep, curRep.getParent(), otherPathsEdges, importantNodes);
         }
 
         EdgeWidget ew;
@@ -275,16 +275,27 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
 
     }
 
-    private void addPathToRoot(DependencyNode depN, List<ArtifactGraphEdge> edges, List<ArtifactGraphNode> nodes) {
-        DependencyNode parentDepN;
+    private void addPathToRoot(ArtifactGraphNode node, List<ArtifactGraphEdge> edges, List<ArtifactGraphNode> nodes) {
+        DependencyNode parentDepN = node.getParentAfterFix();
+        if (parentDepN == null) {
+            parentDepN = node.getArtifact().getParent();
+        }
+        addPathToRoot(node.getArtifact(), parentDepN, edges, nodes);
+    }
+
+
+    private void addPathToRoot(DependencyNode depN, DependencyNode parentDepN, List<ArtifactGraphEdge> edges, List<ArtifactGraphNode> nodes) {
         ArtifactGraphNode grNode;
-        while ((parentDepN = depN.getParent()) != null) {
+        while (parentDepN != null) {
             grNode = getGraphNodeRepresentant(parentDepN);
             edges.addAll(findEdgesBetween(grNode, getGraphNodeRepresentant(depN)));
             nodes.add(grNode);
             depN = parentDepN;
+            parentDepN = parentDepN.getParent();
         }
     }
+
+
 
     private class AllActionsProvider implements PopupMenuProvider, 
             MoveProvider, EditProvider, SelectProvider {
@@ -629,9 +640,12 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                     addEdge(ed);
                     setEdgeTarget(ed, node);
                     setEdgeSource(ed, rootNode);
-                    shouldValidate = true;
 
+                    node.setPrimaryLevel(1);
+                    node.setParentAfterFix(rootNode.getArtifact());
                     rootNode.getArtifact().addChild(node.getArtifact());
+
+                    shouldValidate = true;
                 }
             }
 
@@ -660,6 +674,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                         for (DependencyNode dn : fixContent.conflictParents) {
                             if (sourceNode.represents(dn)) {
                                 edges2Exclude.add(age);
+                                break;
                             }
                         }
                     }
