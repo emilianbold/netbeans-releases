@@ -225,6 +225,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
     public @Override void windowActivated(WindowEvent evt) {
         findPerformed = false;
         createFindPanel();
+        findPanel.blockOneLineSelection=false;
         findPanel.initBlockSearch();
         updateCaretPosition();
     }
@@ -396,6 +397,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
         
         private int blockSearchStartPos = 0;
         private int blockSearchEndPos = 0;
+        private boolean blockOneLineSelection = false;
 
         FindPanel() {
             objToProps.put(findWhat, EditorFindSupport.FIND_WHAT);
@@ -506,18 +508,21 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
             int startSelection = 0;
             int endSelection = 0;
             boolean blockSearchVisible = false;
-            
+            boolean blockSearchEnabled = false;
+            boolean blockOneLine = false;
             if (c != null) {
                 startSelection = c.getSelectionStart();
                 endSelection = c.getSelectionEnd();
-                
+                if (startSelection<endSelection) blockSearchEnabled = true;
                 Document doc = c.getDocument();
                 if (doc instanceof BaseDocument){
                     BaseDocument bdoc = (BaseDocument) doc;
                     try{
                         int startLine = Utilities.getLineOffset(bdoc, startSelection);
                         int endLine = Utilities.getLineOffset(bdoc, endSelection);
-                        if (endLine > startLine) {
+                        if (endLine == startLine && startSelection < endSelection)
+                            blockOneLine = true;
+                        if (endLine > startLine || blockOneLineSelection) {
                             blockSearchVisible = true;
                         }
                     } catch (BadLocationException ble){
@@ -533,15 +538,16 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
                         int n = selText.indexOf( '\n' );
                         if (n >= 0 ) selText = selText.substring(0, n);
                         findWhat.getEditor().setItem(selText);
-                        changeFindWhat(true);
+//                        changeFindWhat(true);
                     }
                 }
             
                 blockSearchStartPos = blockSearchVisible ? startSelection : 0;
                 blockSearchEndPos = blockSearchVisible ? endSelection : 0;
+                blockOneLineSelection = blockOneLine;
                 
                 try{
-                    blockSearch.setEnabled(blockSearchVisible);
+                    blockSearch.setEnabled(blockSearchEnabled);
                     blockSearch.setSelected(blockSearchVisible);
                     findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.valueOf(blockSearchVisible));
                     findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, new Integer(blockSearchStartPos));
