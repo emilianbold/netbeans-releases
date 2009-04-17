@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,48 +34,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.test;
-
-import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
+package org.netbeans.modules.cnd.utils;
 
 /**
- *
- * @author Sergey Grinev
+ * An extension of Runnable that sets thread name
+ * @author Vladimir Kvashin
  */
-public abstract class RemoteUserInfoAccessor {
+public abstract class NamedRunnable implements Runnable {
 
-    private static final RemoteUserInfoAccessor EMPTY = new Empty();
+    private final String name;
 
-    protected RemoteUserInfoAccessor() {
+    public NamedRunnable(String name) {
+        this.name = name;
     }
 
-    public abstract RemoteUserInfo get(ExecutionEnvironment env);
-
-    /** default instance */
-    private static RemoteUserInfoAccessor defaultOne;
-
-    public static synchronized RemoteUserInfoAccessor getDefault() {
-        if (defaultOne != null) {
-            return defaultOne;
+    @Override
+    public final void run() {
+        String oldName = Thread.currentThread().getName();
+        try {
+            Thread.currentThread().setName(name);
+            runImpl();
+        } finally {
+            // restore thread name - it might belong to the pool
+            Thread.currentThread().setName(oldName);
         }
-        defaultOne = Lookup.getDefault().lookup(RemoteUserInfoAccessor.class);
-        return defaultOne == null ? EMPTY : defaultOne;
     }
 
-    private static final class Empty extends RemoteUserInfoAccessor {
-
-        private Empty() {
-        }
-
-        @Override
-        public RemoteUserInfo get(ExecutionEnvironment env) {
-            return null;
-        }
-
-    }
+    protected abstract void runImpl();
 }
