@@ -109,17 +109,17 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         }
         AST token = ast.getNextSibling();
         if( token != null) {
-            //typedef enum { a1, b1, c1 } B;
-            if (token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
-                addList(token, global);
-                return;
-            } else if (token.getType() == CPPTokenTypes.ID) {
-                token = token.getNextSibling();
+            AST enumList = null;
+            if (token.getType() == CPPTokenTypes.ID) {
                 //typedef enum C { a2, b2, c2 } D;
-                if( token != null && token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
-                    addList(token, global);
-                    return;
-                }
+                token = token.getNextSibling();
+            }
+            if (token.getType() == CPPTokenTypes.LCURLY ) {
+                //typedef enum { a1, b1, c1 } B;
+                enumList = token.getNextSibling();
+            }
+            if (enumList != null && enumList.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST) {
+                addList(enumList, global);
             }
         }
     }
