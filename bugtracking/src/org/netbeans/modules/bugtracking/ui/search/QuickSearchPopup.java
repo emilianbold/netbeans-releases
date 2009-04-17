@@ -416,7 +416,9 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
         // plug this popup into layered pane if needed
         JLayeredPane lPane = JLayeredPane.getLayeredPaneAbove(comboBar);
-        if (!isDisplayable()) {
+        // lPane can be null when the corresponding dialog is closed already
+        // for example, when the user didn't want to wait until the search finishes
+        if (!isDisplayable() && (lPane != null)) {
             lPane.add(this, new Integer(JLayeredPane.POPUP_LAYER + 1) );
         }
 

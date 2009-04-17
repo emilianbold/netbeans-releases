@@ -176,13 +176,13 @@ public class MonitorsUpdateService {
                             restarted = true;
 
                             if (result == null || result.length == 0) {
-                                return;
+                                continue;
                             }
 
                             Matcher m = lineStartsWithIntegerPattern.matcher(result[0]);
 
                             if (!m.matches()) {
-                                return;
+                                continue;
                             }
 
                             String value = m.group(1);

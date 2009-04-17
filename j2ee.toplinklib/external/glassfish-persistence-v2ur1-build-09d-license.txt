@@ -2,7 +2,7 @@ Name: TopLink Essentials
 Version: v2ur1-build-09d
 Description: Implementation of Java Persistence API in GlassFish
 License: CDDL-1.0
-OSR: 1304
+OSR: 11715
 Origin: http://glassfish.dev.java.net
 Comment: Out-of-the-box support for developing JPA applications
 

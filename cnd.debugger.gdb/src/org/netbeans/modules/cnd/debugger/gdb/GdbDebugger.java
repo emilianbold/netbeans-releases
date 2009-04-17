@@ -610,7 +610,6 @@ public class GdbDebugger implements PropertyChangeListener {
         }
         final boolean inDis = dis;
         SwingUtilities.invokeLater(new Runnable() {
-
             public void run() {
                 // show current line
                 EditorContextBridge.showSource(csf, inDis);
@@ -905,53 +904,57 @@ public class GdbDebugger implements PropertyChangeListener {
         return gdb;
     }
 
+    private final Object finishLock = new String("GDB debugger finish lock"); //NOI18N
+
     /**
      * Finish debugging session. Terminates execution of the inferior program, exits debugger,
      * closes terminal and console.
      *
      * Note: gdb can be null if we get an exception while starting a debug session.
      */
-    public synchronized void finish(boolean killTerm) {
-        if (isUnitTest()) {
-            setExited();
-        } else {
-            if (state != State.NONE && state != State.EXITED) {
-                if (killTerm) {
-                    firePropertyChange(PROP_KILLTERM, true, false);
-                }
-                if (gdb != null) {
-                    ProjectActionEvent pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-                    if (state == State.RUNNING) {
-                        gdb.exec_interrupt();
-                        if (pae.getType() != DEBUG_ATTACH) {
-                            gdb.exec_abort();
-                        }
-                    }
-                    if (pae.getType() == DEBUG_ATTACH) {
-                        gdb.target_detach();
-                    }
-                    gdb.gdb_exit();
-                    gdb.getProxyEngine().finish();
-                }
-
-                stackUpdate(new ArrayList<String>());
+    public void finish(boolean killTerm) {
+        synchronized (finishLock) {
+            if (isUnitTest()) {
                 setExited();
-                programPID = 0;
-                removeRTCBreakpoint();
-                gdbEngineProvider.getDestructor().killEngine();
-                GdbActionHandler gah = lookupProvider.lookupFirst(null, GdbActionHandler.class);
-                if (gah != null) { // gah is null if we attached (but we don't need it then)
-                    gah.executionFinished(0);
+            } else {
+                if (state != State.NONE && state != State.EXITED) {
+                    if (killTerm) {
+                        firePropertyChange(PROP_KILLTERM, true, false);
+                    }
+                    if (gdb != null) {
+                        ProjectActionEvent pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+                        if (state == State.RUNNING) {
+                            gdb.exec_interrupt();
+                            if (pae.getType() != DEBUG_ATTACH) {
+                                gdb.exec_abort();
+                            }
+                        }
+                        if (pae.getType() == DEBUG_ATTACH) {
+                            gdb.target_detach();
+                        }
+                        gdb.gdb_exit();
+                        gdb.getProxyEngine().finish();
+                    }
+
+                    stackUpdate(new ArrayList<String>());
+                    setExited();
+                    programPID = 0;
+                    removeRTCBreakpoint();
+                    gdbEngineProvider.getDestructor().killEngine();
+                    GdbActionHandler gah = lookupProvider.lookupFirst(null, GdbActionHandler.class);
+                    if (gah != null) { // gah is null if we attached (but we don't need it then)
+                        gah.executionFinished(0);
+                    }
+                    Disassembly.close();
+                    if (ioProxy != null) {
+                        ioProxy.stop();
+                    }
+                    if (iotab != null) {
+                        iotab.getOut().close();
+                    }
+                    GdbContext.getInstance().gdbExit();
+                    GdbTimer.getTimer("Step").reset(); // NOI18N
                 }
-                Disassembly.close();
-                if (ioProxy != null) {
-                    ioProxy.stop();
-                }
-                if (iotab != null) {
-                    iotab.getOut().close();
-                }
-                GdbContext.getInstance().gdbExit();
-                GdbTimer.getTimer("Step").reset(); // NOI18N
             }
         }
     }
@@ -1139,9 +1142,8 @@ public class GdbDebugger implements PropertyChangeListener {
 
     /** Handle gdb responses starting with '*' */
     public void execAsyncOutput(int token, String msg) {
-        Map<String, String> map;
-
         if (msg.startsWith("*stopped")) { // NOI18N
+            Map<String, String> map;
             if (msg.length() > 9) {
                 map = GdbUtils.createMapFromString(msg.substring(9));
             } else {
@@ -1584,7 +1586,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * @param token The token responsible for this stop
      * @param reason A reason why program is stopped
      */
-    public void stopped(int token, Map<String, String> map) {
+    private void stopped(int token, Map<String, String> map) {
         String reason = map.get("reason"); // NOI18N
 
         if (state == State.STARTING) {
@@ -1614,7 +1616,7 @@ public class GdbDebugger implements PropertyChangeListener {
             return;
         }
 
-        log.finest("GD.stopped[" + GdbUtils.threadId() + "]:\n"); // NOI18N
+        log.finest("GD.stopped[" + GdbUtils.threadId() + "]: Reason is " + reason);
         tlog("GD.stopped: Reason is " + reason); // NOI18N
         resetThreadInfo();
         if (reason != null) {
@@ -2362,9 +2364,11 @@ public class GdbDebugger implements PropertyChangeListener {
     private void restoreBreakpointsAndSignals() {
         gdb.set_unwindonsignal("off"); // NOI18N
         ArrayList<Integer> ids = new ArrayList<Integer>();
-        for (Map.Entry<Integer, BreakpointImpl> entry : getBreakpointList().entrySet()) {
-            if (entry.getValue().getBreakpoint().isEnabled()) {
-                ids.add(entry.getKey());
+        synchronized (breakpointList) {
+            for (Map.Entry<Integer, BreakpointImpl> entry : breakpointList.entrySet()) {
+                if (entry.getValue().getBreakpoint().isEnabled()) {
+                    ids.add(entry.getKey());
+                }
             }
         }
         gdb.break_enable(ids.toArray(new Integer[ids.size()]));
@@ -2388,13 +2392,15 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @return current stack frame or null
      */
-    public synchronized CallStackFrame getCurrentCallStackFrame() {
-        if (currentCallStackFrame != null) {
-            return currentCallStackFrame;
-        } else if (!callstack.isEmpty()) {
-            return callstack.get(0);
+    public CallStackFrame getCurrentCallStackFrame() {
+        synchronized (callstack) {
+            if (currentCallStackFrame != null) {
+                return currentCallStackFrame;
+            } else if (!callstack.isEmpty()) {
+                return callstack.get(0);
+            }
+            return null;
         }
-        return null;
     }
 
     /**
@@ -2420,7 +2426,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private CallStackFrame setCurrentCallStackFrameNoFire(CallStackFrame callStackFrame) {
         CallStackFrame old;
 
-        synchronized (this) {
+        synchronized (callstack) {
             old = getCurrentCallStackFrame();
             if (callStackFrame == old) {
                 return callStackFrame;
