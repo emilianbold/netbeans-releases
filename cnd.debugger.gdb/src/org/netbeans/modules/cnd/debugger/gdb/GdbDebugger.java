@@ -2365,9 +2365,11 @@ public class GdbDebugger implements PropertyChangeListener {
     private void restoreBreakpointsAndSignals() {
         gdb.set_unwindonsignal("off"); // NOI18N
         ArrayList<Integer> ids = new ArrayList<Integer>();
-        for (Map.Entry<Integer, BreakpointImpl> entry : getBreakpointList().entrySet()) {
-            if (entry.getValue().getBreakpoint().isEnabled()) {
-                ids.add(entry.getKey());
+        synchronized (breakpointList) {
+            for (Map.Entry<Integer, BreakpointImpl> entry : breakpointList.entrySet()) {
+                if (entry.getValue().getBreakpoint().isEnabled()) {
+                    ids.add(entry.getKey());
+                }
             }
         }
         gdb.break_enable(ids.toArray(new Integer[ids.size()]));
