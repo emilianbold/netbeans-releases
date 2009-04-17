@@ -41,20 +41,16 @@
 package org.netbeans.modules.web.debug;
 
 import java.awt.event.KeyEvent;
-import java.beans.EventHandler;
 import java.io.File;
 import java.io.IOException;
-import javax.swing.JDialog;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.modules.debugger.SourcesOperator;
 import org.netbeans.jellytools.modules.debugger.actions.ApplyCodeChangesAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepIntoAction;
 import org.netbeans.jellytools.modules.debugger.actions.StepOutAction;
@@ -64,8 +60,8 @@ import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.util.Exceptions;
@@ -160,13 +156,15 @@ public class ServletDebuggingTest extends J2eeTestCase {
         Utils.confirmClientSideDebuggingMeassage(SAMPLE_WEB_PROJECT_NAME);
         new NbDialogOperator(setURITitle).ok();
         try {
-            Thread.sleep(130000);
+            Thread.sleep(30000);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
         //OutputTabOperator outputTab = new OutputTabOperator("MainTestApplication (debug)");
         //outputTab.waitText("BUILD SUCCESSFUL");
-        stt.waitText("DivideServlet.java:" + line); //NOI18N
+        //stt.waitText("DivideServlet.java:" + line); //NOI18N
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
+        waitEnabled(new StepIntoAction());
         new StepIntoAction().perform();
         MainWindowOperator.getDefault().pressKey(KeyEvent.VK_ENTER);
         //stt.waitText("DivideServlet.java:"+(line+2)); //NOI18N
@@ -175,6 +173,27 @@ public class ServletDebuggingTest extends J2eeTestCase {
         Utils.finishDebugger();
     }
 
+    private void waitEnabled(final Action action) {
+        Waiter waiter = new Waiter(new Waitable() {
+
+            public Object actionProduced(Object arg0) {
+                if (!action.isEnabled()){
+                    return null;
+                }else{
+                    return this;
+                }
+            }
+
+            public String getDescription() {
+                return "waiting for enabled Step Into Action";
+            }
+        });
+        try {
+            waiter.waitAction(null);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
     /** Step out from servlet.
      * - call Debug File popup on servlets node
      * - wait until debugger stops at previously set breakpoint
@@ -183,16 +202,16 @@ public class ServletDebuggingTest extends J2eeTestCase {
      * - finish debugger
      */
     public void testStepOut() {
+        JSPDebuggingOverallTest.verifyActiveNode(servletNode);
         new DebugAction().perform(servletNode);
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
-        //Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
-        try {
-            Thread.sleep(20000);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
+        EditorOperator eo = new EditorOperator("DivideServlet.java"); // NOI18N
+        eo.select("<h1>"); // NOI18N
+        line = eo.getLineNumber();
         stt.waitText("DivideServlet.java:" + line); //NOI18N
         stt.clear();
+        waitEnabled(new StepOutAction());
         new StepOutAction().perform();
         // it stops at doGet method
         stt.waitText("DivideServlet.java:"); //NOI18N
@@ -209,6 +228,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
      * - finish debugger
      */
     public void testStepOver() {
+        JSPDebuggingOverallTest.verifyActiveNode(servletNode);
         new DebugAction().perform(servletNode);
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
@@ -230,6 +250,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
      * - open URL connection and wait for changed text
      */
     public void testApplyCodeChanges() {
+        JSPDebuggingOverallTest.verifyActiveNode(servletNode);
         new DebugAction().perform(servletNode);
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME + "/DivideServlet");
@@ -248,6 +269,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testStopServer() {
         J2eeServerNode serverNode = new J2eeServerNode(Utils.DEFAULT_SERVER);
+        JSPDebuggingOverallTest.verifyServerNode(serverNode);
         serverNode.stop();
     }
 }

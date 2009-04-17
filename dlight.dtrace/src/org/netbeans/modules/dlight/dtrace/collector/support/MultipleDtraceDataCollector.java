@@ -50,10 +50,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -75,7 +74,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
  * @author Alexey Vladykin
  */
 public final class MultipleDtraceDataCollector extends IndicatorDataProvider<MultipleDTDCConfiguration>
-    implements DataCollector<MultipleDTDCConfiguration>, IndicatorDataProvideHandler { 
+        implements DataCollector<MultipleDTDCConfiguration>, IndicatorDataProvideHandler {
 
     private DtraceDataCollector collector;
     private Map<String, DtraceDataCollector> slaveCollectors;
@@ -98,7 +97,7 @@ public final class MultipleDtraceDataCollector extends IndicatorDataProvider<Mul
 
     public void addConfiguration(MultipleDTDCConfiguration configuration) {
         DtraceDataCollector slaveCollector = new DtraceDataCollector(
-            MultipleDTDCConfigurationAccessor.getDefault().getDTDCConfiguration(configuration));
+                MultipleDTDCConfigurationAccessor.getDefault().getDTDCConfiguration(configuration));
         slaveCollector.setSlave(true);
         slaveCollector.setIndicatorDataProviderHanlder(this);
         slaveCollectors.put(MultipleDTDCConfigurationAccessor.getDefault().getOutputPrefix(configuration), slaveCollector);
@@ -129,21 +128,21 @@ public final class MultipleDtraceDataCollector extends IndicatorDataProvider<Mul
 
     private File mergeScripts() {
         try {
-            File output = File.createTempFile("dlight", ".d");
+            File output = File.createTempFile("dlight", ".d"); // NOI18N
             BufferedWriter w = new BufferedWriter(new FileWriter(output));
             try {
-                w.write("#!/usr/sbin/dtrace -Cs\n");
+                w.write("#!/usr/sbin/dtrace -Cs\n"); // NOI18N
                 for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
                     DtraceDataCollector ddc = entry.getValue();
                     BufferedReader r = new BufferedReader(new FileReader(ddc.getLocalScriptPath()));
                     try {
                         for (String line = r.readLine(); line != null; line = r.readLine()) {
-                            if (!line.startsWith("#!")) {
-                                w.write(line.replaceAll("(printf\\(\")", "$1" + entry.getKey()));
-                                w.write('\n');
+                            if (!line.startsWith("#!")) { // NOI18N
+                                w.write(line.replaceAll("(printf\\(\")", "$1" + entry.getKey())); // NOI18N
+                                w.write('\n'); // NOI18N
                             }
                         }
-                        w.write('\n');
+                        w.write('\n'); // NOI18N
                     } finally {
                         r.close();
                     }
@@ -190,12 +189,12 @@ public final class MultipleDtraceDataCollector extends IndicatorDataProvider<Mul
         collector.removeValidationListener(listener);
     }
 
-    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-        collector.targetStateChanged(source, oldState, newState);
-        for (DtraceDataCollector ddc : slaveCollectors.values()) {
-            ddc.targetStateChanged(source, oldState, newState);
-        }
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        collector.targetStateChanged(event);
 
+        for (DtraceDataCollector ddc : slaveCollectors.values()) {
+            ddc.targetStateChanged(event);
+        }
     }
 
     public void notify(List<DataRow> list) {
@@ -220,5 +219,4 @@ public final class MultipleDtraceDataCollector extends IndicatorDataProvider<Mul
             lastSlaveCollector = target;
         }
     }
-
 }

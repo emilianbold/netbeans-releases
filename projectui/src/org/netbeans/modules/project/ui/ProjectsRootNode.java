@@ -120,7 +120,9 @@ public class ProjectsRootNode extends AbstractNode {
         super( new ProjectChildren( type ) ); 
         setIconBaseWithExtension( ICON_BASE );
         this.type = type;
-        all.add(this);
+        synchronized(all){
+            all.add(this);
+        }
     }
         
     public String getName() {
@@ -202,13 +204,15 @@ public class ProjectsRootNode extends AbstractNode {
     }
 
     static void checkNoLazyNode(Object msg) {
-        for (ProjectsRootNode root : all) {
-            for (Node n : root.getChildren().getNodes()) {
-                if (n.getLookup().lookup(LazyProject.class) != null) {
-                    LogRecord REC = new LogRecord(Level.WARNING, "LazyProjects remain visible:\n {0}"); // NOI18N
-                    REC.setLoggerName(OpenProjectList.LOGGER.getName());
-                    REC.setParameters(new Object[] { msg });
-                    OpenProjectList.log(REC);
+        synchronized(all){
+            for (ProjectsRootNode root : all) {
+                for (Node n : root.getChildren().getNodes()) {
+                    if (n.getLookup().lookup(LazyProject.class) != null) {
+                        LogRecord REC = new LogRecord(Level.WARNING, "LazyProjects remain visible:\n {0}"); // NOI18N
+                        REC.setLoggerName(OpenProjectList.LOGGER.getName());
+                        REC.setParameters(new Object[] { msg });
+                        OpenProjectList.log(REC);
+                    }
                 }
             }
         }

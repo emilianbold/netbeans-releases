@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -312,6 +313,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     @SuppressWarnings("unchecked")
     private boolean isEnoughAfterFilterVisibileObjects(String strPrefix, boolean match,
             Collection<? extends CsmObject> toCheck, Collection out) {
+        boolean enough = false;
         boolean foundVisible = false;
         if (isEnough(strPrefix, match, toCheck)) {
             assert toCheck != null && !toCheck.isEmpty();
@@ -323,15 +325,17 @@ public class CompletionResolverImpl implements CompletionResolver {
                 if (resolver.isObjectVisible(file, obj)) {
                     visibleObjs.add(obj);
                     foundVisible = true;
+                    if(!CsmClassifierResolver.getDefault().isForwardClass(obj)) {
+                        enough = true;
+                    }
                 }
             }
-
             if (foundVisible) {
                 // add visible
                 out.addAll(visibleObjs);
             }
         }
-        return foundVisible;
+        return enough;
     }
 
     private boolean resolveLocalContext(CsmProject prj, ResultImpl resImpl, CsmFunction fun, CsmContext context, int offset, String strPrefix, boolean match) {
@@ -794,11 +798,6 @@ public class CompletionResolverImpl implements CompletionResolver {
     protected CsmProjectContentResolver createContentResolver(CsmProject prj) {
         CsmProjectContentResolver resolver = new CsmProjectContentResolver(prj, isCaseSensitive(), isSortNeeded(), isNaturalSort());
         return resolver;
-    }
-
-    protected CsmProjectContentResolver createLibraryResolver(CsmProject lib) {
-        CsmProjectContentResolver libResolver = new CsmProjectContentResolver(lib, isCaseSensitive(), isSortNeeded(), isNaturalSort());
-        return libResolver;
     }
 
     @SuppressWarnings("unchecked")

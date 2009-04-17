@@ -97,6 +97,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup.Pair;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -266,7 +267,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         private Action[] actions;
         
         ProjectDependencyNode(final TestModuleDependency dep, String testType, final NbModuleProject project) {
-            super(Children.LEAF, Lookups.fixed(new Object[] { dep, project, dep.getModule()}));
+            super(Children.LEAF, Lookups.fixed(new Object[] { dep, project, dep.getModule(), testType}));
             this.dep = dep;
             this.testType = testType;
             this.project = project;
@@ -309,7 +310,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 final NbModuleProject project, final Node original) {
             super(original, null, new ProxyLookup(new Lookup[] {
                 original.getLookup(),
-                Lookups.fixed(new Object[] { dep, project })
+                Lookups.fixed(new Object[] { dep, project, testType })
             }));
             this.dep = dep;
             this.testType = testType;
@@ -393,32 +394,41 @@ final class UnitTestLibrariesNode extends AbstractNode {
         
         
     }
-    
+
+    private static final class Pair<F, S> {
+        public F first;
+        public S second;
+        public Pair(F first, S second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
     
     static final class RemoveDependencyAction extends CookieAction {
-        
         protected void performAction(Node[] activatedNodes) {
-            Map<NbModuleProject, Set<TestModuleDependency>> map = new HashMap<NbModuleProject, Set<TestModuleDependency>>();
+            Map<NbModuleProject, Set<Pair<TestModuleDependency, String>>> map =
+                    new HashMap<NbModuleProject, Set<Pair<TestModuleDependency, String>>>();
             for (int i = 0; i < activatedNodes.length; i++) {
-                TestModuleDependency dep = activatedNodes[i].getLookup().lookup(TestModuleDependency.class);
+                Lookup lkp = activatedNodes[i].getLookup();
+                TestModuleDependency dep = lkp.lookup(TestModuleDependency.class);
                 assert dep != null;
-                NbModuleProject project = activatedNodes[i].getLookup().lookup(NbModuleProject.class);
+                NbModuleProject project = lkp.lookup(NbModuleProject.class);
                 assert project != null;
-                Set<TestModuleDependency> deps = map.get(project);
+                String testType = lkp.lookup(String.class);
+                assert testType != null;
+                Set<Pair<TestModuleDependency, String>> deps = map.get(project);
                 if (deps == null) {
-                    deps = new HashSet<TestModuleDependency>();
+                    deps = new HashSet<Pair<TestModuleDependency, String>>();
                     map.put(project, deps);
                 }
-                deps.add(dep);
+                deps.add(new Pair<TestModuleDependency, String>(dep, testType));
             }
-            for (Map.Entry<NbModuleProject,Set<TestModuleDependency>> me : map.entrySet()) {
+            for (Map.Entry<NbModuleProject,Set<Pair<TestModuleDependency, String>>> me : map.entrySet()) {
                 NbModuleProject project = me.getKey();
                 ProjectXMLManager pxm = new ProjectXMLManager(project);
                 //remove dep one by one
-                for (TestModuleDependency rem : me.getValue()) {
-                    // XXX fix - should know what test type it is
-                    pxm.removeTestDependency(TestModuleDependency.UNIT, rem.getModule().getCodeNameBase());
-                    pxm.removeTestDependency(TestModuleDependency.QA_FUNCTIONAL, rem.getModule().getCodeNameBase());
+                for (Pair<TestModuleDependency, String> pair : me.getValue()) {
+                    pxm.removeTestDependency(pair.second, pair.first.getModule().getCodeNameBase());
                 }
                 try {
                     ProjectManager.getDefault().saveProject(project);

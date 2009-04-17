@@ -42,18 +42,17 @@ package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.parser.RubyParserResult;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.parser.ParserResult;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  * @author Tor Norbye
  */
-public class RubyParseResult extends ParserResult {
+public class RubyParseResult extends org.netbeans.modules.csl.spi.ParserResult {
     
     private final RubyParser parser;
     private final Node rootNode;
@@ -63,7 +62,7 @@ public class RubyParseResult extends ParserResult {
     private String sanitizedContents;
     private RubyStructureAnalyzer.AnalysisResult analysisResult;
     private RubyParser.Sanitize sanitized;
-    private RubyParserResult jrubyResult;
+    private ParserResult jrubyResult;
     private boolean commentsAdded;
     private List<Error> errors;
 
@@ -139,7 +138,7 @@ public class RubyParseResult extends ParserResult {
         return sanitized;
     }    
 
-    public RubyParserResult getJRubyResult() {
+    public ParserResult getJRubyResult() {
         return jrubyResult;
     }
 

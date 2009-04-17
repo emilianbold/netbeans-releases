@@ -38,75 +38,63 @@
  */
 package org.netbeans.modules.nativeexecution.sps.impl;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.security.acl.NotOwnerException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.sps.impl.RequestPrivilegesTask.RequestPrivilegesTaskParams;
 import org.netbeans.modules.nativeexecution.support.Computable;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.ui.GrantPrivilegesDialog;
 import org.openide.util.NbBundle;
-import org.openide.windows.InputOutput;
 
 public final class RequestPrivilegesTask implements Computable<RequestPrivilegesTaskParams, Boolean> {
 
+    private static final java.util.logging.Logger log = Logger.getInstance();
     private WeakReference<GrantPrivilegesDialog> dialogRef = null;
 
     public Boolean compute(RequestPrivilegesTaskParams args) throws InterruptedException {
-
-        // Attempt to grant privileges using pfexec
-        NativeProcessBuilder npb = new NativeProcessBuilder(
-                args.support.getExecEnv(), "/bin/pfexec"); // NOI18N
-
-        npb = npb.setArguments("/bin/ppriv", "-s", // NOI18N
-                "I+" + args.privilegesString, args.support.getPID()); // NOI18N
-
-        ExecutionDescriptor d = new ExecutionDescriptor().inputOutput(InputOutput.NULL);
-        ExecutionService execService = ExecutionService.newService(npb, d, "ppriv"); // NOI18N
-
-        Future<Integer> res = execService.run();
-
-        Integer exitStatus = -1;
-
-        try {
-            exitStatus = res.get();
-        } catch (InterruptedException ex) {
-        } catch (ExecutionException ex) {
-        }
-
-        if (exitStatus.intValue() == 0) {
-            // ppriv succeeded
-            return Boolean.TRUE;
-        }
-
-        if (!args.askForPassword) {
-            return Boolean.FALSE;
-        }
-
         final ProgressHandle ph = ProgressHandleFactory.createHandle(
                 loc("TaskPrivilegesSupport_Progress_RequestPrivileges")); // NOI18N
 
-        ph.start();
+        Process ppriv = null;
 
         try {
+            ph.start();
+
+            // An attempt to grant privileges using pfexec
+            NativeProcessBuilder npb = new NativeProcessBuilder(
+                    args.support.getExecEnv(), "/bin/pfexec"); // NOI18N
+
+            npb = npb.setArguments("/bin/ppriv", "-s", // NOI18N
+                    "I+" + args.privilegesString, args.support.getPID()); // NOI18N
+
+            ppriv = npb.call();
+            int result = ppriv.waitFor();
+
+            if (result == 0) {
+                // pfexec succeeded ...
+                return Boolean.TRUE;
+            }
+
+            if (!args.askForPassword) {
+                return Boolean.FALSE;
+            }
+
+            if (dialogRef == null || dialogRef.get() == null) {
+                dialogRef = new WeakReference<GrantPrivilegesDialog>(
+                        new GrantPrivilegesDialog());
+            }
+
+            GrantPrivilegesDialog dialog = dialogRef.get();
+
             while (true) {
-                if (dialogRef == null || dialogRef.get() == null) {
-                    dialogRef = new WeakReference<GrantPrivilegesDialog>(
-                            new GrantPrivilegesDialog());
-                }
-
-                GrantPrivilegesDialog dialog = dialogRef.get();
-                boolean result = dialog.askPassword();
-
-                if (result) {
+                if (dialog.askPassword()) {
                     try {
                         char[] clearPassword = dialog.getPassword();
                         args.support.requestPrivileges(args.requestedPrivileges, dialog.getUser(), clearPassword);
@@ -114,14 +102,20 @@ public final class RequestPrivilegesTask implements Computable<RequestPrivileges
                         dialog.clearPassword();
                         return Boolean.TRUE;
                     } catch (NotOwnerException ex) {
+                        // wrong password or not enough privileges...
+                        // Continue with password requests...
                     }
                 } else {
                     throw new CancellationException();
                 }
             }
+        } catch (IOException ex) {
+            log.fine("IOException in RequestPrivilegesTask : " + ex.toString()); // NOI18N
         } finally {
             ph.finish();
         }
+
+        return Boolean.FALSE;
     }
 
     private static String loc(String key, String... params) {
@@ -164,7 +158,6 @@ public final class RequestPrivilegesTask implements Computable<RequestPrivileges
                     o.support == support &&
                     o.requestedPrivileges.containsAll(requestedPrivileges) &&
                     requestedPrivileges.containsAll(o.requestedPrivileges);
-
         }
 
         @Override

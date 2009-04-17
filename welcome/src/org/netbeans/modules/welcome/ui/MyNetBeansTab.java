@@ -85,7 +85,7 @@ class MyNetBeansTab extends AbstractTab {
         main.add( new ContentSection( BundleSupport.getLabel( "SectionNewsAndTutorials" ), //NOI18N
                 "org/netbeans/modules/welcome/resources/lbl_news.png", //NOI18N
                 SwingConstants.NORTH_EAST, c, true ),
-                new GridBagConstraints(1,1,1,1,1.0,1.0,GridBagConstraints.SOUTHWEST,
+                new GridBagConstraints(1,1,1,1,1.0,0.0,GridBagConstraints.SOUTHWEST,
                 GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
         
         c = new DemoPanel();
@@ -100,7 +100,7 @@ class MyNetBeansTab extends AbstractTab {
                 "org/netbeans/modules/welcome/resources/lbl_blogs.png", //NOI18N
                 SwingConstants.SOUTH_EAST, c, true );
         main.add( blogsSection,
-                new GridBagConstraints(1,2,1,1,1.0,1.0,GridBagConstraints.NORTHWEST,
+                new GridBagConstraints(1,2,1,1,1.0,0.0,GridBagConstraints.NORTHWEST,
                 GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
 
         bottomBar = new BottomBar();

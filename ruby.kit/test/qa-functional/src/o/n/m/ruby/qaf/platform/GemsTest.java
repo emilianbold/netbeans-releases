@@ -220,7 +220,7 @@ public class GemsTest extends JellyTestCase {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(GemsTest.class).enableModules(".*").clusters("ruby")); //NOI18N
+                NbModuleSuite.createConfiguration(GemsTest.class).enableModules(".*").clusters(".*")); //NOI18N
     }
 
     private void sleep(long millis) {

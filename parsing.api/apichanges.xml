@@ -107,6 +107,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="Context-checkForEditorModifications">
+      <api name="ParsingAPI"/>
+      <summary>Adding Context.checkForEditorModifications</summary>
+      <version major="1" minor="10"/>
+      <date day="15" month="4" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Adding <code>Context.checkForEditorModifications()</code> in order to
+              signal indexers whether they should or should not care about editor documents.
+          </p>
+      </description>
+  </change>
+
   <change id="IndexResult-getRoot-getRelativePath">
       <api name="ParsingAPI"/>
       <summary>Adding IndexResult.getRoot and getRelativePath</summary>

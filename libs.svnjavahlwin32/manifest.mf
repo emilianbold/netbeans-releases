@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.libs.svnjavahlwin32/1
+OpenIDE-Module: org.netbeans.libs.svnjavahlwin32/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/svnjavahlwin32/Bundle.properties
-OpenIDE-Module-Implementation-Version: 15
 AutoUpdate-Show-In-Client: true
+OpenIDE-Module-Specification-Version: 0.2.0

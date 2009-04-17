@@ -517,7 +517,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
         if (lastIdx < marksSize) { // Otherwise the index would be obsolete
             if (lastIdx == -1) {
                 hit = (marksSize == 0 || marks.get(0).getOffset() > offset);
-            } else { // idx != -1
+            } else if (lastIdx >= 0) { // Since there's "lastAddIndex--" the "lastIdx <= -2" is possible
                 int markOffset = marks.get(lastIdx).getOffset();
                 if (offset == markOffset) { // Verify that idx is first with this offset
                     hit = (lastIdx == 0 || marks.get(lastIdx - 1).getOffset() < offset);

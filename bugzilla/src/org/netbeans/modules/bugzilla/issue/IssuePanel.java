@@ -266,28 +266,30 @@ public class IssuePanel extends javax.swing.JPanel {
             reloadField(force, keywordsField, BugzillaIssue.IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
 
             // reported field
-            format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
-            String creationTxt = issue.getFieldValue(BugzillaIssue.IssueField.CREATION);
-            try {
-                Date creation = creationFormat.parse(creationTxt);
-                creationTxt = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(creation);
-            } catch (ParseException pex) {
-                Bugzilla.LOG.log(Level.INFO, null, pex);
+            if (!isNew) {
+                format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
+                String creationTxt = issue.getFieldValue(BugzillaIssue.IssueField.CREATION);
+                try {
+                    Date creation = creationFormat.parse(creationTxt);
+                    creationTxt = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(creation);
+                } catch (ParseException pex) {
+                    Bugzilla.LOG.log(Level.INFO, null, pex);
+                }
+                String reportedTxt = MessageFormat.format(format, creationTxt, issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME));
+                reportedField.setText(reportedTxt);
+                fixPrefSize(reportedField);
+
+                // modified field
+                String modifiedTxt = issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION);
+                try {
+                    Date modification = modificationFormat.parse(modifiedTxt);
+                    modifiedTxt = DateFormat.getDateTimeInstance().format(modification);
+                } catch (ParseException pex) {
+                    Bugzilla.LOG.log(Level.INFO, null, pex);
+                }
+                modifiedField.setText(modifiedTxt);
+                fixPrefSize(modifiedField);
             }
-            String reportedTxt = MessageFormat.format(format, creationTxt, issue.getFieldValue(BugzillaIssue.IssueField.REPORTER));
-            reportedField.setText(reportedTxt);
-            fixPrefSize(reportedField);
-            
-            // modified field
-            String modifiedTxt = issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION);
-            try {
-                Date modification = modificationFormat.parse(modifiedTxt);
-                modifiedTxt = DateFormat.getDateTimeInstance().format(modification);
-            } catch (ParseException pex) {
-                Bugzilla.LOG.log(Level.INFO, null, pex);
-            }
-            modifiedField.setText(modifiedTxt);
-            fixPrefSize(modifiedField);
 
             reloadField(force, assignedField, BugzillaIssue.IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
             reloadField(force, qaContactField, BugzillaIssue.IssueField.QA_CONTACT, qaContactWarning, qaContactLabel);
@@ -303,7 +305,9 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
         oldCommentCount = newCommentCount;
-        commentsPanel.setIssue(issue);
+        if (!isNew) {
+            commentsPanel.setIssue(issue);
+        }
         attachmentsPanel.setIssue(issue);
         BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
         BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);

@@ -113,9 +113,16 @@ public class WsdlUpdater implements WsdlRetriever.MessageReceiver, Cancellable{
                     final Sources sources = doj.getClientProject().getLookup().lookup(Sources.class);
                     final SourceGroup sg = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)[0];
                     FileObject localFile = sg.getRootFolder().getFileObject(file);
-                    final InputStream is = localFile.getInputStream();
-                    final boolean equals = localFile != null ? FileContentComparator.equalFiles(bais, is) : false;
-                    is.close();
+                    // Fix for #162713 - NullPointerException at org.netbeans.modules.mobility.jsr172.multiview.WsdlUpdater.setWsdlDownloadMessage
+                    boolean equals ;
+                    if ( localFile == null){
+                        equals = false;
+                    }
+                    else {
+                        final InputStream is = localFile.getInputStream();
+                        equals = FileContentComparator.equalFiles(bais, is);
+                        is.close();
+                    }
                     if (equals){
                         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(WsdlUpdater.class, "MSG_WSDL_Unchanged"));
                     } else {

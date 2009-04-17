@@ -101,7 +101,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     public Set<String> getCodes() {
-        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.resolve.location.args", "compiler.err.cant.apply.symbol", "compiler.err.cant.resolve")); // NOI18N
+        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.resolve.location.args", "compiler.err.cant.apply.symbol", "compiler.err.cant.resolve", "compiler.err.cant.resolve.args")); // NOI18N
     }
 
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
@@ -328,7 +328,7 @@ public final class CreateElement implements ErrorRule<Void> {
 
             TypeElement clazzTarget = (TypeElement) clazz;
 
-            result.addAll(prepareCreateMethodFix(info, newClass, getAccessModifiers(info, source, clazzTarget), clazzTarget, "<init>", nct.getArguments(), null));
+            result.addAll(prepareCreateMethodFix(info, newClass, getAccessModifiers(info, source, clazzTarget), clazzTarget, "<init>", nct.getArguments(), null)); //NOI18N
         }
 
         //field like or class (type):

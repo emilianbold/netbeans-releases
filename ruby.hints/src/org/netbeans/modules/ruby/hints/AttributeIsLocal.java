@@ -36,10 +36,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.EditRegions;
@@ -167,7 +167,7 @@ public class AttributeIsLocal extends RubyAstRule {
             Iterator<Node> it = path.leafToRoot();
             while (it.hasNext()) {
                 Node n = it.next();
-                if (n.nodeId == NodeType.ARGSNODE) {
+                if (n.getNodeType() == NodeType.ARGSNODE) {
                     return;
                 }
             }
@@ -288,7 +288,7 @@ public class AttributeIsLocal extends RubyAstRule {
         }
 
         private void addLocalRegions(Node node, String name, Set<OffsetRange> ranges) {
-            if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
+            if ((node.getNodeType() == NodeType.LOCALASGNNODE || node.getNodeType() == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(context.parserResult, range);
                 if (range != OffsetRange.NONE) {

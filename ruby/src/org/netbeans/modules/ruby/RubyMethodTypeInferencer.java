@@ -40,9 +40,9 @@ package org.netbeans.modules.ruby;
 
 import java.util.List;
 import java.util.Set;
-import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
@@ -79,8 +79,11 @@ final class RubyMethodTypeInferencer {
     private RubyType inferType() {
         String name = AstUtilities.getName(callNodeToInfer);
         Node receiver = null;
-        switch (callNodeToInfer.nodeId) {
+        switch (callNodeToInfer.getNodeType()) {
             case CALLNODE:
+                if (RubyTypeAnalyzer.isTrueFalseCall(name)) {
+                    return RubyType.BOOLEAN;
+                }
                 receiver = ((CallNode) callNodeToInfer).getReceiverNode();
                 break;
             case FCALLNODE:

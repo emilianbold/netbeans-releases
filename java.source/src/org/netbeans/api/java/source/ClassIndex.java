@@ -41,42 +41,32 @@
 
 package org.netbeans.api.java.source;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Logger;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.classpath.GlobalSourcePath;
-import org.netbeans.modules.java.source.usages.ClassIndexFactory;
-import org.netbeans.modules.java.source.usages.ClassIndexImpl;
-import org.netbeans.modules.java.source.usages.ClassIndexImplEvent;
-import org.netbeans.modules.java.source.usages.ClassIndexImplListener;
-import org.netbeans.modules.java.source.usages.ClassIndexManager;
-import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
-import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
-import org.netbeans.modules.java.source.usages.ResultConvertor;
+import org.netbeans.modules.java.source.usages.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- * The ClassIndex provides access to information stored in the 
+ * The ClassIndex provides access to information stored in the
  * persistent index. It can be used to obtain list of packages
  * or declared types. It can be also used to obtain a list of
  * source files referencing given type (usages of given type).
@@ -84,9 +74,9 @@ import org.openide.util.WeakListeners;
  * @author Petr Hrebejk, Tomas Zezula
  */
 public final class ClassIndex {
-    
+
     private static final Logger LOGGER = Logger.getLogger(ClassIndex.class.getName());
-    
+
     //INV: Never null
     private final ClassPath bootPath;
     //INV: Never null
@@ -99,7 +89,7 @@ public final class ClassIndex {
     private final Set<URL> oldSources;
     //INV: Never null
     //@GuardedBy (this)
-    private final Set<URL> oldBoot;    
+    private final Set<URL> oldBoot;
     //INV: Never null
     //@GuardedBy (this)
     private final Set<URL> oldCompile;
@@ -109,13 +99,13 @@ public final class ClassIndex {
     //INV: Never null
     //@GuardedBy (this)
     private final Set<ClassIndexImpl> depsIndeces;
-    
+
     private final List<ClassIndexListener> listeners = new CopyOnWriteArrayList<ClassIndexListener>();
-    private final SPIListener spiListener = new SPIListener ();    
-    
-    
+    private final SPIListener spiListener = new SPIListener ();
+
+
     /**
-     * Encodes a type of the name kind used by 
+     * Encodes a type of the name kind used by
      * {@link ClassIndex#getDeclaredTypes} method.
      *
      */
@@ -125,76 +115,76 @@ public final class ClassIndex {
          * is an exact simple name of the package or declared type.
          */
         SIMPLE_NAME,
-        
+
         /**
-         * The name parameter of the {@link ClassIndex#getDeclaredTypes} 
+         * The name parameter of the {@link ClassIndex#getDeclaredTypes}
          * is an case sensitive prefix of the package or declared type name.
          */
         PREFIX,
-        
+
         /**
-         * The name parameter of the {@link ClassIndex#getDeclaredTypes} is 
+         * The name parameter of the {@link ClassIndex#getDeclaredTypes} is
          * an case insensitive prefix of the declared type name.
          */
         CASE_INSENSITIVE_PREFIX,
-        
+
         /**
-         * The name parameter of the {@link ClassIndex#getDeclaredTypes} is 
+         * The name parameter of the {@link ClassIndex#getDeclaredTypes} is
          * an camel case of the declared type name.
          */
         CAMEL_CASE,
-        
-        
+
+
         /**
-         * The name parameter of the {@link ClassIndex#getDeclaredTypes} is 
+         * The name parameter of the {@link ClassIndex#getDeclaredTypes} is
          * an regular expression of the declared type name.
          */
         REGEXP,
-        
+
         /**
-         * The name parameter of the {@link ClassIndex#getDeclaredTypes} is 
+         * The name parameter of the {@link ClassIndex#getDeclaredTypes} is
          * an case insensitive regular expression of the declared type name.
          */
         CASE_INSENSITIVE_REGEXP,
-        
+
         /**
-         * The name parameter of the {@link ClassIndex#getDeclaredTypes} is 
+         * The name parameter of the {@link ClassIndex#getDeclaredTypes} is
          * a camel case or case insensitive prefix of the declared type name.
          * For example all these names NPE, NulPoEx, NULLPOInter leads to NullPointerException returned.
          * @since 0.28.0
          */
         CAMEL_CASE_INSENSITIVE
     };
-    
-    
+
+
     /**
      * Encodes a reference type,
      * used by {@link ClassIndex#getElements} and {@link ClassIndex#getResources}
      * to restrict the search.
      */
     public enum SearchKind {
-        
+
         /**
          * The returned class has to extend or implement given element
          */
         IMPLEMENTORS,
-        
+
         /**
          * The returned class has to call method on given element
          */
         METHOD_REFERENCES,
-        
+
         /**
          * The returned class has to access a field on given element
          */
         FIELD_REFERENCES,
-        
+
         /**
          * The returned class contains references to the element type
          */
-        TYPE_REFERENCES,        
+        TYPE_REFERENCES,
     };
-    
+
     /**
      * Scope used by {@link ClassIndex} to search in
      */
@@ -208,11 +198,11 @@ public final class ClassIndex {
          */
         DEPENDENCIES
     };
-    
+
     static {
 	ClassIndexImpl.FACTORY = new ClassIndexFactoryImpl();
-    }    
-    
+    }
+
     ClassIndex(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {
         assert bootPath != null;
         assert classPath != null;
@@ -225,16 +215,16 @@ public final class ClassIndex {
         this.oldSources = new HashSet<URL>();
         this.depsIndeces = new HashSet<ClassIndexImpl>();
         this.sourceIndeces = new HashSet<ClassIndexImpl>();
-        
+
         final ClassIndexManager manager = ClassIndexManager.getDefault();
         manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, (ClassIndexManagerListener) this.spiListener, manager));
         this.bootPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.bootPath));
         this.classPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.classPath));
-        this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));                
-        reset (true, true);	    
+        this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));
+        reset (true, true);
     }
-    
-    
+
+
     /**
      * Adds an {@link ClassIndexListener}. The listener is notified about the
      * changes of declared types in this {@link ClassIndex}
@@ -244,7 +234,7 @@ public final class ClassIndex {
         assert listener != null;
         listeners.add (listener);
     }
-    
+
     /**
      * Removes an {@link ClassIndexListener}. The listener is notified about the
      * changes of declared types in this {@link ClassIndex}
@@ -254,8 +244,8 @@ public final class ClassIndex {
         assert listener != null;
         listeners.remove(listener);
     }
-    
-    
+
+
     /**
      * Returns a set of {@link ElementHandle}s containing reference(s) to given element.
      * @param element for which usages should be found
@@ -291,7 +281,7 @@ public final class ClassIndex {
             return null;
         }
     }
-    
+
     /**
      * Returns a set of source files containing reference(s) to given element.
      * @param element for which usages should be found
@@ -308,7 +298,7 @@ public final class ClassIndex {
         final Set<FileObject> result = new HashSet<FileObject> ();
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
         final Set<ClassIndexImpl.UsageType> ut =  encodeSearchKind(element.getKind(),searchKind);
-        final String binaryName = element.getSignature()[0];        
+        final String binaryName = element.getSignature()[0];
         try {
             if (!ut.isEmpty()) {
                 for (ClassIndexImpl query : queries) {
@@ -326,9 +316,9 @@ public final class ClassIndex {
         } catch (InterruptedException e) {
             return null;
         }
-    }        
-    
-    
+    }
+
+
     /**
      * Returns {@link ElementHandle}s for all declared types in given classpath corresponding to the name.
      * @param name case sensitive prefix, case insensitive prefix, exact simple name,
@@ -342,8 +332,8 @@ public final class ClassIndex {
     public @NullUnknown Set<ElementHandle<TypeElement>> getDeclaredTypes (final @NonNull String name, final @NonNull NameKind kind, final @NonNull Set<SearchScope> scope) {
         assert name != null;
         assert kind != null;
-        final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();        
-        final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);        
+        final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();
+        final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
         final ResultConvertor<ElementHandle<TypeElement>> thConvertor = ResultConvertor.elementHandleConvertor();
         try {
             for (ClassIndexImpl query : queries) {
@@ -361,7 +351,7 @@ public final class ClassIndex {
             return null;
         }
     }
-    
+
     /**
      * Returns names af all packages in given classpath starting with prefix.
      * @param prefix of the package name
@@ -374,7 +364,7 @@ public final class ClassIndex {
      */
     public @NullUnknown Set<String> getPackageNames (final @NonNull String prefix, boolean directOnly, final @NonNull Set<SearchScope> scope) {
         assert prefix != null;
-        final Set<String> result = new HashSet<String> ();        
+        final Set<String> result = new HashSet<String> ();
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
         try {
             for (ClassIndexImpl query : queries) {
@@ -391,31 +381,31 @@ public final class ClassIndex {
             return null;
         }
     }
-    
+
     // Private innerclasses ----------------------------------------------------
-        
+
     private static class ClassIndexFactoryImpl implements ClassIndexFactory {
-        
-	public ClassIndex create(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {            
+
+	public ClassIndex create(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {
 	    return new ClassIndex(bootPath, classPath, sourcePath);
         }
-	
+
     }
-    
+
     //Private methods
-    
+
     private static void logClosedIndex (final ClassIndexImpl query) {
         assert query != null;
         LOGGER.info("Ignoring closed index: " + query.toString());  //NOI18N
     }
-    
-    
+
+
     private  void reset (final boolean source, final boolean deps) {
         ProjectManager.mutex().readAccess(new Runnable() {
 
             public void run() {
                 synchronized (ClassIndex.this) {
-                    if (source) {            
+                    if (source) {
                         for (ClassIndexImpl impl : sourceIndeces) {
                             impl.removeClassIndexImplListener(spiListener);
                         }
@@ -430,26 +420,26 @@ public final class ClassIndex {
                         depsIndeces.clear();
                         oldBoot.clear();
                         oldCompile.clear();
-                        createQueriesForRoots (bootPath, false, depsIndeces,  oldBoot);                
-                        createQueriesForRoots (classPath, false, depsIndeces, oldCompile);	    
+                        createQueriesForRoots (bootPath, false, depsIndeces,  oldBoot);
+                        createQueriesForRoots (classPath, false, depsIndeces, oldCompile);
                     }
                 }
             }
-        });        
+        });
     }
-    
-    private synchronized Iterable<? extends ClassIndexImpl> getQueries (final Set<SearchScope> scope) {        
+
+    private synchronized Iterable<? extends ClassIndexImpl> getQueries (final Set<SearchScope> scope) {
         Set<ClassIndexImpl> result = new HashSet<ClassIndexImpl> ();
-        if (scope.contains(SearchScope.SOURCE)) {            
+        if (scope.contains(SearchScope.SOURCE)) {
             result.addAll(this.sourceIndeces);
-        }        
+        }
         if (scope.contains(SearchScope.DEPENDENCIES)) {
             result.addAll(this.depsIndeces);
         }
         LOGGER.fine(String.format("ClassIndex.queries[Scope=%s, sourcePath=%s, bootPath=%s, classPath=%s] => %s\n",scope,sourcePath,bootPath,classPath,result));
         return result;
     }
-    
+
     private synchronized Set<? extends URL> getOldState (final Set<SearchScope> scope) {
         final Set<URL> result = new HashSet<URL>();
         if (scope.contains(SearchScope.SOURCE)) {
@@ -461,21 +451,21 @@ public final class ClassIndex {
         }
         return result;
     }
-    
+
     private void createQueriesForRoots (final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries, final Set<? super URL> oldState) {
         final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
         List<ClassPath.Entry> entries = cp.entries();
 	for (ClassPath.Entry entry : entries) {
             URL[] srcRoots;
             if (!sources) {
-                srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, true);                        
+                srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, true);
                 if (srcRoots == null) {
                     srcRoots = new URL[] {entry.getURL()};
                 }
             }
             else {
                 srcRoots = new URL[] {entry.getURL()};
-            }                
+            }
             for (URL srcRoot : srcRoots) {
                 oldState.add (srcRoot);
                 ClassIndexImpl ci = ClassIndexManager.getDefault().getUsagesQuery(srcRoot);
@@ -483,18 +473,18 @@ public final class ClassIndex {
                     ci.addClassIndexImplListener(spiListener);
                     queries.add (ci);
                 }
-            }	    
+            }
 	}
     }
-    
-    
+
+
     private static Set<ClassIndexImpl.UsageType> encodeSearchKind (final ElementKind elementKind, final Set<ClassIndex.SearchKind> kind) {
         assert kind != null;
         final Set<ClassIndexImpl.UsageType> result = EnumSet.noneOf(ClassIndexImpl.UsageType.class);
         for (ClassIndex.SearchKind sk : kind) {
             switch (sk) {
-                case METHOD_REFERENCES:                    
-                    result.add(ClassIndexImpl.UsageType.METHOD_REFERENCE);                    
+                case METHOD_REFERENCES:
+                    result.add(ClassIndexImpl.UsageType.METHOD_REFERENCE);
                     break;
                 case FIELD_REFERENCES:
                     result.add(ClassIndexImpl.UsageType.FIELD_REFERENCE);
@@ -518,18 +508,19 @@ public final class ClassIndex {
                             result.add(ClassIndexImpl.UsageType.SUPER_CLASS);
                             break;
                         default:
-                            throw new IllegalArgumentException ();                                        
+                            throw new IllegalArgumentException ();
                     }
                     break;
                 default:
-                    throw new IllegalArgumentException ();                    
+                    throw new IllegalArgumentException ();
             }
         }
         return result;
-    }           
-    
+    }
+
     private class SPIListener implements ClassIndexImplListener, ClassIndexManagerListener, PropertyChangeListener {
-        
+        private RequestProcessor.Task task;
+
         public void typesAdded (final ClassIndexImplEvent event) {
             assert event != null;
             TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
@@ -537,7 +528,7 @@ public final class ClassIndex {
                 l.typesAdded(_event);
             }
         }
-        
+
         public void typesRemoved (final ClassIndexImplEvent event) {
             assert event != null;
             TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
@@ -545,22 +536,22 @@ public final class ClassIndex {
                 l.typesRemoved(_event);
             }
         }
-        
+
         public void typesChanged (final ClassIndexImplEvent event) {
             assert event != null;
             TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
             for (ClassIndexListener l : listeners) {
                 l.typesChanged(_event);
             }
-        }        
-        
+        }
+
         public void classIndexAdded (final ClassIndexManagerEvent event) {
             final Set<? extends URL> roots = event.getRoots();
             assert roots != null;
             List<URL> ar = new LinkedList<URL>();
             boolean srcF = containsRoot (sourcePath,roots,ar, false);
             boolean depF = containsRoot (bootPath, roots, ar, true);
-            depF |= containsRoot (classPath, roots, ar, true);            
+            depF |= containsRoot (classPath, roots, ar, true);
             if (srcF || depF) {
                 reset (srcF, depF);
                 final RootsEvent e = new RootsEvent(ClassIndex.this, ar);
@@ -569,11 +560,11 @@ public final class ClassIndex {
                 }
             }
         }
-        
+
         public void classIndexRemoved (final ClassIndexManagerEvent event) {
             //Not important handled by propertyChange from ClassPath
         }
-        
+
         private boolean containsRoot (final ClassPath cp, final Set<? extends URL> roots, final List<? super URL> affectedRoots, final boolean translate) {
             final List<ClassPath.Entry> entries = cp.entries();
             final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
@@ -583,25 +574,25 @@ public final class ClassIndex {
                 URL[] srcRoots = null;
                 if (translate) {
                     srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, false);
-                }                
+                }
                 if (srcRoots == null) {
                     if (roots.contains(url)) {
                         affectedRoots.add(url);
-                        result = true;                    
+                        result = true;
                     }
                 }
                 else {
                     for (URL _url : srcRoots) {
                         if (roots.contains(_url)) {
                             affectedRoots.add(url);
-                            result = true;                    
+                            result = true;
                         }
                     }
-                }                
+                }
             }
             return result;
         }
-        
+
         private boolean containsNewRoot (final ClassPath cp, final Set<? extends URL> roots,
                 final List<? super URL> newRoots, final List<? super URL> removedRoots,
                 final boolean translate) throws IOException {
@@ -614,7 +605,7 @@ public final class ClassIndex {
                 URL[] srcRoots = null;
                 if (translate) {
                     srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, false);
-                }                
+                }
                 if (srcRoots == null) {
                     if (!roots.remove(url) && mgr.getUsagesQuery(url)!=null) {
                         newRoots.add (url);
@@ -635,79 +626,100 @@ public final class ClassIndex {
             c.addAll(roots);
             return result;
         }
-        
-        private boolean containsRoot (final Set<? extends URL> cp, final Set<? extends URL> roots, final List<? super URL> affectedRoots) {            
+
+        private boolean containsRoot (final Set<? extends URL> cp, final Set<? extends URL> roots, final List<? super URL> affectedRoots) {
             boolean result = false;
             for (URL url : cp) {
                 if (roots.contains(url)) {
                     affectedRoots.add(url);
-                    result = true;                    
+                    result = true;
                 }
             }
             return result;
         }
 
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(final PropertyChangeEvent evt) {
             if (ClassPath.PROP_ENTRIES.equals (evt.getPropertyName())) {
-                final List<URL> newRoots = new LinkedList<URL>();
-                final List<URL> removedRoots = new  LinkedList<URL> ();
-                boolean dirtySource = false;
-                boolean dirtyDeps = false;
-                try {
-                    Object source = evt.getSource();                
-                    if (source == ClassIndex.this.sourcePath) {
-                        Set<URL> copy;
-                        synchronized (ClassIndex.this) {
-                            copy = new HashSet<URL>(oldSources);
+                if (task != null) {
+                    task.waitFinished();
+                }                
+                if (SourceUtils.isScanInProgress()) {
+                    if (LOGGER.isLoggable(Level.FINE))
+                        LOGGER.log(Level.FINE, "Scan in progress, delegating to separate thread to prevent deadlock.");
+                    task = RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            propertyChangeImpl(evt);
+                            task = null;
                         }
-                        dirtySource = containsNewRoot(sourcePath, copy, newRoots, removedRoots, false);                        
-                    }                
-                    else if (source == ClassIndex.this.classPath) {
-                        Set<URL> copy;
-                        synchronized (ClassIndex.this) {
-                            copy = new HashSet<URL>(oldCompile);
-                        }
-                        dirtyDeps = containsNewRoot(classPath, copy, newRoots, removedRoots, true);                        
-                    }
-                    else if (source == ClassIndex.this.bootPath) {
-                        Set<URL> copy;
-                        synchronized (ClassIndex.this) {
-                            copy = new HashSet<URL>(oldBoot);
-                        }
-                        dirtyDeps = containsNewRoot(bootPath, copy, newRoots, removedRoots, true);
-                    }
-                    
-                    if (dirtySource || dirtyDeps) {                        
-                        ClassIndex.this.reset(dirtySource, dirtyDeps);
-                        final RootsEvent ae = newRoots.isEmpty() ? null : new RootsEvent(ClassIndex.this, newRoots);
-                        final RootsEvent re = removedRoots.isEmpty() ? null : new RootsEvent(ClassIndex.this, removedRoots);
-                        //Threading warning:
-                        //The Javadoc promises that events are fired under javac lock,
-                        //reschedule firing to the Java Worker Thread which runs under javac lock,
-                        //trying to access javac lock in this thread may cause deadlock with Java Worker Thread
-                        //because the classpath events are fired under the project mutex and it's legal to
-                        //aquire project mutex in the CancellableTask.run()
-                        JavaSourceAccessor.getINSTANCE().runSpecialTask(new Mutex.ExceptionAction<Void>() {
-                            
-                            public Void run() {
-                                if (ae != null) {
-                                    for (ClassIndexListener l : listeners) {
-                                        l.rootsAdded(ae);
-                                    }                        
-                                }
-                                if (re != null) {
-                                    for (ClassIndexListener l : listeners) {
-                                        l.rootsRemoved(re);
-                                    }
-                                }
-                                return null;
-                            }                            
-                        }, JavaSource.Priority.MAX);                        
-                    }                    
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                    }, 100);
+
+                } else {
+                    propertyChangeImpl(evt);
                 }
             }
         }
-    }   
+
+        private void propertyChangeImpl(PropertyChangeEvent evt) {
+            if (LOGGER.isLoggable(Level.FINE))
+                        LOGGER.log(Level.FINE, "propertyChangeImpl...");
+            final List<URL> newRoots = new LinkedList<URL>();
+            final List<URL> removedRoots = new  LinkedList<URL> ();
+            boolean dirtySource = false;
+            boolean dirtyDeps = false;
+            try {
+                Object source = evt.getSource();
+                if (source == ClassIndex.this.sourcePath) {
+                    Set<URL> copy;
+                    synchronized (ClassIndex.this) {
+                        copy = new HashSet<URL>(oldSources);
+                    }
+                    dirtySource = containsNewRoot(sourcePath, copy, newRoots, removedRoots, false);
+                }
+                else if (source == ClassIndex.this.classPath) {
+                    Set<URL> copy;
+                    synchronized (ClassIndex.this) {
+                        copy = new HashSet<URL>(oldCompile);
+                    }
+                    dirtyDeps = containsNewRoot(classPath, copy, newRoots, removedRoots, true);
+                }
+                else if (source == ClassIndex.this.bootPath) {
+                    Set<URL> copy;
+                    synchronized (ClassIndex.this) {
+                        copy = new HashSet<URL>(oldBoot);
+                    }
+                    dirtyDeps = containsNewRoot(bootPath, copy, newRoots, removedRoots, true);
+                }
+
+                if (dirtySource || dirtyDeps) {
+                    ClassIndex.this.reset(dirtySource, dirtyDeps);
+                    final RootsEvent ae = newRoots.isEmpty() ? null : new RootsEvent(ClassIndex.this, newRoots);
+                    final RootsEvent re = removedRoots.isEmpty() ? null : new RootsEvent(ClassIndex.this, removedRoots);
+                    //Threading warning:
+                    //The Javadoc promises that events are fired under javac lock,
+                    //reschedule firing to the Java Worker Thread which runs under javac lock,
+                    //trying to access javac lock in this thread may cause deadlock with Java Worker Thread
+                    //because the classpath events are fired under the project mutex and it's legal to
+                    //aquire project mutex in the CancellableTask.run()
+                    JavaSourceAccessor.getINSTANCE().runSpecialTask(new Mutex.ExceptionAction<Void>() {
+
+                        public Void run() {
+                            if (ae != null) {
+                                for (ClassIndexListener l : listeners) {
+                                    l.rootsAdded(ae);
+                                }
+                            }
+                            if (re != null) {
+                                for (ClassIndexListener l : listeners) {
+                                    l.rootsRemoved(re);
+                                }
+                            }
+                            return null;
+                        }
+                    }, JavaSource.Priority.MAX);
+                }
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+    }
 }

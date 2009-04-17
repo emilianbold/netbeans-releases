@@ -756,6 +756,11 @@ abstract public class CsmCompletionQuery {
             this.instantiateTypes = instantiateTypes;
         }
 
+        private boolean resolve(int varPos, String var, boolean match) {
+            varPos = sup.doc2context(varPos);
+            return (compResolver.refresh() && compResolver.resolve(varPos, var, match));
+        }
+
         private void setFindType(boolean findType) {
             this.findType = findType;
         }
@@ -1168,7 +1173,7 @@ abstract public class CsmCompletionQuery {
                                     } else {
                                         compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                     }
-                                    if (compResolver.refresh() && compResolver.resolve(varPos, var, openingSource)) {
+                                    if (resolve(varPos, var, openingSource)) {
                                         res = compResolver.getResult();
                                     }
                                     result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
@@ -1182,7 +1187,7 @@ abstract public class CsmCompletionQuery {
                                             // try to find with resolver
                                             CompletionResolver.Result res = null;
                                             compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
-                                            if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
+                                            if (resolve(varPos, var, true)) {
                                                 res = compResolver.getResult();
                                                 List<? extends CsmObject> vars = new ArrayList<CsmObject>();
                                                 res.addResulItemsToCol(vars);
@@ -1216,7 +1221,7 @@ abstract public class CsmCompletionQuery {
                                                     CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS |
                                                     CompletionResolver.RESOLVE_LOCAL_CLASSES |
                                                     CompletionResolver.RESOLVE_LIB_NAMESPACES);
-                                            if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
+                                            if (resolve(varPos, var, true)) {
                                                 Collection<? extends CsmObject> res = compResolver.getResult().addResulItemsToCol(new ArrayList<CsmObject>());
                                                 if (!res.isEmpty()) {
                                                     CsmObject obj = res.iterator().next();
@@ -1408,7 +1413,7 @@ abstract public class CsmCompletionQuery {
                     Collection<CsmFunction> mtdList = new LinkedHashSet<CsmFunction>();
                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_FUNCTIONS);
                     String operatorPrefix = "operator " + item.getTokenText(0);  // NOI18N
-                    if (compResolver.refresh() && compResolver.resolve(item.getTokenOffset(0), operatorPrefix, false)) {
+                    if (resolve(item.getTokenOffset(0), operatorPrefix, false)) {
                         res = compResolver.getResult();
                     }
                     res.addResulItemsToCol(mtdList);
@@ -1594,7 +1599,7 @@ abstract public class CsmCompletionQuery {
                             String varName = item.getTokenText(nrTokens - 1);
                             int varPos = item.getTokenOffset(nrTokens - 1);
                             compResolver.setResolveTypes(CompletionResolver.RESOLVE_LOCAL_VARIABLES | CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS | CompletionResolver.RESOLVE_GLOB_NAMESPACES | CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
-                            if (compResolver.refresh() && compResolver.resolve(varPos, varName, openingSource)) {
+                            if (resolve(varPos, varName, openingSource)) {
                                 CompletionResolver.Result res = compResolver.getResult();
                                 if (findType) {
                                     CsmClassifier cls = null;
@@ -1745,7 +1750,7 @@ abstract public class CsmCompletionQuery {
                                     Collection<? extends CsmObject> candidates = new ArrayList<CsmObject>();
                                     // try to resolve the most visible
                                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_FUNCTIONS | CompletionResolver.RESOLVE_CONTEXT_CLASSES);
-                                    if (compResolver.refresh() && compResolver.resolve(varPos, mtdName, true)) {
+                                    if (resolve(varPos, mtdName, true)) {
                                         compResolver.getResult().addResulItemsToCol(candidates);
                                     }
                                     for (CsmObject object : candidates) {
@@ -1757,13 +1762,13 @@ abstract public class CsmCompletionQuery {
                                     }
                                 }
                                 compResolver.setResolveTypes(CompletionResolver.RESOLVE_FUNCTIONS);
-                                if (compResolver.refresh() && compResolver.resolve(varPos, mtdName, openingSource)) {
+                                if (resolve(varPos, mtdName, openingSource)) {
                                     compResolver.getResult().addResulItemsToCol(mtdList);
                                 }
                                 if (!last || findType) {
                                     Collection<? extends CsmObject> candidates = new ArrayList<CsmObject>();
                                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES | CompletionResolver.RESOLVE_LOCAL_VARIABLES);
-                                    if (compResolver.refresh() && compResolver.resolve(varPos, mtdName, true)) {
+                                    if (resolve(varPos, mtdName, true)) {
                                         compResolver.getResult().addResulItemsToCol(candidates);
                                     }
                                     for (CsmObject object : candidates) {
@@ -1891,7 +1896,7 @@ abstract public class CsmCompletionQuery {
                             // this is the case of code completion after opening paren "method(|"
                             int varPos = endOffset; // mtdNameExp.getTokenOffset(0);
                             compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
-                            if (compResolver.refresh() && compResolver.resolve(varPos, "", false)) {
+                            if (resolve(varPos, "", false)) {
                                 CompletionResolver.Result res = compResolver.getResult();
                                 result = new CsmCompletionResult(component, getBaseDocument(), res, mtdName + '*', mtdNameExp, varPos, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
                             }
@@ -1966,7 +1971,7 @@ abstract public class CsmCompletionQuery {
         private CsmNamespace findExactNamespace(final String var, final int varPos) {
             CsmNamespace ns = null;
             compResolver.setResolveTypes(CompletionResolver.RESOLVE_GLOB_NAMESPACES | CompletionResolver.RESOLVE_LIB_NAMESPACES);
-            if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
+            if (resolve(varPos, var, true)) {
                 CompletionResolver.Result res = compResolver.getResult();
                 Collection<? extends CsmObject> addResulItemsToCol = res.addResulItemsToCol(new ArrayList<CsmObject>());
                 for (CsmObject csmObject : addResulItemsToCol) {
@@ -1986,7 +1991,7 @@ abstract public class CsmCompletionQuery {
         private CsmClassifier findExactClass(final String var, final int varPos) {
             CsmClassifier cls = null;
             compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES | CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
-            if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
+            if (resolve(varPos, var, true)) {
                 CompletionResolver.Result res = compResolver.getResult();
                 Collection<? extends CsmObject> allItems = res.addResulItemsToCol(new ArrayList<CsmObject>());
                 for (CsmObject item : allItems) {

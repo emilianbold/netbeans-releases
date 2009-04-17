@@ -653,7 +653,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
                 <!-- openesb -->
 		<include name="**/openesb*"/>
-                <exclude name="**/openesb*${server.milestone.number}${server.build.number}.${openesb.build.number}*"/>
+                <exclude name="**/openesb*${server.milestone.number}.${openesb.build.number}*"/>
                 
                 <!-- tomcat -->
 		<include name="**/tomcat*"/>

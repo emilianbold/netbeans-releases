@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.util.Arrays;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -49,6 +50,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.Platform;
 import org.openide.util.Utilities;
 
@@ -110,7 +112,7 @@ public class HostInfoUtilsTest extends NbTestCase {
 
     @Test
     public void testGetPlatformLocal() throws Exception {
-        ExecutionEnvironment env = new ExecutionEnvironment();
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
         Platform platform = HostInfoUtils.getPlatform(env);
         String os_name = System.getProperty("os.name").toLowerCase();
         switch(platform.getOSType()) {
@@ -148,12 +150,32 @@ public class HostInfoUtilsTest extends NbTestCase {
 
     private void testGetPlatform(String host, String user, int port, String passwd, 
             String osTypeShouldContain, String hardwareTypeShouldContain) throws Exception {
-        ExecutionEnvironment env = new ExecutionEnvironment(user, host, port);
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(user, host, port);
         ConnectionManager.getInstance().connectTo(env, passwd.toCharArray(), true);
         Platform platform = HostInfoUtils.getPlatform(env);
         assertTrue(platform.getHardwareType().toString().contains(hardwareTypeShouldContain));
         assertTrue(platform.getOSType().toString().contains(osTypeShouldContain));
     }
+
+    @Test
+    public void testSearchFile() throws Exception {
+        System.out.println("Test searchFile()"); // NOI18N
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+        String result = null;
+
+        result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "/bin", "/usr/bin"), "rm", true); // NOI18N
+        assertNotNull(result);
+
+        result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "/bin", "/usr/bin"), "rm", false); // NOI18N
+        assertNotNull(result);
+
+        result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath"), "ls", true); // NOI18N
+        assertNotNull(result);
+
+        result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath"), "ls", false); // NOI18N
+        assertNull(result);
+    }
+
     
 //    private void testLoggers() {
 //        Logger logger = Logger.getAnonymousLogger();

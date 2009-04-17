@@ -55,7 +55,7 @@ final public class ExecutionEnvironment {
      * Creates a new instance of <tt>ExecutionEnvironment</tt> for local
      * execution.
      */
-    public ExecutionEnvironment() {
+    /*package-local*/ ExecutionEnvironment() {
         this(null, null);
     }
 
@@ -69,7 +69,7 @@ final public class ExecutionEnvironment {
      * @param user user name to be used in this environment
      * @param host host identification string (either hostname or IP address)
      */
-    public ExecutionEnvironment(String user, String host) {
+    /*package-local*/ ExecutionEnvironment(String user, String host) {
         this(user, host, 0);
     }
 
@@ -86,7 +86,7 @@ final public class ExecutionEnvironment {
      * @param host host identification string. Either hostname or IP address.
      * @param sshPort port to be used to establish ssh connection.
      */
-    public ExecutionEnvironment(
+    /*package-local*/ ExecutionEnvironment(
             final String user,
             final String host,
             final int sshPort) {
@@ -119,6 +119,14 @@ final public class ExecutionEnvironment {
      */
     public String getHost() {
         return host;
+    }
+
+    /**
+     * Gets a string representation of the environment to show in the UI
+     * @return a string representation of the environment for showing in UI
+     */
+    public String getDisplayName() {
+        return isLocal() ? "localhost" : toString(); // NOI18N
     }
 
     /**

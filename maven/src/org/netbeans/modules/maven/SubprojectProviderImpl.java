@@ -43,6 +43,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -98,7 +99,12 @@ public class SubprojectProviderImpl implements SubprojectProvider {
     public Set<? extends Project> getSubprojects() {
         Set<Project> projects = new HashSet<Project>();
         File basedir = FileUtil.toFile(project.getProjectDirectory());
-        addProjectModules(basedir, projects, project.getOriginalMavenProject().getModules());
+        try {
+            addProjectModules(basedir, projects, project.getOriginalMavenProject().getModules());
+        } catch (InterruptedException x) {
+            // can be interrupted in the open project dialog..
+            return Collections.emptySet();
+        }
         addOpenedCandidates(projects);
         projects.remove(project);
         return projects;
@@ -131,12 +137,15 @@ public class SubprojectProviderImpl implements SubprojectProvider {
         return false;
     }
 
-    private void addProjectModules(File basedir, Set<Project> resultset, List modules) {
+    private void addProjectModules(File basedir, Set<Project> resultset, List modules) throws InterruptedException {
         if (modules == null || modules.size() == 0) {
             return;
         }
         Iterator it = modules.iterator();
         while (it.hasNext()) {
+            if (Thread.interrupted()) {
+                throw new InterruptedException();
+            }
             String path = (String) it.next();
             File sub = new File(basedir, path);
             File projectFile = FileUtil.normalizeFile(sub);

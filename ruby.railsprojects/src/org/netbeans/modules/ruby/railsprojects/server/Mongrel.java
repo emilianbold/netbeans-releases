@@ -66,7 +66,7 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
      * The pattern for recognizing when an instance of Mongrel has started.
      */
     private static final Pattern[] STARTUP_PATTERNS = {
-        Pattern.compile("\\bMongrel.+available at.+", Pattern.DOTALL),
+        Pattern.compile(".*Mongrel.+available at.+", Pattern.DOTALL),
         // rails 2.3 
         Pattern.compile(".*Ctrl-C to shutdown server.*", Pattern.DOTALL)
     };

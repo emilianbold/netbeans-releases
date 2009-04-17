@@ -52,6 +52,8 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -82,7 +84,7 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             return ;
         }
         
-        if (RepositoryUpdater.getDefault().isRULocked()) {
+        if (IndexingController.getDefault().isInProtectedMode()) {
             return ;
         }
         
@@ -140,7 +142,8 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             LOG.log(Level.WARNING, "Going to recompute root={0}, files in error={1}.",
                     new Object[] {FileUtil.getFileDisplayName(root), TaskCache.getDefault().getAllFilesInError(root.getURL())});
 
-            RepositoryUpdater.getDefault().rebuildRoot(root.getURL(), true);
+// XXX:            RepositoryUpdater.getDefault().rebuildRoot(root.getURL(), true);
+            IndexingManager.getDefault().refreshIndex(root.getURL(), null);
         } catch (IOException ex) {
             LOG.log(Level.FINE, null, ex);
         }

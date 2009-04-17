@@ -554,7 +554,11 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                 try {
                     prjNameCheckMessage = KenaiProject.checkName(getProjectName());
                 } catch (KenaiException ex) {
-                    Exceptions.printStackTrace(ex);
+                    String msg = ex.getAsString();
+                    if (msg==null) {
+                        msg = ex.getLocalizedMessage();
+                    }
+                    prjNameCheckMessage = msg;
                 }
                 panel.fireChangeEvent();
             }

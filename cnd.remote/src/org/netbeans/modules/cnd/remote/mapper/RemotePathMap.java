@@ -46,7 +46,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
@@ -255,18 +255,18 @@ public class RemotePathMap implements PathMap {
 
     private static String getPreferences(ExecutionEnvironment execEnv) {
         return NbPreferences.forModule(RemotePathMap.class).get(
-                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.getHostKey(execEnv), null);
+                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toString(execEnv), null);
     }
 
     private void setPreferences(String newValue) {
         NbPreferences.forModule(RemotePathMap.class).put(
-                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.getHostKey(execEnv), newValue);
+                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toString(execEnv), newValue);
     }
 
     private static boolean validateMapping(ExecutionEnvironment exexEnv, 
             String rpath, String lpath) throws InterruptedException {
 
-        if (!PlatformInfo.getDefault(exexEnv).isWindows() && !PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocalExecutionEnvironment()).isWindows()) {
+        if (!PlatformInfo.getDefault(exexEnv).isWindows() && !PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocal()).isWindows()) {
             File path = new File(lpath);
             if (path.exists() && path.isDirectory()) {
                 File validationFile = null;

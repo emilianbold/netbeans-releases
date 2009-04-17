@@ -64,11 +64,6 @@
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-hierarchy-ShowClassHierarchyAction.instance"/>
                             <attr name="position" intvalue="1200"/>
                         </file>
-
-                        <file name="SeparatorBeforeInspect.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="1500"/>
-                        </file>
                         <file name="org-netbeans-modules-cnd-navigation-macroview-ShowMacroExpansionAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-macroview-ShowMacroExpansionAction.instance"/>
                             <attr name="position" intvalue="1600"/>
@@ -115,11 +110,6 @@
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-hierarchy-ShowClassHierarchyAction.instance"/>
                             <attr name="position" intvalue="1200"/>
                         </file>
-
-                        <file name="SeparatorBeforeInspect.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="1500"/>
-                        </file>
                         <file name="org-netbeans-modules-cnd-navigation-macroview-ShowMacroExpansionAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-macroview-ShowMacroExpansionAction.instance"/>
                             <attr name="position" intvalue="1600"/>
@@ -161,11 +151,6 @@
                         <file name="org-netbeans-modules-cnd-navigation-hierarchy-ShowIncludeHierarchyAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-hierarchy-ShowIncludeHierarchyAction.instance"/>
                             <attr name="position" intvalue="1100"/>
-                        </file>
-
-                        <file name="SeparatorBeforeInspect.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="1300"/>
                         </file>
                         <file name="org-netbeans-modules-cnd-navigation-macroview-ShowMacroExpansionAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-macroview-ShowMacroExpansionAction.instance"/>

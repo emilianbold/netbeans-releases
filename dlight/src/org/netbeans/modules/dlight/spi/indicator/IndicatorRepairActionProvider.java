@@ -69,7 +69,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
     private ValidationStatus currentStatus;
     private final List<IndicatorDataProvider<?>> toReValidate;
     private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
-    private final Object listenersLock = new String("IndicatorRepairActionProvider.Listeners");
+    private final Object listenersLock = new String("IndicatorRepairActionProvider.Listeners"); // NOI18N
 
 
     static {
@@ -86,7 +86,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         List<IndicatorDataProvider<?>> providers = configuration.getConfigurationOptions(false).getIndicatorDataProviders(currentTool);
         toReValidate = new ArrayList<IndicatorDataProvider<?>>();
         for (IndicatorDataProvider idp : providers) {
-            if (!idp.getValidationStatus().isKnown()) {
+            if (!idp.getValidationStatus().isKnown() || (idp.getValidationStatus().isKnown() && idp.getValidationStatus().isInvalid())) {
                 idp.addValidationListener(this);
                 toReValidate.add(idp);
                 currentStatus = idp.getValidationStatus();
@@ -131,6 +131,10 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         return currentStatus.getReason();
     }
 
+    public final ValidationStatus getValidationStatus(){
+        return currentStatus;
+    }
+
     public Future<Boolean> asyncRepair() {
         Future<Boolean> task = DLightExecutorService.submit(new Callable<Boolean>() {
 
@@ -165,7 +169,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
                 }
                 return true;
             }
-        }, "IndicatorRepairActionProvider asyncRepair");
+        }, "IndicatorRepairActionProvider asyncRepair"); //NOI18N
         return task;
 
     }

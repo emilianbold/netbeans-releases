@@ -179,10 +179,10 @@ public class ServersNodeActionsCheck extends NbTestCase {
                     errors.append("Attribute " + name + " present in orig on " + fo + " but null in clone\n");
                 }
 
-                if (name.equals("iconResource")) {
+                if (name.equals("iconResource") || name.equals("iconBase")) {
                     attr = Thread.currentThread().getContextClassLoader().getResource((String)attr);
                     if (!(attr instanceof URL)) {
-                        errors.append("iconResource attr for " + fo + " shall exist "  + attr);
+                        errors.append(attr + " attr for " + fo + " shall exist "  + attr + "\n");
                     }
                 }
                 
