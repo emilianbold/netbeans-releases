@@ -592,6 +592,21 @@ public class APTUtils {
         }
 
         @Override
+        public String getText() {
+            return "<EOF>"; // NOI18N
+        }
+
+        @Override
+        public int getColumn() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public int getLine() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
         public int hashCode() {
             return 1;
         }
