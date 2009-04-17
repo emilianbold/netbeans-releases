@@ -59,6 +59,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void testIZ162745() throws Exception {
+        // IZ#162745:unnamed_enum_typedef.cpp
+        performStaticTest("unnamed_enum_typedef.cpp");
+    }
+    
     public void testDDD() throws Exception {
         // test for number of DDD problems
         performStaticTest("ddd_errors.cpp");
