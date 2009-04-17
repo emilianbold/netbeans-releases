@@ -69,7 +69,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
     private ValidationStatus currentStatus;
     private final List<IndicatorDataProvider<?>> toReValidate;
     private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
-    private final Object listenersLock = new String("IndicatorRepairActionProvider.Listeners");
+    private final Object listenersLock = new String("IndicatorRepairActionProvider.Listeners"); // NOI18N
 
 
     static {
@@ -169,7 +169,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
                 }
                 return true;
             }
-        }, "IndicatorRepairActionProvider asyncRepair");
+        }, "IndicatorRepairActionProvider asyncRepair"); //NOI18N
         return task;
 
     }

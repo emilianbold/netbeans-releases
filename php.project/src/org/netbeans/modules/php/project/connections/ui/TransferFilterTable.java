@@ -180,6 +180,7 @@ final class TransferFilterTable extends JTable {
             });
             getModel().addUpdateUnitListener(new TransferFileTableChangeListener() {
                 public void updateUnitsChanged() {
+                    assert sortingRenderer != null : "Sorting renderer cannot be null.";
                     setSelectedRow();
                     TransferFileUnit selectedUnit = getSelectedUnit();
                     sortingRenderer.sort();
