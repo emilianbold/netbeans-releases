@@ -69,7 +69,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     private List<String> DLightIndicatorDPStrings = Arrays.asList("SunStudio");//NOI18N
     private static final String SUNSTUDIO = "SunStudio";//NOI18N
     private static final String LL_MONITOR = "LLTool";//NOI18N
-    private static final String DTRACE = "DTrace";//NOI18
+    private static final String DTRACE = "DTrace";//NOI18N
     private static final String PRSTAT_INDICATOR = "prstat";//NOI18N
     private static final String PROC_READER = "ProcReader";//NOI18N
     private Project currentProject;

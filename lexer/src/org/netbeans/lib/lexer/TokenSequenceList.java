@@ -195,17 +195,21 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<?>> {
     private void findTokenSequenceWithIndex(int index) {
         while (index >= tokenSequences.size() && tokenListIndex != Integer.MAX_VALUE) {
             EmbeddedTokenList<?> etl = tokenListList.getOrNull(++tokenListIndex);
-            if (etl != null && (endOffset == Integer.MAX_VALUE || etl.startOffset() < endOffset)) {
+            if (etl != null) {
                 etl.embeddingContainer().updateStatus();
-                boolean wrapEnd = ((endOffset != Integer.MAX_VALUE)
-                        && (etl.startOffset() < endOffset)
-                        && (endOffset < etl.endOffset()));
-                if (wrapEnd) {
-                    tokenSequences.add(LexerApiPackageAccessor.get().createTokenSequence(
-                            SubSequenceTokenList.create(etl, 0, endOffset)));
-                    tokenListIndex = Integer.MAX_VALUE;
+                if (endOffset == Integer.MAX_VALUE || etl.startOffset() < endOffset) {
+                    boolean wrapEnd = ((endOffset != Integer.MAX_VALUE)
+                            && (etl.startOffset() < endOffset)
+                            && (endOffset < etl.endOffset()));
+                    if (wrapEnd) {
+                        tokenSequences.add(LexerApiPackageAccessor.get().createTokenSequence(
+                                SubSequenceTokenList.create(etl, 0, endOffset)));
+                        tokenListIndex = Integer.MAX_VALUE;
+                    } else {
+                        tokenSequences.add(LexerApiPackageAccessor.get().createTokenSequence(etl));
+                    }
                 } else {
-                    tokenSequences.add(LexerApiPackageAccessor.get().createTokenSequence(etl));
+                    tokenListIndex = Integer.MAX_VALUE;
                 }
             } else { // Singnal no more token sequences
                 tokenListIndex = Integer.MAX_VALUE;

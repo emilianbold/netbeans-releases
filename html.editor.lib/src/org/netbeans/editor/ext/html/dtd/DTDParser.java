@@ -1627,7 +1627,9 @@ class DTDParser extends Object {
 
         public Set getPossibleElements() {
             Set s = new HashSet();
-            s.add( elem );
+            if(elem != null) {
+                s.add( elem );
+            }
             return s;
         }
     }
