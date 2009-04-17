@@ -115,6 +115,7 @@ public class Hk2Configuration extends GlassfishConfiguration implements Deployme
     @Override
     public boolean supportsCreateMessageDestination() {
         boolean enableSupport = false;
+        // FIXME -- what if the module is being deployed to a prelude domain?
         if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures"))) {
             enableSupport = true;
     }
