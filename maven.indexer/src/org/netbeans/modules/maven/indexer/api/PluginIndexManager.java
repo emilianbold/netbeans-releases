@@ -72,6 +72,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.FSDirectory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -244,21 +245,21 @@ public class PluginIndexManager {
                         String name = paramDet[0];
                         String editable = paramDet[1];
                         String required = paramDet[2];
-                        boolean req = "true".equals(required);
+                        boolean req = "true".equals(required); //NOI18N
                         if ("true".equals(editable)) { //NOI18N
                             String expr = paramDet[3];
-                            if (expr != null && "null".equals(expr)) {
+                            if (expr != null && "null".equals(expr)) { //NOI18N
                                 expr = null;
                             }
                             String defVal = paramDet[4];
-                            if (defVal != null && "null".equals(defVal)) {
+                            if (defVal != null && "null".equals(defVal)) { //NOI18N
                                 defVal = null;
                             }
                             String desc;
                             if (paramDet.length > 5) {
                                 desc = paramDet[5];
                                 byte[] dec = Base64.decodeBase64(desc.getBytes());
-                                desc =  new String(dec, "UTF-8");
+                                desc =  new String(dec, "UTF-8"); //NOI18N
                             } else {
                                 desc = null;
                             }
@@ -313,7 +314,7 @@ public class PluginIndexManager {
         TermQuery tq = new TermQuery(new Term(FIELD_CYCLES, packaging));
         bq.add(tq, BooleanClause.Occur.MUST);
         if (mvnVersion == null) {
-            mvnVersion = "2.0.9"; //oh well we need something..
+            mvnVersion = "2.0.9"; //oh well we need something.. //NOI18N
         }
         BooleanQuery bq2 = new BooleanQuery();
         tq = new TermQuery(new Term(FIELD_MVN_VERSION, mvnVersion));
@@ -506,11 +507,10 @@ public class PluginIndexManager {
         }
 
         public String getHtmlDetails(boolean includeName) {
-            return "<html>" + (includeName ? ("<h3>Plugin Parameter: " + getName() + "</h3>") : "") +
-            "<p><b>Expression: </b>" +  (getExpression() != null ? ("${" + getExpression() + "}") : "&lt;Undefined&gt;") + "<br>" +
-            "<b>Default Value: </b>" + (getDefaultValue() != null ? getDefaultValue() : "&lt;Undefined&gt;")  +
-            "</p>" +
-            "<h4>Description:</h4><p>"+ getDescription() + "</p></html>";
+            return "<html><body>" + (includeName ? ("<h4>" + NbBundle.getMessage(PluginIndexManager.class, "TXT_LBL_PARAMETER") + getName() + "</h4>") : "") +
+            "<b>" + NbBundle.getMessage(PluginIndexManager.class, "LBL_Expression") + "</b>" +  (getExpression() != null ? ("${" + getExpression() + "}") : NbBundle.getMessage(PluginIndexManager.class, "LBL_Undefined")) + "<br>" +
+            "<b>" + NbBundle.getMessage(PluginIndexManager.class, "LBL_DefaultValue") + "</b>" + (getDefaultValue() != null ? getDefaultValue() : NbBundle.getMessage(PluginIndexManager.class, "LBL_Undefined"))  +
+            "<br><b>" + NbBundle.getMessage(PluginIndexManager.class, "LBL_Description") + "</b><br>"+ getDescription() + "</body></html>";
         }
 
 
