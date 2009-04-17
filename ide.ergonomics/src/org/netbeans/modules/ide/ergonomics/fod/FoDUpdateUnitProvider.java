@@ -28,10 +28,12 @@
 package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.spi.autoupdate.UpdateItem;
@@ -80,7 +82,8 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
             justKits.addAll(fi.getCodeNames());
             String name = "fod." + prefCnb; // NOI18N
             ModuleInfo preferred = null;
-            for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            Collection<? extends ModuleInfo> allModules = Lookup.getDefault().lookupAll(ModuleInfo.class);
+            for (ModuleInfo mi : allModules) {
                 if (prefCnb.equals(mi.getCodeNameBase())) {
                     preferred = mi;
                 }
@@ -88,6 +91,12 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
                     continue;
                 }
                 justKits.remove(mi.getCodeNameBase());
+            }
+            if (preferred == null) {
+                FoDFileSystem.LOG.warning("For cluster " + fi.clusterName + " there is prefCnb " + prefCnb +
+                        " but the module is not found " + preferred + "\nList of modules is: ");
+                FeatureManager.dumpModules(Level.INFO, Level.INFO);
+                continue;
             }
             Object desc = preferred.getLocalizedAttribute("OpenIDE-Module-Long-Description"); // NOI18N
             if (!(desc instanceof String)) {
