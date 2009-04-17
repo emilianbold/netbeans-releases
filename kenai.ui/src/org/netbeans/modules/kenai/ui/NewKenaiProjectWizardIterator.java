@@ -81,7 +81,6 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     private Node activeNode;
     private boolean isShareExistingFolder;
 
-
     public static final String PROP_PRJ_NAME = "projectName";
     public static final String PROP_PRJ_TITLE = "projectTitle";
     public static final String PROP_PRJ_DESC = "projectDescription";
@@ -93,6 +92,8 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     public static final String PROP_ISSUES = "projectIssues";
     public static final String PROP_ISSUES_URL = "projectIssuesUrl";
     public static final String PROP_AUTO_COMMIT = "projectIssuesUrl";
+
+    public static final String PROP_EXC_ERR_MSG = "exceptionErrorMessage";
 
     // special values when no features are created
     public static final String NO_REPO = "none";
@@ -139,8 +140,10 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                     newPrjDesc, new String[] { newPrjLicense }, /*no tags*/ null);
 
         } catch (KenaiException kex) {
-            throw new IOException(getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
-                    "NewKenaiProject.progress.projectCreationFailed")));
+            String errorMsg = getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
+                    "NewKenaiProject.progress.projectCreationFailed"));
+            ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG, errorMsg);
+            throw new IOException(errorMsg);
         }
 
         // Create feature - SCM repository
@@ -162,8 +165,10 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                 repoCreated = KenaiService.Names.SUBVERSION.equals(newPrjScmType) || KenaiService.Names.MERCURIAL.equals(newPrjScmType);
 
             } catch (KenaiException kex) {
-                throw new IOException(getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
-                        "NewKenaiProject.progress.repoCreationFailed")));
+                String errorMsg = getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
+                        "NewKenaiProject.progress.repoCreationFailed"));
+                ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG, errorMsg);
+                throw new IOException(errorMsg);
             }
         } else {
             logger.log(Level.FINE, "SCM Repository creation skipped."); // NOI18N
@@ -185,8 +190,10 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                     displayName, description, newPrjIssues, extIssuesUrl, /*ext repo URL*/ null, /*browse repo URL*/ null);
 
             } catch (KenaiException kex) {
-                throw new IOException(getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
-                        "NewKenaiProject.progress.issuesCreationFailed")));
+                String errorMsg = getErrorMessage(kex, NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
+                        "NewKenaiProject.progress.issuesCreationFailed"));
+                ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG, errorMsg);
+                throw new IOException(errorMsg);
             }
         } else {
             logger.log(Level.FINE, "Issue Tracking creation skipped."); // NOI18N
