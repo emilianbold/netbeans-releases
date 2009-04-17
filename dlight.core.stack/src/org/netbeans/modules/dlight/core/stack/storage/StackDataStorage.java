@@ -50,8 +50,8 @@ import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescr
  */
 public interface StackDataStorage {//extends StackSupport {
 
-    public static final String STACK_DATA_STORAGE_TYPE_ID = "stack";
-    public static final String STACK_METADATA_VIEW_NAME = "DtraceStack";
+    public static final String STACK_DATA_STORAGE_TYPE_ID = "stack"; //NOI18N
+    public static final String STACK_METADATA_VIEW_NAME = "DtraceStack"; //NOI18N
 
     /**
      * Submits new stack (sample) to the storage.

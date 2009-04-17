@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.api.execution;
 
 import java.net.ConnectException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -116,8 +115,7 @@ public abstract class DLightTarget {
      * @param oldState state target was
      * @param newState state  target is
      */
-    protected final void notifyListeners(final DLightTarget.State oldState,
-            final DLightTarget.State newState) {
+    protected final void notifyListeners(final DLightTargetChangeEvent event) {
         DLightTargetListener[] ll;
 
         synchronized (this) {
@@ -133,7 +131,7 @@ public abstract class DLightTarget {
 
                 public void run() {
                     try {
-                        l.targetStateChanged(DLightTarget.this, oldState, newState);
+                        l.targetStateChanged(event);
                     } finally {
                         doneFlag.countDown();
                     }

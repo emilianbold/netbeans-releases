@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.tools.*;
 import java.io.File;
 import java.net.ConnectException;
@@ -57,7 +58,6 @@ import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.ExecutionEnvVariablesProvider;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -194,8 +194,8 @@ public class LLDataCollector
         return NativeToolsUtil.locateFile(env, NativeToolsUtil.getExecutable("prof_monitor")); // NOI18N
     }
 
-    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case RUNNING:
                 startMonitor();
                 break;

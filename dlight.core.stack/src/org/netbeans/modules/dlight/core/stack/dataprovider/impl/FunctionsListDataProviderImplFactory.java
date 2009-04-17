@@ -58,7 +58,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class FunctionsListDataProviderImplFactory implements DataProviderFactory{
 
     private final Collection<DataStorageType> supportedStorageTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
-    private final Collection<DataModelScheme> providedSchemas = Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:functions"));
+    private final Collection<DataModelScheme> providedSchemas = Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:functions")); //NOI18N
 
     public DataProvider create() {
         return new FunctionsListDataProviderImpl();

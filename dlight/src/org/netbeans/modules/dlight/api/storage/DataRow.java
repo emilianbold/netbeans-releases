@@ -84,7 +84,7 @@ public final class DataRow {
     String result = null;
     int idx = colnames.indexOf(columnName);
     if (idx >= 0) {
-      result = "" + data.get(idx);
+      result = String.valueOf(data.get(idx));
     }
     return result;
   }
@@ -122,13 +122,13 @@ public final class DataRow {
   public String toString() {
     StringBuilder sb = new StringBuilder(" *");
     for (String n : colnames) {
-      sb.append(n).append("* | *");
+      sb.append(n).append("* | *"); //NOI18N
     }
 
-    sb.append("\n");
+    sb.append("\n"); //NOI18N
 
     for (Object v : data) {
-      sb.append(v.toString()).append(" | ");
+      sb.append(v.toString()).append(" | "); //NOI18N
     }
 
     return sb.toString();

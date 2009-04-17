@@ -58,7 +58,7 @@ import org.openide.util.Exceptions;
  */
 final class ToolsConfiguration {
 
-    private static final String KNOWN_TOOLS_SET = "KnownToolsConfigurationProviders";
+    private static final String KNOWN_TOOLS_SET = "KnownToolsConfigurationProviders"; //NOI18N
     private final FileObject rootFolder;
     private boolean useRootFolder = false;
     private List<DLightTool> cachedList = null;
@@ -113,7 +113,7 @@ final class ToolsConfiguration {
 
             InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
             if (ic == null) {
-                String message = "D-Light tool configuration " + child.getName() + " not found";
+                String message = "D-Light tool configuration " + child.getName() + " not found"; //NOI18N
                 Logger.getLogger(ToolsConfiguration.class.getName()).log(Level.SEVERE, message, new Exception(message));
                 continue;
             }

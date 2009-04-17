@@ -46,11 +46,8 @@ public interface DLightTargetListener {
 
   /**
    * Invoked when target state is changed 
-   * @param source target state is changed
-   * @param oldState old state
-   * @param newState new state
    */
-  public void targetStateChanged(DLightTarget source, DLightTarget.State oldState, DLightTarget.State newState);
+  public void targetStateChanged(DLightTargetChangeEvent event);
 //  /**
 //   * Invoked when targed is started
 //   * @param target target started

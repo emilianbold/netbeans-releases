@@ -60,6 +60,8 @@ made subject to such option by the copyright holder.
                 <package>com.sun.xml.rpc.spi</package>
                 <package>com.sun.xml.rpc.spi.model</package>
                 <package>com.sun.xml.rpc.spi.tools</package>
+                <package>com.sun.xml.rpc.tools.plugin</package>
+                <package>com.sun.xml.rpc.tools.wscompile</package>
                 <package>com.sun.xml.rpc.util</package>               
                 <package>com.sun.xml.rpc.wsdl.document.soap</package>
             </public-packages>
