@@ -162,7 +162,7 @@ public abstract class Issue {
      * Opens this issue in the IDE
      */
     final public void open() {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle("Opening Issue..." + getID());
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[] {getID()}));
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 handle.start();
