@@ -446,6 +446,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
         listModel.removeElement(value);
         listModel.add(index + 1, value);
         fireValueChanged();
+        enableButtons(); // #162680
     }
     
     /** Enables buttons according to the state of the list.*/
