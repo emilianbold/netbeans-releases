@@ -38,14 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-/*
- * OptionalFactory.java
- *
- * Created on January 12, 2004, 4:15 PM
- */
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
 import org.netbeans.modules.j2ee.sun.ide.dm.ServerInstanceDescriptorImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
 import org.openide.WizardDescriptor;
@@ -149,6 +145,12 @@ public  class OptionalFactory extends OptionalDeploymentManagerFactory {
             throw new IllegalArgumentException("");
         
         return new ServerInstanceDescriptorImpl((SunDeploymentManager) dm);
+    }
+
+    @Override
+    public void finishServerInitialization() throws ServerInitializationException {
+        RunTimeDDCatalog.getRunTimeDDCatalog().refresh();
+        super.finishServerInitialization();
     }
     
 }
