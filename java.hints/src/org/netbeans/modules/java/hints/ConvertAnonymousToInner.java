@@ -377,7 +377,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
         
         Element currentElement = copy.getTrees().getElement(newClassToConvert);
         boolean isEnclosedByStaticElem = false;
-        while (currentElement != null && currentElement.getEnclosingElement() != null && currentElement.getEnclosingElement().getKind() != ElementKind.METHOD) {
+        while (currentElement != null && currentElement.getEnclosingElement() != null && currentElement.getKind() != ElementKind.METHOD) {
             if (currentElement.getModifiers().contains(Modifier.STATIC)) {
                 isEnclosedByStaticElem = true; //enclosing method is static
                 break;
