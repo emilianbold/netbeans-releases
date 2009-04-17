@@ -209,7 +209,8 @@ public abstract class Issue {
     public abstract String getSummary();
 
     /**
-     * 
+     * Returns a description summarizing the changes made
+     * in this issues since the last time it was set as seen.
      */
     public abstract String getRecentChanges();
 
@@ -231,6 +232,10 @@ public abstract class Issue {
         fireSeenChanged(oldValue, seen);
     }
 
+    /**
+     * Returns this issues attributes. 
+     * @return
+     */
     public abstract Map<String, String> getAttributes();
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {

@@ -72,7 +72,7 @@ public abstract class BugtrackingController {
     public abstract HelpCtx getHelpCtx();
 
     /**
-     * returns true if data in this controllers visual component are valid
+     * Returns true if data in this controllers visual component are valid
      * @return
      */
     public abstract boolean isValid();
@@ -86,7 +86,8 @@ public abstract class BugtrackingController {
     }
     
     /**
-     *
+     * Is called when the changes made in the
+     * controllers visual component are confirmed
      */
     public abstract void applyChanges() throws IOException; 
 
