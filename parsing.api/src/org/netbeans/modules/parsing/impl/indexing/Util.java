@@ -97,6 +97,29 @@ public final class Util {
         return true;
     }
 
+    public static StackTraceElement findCaller(StackTraceElement[] elements, Class... classesToFilterOut) {
+        loop: for (StackTraceElement e : elements) {
+            if (e.getClassName().equals(Util.class.getName()) || e.getClassName().startsWith("java.lang.")) { //NOI18N
+                continue;
+            }
+
+            if (classesToFilterOut != null && classesToFilterOut.length > 0) {
+                for(Class c : classesToFilterOut) {
+                    if (e.getClassName().startsWith(c.getName())) {
+                        continue loop;
+                    }
+                }
+            } else {
+                if (e.getClassName().startsWith("org.netbeans.modules.parsing.")) { //NOI18N
+                    continue;
+                }
+            }
+
+            return e;
+        }
+        return null;
+    }
+
     private Util() {
     }
 }
