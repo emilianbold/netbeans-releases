@@ -724,6 +724,12 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         panel.fireChangeEvent();
     }
 
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        this.putClientProperty(NewKenaiProjectWizardIterator.PROP_EXC_ERR_MSG, null);
+    }
+
     public boolean valid() {
 
         String message = checkForErrors();
@@ -755,6 +761,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     }
 
     private String checkForErrors() {
+        String excErrMsg = (String) this.getClientProperty(NewKenaiProjectWizardIterator.PROP_EXC_ERR_MSG);
+        if (excErrMsg != null) {
+            return excErrMsg;
+        }
         // invalid repo name
         // invalid local repo path
         // invalid ext repo URL

@@ -28,10 +28,14 @@
 <a href="proj_stand_ant_structure.html">About IDE-Generated Ant Scripts</a> for 
 a description of standard project Ant scripts and properties files.</p>
 <p><b>To override a target from an IDE-generated build script:</b></p>
-<ol>
+<ul>
   <li>Copy the target from <tt>build-impl.xml</tt> or <tt>suite.xml</tt>
     to <tt>build.xml</tt> and make any changes to the target.</li>
-</ol>
+</ul>
+<p><b>Note:</b>
+<ul>
+  <li>You may need to disable the Compile on Save option in project properties, because when enabled it causes some commands to skip calling the ant targets. To disable the Compile on Save option, right-click your project in the Projects window, select Properties, and clear the Compile on Same checkbox in the Compiling category. </li>
+</ul>
 <p><b>To add instructions to be processed before or after an Ant target is run:</b></p>
 <ul>
   <li>Override the <tt>-pre</tt> or <tt>-post</tt> target for the target. 
@@ -59,7 +63,7 @@ a description of standard project Ant scripts and properties files.</p>
     <tt>build.xml</tt>.</li>
 </ol>
 <p><b>Notes:</b>
-  <ul> 
+<ul> 
     <li>In a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
     <param name="content" value="./csh/glossary_freeform.html">
     <param name="viewerActivator" value="javax.help.LinkLabel">
@@ -79,7 +83,7 @@ a description of standard project Ant scripts and properties files.</p>
         clean your project. You should therefore never set the output folder 
         to the same location as your source folder without first configuring 
         the <tt>clean</tt> target to not delete the output folder.</li>
-  </ul>
+</ul>
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>
