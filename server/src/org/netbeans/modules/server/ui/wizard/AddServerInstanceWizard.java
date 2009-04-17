@@ -143,21 +143,28 @@ public class AddServerInstanceWizard extends WizardDescriptor {
                 DialogDisplayer.getDefault().notify(descriptor);
                 return null;
             } else {
-                AvailableProvidersPanel available = new AvailableProvidersPanel(ready);
-                DialogDescriptor descriptor = new DialogDescriptor(
-                        available,
-                        NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Title"),
-                        true,
-                        new Object[] {DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION },
-                        null,
-                        DialogDescriptor.DEFAULT_ALIGN,
-                        null,
-                        null);
+                Action a = null;
+                if (ready.length == 1) {
+                    a = (Action)ready[0].getClientProperty("action"); // NOI18N
+                } else {
+                    AvailableProvidersPanel available = new AvailableProvidersPanel(ready);
+                    DialogDescriptor descriptor = new DialogDescriptor(
+                            available,
+                            NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Title"),
+                            true,
+                            new Object[] {DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION },
+                            null,
+                            DialogDescriptor.DEFAULT_ALIGN,
+                            null,
+                            null);
 
-                DialogDisplayer.getDefault().notify(descriptor);
-                if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                    Action a = (Action)available.getSelected().getClientProperty("action"); // NOI18N
-                    a.actionPerformed(new ActionEvent(descriptor, 0, "noui")); // NOI18N
+                    DialogDisplayer.getDefault().notify(descriptor);
+                    if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                        a = (Action)available.getSelected().getClientProperty("action"); // NOI18N
+                    }
+                }
+                if (a != null) {
+                    a.actionPerformed(new ActionEvent(a, 0, "noui")); // NOI18N
                 } else {
                     return null;
                 }
