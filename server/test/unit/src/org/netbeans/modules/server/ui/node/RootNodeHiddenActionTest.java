@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,52 +34,73 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.graph;
+package org.netbeans.modules.server.ui.node;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
+import java.util.Arrays;
 import javax.swing.Action;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.CallableSystemAction;
 
 /**
  *
- * @author mkleint
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ShowGraphAction extends AbstractAction implements ContextAwareAction {
-    public ShowGraphAction() {
-        putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ShowGraphAction.class, "ACT_Show_Graph"));
+public class RootNodeHiddenActionTest extends NbTestCase {
+
+    public RootNodeHiddenActionTest(String s) {
+        super(s);
     }
-    
-    public ShowGraphAction(Project prj) {
-        this();
-        if (prj != null) {
-            putValue("prj", prj); //NOI18N
+
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+    }
+
+
+
+    public void testGetActions() throws Exception {
+        RootNode rn = RootNode.getInstance();
+        FileObject fo = FileUtil.getConfigFile("Servers/Actions");
+        assertNotNull("Folder for actions precreated", fo);
+        FileObject x = fo.createData(MyAction.class.getName().replace('.', '-') + ".instance");
+        x.setAttribute("position", 37);
+        Action[] arr = rn.getActions(true);
+        assertEquals("Just one action and two separators found: " + Arrays.asList(arr), 3, arr.length);
+        MyAction a = MyAction.get(MyAction.class);
+        if (a == arr[0] || a == arr[1] || a == arr[2]) {
+            fail("My action shall not be present as it is hidden: " + arr[0] + " 2nd: " + arr[1] + " 3rd: " + arr[2]);
         }
     }
-    
-    public void actionPerformed(ActionEvent e) {
-        final Project project = (Project) getValue("prj"); //NOI18N
-        if (project != null) {
-            ArtifactViewer.showArtifactViewer(project, ArtifactViewer.HINT_GRAPH);
+
+    public static final class MyAction extends CallableSystemAction {
+        static int cnt;
+
+        @Override
+        protected void initialize() {
+            super.initialize();
+            putValue("serverNodeHidden", Boolean.TRUE);
         }
-    }
-    
-    public Action createContextAwareInstance(Lookup lookup) {
-        Project prj = lookup.lookup(Project.class);
-        if (prj == null) {
-            FileObject fo = lookup.lookup(FileObject.class);
-            if (fo != null) {
-                prj = FileOwnerQuery.getOwner(fo);
-            }
+
+        @Override
+        public void performAction() {
+            cnt++;
         }
-        return new ShowGraphAction(prj);
+
+        @Override
+        public String getName() {
+            return "My";
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
     }
 }

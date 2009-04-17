@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -143,21 +143,28 @@ public class AddServerInstanceWizard extends WizardDescriptor {
                 DialogDisplayer.getDefault().notify(descriptor);
                 return null;
             } else {
-                AvailableProvidersPanel available = new AvailableProvidersPanel(ready);
-                DialogDescriptor descriptor = new DialogDescriptor(
-                        available,
-                        NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Title"),
-                        true,
-                        new Object[] {DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION },
-                        null,
-                        DialogDescriptor.DEFAULT_ALIGN,
-                        null,
-                        null);
+                Action a = null;
+                if (ready.length == 1) {
+                    a = (Action)ready[0].getClientProperty("action"); // NOI18N
+                } else {
+                    AvailableProvidersPanel available = new AvailableProvidersPanel(ready);
+                    DialogDescriptor descriptor = new DialogDescriptor(
+                            available,
+                            NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Title"),
+                            true,
+                            new Object[] {DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION },
+                            null,
+                            DialogDescriptor.DEFAULT_ALIGN,
+                            null,
+                            null);
 
-                DialogDisplayer.getDefault().notify(descriptor);
-                if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                    Action a = (Action)available.getSelected().getClientProperty("action"); // NOI18N
-                    a.actionPerformed(new ActionEvent(descriptor, 0, "noui")); // NOI18N
+                    DialogDisplayer.getDefault().notify(descriptor);
+                    if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                        a = (Action)available.getSelected().getClientProperty("action"); // NOI18N
+                    }
+                }
+                if (a != null) {
+                    a.actionPerformed(new ActionEvent(a, 0, "noui")); // NOI18N
                 } else {
                     return null;
                 }
@@ -209,21 +216,15 @@ public class AddServerInstanceWizard extends WizardDescriptor {
     static JRadioButton[] listAvailableProviders() {
         List<JRadioButton> res = new ArrayList<JRadioButton>();
 
-        FileObject fo = FileUtil.getConfigFile("Servers/Actions"); // NOI18N
-        if (fo != null) {
-            for (FileObject o : fo.getChildren()) {
-                Object msg = o.getAttribute("wizardMessage"); // NOI18N
-                if (msg instanceof String) {
-                    Lookup l = Lookups.forPath("Servers/Actions"); // NOI18N
-                    for (Lookup.Item<Action> item : l.lookupResult(Action.class).allItems()) {
-                        if (item.getId().contains(o.getName())) {
-                            Action a = item.getInstance();
-                            JRadioButton button = new JRadioButton((String)msg);
-                            button.putClientProperty("action", a); // NOI18N
-                            res.add(button);
-                        }
-                    }
-                }
+        for (Action a : Utilities.actionsForPath("Servers/Actions")) { // NOI18N
+            if (a == null) {
+                continue;
+            }
+            Object msg = a.getValue("wizardMessage"); // NOI18N
+            if (msg instanceof String) {
+                JRadioButton button = new JRadioButton((String)msg);
+                button.putClientProperty("action", a); // NOI18N
+                res.add(button);
             }
         }
 
