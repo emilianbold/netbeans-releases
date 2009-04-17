@@ -42,8 +42,6 @@ package org.netbeans.modules.parsing.impl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
@@ -51,6 +49,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -73,8 +72,9 @@ public class SelectedNodesScheduler extends Scheduler {
         final Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
         if (nodes.length == 1) {
             final DataObject dataObject = nodes [0].getLookup ().lookup (DataObject.class);
-            if (dataObject != null) {
+            if (dataObject != null && dataObject.isValid()) {
                 final FileObject fileObject = dataObject.getPrimaryFile ();
+                if (fileObject.isValid() && Util.canBeParsed(fileObject.getMIMEType()))
                 source = Source.create (fileObject);
                 if (source != null) {
                     schedule (source, new SchedulerEvent (this) {});
@@ -87,7 +87,7 @@ public class SelectedNodesScheduler extends Scheduler {
     
     @Override
     public String toString () {
-        return "SelectedNodesScheduller";
+        return "SelectedNodesScheduller"; //NOI18N
     }
 
     @Override
