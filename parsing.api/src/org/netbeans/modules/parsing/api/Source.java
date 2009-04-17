@@ -40,6 +40,7 @@
 package org.netbeans.modules.parsing.api;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -336,6 +337,8 @@ public final class Source {
                         is.close ();
                     }
                 }
+            } catch (FileNotFoundException fnfe) {
+                // working with a stale FileObject, just ignore this (eg see #158119)
             } catch (IOException ioe) {
                 LOG.log (Level.WARNING, null, ioe);
             }
