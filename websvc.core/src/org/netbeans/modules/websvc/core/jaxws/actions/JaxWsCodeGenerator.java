@@ -932,7 +932,8 @@ public class JaxWsCodeGenerator {
                 VariableTree serviceRefInjection = make.Variable(
                 methodModifiers,
                 serviceFName,
-                make.Type(typeElement.asType()),
+                (typeElement != null ?
+                    make.Type(typeElement.asType()) : make.Identifier(serviceJavaName)),
                 null);
                 
                 ClassTree modifiedClass = make.insertClassMember(javaClass, 0, serviceRefInjection);
