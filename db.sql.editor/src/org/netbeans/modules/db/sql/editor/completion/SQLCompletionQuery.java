@@ -162,6 +162,9 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         this.quoter = quoter;
         anchorOffset = -1;
         substitutionOffset = 0;
+        if (env == null) {
+            return null;
+        }
         items = new SQLCompletionItems(quoter, env.getSubstitutionHandler());
         SQLStatementKind kind = SQLStatementAnalyzer.analyzeKind (env.getTokenSequence());
         if (kind == null) {
