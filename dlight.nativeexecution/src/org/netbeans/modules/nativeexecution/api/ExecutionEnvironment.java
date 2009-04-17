@@ -126,7 +126,7 @@ final public class ExecutionEnvironment {
      * @return a string representation of the environment for showing in UI
      */
     public String getDisplayName() {
-        return isLocal() ? "localhost" : toString();
+        return isLocal() ? "localhost" : toString(); // NOI18N
     }
 
     /**

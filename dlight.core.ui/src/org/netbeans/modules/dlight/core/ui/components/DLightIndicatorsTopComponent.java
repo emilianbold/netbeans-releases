@@ -69,8 +69,8 @@ final class DLightIndicatorsTopComponent extends TopComponent {
     private static DLightIndicatorsTopComponent instance;
     private DLightSession session;
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/dlight/core/ui/resources/indicators_small.png";
-    private static final String PREFERRED_ID = "DLightIndicatorsTopComponent";
+    static final String ICON_PATH = "org/netbeans/modules/dlight/core/ui/resources/indicators_small.png"; // NOI18N
+    private static final String PREFERRED_ID = "DLightIndicatorsTopComponent"; // NOI18N
     private final CardLayout cardLayout = new CardLayout();
     private JPanel cardsLayoutPanel;
     private JPanel panel1;
@@ -83,8 +83,8 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         setName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
         //setToolTipText(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "HINT_DLightIndicatorsTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){
-            if (WindowManager.getDefault().findMode("navigator") != null){
+        if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){ // NOI18N
+            if (WindowManager.getDefault().findMode("navigator") != null){ // NOI18N
                 WindowManager.getDefault().findMode("navigator").dockInto(this);//NOI18N
             }
         }
@@ -169,7 +169,7 @@ final class DLightIndicatorsTopComponent extends TopComponent {
 //            add(scrollPane);
             componentToAdd = scrollPane;
         } else {
-            JLabel emptyLabel = new JLabel(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent"));
+            JLabel emptyLabel = new JLabel(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent")); // NOI18N
             emptyLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
             componentToAdd = emptyLabel;
 //            add(emptyLabel);

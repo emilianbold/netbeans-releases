@@ -94,7 +94,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     }
     
     public void doAction (Object action) {
-        runAction(action, false);
+        runAction(action, true);
     }
     
     @Override
@@ -102,7 +102,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         doLazyAction(new Runnable() {
             public void run() {
                 try {
-                    runAction(action, false);
+                    runAction(action, true);
                 } finally {
                     actionPerformedNotifier.run();
                 }

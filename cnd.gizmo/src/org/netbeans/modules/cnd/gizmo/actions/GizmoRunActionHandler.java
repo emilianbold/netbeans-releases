@@ -56,8 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
@@ -82,7 +81,6 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
 
     private static final String GNU_FAMILIY = "gc++filt"; //NOI18N
     private static final String SS_FAMILIY = "dem"; //NOI18N
-
     private ProjectActionEvent pae;
     private List<ExecutionListener> listeners;
     private DLightSessionHandler session;
@@ -116,12 +114,12 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String binDir = compilerSet.getDirectory();
         String demangle_utility = SS_FAMILIY;
-        if (compilerSet.isGnuCompiler()){
+        if (compilerSet.isGnuCompiler()) {
             demangle_utility = GNU_FAMILIY;
         }
         String dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
         targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
-        
+
         if (execEnv.isRemote()) {
             targetConf.setHost(execEnv.getHost());
             targetConf.setUser(execEnv.getUser());
@@ -146,16 +144,17 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         target.addTargetListener(this);
         DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
-        if (options instanceof GizmoConfigurationOptions){
-            ((GizmoConfigurationOptions)options).configure(pae.getProject());
+        if (options instanceof GizmoConfigurationOptions) {
+            ((GizmoConfigurationOptions) options).configure(pae.getProject());
         }
-   
+
 
         //WE are here only when Profile On RUn 
         final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(
                 target, configuration, IpeUtils.getBaseName(pae.getExecutable()));
 
         DLightExecutorService.submit(new Runnable() {
+
             public void run() {
                 try {
                     session = handle.get();
@@ -171,7 +170,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     }
 
     private Map<String, String> createMap(String[][] array) {
-        Map<String, String> result = new HashMap<String,String>();
+        Map<String, String> result = new HashMap<String, String>();
         for (int i = 0; i < array.length; ++i) {
             result.put(array[i][0], array[i][1]);
         }
@@ -199,8 +198,8 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         listeners.remove(l);
     }
 
-    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case INIT:
             case STARTING:
                 break;
@@ -209,11 +208,13 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 break;
             case FAILED:
             case STOPPED:
+                targetFailed();
+                break;
             case TERMINATED:
-                targetFinished(source, false);
+                targetFinished(event.status);
                 break;
             case DONE:
-                targetFinished(source, true);
+                targetFinished(event.status);
                 break;
         }
     }
@@ -225,16 +226,30 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
     }
 
-    private void targetFinished(DLightTarget target, boolean analyzeExitCode) {
+    private void targetFailed() {
+        StatusDisplayer.getDefault().setStatusText(
+                getMessage("Status.RunFailedToStart")); // NOI18N
+        io.getErr().println(getMessage("Output.RunFailedToStart")); // NOI18N);
+
+        for (ExecutionListener l : listeners) {
+            l.executionFinished(-1);
+        }
+    }
+
+    private void targetFinished(Integer status) {
         int exitCode = -1;
-        if (analyzeExitCode) {
-            try {
-                exitCode = target.getExitCode();
-            } catch (InterruptedException ex) {
-            }
+
+        io.getOut().println();
+        
+        if (status == null) {
+            StatusDisplayer.getDefault().setStatusText(getMessage("Status.RunTerminated")); // NOI18N
+            io.getErr().println(getMessage("Output.RunTerminated")); // NOI18N
+        } else {
+            exitCode = status.intValue();
             boolean success = exitCode == 0;
+
             StatusDisplayer.getDefault().setStatusText(
-                    getMessage(success? "Status.RunSuccessful" : "Status.RunFailed")); // NOI18N
+                    getMessage(success ? "Status.RunSuccessful" : "Status.RunFailed")); // NOI18N
 
             String time = formatTime(System.currentTimeMillis() - startTimeMillis);
             if (success) {
@@ -243,6 +258,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 io.getErr().println(getMessage("Output.RunFailed", exitCode, time)); // NOI18N
             }
         }
+
         for (ExecutionListener l : listeners) {
             l.executionFinished(exitCode);
         }
