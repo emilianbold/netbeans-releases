@@ -21,7 +21,6 @@
 |org.netbeans.modules.maven.kit|Maven|Java|java
 |org.netbeans.modules.apisupport.kit|NetBeans Plugin Development|Java|apisupport
 |org.netbeans.modules.spring.beans|Spring Beans|Java|java
-|org.netbeans.modules.hibernateweb|Hibernate Web|Java Web and EE|enterprise
 |org.netbeans.modules.identity.kit|Identity|Java Web and EE|identity
 |org.netbeans.modules.j2ee.kit|Java EE|Java Web and EE|enterprise
 |org.netbeans.modules.web.kit|Java Web Applications|Java Web and EE|enterprise
@@ -35,5 +34,5 @@
 |org.netbeans.modules.php.kit|PHP|PHP|php
 |org.netbeans.modules.core.kit|RCP Platform|RCP Platform|platform
 |org.netbeans.modules.ruby.kit|Ruby and Rails|Ruby|ruby
-|org.netbeans.modules.websvc.saas.kit|SaaS Services|Web Applications|websvccommon
-|org.netbeans.modules.web.client.tools.kit|Web Client Tools|Web Applications|webcommon
+|org.netbeans.modules.web.client.tools.kit|JavaScript Debugger|Web Applications|webcommon
+|org.netbeans.modules.websvc.saas.kit|Software as a Service|Web Applications|websvccommon
