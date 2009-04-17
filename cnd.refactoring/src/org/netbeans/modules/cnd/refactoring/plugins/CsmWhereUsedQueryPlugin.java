@@ -262,7 +262,9 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                             } finally {
                                 Thread.currentThread().setName(oldName);
                             }
-                            fireProgressListenerStep();
+                            synchronized (CsmWhereUsedQueryPlugin.this) {
+                                fireProgressListenerStep();
+                            }
                         }
                     } finally {
                         waitFinished.countDown();

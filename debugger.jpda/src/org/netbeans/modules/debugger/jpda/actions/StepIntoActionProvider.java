@@ -114,7 +114,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         if (ActionsManager.ACTION_STEP_INTO.equals(action) && doMethodSelection()) {
             return; // action performed
         }
-        stepInto.runAction(doResume);
+        stepInto.runAction(action, doResume);
     }
     
     protected void checkEnabled (int debuggerState) {

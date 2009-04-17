@@ -71,7 +71,10 @@ abstract class CompileWorker {
     CompileTuple createTuple(Context context, JavaParsingContext javaContext, Indexable indexable) {
         File root = null;
         if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
-            return new CompileTuple(FileObjects.fileFileObject(new File(indexable.getURL().getPath()), root, null), indexable);
+            try {
+                File file = new File(indexable.getURL().toURI().getPath());
+                return new CompileTuple(FileObjects.fileFileObject(file, root, null), indexable);
+            } catch (Exception ex) {}
         }
         FileObject fo = URLMapper.findFileObject(indexable.getURL());
         return fo != null ? new CompileTuple(SourceFileObject.create(fo, context.getRoot()), indexable) : null;

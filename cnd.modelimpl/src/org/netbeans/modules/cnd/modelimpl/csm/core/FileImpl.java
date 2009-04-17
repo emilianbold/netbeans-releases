@@ -326,7 +326,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     //@Deprecated
-    public APTPreprocHandler getPreprocHandler() {
+    private APTPreprocHandler getPreprocHandler() {
         return getProjectImpl(true) == null ? null : getProjectImpl(true).getPreprocHandler(fileBuffer.getFile());
     }
 
@@ -717,8 +717,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    private TokenStream createFullTokenStream(boolean filtered) {
-        APTPreprocHandler preprocHandler = getPreprocHandler();
+    private TokenStream createFullTokenStream(boolean filtered, int contextOffsets[]) {
         APTFile apt = null;
         try {
             apt = APTDriver.getInstance().findAPT(fileBuffer);
@@ -731,6 +730,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (apt == null) {
             return null;
         }
+        APTPreprocHandler preprocHandler = getPreprocHandler();
         APTPreprocHandler.State ppState = preprocHandler.getState();
         ProjectBase startProject = ProjectBase.getStartProject(ppState);
         if (startProject == null) {
@@ -761,7 +761,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 } else {
 //                    System.err.println("new stream created, because prev stream was finished on " + stream.getStartOffset() + " now asked for " + startOffset);
                 }
-                TokenStream fullTS = createFullTokenStream(filtered);
+                TokenStream fullTS = createFullTokenStream(filtered, new int[] {startOffset, endOffset});
                 if(fullTS != null) {
                     stream = new OffsetTokenStream(fullTS);
                 } else {

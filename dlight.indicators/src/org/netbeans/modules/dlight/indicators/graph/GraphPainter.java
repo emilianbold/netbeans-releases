@@ -236,7 +236,7 @@ class GraphPainter {
                         }
                     }
                     xx[i] = lastx = x + GraphConfig.STEP_SIZE * i;
-                    yy[i] = lasty = y + h - 2 - value * effectiveHeight / scale;
+                    yy[i] = lasty = (int)(y + h - 2 - (long)value * effectiveHeight / scale); // int may overflow in multiplication
                 }
                 g2.setColor(descriptors[ser].getColor());
                 switch (descriptors[ser].getKind()) {

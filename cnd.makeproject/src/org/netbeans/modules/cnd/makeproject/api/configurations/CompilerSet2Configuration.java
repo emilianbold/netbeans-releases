@@ -77,7 +77,8 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     // Constructors
     public CompilerSet2Configuration(DevelopmentHostConfiguration dhconf) {
         this.dhconf = dhconf;
-        String csName = getCompilerSetManager().getDefaultCompilerSet().getName();
+        CompilerSet cs = getCompilerSetManager().getDefaultCompilerSet();
+        String csName = (cs == null) ? null : cs.getName();
         if (csName == null || csName.length() == 0) {
             if (getCompilerSetManager().getCompilerSetNames().size() > 0) {
                 csName = getCompilerSetManager().getCompilerSet(0).getName();

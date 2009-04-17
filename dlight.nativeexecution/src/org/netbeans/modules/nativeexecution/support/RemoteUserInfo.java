@@ -136,7 +136,7 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                 PasswordDlg pwdDlg = new PasswordDlg();
 
                 synchronized (lock) {
-                    result = pwdDlg.askPassword(env.toString());
+                    result = pwdDlg.askPassword(env);
                 }
 
                 if (result) {

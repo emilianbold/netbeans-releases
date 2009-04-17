@@ -61,17 +61,17 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
   }
 
   public DLightToolConfiguration create() {
-    final String toolName = "Web Stack MySQL Monitor";
+    final String toolName = getMessage("MysqlTool.Name"); // NOI18N
     final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
     List<Column> mysqlColumns = Arrays.asList(
-            new Column("timestamp", Long.class, "Timestamp", null),
-            new Column("query", String.class, "SQL Query", null),
-            new Column("time", Double.class, "Execution time", null));
-    final DataTableMetadata mysqlDatatableMetadata = new DataTableMetadata("mysql", mysqlColumns);
+            new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
+            new Column("query", String.class, getMessage("Column.SqlQuery"), null), // NOI18N
+            new Column("time", Double.class, getMessage("Column.ExecutionTime"), null)); // NOI18N
+    final DataTableMetadata mysqlDatatableMetadata = new DataTableMetadata("mysql", mysqlColumns); // NOI18N
     DTDCConfiguration dcConfiguration = new DTDCConfiguration(Util.copyResource(PhpConfigurationProvider.class,
-            "org/netbeans/modules/dlight/webstack/resources/script_1.d"), Arrays.asList(mysqlDatatableMetadata));
-    dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner"));
-    dcConfiguration.setScriptArgs("`pgrep -x mysqld`");
+            "org/netbeans/modules/dlight/webstack/resources/script_1.d"), Arrays.asList(mysqlDatatableMetadata)); // NOI18N
+    dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner")); // NOI18N
+    dcConfiguration.setScriptArgs("`pgrep -x mysqld`"); // NOI18N
     toolConfiguration.addDataCollectorConfiguration(dcConfiguration);
     toolConfiguration.addIndicatorDataProviderConfiguration(new TimerIDPConfiguration());
     IndicatorMetadata indicatorMetadata1 = new IndicatorMetadata(Arrays.asList(TimerIDPConfiguration.TIME_INFO));
@@ -79,5 +79,9 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
     clockIndicator.setVisualizerConfiguration(new TableVisualizerConfiguration(mysqlDatatableMetadata));
     toolConfiguration.addIndicatorConfiguration(clockIndicator);
     return toolConfiguration;
+  }
+
+  private static String getMessage(String name) {
+      NbBundle.getMessage(MySQLConfigurationProvider.class, name);
   }
 }
