@@ -103,6 +103,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TopologicalSortException;
 
@@ -356,7 +357,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         if (root != null &&  VisibilityQuery.getDefault().isVisible(fo) && fo.isData()
             /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
-            scheduleWork(new DeleteWork(root, fo), false);
+            String relativePath = FileUtil.getRelativePath(URLMapper.findFileObject(root), fo);
+            assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
+            scheduleWork(new DeleteWork(root, relativePath), false);
             processed = true;
         }
         
@@ -824,7 +827,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     }
 
                     if (supportsEmbeddings) {
-                        if (canBeParsed(mimeType)) {
+                        if (Util.canBeParsed(mimeType)) {
                             //Then use slow gsf like indexers
                             LOGGER.log(Level.FINE, "Using EmbeddingIndexers for {0}", indexables); //NOI18N
 
@@ -893,48 +896,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             if (isCancelledBy(newWork)) {
                 cancelled.set(true);
             }
-        }
-
-        private final boolean canBeParsed(String mimeType) {
-            if (!Util.getAllMimeTypes().contains(mimeType)) {
-                return false;
-            }
-
-            int slashIdx = mimeType.indexOf('/'); //NOI18N
-            assert slashIdx != -1 : "Invalid mimetype: '" + mimeType + "'"; //NOI18N
-
-            String type = mimeType.substring(0, slashIdx);
-            if (type.equals("application")) { //NOI18N
-                if (!mimeType.equals("application/x-httpd-eruby") && !mimeType.equals("application/xml-dtd")) { //NOI18N
-                    return false;
-                }
-            } else if (!type.equals("text")) { //NOI18N
-                return false;
-            }
-
-//            if (allLanguagesParsersCount == -1) {
-//                Collection<? extends ParserFactory> allLanguagesParsers = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(ParserFactory.class);
-//                allLanguagesParsersCount = allLanguagesParsers.size();
-//            }
-//            Collection<? extends ParserFactory> parsers = MimeLookup.getLookup(mimeType).lookupAll(ParserFactory.class);
-//            if (parsers.size() - allLanguagesParsersCount > 0) {
-//                return true;
-//            }
-//
-//            // Ideally we should check that there are EmbeddingProviders registered for the
-//            // mimeType, but let's assume that if there are TaskFactories they are either
-//            // ordinary scheduler tasks or EmbeddingProviders. The former would most likely
-//            // mean that there is also a Parser and would have been caught in the previous check.
-//            if (allLanguagesTasksCount == -1) {
-//                Collection<? extends TaskFactory> allLanguagesTasks = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(TaskFactory.class);
-//                allLanguagesTasksCount = allLanguagesTasks.size();
-//            }
-//            Collection<? extends TaskFactory> tasks = MimeLookup.getLookup(mimeType).lookupAll(TaskFactory.class);
-//            if (tasks.size() - allLanguagesTasksCount > 0) {
-//                return true;
-//            }
-            
-            return true;
         }
 
         private String urlForMessage(URL currentlyScannedRoot) {
@@ -1033,17 +994,14 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         public DeleteWork (URL root, String relativePath) {
             super(false, false);
             
-            assert root != null;
-            assert relativePath != null;
+            Parameters.notNull("root", root);
+            Parameters.notNull("relativePath", relativePath);
+            
             this.root = root;
             this.relativePaths.add(relativePath);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("DeleteWork: root=" + root + ", files=" + relativePaths);
             }
-        }
-
-        public DeleteWork (URL root, FileObject file) {
-            this(root, FileUtil.getRelativePath(URLMapper.findFileObject(root), file));
         }
 
         public @Override void getDone() {
