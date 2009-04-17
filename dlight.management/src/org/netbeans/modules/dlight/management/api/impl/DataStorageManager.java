@@ -87,7 +87,7 @@ public final class DataStorageManager {
      *  Returns previously created or created new instance of DataStorage
      *  for requested schema (if it can be found within all available DataStorages)
      */
-    public DataStorage getDataStorageFor(DLightSession session, DataCollector collector) {
+    public DataStorage getDataStorageFor(DLightSession session, DataCollector<?> collector) {
         Collection<DataStorageType> supportedTypes = collector.getSupportedDataStorageTypes();
         for (DataStorageType type : supportedTypes) {
             DataStorage storage = getDataStorageFor(session, type, collector.getDataTablesMetadata());

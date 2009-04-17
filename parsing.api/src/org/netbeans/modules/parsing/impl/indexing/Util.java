@@ -39,7 +39,12 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 
 /**
@@ -97,6 +102,45 @@ public final class Util {
         return true;
     }
 
+    public static StackTraceElement findCaller(StackTraceElement[] elements, Class... classesToFilterOut) {
+        loop: for (StackTraceElement e : elements) {
+            if (e.getClassName().equals(Util.class.getName()) || e.getClassName().startsWith("java.lang.")) { //NOI18N
+                continue;
+            }
+
+            if (classesToFilterOut != null && classesToFilterOut.length > 0) {
+                for(Class c : classesToFilterOut) {
+                    if (e.getClassName().startsWith(c.getName())) {
+                        continue loop;
+                    }
+                }
+            } else {
+                if (e.getClassName().startsWith("org.netbeans.modules.parsing.")) { //NOI18N
+                    continue;
+                }
+            }
+
+            return e;
+        }
+        return null;
+    }
+
+    public static URL resolveUrl(URL root, String relativePath) throws MalformedURLException {
+        try {
+            if ("file".equals(root.getProtocol())) { //NOI18N
+                return new File(new File(root.toURI()), relativePath).toURL();
+            } else {
+                return root.toURI().resolve(relativePath).toURL();
+            }
+        } catch (URISyntaxException use) {
+            MalformedURLException mue = new MalformedURLException();
+            mue.initCause(use);
+            throw mue;
+        }
+    }
+
+    private static final Logger LOG = Logger.getLogger(Util.class.getName());
+    
     private Util() {
     }
 }

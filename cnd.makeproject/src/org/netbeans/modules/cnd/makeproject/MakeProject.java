@@ -675,6 +675,12 @@ public final class MakeProject implements Project, AntProjectListener {
         }
     }
 
+    /**
+     * if specified => project name will have information about directory in project view
+     */
+    private final static String PROJECT_NAME_WITH_HIDDEN_PATHS = System.getProperty("cnd.project.name.hidden.paths");
+    private final static int PROJECT_NAME_NUM_SHOWN_FOLDERS = Integer.getInteger("cnd.project.name.folders.num", 1);
+
     private final class Info implements ProjectInformation {
 
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -694,6 +700,43 @@ public final class MakeProject implements Project, AntProjectListener {
         public String getDisplayName() {
             String name = MakeProject.this.getName();
 
+            if (PROJECT_NAME_WITH_HIDDEN_PATHS != null) {
+                FileObject fo = MakeProject.this.getProjectDirectory();
+                if (fo != null && fo.isValid()) {
+                    String prjDirDispName = FileUtil.getFileDisplayName(fo);
+                    String[] split = PROJECT_NAME_WITH_HIDDEN_PATHS.split(":"); // NOI18N
+                    for (String skipPath : split) {
+                        if (prjDirDispName.startsWith(skipPath)) {
+                            prjDirDispName = prjDirDispName.substring(skipPath.length());
+                            break;
+                        }
+                    }
+                    if (prjDirDispName.startsWith("/") || prjDirDispName.startsWith("\\")) { // NOI18N
+                        prjDirDispName = prjDirDispName.substring(1);
+                    }
+                    int sep = 0;
+                    for (int i = 0; i < PROJECT_NAME_NUM_SHOWN_FOLDERS; i++) {
+                        int nextSep = prjDirDispName.indexOf('\\', sep);
+                        nextSep = (nextSep == -1) ? prjDirDispName.indexOf('/', sep) : nextSep;
+                        if (nextSep > 0) {
+                            sep = nextSep+1;
+                        } else {
+                            // name has less elements than asked
+                            sep = prjDirDispName.length();
+                            break;
+                        }
+                    }
+                    if (sep > 0) {
+                        prjDirDispName = prjDirDispName.substring(0, sep);
+                    }
+                    if (prjDirDispName.length() > 0) {
+                        if (prjDirDispName.endsWith("/") || prjDirDispName.endsWith("\\")) { // NOI18N
+                            prjDirDispName = prjDirDispName.substring(0, prjDirDispName.length() - 1);
+                        }
+                        name = NbBundle.getMessage(getClass(), "PRJ_DISPLAY_NAME_WITH_FOLDER", name, prjDirDispName); // NOI18N
+                    }
+                }
+            }
             DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
             if (devHost != null && ! devHost.isLocalhost()) {
                 name = NbBundle.getMessage(getClass(), "PRJ_DISPLAY_NAME",
