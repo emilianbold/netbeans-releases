@@ -378,7 +378,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         }
         private HelpCtx getHelpFor(Repository repository) {
             return (repository != null)
-                   ? repository.getController().getHelpContext()
+                   ? repository.getController().getHelpCtx()
                    : null;
         }
 

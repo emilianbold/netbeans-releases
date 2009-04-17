@@ -253,7 +253,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     @Override
-    public HelpCtx getHelpContext() {
+    public HelpCtx getHelpCtx() {
         return new HelpCtx(org.netbeans.modules.bugzilla.query.BugzillaQuery.class);
     }
 
