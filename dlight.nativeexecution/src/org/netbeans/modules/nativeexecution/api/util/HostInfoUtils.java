@@ -461,8 +461,8 @@ public final class HostInfoUtils {
             StringBuilder command = new StringBuilder();
 
             command.append("uname -s &&"); // NOI18N
-            command.append("test \"unknown\" = `uname -p` && uname -m || uname -p && "); // NOI18N
-            command.append("test \"SunOS\" = `uname -s` && isainfo -b || uname -a | grep x86_64 >/dev/null && echo 64 || echo 32 && "); // NOI18N
+            command.append("test \"unknown\" = \"`uname -p`\" && uname -m || uname -p && "); // NOI18N
+            command.append("test \"SunOS\" = \"`uname -s`\" && isainfo -b || ( uname -a | grep x86_64 >/dev/null && echo 64 ) || echo 32 && "); // NOI18N
             command.append("/bin/ls /bin/sh 2>/dev/null || /bin/ls /usr/bin/sh 2>/dev/null"); // NOI18N
 
             synchronized (session) {
