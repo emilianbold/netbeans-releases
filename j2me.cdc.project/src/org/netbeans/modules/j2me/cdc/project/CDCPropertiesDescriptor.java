@@ -93,7 +93,8 @@ public class CDCPropertiesDescriptor implements ProjectPropertiesDescriptor {
             set.add(new PropertyDescriptor(PLATFORM_FAT_JAR, true, DefaultPropertyParsers.BOOLEAN_PARSER, "true")); //NOI18N
             ref = new WeakReference(set);
         }
-        return set;
+        //Defensive copy - getting CMEs when creating new configurations
+        return new HashSet(set);
     }
 
 }
