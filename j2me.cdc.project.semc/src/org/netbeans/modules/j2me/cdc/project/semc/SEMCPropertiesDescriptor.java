@@ -96,7 +96,7 @@ public class SEMCPropertiesDescriptor implements ProjectPropertiesDescriptor {
         if (uid != null) set.remove(uid);
         uid = new PropertyDescriptor(SEMC_APPLICATION_UID, true, DefaultPropertyParsers.STRING_PARSER,  randomUID());
         set.add(uid);
-        return set;
+        return new HashSet(set);
     }
 
 }
