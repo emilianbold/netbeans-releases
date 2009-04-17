@@ -37,19 +37,70 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.ui.spi.impl;
+package org.netbeans.modules.server.ui.node;
 
-import org.netbeans.modules.dlight.management.ui.spi.EmptyVisualizerContainerProvider;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import java.util.Arrays;
+import javax.swing.Action;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.CallableSystemAction;
 
 /**
  *
- * @author mt154047
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class DefaultEmptyVisualizerContainerProvider implements EmptyVisualizerContainerProvider{
+public class RootNodeHiddenActionTest extends NbTestCase {
 
-    public VisualizerContainer getEmptyVisualizerContainer() {
-        throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+    public RootNodeHiddenActionTest(String s) {
+        super(s);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+    }
+
+
+
+    public void testGetActions() throws Exception {
+        RootNode rn = RootNode.getInstance();
+        FileObject fo = FileUtil.getConfigFile("Servers/Actions");
+        assertNotNull("Folder for actions precreated", fo);
+        FileObject x = fo.createData(MyAction.class.getName().replace('.', '-') + ".instance");
+        x.setAttribute("position", 37);
+        Action[] arr = rn.getActions(true);
+        assertEquals("Just one action and two separators found: " + Arrays.asList(arr), 3, arr.length);
+        MyAction a = MyAction.get(MyAction.class);
+        if (a == arr[0] || a == arr[1] || a == arr[2]) {
+            fail("My action shall not be present as it is hidden: " + arr[0] + " 2nd: " + arr[1] + " 3rd: " + arr[2]);
+        }
+    }
+
+    public static final class MyAction extends CallableSystemAction {
+        static int cnt;
+
+        @Override
+        protected void initialize() {
+            super.initialize();
+            putValue("serverNodeHidden", Boolean.TRUE);
+        }
+
+        @Override
+        public void performAction() {
+            cnt++;
+        }
+
+        @Override
+        public String getName() {
+            return "My";
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+    }
 }

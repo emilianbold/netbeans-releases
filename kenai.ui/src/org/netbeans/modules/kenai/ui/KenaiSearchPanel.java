@@ -276,6 +276,7 @@ public class KenaiSearchPanel extends JPanel {
         }
 
         searchButton.setEnabled(false);
+        searchTextField.setEnabled(false);
 
         boolean showProgressAndRepaint = false;
         final JPanel progressPanel = createProgressPanel();
@@ -314,6 +315,7 @@ public class KenaiSearchPanel extends JPanel {
                                 finishProgress();
                                 remove(progressPanel);
                                 searchButton.setEnabled(true);
+                                searchTextField.setEnabled(true);
                                 add(BorderLayout.CENTER, badRequestPanel);
                                 revalidate();
                                 repaint();
@@ -334,6 +336,7 @@ public class KenaiSearchPanel extends JPanel {
                             finishProgress();
                             remove(progressPanel);
                             searchButton.setEnabled(true);
+                            searchTextField.setEnabled(true);
                             add(BorderLayout.CENTER, scrollPane);
                             revalidate();
                             repaint();
@@ -345,6 +348,7 @@ public class KenaiSearchPanel extends JPanel {
                             finishProgress();
                             remove(progressPanel);
                             searchButton.setEnabled(true);
+                            searchTextField.setEnabled(true);
                             add(BorderLayout.CENTER, noMatchingLabelPanel);
                             revalidate();
                             repaint();
