@@ -491,6 +491,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(2, binIndexerFactory.indexer.getCount());
     }
 
+    @RandomlyFails
     public void testFileChanges() throws Exception {
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
@@ -586,6 +587,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, eindexerFactory.indexer.getDeletedCount());
     }
 
+    @RandomlyFails
     public void testFileRenamed() throws Exception {
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");

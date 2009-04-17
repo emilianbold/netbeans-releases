@@ -242,18 +242,15 @@ public class JavacParser extends Parser {
     }
     
     private void init (final Snapshot snapshot, final Task task, final boolean singleSource) {
-        boolean explicitCpInfo = false;
+        final boolean explicitCpInfo = (task instanceof ClasspathInfoProvider) && ((ClasspathInfoProvider)task).getClasspathInfo() != null;
         if (!initialized) {
             final Source source = snapshot.getSource();
             final FileObject sourceFile = source.getFileObject();
             assert sourceFile != null;
             this.file = sourceFile;
-            ClasspathInfo _tmpInfo;
             final ClasspathInfo oldInfo = this.cpInfo;
-            if (task instanceof ClasspathInfoProvider &&
-                    (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
-                cpInfo = _tmpInfo;
-                explicitCpInfo = true;
+            if (explicitCpInfo) {
+                cpInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
             }
             else {
                 cpInfo = ClasspathInfo.create(sourceFile);
@@ -273,7 +270,7 @@ public class JavacParser extends Parser {
                 initialized = true;
             }
         }
-        else if (!explicitCpInfo) {
+        else if (singleSource && !explicitCpInfo) {     //tzezula: MultiSource should ever be explicitCpInfo, but JavaSource.create(CpInfo, List<Fo>) allows null!
             //Recheck ClasspathInfo if still valid
             assert this.file != null;
             assert cpInfo != null;
@@ -283,7 +280,12 @@ public class JavacParser extends Parser {
                 final Project owner = FileOwnerQuery.getOwner(this.file);
                 LOGGER.warning("ClassPath identity changed for " + this.file + ", class path owner: " +       //NOI18N
                         (owner == null ? "null" : (FileUtil.getFileDisplayName(owner.getProjectDirectory())+" ("+owner.getClass()+")")));       //NOI18N
+                if (this.weakCpListener != null) {
+                    cpInfo.removeChangeListener(weakCpListener);
+                }
                 cpInfo = ClasspathInfo.create(this.file);
+                this.weakCpListener = WeakListeners.change(cpInfoListener, cpInfo);
+                cpInfo.addChangeListener (this.weakCpListener);
                 JavaSourceAccessor.getINSTANCE().invalidateCachedClasspathInfo(this.file);                
             }
         }

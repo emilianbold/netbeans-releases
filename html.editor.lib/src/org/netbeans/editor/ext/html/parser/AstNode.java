@@ -43,11 +43,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Content;
+import org.netbeans.editor.ext.html.dtd.DTD.ContentLeaf;
 import org.netbeans.editor.ext.html.dtd.DTD.ContentModel;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 
@@ -69,7 +72,7 @@ public class AstNode {
     private Map<String, Object> attributes = null;
     private Content content = null;
     private ContentModel contentModel = null;
-    private List<String> errorMessages = null;
+    private Collection<String> errorMessages = null;
 
     AstNode(String name, NodeType nodeType, int startOffset, int endOffset, ContentModel contentModel) {
         this(name, nodeType, startOffset, endOffset);
@@ -128,6 +131,16 @@ public class AstNode {
 //    }
 
     boolean isResolved() {
+        if(content == null) {
+            return false;
+        }
+        //CDATA
+        if(content instanceof DTD.ContentLeaf) {
+            if( "CDATA".equals(((DTD.ContentLeaf)content).getElementName()) ) {
+                return true;
+            }
+        }
+
         //#PCDATA hack
         if(content.getPossibleElements().size() == 1) {
             if(content.getPossibleElements().iterator().next() == null) {
@@ -164,12 +177,12 @@ public class AstNode {
 
     public synchronized void addErrorMessages(Collection<String> messages) {
         if(errorMessages == null) {
-            errorMessages = new ArrayList<String>(2);
+            errorMessages = new HashSet<String>(2);
         }
         errorMessages.addAll(messages);
     }
 
-    public List<String> getErrorMessages() {
+    public Collection<String> getErrorMessages() {
         return errorMessages == null ? Collections.<String>emptyList() : errorMessages;
     }
 
