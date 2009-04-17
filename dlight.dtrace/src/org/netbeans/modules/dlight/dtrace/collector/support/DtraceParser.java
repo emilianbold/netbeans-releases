@@ -84,7 +84,7 @@ public class DtraceParser {
 //    if (lines.length != metadata.getColumnsCount()-reservedColCount) {
         if (matchList.size() < colCount) {
             log.info("^^^^^Line:" + line + " lines array size is " + // NOI18N
-                    "less than medatadat.getCoulmnsCount() columnsCount=" +
+                    "less than medatadat.getCoulmnsCount() columnsCount=" + //NOI18N
                     metadata.getColumnsCount() + " lines splited=" + // NOI18N
                     matchList.size());
             return null;

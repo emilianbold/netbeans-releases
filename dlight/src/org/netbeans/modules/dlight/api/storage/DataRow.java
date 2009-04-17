@@ -120,7 +120,7 @@ public final class DataRow {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(" *");
+    StringBuilder sb = new StringBuilder(" *"); //NOI18N
     for (String n : colnames) {
       sb.append(n).append("* | *"); //NOI18N
     }

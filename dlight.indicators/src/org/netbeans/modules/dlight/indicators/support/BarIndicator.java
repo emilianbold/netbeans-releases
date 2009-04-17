@@ -68,7 +68,7 @@ public class BarIndicator extends Indicator<BarIndicatorConfiguration> {
     this.configuration = config;
     for (Column col : getMetadata().getColumns()) {
       if (col.getColumnClass().getSuperclass() != Number.class) {
-        throw new IllegalArgumentException("BarIndicator could be based on Number data only!");
+        throw new IllegalArgumentException("BarIndicator could be based on Number data only!"); //NOI18N
       }
     }
     
@@ -138,14 +138,14 @@ public class BarIndicator extends Indicator<BarIndicatorConfiguration> {
 
       int idx = 0;
       for (Column c : metadata.getColumns()) {
-        JLabel l = new JLabel(c.getColumnUName() + ": ");
+        JLabel l = new JLabel(c.getColumnUName() + ": "); //NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = idx;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(l, gridBagConstraints);
         
-        JLabel v = new JLabel("--");
+        JLabel v = new JLabel("--"); //NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = idx;

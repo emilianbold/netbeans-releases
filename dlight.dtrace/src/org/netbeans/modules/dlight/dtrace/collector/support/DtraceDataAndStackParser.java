@@ -140,7 +140,7 @@ final class DtraceDataAndStackParser extends DtraceParser {
                     state = State.WAITING_DATA;
                     return null;
                 }
-                String[] stackData = line.split("[ \t]+");
+                String[] stackData = line.split("[ \t]+"); //NOI18N
                 DLightLogger.assertTrue(stackData.length == 3, "stack marker should consist of CPU-id, thread-id and timestamp"); // NOI18N
                 if (isProfiler) {
                     currData = processDataLine(line);

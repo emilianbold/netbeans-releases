@@ -76,7 +76,7 @@ public final class DeploymentPlatformTarget extends DLightTarget {
     public ExecutionEnvironment getExecEnv() {
         String user_name = System.getProperty("dlight.webstack.user", "masha");
         String host_name = System.getProperty("dlight.webstack.host", "localhost");
-        host_name = "129.159.126.238";
+        host_name = "129.159.126.238"; //NOI18N
         int port_number = Integer.valueOf(System.getProperty("dlight.webstack.port_number", "2222"));
         // return new ExecutionEnvironment("masha", "129.159.126.238",  2222);
         return new ExecutionEnvironment(user_name, host_name, port_number);
