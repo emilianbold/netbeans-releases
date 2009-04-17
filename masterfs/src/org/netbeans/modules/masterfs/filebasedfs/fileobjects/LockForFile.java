@@ -56,6 +56,7 @@ import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -282,9 +283,9 @@ public class LockForFile extends FileLock {
     public void releaseLock() {
         LockForFile.deregisterLock(this);
         super.releaseLock();
-        BaseFileObj fo = (BaseFileObj) FileUtil.toFileObject(FileUtil.normalizeFile(file));
-        if (fo != null) {
-            fo.getProvidedExtensions().fileUnlocked(fo);
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        if (fo instanceof BaseFileObj) {
+            ((BaseFileObj) fo).getProvidedExtensions().fileUnlocked(fo);
         }
     }
 

@@ -56,7 +56,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position = 10)
 public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
 
-    static final String H2_DATA_STORAGE_TYPE = "db:sql:h2";
+    static final String H2_DATA_STORAGE_TYPE = "db:sql:h2"; // NOI18N
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
 
     public H2DataStorageFactory() {
