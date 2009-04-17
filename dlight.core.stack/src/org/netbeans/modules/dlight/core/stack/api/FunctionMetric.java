@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.core.stack.api;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.core.stack.api.impl.FunctionMetricAccessor;
+import org.openide.util.NbBundle;
 
 /**
  * Represents function metric, as an example "Exclusive Time" is metric, "Inclusive Time",
@@ -55,8 +56,12 @@ public final class FunctionMetric {
     private final String metricID;
     private final String metricDisplayedName;
     private final Class metricValueClass;
-    public static final FunctionMetric CpuTimeInclusiveMetric = FunctionMetricsFactory.getInstance().getFunctionMetric(new FunctionMetric.FunctionMetricConfiguration("time_incl", "CPU Time (Inclusive)", Time.class));
-    public static final FunctionMetric CpuTimeExclusiveMetric = FunctionMetricsFactory.getInstance().getFunctionMetric(new FunctionMetric.FunctionMetricConfiguration("time_excl", "CPU Time (Exclusive)", Time.class));
+    public static final FunctionMetric CpuTimeInclusiveMetric = 
+            FunctionMetricsFactory.getInstance().getFunctionMetric(
+            new FunctionMetric.FunctionMetricConfiguration("time_incl", getMessage("Metric.CpuTimeInclusive"), Time.class)); //NOI18N
+    public static final FunctionMetric CpuTimeExclusiveMetric = 
+            FunctionMetricsFactory.getInstance().getFunctionMetric(
+            new FunctionMetric.FunctionMetricConfiguration("time_excl", getMessage("Metric.CpuTimeExclusive"), Time.class)); //NOI18N
 
     FunctionMetric(FunctionMetricConfiguration metricConfiguration) {
         this.metricID = metricConfiguration.getMetricID();
@@ -155,4 +160,7 @@ public final class FunctionMetric {
         
     }
 
+    private static final String getMessage(String name) {
+        return NbBundle.getMessage(FunctionMetric.class, name);
+    }
 }

@@ -63,7 +63,7 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
     }
 
     public String getCommand(int pid) {
-        return "while head -n1 /proc/stat && head -n1 /proc/" + pid + "/stat; do sleep 1; done";
+        return "while head -n1 /proc/stat && head -n1 /proc/" + pid + "/stat; do sleep 1; done"; // NOI18N
     }
 
     public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {

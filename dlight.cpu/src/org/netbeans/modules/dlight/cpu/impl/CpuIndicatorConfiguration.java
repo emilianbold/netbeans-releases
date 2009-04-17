@@ -48,7 +48,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
  * @author mt154047
  */
 public final class CpuIndicatorConfiguration extends IndicatorConfiguration{
-  static final String ID = "CpuIndicatorConfiguration_ID";
+  static final String ID = "CpuIndicatorConfiguration_ID"; // NOI18N
 
   public CpuIndicatorConfiguration(IndicatorMetadata metadata, int position) {
     super(metadata, position);

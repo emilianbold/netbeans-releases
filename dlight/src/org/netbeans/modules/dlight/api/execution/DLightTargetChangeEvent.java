@@ -37,44 +37,18 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.api;
+package org.netbeans.modules.dlight.api.execution;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.kenai.api.KenaiService.Type;
+import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 
-/**
- *
- * @author Jan Becicka
- */
-public class KenaiFeatureTest extends NbTestCase {
+public class DLightTargetChangeEvent {
+    public final DLightTarget target;
+    public final DLightTarget.State state;
+    public final Integer status;
 
-    public KenaiFeatureTest(String s) {
-        super(s);
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    /**
-     * Test of getName method, of class KenaiFeature.
-     */
-    @Test
-    public void testType() {
-        System.out.println("getType");
-        assert Type.forId("foo").equals(Type.UNKNOWN);
-        assert Type.forId("forum").equals(Type.FORUM);
-        assert Type.forId("downloads").equals(Type.DOWNLOADS);
-        assert Type.forId("issues").equals(Type.ISSUES);
-        assert Type.forId("wiki").equals(Type.WIKI);
-        assert Type.forId("chat").equals(Type.CHAT);
+    public DLightTargetChangeEvent(DLightTarget target, State state, Integer status) {
+        this.target = target;
+        this.state = state;
+        this.status = status;
     }
 }
-

@@ -77,7 +77,7 @@ public class DynamicVerifyTest extends NbTestCase {
             NbModuleSuite.emptyConfiguration().
             addTest(ProjectTemplatesCheck.class).
             addTest(AllClustersProcessedCheck.class).
-            addTest(FilesAndAttributesCheck.class, "testCheckAllTemplatesReal").
+            addTest(FilesAndAttributesCheck.class, "testCheckAllTemplatesReal", "testTemplateHTMLDescriptions").
             addTest(DebuggerAttachTypesCheck.class, "testGetAllDebuggersReal").
             addTest(ServersNodeActionsCheck.class, "testCheckAllReal").
             addTest(MenuProfileActionsCheck.class, "testCheckAllReal").

@@ -125,7 +125,7 @@ public class Graph extends JComponent {
 //    }
 
     protected String formatValue(int value) {
-        return String.format("%d", value);
+        return String.format("%d", value); // NOI18N
     }
 
     private static enum AxisOrientation {

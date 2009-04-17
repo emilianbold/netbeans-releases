@@ -121,7 +121,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             final NativeProcessInfo info, final ExternalTerminal terminal) {
         super(info);
         this.terminal = terminal;
-        this.processOutput = new ByteArrayInputStream(new byte[]{32});
+        this.processOutput = new ByteArrayInputStream(
+                (loc("TerminalLocalNativeProcess.ProcessStarted.text") + '\n').getBytes()); // NOI18N
     }
 
     protected void create() throws Throwable {
