@@ -2391,7 +2391,7 @@ public class BaseKit extends DefaultEditorKit {
 
     @EditorActionRegistrations({
         @EditorActionRegistration(name = beginWordAction),
-        @EditorActionRegistration(name = selectionBeginAction)
+        @EditorActionRegistration(name = selectionBeginWordAction)
     })
     public static class BeginWordAction extends LocalBaseAction {
 
@@ -2407,7 +2407,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int dot = Utilities.getWordStart(target, caret.getDot());
-                    boolean select = selectionBeginAction.equals(getValue(Action.NAME));
+                    boolean select = selectionBeginWordAction.equals(getValue(Action.NAME));
                     if (select) {
                         caret.moveDot(dot);
                     } else {
