@@ -103,7 +103,16 @@ public final class RootNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return Utilities.actionsForPath("Servers/Actions").toArray(new Action[0]); // NOI18N
+        Action[] arr = Utilities.actionsForPath("Servers/Actions").toArray(new Action[0]); // NOI18N
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] == null) {
+                continue;
+            }
+            if (Boolean.TRUE.equals(arr[i].getValue("serverNodeHidden"))) { // NOI18N
+                arr[i] = null;
+            }
+        }
+        return arr;
     }
 
 
