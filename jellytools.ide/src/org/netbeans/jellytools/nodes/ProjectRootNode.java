@@ -38,31 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.jellytools.actions;
+package org.netbeans.jellytools.nodes;
 
-import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
-import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.actions.*;
+import org.netbeans.jemmy.operators.JTreeOperator;
 
-/** Used to invoke help on a property sheet from popup menu or using the F1 shortcut
- * If you also include the jellytools.ide module, you should use IDEHelpAction instead.
- * It is the same, but also provides option of calling help by "Help|Help Contents" menu.
- * It was split, because the "Help Contents" bundle message is only in the
- * ide cluster.
- *
- * @see Action
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
-public class HelpAction extends Action {
+/** Project root node class. It represents root node of a project in Projects
+ * view.
+ * @see org.netbeans.jellytools.ProjectsTabOperator
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
+ * @author Jiri.Skrivanek@sun.com
+ */
+public class ProjectRootNode extends Node {
 
-    // String used in property sheets
-    private static final String popupPath = Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Help");    
-    private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0);
-
-    /** Creates new HelpAction instance for master help set (Help|Contents)
-     * or for generic use e.g. in property sheets.
-     */
-    public HelpAction() {
-        super(null, popupPath, keystroke);
+    static final FindAction findAction = new FindAction();    
+    static final PropertiesAction propertiesAction = new PropertiesAction();
+   
+    /** tests popup menu items for presence */    
+    public void verifyPopup() {
+        verifyPopup(new Action[]{
+            findAction,            
+            propertiesAction
+        });
     }
-
+    
+    /** creates new ProjectRootNode instance
+     * @param treeOperator treeOperator JTreeOperator of tree with Filesystems repository 
+     * @param projectName display name of project
+     */
+    public ProjectRootNode(JTreeOperator treeOperator, String projectName) {
+        super(treeOperator, projectName);
+    }
+    
+    /** opens Search Filesystems dialog */    
+    public void find() {
+        findAction.perform(this);
+    }
+       
+    /** opens properties of project */    
+    public void properties() {
+        propertiesAction.perform(this);
+    }
 }

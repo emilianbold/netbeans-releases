@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,32 +31,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.jellytools.actions;
-
-import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
-import org.netbeans.jellytools.Bundle;
-
-/** Used to invoke help on a property sheet from popup menu or using the F1 shortcut
- * If you also include the jellytools.ide module, you should use IDEHelpAction instead.
- * It is the same, but also provides option of calling help by "Help|Help Contents" menu.
- * It was split, because the "Help Contents" bundle message is only in the
- * ide cluster.
  *
- * @see Action
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
-public class HelpAction extends Action {
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ */
 
-    // String used in property sheets
-    private static final String popupPath = Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Help");    
-    private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0);
+package org.netbeans.jellytools;
 
-    /** Creates new HelpAction instance for master help set (Help|Contents)
-     * or for generic use e.g. in property sheets.
+import junit.framework.Test;
+
+/**
+ *
+ * @author sigi
+ */
+public class IDEBundleKeysTest extends TestBundleKeys {
+
+    public static String propertiesName = "org/netbeans/jellytools/IDEBundleKeysTest.properties";
+
+    public IDEBundleKeysTest(String isBundleName) {
+        this(isBundleName, null);
+    }
+    /** Constructor required by JUnit.
+     * @param testName method name to be used as testcase
      */
-    public HelpAction() {
-        super(null, popupPath, keystroke);
+    public IDEBundleKeysTest(String isBundleName, String isKeys) {
+        super(isBundleName);
+        this.keys=isKeys;
+    }
+
+    @Override
+    protected String getPropertiesName() {
+        return propertiesName;
+    }
+
+    @Override
+    protected ClassLoader getDescendantClassLoader() {
+        return IDEBundleKeysTest.class.getClassLoader();
+    }
+
+    /** Method used for explicit testsuite definition
+     * @return  created suite
+     */
+    public static Test suite() {
+       return prepareSuite(IDEBundleKeysTest.class, propertiesName);
+    }
+
+    /** Use for internal test execution inside IDE
+     * @param args command line arguments
+     */
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
     }
 
 }

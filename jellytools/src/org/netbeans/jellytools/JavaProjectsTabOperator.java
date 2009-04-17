@@ -38,58 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.jellytools.nodes;
 
-import org.netbeans.jellytools.actions.*;
-import org.netbeans.jemmy.operators.JTreeOperator;
+package org.netbeans.jellytools;
 
-/** Project root node class. It represents root node of a project in Projects
- * view.
- * @see org.netbeans.jellytools.ProjectsTabOperator
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+import org.netbeans.jellytools.nodes.JavaProjectRootNode;
+
+/**
+ * Java-specific extension to ProjectsTabOperator.
+ *
+ * @author Vojtech.Sigler@sun.com
  */
-public class ProjectRootNode extends Node {
+public class JavaProjectsTabOperator extends ProjectsTabOperator {
 
-    static final FindAction findAction = new FindAction();
-    static final BuildProjectAction buildProjectAction = new BuildProjectAction();
-    static final CleanProjectAction cleanProjectAction = new CleanProjectAction();
-    static final PropertiesAction propertiesAction = new PropertiesAction();
-   
-    /** tests popup menu items for presence */    
-    public void verifyPopup() {
-        verifyPopup(new Action[]{
-            findAction,
-            buildProjectAction,
-            propertiesAction
-        });
-    }
-    
-    /** creates new ProjectRootNode instance
-     * @param treeOperator treeOperator JTreeOperator of tree with Filesystems repository 
+    /** Gets JavaProjectRootNode
      * @param projectName display name of project
+     * @return ProjectsRootNode
      */
-    public ProjectRootNode(JTreeOperator treeOperator, String projectName) {
-        super(treeOperator, projectName);
-    }
-    
-    /** opens Search Filesystems dialog */    
-    public void find() {
-        findAction.perform(this);
-    }
-    
-    /** build project */    
-    public void buildProject() {
-        buildProjectAction.perform(this);
-    }
-    
-    /** Clean project */    
-    public void cleanProject() {
-        cleanProjectAction.perform(this);
-    }
-    
-    /** opens properties of project */    
-    public void properties() {
-        propertiesAction.perform(this);
+    public JavaProjectRootNode getJavaProjectRootNode(String projectName) {
+        return new JavaProjectRootNode(tree(), projectName);
     }
 }
