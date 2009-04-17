@@ -76,6 +76,11 @@ Microsystems, Inc. All Rights Reserved.
             can extend the list of popup actions on Servers node in
             Services tab.
       </api>
+      <api group="property" name="serverNodeHidden" type="export" category="friend">
+            If the action registered in <code>Servers/Actions</code> folder
+            has <code>getValue("serverNodeHidden") == Boolean.TRUE</code>, then
+            it will not be shown in the popup menu.
+      </api>
       <api group="layer" name="ServersNodeActionsAttributes" type="export" category="friend">
             <p>
             By adding additional attributes to files in <code>Servers/Actions</code>
