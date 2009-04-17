@@ -117,13 +117,32 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="sizeof.${module.name}=${size}${line.separator}" file="${basedir}/build/sizes.pro" append="true"/>                    
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="sh ${basedir}/pack200.sh ${basedir}/netBeans/${module.name}/build ${VerifyFile.class.name} ${VerifyFile.classpath}"/>
-        </exec>           
+            <arg value="sh ${basedir}/pack200.sh ${module.builddir} ${VerifyFile.class.name} ${VerifyFile.classpath}"/>
+        </exec>
+        <ant target="update-crc32-info-module"/>
     </target>
+
+    <target name="update-crc32-info-module" description="Update crc32 info in the update_tracking files for the module (Issue #159657)">
+        <echo message="Update crc32 info in module ${module.name}"/>
+        <property name="tmpDir" value="${module.builddir}/tmp"/>
+        <property name="nbDir" value="${module.builddir}/netbeans"/>
+        <mkdir dir="${tmpDir}"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="sh ${basedir}/commonfiles/unpack200_to_dir.sh ${nbDir} ${tmpDir}"/>
+        </exec>
+
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="sh ${basedir}/commonfiles/update_crc32.sh ${tmpDir} ${nbDir}"/>
+        </exec>
+    </target>
+
 
     <target name="build-pkg" depends="unzip-nb" description="Builds NB and packs packages" >                  
         <ant target="size-pack-module">
-            <property name="module.name" value="baseide"/>            
+            <property name="module.name" value="baseide"/>
+            <property name="module.builddir" value="${basedir}/netBeans/${module.name}/build"/>
         </ant>            
         <ant dir="${basedir}/netBeans/baseide"/>          
         <ant target="build-modules"/>       
