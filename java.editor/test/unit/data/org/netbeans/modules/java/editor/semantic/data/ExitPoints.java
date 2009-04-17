@@ -105,4 +105,19 @@ public class ExitPoints {
     private String[] testArray() {
         return new String[]{new String()};
     }
+
+    public String method() {
+        class H {
+            public void run() {
+                if(true) return;
+            }
+        }
+        new Runnable() {
+            public void run() {
+                if(true) return;
+            }
+        };
+        return "";
+    }
+
 }
