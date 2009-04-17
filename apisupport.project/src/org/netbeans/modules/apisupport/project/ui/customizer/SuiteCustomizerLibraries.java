@@ -45,9 +45,7 @@ import java.awt.CardLayout;
 import javax.swing.Action;
 import javax.swing.table.TableColumn;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
-import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.image.ComponentColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
@@ -116,7 +114,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.w3c.dom.Element;
-import sun.management.snmp.util.SnmpLoadedClassData;
 
 /**
  * Represents <em>Libraries</em> panel in Suite customizer.

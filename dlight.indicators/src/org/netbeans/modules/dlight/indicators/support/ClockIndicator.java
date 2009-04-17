@@ -83,7 +83,7 @@ public class ClockIndicator extends Indicator<ClockIndicatorConfiguration> {
   }
   
   private class ClockPanel extends JPanel {
-    private JLabel timeLabel = new JLabel("00:00:00");
+    private JLabel timeLabel = new JLabel("00:00:00"); //NOI18N
 
     public ClockPanel() {
       setLayout(new BorderLayout(10, 10));
@@ -95,9 +95,9 @@ public class ClockIndicator extends Indicator<ClockIndicatorConfiguration> {
       int hours = seconds / (60 * 60);
       int minutes = (seconds - hours * 60 * 60) / 60;
       int real_seconds = (seconds - hours * 60 * 60 - minutes * 60);
-      String timerStr = (hours < 10 ? "0" : "") + hours +
-          ":" + (minutes < 10 ? "0" : "") + minutes +
-          ":" + (real_seconds < 10 ? "0" : "") + real_seconds;
+      String timerStr = (hours < 10 ? "0" : "") + hours + //NOI18N
+          ":" + (minutes < 10 ? "0" : "") + minutes + //NOI18N
+          ":" + (real_seconds < 10 ? "0" : "") + real_seconds; //NOI18N
       timeLabel.setText(timerStr);
     }
   }
