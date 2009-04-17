@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescripto
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
 /**
  * A common base class for remote "unit" tests
@@ -60,7 +61,14 @@ public abstract class RemoteTestBase extends BaseTestCase {
     protected RemoteTestBase(String testName) {
         super(testName);
     }
-    
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        ConnectionManager.getInstance().connectTo(getExecutionEnvironment(), getRemotePassword(), false);
+    }
+
+
     public static class FakeCompilerSet extends CompilerSet {
 
         private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());
