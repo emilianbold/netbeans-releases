@@ -15,13 +15,13 @@ NAMESPACE DEFINITOIN NS [1:1/0-6:2/80] SCOPE: typedef_enum_in_class_scope.cc
     CLASS C (NS::C ) [2:9/16-4:10/54] lcurly=24 SCOPE: NS 
         BASE CLASSES:
         MEMBERS:
-            TYPEDEF EE  [3:17/29-3:39/51] TYPE: NS::C:: TEXT=typedef enum E } EE ;  [3:17/29-3:39/51] SCOPE: C 
-    TYPEDEF B  [5:9/57-5:30/78] TYPE: NS:: TEXT=typedef enum A } B ;  [5:9/57-5:30/78] SCOPE: NS 
-TYPEDEF Y  [7:1/81-7:22/102] TYPE:  TEXT=typedef enum X } Y ;  [7:1/81-7:22/102] SCOPE: $Global$ 
+            TYPEDEF EE  [3:17/29-3:39/51] TYPE: NS::C:: TEXT=typedef enum { E } EE ;  [3:17/29-3:39/51] SCOPE: C 
+    TYPEDEF B  [5:9/57-5:30/78] TYPE: NS:: TEXT=typedef enum { A } B ;  [5:9/57-5:30/78] SCOPE: NS 
+TYPEDEF Y  [7:1/81-7:22/102] TYPE:  TEXT=typedef enum { X } Y ;  [7:1/81-7:22/102] SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
-TYPEDEF Y  [7:1/81-7:22/102] TYPE:  TEXT=typedef enum X } Y ;  [7:1/81-7:22/102] SCOPE: $Global$ 
-ENUM  [7:9/89-7:13/93] SCOPE: $Global$ 
+TYPEDEF Y  [7:1/81-7:22/102] TYPE:  TEXT=typedef enum { X } Y ;  [7:1/81-7:22/102] SCOPE: $Global$ 
+ENUM  [7:9/89-7:19/99] SCOPE: $Global$ 
     X
 NAMESPACE DEFINITIONS for NS (NS) 
     typedef_enum_in_class_scope.cc  [1:1/0-6:2/80]
@@ -29,8 +29,8 @@ NAMESPACE NS (NS)
     CLASS C (NS::C ) [2:9/16-4:10/54] lcurly=24 SCOPE: NS 
         BASE CLASSES:
         MEMBERS:
-            TYPEDEF EE  [3:17/29-3:39/51] TYPE: NS::C:: TEXT=typedef enum E } EE ;  [3:17/29-3:39/51] SCOPE: C 
-    TYPEDEF B  [5:9/57-5:30/78] TYPE: NS:: TEXT=typedef enum A } B ;  [5:9/57-5:30/78] SCOPE: NS 
-    ENUM  [5:17/65-5:21/69] SCOPE: NS 
+            TYPEDEF EE  [3:17/29-3:39/51] TYPE: NS::C:: TEXT=typedef enum { E } EE ;  [3:17/29-3:39/51] SCOPE: C 
+    TYPEDEF B  [5:9/57-5:30/78] TYPE: NS:: TEXT=typedef enum { A } B ;  [5:9/57-5:30/78] SCOPE: NS 
+    ENUM  [5:17/65-5:27/75] SCOPE: NS 
         A
 
