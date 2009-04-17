@@ -142,7 +142,7 @@ public class RepositoryController extends BugtrackingController implements Docum
 
         String name = panel.nameField.getText().trim();
         if(name.equals("")) { // NOI18N
-            errorMessage = "Missing name"; // XXX bundle me
+            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_NAME"); // XXX bundle me
             return false;
         }
 
@@ -151,7 +151,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             repositories = BugzillaConfig.getInstance().getRepositories();
             for (String repositoryName : repositories) {
                 if(name.equals(repositoryName)) {
-                    errorMessage = "Issue tracker with the same name alreay exists"; // XXX bundle me
+                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_NAME_ALREADY_EXISTS"); // XXX bundle me
                     return false;
                 }
             }
@@ -159,13 +159,13 @@ public class RepositoryController extends BugtrackingController implements Docum
 
         String url = getUrl();
         if(url.equals("")) { // NOI18N
-            errorMessage = "Missing URL"; // XXX bundle me
+            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_URL"); // XXX bundle me
             return false;
         }
         try {
             new URL(url);
         } catch (MalformedURLException ex) {
-            errorMessage = "Wrong URL format"; // XXX bundle me
+            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT"); // XXX bundle me
             return false;
         }
 
@@ -173,7 +173,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             for (String repositoryName : repositories) {
                 BugzillaRepository repo = BugzillaConfig.getInstance().getRepository(repositoryName);
                 if(url.trim().equals(repo.getUrl())) {
-                    errorMessage = "Issue tracker with the same url already exists"; // XXX bundle me
+                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_URL_ALREADY_EXISTS"); // XXX bundle me
                     return false;
                 }
             }
@@ -304,7 +304,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                     if(cmd.hasFailed()) {
                         if(cmd.getErrorMessage() == null) {
                             Bugzilla.LOG.warning("validate command has failed, yet the returned error message is null."); // NOI18N
-                            errorMessage = "Validation failed."; // XXX bundle me
+                            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED"); // XXX bundle me
                         } else {
                             errorMessage = cmd.getErrorMessage();
                         }
