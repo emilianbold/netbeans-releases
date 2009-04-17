@@ -3,6 +3,8 @@ class TestDomain {
     String name
     int age
 
+    static constraints = {}
+
     def test1() {
         TestDomain.findBy
     }

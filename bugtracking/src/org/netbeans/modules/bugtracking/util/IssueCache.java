@@ -66,6 +66,13 @@ public abstract class IssueCache {
 
     public IssueCache(String nameSpace) {
         this.nameSpace = nameSpace;
+        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                synchronized(CACHE_LOCK) {
+                    IssueStorage.getInstance().cleanup(IssueCache.this.nameSpace);
+                }
+            }
+        });
     }
 
     /**
@@ -99,7 +106,6 @@ public abstract class IssueCache {
             if(entry.issue == null) {
                 if(issue != null) {
                     entry.issue = issue;
-//                    entry.status = Issue.ISSUE_STATUS_SEEN;
                     BugtrackingManager.LOG.log(Level.FINE, "setting task data for issue {0} ", new Object[] {id}); // NOI18N
                     setTaskData(entry.issue, taskData);
                 } else {
@@ -215,7 +221,7 @@ public abstract class IssueCache {
         }
     }
 
-    public void storeQuery(String name, String[] ids) {
+    public void storeQueryIssues(String name, String[] ids) {
         synchronized(CACHE_LOCK) {
             try {
                 IssueStorage.getInstance().storeQuery(nameSpace, name, ids);
@@ -225,10 +231,32 @@ public abstract class IssueCache {
         }
     }
 
-    public List<String> readQuery(String name) {
+    public List<String> readQueryIssues(String name) {
         synchronized(CACHE_LOCK) {
             try {
                 return IssueStorage.getInstance().readQuery(nameSpace, name);
+            } catch (IOException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            }
+            return new ArrayList<String>(0);
+        }
+    }
+
+    public void storeArchivedQueryIssues(String name, String[] ids) {
+        synchronized(CACHE_LOCK) {
+            try {
+                IssueStorage.getInstance().storeArchivedQueryIssues(nameSpace, name, ids);
+            } catch (IOException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public List<String> readArchivedQueryIssues(String name) {
+        synchronized(CACHE_LOCK) {
+            try {
+                Map<String, Long> m = IssueStorage.getInstance().readArchivedQueryIssues(nameSpace, name);
+                return new ArrayList<String>(m.keySet());
             } catch (IOException ex) {
                 BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             }
