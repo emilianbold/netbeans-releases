@@ -177,6 +177,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     public void addIndexingJob(URL rootUrl, Collection<? extends URL> fileUrls, boolean followUpJob, boolean checkEditor, boolean wait) {
         assert rootUrl != null;
 
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("addIndexingJob: rootUrl=" + rootUrl + ", fileUrls=" + fileUrls //NOI18N
+                + ", followUpJob=" + followUpJob + ", checkEditor=" + checkEditor + ", wait=" + wait); //NOI18N
+        }
+
         FileObject root = URLMapper.findFileObject(rootUrl);
         assert root != null : rootUrl + " can't be translated to FileObject"; //NOI18N
         if (root == null) {
@@ -221,6 +226,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
      * @param indexerName The name of the indexer, which indexes should be refreshed.
      */
     public void addIndexingJob(String indexerName) {
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("addIndexingJob: indexerName=" + indexerName); //NOI18N
+        }
+
         CustomIndexerFactory factory = null;
         Set<String> indexerMimeTypes = new HashSet<String>();
         
@@ -598,6 +607,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     /* test */ void scheduleWork(final Work work, boolean wait) {
+        recordCaller();
+
         synchronized (this) {
             if (state == State.STARTED) {
                 state = State.INITIAL_SCAN_RUNNING;
@@ -671,6 +682,38 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
         return true;
+    }
+
+    private static final Map<List<StackTraceElement>, Long> lastRecordedStackTraces = new HashMap<List<StackTraceElement>, Long>();
+    private static long stackTraceId = 0;
+    private static void recordCaller() {
+        if (!LOGGER.isLoggable(Level.FINE)) {
+            return;
+        }
+
+        synchronized (lastRecordedStackTraces) {
+            StackTraceElement []  stackTrace = Thread.currentThread().getStackTrace();
+            List<StackTraceElement> stackTraceList = new ArrayList<StackTraceElement>(stackTrace.length);
+            for(StackTraceElement e : stackTrace) {
+                stackTraceList.add(e);
+            }
+
+            Long id = lastRecordedStackTraces.get(stackTraceList);
+            if (id == null) {
+                id = stackTraceId++;
+                lastRecordedStackTraces.put(stackTraceList, id);
+                StringBuilder sb = new StringBuilder();
+                sb.append("RepositoryUpdater caller [id=").append(id).append("] :\n"); //NOI18N
+                for(StackTraceElement e : stackTraceList) {
+                    sb.append(e.toString());
+                    sb.append("\n"); //NOI18N
+                }
+                LOGGER.fine(sb.toString());
+            } else {
+                StackTraceElement caller = Util.findCaller(stackTrace);
+                LOGGER.fine("RepositoryUpdater caller [refid=" + id + "]: " + caller); //NOI18N
+            }
+        }
     }
 
 // we have to handle *all* mime types because of eg. tasklist indexer or goto-file indexer
