@@ -110,7 +110,10 @@ implements Runnable, ChangeListener {
         LOG.fine("collecting layers"); // NOI18N
         List<FileSystem> delegate = new ArrayList<FileSystem>();
         for (FeatureInfo info : FeatureManager.features()) {
-            if (!info.isEnabled() && info.isPresent()) {
+            if (!info.isPresent()) {
+                continue;
+            }
+            if (!info.isEnabled()) {
                 LOG.finest("adding feature " + info.clusterName); // NOI18N
                 delegate.add(info.getXMLFileSystem());
             } else {
