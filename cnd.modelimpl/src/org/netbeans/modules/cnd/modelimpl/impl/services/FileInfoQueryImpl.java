@@ -251,7 +251,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             try {
                 APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
 
-                GuardBlockWalker guardWalker = new GuardBlockWalker(apt, fileImpl.getPreprocHandler());
+                GuardBlockWalker guardWalker = new GuardBlockWalker(apt);
                 TokenStream ts = guardWalker.getTokenStream();
                 try {
                     Token token = ts.nextToken();

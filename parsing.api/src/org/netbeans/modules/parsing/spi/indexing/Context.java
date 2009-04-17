@@ -42,6 +42,8 @@ package org.netbeans.modules.parsing.spi.indexing;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
@@ -138,6 +140,10 @@ public final class Context {
      * @since 1.3
      */
     public void addSupplementaryFiles(URL root, Collection<? extends URL> files) {
+        Logger repouLogger = Logger.getLogger(RepositoryUpdater.class.getName());
+        if (repouLogger.isLoggable(Level.FINE)) {
+            repouLogger.fine("addSupplementaryFiles: root=" + root + ", files=" + files); //NOI18N
+        }
         RepositoryUpdater.getDefault().addIndexingJob(root, files, true, false, false);
     }
 
