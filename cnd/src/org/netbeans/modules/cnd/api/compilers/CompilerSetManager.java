@@ -49,10 +49,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.AlternativePath;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
@@ -64,11 +67,13 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -318,10 +323,41 @@ public class CompilerSetManager {
         this(env, true);
     }
 
-    private CompilerSetManager(ExecutionEnvironment env, boolean runCompilerSetDataLoader) {
+    private CompilerSetManager(ExecutionEnvironment env, final boolean runCompilerSetDataLoader) {
         executionEnvironment = env;
         state = State.STATE_PENDING;
-        init(runCompilerSetDataLoader);
+        if (executionEnvironment.isLocal()) {
+            platform = computeLocalPlatform();
+            initCompilerSets(Path.getPath());
+            state = State.STATE_COMPLETE;
+        } else {
+            final AtomicReference<Thread> threadRef = new AtomicReference<Thread>();
+            final String progressMessage = NbBundle.getMessage(getClass(), "PROGRESS_TEXT", env.getDisplayName());
+            final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
+                    progressMessage,
+                    new Cancellable() {
+                        public boolean cancel() {
+                            Thread thread = threadRef.get();
+                            if (thread != null) {
+                                thread.interrupt();
+                            }
+                            return true;
+                        }
+
+            });
+            log.fine("CSM.init: initializing remote compiler set for: " + toString());
+            progressHandle.start();
+            RequestProcessor.getDefault().post(new NamedRunnable(progressMessage) {
+                protected @Override void runImpl() {
+                    threadRef.set(Thread.currentThread());
+                    try {
+                        initRemoteCompilerSets(false, runCompilerSetDataLoader);
+                    } finally {
+                        progressHandle.finish();
+                    }
+                }
+            });
+        }
     }
 
     private CompilerSetManager(ExecutionEnvironment env, List<CompilerSet> sets, int platform) {
@@ -334,17 +370,6 @@ public class CompilerSetManager {
             add(CompilerSet.createEmptyCompilerSet(platform));
         } else {
             this.state = State.STATE_COMPLETE;
-        }
-    }
-
-    private void init(boolean runCompilerSetDataLoader) {
-        if (executionEnvironment.isLocal()) {
-            platform = computeLocalPlatform();
-            initCompilerSets(Path.getPath());
-            state = State.STATE_COMPLETE;
-        } else {
-            log.fine("CSM.init: initializing remote compiler set for: " + toString());
-            initRemoteCompilerSets(false, runCompilerSetDataLoader);
         }
     }
 
@@ -387,7 +412,10 @@ public class CompilerSetManager {
             if (executionEnvironment.isLocal()) {
                 platform = computeLocalPlatform();
             } else {
-                waitForCompletion();
+                //waitForCompletion();
+                if (isPending()) {
+                    log.warning("calling getPlatform() on uninitializad " + getClass().getSimpleName());
+                }
             }
         }
         return platform == -1 ? PlatformTypes.PLATFORM_NONE : platform;
@@ -410,15 +438,6 @@ public class CompilerSetManager {
         }
     }
 
-    private void waitForCompletion() {
-        while (isPending()) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-            }
-        }
-    }
-
     public static int computeLocalPlatform() {
         String os = System.getProperty("os.name"); // NOI18N
 
@@ -436,7 +455,10 @@ public class CompilerSetManager {
     }
 
     public CompilerSetManager deepCopy() {
-        waitForCompletion(); // in case its a remote connection...
+        //waitForCompletion();
+        if (isPending()) {
+            log.warning("calling deepCopy() on uninitializad " + getClass().getSimpleName());
+        }
         List<CompilerSet> setsCopy = new ArrayList<CompilerSet>();
         for (CompilerSet set : getCompilerSets()) {
             setsCopy.add(set.createCopy());
@@ -1097,7 +1119,10 @@ public class CompilerSetManager {
     }
 
     public CompilerSet getCompilerSet(String name, String dname) {
-        waitForCompletion();
+        //waitForCompletion();
+        if (isPending()) {
+            log.warning("calling getCompilerSet() on uninitializad " + getClass().getSimpleName());
+        }
         for (CompilerSet cs : sets) {
             if (cs.getName().equals(name) && cs.getDisplayName().equals(dname)) {
                 return cs;
@@ -1107,7 +1132,10 @@ public class CompilerSetManager {
     }
 
     public CompilerSet getCompilerSet(int idx) {
-        waitForCompletion();
+        //waitForCompletion();
+        if (isPending()) {
+            log.warning("calling getCompilerSet() on uninitializad " + getClass().getSimpleName());
+        }
         if (idx >= 0 && idx < sets.size()) {
             return sets.get(idx);
         }

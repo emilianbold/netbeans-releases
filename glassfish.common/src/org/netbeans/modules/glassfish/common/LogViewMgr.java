@@ -93,7 +93,7 @@ import org.openide.windows.OutputWriter;
  */
 public class LogViewMgr {
 
-    private static final Logger LOGGER = Logger.getLogger("glassfish");
+    private static final Logger LOGGER = Logger.getLogger("glassfish"); //  NOI18N
 
     /**
      * Amount of time in milliseconds to wait between checks of the input
@@ -288,15 +288,13 @@ public class LogViewMgr {
     private OutputWriter getWriter(boolean error) {
         OutputWriter writer = error ? io.getErr() : io.getOut();
         if(LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.log(Level.FINEST, "getIOWriter: closed = " + io.isClosed() +
-                    " [ " + (error ? "STDERR" : "STDOUT") + " ]" +
-                    ", output error flag = " + writer.checkError());
+            LOGGER.log(Level.FINEST, "getIOWriter: closed = " + io.isClosed() + " [ " + (error ? "STDERR" : "STDOUT") + " ]" + ", output error flag = " + writer.checkError()); // NOI18N
         }
         if(writer.checkError() == true) {
             InputOutput newIO = getServerIO(uri);
             if(newIO == null) {
                 if(LOGGER.isLoggable(Level.INFO)) {
-                    LOGGER.log(Level.INFO, "Unable to recreate I/O for " + uri + ", still in error state");
+                    LOGGER.log(Level.INFO, "Unable to recreate I/O for " + uri + ", still in error state"); // NOI18N
                 }
                 writer = null;
             } else {
@@ -315,9 +313,9 @@ public class LogViewMgr {
     
     private Locale getLogLocale() {
         // XXX detect and use server language/country/variant instead of IDE's.
-        String language = System.getProperty("user.language");
+        String language = System.getProperty("user.language"); // NOI18N
         if(language != null) {
-            return new Locale(language, System.getProperty("user.country", ""), System.getProperty("user.variant", ""));
+            return new Locale(language, System.getProperty("user.country", ""), System.getProperty("user.variant", "")); // NOI18N
         }
         return Locale.getDefault();
     }
@@ -353,8 +351,7 @@ public class LogViewMgr {
      */
     public synchronized void selectIO() {
         if(LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.log(Level.FINEST, "selectIO: closed = " + io.isClosed() +
-                    ", output error flag = " + io.getOut().checkError());
+            LOGGER.log(Level.FINEST, "selectIO: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError()); // NOI18N
         }
         io.select();
     }
@@ -386,7 +383,7 @@ public class LogViewMgr {
             BufferedReader reader = null;
             
             try {
-                Thread.currentThread().setName(this.getClass().getName() + " - " + inputStream);
+                Thread.currentThread().setName(this.getClass().getName() + " - " + inputStream); // NOI18N
 
                 reader = new BufferedReader(new InputStreamReader(inputStream));
 
@@ -431,19 +428,19 @@ public class LogViewMgr {
                     }
                 }
             } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE, "I/O exception reading server log", ex);
+                LOGGER.log(Level.SEVERE, "I/O exception reading server log", ex); // NOI18N
             } finally {
                 try {
                     inputStream.close();
                 } catch (IOException ex) {
-                    LOGGER.log(Level.SEVERE, "I/O exception closing server log", ex);
+                    LOGGER.log(Level.SEVERE, "I/O exception closing server log", ex); // NOI18N
                 }
                 
                 if(reader != null) {
                     try {
                         reader.close();
                     } catch (IOException ex) {
-                        LOGGER.log(Level.WARNING, "I/O exception closing stream buffer", ex);
+                        LOGGER.log(Level.WARNING, "I/O exception closing stream buffer", ex); // NOI18N
                     }
                 }
                 
@@ -455,7 +452,7 @@ public class LogViewMgr {
 
         private void processLine(String line) {
             if(LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "processing text: '" + line + "'");
+                LOGGER.log(Level.FINEST, "processing text: '" + line + "'"); // NOI18N
             }
             OutputListener listener = null;
             Iterator<Recognizer> iterator = recognizers.iterator();
@@ -504,7 +501,7 @@ public class LogViewMgr {
         }
         
         protected void reset() {
-            message = "";
+            message = ""; // NOI18N
         }
         
         public abstract String process(char c);
@@ -513,7 +510,7 @@ public class LogViewMgr {
     
     private static final class StreamFilter extends StateFilter {
 
-        private static final Pattern messagePattern = Pattern.compile("([\\p{Lu}]{0,16}?):|([^\\r\\n]{0,24}?\\d\\d?:\\d\\d?:\\d\\d?)");
+        private static final Pattern messagePattern = Pattern.compile("([\\p{Lu}]{0,16}?):|([^\\r\\n]{0,24}?\\d\\d?:\\d\\d?:\\d\\d?)"); // NOI18N
         
         private String line;
         
@@ -524,7 +521,7 @@ public class LogViewMgr {
         @Override
         protected void reset() {
             super.reset();
-            line = "";
+            line = ""; // NOI18N
         }
 
         /**
@@ -593,7 +590,7 @@ public class LogViewMgr {
         @Override
         protected void reset() {
             super.reset();
-            time = type = version = classinfo = threadinfo = "";
+            time = type = version = classinfo = threadinfo = ""; // NOI18N
             multiline = false;
         }
         
@@ -723,7 +720,7 @@ public class LogViewMgr {
                     } else if(c == '\n') {
                         if(msg.length() > 0) { // suppress blank lines in multiline messages
                             msg.append('\n');
-                            result = !multiline ? type + ": " + msg.toString() : msg.toString();
+                            result = !multiline ? type + ": " + msg.toString() : msg.toString(); // NOI18N
                             multiline = true;
                             msg.setLength(0);
                         }
@@ -744,7 +741,7 @@ public class LogViewMgr {
                     if(c == ']') {
                         state = 0;
                         msg.setLength(0);
-                        result = (multiline ? message : type + ": " + message) + '\n';
+                        result = (multiline ? message : type + ": " + message) + '\n'; // NOI18N
                         reset();
                     } else {
                         state = 8;
@@ -784,18 +781,18 @@ public class LogViewMgr {
                 boolean valid = true;
                 if(serverIO.isClosed()) {
                     if(LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Output window for " + uri + " is closed.");
+                        LOGGER.fine("Output window for " + uri + " is closed."); // NOI18N
                     }
                 }
                 if(serverIO.getOut().checkError()) {
                     if(LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Standard out for " + uri + " is in error state.");
+                        LOGGER.fine("Standard out for " + uri + " is in error state."); // NOI18N
                     }
                     valid = false;
                 }
                 if(serverIO.getErr().checkError()) {
                     if(LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Standard error for " + uri + " is in error state.");
+                        LOGGER.fine("Standard error for " + uri + " is in error state."); // NOI18N
                     }
                     valid = false;
                 }
