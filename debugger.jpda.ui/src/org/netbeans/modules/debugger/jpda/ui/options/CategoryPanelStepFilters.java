@@ -347,6 +347,7 @@ class CategoryPanelStepFilters extends StorablePanel {
             filterClassesModel.addRow(new Object[] { enabledFilters.contains(filter), filter });
         }
         stepThroughFiltersCheckBox.setSelected(p.getBoolean("StepThroughFilters", false));
+        useStepFiltersCheckBoxActionPerformed(null);
     }
 
     @Override
