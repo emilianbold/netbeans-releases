@@ -39,7 +39,12 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 
 /**
@@ -120,6 +125,22 @@ public final class Util {
         return null;
     }
 
+    public static URL resolveUrl(URL root, String relativePath) throws MalformedURLException {
+        try {
+            if ("file".equals(root.getProtocol())) { //NOI18N
+                return new File(new File(root.toURI()), relativePath).toURL();
+            } else {
+                return root.toURI().resolve(relativePath).toURL();
+            }
+        } catch (URISyntaxException use) {
+            MalformedURLException mue = new MalformedURLException();
+            mue.initCause(use);
+            throw mue;
+        }
+    }
+
+    private static final Logger LOG = Logger.getLogger(Util.class.getName());
+    
     private Util() {
     }
 }

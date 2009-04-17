@@ -39,11 +39,9 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,18 +79,11 @@ public final class DeletedIndexable implements IndexableImpl {
 
     public URL getURL() {
         try {
-            if (root.getProtocol().equals("file")) { //NOI18N
-                return new File(new File(root.toURI()), relativePath).toURL();
-            } else {
-                return new URL(root, relativePath);
-            }
-        } catch (URISyntaxException ex) {
-            LOG.log(Level.WARNING, null, ex);
+            return Util.resolveUrl(root, relativePath);
         } catch (MalformedURLException ex) {
             LOG.log(Level.WARNING, null, ex);
+            return null;
         }
-        
-        return null;
     }
 
     public InputStream openInputStream() throws IOException {
