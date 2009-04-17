@@ -510,6 +510,43 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
         "    }\n" +
         "}\n");
     }
+
+    public void test129413() throws Exception {
+        performTest("package hierbas.del.litoral;\n\n" +
+                    "public class TestClass {\n" +
+                    "    public static void method() {\n" +
+                    "        new AbstractClass(\"\",26) {\n" +
+                    "            public String getInfo() {\n" +
+                    "                return this.name;\n" +
+                    "            }\n" +
+                    "        };\n" +
+                    "    }\n" +
+                    "    private static abstract class AbstractClass {\n" +
+                    "        protected String name;\n" +
+                    "        public AbstractClass(String s, int i) {\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "package hierbas.del.litoral;\n\n" +
+                    "public class TestClass {\n" +
+                    "    public static void method() {\n" +
+                    "        new AbstractClassImpl(\"\",26);\n" +
+                    "    }\n" +
+                    "    private static abstract class AbstractClass {\n" +
+                    "        protected String name;\n" +
+                    "        public AbstractClass(String s, int i) {\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "    private static class AbstractClassImpl extends AbstractClass {\n" +
+                    "        public AbstractClassImpl(String s, int i) {\n" +
+                    "            super(s, i);\n" +
+                    "        }\n" +
+                    "        public String getInfo() {\n" +
+                    "            return this.name;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n");
+    }
     
     private void performTest(String test, String golden) throws Exception {
         clearWorkDir();
