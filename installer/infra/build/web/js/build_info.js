@@ -48,19 +48,19 @@ var MORE_LANGUAGES_REDIRECT_URL = "{alternative.languages.page.url}";
 
 var BUILD_LOCATION = "";
 
-var LOAD_OMNITURE_CODE = 0;
-var LOAD_GOOGLE_ANALYTICS_CODE = 0;
+var LOAD_OMNITURE_CODE = 1;
+var LOAD_GOOGLE_ANALYTICS_CODE = 1;
 var USE_BOUNCER = 0;
 var ADD_VERSION_INFO_TO_URL = 0;
 
 var BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 
-//var SOURCES_AND_BINARIES_URL = "javascript: open_zip_link()";
-var SOURCES_AND_BINARIES_URL = BUILD_LOCATION + "zip/";
+var SOURCES_AND_BINARIES_URL = "javascript: open_zip_link()";
+//var SOURCES_AND_BINARIES_URL = BUILD_LOCATION + "zip/";
 
 function add_download_tabs() {
 	add_download_tab("6.5.1", "http://www.netbeans.org/downloads");
-	add_download_tab("6.7M3", "http://bits.netbeans.org/netbeans/6.7/m3");
-	add_download_tab(DEVELOPMENT_TITLE /*,DEVELOPMENT_BUILDS_LINK*/);
+	add_download_tab("6.7 Beta");
+	add_download_tab(DEVELOPMENT_TITLE, DEVELOPMENT_BUILDS_LINK);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }

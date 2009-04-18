@@ -303,7 +303,7 @@
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
 
         <set property="nb.bundle.files.prefix"
-             value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
+             value="${nb.files.prefix}${nb.build.suffix}"/>
 
         <set property="jdk.bundle.files.suffix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
