@@ -1291,7 +1291,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     </nbprofiledirect>
     
     <antcall target="tryme">
-        <param name="tryme.args" value="${profiler.jvmargs}"/>
+        <param name="tryme.debug.args" value="${profiler.jvmargs}"/>
     </antcall>
   </target>
   
