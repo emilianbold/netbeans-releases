@@ -46,25 +46,50 @@ made subject to such option by the copyright holder.
   <folder name="Services">
       
     <folder name="AutoupdateType">
+
       <!-- this ordering left because backward compatibility with deserialized autoupdate types -->
       <file name="standard-update-provider.instance">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
-        <attr name="url_key" stringvalue="URL_LatestBuild"/>
+
+        <attr name="url_key" stringvalue="URL_Standard"/>
         <attr name="category" stringvalue="STANDARD"/>
         <attr name="enabled" boolvalue="true"/>
         <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
         <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />        
       </file>
     
-      <file name="dev-update-provider.instance">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
-          <attr name="url_key" stringvalue="URL_Default_N"/>
-          <attr name="category" stringvalue="STANDARD"/> 
-          <attr name="enabled" boolvalue="true"/>
-          <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
-          <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />                
+      <file name="beta-update-provider.instance">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
+
+        <attr name="url_key" stringvalue="URL_Beta"/>
+        <attr name="category" stringvalue="BETA"/>
+        <attr name="enabled" boolvalue="true"/>
+        <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
+        <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />        
+      </file>
+    
+      <file name="thirdparty-update-provider.instance">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
+
+        <attr name="url_key" stringvalue="URL_ThirdParty"/>
+        <attr name="category" stringvalue="COMMUNITY"/>
+        <attr name="enabled" boolvalue="true"/>
+        <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
+        <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />        
+      </file>
+
+      <file name="pluginportal-update-provider.instance">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
+
+        <attr name="url_key" stringvalue="URL_PluginPortal"/>
+        <attr name="category" stringvalue="COMMUNITY"/>
+        <attr name="enabled" boolvalue="true"/>
+        <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
+        <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />
       </file>
       
    </folder>
@@ -72,3 +97,4 @@ made subject to such option by the copyright holder.
   </folder> <!-- Services -->
 
 </filesystem>
+
