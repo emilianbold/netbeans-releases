@@ -203,6 +203,9 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
         Data d = new Data(projectDirectory, false);
 
         for (FeatureInfo info : FeatureManager.features()) {
+            if (!info.isPresent()) {
+                continue;
+            }
             if (!info.isEnabled() && (info.isProject(d) == 1)) {
                 return true;
             }
@@ -217,6 +220,9 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
         List<FeatureInfo> additional = new ArrayList<FeatureInfo>();
         int notEnabled = 0;
         for (FeatureInfo info : FeatureManager.features()) {
+            if (!info.isPresent()) {
+                continue;
+            }
             switch (info.isProject(d)) {
                 case 0: break;
                 case 1:
