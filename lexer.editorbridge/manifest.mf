@@ -1,5 +1,5 @@
 OpenIDE-Module: org.netbeans.modules.lexer.editorbridge/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/lexer/editorbridge/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.7
+OpenIDE-Module-Specification-Version: 1.7.1
 OpenIDE-Module-Deprecated: true
 

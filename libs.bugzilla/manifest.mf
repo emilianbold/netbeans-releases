@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.libs.bugzilla
 OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/bugzilla/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0.0
+OpenIDE-Module-Specification-Version: 1.0.1
 

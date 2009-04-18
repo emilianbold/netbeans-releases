@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.maven.kit/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/maven/feature/Bundle.properties
 OpenIDE-Module-Public-Packages: -
 OpenIDE-Module-Provides: MavenKit2
-OpenIDE-Module-Specification-Version: 4.1.1
+OpenIDE-Module-Specification-Version: 4.1.2
 

@@ -3,5 +3,5 @@ AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.dlight.memory
 OpenIDE-Module-Layer: org/netbeans/modules/dlight/memory/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/memory/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.0.1
 OpenIDE-Module-Provides: org.netbeans.modules.dlight.spi.indicator.IndicatorFactory, org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider

@@ -3,4 +3,4 @@ OpenIDE-Module: org.netbeans.modules.cnd.gizmo
 OpenIDE-Module-Layer: org/netbeans/modules/cnd/gizmo/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/gizmo/resources/Bundle.properties
 OpenIDE-Module-Provides: org.netbeans.modules.dlight.spi.SourceFileInfoProvider
-OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.0.1

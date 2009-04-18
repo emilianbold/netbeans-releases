@@ -3,5 +3,5 @@ AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.vmd.componentssupport
 OpenIDE-Module-Layer: org/netbeans/modules/vmd/componentssupport/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/vmd/componentssupport/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.2.1
 

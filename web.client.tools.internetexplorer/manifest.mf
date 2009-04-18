@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.web.client.tools.internetexplorer
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/client/tools/internetexplorer/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.1.1
 

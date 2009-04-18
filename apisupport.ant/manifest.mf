@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.apisupport.ant
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/apisupport/ant/TemplateNames.properties
-OpenIDE-Module-Specification-Version: 2.34
+OpenIDE-Module-Specification-Version: 2.34.1
 AutoUpdate-Show-In-Client: false

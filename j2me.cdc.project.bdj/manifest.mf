@@ -3,5 +3,5 @@ AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.j2me.cdc.project.bdj
 OpenIDE-Module-Layer: org/netbeans/modules/j2me/cdc/project/bdj/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2me/cdc/project/bdj/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.1.1
 

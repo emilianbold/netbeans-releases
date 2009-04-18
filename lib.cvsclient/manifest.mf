@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.lib.cvsclient/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/lib/cvsclient/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.18
+OpenIDE-Module-Specification-Version: 1.18.1
 Specification-Version: 1.9
 Main-Class: org.netbeans.lib.cvsclient.commandLine.CVSCommand
 

@@ -4,5 +4,5 @@ OpenIDE-Module: org.netbeans.modules.registration
 OpenIDE-Module-Install: org/netbeans/modules/registration/NbInstaller.class
 OpenIDE-Module-Layer: org/netbeans/modules/registration/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/registration/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.2.1
 
