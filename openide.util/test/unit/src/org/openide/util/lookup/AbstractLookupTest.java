@@ -49,7 +49,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.junit.*;
 import org.openide.util.Lookup;
-import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.lookup.AbstractLookup.Pair;
 
 public class AbstractLookupTest extends AbstractLookupBaseHid implements AbstractLookupBaseHid.Impl {
@@ -262,9 +261,7 @@ public class AbstractLookupTest extends AbstractLookupBaseHid implements Abstrac
         al.addPair(item);
         al.removePair(item);
 
-        NbMarshalledObject mar = new NbMarshalledObject(al);
-
-        AbstractLookup newLookup = (AbstractLookup)mar.get();
+        AbstractLookup newLookup = (AbstractLookup)reserialize(al);
 
         newLookup.lookup(Number.class);
 

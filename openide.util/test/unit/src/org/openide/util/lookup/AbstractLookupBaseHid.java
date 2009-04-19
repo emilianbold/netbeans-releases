@@ -41,6 +41,10 @@
 
 package org.openide.util.lookup;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 
@@ -995,14 +999,14 @@ public class AbstractLookupBaseHid extends NbTestCase {
             ic.addPair (new SerialPair ("2"));
             ic.addPair (new SerialPair ("3"));
 
-            Lookup l = (Lookup)new org.openide.util.io.NbMarshalledObject (lookup).get ();
+            Lookup l = (Lookup)reserialize(lookup);
 
             assertEquals ("Able to answer simple query", "1", l.lookup (String.class));
 
             assertEquals ("Three objects there", 3, l.lookup (new Lookup.Template (String.class)).allInstances().size ());
 
             while (count-- > 0) {
-                l = (Lookup)new org.openide.util.io.NbMarshalledObject (l).get ();
+                l = (Lookup)reserialize(l);
             }
 
             assertEquals ("Able to answer simple query", "1", l.lookup (String.class));
@@ -1068,7 +1072,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         }
         
         // replace the old lookup with new one
-        lookup = (Lookup)new org.openide.util.io.NbMarshalledObject (lookup).get ();
+        lookup = (Lookup)reserialize(lookup);
         
         Lookup.Result result = lookup.lookup (new Lookup.Template (Garbage.class));
         assertEquals ("One item is the result", 1, result.allInstances ().size ());
@@ -1232,7 +1236,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         assertEquals ("One instance", 1, res.allInstances().size ());
         assertEquals ("my.instanceOf called once", 1, my.countInstanceOf);
         
-        Lookup serial = (Lookup)new org.openide.util.io.NbMarshalledObject (lookup).get ();
+        Lookup serial = (Lookup)reserialize(lookup);
         
         Lookup.Result r2 = serial.lookup(new Lookup.Template(String.class));
         
@@ -1540,6 +1544,17 @@ public class AbstractLookupBaseHid extends NbTestCase {
         for(int i = 0; i < listeners.length; ++i) {
             assertTrue("Listener " + i + " called", listeners[i].wasCalled());
         }
+    }
+
+    static Object reserialize(Object o) throws Exception {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(os);
+        oos.writeObject(o);
+        oos.close();
+
+        ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
+        ObjectInputStream ois = new ObjectInputStream(is);
+        return ois.readObject();
     }
     
     private class Listener implements LookupListener {

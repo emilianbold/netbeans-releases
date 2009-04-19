@@ -41,12 +41,10 @@
 
 package org.openide.util.lookup;
 
-import org.openide.util.*;
-
 import java.util.*;
-import junit.framework.*;
 import org.netbeans.junit.*;
 import org.netbeans.modules.openide.util.ActiveQueue;
+import org.openide.util.Lookup;
 
 /** Testing memory consumption of various AbstractLookup aspects.
  */
