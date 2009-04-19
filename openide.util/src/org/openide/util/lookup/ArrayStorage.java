@@ -234,10 +234,10 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
         }
 
         if (content instanceof Object[]) {
-            Enumeration<Object> all = org.openide.util.Enumerations.array((Object[]) content);
+            Enumeration<Object> all = InheritanceTree.arrayEn((Object[]) content);
             return org.openide.util.Enumerations.filter(all, new CheckEn());
         } else {
-            return org.openide.util.Enumerations.empty();
+            return InheritanceTree.emptyEn();
         }
     }
 
