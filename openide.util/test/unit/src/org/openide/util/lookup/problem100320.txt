@@ -1,13 +1,13 @@
-:java.io.Exception:
+:java.io.IOException:
 java.nio.charset.CharacterCodingException
 java.io.EOFException
 java.io.FileNotFoundException
 java.io.InterruptedIOException
 java.net.MalformedURLException
-java.io.ObjectStreamException
-java.io.InvalidClassException
+java.io.IOException
+java.io.UnsupportedEncodingException
 java.io.NotActiveException
-java.io.OptionalDataException
+java.io.StreamCorruptedException
 java.io.UTFDataFormatException
 java.util.zip.ZipException
 java.util.jar.JarException
