@@ -9,7 +9,6 @@
 |org.netbeans.modules.subversion|Subversion|Base IDE|ide
 |org.netbeans.modules.team.kit|Team|Base IDE|ide
 |org.netbeans.modules.cnd.kit|C/C++|C/C++|cnd
-|org.netbeans.modules.timers|Timers API|Developing NetBeans|apisupport
 |org.netbeans.modules.groovy.kit|Groovy and Grails|Groovy|groovy
 |org.netbeans.modules.ant.kit|Ant|Java|java
 |org.netbeans.modules.form.kit|GUI Builder|Java|java
