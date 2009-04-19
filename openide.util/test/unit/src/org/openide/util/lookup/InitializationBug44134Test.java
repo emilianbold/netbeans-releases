@@ -41,13 +41,9 @@
 
 package org.openide.util.lookup;
 
-import org.openide.util.*;
-
-import java.lang.ref.WeakReference;
 import java.util.*;
-import junit.framework.*;
 import org.netbeans.junit.*;
-import java.io.Serializable;
+import org.openide.util.Lookup;
 
 public class InitializationBug44134Test extends NbTestCase {
     public InitializationBug44134Test (java.lang.String testName) {
@@ -78,6 +74,7 @@ public class InitializationBug44134Test extends NbTestCase {
             super();
         }
         
+        @Override
         protected void initialize() {
             for (int i=0; i<18; i++) {
                 try {
