@@ -218,24 +218,45 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
     * @see #unsorted
     */
     public <T> Enumeration<Pair<T>> lookup(final Class<T> clazz) {
-        class CheckEn implements org.openide.util.Enumerations.Processor<Object,Pair<T>> {
-            @SuppressWarnings("unchecked")
-            public Pair<T> process(Object o, Collection ignore) {
-                boolean ok;
+        if (content instanceof Object[]) {
+            final Enumeration<Object> all = InheritanceTree.arrayEn((Object[]) content);
+            class JustPairs implements Enumeration<Pair<T>> {
+                private Pair<T> next;
 
-                if (o instanceof AbstractLookup.Pair) {
-                    ok = (clazz == null) || ((AbstractLookup.Pair) o).instanceOf(clazz);
-                } else {
-                    ok = false;
+                private Pair<T> findNext() {
+                    for (;;) {
+                        if (next != null) {
+                            return next;
+                        }
+                        if (!all.hasMoreElements()) {
+                            return null;
+                        }
+                        Object o = all.nextElement();
+                        boolean ok;
+                        if (o instanceof AbstractLookup.Pair) {
+                            ok = (clazz == null) || ((AbstractLookup.Pair) o).instanceOf(clazz);
+                        } else {
+                            ok = false;
+                        }
+
+                        next = ok ? (Pair<T>) o : null;
+                    }
+                }
+                
+                public boolean hasMoreElements() {
+                    return findNext() != null;
                 }
 
-                return ok ? (Pair<T>)o : null;
-            }
-        }
-
-        if (content instanceof Object[]) {
-            Enumeration<Object> all = InheritanceTree.arrayEn((Object[]) content);
-            return org.openide.util.Enumerations.filter(all, new CheckEn());
+                public Pair<T> nextElement() {
+                    Pair<T> r = findNext();
+                    if (r == null) {
+                        throw new NoSuchElementException();
+                    }
+                    next = null;
+                    return r;
+                }
+            } // end of JustPairs
+            return new JustPairs();
         } else {
             return InheritanceTree.emptyEn();
         }
