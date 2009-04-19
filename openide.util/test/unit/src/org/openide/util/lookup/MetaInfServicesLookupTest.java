@@ -41,7 +41,6 @@
 
 package org.openide.util.lookup;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -69,7 +68,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import junit.framework.Test;
 import org.bar.Comparator2;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -435,7 +433,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         }, c0);
         Lookup lookup = Lookups.metaInfServices(ctmp, prefix());
 
-        Collection<?> colAWT = lookup.lookupAll(Component.class);
+        Collection<?> colAWT = lookup.lookupAll(IOException.class);
         assertEquals("There is enough objects to switch to InheritanceTree", 12, colAWT.size());
         
         
