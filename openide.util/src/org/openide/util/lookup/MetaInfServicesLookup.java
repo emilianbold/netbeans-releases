@@ -54,12 +54,12 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
-import org.openide.util.WeakSet;
 
 /**
  * @author Jaroslav Tulach, Jesse Glick
@@ -84,7 +84,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
      * However we also hold classes which are definitely not loadable by
      * our loader.
      */
-    private final Set<Class> classes = new WeakSet<Class>(); // Set<Class>
+    private final Map<Class,Object> classes = new WeakHashMap<Class,Object>();
 
     /** class loader to use */
     private final ClassLoader loader;
@@ -114,7 +114,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
         HashSet<AbstractLookup.R> listeners;
 
         synchronized (this) {
-            if (classes.add(c)) {
+            if (classes.put(c, "") == null) { // NOI18N
                 // Added new class, search for it.
                 LinkedHashSet<AbstractLookup.Pair<?>> arr = getPairsAsLHS();
                 search(c, arr);
@@ -485,7 +485,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         // could see and return immediately.
                         object = o;
                     } catch (Exception ex) {
-                        LOGGER.log(Level.WARNING, null, ex);
+                        LOGGER.log(Level.WARNING, "Cannot create " + object, ex);
                         object = null;
                     }
                 }

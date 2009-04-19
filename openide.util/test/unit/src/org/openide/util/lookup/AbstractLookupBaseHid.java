@@ -50,6 +50,8 @@ import java.util.*;
 import org.netbeans.junit.*;
 import java.io.Serializable;
 import java.lang.ref.Reference;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.openide.util.Lookup.Template;
 
 public class AbstractLookupBaseHid extends NbTestCase {
@@ -1175,7 +1177,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
                 }
             }
             BlockInInstanceOf blk = new BlockInInstanceOf ();
-            RequestProcessor.getDefault ().post (blk);
+            Executors.newSingleThreadScheduledExecutor().schedule(blk, 0, TimeUnit.MICROSECONDS);
             pair.wait ();
         }
         

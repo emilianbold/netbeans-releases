@@ -62,6 +62,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
@@ -75,7 +77,6 @@ import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
 
 /** Test finding services from manifest.
@@ -405,7 +406,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
 
             public synchronized void resultChanged(LookupEvent ev) {
                 toInterrupt = Thread.currentThread();
-                RequestProcessor.getDefault().post(this);
+                Executors.newSingleThreadScheduledExecutor().schedule(this, 0, TimeUnit.MICROSECONDS);
                 try {
                     wait(3000);
                     fail("Should be interrupted - means it was not possible to finish query in run() method");
