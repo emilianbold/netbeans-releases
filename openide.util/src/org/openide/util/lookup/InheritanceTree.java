@@ -40,7 +40,6 @@
  */
 package org.openide.util.lookup;
 
-import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup.Pair;
 import org.openide.util.lookup.AbstractLookup.ReferenceIterator;
@@ -675,29 +674,8 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
             return e;
         }
 
-        // we have found what we need
-        // now we have to just build the enumeration
-        class DeepAndItems implements Enumerations.Processor<Node,Enumeration<Pair>> {
-            public Enumeration<Pair> process(Node n2, Collection<Node> toAdd) {
-                if (n2.children != null) {
-                    toAdd.addAll(n2.children);
-                }
-
-                if ((n2.items == null) || n2.items.isEmpty()) {
-                    return emptyEn();
-                } else {
-                    return Collections.enumeration(n2.items);
-                }
-            }
-        }
-
-        Enumeration<Enumeration<Pair>> en = Enumerations.queue(
-            // initial node is our current one
-            singletonEn(n), new DeepAndItems()
-        );
-        Enumeration<Pair> all = Enumerations.concat(en);
         // create enumeration of Items
-        return new NeedsSortEnum<Pair>(all);
+        return new NeedsSortEnum(n);
     }
 
     //
@@ -1255,18 +1233,42 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
     /** Just a marker class to be able to do instanceof and find out
      * that this enumeration is not sorted
      */
-    private static final class NeedsSortEnum<T> implements Enumeration<T> {
-        private Enumeration<T> en;
+    private static final class NeedsSortEnum extends LinkedList<Node>
+    implements Enumeration<Pair> {
+        private Enumeration<Pair> en;
 
-        public NeedsSortEnum(Enumeration<T> en) {
-            this.en = en;
+        public NeedsSortEnum(Node n) {
+            add(n);
+        }
+
+        private boolean ensureNext() {
+            for (;;) {
+                if (en != null && en.hasMoreElements()) {
+                    return true;
+                }
+                if (isEmpty()) {
+                    return false;
+                }
+
+                Node n2 = poll();
+                if (n2.children != null) {
+                    addAll(n2.children);
+                }
+
+                if (n2.items != null && !n2.items.isEmpty()) {
+                    en = Collections.enumeration(n2.items);
+                }
+            }
         }
 
         public boolean hasMoreElements() {
-            return en.hasMoreElements();
+            return ensureNext();
         }
 
-        public T nextElement() {
+        public Pair nextElement() {
+            if (!ensureNext()) {
+                throw new NoSuchElementException();
+            }
             return en.nextElement();
         }
     }
