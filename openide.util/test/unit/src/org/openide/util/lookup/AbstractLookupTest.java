@@ -42,13 +42,13 @@
 package org.openide.util.lookup;
 
 import java.util.concurrent.ExecutionException;
-import org.openide.util.*;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.junit.*;
+import org.openide.util.Lookup;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.lookup.AbstractLookup.Pair;
 

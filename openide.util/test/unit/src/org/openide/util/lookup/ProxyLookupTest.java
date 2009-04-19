@@ -42,7 +42,6 @@
 package org.openide.util.lookup;
 
 import java.io.Serializable;
-import org.openide.util.*;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -51,7 +50,10 @@ import java.util.concurrent.Executor;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.netbeans.modules.openide.util.ActiveQueue;
+import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /** Runs all NbLookupTest tests on ProxyLookup and adds few additional.
  */

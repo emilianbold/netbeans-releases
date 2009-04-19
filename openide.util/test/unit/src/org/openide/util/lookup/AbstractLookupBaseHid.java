@@ -43,7 +43,6 @@ package org.openide.util.lookup;
 
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
-import org.openide.util.*;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -52,7 +51,10 @@ import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.openide.util.Lookup;
 import org.openide.util.Lookup.Template;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 public class AbstractLookupBaseHid extends NbTestCase {
     private static AbstractLookupBaseHid running;

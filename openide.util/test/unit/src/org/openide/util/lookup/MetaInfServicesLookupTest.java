@@ -73,7 +73,6 @@ import java.util.regex.Pattern;
 import org.bar.Comparator2;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -364,7 +363,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
             @Override
             protected Enumeration findResources(String name) throws IOException {
                 if (name.equals(prefix() + "java.lang.Runnable")) {
-                    return Enumerations.singleton(findResource(name));
+                    return Collections.enumeration(Collections.singleton(findResource(name)));
                 }
                 return super.findResources(name);
             }
