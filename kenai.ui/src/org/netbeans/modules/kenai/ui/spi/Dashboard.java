@@ -5,6 +5,7 @@
 
 package org.netbeans.modules.kenai.ui.spi;
 
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 
 /**
@@ -13,6 +14,13 @@ import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
  * @author S. Aubrecht
  */
 public abstract class Dashboard {
+
+    /**
+     * Name of the property that will be fired when some change in opened projects
+     * in Dashboard occurs. Firing this property doesn't neccessary mean that number
+     * of opened project has changed.
+     */
+    public static final String PROP_OPENED_PROJECTS = "openedProjects";
 
     public static Dashboard getDefault() {
         return DashboardImpl.getInstance();
@@ -41,4 +49,17 @@ public abstract class Dashboard {
      * @return array of ProjectHandles
      */
     public abstract ProjectHandle[] getOpenProjects();
+
+    /**
+     * Add listener for listening for property changes related to Dashboard
+     * @param listener listener to be notified about property change
+     */
+    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+
+    /**
+     * Remove listener from list of listeners notified about property changes
+     * @param listener listener to be removed
+     */
+    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+
 }

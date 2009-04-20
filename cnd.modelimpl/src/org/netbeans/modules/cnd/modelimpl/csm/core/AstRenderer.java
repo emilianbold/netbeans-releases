@@ -844,8 +844,11 @@ public class AstRenderer {
                             case CPPTokenTypes.LITERAL_enum:
                                 if (AstUtil.findSiblingOfType(curr, CPPTokenTypes.RCURLY) != null) {
                                     results.enclosing = EnumImpl.create(curr, scope, file, !isRenderingLocalContext());
-                                    if (scope instanceof MutableDeclarationsContainer) {
-                                        ((MutableDeclarationsContainer) scope).addDeclaration(results.enclosing);
+                                    if (results.getEnclosingClassifier() != null && scope instanceof MutableDeclarationsContainer) {
+                                        ((MutableDeclarationsContainer) scope).addDeclaration(results.getEnclosingClassifier());
+                                    }
+                                    if (container != null && results.getEnclosingClassifier() != null && !ForwardClass.isForwardClass(results.getEnclosingClassifier())) {
+                                        container.addDeclaration(results.getEnclosingClassifier());
                                     }
                                     break;
                                 }
@@ -881,13 +884,13 @@ public class AstRenderer {
                                     typeImpl = TypeFactory.createType(cfdi, ptrOperator, arrayDepth, ast, file);
                                 } else if (classifier != null) {
                                     typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, scope);
-                                } else if (results.enclosing != null) {
-                                    typeImpl = TypeFactory.createType(results.enclosing, ptrOperator, arrayDepth, ast, file);
+                                } else if (results.getEnclosingClassifier() != null) {
+                                    typeImpl = TypeFactory.createType(results.getEnclosingClassifier(), ptrOperator, arrayDepth, ast, file);
                                 }
                                 if (typeImpl != null) {
                                     CsmTypedef typedef = createTypedef(ast/*nameToken*/, file, scope, typeImpl, name);
                                     if (typedef != null) {
-                                        if (results.enclosing != null && results.enclosing.getName().length() == 0) {
+                                        if (results.getEnclosingClassifier() != null && results.getEnclosingClassifier().getName().length() == 0) {
                                             ((TypedefImpl) typedef).setTypeUnnamed();
                                         }
                                         results.typedefs.add(typedef);

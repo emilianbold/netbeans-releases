@@ -46,6 +46,7 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
@@ -77,6 +78,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
         fireChangeEvent();
         initWarCheckBox();
+        initServerComboBox();
     }
 
     public @Override void removeNotify() {
@@ -205,12 +207,14 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     private void initServerComboBox(){
         RubyPlatform platform = getPlatform();
         if (platform != null) {
-            serverComboBox.setModel(new RailsServerUiUtils.ServerListModel(getPlatform()));
+            RailsServerUiUtils.ServerListModel model = new RailsServerUiUtils.ServerListModel(getPlatform());
+            RailsServerUiUtils.addDefaultGlassFishGem(model, platform);
+            serverComboBox.setModel(model);
         } else {
             serverComboBox.setModel(new DefaultComboBoxModel(new Object[]{}));
         }
     }
-    
+
     RubyPlatform getPlatform() {
         return PlatformComponentFactory.getPlatform(platforms);
     }
@@ -219,6 +223,10 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         return warCheckBox.isSelected();
     }
     
+    Object getServer() {
+        return serverComboBox.getSelectedItem();
+    }
+
     boolean valid(WizardDescriptor settings) {
         if (warCheckBox.isSelected() && !isJdk()) {
             settings.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(PanelOptionsVisual.class, "MSG_NoJDK"));

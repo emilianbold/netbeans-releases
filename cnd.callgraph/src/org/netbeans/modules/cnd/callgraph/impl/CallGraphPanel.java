@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.cnd.callgraph.impl;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -52,6 +54,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -62,6 +65,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.GridGraphLayout;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -98,6 +102,9 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     
     private CallGraphScene scene;
     private static double dividerLocation = 0.5;
+    FocusTraversalPolicy newPolicy;
+    private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID());
+    private static final Color macBackground = UIManager.getColor("NbExplorerView.background");
     
     /** Creates new form CallGraphPanel */
     public CallGraphPanel(boolean showGraph) {
@@ -166,6 +173,18 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
                 }
             }
         });
+        ArrayList<Component> order = new ArrayList<Component>();
+        order.add(treeView);
+        order.add(contextPanel);
+        order.add(refresh);
+        order.add(focusOn);
+        order.add(calls);
+        order.add(callers);
+        newPolicy = new MyOwnFocusTraversalPolicy(this, order);
+        setFocusTraversalPolicy(newPolicy);
+        if( isMacLaf ) {
+            jToolBar1.setBackground(macBackground);
+        }
     }
     
     private void initGraph() {
@@ -199,19 +218,20 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         treeView = new BeanTreeView();
         contextPanel = new ContextPanel();
 
+        setFocusCycleRoot(true);
         setLayout(new java.awt.BorderLayout());
 
         jToolBar1.setFloatable(false);
         jToolBar1.setOrientation(1);
         jToolBar1.setRollover(true);
+        jToolBar1.setFocusable(false);
 
         refresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/refresh.png"))); // NOI18N
         refresh.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "RefreshActionTooltip")); // NOI18N
-        refresh.setFocusable(false);
         refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        refresh.setMaximumSize(new java.awt.Dimension(24, 24));
-        refresh.setMinimumSize(new java.awt.Dimension(24, 24));
-        refresh.setPreferredSize(new java.awt.Dimension(24, 24));
+        refresh.setMaximumSize(new java.awt.Dimension(28, 28));
+        refresh.setMinimumSize(new java.awt.Dimension(28, 28));
+        refresh.setPreferredSize(new java.awt.Dimension(28, 28));
         refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         refresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -220,13 +240,12 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         });
         jToolBar1.add(refresh);
 
-        focusOn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/focus.png"))); // NOI18N
+        focusOn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/focus_on.png"))); // NOI18N
         focusOn.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "FocusOnActionTooltip")); // NOI18N
-        focusOn.setFocusable(false);
         focusOn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        focusOn.setMaximumSize(new java.awt.Dimension(24, 24));
-        focusOn.setMinimumSize(new java.awt.Dimension(24, 24));
-        focusOn.setPreferredSize(new java.awt.Dimension(24, 24));
+        focusOn.setMaximumSize(new java.awt.Dimension(28, 28));
+        focusOn.setMinimumSize(new java.awt.Dimension(28, 28));
+        focusOn.setPreferredSize(new java.awt.Dimension(28, 28));
         focusOn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         focusOn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -240,11 +259,10 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
 
         calls.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/who_is_called.png"))); // NOI18N
         calls.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CallsActionTooltip")); // NOI18N
-        calls.setFocusable(false);
         calls.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        calls.setMaximumSize(new java.awt.Dimension(24, 24));
-        calls.setMinimumSize(new java.awt.Dimension(24, 24));
-        calls.setPreferredSize(new java.awt.Dimension(24, 24));
+        calls.setMaximumSize(new java.awt.Dimension(28, 28));
+        calls.setMinimumSize(new java.awt.Dimension(28, 28));
+        calls.setPreferredSize(new java.awt.Dimension(28, 28));
         calls.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         calls.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -255,11 +273,10 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
 
         callers.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/who_calls.png"))); // NOI18N
         callers.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CallersActionTooltip")); // NOI18N
-        callers.setFocusable(false);
         callers.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        callers.setMaximumSize(new java.awt.Dimension(24, 24));
-        callers.setMinimumSize(new java.awt.Dimension(24, 24));
-        callers.setPreferredSize(new java.awt.Dimension(24, 24));
+        callers.setMaximumSize(new java.awt.Dimension(28, 28));
+        callers.setMinimumSize(new java.awt.Dimension(28, 28));
+        callers.setPreferredSize(new java.awt.Dimension(28, 28));
         callers.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         callers.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -277,17 +294,16 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
 
         graphView.setFocusable(false);
         jSplitPane1.setRightComponent(graphView);
+        graphView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "pictorial.part")); // NOI18N
+        graphView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "pictorial.part")); // NOI18N
 
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(1.0);
         jSplitPane2.setFocusable(false);
-
-        treeView.setFocusable(false);
         jSplitPane2.setLeftComponent(treeView);
         treeView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_TreeView_AN")); // NOI18N
         treeView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_TreeView_AD")); // NOI18N
 
-        contextPanel.setFocusable(false);
         jSplitPane2.setRightComponent(contextPanel);
         contextPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AM")); // NOI18N
         contextPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AD")); // NOI18N
@@ -604,4 +620,75 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
             }
         }
     }
- }
+    
+    public static class MyOwnFocusTraversalPolicy extends FocusTraversalPolicy {
+        private ArrayList<Component> order;
+        private Container panel;
+        public MyOwnFocusTraversalPolicy(Container panel, List<Component> order) {
+            this.order = new ArrayList<Component>(order.size());
+            this.order.addAll(order);
+            this.panel = panel;
+        }
+        public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {
+            if (focusCycleRoot == panel) {
+                int idx = getIndex(aComponent);
+                idx = (idx + 1) % order.size();
+                return getComponentAtIndex(idx);
+            }
+            return null;
+        }
+
+        private int getIndex(Component aComponent) {
+            int idx = order.indexOf(aComponent);
+            while (idx == -1) {
+                aComponent = aComponent.getParent();
+                if (aComponent == null) {
+                    return -1;
+                }
+                idx = order.indexOf(aComponent);
+            }
+            return idx;
+        }
+
+        private Component getComponentAtIndex(int idx) {
+            if (idx == 0) {
+                return ((BeanTreeView)order.get(idx)).getViewport().getView();
+            } else if (idx == 1) {
+                    return ((ContextPanel)order.get(idx)).listView.getViewport().getView();
+            }
+            return order.get(idx);
+        }
+
+        public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
+            if (focusCycleRoot == panel) {
+                int idx = getIndex(aComponent) - 1;
+                if (idx < 0) {
+                    idx = order.size() - 1;
+                }
+                return getComponentAtIndex(idx);
+            }
+            return null;
+        }
+
+        public Component getDefaultComponent(Container focusCycleRoot) {
+            if (focusCycleRoot == panel) {
+                return getComponentAtIndex(0);
+            }
+            return null;
+        }
+
+        public Component getLastComponent(Container focusCycleRoot) {
+            if (focusCycleRoot == panel) {
+                return getComponentAtIndex(order.size()-1);
+            }
+            return null;
+        }
+
+        public Component getFirstComponent(Container focusCycleRoot) {
+            if (focusCycleRoot == panel) {
+                return getComponentAtIndex(0);
+            }
+            return null;
+        }
+    }
+}

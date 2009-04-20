@@ -84,7 +84,10 @@ import org.openide.util.WeakListeners;
 public final class EventSupport {
     
     private static final Logger LOGGER = Logger.getLogger(EventSupport.class.getName());
-    
+
+    // make sure that RP is initialized before anything else happens (#163056)
+    private static final RequestProcessor RP = new RequestProcessor ("parsing-event-collector",1);       //NOI18N
+
     private final Source source;
     private volatile boolean initialized;
     private volatile boolean k24;
@@ -92,16 +95,14 @@ public final class EventSupport {
     private FileChangeListener fileChangeListener;
     private DataObjectListener dobjListener;
     private ChangeListener parserListener;
-    private static final EditorRegistryListener editorRegistryListener  = new EditorRegistryListener();
-    
-    
-    private static final RequestProcessor RP = new RequestProcessor ("parsing-event-collector",1);       //NOI18N
     
     private final RequestProcessor.Task resetTask = RP.create(new Runnable() {
         public void run() {
             resetStateImpl();
         }
     });
+
+    private static final EditorRegistryListener editorRegistryListener  = new EditorRegistryListener();
     
     public EventSupport (final Source source) {
         assert source != null;

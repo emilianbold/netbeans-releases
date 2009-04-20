@@ -86,8 +86,6 @@ NodeModel, TableModel, NodeActionsProvider {
         "java.lang.Long",
         "java.lang.Short",
 
-        "java.lang.ref.WeakReference",
-        
         "java.util.ArrayList",
         "java.util.HashSet",
         "java.util.LinkedHashSet",
@@ -106,7 +104,6 @@ NodeModel, TableModel, NodeActionsProvider {
         "java.util.WeakHashMap",
         "java.util.LinkedHashMap",
         "java.util.LinkedHashMap$Entry",
-        "java.beans.PropertyChangeSupport"
     }));
     private ContextProvider lookupProvider;
     
