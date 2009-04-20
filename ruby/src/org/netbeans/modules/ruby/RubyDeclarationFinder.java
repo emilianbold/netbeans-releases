@@ -51,33 +51,33 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import org.jruby.nb.ast.AliasNode;
-import org.jruby.nb.ast.ArgsNode;
-import org.jruby.nb.ast.ArgumentNode;
-import org.jruby.nb.ast.BlockArgNode;
-import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.ClassNode;
-import org.jruby.nb.ast.ClassVarDeclNode;
-import org.jruby.nb.ast.ClassVarNode;
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.ConstNode;
-import org.jruby.nb.ast.DAsgnNode;
-import org.jruby.nb.ast.DVarNode;
-import org.jruby.nb.ast.FCallNode;
-import org.jruby.nb.ast.GlobalAsgnNode;
-import org.jruby.nb.ast.GlobalVarNode;
-import org.jruby.nb.ast.HashNode;
-import org.jruby.nb.ast.InstAsgnNode;
-import org.jruby.nb.ast.InstVarNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.LocalAsgnNode;
-import org.jruby.nb.ast.LocalVarNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.StrNode;
-import org.jruby.nb.ast.SymbolNode;
-import org.jruby.nb.ast.VCallNode;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.AliasNode;
+import org.jrubyparser.ast.ArgsNode;
+import org.jrubyparser.ast.ArgumentNode;
+import org.jrubyparser.ast.BlockArgNode;
+import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.ClassVarDeclNode;
+import org.jrubyparser.ast.ClassVarNode;
+import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.ConstNode;
+import org.jrubyparser.ast.DAsgnNode;
+import org.jrubyparser.ast.DVarNode;
+import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.GlobalAsgnNode;
+import org.jrubyparser.ast.GlobalVarNode;
+import org.jrubyparser.ast.HashNode;
+import org.jrubyparser.ast.InstAsgnNode;
+import org.jrubyparser.ast.InstVarNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.LocalAsgnNode;
+import org.jrubyparser.ast.LocalVarNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.StrNode;
+import org.jrubyparser.ast.SymbolNode;
+import org.jrubyparser.ast.VCallNode;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -1688,7 +1688,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         } else if (node instanceof ArgsNode) {
             ArgsNode an = (ArgsNode)node;
 
-            if (an.getRequiredArgsCount() > 0) {
+            if (an.getRequiredCount() > 0) {
                 List<Node> args = an.childNodes();
 
                 for (Node arg : args) {
@@ -1711,8 +1711,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             }
 
             // Rest args
-            if (an.getRestArgNode() != null) {
-                ArgumentNode bn = an.getRestArgNode();
+            if (an.getRest() != null) {
+                ArgumentNode bn = an.getRest();
 
                 if (bn.getName().equals(name)) {
                     return getLocation(info, bn);
@@ -1720,8 +1720,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             }
 
             // Block args
-            if (an.getBlockArgNode() != null) {
-                BlockArgNode bn = an.getBlockArgNode();
+            if (an.getBlock() != null) {
+                BlockArgNode bn = an.getBlock();
 
                 if (bn.getName().equals(name)) {
                     return getLocation(info, bn);

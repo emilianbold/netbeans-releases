@@ -41,14 +41,17 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <terminaldefinition xmlns="http://www.netbeans.org/ns/nativeexecution-terminal-definition/1">
-    <terminal id="xterm" platforms="solaris,linux"/>
+    <terminal id="xterm"/>
+    <validation>
+        <platforms>solaris,linux</platforms>
+    </validation>
+    <command stringvalue="xterm"/>
     <searchpaths>
         <path>/usr/openwin/bin</path>
         <path>/usr/X11R6/bin</path>
         <path>/usr/X11/bin</path>
         <path>/usr/bin</path>
     </searchpaths>
-    <command stringvalue="xterm"/>
     <arguments>
         <arg>-title</arg>
         <arg>$title</arg>

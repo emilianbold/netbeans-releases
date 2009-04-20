@@ -371,18 +371,28 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             if (child != null &&
                     (child.getType() == CPPTokenTypes.LITERAL_struct ||
                     child.getType() == CPPTokenTypes.LITERAL_class)) {
-                CsmScope scope = ClassImpl.this.getScope();
-                while (!CsmKindUtilities.isNamespace(scope) && CsmKindUtilities.isScopeElement(scope)) {
-                    scope = ((CsmScopeElement)scope).getScope();
+                // check if we want to have class forward
+                // we don't want for AA::BB names
+                AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+                CharSequence[] nameParts = AstRenderer.getNameTokens(qid);
+                if (nameParts != null && nameParts.length == 1) {
+                    // also we don't want for templates references
+                    AST templStart = TemplateUtils.getTemplateStart(ast.getFirstChild());
+                    if (templStart == null) {
+                        CsmScope scope = ClassImpl.this.getScope();
+                        while (!CsmKindUtilities.isNamespace(scope) && CsmKindUtilities.isScopeElement(scope)) {
+                            scope = ((CsmScopeElement)scope).getScope();
+                        }
+                        if (!CsmKindUtilities.isNamespace(scope)) {
+                            scope = getContainingFile().getProject().getGlobalNamespace();
+                        }
+                        cfd = super.createForwardClassDeclaration(ast, null, (FileImpl) getContainingFile(), scope);
+                        if (true) { // always put in repository, because it's an element of global NS
+                            RepositoryUtils.put(cfd);
+                        }
+                        ((NamespaceImpl) scope).addDeclaration(cfd);
+                    }
                 }
-                if (!CsmKindUtilities.isNamespace(scope)) {
-                    scope = getContainingFile().getProject().getGlobalNamespace();
-                }
-                cfd = super.createForwardClassDeclaration(ast, null, (FileImpl) getContainingFile(), scope);
-                if (true) { // always put in repository, because it's an element of global NS
-                    RepositoryUtils.put(cfd);
-                }
-                ((NamespaceImpl) scope).addDeclaration(cfd);
             }
             return new FriendClassImpl(firstChild, cfd, (FileImpl) getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
         }

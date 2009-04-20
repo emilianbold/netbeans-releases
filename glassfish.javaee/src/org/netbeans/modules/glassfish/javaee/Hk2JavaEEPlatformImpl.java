@@ -120,12 +120,10 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         }        
 
         File wsLib = null;
-        File jsr109lib = null;
         
         String gfRootStr = dm.getProperties().getGlassfishRoot();
         if (gfRootStr != null) {
             wsLib = ServerUtilities.getJarName(gfRootStr, "webservices" + ServerUtilities.GFV3_VERSION_MATCHER);
-            jsr109lib = new File(gfRootStr, "jsr109-impl");
         }
 
         // WEB SERVICES SUPPORT
@@ -143,11 +141,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
                 return true;
             }
             if (TOOL_JSR109.equals(toolName)) {        //NOI18N
-                // FIXME ---> jsr109 is not supported currently
-                if ((jsr109lib != null) && (jsr109lib.exists())) {
-                    return true;
-                }
-                return false;
+                return true;
             }
             if (TOOL_KEYSTORE.equals(toolName)) {      //NOI18N
                 return true;
@@ -162,7 +156,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
                 return true;
             }
             if (TOOL_WSCOMPILE.equals(toolName)) {     //NOI18N
-                return false;   // TODO - the support is there - need to find the right classpath then change to true
+                return true;   // TODO - the support is there - need to find the right classpath then change to true
             }
             if (TOOL_APPCLIENTRUNTIME.equals(toolName)) { //NOI18N
                 return false;    //TODO - when the support becomes available, change to true
@@ -182,20 +176,23 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         if (TOOL_WSGEN.equals(toolName) || TOOL_WSIMPORT.equals(toolName)) {
             String[] entries = new String[] {"webservices", //NOI18N
                                              "javax.activation", //NOI18N
-                                             "jaxb", //NOI18N
-                                             "jsr109-impl"}; //NOI18N
+                                             "jaxb"}; //NOI18N
             List<File> cPath = new ArrayList<File>();
             
-            // Note: javax.javaee is probably not needed
-            /*
-            List<String> entryList = Arrays.asList(entries);
-            File f = ServerUtilities.getJarName(gfRootStr, "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER);
-            if (null == f) {
-                // Prelude release hack
-                entryList = ServerUtilities.filterByManifest(entryList, 
-                        new File(gfRootStr, "modules"), 0, true);
+            for (String entry : entries) {
+                File f = ServerUtilities.getJarName(gfRootStr, entry + ServerUtilities.GFV3_VERSION_MATCHER);
+                if ((f != null) && (f.exists())) {
+                    cPath.add(f);
+                }
             }
-            */
+            return cPath.toArray(new File[cPath.size()]);
+        }
+
+        if (TOOL_WSCOMPILE.equals(toolName)) {
+            String[] entries = new String[] {"webservices", //NOI18N
+                                             "javax.activation"}; //NOI18N
+            List<File> cPath = new ArrayList<File>();
+
             for (String entry : entries) {
                 File f = ServerUtilities.getJarName(gfRootStr, entry + ServerUtilities.GFV3_VERSION_MATCHER);
                 if ((f != null) && (f.exists())) {

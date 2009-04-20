@@ -155,7 +155,7 @@ public class GenericSources {
         
         public boolean contains(FileObject file) throws IllegalArgumentException {
             if (file != rootFolder && !FileUtil.isParentOf(rootFolder, file)) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException(rootFolder + " [isValid=" + rootFolder.isValid() + "] is not parent of " + file + " [isValid=" + file.isValid() + "].");  //NOI18N
             }
             if (p != null) {
                 if (file.isFolder() && file != p.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {

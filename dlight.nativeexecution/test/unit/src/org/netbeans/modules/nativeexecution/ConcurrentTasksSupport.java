@@ -120,7 +120,7 @@ public class ConcurrentTasksSupport {
         try {
             doneSignal.await();
         } catch (InterruptedException ex) {
-            log.info("InterruptedException while waiting doneSignal");
+            log.info("InterruptedException while waiting doneSignal"); // NOI18N
         }
     }
 
@@ -148,7 +148,7 @@ public class ConcurrentTasksSupport {
             TreeMap<String, AtomicInteger> map = new TreeMap<String, AtomicInteger>(counters);
 
             for (String id : map.keySet()) {
-                stream.println(id + ": " + map.get(id));
+                stream.println(id + ": " + map.get(id)); // NOI18N
             }
         }
     }

@@ -89,116 +89,103 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     public final static String MACRO_EXPANSION_OFFSET_TRANSFORMER = "macro-expansion-offset-transformer"; // NOI18N
     public final static String MACRO_EXPANSION_MACRO_TABLE = "macro-expansion-macro-table"; // NOI18N
 
-//    public String getExpandedText(CsmFile file, int startOffset, int endOffset) {
-//        if (file instanceof FileImpl) {
-//            FileImpl f = (FileImpl) file;
-//            TokenStream ts = f.getTokenStream(startOffset, endOffset, false);
-//            StringBuilder sb = new StringBuilder();
-//            try {
-//                antlr.Token token = ts.nextToken();
-//                while (token != null && !APTUtils.isEOF(token)) {
-//                    sb.append(token.getText());
-//                    sb.append(' '); // NOI18N
-//                    token = ts.nextToken();
-//                }
-//            } catch (TokenStreamException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//            f.releaseTokenStream(ts);
-//            return sb.toString();
-//        }
-//        return null;
-//    }
-
-    public synchronized int expand(Document inDoc, int startOffset, int endOffset, Document outDoc) {
+    public synchronized int expand(final Document inDoc, final int startOffset, final int endOffset, final Document outDoc) {
         if (inDoc == null || outDoc == null) {
             return 0;
         }
-        CsmFile file = CsmUtilities.getCsmFile(inDoc, true);
+        final CsmFile file = CsmUtilities.getCsmFile(inDoc, true);
         if (file == null) {
             return 0;
         }
 
-        TransformationTable tt = new TransformationTable(DocumentUtilities.getDocumentVersion(inDoc), CsmFileInfoQuery.getDefault().getFileVersion(file));
-        StringBuilder expandedData = new StringBuilder();
 
-        synchronized (inDoc) {
-            // Init token sequences
-            TokenSequence<CppTokenId> docTS = CndLexerUtilities.getCppTokenSequence(inDoc, inDoc.getLength(), false, true);
-            if (docTS == null) {
-                return 0;
-            }
-            docTS.move(startOffset);
-            MyTokenSequence fileTS = getFileTokenSequence(file, startOffset, endOffset);
-            if (fileTS == null) {
-                return 0;
-            }
-
-            // process tokens
-            try {
-                tt.setInStart(startOffset);
-                tt.setOutStart(0);
-
-                boolean inMacroParams = false;
-                boolean inDeadCode = true;
-
-                while (docTS.moveNext()) {
-                    Token<CppTokenId> docToken = docTS.token();
-
-                    int docTokenStartOffset = docTS.offset();
-                    int docTokenEndOffset = docTokenStartOffset + docToken.length();
-
-                    if (isWhitespace(docToken)) {
-                        continue;
-                    }
-
-                    APTToken fileToken = findToken(fileTS, docTokenStartOffset);
-                    if (fileToken == null) {
-                        // expanded stream ended
-                        if (!(inMacroParams || inDeadCode)) {
-                            copyInterval(inDoc, ((endOffset > docTokenStartOffset) ? docTokenStartOffset : endOffset) - tt.currentIn.start, tt, expandedData);
-                        }
-                        tt.appendInterval(endOffset - tt.currentIn.start, 0, false);
-                        break;
-                    }
-                    if (docTokenEndOffset <= fileToken.getOffset() || !APTUtils.isMacro(fileToken)) {
-                        if(isOnInclude(docTS)) {
-                            if (!(inMacroParams || inDeadCode)) {
-                                copyInterval(inDoc, docTokenStartOffset - tt.currentIn.start, tt, expandedData);
-                            } else {
-                                tt.appendInterval(docTokenStartOffset - tt.currentIn.start, 0, false);
-                            }
-                            expandIcludeToken(docTS, inDoc, file, tt, expandedData);
-                        } else if (docTokenEndOffset <= fileToken.getOffset()) {
-                            if (inMacroParams || inDeadCode) {
-                                // skip token in dead code
-                                tt.appendInterval(docTokenEndOffset - tt.currentIn.start, 0, false);
-                                continue;
-                            } else {
-                                // copy tokens befor dead token and skip this token
-                                copyInterval(inDoc, docTokenStartOffset - tt.currentIn.start, tt, expandedData);
-                                tt.appendInterval(docTokenEndOffset - tt.currentIn.start, 0, false);
-                                inDeadCode = true;
-                                continue;
-                            }
-                        }
-                        inMacroParams = false;
-                        inDeadCode = false;
-                        continue;
-                    }
-                    // process macro
-                    copyInterval(inDoc, docTokenStartOffset - tt.currentIn.start, tt, expandedData);
-                    expandMacroToken(docTS, fileTS, tt, expandedData);
-                    inMacroParams = true;
-                }
-                // copy the tail of the code
-                copyInterval(inDoc, endOffset - tt.currentIn.start, tt, expandedData);
-            } finally {
-                fileTS.release();
-            }
+        final MyTokenSequence fileTS = getFileTokenSequence(file, startOffset, endOffset);
+        if (fileTS == null) {
+            return 0;
         }
 
-        tt.cleanUp();
+        final StringBuilder expandedData = new StringBuilder();
+        final TransformationTable tt = new TransformationTable(DocumentUtilities.getDocumentVersion(inDoc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+
+        try {
+            Runnable r = new Runnable() {
+
+                public void run() {
+                    // Init token sequences
+                    TokenSequence<CppTokenId> docTS = CndLexerUtilities.getCppTokenSequence(inDoc, inDoc.getLength(), false, true);
+                    if (docTS == null) {
+                        return;
+                    }
+                    docTS.move(startOffset);
+
+                    // process tokens
+                    tt.setInStart(startOffset);
+                    tt.setOutStart(0);
+
+                    boolean inMacroParams = false;
+                    boolean inDeadCode = true;
+
+                    while (docTS.moveNext()) {
+                        Token<CppTokenId> docToken = docTS.token();
+
+                        int docTokenStartOffset = docTS.offset();
+                        int docTokenEndOffset = docTokenStartOffset + docToken.length();
+
+                        if (isWhitespace(docToken)) {
+                            continue;
+                        }
+
+                        APTToken fileToken = findToken(fileTS, docTokenStartOffset);
+                        if (fileToken == null) {
+                            // expanded stream ended
+                            if (!(inMacroParams || inDeadCode)) {
+                                copyInterval(inDoc, ((endOffset > docTokenStartOffset) ? docTokenStartOffset : endOffset) - tt.currentIn.start, tt, expandedData);
+                            }
+                            tt.appendInterval(endOffset - tt.currentIn.start, 0, false);
+                            break;
+                        }
+                        if (docTokenEndOffset <= fileToken.getOffset() || !APTUtils.isMacro(fileToken)) {
+                            if (isOnInclude(docTS)) {
+                                if (!(inMacroParams || inDeadCode)) {
+                                    copyInterval(inDoc, docTokenStartOffset - tt.currentIn.start, tt, expandedData);
+                                } else {
+                                    tt.appendInterval(docTokenStartOffset - tt.currentIn.start, 0, false);
+                                }
+                                expandIcludeToken(docTS, inDoc, file, tt, expandedData);
+                            } else if (docTokenEndOffset <= fileToken.getOffset()) {
+                                if (inMacroParams || inDeadCode) {
+                                    // skip token in dead code
+                                    tt.appendInterval(docTokenEndOffset - tt.currentIn.start, 0, false);
+                                    continue;
+                                } else {
+                                    // copy tokens befor dead token and skip this token
+                                    copyInterval(inDoc, docTokenStartOffset - tt.currentIn.start, tt, expandedData);
+                                    tt.appendInterval(docTokenEndOffset - tt.currentIn.start, 0, false);
+                                    inDeadCode = true;
+                                    continue;
+                                }
+                            }
+                            inMacroParams = false;
+                            inDeadCode = false;
+                            continue;
+                        }
+                        // process macro
+                        copyInterval(inDoc, docTokenStartOffset - tt.currentIn.start, tt, expandedData);
+                        expandMacroToken(docTS, fileTS, tt, expandedData);
+                        inMacroParams = true;
+                    }
+                    // copy the tail of the code
+                    copyInterval(inDoc, endOffset - tt.currentIn.start, tt, expandedData);
+
+                    tt.cleanUp();
+                }
+            };
+
+            inDoc.render(r);
+
+        } finally {
+            fileTS.release();
+        }
 
         // apply transformation to result document
         outDoc.putProperty(MACRO_EXPANSION_OFFSET_TRANSFORMER, tt);
@@ -208,9 +195,6 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             Exceptions.printStackTrace(ex);
         }
         initGuardedBlocks(outDoc, tt);
-
-//        System.out.println("MACRO_EXPANSION_OFFSET_TRANSFORMER");
-//        System.out.println(tt);
 
         return calcExpansionNumber(tt);
     }
@@ -283,7 +267,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     }
 
     public String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
-        TransformationTable tt = updateTransformationTableIfNeeded(doc, file);
+        TransformationTable tt = updateMacroTableIfNeeded(doc, file);
         return tt == null ? null : expandInterval(doc, tt, startOffset, endOffset);
     }
 
@@ -292,7 +276,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         TransformationTable tt;
         if (wait) {
             CsmFile file = CsmUtilities.getCsmFile(doc, true);
-            tt = updateTransformationTableIfNeeded(doc, file);
+            tt = updateMacroTableIfNeeded(doc, file);
         } else {
             tt = getMacroTable(doc);
         }
@@ -952,7 +936,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
     }
 
-    private TransformationTable updateTransformationTableIfNeeded(Document doc, CsmFile file) {
+    private TransformationTable updateMacroTableIfNeeded(Document doc, CsmFile file) {
         if (file == null || doc == null) {
             return null;
         }

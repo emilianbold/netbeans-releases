@@ -53,6 +53,7 @@ import org.junit.Test;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
@@ -90,8 +91,8 @@ public class MacroExpanderFactoryTest {
 //    @Test
     public void testGetExpander_ExecutionEnvironment_String() {
         System.out.println("getExpander"); // NOI18N
-//        ExecutionEnvironment execEnv = new ExecutionEnvironment("ak119685", "brighton.russia.sun.com");
-        ExecutionEnvironment execEnv = new ExecutionEnvironment();
+//        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "brighton.russia.sun.com");
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
 //        ConnectionManager.getInstance().getConnectToAction(execEnv, null).invoke();
         MacroExpander expander = MacroExpanderFactory.getExpander(execEnv, "SunStudio"); // NOI18N
 
@@ -113,7 +114,7 @@ public class MacroExpanderFactoryTest {
 
     @Test
     public void testPath() {
-        ExecutionEnvironment execEnv = new ExecutionEnvironment("test", "localhost"); // NOI18N
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("test", "localhost"); // NOI18N
         NativeProcessBuilder npb = new NativeProcessBuilder(
                 execEnv, "/bin/env").addEnvironmentVariable( // NOI18N
                 "PATH", "/firstPath:$PATH:${ZZZ}_${platform}").addEnvironmentVariable("PATH", "$PATH:/secondPath").addEnvironmentVariable("XXX", "It WORKS!"); // NOI18N

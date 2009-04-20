@@ -236,7 +236,7 @@ class GraphPainter {
                         }
                     }
                     xx[i] = lastx = x + GraphConfig.STEP_SIZE * i;
-                    yy[i] = lasty = y + h - 2 - value * effectiveHeight / scale;
+                    yy[i] = lasty = (int)(y + h - 2 - (long)value * effectiveHeight / scale); // int may overflow in multiplication
                 }
                 g2.setColor(descriptors[ser].getColor());
                 switch (descriptors[ser].getKind()) {
@@ -301,7 +301,7 @@ class GraphPainter {
      * @param fm  font metrics (used to calculate label width and height)
      */
     private void paintVLabels(Graphics g, int x, int w, int y1, int y2, int v1, int v2, FontMetrics fm) {
-        if (y2 - y1 <= 2 * fm.getAscent()) { return; }
+        if (y2 - y1 <= 2 * fm.getAscent() || v1 <= v2 + 1) { return; }
         int my = (y2 + y1) / 2; // middle y
         int mv = (v1 + v2) / 2; // middle value
         paintVLabel(g, mv, x + w - 1 - fm.getAscent() / 2, my,

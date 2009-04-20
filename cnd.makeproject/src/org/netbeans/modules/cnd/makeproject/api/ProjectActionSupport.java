@@ -473,7 +473,13 @@ public class ProjectActionSupport {
             // Check existence of executable
             if (!IpeUtils.isPathAbsolute(executable) && (executable.startsWith(".") || executable.indexOf(File.separatorChar) > 0)) { // NOI18N
                 //executable is relative to project root - convert to absolute and check. Should be safe (?).
-                executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
+                String runDir = pae.getProfile().getRunDir();
+                if (runDir == null || runDir.length() == 0 || IpeUtils.isPathAbsolute(runDir)) {
+                    executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
+                }
+                else {
+                    executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir() + "/" + runDir, executable); // NOI18N
+                }
                 executable = FilePathAdaptor.normalize(executable);
             }
             if (IpeUtils.isPathAbsolute(executable)) {
@@ -494,7 +500,7 @@ public class ProjectActionSupport {
                     }
                 }
                 if (!ok) {
-                    String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", pae.getExecutable()); // NOI18N
+                    String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", executable); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                     return false;
                 }

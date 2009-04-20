@@ -1378,6 +1378,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
             LOG.log(Level.FINE, "doShow, dialog has been created"); // NOI18N
             boolean firstRound = true;
+            StringBuilder sb = new StringBuilder(1024);
             for (;;) {
                 try {
                     if (url == null) {
@@ -1385,6 +1386,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
 
                     LOG.log(Level.FINE, "doShow, reading from = {0}", url);
+                    sb.append("doShow reading from: " + url + "\n");
                     URLConnection conn = url.openConnection();
                     conn.setRequestProperty("User-Agent", "NetBeans");
                     conn.setConnectTimeout(5000);
@@ -1395,7 +1397,15 @@ public class Installer extends ModuleInstall implements Runnable {
                     os.close();
                     conn.getInputStream().close();
                     LOG.log(Level.FINE, "doShow, all read from = {0}", url); // NOI18N
+                    //Temporary logging to investigate #141497
                     InputStream is = new FileInputStream(tmp);
+                    byte [] arr = new byte [is.available()];
+                    is.read(arr);
+                    String s = new String(arr);
+                    sb.append("Content:\n" + s);
+                    is.close();
+                    //End
+                    is = new FileInputStream(tmp);
                     parseButtons(is, exitMsg, dd);
                     LOG.log(Level.FINE, "doShow, parsing buttons: " + Arrays.toString(dd.getOptions())); // NOI18N
                     alterMessage(dd);
@@ -1408,6 +1418,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 } catch (ParserConfigurationException ex) {
                     LOG.log(Level.WARNING, null, ex);
                 } catch (SAXException ex) {
+                    LOG.log(Level.INFO, sb.toString());
                     LOG.log(Level.WARNING, url.toExternalForm(), ex);
                 } catch (IllegalStateException ex){
                     catchConnectionProblem(ex);
@@ -1421,15 +1432,15 @@ public class Installer extends ModuleInstall implements Runnable {
                 } catch (NoRouteToHostException ex) {
                     catchConnectionProblem(ex);
                     continue;
-                }catch (ConnectException ex){
+                } catch (ConnectException ex) {
                     catchConnectionProblem(ex);
                     continue;
                 } catch (IOException ex) {
-                    if (firstRound){
+                    if (firstRound) {
                         catchConnectionProblem(ex);
                         firstRound = false;
                         continue;
-                    }else{// preventing from deadlock while reading error page
+                    } else {// preventing from deadlock while reading error page
                         LOG.log(Level.WARNING, url.toExternalForm(), ex);
                     }
                 }

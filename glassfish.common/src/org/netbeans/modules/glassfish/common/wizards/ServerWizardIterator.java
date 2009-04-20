@@ -299,7 +299,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     }
 
     String getInstallRootProperty() {
-        return gip.getInstallRootProperty(); // "org.glassfish.v3.installRoot"; // NOI18N throw new UnsupportedOperationException("Not yet implemented");
+        return gip.getInstallRootProperty();
     }
 
     String getNameOfBits() {

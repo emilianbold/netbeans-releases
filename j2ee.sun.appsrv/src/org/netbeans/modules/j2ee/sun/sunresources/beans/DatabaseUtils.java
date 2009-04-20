@@ -314,6 +314,7 @@ public class DatabaseUtils {
         //dsClassMap.put("jdbc:postgresql:", "postgresql.Driver");
         //PostgreSQL (v7.0 and later)
         dsClassMap.put("jdbc:postgresql:", "org.postgresql.ds.PGSimpleDataSource");
+        dsClassMap.put("jdbc:postgresql:", "org.postgresql.ds.PGPoolingDataSource");
         //Quadcap Embeddable Database
         //dsClassMap.put("jdbc:qed:", "com.quadcap.jdbc.JdbcDriver");
         //Sybase (jConnect 4.2 and earlier)

@@ -42,23 +42,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
-import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
-import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
-import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.cpu.impl.CpuIndicatorConfiguration;
+import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.MultipleDTDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.openide.util.NbBundle;
@@ -72,15 +69,11 @@ public final class DLightCPUToolConfigurationProvider
 
     public static final int INDICATOR_POSITION = 100;
     private static final String TOOL_NAME = loc("CPUMonitorTool.ToolName"); // NOI18N
-    private static final List<Column> PRSTAT_COLUMNS = Arrays.asList(
-        new Column("utime", Float.class, loc("CPUMonitorTool.ColumnName.utime"), null), // NOI18N
-        new Column("stime", Float.class, loc("CPUMonitorTool.ColumnName.stime"), null), // NOI18N
-        new Column("wtime", Float.class, loc("CPUMonitorTool.ColumnName.wtime"), null)); // NOI18N
 
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration =
             new DLightToolConfiguration(TOOL_NAME);
-        toolConfiguration.setIcon("org/netbeans/modules/dlight/cpu/resources/cpu.png");
+        toolConfiguration.setIcon("org/netbeans/modules/dlight/cpu/resources/cpu.png"); // NOI18N
 
         // SunStudio should collect data about most CPU-expensive functions
         // i.e. create a configuration that collects
@@ -133,19 +126,11 @@ public final class DLightCPUToolConfigurationProvider
             true);
 
 
-        // both use prstat as indicator data provider
-        final DataTableMetadata indicatorTableMetadata =
-            new DataTableMetadata("prstat", PRSTAT_COLUMNS); // NOI18N
+        ProcDataProviderConfiguration indicatorProviderConfiguration = new ProcDataProviderConfiguration();
+        toolConfiguration.addIndicatorDataProviderConfiguration(indicatorProviderConfiguration);
 
-        CLIODCConfiguration indicatorProviderConfiguration =
-            new CLIODCConfiguration("/bin/prstat", "-mv -p @PID -c 1", // NOI18N
-            new PrstatParser(), Arrays.asList(indicatorTableMetadata));
-        indicatorProviderConfiguration.setName("prstat");
-        toolConfiguration.addIndicatorDataProviderConfiguration(
-            indicatorProviderConfiguration);
         List<Column> resultColumns = new ArrayList<Column>();
-        resultColumns.addAll(PRSTAT_COLUMNS);
-        resultColumns.addAll(LLDataCollectorConfiguration.CPU_TABLE.getColumns());
+        resultColumns.addAll(ProcDataProviderConfiguration.CPU_TABLE.getColumns());
         IndicatorMetadata indicatorMetadata =
             new IndicatorMetadata(resultColumns);
         CpuIndicatorConfiguration indicatorConfiguration =
@@ -153,19 +138,6 @@ public final class DLightCPUToolConfigurationProvider
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigDtrace);
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigSS);
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
-        LLDataCollectorConfiguration llDataCollectorConfiguration =
-            new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.CPU);
-
-        toolConfiguration.addIndicatorDataProviderConfiguration(llDataCollectorConfiguration);
-//        IndicatorMetadata indicatorMetadata =
-//            new IndicatorMetadata(LLDataCollectorConfiguration.CPU_TABLE.getColumns());
-//        CpuIndicatorConfiguration indicatorConfiguration =
-//            new CpuIndicatorConfiguration(indicatorMetadata);
-//        if (detailsVisualizerConfig != null) {
-//            indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfig);
-//        }
-//        toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
-//
 
         return toolConfiguration;
     }
@@ -202,39 +174,6 @@ public final class DLightCPUToolConfigurationProvider
 
 
         return result;
-    }
-
-    private static class PrstatParser implements CLIOParser {
-
-        private final List<String> colnames = Arrays.asList(new String[]{
-                "utime", // NOI18N
-                "stime", // NOI18N
-                "wtime" // NOI18N
-            });
-        Float utime, stime, wtime;
-
-        public DataRow process(String line) {
-            if (line == null) {
-                return null;
-            }
-            String l = line.trim();
-            l = l.replaceAll(",", "."); // NOI18N
-            String[] tokens = l.split("[ \t]+"); // NOI18N
-
-            if (tokens.length != 15) {
-                return null;
-            }
-
-            try {
-                utime = Float.valueOf(tokens[2]);
-                stime = Float.valueOf(tokens[3]);
-                wtime = Float.valueOf(tokens[8]);
-            } catch (NumberFormatException ex) {
-                return null;
-            }
-
-            return new DataRow(colnames, Arrays.asList(utime, stime, wtime));
-        }
     }
 
     private static String loc(String key, String... params) {

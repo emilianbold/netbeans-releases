@@ -338,7 +338,11 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     }
 
     public int findNextUsedLine(int from) {
-        int line1 = findNextUsedLine(from, getMarkMap());
+        int line1;
+        synchronized (this) {
+            line1 = findNextUsedLine(from, getMarkMap());
+        }
+
         int line2 = document.getAnnotations().getNextLineWithAnnotation(from + 1);
         
         if (line2 == (-1))

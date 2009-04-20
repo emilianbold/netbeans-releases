@@ -180,7 +180,7 @@ public final class UIDCsmConverter {
     ////////////////////////////////////////////////////////////////////////////
     // Object -> UID
     public static CsmUID<CsmFile> fileToUID(CsmFile file) {
-        return file == null ? null : UIDs.get(file);
+        return (file == null || !file.isValid()) ? null : UIDs.get(file);
     }
 
     public static CsmUID<CsmNamespace> namespaceToUID(CsmNamespace ns) {

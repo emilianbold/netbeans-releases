@@ -787,7 +787,9 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                         (template_head)?   // :)
                         ctor_decl_spec
                         {ctrName = qualifiedItemIsOneOf(qiCtor);}
-                        ctor_declarator[false] 	(EOF!|SEMICOLON) // Constructor declarator
+                        ctor_declarator[false]
+                        (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+                        | SEMICOLON ) // Constructor declarator
                         {
                             // below is a workaround for know infinite loop bug in ANTLR 
                             // see http://www.jguru.com/faq/view.jsp?EID=271922
@@ -1148,7 +1150,9 @@ member_declaration_template
                                         LT(1).getLine());
                         }
                         ctor_decl_spec
-                        ctor_declarator[false] 	(EOF!|SEMICOLON) // Constructor declarator
+                        ctor_declarator[false] 	
+                        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+                        | SEMICOLON ) // Constructor declarator
                         {
                         // below is a workaround for know infinite loop bug in ANTLR 
                         // see http://www.jguru.com/faq/view.jsp?EID=271922
@@ -1314,7 +1318,9 @@ member_declaration
 			printf("member_declaration_5a[%d]: Destructor declaration\n",
 				LT(1).getLine());
 		}
-		dtor_head[false] (EOF!|SEMICOLON) //{end_of_stmt();}	// Declaration
+		dtor_head[false] 
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON ) //{end_of_stmt();}	// Declaration
 		{ #member_declaration = #(#[CSM_DTOR_DECLARATION, "CSM_DTOR_DECLARATION"], #member_declaration); }
 	|
 		// No template_head allowed for dtor member
@@ -1357,7 +1363,9 @@ member_declaration
 			printf("member_declaration_11a[%d]: Function declaration\n",
 				LT(1).getLine());
 		}
-		(LITERAL_static)? function_declarator[false, false] (EOF!|SEMICOLON) //{end_of_stmt();}
+		(LITERAL_static)? function_declarator[false, false] 
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON ) //{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
 	|
 		// Member without a type (I guess it can only be a function definition)
@@ -1409,7 +1417,9 @@ member_declaration
 			printf("member_declaration_9[%d]: Qualified ID\n",
 				LT(1).getLine());
 		}
-		q = qualified_id (EOF!|SEMICOLON) //{end_of_stmt();}
+		q = qualified_id 
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON) //{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_VISIBILITY_REDEF, "CSM_VISIBILITY_REDEF"], #member_declaration); }
 	|  
 		// Member with a type or just a type def
@@ -1420,7 +1430,9 @@ member_declaration
 			printf("member_declaration_10[%d]: Declaration(s)\n",
 				LT(1).getLine());
 		}
-		(LITERAL___extension__!)? declaration_specifiers[true, false] (member_declarator_list)? (EOF!|SEMICOLON) //{end_of_stmt();}
+		(LITERAL___extension__!)? declaration_specifiers[true, false] (member_declarator_list)? 
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON) //{end_of_stmt();}
                 // now member typedefs are placed under CSM_FIELD, so we do this here as well
                 // TODO: separate imaginery AST nodes for typedefs and fields
 		{ #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
@@ -1467,7 +1479,9 @@ function_declarator_with_fun_as_ret_type  [boolean definition]
     
 function_declaration_with_fun_as_ret_type
         :
-            declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[false] (EOF!|SEMICOLON)
+            declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[false] 
+            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+            | SEMICOLON )
         ;
 
 function_definition_with_fun_as_ret_type
@@ -1541,7 +1555,9 @@ declaration[int kind]
 		{beginDeclaration();}
 		// LL 31/1/97: added (COMMA) ? below. This allows variables to
 		// typedef'ed more than once. DW 18/08/03 ?
-		declaration_specifiers[true, false] ((COMMA!)? init_declarator_list[kind])? (EOF!|SEMICOLON)
+		declaration_specifiers[true, false] ((COMMA!)? init_declarator_list[kind])? 
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON )
 		//{end_of_stmt();}
 		{endDeclaration();}
 	|	
@@ -1737,7 +1753,8 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
                 )*
         		{endClassDefinition();}
                 {enclosingClass = saveClass;}
-                (EOF!|RCURLY)
+                ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+                | RCURLY )
             |
                 {classForwardDeclaration(ts, ds, id);}
             )
@@ -1747,18 +1764,24 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
             {beginClassDefinition(ts, "anonymous");}
             (member_declaration)*
             {endClassDefinition();}
-            (EOF!|RCURLY)
+            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+            | RCURLY )
             {enclosingClass = saveClass;}
         )
     ;
 
 enum_specifier
 	:	LITERAL_enum
-		(	LCURLY! enumerator_list (EOF!|RCURLY)
+		(	LCURLY enumerator_list 
+                        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+                        | RCURLY )
 		|	id:ID     // DW 22/04/03 Suggest qualified_id here to satisfy
 				  // elaborated_type_specifier
 			{beginEnumDefinition(id.getText());}
-			(LCURLY! enumerator_list (EOF!|RCURLY))
+			(LCURLY enumerator_list 
+                            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+                            | RCURLY )
+                        )
 			{endEnumDefinition();}
 		)
 	;
@@ -1848,7 +1871,9 @@ initializer
     |   
         LCURLY RCURLY
     |   
-        LCURLY initializer (COMMA initializer)* (COMMA)? (EOF!|RCURLY)
+        LCURLY initializer (COMMA initializer)* (COMMA)? 
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | RCURLY )
     ;
 
 
@@ -2846,7 +2871,8 @@ compound_statement
 		    //enterNewLocalScope();
 		}*/
 		(statement_list)?
-		(EOF!|RCURLY)
+		( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | RCURLY )
 		//{exitLocalScope();}
 		{#compound_statement = #(#[CSM_COMPOUND_STATEMENT, "CSM_COMPOUND_STATEMENT"], #compound_statement);}
             )                      
@@ -2911,7 +2937,8 @@ do_while_statement
 		LITERAL_do 
 		single_statement LITERAL_while
 		LPAREN! expression RPAREN! 
-		(EOF!|SEMICOLON) //{end_of_stmt();} 
+		( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON ) //{end_of_stmt();}
 		{#do_while_statement = #(#[CSM_DO_WHILE_STATEMENT, "CSM_DO_WHILE_STATEMENT"], #do_while_statement);}
 	;
 
@@ -2921,7 +2948,9 @@ for_statement
 		LITERAL_for LPAREN!
 		for_init_statement
 		(
-		(condition)? (EOF!|SEMICOLON) //{end_of_stmt();}
+		(condition)? 
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON ) //{end_of_stmt();}
 		(expression)?
 		)?
 		RPAREN! single_statement
@@ -2932,17 +2961,23 @@ protected
 for_init_statement
 	:
 		(	(declaration[declStatement])=> declaration[declStatement]
-		|	expression (EOF!|SEMICOLON) //{end_of_stmt();}
-		|	(EOF!|SEMICOLON) //{end_of_stmt();} 
+		|	expression 
+            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+            | SEMICOLON ) //{end_of_stmt();}
+		|	( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+            | SEMICOLON) //{end_of_stmt();}
 		)
 		{#for_init_statement = #(#[CSM_FOR_INIT_STATEMENT, "CSM_FOR_INIT_STATEMENT"], #for_init_statement);}
 	;
 
 jump_statement
 	:	
-	(	LITERAL_goto ID (EOF!|SEMICOLON) {/*end_of_stmt();*/ #jump_statement = #(#[CSM_GOTO_STATEMENT, "CSM_GOTO_STATEMENT"], #jump_statement);}
-	|	LITERAL_continue (EOF!|SEMICOLON) {/*end_of_stmt();*/ #jump_statement = #(#[CSM_CONTINUE_STATEMENT, "CSM_CONTINUE_STATEMENT"], #jump_statement);}
-	|	LITERAL_break (EOF!|SEMICOLON) {/*end_of_stmt();*/ #jump_statement = #(#[CSM_BREAK_STATEMENT, "CSM_BREAK_STATEMENT"], #jump_statement);}
+	(	LITERAL_goto ID (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
+        {/*end_of_stmt();*/ #jump_statement = #(#[CSM_GOTO_STATEMENT, "CSM_GOTO_STATEMENT"], #jump_statement);}
+	|	LITERAL_continue (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
+        {/*end_of_stmt();*/ #jump_statement = #(#[CSM_CONTINUE_STATEMENT, "CSM_CONTINUE_STATEMENT"], #jump_statement);}
+	|	LITERAL_break (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
+        {/*end_of_stmt();*/ #jump_statement = #(#[CSM_BREAK_STATEMENT, "CSM_BREAK_STATEMENT"], #jump_statement);}
 		// DW 16/05/03 May be problem here if return is followed by a cast expression 
 	|	LITERAL_return {in_return = true;}
 		(	
@@ -2962,7 +2997,9 @@ jump_statement
 		|	expression 
 */
                 expression
-		)?	(EOF!|SEMICOLON) {in_return = false; /*end_of_stmt();*/ #jump_statement = #(#[CSM_RETURN_STATEMENT, "CSM_RETURN_STATEMENT"], #jump_statement);} 
+		)?	
+        (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
+        {in_return = false; /*end_of_stmt();*/ #jump_statement = #(#[CSM_RETURN_STATEMENT, "CSM_RETURN_STATEMENT"], #jump_statement);}
 	)
 	;
 
@@ -2991,7 +3028,9 @@ exception_declaration
  * as a statement also.
  */
 throw_statement
-	:	LITERAL_throw (assignment_expression) ? (EOF!|SEMICOLON) //{ end_of_stmt();}
+	:	LITERAL_throw (assignment_expression) ? 
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON) //{ end_of_stmt();}
 		{#throw_statement = #(#[CSM_THROW_STATEMENT, "CSM_THROW_STATEMENT"], #throw_statement);}
 	;
 
@@ -3007,14 +3046,16 @@ using_declaration
 	;
 
 asm_block 	
-	:	(
-		literal_asm LCURLY (~RCURLY)* (EOF!|RCURLY) 
-		|
-		literal_asm (literal_volatile)? ({LA(1)==LPAREN}? balanceParens) // (gcc_asm_expr)* (EOF|RPAREN)
+    :
+    (
+        literal_asm LCURLY (~RCURLY)*
+        (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |RCURLY)
+    |
+        literal_asm (literal_volatile)? ({LA(1)==LPAREN}? balanceParens) // (gcc_asm_expr)* (EOF|RPAREN)
 //		{balanceBraces(CPPTokenTypes.LPAREN, CPPTokenTypes.RPAREN);}
-		)
-		{#asm_block = #(#[CSM_ASM_BLOCK, "CSM_ASM_BLOCK"], #asm_block);}
-	;
+    )
+    {#asm_block = #(#[CSM_ASM_BLOCK, "CSM_ASM_BLOCK"], #asm_block);}
+    ;
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -3203,7 +3244,12 @@ balanceParensInExpression
                 |
                     balanceParensInExpression
                 |
-                    ~(SEMICOLON | RCURLY | LCURLY | LPAREN)
+                    balanceSquaresInExpression
+                |
+                    ~(SEMICOLON | RCURLY | LCURLY | LPAREN | LSQUARE | RSQUARE)
+                |
+                    (RCURLY | RSQUARE)
+                    { reportError(new NoViableAltException(LT(0), getFilename())); }
             )*
             RPAREN
         ;
@@ -3217,7 +3263,12 @@ balanceSquaresInExpression
                 |
                     balanceSquaresInExpression
                 |
-                    ~(SEMICOLON | RCURLY | LCURLY | LSQUARE)
+                    balanceParensInExpression
+                |
+                    ~(SEMICOLON | RCURLY | LCURLY | LSQUARE | LPAREN | RPAREN)
+                |
+                    (RCURLY | RPAREN)
+                    { reportError(new NoViableAltException(LT(0), getFilename())); }
             )*
         RSQUARE
     ;

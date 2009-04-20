@@ -303,6 +303,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         initializeCardsPanel();
 
         if ((label == null) && (combo == null)) {
+            addInsetsToPanel(cardsPanel);
             return cardsPanel;
         }
 
