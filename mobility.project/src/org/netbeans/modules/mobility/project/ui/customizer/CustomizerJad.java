@@ -52,10 +52,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -69,6 +75,9 @@ import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySup
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -367,7 +376,9 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
         	map3 = new HashMap<String,String>();
         final private ArrayList<String> items = new ArrayList<String>();
         private boolean isMIDP20 = false;
-        
+
+        private String[] additionalAttributes = null;
+
         final private static String NAME="MIDlet-Name"; //NOI18N
         final private static String VENDOR="MIDlet-Vendor"; //NOI18N
         final private static String VERSION="MIDlet-Version"; //NOI18N
@@ -405,20 +416,20 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
             },
         };
         
-        private static final String[][] allMIDletProperties = {
-            new String[] {
-                NAME, VENDOR, VERSION, ICON, DESCRIPTION, INFOURL, 
-                DATASIZE, 
-                INSTALL, DELETE, CONFIRM, 
-                MECONFIG, MEPROFILE, 
-            },
-            new String[] {
-                NAME, VENDOR, VERSION, ICON, DESCRIPTION, INFOURL, 
-                DATASIZE, 
-                INSTALL, DELETE, CONFIRM, 
-                MECONFIG, MEPROFILE, 
-            },
-        };
+//        private static final String[][] allMIDletProperties = {
+//            new String[] {
+//                NAME, VENDOR, VERSION, ICON, DESCRIPTION, INFOURL,
+//                DATASIZE,
+//                INSTALL, DELETE, CONFIRM,
+//                MECONFIG, MEPROFILE,
+//            },
+//            new String[] {
+//                NAME, VENDOR, VERSION, ICON, DESCRIPTION, INFOURL,
+//                DATASIZE,
+//                INSTALL, DELETE, CONFIRM,
+//                MECONFIG, MEPROFILE,
+//            },
+//        };
         
         private static final String[] riskyProperties = {
             MECONFIG, MEPROFILE, 
@@ -578,11 +589,14 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
         }
         
         public String[] getNonMandatory() {
-            return nonmandatoryProperties[isMIDP20 ? 1 : 0];
+            if (additionalAttributes == null){
+                additionalAttributes = loadAdditionalAttributes();
+            }
+            return mergeAttributes(nonmandatoryProperties[isMIDP20 ? 1 : 0], additionalAttributes);
         }
         
         public String[] getAllAttrs() {
-            return allMIDletProperties[isMIDP20 ? 1 : 0];
+            return mergeAttributes(getMandatory(), getNonMandatory());//allMIDletProperties[isMIDP20 ? 1 : 0];
         }
         
         public boolean containsInMandatory(final String item) {
@@ -659,7 +673,45 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
                 return;
             removeRow(row);
         }
-        
+
+        private String[] loadAdditionalAttributes(){
+            final List<String> attrs = new ArrayList<String>();
+
+            final FileObject xml = FileUtil.getConfigFile("Buildsystem/ApplicationDescriptor/Attributes"); // NOI18N
+            if (xml == null){
+                return new String[0];
+            }
+
+            FileObject[] entries = xml.getChildren();            
+            for (FileObject fileObject : Arrays.asList(entries)) {
+                InputStream is = null;
+                try {
+                    is = fileObject.getInputStream();
+                    final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                    try {
+                        String s;
+                        while ((s = reader.readLine()) != null){
+                            s = s.trim();
+                            if (!attrs.contains(s) && s.length() != 0){
+                                attrs.add(s);
+                            }
+                        }
+                    } finally {
+                        reader.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return attrs.toArray(new String[attrs.size()]);
+        }
+
+        private String[] mergeAttributes(String[] a, String[] b){
+            String[] s = new String[a.length + b.length];
+            System.arraycopy(a, 0, s, 0, a.length);
+            System.arraycopy(b, 0, s, a.length, b.length);
+            return s;
+        }
     }
     
 }

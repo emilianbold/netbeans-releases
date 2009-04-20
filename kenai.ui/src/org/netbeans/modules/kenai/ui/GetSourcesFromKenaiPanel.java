@@ -423,9 +423,12 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             if (prjAndFeature != null) {
                 try {
                     KenaiProject prj = Kenai.getDefault().getProject(prjAndFeature.projectName);
-                    KenaiFeatureListItem item = new KenaiFeatureListItem(prj, prjAndFeature.feature);
-                    addElement(item);
-                    setSelectedItem(item);
+                    if (KenaiService.Names.MERCURIAL.equals(prjAndFeature.feature.getService()) ||
+                        KenaiService.Names.SUBVERSION.equals(prjAndFeature.feature.getService())) {
+                        KenaiFeatureListItem item = new KenaiFeatureListItem(prj, prjAndFeature.feature);
+                        addElement(item);
+                        setSelectedItem(item);
+                    }
                 } catch (KenaiException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -454,7 +457,10 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                                     EventQueue.invokeLater(new Runnable() {
 
                                         public void run() {
-                                            addElement(new KenaiFeatureListItem(project, feature));
+                                            if (KenaiService.Names.MERCURIAL.equals(feature.getService()) ||
+                                                KenaiService.Names.SUBVERSION.equals(feature.getService())) {
+                                                addElement(new KenaiFeatureListItem(project, feature));
+                                            }
                                         }
                                     });
                                 }

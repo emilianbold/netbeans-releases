@@ -54,6 +54,7 @@ import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.openide.util.NbBundle;
 
 /**
  * Thread usage indicator
@@ -126,9 +127,10 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
                 }
             });
         } else {
-            final JLabel label = new JLabel(getRepairActionProvider().isValid()?
-                "<html><center>Will show data on the next run</center></html>" ://NOI18N
-                "<html><center>Invalid</center></html>");//NOI18N
+            final JLabel label = new JLabel(
+                    "<html><center>" // NOI18N
+                    + getMessage(getRepairActionProvider().isValid()? "Repair.Valid" : "Repair.Invalid") // NOI18N
+                    + "</center></html>"); // NOI18N
             label.setForeground(GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {
                 public void run() {
@@ -136,5 +138,9 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
                 }
             });
         }
+    }
+
+    private static String getMessage(String name) {
+        return NbBundle.getMessage(SyncIndicator.class, name);
     }
 }

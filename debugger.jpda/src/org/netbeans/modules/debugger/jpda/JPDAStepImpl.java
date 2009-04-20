@@ -56,6 +56,7 @@ import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 
+import com.sun.jdi.event.StepEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -67,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAStep;
@@ -88,6 +90,7 @@ import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
@@ -123,12 +126,14 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     private StepRequest boundaryStepRequest;
     //private SingleThreadedStepWatch stepWatch;
     private Set<EventRequest> requestsToCancel = new HashSet<EventRequest>();
+    private Properties p;
     
     private Session session;
     
     public JPDAStepImpl(JPDADebugger debugger, Session session, int size, int depth) {
         super(debugger, size, depth);
         this.session = session;
+        p = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N
     }
     
     public void addStep(JPDAThread tr) {
@@ -460,7 +465,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     }
                 }
                 if (!stepAdded) {
-                    if ((EventWrapper.request(event) instanceof StepRequest) && shouldNotStopHere(event)) {
+                    if ((eventRequest instanceof StepRequest) && shouldNotStopHere((StepEvent) event)) {
                         return true; // Resume
                     }
                 }
@@ -585,10 +590,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     /**
      * Checks for synthetic methods and smart-stepping...
      */
-    private boolean shouldNotStopHere(Event ev) {
+    private boolean shouldNotStopHere(StepEvent event) {
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
         // 2) init info about current state
-        LocatableEvent event = (LocatableEvent) ev;
         try {
             ThreadReference tr = LocatableEventWrapper.thread (event);
             JPDAThreadImpl t = debuggerImpl.getThread (tr);
@@ -596,7 +600,26 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             try {
                 try {
                     // Synthetic method?
-                    if (TypeComponentWrapper.isSynthetic(LocationWrapper.method(StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0))))) {
+                    Method m = LocationWrapper.method(StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0)));
+                    boolean doStepAgain = false;
+                    int doStepDepth = getDepth();
+
+                    boolean useStepFilters = p.getBoolean("UseStepFilters", true);
+                    boolean filterSyntheticMethods = useStepFilters && p.getBoolean("FilterSyntheticMethods", true);
+                    boolean filterStaticInitializers = useStepFilters && p.getBoolean("FilterStaticInitializers", false);
+                    boolean filterConstructors = useStepFilters && p.getBoolean("FilterConstructors", false);
+                    if (filterSyntheticMethods && TypeComponentWrapper.isSynthetic(m)) {
+                        //S ystem.out.println("In synthetic method -> STEP INTO again");
+                        doStepAgain = true;
+                    }
+                    if (filterStaticInitializers && MethodWrapper.isStaticInitializer(m) ||
+                        filterConstructors && MethodWrapper.isConstructor(m)) {
+                        
+                        doStepAgain = true;
+                        doStepDepth = StepRequest.STEP_OUT;
+                    }
+
+                    if (doStepAgain) {
                         //S ystem.out.println("In synthetic method -> STEP OVER/OUT again");
 
                         VirtualMachine vm = debuggerImpl.getVirtualMachine ();
@@ -607,7 +630,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                             VirtualMachineWrapper.eventRequestManager(vm),
                             tr,
                             StepRequest.STEP_LINE,
-                            getDepth()
+                            doStepDepth
                         );
                         EventRequestWrapper.addCountFilter(stepRequest, 1);
                         String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
@@ -650,10 +673,13 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 }
                 int depth;
                 Map properties = session.lookupFirst(null, Map.class);
-                if (properties != null && properties.containsKey (StepIntoActionProvider.SS_STEP_OUT)) {
+                boolean smartSteppingStepOut = properties != null && properties.containsKey (StepIntoActionProvider.SS_STEP_OUT);
+                boolean useStepFilters = p.getBoolean("UseStepFilters", true);
+                boolean stepThrough = useStepFilters && p.getBoolean("StepThroughFilters", false);
+                if (!stepThrough || smartSteppingStepOut) {
                     depth = StepRequest.STEP_OUT;
                 } else {
-                    depth = StepRequest.STEP_INTO;
+                    depth = ((StepRequest) event.request()).depth(); // Use the original depth instead of StepRequest.STEP_INTO, which we do not want when stepping over or out.
                 }
                 StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest(
                     VirtualMachineWrapper.eventRequestManager(vm),

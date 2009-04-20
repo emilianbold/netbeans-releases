@@ -41,11 +41,10 @@
 
 package org.openide.util.lookup;
 
-import org.openide.util.*;
-
 import java.util.*;
-import junit.framework.*;
 import org.netbeans.junit.*;
+import org.netbeans.modules.openide.util.ActiveQueue;
+import org.openide.util.Lookup;
 
 /** Testing memory consumption of various AbstractLookup aspects.
  */
@@ -94,7 +93,7 @@ public class AbstractLookupMemoryTest extends NbTestCase {
             new EmptyPair (),
             new EmptyPair (),
             t,
-            Utilities.activeReferenceQueue(),
+            ActiveQueue.queue(),
             listener,
             listener2,
             new Integer (11) // trashhold is shared

@@ -58,7 +58,7 @@ public class StopDLightAction extends AbstractAction
     implements DLightSessionListener, SessionStateListener {
 
     public StopDLightAction() {
-        super("Stop D-Light");
+        super("Stop D-Light"); //NOI18N
         putValue("iconBase", "org/netbeans/modules/dlight/management/resources/stop24.png"); // NOI18N
         putValue(Action.SMALL_ICON, "org/netbeans/modules/dlight/management/resources/stop.png"); // NOI18N
         DLightManager.getDefault().addDLightSessionListener(this);
