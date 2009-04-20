@@ -32,7 +32,6 @@
 
 package org.netbeans.nbbuild.testdist;
 
-import org.netbeans.nbbuild.testdist.TestDistFilter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
