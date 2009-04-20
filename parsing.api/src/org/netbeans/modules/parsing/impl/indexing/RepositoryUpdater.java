@@ -251,7 +251,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         if (factory == null) {
             throw new InvalidParameterException("No CustomIndexerFactory with name: '" + indexerName + "'"); //NOI18N
         } else {
-            Work w = new RefreshIndicies(indexerMimeTypes, factory, scannedRoots2Dependencies);
+            Work w = new RefreshIndices(indexerMimeTypes, factory, scannedRoots2Dependencies);
             scheduleWork(w, false);
         }
     }
@@ -1077,13 +1077,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     } // End of DeleteWork class
 
-    private static class RefreshIndicies extends Work {
+    private static class RefreshIndices extends Work {
 
         private final Set<String> indexerMimeTypes;
         private final CustomIndexerFactory indexerFactory;
         private final Map<URL, List<URL>> scannedRoots2Dependencies;
 
-        public RefreshIndicies(Set<String> indexerMimeTypes, CustomIndexerFactory indexerFactory, Map<URL, List<URL>> scannedRoots2Depencencies) {
+        public RefreshIndices(Set<String> indexerMimeTypes, CustomIndexerFactory indexerFactory, Map<URL, List<URL>> scannedRoots2Depencencies) {
             super(false, false);
             this.indexerMimeTypes = indexerMimeTypes;
             this.indexerFactory = indexerFactory;
@@ -1143,7 +1143,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
         }
-    } // End of RefreshIndicies class
+    } // End of RefreshIndices class
 
     private static class RootsWork extends Work {
 
