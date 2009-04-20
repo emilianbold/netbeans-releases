@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -104,6 +105,12 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         public
         @Override
         Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            //filter out transitive embedding creations like JSP -> HTML -> JavaScript
+            //we have a direct translator for them JSP -> JavaScript
+            if(snapshot.getMimeType().equals("text/html") && snapshot.getMimePath().size() > 1) { //NOI18N
+                return null;
+            }
+
             Translator t = translators.get(snapshot.getMimeType());
             if (t != null) {
                 return Collections.singleton(new JsEmbeddingProvider(snapshot.getMimeType(), t));
