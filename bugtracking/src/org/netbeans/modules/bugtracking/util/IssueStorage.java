@@ -431,7 +431,7 @@ class IssueStorage {
     private static String readString(DataInputStream dis) throws IOException {
         int len = dis.readInt();
         if(len == 0) {
-            return "";
+            return "";                                                          // NOI18N
         }
         StringBuffer sb = new StringBuffer();                
         while(len-- > 0) {

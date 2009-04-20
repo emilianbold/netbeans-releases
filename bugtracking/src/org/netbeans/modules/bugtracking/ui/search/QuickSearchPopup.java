@@ -265,7 +265,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
                     }
                     @Override
                     String getDisplayText() {
-                        return "...";
+                        return "...";  // NOI18N
                     }
                 });
                 break;
