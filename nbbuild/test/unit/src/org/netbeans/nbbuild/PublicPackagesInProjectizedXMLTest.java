@@ -140,10 +140,10 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             "   <type>org.netbeans.modules.apisupport.project</type>" +
             "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">" +
             "       <code-name-base>org.netbeans.modules.scripting.bsf</code-name-base>" +
+            "       <module-dependencies/>" +
             "       <public-packages>" +
             "           <subpackages>org.hello</subpackages>" +
             "       </public-packages>" +
-            "       <javadoc/>" +
             "   </data></configuration>" +
             "</project>"
         );
@@ -181,10 +181,10 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             "   <type>org.netbeans.modules.apisupport.project</type>" +
             "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">" +
             "       <code-name-base>org.netbeans.modules.scripting.bsf</code-name-base>" +
+            "       <module-dependencies/>" +
             "       <public-packages>" +
             "           <subpackages>org.hello</subpackages>" +
             "       </public-packages>" +
-            "       <javadoc/>" +
             "   </data></configuration>" +
             "</project>"
         );
