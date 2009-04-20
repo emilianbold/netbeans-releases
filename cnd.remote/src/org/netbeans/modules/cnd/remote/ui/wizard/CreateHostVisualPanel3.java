@@ -67,7 +67,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
         textHostDisplayName.setText(execEnv.getHost());
         CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(execEnv);
         labelPlatformValue.setText(PlatformTypes.toString(csm.getPlatform()));
-        labelUsernameValue.setText(execEnv.getHost());
+        labelUsernameValue.setText(execEnv.getUser());
         labelHostnameValue.setText(execEnv.getHost());
         List<String> sets = csm.getCompilerSetDisplayNames();
         cbDefaultToolchain.setModel(new javax.swing.DefaultComboBoxModel(sets.toArray(new String[sets.size()])));
