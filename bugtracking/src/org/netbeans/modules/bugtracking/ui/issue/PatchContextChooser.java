@@ -57,6 +57,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -170,7 +171,7 @@ public class PatchContextChooser extends javax.swing.JPanel implements ExplorerM
 
     private void locationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationButtonActionPerformed
         FileChooserBuilder builder = new FileChooserBuilder(PatchContextChooser.class);
-        File file = builder.setApproveText("Select").showOpenDialog();
+        File file = builder.setApproveText(NbBundle.getMessage(PatchContextChooser.class, "LBL_SELECT")).showOpenDialog();
         if (file != null) {
             FileObject fob = FileUtil.toFileObject(file);
             locationField.setText(FileUtil.getFileDisplayName(fob));

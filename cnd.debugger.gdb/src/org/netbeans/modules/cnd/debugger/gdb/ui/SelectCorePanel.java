@@ -46,12 +46,12 @@
 package org.netbeans.modules.cnd.debugger.gdb.ui;
 
 import java.io.File;
-import org.netbeans.api.project.Project;
+import javax.swing.JButton;
+import javax.swing.event.DocumentEvent;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.debugger.gdb.attach.GdbAttachPanel;
 import org.netbeans.modules.cnd.debugger.gdb.attach.GdbAttachPanel.ProjectCBItem;
+import org.netbeans.modules.cnd.debugger.gdb.attach.GdbAttachPanel.AnyChangeDocumentListener;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.NbBundle;
 
@@ -60,11 +60,19 @@ import org.openide.util.NbBundle;
  * @author Egor Ushakov
  */
 public class SelectCorePanel extends javax.swing.JPanel {
+    private final JButton okButton;
 
     /** Creates new form SelectCorePanel */
-    public SelectCorePanel() {
+    public SelectCorePanel(JButton okButton) {
+        this.okButton = okButton;
         initComponents();
         GdbAttachPanel.fillProjectsCombo(projectCB);
+        corePathText.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
+            public void documentChanged(DocumentEvent e) {
+                setValid();
+            }
+        });
+        setValid();
     }
 
     /** This method is called from within the constructor to
@@ -139,6 +147,11 @@ public class SelectCorePanel extends javax.swing.JPanel {
 
     public String getCorePath() {
         return corePathText.getText();
+    }
+
+    private void setValid() {
+        String text = corePathText.getText();
+        okButton.setEnabled(text != null && text.length() > 0 && projectCB.getSelectedItem() != null);
     }
 
     public ProjectInformation getProjectInformation() {

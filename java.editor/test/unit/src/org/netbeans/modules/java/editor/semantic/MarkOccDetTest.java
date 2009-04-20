@@ -313,12 +313,20 @@ public class MarkOccDetTest extends TestBase {
     public void testException144264() throws Exception {
         performTest("Exception144264", 7, 19);
     }
-    
+
     public void testTypeParamMarkOccurrences() throws Exception {
         performTest("TypeParamMarkOccurrences", 3, 14);
         performTest("TypeParamMarkOccurrences", 3, 28);
     }
     
+    public void testExitPointsAnnonymous162974a() throws Exception {
+        performTest("ExitPoints", 108, 15);
+    }
+
+    public void testExitPointsAnnonymous162974b() throws Exception {
+        performTest("ExitPoints", 115, 22);
+    }
+
     private void performTest(String name, final int line, final int column) throws Exception {
         performTest(name, line, column, false);
     }

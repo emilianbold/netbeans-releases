@@ -130,7 +130,7 @@ public class PasswordDlg extends javax.swing.JPanel {
         jLabel2.setLabelFor(tfPassword);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.jLabel2.text")); // NOI18N
 
-        tfHost.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+        tfHost.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background") /*NOI18N*/);
         tfHost.setEditable(false);
         tfHost.setText(null);
         tfHost.setFocusable(false);
@@ -140,7 +140,7 @@ public class PasswordDlg extends javax.swing.JPanel {
         jLabel0.setLabelFor(tfHost);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel0, org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.jLabel0.text")); // NOI18N
 
-        tfUser.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+        tfUser.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background") /*NOI18N*/);
         tfUser.setEditable(false);
         tfUser.setText(null);
         tfUser.setFocusable(false);
@@ -158,41 +158,44 @@ public class PasswordDlg extends javax.swing.JPanel {
                             .add(jLabel1)
                             .add(jLabel0, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(tfUser)
-                            .add(tfHost)
-                            .add(tfPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 253, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(tfHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                .add(tfUser)
+                                .add(tfPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 253, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                     .add(cbRememberPwd))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
+                .add(23, 23, 23)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel0)
-                    .add(tfUser, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(tfUser))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(tfHost, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(tfHost, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
-                    .add(tfPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(tfPassword))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(cbRememberPwd)
                 .addContainerGap())
         );
 
-        tfPassword.getAccessibleContext().setAccessibleName("null");
-        tfPassword.getAccessibleContext().setAccessibleDescription("null");
-        jLabel2.getAccessibleContext().setAccessibleName("null");
-        jLabel2.getAccessibleContext().setAccessibleDescription("null");
-        tfHost.getAccessibleContext().setAccessibleName("null");
-        tfHost.getAccessibleContext().setAccessibleDescription("null");
-        cbRememberPwd.getAccessibleContext().setAccessibleName("null");
-        cbRememberPwd.getAccessibleContext().setAccessibleDescription("null");
+        tfPassword.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "Pwd.Password_AN")); // NOI18N
+        tfPassword.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "Pwd.Password_AD")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "AN_Password")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "DESC_Password")); // NOI18N
+        tfHost.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "Pwd.Host_AN")); // NOI18N
+        tfHost.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "Pwd.Host_AD")); // NOI18N
+        cbRememberPwd.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "AN_RememberPassword")); // NOI18N
+        cbRememberPwd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "DESC_RememberPassword")); // NOI18N
+        tfUser.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.tfUser.AccessibleContext.accessibleName")); // NOI18N
+        tfUser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.tfUser.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void tfPasswordonPwdFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfPasswordonPwdFocus

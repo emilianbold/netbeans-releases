@@ -68,7 +68,7 @@ abstract class PopupItem {
         }
 
         public String highlite(String text, String displayText) {
-            if(text == null || text.trim().equals("")) return displayText;
+            if(text == null || text.trim().equals("")) return displayText;      // NOI18N
             StringBuffer sb = new StringBuffer();
 
             int idx = displayText.indexOf(text);
