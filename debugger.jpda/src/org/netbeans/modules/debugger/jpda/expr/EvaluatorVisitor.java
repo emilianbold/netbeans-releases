@@ -2286,11 +2286,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         return clazz.classObject();
                     }
                     Field f = clazz.fieldByName(fieldName);
-                    if (!f.isStatic()) {
-                        Assert2.error(arg0, "accessInstanceVariableFromStaticContext", fieldName);
-                        return null;
-                    }
                     if (f != null) {
+                        if (!f.isStatic()) {
+                            Assert2.error(arg0, "accessInstanceVariableFromStaticContext", fieldName);
+                            return null;
+                        }
                         evaluationContext.putField(arg0, f, null);
                         return clazz.getValue(f);
                     } else {
@@ -3374,7 +3374,6 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 throw new IllegalStateException(ieex);
             }
         }
-        
     }
 
     // *************************************************************************

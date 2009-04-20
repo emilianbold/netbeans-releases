@@ -37,59 +37,12 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.issue;
-
-import java.awt.Font;
-import javax.swing.JComponent;
-import javax.swing.JScrollPane;
-import javax.swing.UIManager;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.openide.util.HelpCtx;
+package org.netbeans.modules.cnd.debugger.gdb;
 
 /**
  *
- * @author Tomas Stupka, Jan Stola
+ * @author eu155513
  */
-public class IssueController extends BugtrackingController {
-    private JComponent issuePanel;
-
-    public IssueController(BugzillaIssue issue) {
-        IssuePanel panel = new IssuePanel();
-        panel.setIssue(issue);
-        JScrollPane scrollPane = new JScrollPane(panel);
-        scrollPane.setBorder(null);
-        Font font = UIManager.getFont("Label.font"); // NOI18N
-        if (font != null) {
-            int size = (int)(font.getSize()*1.5);
-            scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
-            scrollPane.getVerticalScrollBar().setUnitIncrement(size);
-        }
-        BugtrackingUtil.keepFocusedComponentVisible(scrollPane);
-        issuePanel = scrollPane;
-    }
-
-    @Override
-    public JComponent getComponent() {
-        return issuePanel;
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(org.netbeans.modules.bugzilla.issue.BugzillaIssue.class);
-    }
-
-    @Override
-    public boolean isValid() {
-        return true; // PENDING
-    }
-
-    @Override
-    public void applyChanges() {
-    }
-
-    void refreshViewData() {
-        // PENDING
-    }
-
+public enum Signal {
+    STOP, TERM, INT, TSTP, TRAP
 }

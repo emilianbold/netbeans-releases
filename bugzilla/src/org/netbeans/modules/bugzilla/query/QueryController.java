@@ -106,7 +106,7 @@ import org.openide.util.RequestProcessor.Task;
 public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
     protected QueryPanel panel;
 
-    private static final String CHANGED_NOW = "Now";
+    private static final String CHANGED_NOW = "Now";                            // NOI18N
 
     private final ComboParameter summaryParameter;
     private final ComboParameter commentsParameter;
@@ -253,7 +253,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     @Override
-    public HelpCtx getHelpContext() {
+    public HelpCtx getHelpCtx() {
         return new HelpCtx(org.netbeans.modules.bugzilla.query.BugzillaQuery.class);
     }
 
@@ -920,7 +920,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     panel.tableSummaryLabel.setText(
                             NbBundle.getMessage(
                                 QueryController.class,
-                                "LBL_MatchingIssues",
+                                NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
                                 new Object[] { count }
                             )
                     );

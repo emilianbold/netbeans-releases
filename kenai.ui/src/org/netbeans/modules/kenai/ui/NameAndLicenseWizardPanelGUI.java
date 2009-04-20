@@ -86,6 +86,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiLicense;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -786,7 +787,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_PRJ_LICENSE, getProjectLicense());
 
         if (panel.isFinishPanel()) {
-            settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES, "issues");
+            settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES, KenaiService.Names.BUGZILLA);
             //settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES_URL, "nevim");
             settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_LOCAL, getFolderToShare());
             settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_NAME, SourceAndIssuesWizardPanelGUI.SVN_DEFAULT_NAME);

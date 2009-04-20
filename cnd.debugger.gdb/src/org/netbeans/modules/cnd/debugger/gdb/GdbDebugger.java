@@ -1355,7 +1355,7 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @param signal The signal to send (as defined by "kill -l")
      */
-    public void kill(int signal) {
+    public void kill(Signal signal) {
         if (programPID > 0) { // Never send a kill if PID is 0
             kill(signal, programPID);
         }
@@ -1370,7 +1370,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * @param signal The signal to send (as defined by "kill -l")
      * @param pid The process ID to send the signal to
      */
-    public void kill(int signal, long pid) {
+    public void kill(Signal signal, long pid) {
         if (pid > 0) {
             ArrayList<String> killcmd = new ArrayList<String>();
             File f;
@@ -1394,22 +1394,8 @@ public class GdbDebugger implements PropertyChangeListener {
             }
             if (!killcmd.isEmpty()) {
                 killcmd.add("-s"); // NOI18N
-
-                String signalName = Integer.toString(signal);
-                // for MacOS we should substitute signal number with the real name
-                if (platform == PlatformTypes.PLATFORM_MACOSX) {
-                    switch (signal) {
-                        case 2:
-                            signalName = "TRAP"; // NOI18N
-                            break;
-                        case 15:
-                            signalName = "TERM"; // NOI18N
-                            break;
-                        default:
-                            assert false : "No textual value for MacOS signal " + signal + ", please add it to kill command in GdbDebugger.";// NOI18N
-                    }
-                }
-                killcmd.add(signalName);
+                
+                killcmd.add(signal.toString());
 
                 killcmd.add(Long.toString(pid));
                 NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, killcmd.get(0));

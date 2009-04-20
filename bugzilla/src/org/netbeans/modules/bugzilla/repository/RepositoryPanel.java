@@ -260,7 +260,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
 
     private void validateText() {
         String txt = urlField.getText();
-        validateButton.setEnabled(txt != null && !txt.equals(""));
+        validateButton.setEnabled(txt != null && !txt.equals(""));              // NOI18N
     }
 
     void enableFields(boolean bl) {
