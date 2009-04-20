@@ -103,8 +103,8 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     private CallGraphScene scene;
     private static double dividerLocation = 0.5;
     FocusTraversalPolicy newPolicy;
-    private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID());
-    private static final Color macBackground = UIManager.getColor("NbExplorerView.background");
+    private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
+    private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
     
     /** Creates new form CallGraphPanel */
     public CallGraphPanel(boolean showGraph) {
