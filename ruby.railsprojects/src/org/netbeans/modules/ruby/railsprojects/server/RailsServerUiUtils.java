@@ -39,15 +39,23 @@
 package org.netbeans.modules.ruby.railsprojects.server;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.List;
+import java.util.concurrent.Future;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.gems.GemInfo;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
+import org.netbeans.modules.ruby.railsprojects.ui.wizards.NewRailsProjectWizardIterator;
+import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * A collection of UI related methods / classes
@@ -66,9 +74,49 @@ public final class RailsServerUiUtils {
         return result;
     }
 
+    public static void addDefaultGlassFishGem(ComboBoxModel servers, RubyPlatform platform) {
+        if (platform == null || !platform.isJRuby()) {
+            return;
+        }
+        for (int i = 0; i < servers.getSize(); i++) {
+            Object server = servers.getElementAt(i);
+            if (server instanceof GlassFishGem) {
+                return;
+            }
+        }
+        ServerListModel model = (ServerListModel) servers;
+        // no glassfish gem, add a placeholder
+        RubyInstance fakeGfGem = new FakeGlassFishGem();
+        model.addServer(fakeGfGem);
+        model.setSelectedItem(fakeGfGem);
+    }
+
+    public static boolean isValidServer(Object server) {
+        return !(server instanceof FakeGlassFishGem);
+    }
+
+    public static void replaceFakeGlassFish(WizardDescriptor descriptor) {
+        RubyInstance server = (RubyInstance) descriptor.getProperty(NewRailsProjectWizardIterator.SERVER_INSTANCE);
+        if (!(server instanceof FakeGlassFishGem)) {
+            return;
+        }
+        RubyPlatform platform = (RubyPlatform) descriptor.getProperty(NewRailsProjectWizardIterator.PLATFORM);
+        GemManager gemManager = platform.getGemManager();
+        if (gemManager == null) {
+            return;
+        }
+        List<GemInfo> versions = gemManager.getVersions(GlassFishGem.GEM_NAME);
+        GemInfo glassFishGemInfo = versions.isEmpty() ? null : versions.get(0);
+        if (glassFishGemInfo == null) {
+            return;
+        }
+        GlassFishGem gfGem = new GlassFishGem(platform, glassFishGemInfo);
+        descriptor.putProperty(NewRailsProjectWizardIterator.SERVER_INSTANCE, gfGem);
+    }
+
     public static class ServerListModel extends AbstractListModel implements ComboBoxModel {
 
-        private final List<? extends RubyInstance> servers;
+        private final List<RubyInstance> servers;
         private Object selected;
 
         public ServerListModel(RubyPlatform platform) {
@@ -96,6 +144,11 @@ public final class RailsServerUiUtils {
         public Object getSelectedItem() {
             return selected;
         }
+
+        void addServer(RubyInstance server) {
+            servers.add(0, server);
+            fireContentsChanged(this, -1, -1);
+        }
     }
 
     private static class ServerListCellRendered extends JLabel implements ListCellRenderer {
@@ -114,4 +167,66 @@ public final class RailsServerUiUtils {
             return this;
         }
     }
+
+    private static class FakeGlassFishGem implements RubyInstance {
+
+        public FakeGlassFishGem() {
+        }
+
+        public String getServerUri() {
+            return "";
+        }
+
+        public String getDisplayName() {
+            return NbBundle.getMessage(RailsServerUiUtils.class, "LBL_FakeGlassFish");
+        }
+
+        public ServerState getServerState() {
+            return null;
+        }
+
+        public Future<OperationState> startServer(RubyPlatform platform) {
+            return null;
+        }
+
+        public Future<OperationState> stopServer() {
+            return null;
+        }
+
+        public Future<OperationState> deploy(String applicationName, File applicationDir) {
+            return null;
+        }
+
+        public Future<OperationState> stop(String applicationName) {
+            return null;
+        }
+
+        public Future<OperationState> runApplication(RubyPlatform platform, String applicationName, File applicationDir) {
+            return null;
+        }
+
+        public boolean isPlatformSupported(RubyPlatform platform) {
+            return false;
+        }
+
+        public void addChangeListener(ChangeListener listener) {
+        }
+
+        public void removeChangeListener(ChangeListener listener) {
+        }
+
+        public String getContextRoot(String applicationName) {
+            return "";
+        }
+
+        public int getRailsPort() {
+            return -1;
+        }
+
+        public String getServerCommand(RubyPlatform platform, String classpath, File applicationDir, int httpPort, boolean debug) {
+            return null;
+        }
+    }
+
+
 }

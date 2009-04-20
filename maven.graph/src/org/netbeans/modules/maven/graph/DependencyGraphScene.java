@@ -331,9 +331,12 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                     popupMenu.add(new FixVersionConflictAction(node));
                 }
                 popupMenu.add(highlitedZoomToFitAction);
-                Action a = CommonArtifactActions.createViewArtifactDetails(node.getArtifact().getArtifact(), project.getRemoteArtifactRepositories());
-                a.putValue("PANEL_HINT", ArtifactViewer.HINT_GRAPH); //NOI18N
-                popupMenu.add(a);
+                if (!node.isRoot()) {
+                    Action a = CommonArtifactActions.createViewArtifactDetails(node.getArtifact().getArtifact(), project.getRemoteArtifactRepositories());
+                    a.putValue("PANEL_HINT", ArtifactViewer.HINT_GRAPH); //NOI18N
+                    a.putValue(Action.NAME, NbBundle.getMessage(DependencyGraphScene.class, "ACT_Show_Graph"));
+                    popupMenu.add(a);
+                }
             }
             return popupMenu;
         }
