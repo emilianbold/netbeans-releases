@@ -93,6 +93,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.openide.ErrorManager;
+import static org.netbeans.modules.java.hints.errors.Utilities.getIterableGenericType;
 
 /**
  *
@@ -457,12 +458,22 @@ public final class CreateElementUtilities {
             return Collections.singletonList(info.getTrees().getTypeMirror(new TreePath(parent, vt.getType())));
         }
         
-        if (vt.getType() == error) {
-            types.add(ElementKind.CLASS);
-            return Collections.<TypeMirror>emptyList();
+        TreePath context = parent.getParentPath();
+        if (vt.getType() != error || context == null) {
+            return null;
         }
-        
-        return null;
+
+        switch (context.getLeaf().getKind()) {
+            case ENHANCED_FOR_LOOP:
+                ExpressionTree iterableTree = ((EnhancedForLoopTree) context.getLeaf()).getExpression();
+                TreePath iterablePath = new TreePath(context, iterableTree);
+                TypeMirror type = getIterableGenericType(info, iterablePath);
+                types.add(ElementKind.LOCAL_VARIABLE);
+                return Collections.singletonList(type);
+            default:
+                types.add(ElementKind.CLASS);
+                return Collections.<TypeMirror>emptyList();
+        }
     }
     
     private static List<? extends TypeMirror> computeAssert(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {

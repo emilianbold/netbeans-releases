@@ -130,10 +130,10 @@ public final class Util {
             if ("file".equals(root.getProtocol())) { //NOI18N
                 return new File(new File(root.toURI()), relativePath).toURL();
             } else {
-                return root.toURI().resolve(relativePath).toURL();
+                return new URL(root, relativePath);
             }
         } catch (URISyntaxException use) {
-            MalformedURLException mue = new MalformedURLException();
+            MalformedURLException mue = new MalformedURLException("Can't resolve URL: root=" + root + ", relativePath=" + relativePath); //NOI18N
             mue.initCause(use);
             throw mue;
         }

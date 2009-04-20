@@ -175,7 +175,7 @@ public class ChatPanel extends javax.swing.JPanel {
                     setEndSelection();
                     insertMessage(message);
                     if (!ChatPanel.this.isVisible()) {
-                        ChatTopComponent.getDefault().setModified(ChatPanel.this);
+                        ChatTopComponent.findInstance().setModified(ChatPanel.this);
                     }
                 }
             });

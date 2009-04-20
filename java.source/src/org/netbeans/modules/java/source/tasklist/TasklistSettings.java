@@ -71,7 +71,7 @@ public class TasklistSettings {
             getPreferencesNode().putBoolean(KEY_ENABLED, enabled);
             if (enabled) {
 // XXX:                RepositoryUpdater.getDefault().rebuildAll(true);
-                IndexingManager.getDefault().refreshAllIndicies(JavaIndex.NAME);
+                IndexingManager.getDefault().refreshAllIndices(JavaIndex.NAME);
             }
             
             ErrorAnnotator an = ErrorAnnotator.getAnnotator();
@@ -109,7 +109,7 @@ public class TasklistSettings {
             getPreferencesNode().putBoolean(KEY_DEPENDENCY_TRACKING, enabled);
             if (enabled) {
 // XXX:                RepositoryUpdater.getDefault().rebuildAll(true);
-                IndexingManager.getDefault().refreshAllIndicies(JavaIndex.NAME);
+                IndexingManager.getDefault().refreshAllIndices(JavaIndex.NAME);
             }
             
             ErrorAnnotator an = ErrorAnnotator.getAnnotator();

@@ -256,7 +256,12 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                 }
             }
         }
-        assert hashCode != null;
+
+        //#162267: With Java Card's runtime, there *is* no Object.hashCode() method
+        if (hashCode == null) {
+            return ret;
+        }
+
         assert equals != null;
         
         TypeElement clazz = (TypeElement)type;

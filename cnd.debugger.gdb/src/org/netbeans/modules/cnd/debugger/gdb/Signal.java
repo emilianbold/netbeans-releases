@@ -36,29 +36,13 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.collab.chat;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.debugger.gdb;
 
 /**
- * TODO: delete this class
- * @author Jan Becicka
+ *
+ * @author eu155513
  */
-public final class SendChatMessageDisabled extends AbstractAction {
-
-    public SendChatMessageDisabled() {
-        super(NbBundle.getMessage(WhoIsOnlineDisabled.class, "CTL_SendChatMessageAction"));
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(e); // NOI18N
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return Boolean.parseBoolean(System.getProperty(("kenai.chat.enabled"), "false"));
-    }
+public enum Signal {
+    STOP, TERM, INT, TSTP, TRAP
 }
-
