@@ -134,7 +134,7 @@ public final class ExternalTerminalProvider {
                             command = command.replaceAll("\\$self", executable); // NOI18N
                         }
 
-                        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, HostInfoUtils.getShell(execEnv));
+                        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, HostInfoUtils.getHostInfo(execEnv, true).getShell());
                         npb = npb.setArguments("-c", command); // NOI18N
                         Process pr = npb.call();
                         int result = pr.waitFor();

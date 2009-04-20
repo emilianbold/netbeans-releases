@@ -36,46 +36,78 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.nativeexecution.api;
 
-package org.netbeans.modules.nativeexecution;
+public interface HostInfo {
 
-import org.netbeans.modules.nativeexecution.api.Platform;
-import org.netbeans.modules.nativeexecution.api.Platform.HardwareType;
-import org.netbeans.modules.nativeexecution.api.Platform.OSType;
+    public static enum CpuFamily {
 
-/**
- * A factory class for org.netbeans.modules.nativeexecution.api.Platform
- * @author Vladimir Kvashin
- */
-public abstract class PlatformAccessor {
-
-    private static PlatformAccessor DEFAULT;
-
-    protected PlatformAccessor() {
+        SPARC,
+        X86,
+        UNKNOWN;
     }
 
-    public static Platform createNew(HardwareType hardwareType, OSType oSType) {
-        return getDefault().createImpl(hardwareType, oSType);
-    }
+    public static enum OSFamily {
 
-    public static void setDefault(PlatformAccessor accessor) {
-        if (DEFAULT != null) {
-          throw new IllegalStateException();
+        SUNOS,
+        LINUX,
+        WINDOWS,
+        MACOSX,
+        UNKNOWN;
+
+        public boolean isUnix() {
+            switch (this) {
+                case LINUX:
+                case MACOSX:
+                case SUNOS:
+                    return true;
+                case WINDOWS:
+                    return false;
+                case UNKNOWN:
+                    return false;
+                default:
+                    throw new IllegalStateException("Unexpected OSFamily: " + this); //NOI18N
+            }
         }
-        DEFAULT = accessor;
     }
 
-    public static PlatformAccessor getDefault() {
-        PlatformAccessor a = DEFAULT;
-        if (a != null) {
-          return a;
+    public static enum Bitness {
+
+        _32,
+        _64;
+
+        public static Bitness valueOf(int bitness) {
+            return bitness == 64 ? _64 : _32;
         }
-        try {
-          Class.forName(Platform.class.getName(), true, Platform.class.getClassLoader());
-        } catch (Exception e) {
+
+        @Override
+        public String toString() {
+            return (this == _32) ? "32" : "64"; // NOI18N
         }
-        return DEFAULT;
     }
 
-    protected abstract Platform createImpl(HardwareType hardwareType, OSType oSType);
+    public static interface OS {
+
+        public OSFamily getFamily();
+
+        public String getName();
+
+        public String getVersion();
+
+        public Bitness getBitness();
+    }
+
+    public OS getOS();
+
+    public CpuFamily getCpuFamily();
+
+    public int getCpuNum();
+
+    public OSFamily getOSFamily();
+
+    public String getHostname();
+
+    public String getShell();
+
+    public String getTempDir();
 }

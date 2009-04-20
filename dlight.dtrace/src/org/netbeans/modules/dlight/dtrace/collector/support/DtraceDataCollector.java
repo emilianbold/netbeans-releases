@@ -77,6 +77,7 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -322,11 +323,15 @@ public final class DtraceDataCollector
         boolean connected = true;
         String error = ""; // NOI18N
 
+        final HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv, true);
+
+        if (hostInfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
+            return ValidationStatus.invalidStatus(
+                    NbBundle.getMessage(DtraceDataCollector.class,
+                    "DtraceDataCollector.DtraceIsSupportedOnSunOSOnly")); // NOI18N
+        }
+
         try {
-            if (!HostInfoUtils.getOS(execEnv).equals("SunOS")) { // NOI18N
-                return ValidationStatus.invalidStatus(
-                        NbBundle.getMessage(DtraceDataCollector.class, "DtraceDataCollector.DtraceIsSupportedOnSunOSOnly")); // NOI18N
-            }
             fileExists = HostInfoUtils.fileExists(execEnv, command);
         } catch (IOException ex) {
             error = ex.getMessage();
@@ -368,7 +373,8 @@ public final class DtraceDataCollector
 
         if (sps == null) {
             return ValidationStatus.invalidStatus(
-                    NbBundle.getMessage(DtraceDataCollector.class, "DtraceDataCollector.NoPrivSupport", execEnv.toString()));//NOI18N
+                    NbBundle.getMessage(DtraceDataCollector.class, 
+                    "DtraceDataCollector.NoPrivSupport", execEnv.toString())); // NOI18N
         }
 
         boolean status = sps.hasPrivileges(requiredPrivilegesList);
