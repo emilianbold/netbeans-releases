@@ -59,11 +59,11 @@ public class NodeUtils {
      */
     public static Image getTreeFolderIcon(boolean opened) {
         Image base = null;
-        Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
+        Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
         if (baseIcon != null) {
             base = ImageUtilities.icon2Image(baseIcon);
         } else {
-            base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
+            base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
             if (base == null) { // fallback to our owns
                 base = ImageUtilities.loadImage(opened ? OPENED_ICON_PATH : ICON_PATH, true);
             }
