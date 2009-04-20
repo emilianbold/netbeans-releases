@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-public final class CreateHostVisualPanel3 extends JPanel {
+/*package*/ final class CreateHostVisualPanel3 extends JPanel {
 
     public CreateHostVisualPanel3() {
         initComponents();
