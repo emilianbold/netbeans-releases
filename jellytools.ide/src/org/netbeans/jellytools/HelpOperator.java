@@ -45,7 +45,7 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Window;
-import org.netbeans.jellytools.actions.HelpAction;
+import org.netbeans.jellytools.actions.IDEHelpAction;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -85,7 +85,7 @@ public class HelpOperator extends WindowOperator {
         super(WindowOperator.waitWindow(new HelpWindowChooser(title)));
     }
 
-    private static final HelpAction helpAction = new HelpAction();
+    private static final IDEHelpAction helpAction = new IDEHelpAction();
     
     private JButtonOperator _btBack;
     private JButtonOperator _btNext;

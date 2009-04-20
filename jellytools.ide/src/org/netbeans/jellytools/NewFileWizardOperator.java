@@ -125,33 +125,7 @@ public class NewFileWizardOperator extends WizardOperator {
         nfwo.selectFileType(filetype);
         nfwo.next();
         return new NewFileWizardOperator();
-    }
-    
-    /** Creates a new object from template. It invokes new file wizard, 
-     * sets given project, category and file type. On the next panel it
-     * sets package and object name. If package name is null or empty, it lets
-     * the default one.
-     * @param projectName name of project in which new object should be created
-     * @param category category to be selected
-     * @param fileType file type to be selected
-     * @param packageName package name of new object
-     * @param name name of created object
-     */
-    public static void create(String projectName, String category, String fileType, String packageName, String name) {
-        String wizardTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle",
-                                              "LBL_NewFileWizard_Title");
-        NewFileWizardOperator nfwo = invoke(wizardTitle);
-        nfwo.selectProject(projectName);
-        nfwo.selectCategory(category);
-        nfwo.selectFileType(fileType);
-        nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
-        nfnlso.setObjectName(name);
-        if(packageName != null && !"".equals(packageName)) {
-            nfnlso.setPackage(packageName);
-        }
-        nfnlso.finish();
-    }
+    }     
     
     /** Select given project in combobox of projects
      *  @param project name of project
