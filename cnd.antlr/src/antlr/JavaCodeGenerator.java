@@ -420,6 +420,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        println("import antlr.LexerSharedInputState;");
 	        println("import antlr.collections.impl.BitSet;");
 	        println("import antlr.SemanticException;");
+                println("import java.util.Map;");
+                println("import java.util.HashMap;");
 
 	        // Generate user-defined lexer file preamble
 	        println(grammar.preambleAction.getText());
@@ -517,27 +519,34 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        println("caseSensitiveLiterals = " + g.caseSensitiveLiterals + ";");
 	        println("setCaseSensitive(" + g.caseSensitive + ");");
 	
-	        // Generate the initialization of a hashtable
-	        // containing the string literals used in the lexer
 	        // The literals variable itself is in CharScanner
-	        println("literals = new Hashtable();");
-	        Enumeration keys = grammar.tokenManager.getTokenSymbolKeys();
-	        while (keys.hasMoreElements()) {
-	            String key = (String)keys.nextElement();
-	            if (key.charAt(0) != '"') {
-	                continue;
-	            }
-	            TokenSymbol sym = grammar.tokenManager.getTokenSymbol(key);
-	            if (sym instanceof StringLiteralSymbol) {
-	                StringLiteralSymbol s = (StringLiteralSymbol)sym;
-	                println("literals.put(new ANTLRHashString(" + s.getId() + ", this), new Integer(" + s.getTokenType() + "));");
-	            }
-	        }
+	        println("literals = LITERALS_TABLE;");
 	        tabs--;
-	
-	        Enumeration ids;
 	        println("}");
-	
+
+                // Generate the initialization of a hashtable
+                // containing the string literals used in the lexer
+                // The literals variable itself is in CharScanner
+                println("private static final Map<ANTLRHashString, Integer> LITERALS_TABLE;");
+                println("static {");
+	        tabs++;
+                println("LITERALS_TABLE = new HashMap<ANTLRHashString, Integer>(256);");
+                Enumeration keys = grammar.tokenManager.getTokenSymbolKeys();
+                while (keys.hasMoreElements()) {
+                    String key = (String) keys.nextElement();
+                    if (key.charAt(0) != '"') {
+                        continue;
+                    }
+                    TokenSymbol sym = grammar.tokenManager.getTokenSymbol(key);
+                    if (sym instanceof StringLiteralSymbol) {
+                        StringLiteralSymbol s = (StringLiteralSymbol) sym;
+                        println("LITERALS_TABLE.put(new ANTLRHashString(" + s.getId() + ", " + g.caseSensitiveLiterals + "), Integer.valueOf(" + s.getTokenType() + "));");
+                    }
+                }
+	        tabs--;
+                println("}");
+
+	        Enumeration ids;
 	        // generate the rule name array for debugging
 	        if (grammar.debuggingOutput) {
 	            println("private static final String _ruleNames[] = {");
