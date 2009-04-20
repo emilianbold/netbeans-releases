@@ -43,7 +43,6 @@ import java.awt.Image;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
