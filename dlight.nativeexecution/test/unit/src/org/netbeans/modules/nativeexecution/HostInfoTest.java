@@ -39,7 +39,6 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -49,17 +48,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.Exceptions;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author ak119685
- */
-public class HostInfoTest {
-    private final static String password = "";
-    
+public class HostInfoTest extends NativeExecutionTest {
+
+    private final static String password = ""; // NOI18N
     public HostInfoTest() {
     }
 
@@ -81,8 +77,9 @@ public class HostInfoTest {
 
     @Test
     public void testGetHostInfo() {
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "129.159.127.252", 22); // NOI18N
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "tulos", 22); // NOI18N
         ConnectionManager cm = ConnectionManager.getInstance();
+        
         try {
             cm.connectTo(execEnv, password.toCharArray(), false);
         } catch (IOException ex) {
@@ -91,12 +88,10 @@ public class HostInfoTest {
             Exceptions.printStackTrace(ex);
         }
 
-        try {
-            System.out.println("Tempdir is " + HostInfoUtils.getTempDir(execEnv)); // NOI18N
-        } catch (ConnectException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        HostInfo hi = HostInfoUtils.getHostInfo(execEnv, true);
+        System.out.println("Tempdir is " + hi.getTempDir()); // NOI18N
     }
+
     /**
      * Test of getOS method, of class HostInfo.
      */
@@ -105,16 +100,11 @@ public class HostInfoTest {
         System.out.println("getOS"); // NOI18N
         String expResult = "SunOS"; // NOI18N
         String result;
-
-        try {
-            expResult = "SunOS"; // NOI18N
-            result = HostInfoUtils.getOS(ExecutionEnvironmentFactory.createNew("ak119685", "127.0.0.1")); // NOI18N
-            System.out.printf("Expected result is %s, actual result is %s\n", expResult, result); // NOI18N
-            assertEquals(expResult, result);
-        } catch (ConnectException ex) {
-            Exceptions.printStackTrace(ex);
-            fail("Wrong exception"); // NOI18N
-        }
+        expResult = "SunOS"; // NOI18N
+        HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.createNew("ak119685", "127.0.0.1"), false); // NOI18N
+        result = hi.getOS().getName();
+        System.out.printf("Expected result is %s, actual result is %s\n", expResult, result); // NOI18N
+        assertEquals(expResult, result);
 //
 //        try {
 //            result = HostInfo.getOS(new ExecutionEnvironment("ak119685", "129.159.127.252"));
@@ -158,7 +148,7 @@ public class HostInfoTest {
         boolean result;
         boolean expResult;
 
-        ExecutionEnvironment ee = ExecutionEnvironmentFactory.createNew("ak119685", "129.159.127.252"); // NOI18N
+        ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
 //        try {
 //            CharArrayWriter writer = new CharArrayWriter();
 //
@@ -266,18 +256,5 @@ public class HostInfoTest {
         assertEquals(expResult, result);
     }
 
-//    @Test
-    public void testGetPlatformPath() {
-        System.out.println("getPlatformPath"); // NOI18N
-        String expResult = "intel-S2"; // NOI18N
-        String result = ""; // NOI18N
-
-        for (int i = 0; i < 3; i++) {
-//            result = HostInfoUtils.getPlatformPath(new ExecutionEnvironment(null, null));
-            System.out.println("Platform PATH is " + result); // NOI18N
-        }
-        assertEquals(expResult, result);
-
-    }
 }
 

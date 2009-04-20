@@ -164,7 +164,7 @@ public class LLDataCollector
 
     public Map<String, String> getExecutionEnv(DLightTarget target) throws ConnectException {
         ExecutionEnvironment env = target.getExecEnv();
-        String ldPreloadName = NativeToolsUtil.getLdPreloadName(HostInfoUtils.getOS(env));
+        String ldPreloadName = NativeToolsUtil.getLdPreloadName(env);
         File agentLibraryLocal = locateAgentLibrary(env);
         if (agentLibraryLocal != null) {
             return Collections.singletonMap(ldPreloadName, getRemotePath(env, agentLibraryLocal));
@@ -177,12 +177,7 @@ public class LLDataCollector
         if (env.isLocal()) {
             return localPath.getAbsolutePath();
         } else {
-            try{
-                return HostInfoUtils.getTempDir(env) + localPath.getName();
-            }catch(ConnectException ex){
-
-            }
-            return "/tmp/" + localPath.getName(); // NOI18N
+            return HostInfoUtils.getHostInfo(env, true).getTempDir() + localPath.getName();
         }
     }
 

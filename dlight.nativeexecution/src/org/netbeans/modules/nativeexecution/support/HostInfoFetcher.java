@@ -36,75 +36,57 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.nativeexecution.support;
 
-package org.netbeans.modules.nativeexecution.api;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
-import org.netbeans.modules.nativeexecution.PlatformAccessor;
+public class HostInfoFetcher {
 
-/**
- * Describes a platform - operating system and hardware
- * of the local or remote host.
- *
- * @author Vladimir Kvashin
- */
-public final class Platform {
+    private static final java.util.logging.Logger log = Logger.getInstance();
+    private static final Map<ExecutionEnvironment, HostInfo> hostsInfo =
+            new HashMap<ExecutionEnvironment, HostInfo>();
 
-//    public static final Platform DUMMY = new Platform(HardwareType.UNKNOWN, OSType.UNKNOWN);
+    private final ExecutionEnvironment execEnv;
 
-    public enum OSType {
+    public HostInfoFetcher(ExecutionEnvironment execEnv) {
+        this.execEnv = execEnv;
+    }
 
-        SOLARIS,
-        LINUX,
-        MACOSX,
-        WINDOWS,
-        GENUNIX,
-        UNKNOWN;
+    public HostInfo getInfo(boolean blocking) {
+        HostInfo info;
 
-        public boolean isUnix() {
-            switch(this) {
-                case GENUNIX:
-                case LINUX:
-                case MACOSX:
-                case SOLARIS:
-                    return true;
-                case WINDOWS:
-                    return false;
-                case UNKNOWN:
-                    return false;
-                default:
-                    throw new IllegalStateException("Unexpected OSType: " + this); //NOI18N
+        synchronized (hostsInfo) {
+            info = hostsInfo.get(execEnv);
+        }
+
+        if (info != null || !blocking) {
+            return info;
+        }
+
+        synchronized (this) {
+            try {
+                ConnectionManager mgr = ConnectionManager.getInstance();
+
+                if (!mgr.isConnectedTo(execEnv)) {
+                    mgr.connectTo(execEnv);
+                }
+                
+                info = HostInfoImpl.getHostInfo(execEnv);
+                synchronized (hostsInfo) {
+                    hostsInfo.put(execEnv, info);
+                }
+            } catch (IOException ex) {
+                log.fine("IOException while connecting to " + execEnv + ": " + ex); // NOI18N
+            } catch (CancellationException ex) {
             }
+
+            return info;
         }
     }
-
-    public enum HardwareType {
-        X86,
-        SPARC,
-        UNKNOWN
-    }
-
-    public OSType getOSType() {
-        return oSType;
-    }
-
-    public HardwareType getHardwareType() {
-        return hardwareType;
-    }
-
-    private final HardwareType hardwareType;
-    private final OSType oSType;
-
-    private Platform(HardwareType hardwareType, OSType oSType) {
-        this.hardwareType = hardwareType;
-        this.oSType = oSType;
-    }
-
-    static {
-        PlatformAccessor.setDefault(new PlatformAccessor() {
-            protected Platform createImpl(HardwareType hardwareType, OSType oSType) {
-                return new Platform(hardwareType, oSType);
-            }
-        });
-    }
-
 }

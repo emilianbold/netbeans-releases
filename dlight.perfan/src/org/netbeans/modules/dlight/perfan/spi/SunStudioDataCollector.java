@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.perfan.spi;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -80,6 +79,7 @@ import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -239,19 +239,22 @@ public class SunStudioDataCollector
             this.target = target;
 
             ExecutionEnvironment execEnv = target.getExecEnv();
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv, true);
+
+            switch (hostInfo.getOSFamily()) {
+                case LINUX:
+                case SUNOS:
+                    break;
+                default:
+                    validationStatus = ValidationStatus.invalidStatus(
+                            "SunStudioDataCollector works on SunOS or Linux only."); // NOI18N
+                    return validationStatus;
+            }
 
             String command = null;
             String sprohome = null;
 
             try {
-                String os = HostInfoUtils.getOS(execEnv);
-
-                if (os == null || !("SunOS".equals(os) || os.indexOf("Linux") >= 0)) { // NOI18N
-                    validationStatus = ValidationStatus.invalidStatus(
-                            "SunStudioDataCollector works on SunOS or Linux only."); // NOI18N
-                    return validationStatus;
-                }
-
                 Collection<? extends SunStudioLocatorFactory> factories =
                         Lookup.getDefault().lookupAll(SunStudioLocatorFactory.class);
 
@@ -345,15 +348,7 @@ public class SunStudioDataCollector
             DLightLogger.assertTrue(this.target == target,
                     "Validation was performed against another target"); // NOI18N
 
-            String tmpDirBase = null;
-
-            try {
-                tmpDirBase = HostInfoUtils.getTempDir(target.getExecEnv());
-            } catch (ConnectException ex) {
-                // TODO: throw exception here
-                tmpDirBase = "/var/tmp"; // NOI18N
-            }
-
+            String tmpDirBase = HostInfoUtils.getHostInfo(target.getExecEnv(), true).getTempDir();
             this.experimentDir = tmpDirBase + "/experiment_" + uid.incrementAndGet() + ".er"; // NOI18N
             this.storage = (PerfanDataStorage) dataStorage;
 
