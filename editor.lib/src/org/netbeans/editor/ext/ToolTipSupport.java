@@ -394,9 +394,7 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
                 }
                 
                 
-            } else { // just deinstalled
-                component = (JTextComponent)evt.getOldValue();
-
+            } else if (null != (component = (JTextComponent)evt.getOldValue())) { // just deinstalled
                 component.removeFocusListener(this);
                 component.removePropertyChangeListener(this);
                 
