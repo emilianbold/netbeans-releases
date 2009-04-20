@@ -39,8 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.nbbuild;
+package org.netbeans.nbbuild.testdist;
 
+import org.netbeans.nbbuild.testdist.ValidatePath;
 import java.io.File;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
