@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.ConnectException;
 import java.security.acl.NotOwnerException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -244,20 +243,15 @@ public final class DtraceDataCollector
             Util.setExecutionPermissions(Arrays.asList(scriptPath));
         } else {
             File script = new File(localScriptPath);
+            scriptPath = HostInfoUtils.getHostInfo(execEnv, true).getTempDir() + "/" + script.getName(); // NOI18N
+            Future<Integer> copyResult = CommonTasksSupport.uploadFile(
+                    localScriptPath, execEnv, scriptPath, 0777, null);
             try {
-                scriptPath = HostInfoUtils.getTempDir(execEnv) + "/" + script.getName(); // NOI18N
-                Future<Integer> copyResult = CommonTasksSupport.uploadFile(
-                        localScriptPath, execEnv, scriptPath, 0777, null);
-                try {
-                    copyResult.get();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } catch (ConnectException ex) {
-                // should not happen as validation assures that host is connected
-                DLightLogger.instance.severe("Host must be connected at this stage"); // NOI18N
+                copyResult.get();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
