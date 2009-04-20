@@ -246,6 +246,7 @@ final class GizmoIndicatorsTopComponent extends TopComponent {
     @Override
     public void componentClosed() {
         if (session != null) {
+
             DLightManager.getDefault().closeSessionOnExit(session);
         }
         super.componentClosed();

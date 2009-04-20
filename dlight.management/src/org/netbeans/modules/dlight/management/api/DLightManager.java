@@ -173,7 +173,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         if (sessions.isEmpty()) {
             setActiveSession(null);
         } else {
-            setActiveSession(sessions.get(0));
+            setActiveSession(sessions.get(sessions.size() -1));//last one will be active
         }
     }
 
