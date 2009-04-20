@@ -92,7 +92,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
             String threads = row.getStringValue("threads"); // NOI18N
             if (locks != null && threads != null) {
                 lastThreads = Integer.parseInt(threads);
-                lastLocks = (int) (lastThreads * Float.parseFloat(locks) / 100);
+                lastLocks = Math.round(lastThreads * Float.parseFloat(locks) / 100);
             }
         }
     }

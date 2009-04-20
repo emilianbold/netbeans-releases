@@ -203,7 +203,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 }
                 // find tag open and keep searching backwards ignoring it:
                 if (moveToOpeningTag(ts)) {
-                    assert getTokenName(ts.token()).equals(tag) : "tag="+tag+" token="+ts.token();
+                    assert getTokenName(ts.token()).equalsIgnoreCase(tag) : "tag="+tag+" token="+ts.token();
                     int rangeStart;
                     // if document is being editted end tag symbol might be accidentally missing:
                     if (ts.movePrevious() && isStartTagSymbol(ts.token())) {
