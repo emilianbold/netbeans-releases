@@ -47,12 +47,10 @@ import javax.swing.JOptionPane;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.explorer.propertysheet.PropertyEnv;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
@@ -98,9 +96,7 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         if (!dhconf.isOnline()) {
             ExecutionEnvironment execEnv = dhconf.getExecutionEnvironment();
-            ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-            assert registry != null;
-            final ServerRecord record = registry.get(execEnv);
+            final ServerRecord record = ServerList.get(execEnv);
             assert record != null;
 
             // start validation phase

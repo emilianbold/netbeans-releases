@@ -37,71 +37,37 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.remote;
+package org.netbeans.modules.cnd.spi.remote;
 
+import org.netbeans.modules.cnd.api.remote.*;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
 
 /**
  * This is a place holder for a RemoteServerList which will be implemented in cnd.remote.
  * 
  * @author gordonp
  */
-public class ServerList {
-
-    private ServerList() {
-    }
-
-    private static ServerListImplementation DEFAULT;
-
-    private static ServerListImplementation getDefault() {
-        ServerListImplementation result = DEFAULT;
-        if (result == null) {
-            result = Lookup.getDefault().lookup(ServerListImplementation.class);
-            assert result != null;
-            DEFAULT = result;
-        }
-        return result;
-    };
-
+public interface ServerListImplementation {
+    
     /** The index of the default development server */
-    public static int getDefaultIndex() {
-        return getDefault().getDefaultIndex();
-    }
+    public abstract int getDefaultIndex();
 
-    public static Collection<? extends ServerRecord> getRecords() {
-        return getDefault().getRecords();
-    }
+    public abstract Collection<? extends ServerRecord> getRecords();
     
     /** Set the index of the default development server */
-    public static void setDefaultIndex(int defaultIndex) {
-        getDefault().setDefaultIndex(defaultIndex);
-    }
+    public abstract void setDefaultIndex(int defaultIndex);
     
-    public static List<ExecutionEnvironment> getEnvironments() {
-        return getDefault().getEnvironments();
-    };
+    public abstract List<ExecutionEnvironment> getEnvironments();
 
-    public static ServerRecord get(ExecutionEnvironment env) {
-        return getDefault().get(env);
-    }
+    public abstract ServerRecord get(ExecutionEnvironment env);
     
-    public static ServerRecord getDefaultRecord() {
-        return getDefault().getDefaultRecord();
-    }
+    public abstract ServerRecord getDefaultRecord();
     
-    public static void clear() {
-        getDefault().clear();
-    }
+    public abstract void clear();
 
-    public static ServerRecord addServer(ExecutionEnvironment env, boolean asDefault, boolean connect) {
-        return getDefault().addServer(env, asDefault, connect);
-    }
+    public abstract ServerRecord addServer(ExecutionEnvironment env, boolean asDefault, boolean connect);
 
-    public static boolean isValidExecutable(ExecutionEnvironment env, String path) {
-        return getDefault().isValidExecutable(env, path);
-    }
+    public abstract boolean isValidExecutable(ExecutionEnvironment env, String path);
 }
