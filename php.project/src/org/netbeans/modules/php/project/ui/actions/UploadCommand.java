@@ -98,6 +98,10 @@ public class UploadCommand extends RemoteCommand implements Displayable {
 
         FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(getProject());
 
+        if (!sourcesFilesOnly(sources, filesToUpload)) {
+            return;
+        }
+
         InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
         RemoteClient remoteClient = getRemoteClient(remoteLog);
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());
