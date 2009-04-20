@@ -497,7 +497,14 @@ public class JavaCodeGenerator extends CodeGenerator {
 	            println("this(new LexerSharedInputState(), ib);");
 	        tabs--;
 	        println("}");
-	
+
+                // Generate the constructor from char buffer
+                println("public " + grammar.getClassName() + "(char buf[]) {");
+                tabs++;
+                    println("this(new LexerSharedInputState(), new CharBuffer(buf));");
+                tabs--;
+                println("}");
+
 	        //
 	        // Generate the constructor from InputBuffer (char or byte)
 	        //
