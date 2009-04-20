@@ -53,7 +53,7 @@ public final class SendChatMessageDisabled extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        ChatTopComponent.openAction(ChatTopComponent.getDefault(), "", "", false).actionPerformed(e); // NOI18N
+        ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(e); // NOI18N
     }
 
     @Override

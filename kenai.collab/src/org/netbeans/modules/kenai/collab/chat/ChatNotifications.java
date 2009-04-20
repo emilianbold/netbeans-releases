@@ -114,8 +114,9 @@ public class ChatNotifications {
                 final ActionListener l = new ActionListener() {
 
                     public void actionPerformed(ActionEvent arg0) {
-                        ChatTopComponent.openAction(ChatTopComponent.getDefault(), "", "", false).actionPerformed(arg0); // NOI18N
-                        ChatTopComponent.getDefault().setActive(chatRoomName);
+                        final ChatTopComponent chatTc = ChatTopComponent.findInstance();
+                        ChatTopComponent.openAction(chatTc, "", "", false).actionPerformed(arg0); // NOI18N
+                        chatTc.setActive(chatRoomName);
                     }
                 };
 

@@ -126,7 +126,7 @@ public class PresenceIndicator {
         @Override
         public void mouseClicked(MouseEvent event) {
             if (event.getClickCount() == 2) {
-                ChatTopComponent.openAction(ChatTopComponent.getDefault(), "", "", false).actionPerformed(new ActionEvent(event,event.getID(),"")); // NOI18N
+                ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(new ActionEvent(event,event.getID(),"")); // NOI18N
             }
         }
     }
