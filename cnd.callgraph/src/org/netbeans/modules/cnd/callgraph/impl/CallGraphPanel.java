@@ -64,6 +64,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
@@ -550,6 +551,7 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
             setLayout(new java.awt.BorderLayout());
             add(listView, java.awt.BorderLayout.CENTER);
             listView.setFocusable(false);
+            listView.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         }
         
         public ExplorerManager getExplorerManager() {
