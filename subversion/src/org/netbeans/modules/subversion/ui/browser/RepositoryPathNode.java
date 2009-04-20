@@ -347,9 +347,7 @@ public class RepositoryPathNode extends AbstractNode {
 
                     } catch (SVNClientException ex) {
                         Collection entries = getPreviousNodeEntries();
-                        if(entries.size() > 0) {
-                            setKeys(entries);
-                        } else {
+                        if(entries.size() == 0) {
                             setKeys(Collections.singleton(errorNode(ex)));
                         }
                         return;

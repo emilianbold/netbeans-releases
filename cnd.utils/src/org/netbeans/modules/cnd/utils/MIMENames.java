@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.cnd.utils;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * MIME names.
  * We need these both in the loaders code and in the editor code
@@ -122,6 +126,18 @@ public final class MIMENames {
     /** Qt Translation files */
     public static final String QT_TRANSLATION_MIME_TYPE = "text/qttranslation+xml"; // NOI18N
 
+    public static final Set<String> CND_TEXT_MIME_TYPES;
+
+    static {
+        CND_TEXT_MIME_TYPES = new HashSet<String>(Arrays.asList(new String[]{
+                    HEADER_MIME_TYPE, C_HEADER_MIME_TYPE, CPLUSPLUS_MIME_TYPE, C_MIME_TYPE, FORTRAN_MIME_TYPE,
+                    MAKEFILE_MIME_TYPE, SHELL_MIME_TYPE, BAT_MIME_TYPE,
+                    VISU_MIME_TYPE,
+                    LEX_MIME_TYPE, YACC_MIME_TYPE, ASM_MIME_TYPE,
+                    QT_UI_MIME_TYPE, QT_RESOURCE_MIME_TYPE, QT_TRANSLATION_MIME_TYPE
+                }));
+    }
+
     public static boolean isCppOrC(String mime) {
         if (mime == null || mime.length() == 0) {
             return false;
@@ -140,7 +156,7 @@ public final class MIMENames {
         if (mime == null || mime.length() == 0) {
             return false;
         }
-        return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(C_MIME_TYPE) || mime.equals(HEADER_MIME_TYPE) || mime.equals(FORTRAN_MIME_TYPE);
+        return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(C_MIME_TYPE) || mime.equals(HEADER_MIME_TYPE) || mime.equals(C_HEADER_MIME_TYPE) || mime.equals(FORTRAN_MIME_TYPE);
     }
 
     public static boolean isExe(String mime) {

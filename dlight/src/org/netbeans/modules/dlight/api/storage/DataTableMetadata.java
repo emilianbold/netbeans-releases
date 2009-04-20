@@ -158,7 +158,7 @@ public final class DataTableMetadata {
         sb.append(' ');
         if (columns != null) {
             for (Column column : columns) {
-                sb.append("\n\t");
+                sb.append("\n\t"); //NOI18N
                 sb.append(column);
             }
         }
@@ -232,7 +232,7 @@ public final class DataTableMetadata {
 
         @Override
         public String toString() {
-            return name + " : (" + getColumnClass().getName() + ")";
+            return name + " : (" + getColumnClass().getName() + ")"; //NOI18N
         }
     }
 

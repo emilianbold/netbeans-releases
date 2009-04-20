@@ -36,12 +36,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jruby.nb.ast.FCallNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.StrNode;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.StrNode;
+import org.jrubyparser.ast.INameNode;
 import org.jruby.util.ByteList;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -184,7 +184,7 @@ public class Deprecations extends RubyAstRule {
     }
     
     private static String getStringArg(Node node) {
-        if (node.nodeId == NodeType.FCALLNODE) {
+        if (node.getNodeType() == NodeType.FCALLNODE) {
             Node argsNode = ((FCallNode)node).getArgsNode();
 
             if (argsNode instanceof ListNode) {
@@ -196,7 +196,7 @@ public class Deprecations extends RubyAstRule {
                     // For dynamically computed strings, we have n instanceof DStrNode
                     // but I can't handle these anyway
                     if (n instanceof StrNode) {
-                        ByteList require = ((StrNode)n).getValue();
+                        String require = ((StrNode)n).getValue();
                         
                         if ((require != null) && (require.length() > 0)) {
                             return require.toString();

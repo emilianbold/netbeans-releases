@@ -109,7 +109,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
     public DLightToolConfiguration create() {
         DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME);
-        toolConfiguration.setIcon("org/netbeans/modules/dlight/memory/resources/memory.png");
+        toolConfiguration.setIcon("org/netbeans/modules/dlight/memory/resources/memory.png"); // NOI18N
         DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
         toolConfiguration.addDataCollectorConfiguration(dcc);
         MultipleDTDCConfiguration mdcc = initDtraceDataCollectorConfiguration();
@@ -157,7 +157,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
         // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
-        dataCollectorConfiguration.setScriptArgs(" -DNOSTACK");
+        dataCollectorConfiguration.setScriptArgs(" -DNOSTACK"); // NOI18N
         dataCollectorConfiguration.setStackSupportEnabled(true); // true
 
         MultipleDTDCConfiguration mdc = new MultipleDTDCConfiguration(dataCollectorConfiguration, "mem:"); // NOI18N
@@ -223,7 +223,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 "AND stackid = node.node_id and node.func_id = func.func_id " + // NOI18N
                 " GROUP BY node.func_id, func.func_id, func.func_name, node.offset"; // NOI18N
 
-        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_name", "offset", "id");
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription("func_name", "offset", "id"); // NOI18N
 
         DataTableMetadata viewTableMetadata = new DataTableMetadata(
                 "mem", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N

@@ -241,7 +241,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             }
             return new MarkupItem(tagName, true, indentation, optionalEnd, children, empty != null ? empty.booleanValue() : false, false, false);
         } else {
-            return new MarkupItem(tagName, false, indentation, false, null, false, false, false);
+            Boolean empty = isEmptyTag(tagName);
+            return new MarkupItem(tagName, false, indentation, false, null, empty != null ? empty.booleanValue() : false, false, false);
         }
 
     }
@@ -738,6 +739,9 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                     // nothing to do:
                     break;
                 } else if (item.optionalClosingTag) {
+                    if (lastFailureSize == -1) {
+                        lastFailureSize = newItems.size();
+                    }
                     newItems.add(MarkupAbstractIndenter.createVirtualMarkupItem(item.tagName, item.empty));
                 } else {
                     if (lastFailureSize == -1) {
@@ -750,6 +754,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                         if (AbstractIndenter.DEBUG) {
                             System.err.println("WARNING: cannot find opening tag for "+newItem+": "+getStack()+" stopped searching at "+item);
                         }
+                        // resuse eliminated attribute here to simply ignore newItem
+                        newItem.eliminated = true;
                         break;
                     }
 

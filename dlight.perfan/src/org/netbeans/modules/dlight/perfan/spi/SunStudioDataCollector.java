@@ -61,7 +61,7 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -144,7 +144,7 @@ public class SunStudioDataCollector
                 SunStudioDCConfiguration.c_iSync,
                 SunStudioDCConfiguration.c_iSyncn));
 
-        memInfoTable = new DataTableMetadata("SunStudioMemDetailedData",
+        memInfoTable = new DataTableMetadata("SunStudioMemDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_leakCount,
                 SunStudioDCConfiguration.c_leakSize));
@@ -204,8 +204,8 @@ public class SunStudioDataCollector
         }
     }
 
-    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case STARTING:
                 if (warmUpTaskResult == null) {
                     // This means that re-starting occured
@@ -213,19 +213,19 @@ public class SunStudioDataCollector
                 }
                 return;
             case RUNNING:
-                targetStarted(source);
+                targetStarted(event.target);
                 return;
             case FAILED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case TERMINATED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case DONE:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case STOPPED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
         }
     }
@@ -276,7 +276,7 @@ public class SunStudioDataCollector
                 }
 
                 if (notFound) {
-                    validationStatus = ValidationStatus.invalidStatus("No SunStudio Found"); //NOI18N
+                    validationStatus = ValidationStatus.invalidStatus("No SunStudio Found, use link http://developers.sun.com/sunstudio/ to download latest SunStudio"); //NOI18N
                     return validationStatus;
                 }
 

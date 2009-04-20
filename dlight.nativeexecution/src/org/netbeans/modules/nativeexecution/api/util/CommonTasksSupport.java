@@ -115,7 +115,7 @@ public final class CommonTasksSupport {
             return null;
         }
 
-        final String cmd = "/bin/scp -p -t " + dstFileName; // NOI18N
+        final String cmd = "scp -p -t " + dstFileName; // NOI18N
 
         ChangeListener processListener = new ChangeListener() {
 
@@ -177,7 +177,7 @@ public final class CommonTasksSupport {
             ExecutionEnvironment execEnv,
             String fname, final Writer error) {
         NativeProcessBuilder npb =
-                new NativeProcessBuilder(execEnv, "/bin/rm"); // NOI18N
+                new NativeProcessBuilder(execEnv, "rm"); // NOI18N
         npb = npb.setArguments("-f", fname); // NOI18N
 
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
@@ -208,7 +208,7 @@ public final class CommonTasksSupport {
      */
     public static Future<Integer> rmDir(final ExecutionEnvironment execEnv,
             String dirname, boolean recursively, final Writer error) {
-        String cmd = recursively ? "/bin/rm" : "/bin/rmdir"; // NOI18N
+        String cmd = recursively ? "rm" : "rmdir"; // NOI18N
 
         String[] args = recursively
                 ? new String[]{"-rf", dirname} : new String[]{"-f", dirname}; // NOI18N

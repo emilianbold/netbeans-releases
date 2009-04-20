@@ -341,6 +341,12 @@ public final class ExtractLayer extends Task {
                         } else {
                             additionalKeys.add(prefix);
                         }
+                    } else if (name.equals("iconResource") || name.equals("iconBase")) {
+                        String s = attributes.getValue("stringvalue");
+                        if (s == null) {
+                            throw new BuildException("No stringvalue attribute for " + name);
+                        }
+                        addResource("nbresloc:" + s, false);
                     } else if (attributes.getValue("bundlevalue") != null) {
                         String bundlevalue = attributes.getValue("bundlevalue");
                         int idx = bundlevalue.indexOf('#');

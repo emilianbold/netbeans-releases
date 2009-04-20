@@ -201,6 +201,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
 
     /** Factory method providing catalog for XML completion of DD */
     public static synchronized RunTimeDDCatalog getPreludeRunTimeDDCatalog(){
+        // FIXME -- avoid dereferencing the property.
         if ((preludeDDCatalog==null) &&
                 !("true".equals(System.getProperty("org.glassfish.v3.disablePreludeSupport")))) {
             preludeDDCatalog = new RunTimeDDCatalog();
@@ -212,6 +213,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
 
     /** Factory method providing catalog for XML completion of DD */
     public static synchronized RunTimeDDCatalog getEE6RunTimeDDCatalog(){
+        // FIXME -- avoid dereferencing the property.
         if ((javaEE6DDCatalog==null) &&
                 ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures"))))  {
             javaEE6DDCatalog = new RunTimeDDCatalog();

@@ -166,6 +166,14 @@ public class AnnotationsTest extends J2eeTestCase {
         runTest("unknownCSSProperty.html", 1);
     }
 
+    public void testMissingTableContent() throws Exception {
+        runTest("missingTableContent.html", 1);
+    }
+
+    public void testMissingTitle() throws Exception {
+        runTest("missingTitle.html", 1);
+    }
+
     private void runTest(String fileName) throws Exception {
         runTest(fileName, 0);
     }
@@ -178,6 +186,7 @@ public class AnnotationsTest extends J2eeTestCase {
         assertEquals(annotationsCount, anns.length);
         for (Object object : anns) {
             String desc = EditorOperator.getAnnotationShortDescription(object);
+            desc = desc.replaceAll("<.*>", "");
             ref(desc);
         }
         eOp.closeDiscard();

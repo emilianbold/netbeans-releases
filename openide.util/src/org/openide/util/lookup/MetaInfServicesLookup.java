@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,12 +55,11 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
-import org.openide.util.WeakSet;
 
 /**
  * @author Jaroslav Tulach, Jesse Glick
@@ -84,7 +84,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
      * However we also hold classes which are definitely not loadable by
      * our loader.
      */
-    private final Set<Class> classes = new WeakSet<Class>(); // Set<Class>
+    private final Map<Class,Object> classes = new WeakHashMap<Class,Object>();
 
     /** class loader to use */
     private final ClassLoader loader;
@@ -114,7 +114,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
         HashSet<AbstractLookup.R> listeners;
 
         synchronized (this) {
-            if (classes.add(c)) {
+            if (classes.put(c, "") == null) { // NOI18N
                 // Added new class, search for it.
                 LinkedHashSet<AbstractLookup.Pair<?>> arr = getPairsAsLHS();
                 search(c, arr);
@@ -443,11 +443,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         }
 
                         if (o == null) {
-                            if (SharedClassObject.class.isAssignableFrom(c)) {
-                                o = SharedClassObject.findObject(c.asSubclass(SharedClassObject.class), true);
-                            } else {
-                                o = c.newInstance();
-                            }
+                            o = createInstance(c);
 
                             synchronized (knownInstances) { // guards only the static cache
                                 hashPut(o);
@@ -485,7 +481,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         // could see and return immediately.
                         object = o;
                     } catch (Exception ex) {
-                        LOGGER.log(Level.WARNING, null, ex);
+                        LOGGER.log(Level.WARNING, "Cannot create " + object, ex);
                         object = null;
                     }
                 }
@@ -522,6 +518,35 @@ final class MetaInfServicesLookup extends AbstractLookup {
                     index = 0;
                 }
             }
+        }
+
+        private static boolean findSharedClassObjectSkip;
+        private static Method findSharedClassObject;
+        /** Basically does c.newInstance(), however the method is complicated
+         * with a special behaviour for old and almost obsoleted NetBeans
+         * class: SharedClassObject.
+         */
+        private static Object createInstance(Class<?> c) throws InstantiationException, IllegalAccessException {
+            if (!findSharedClassObjectSkip) {
+                try {
+                    if (findSharedClassObject == null) {
+                        Class<?> sco;
+                        try {
+                            sco = Class.forName("org.openide.util.SharedClassObject"); // NOI18N
+                        } catch (ClassNotFoundException ex) {
+                            findSharedClassObjectSkip = true;
+                            return c.newInstance();
+                        }
+                        findSharedClassObject = sco.getMethod("findObject", Class.class, boolean.class);
+                    }
+                    if (findSharedClassObject.getReturnType().isAssignableFrom(c)) {
+                        return findSharedClassObject.invoke(null, c, true);
+                    }
+                } catch (Exception problem) {
+                    throw (InstantiationException)new InstantiationException(problem.getMessage()).initCause(problem);
+                }
+            }
+            return c.newInstance();
         }
     }
 }

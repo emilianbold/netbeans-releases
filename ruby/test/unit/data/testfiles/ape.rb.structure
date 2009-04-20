@@ -11,7 +11,7 @@ Ape:CLASS:[]:ESCAPED{Ape}:
   diarefs:FIELD:[]:ESCAPED{diarefs}:
   end_list:METHOD:[PUBLIC]:ESCAPED{end_list}:
   error:METHOD:[PUBLIC]:ESCAPED{error}(PARAMETERS{ESCAPED{message}, ESCAPED{crumb_key}}):
-  find_entry:METHOD:[PUBLIC]:ESCAPED{find_entry}(PARAMETERS{ESCAPED{feed_uri}, ESCAPED{name}, ESCAPED{id}, ESCAPED{report}})<font color='#777777'> : ESCAPED{String, _unknown_}</font>:
+  find_entry:METHOD:[PUBLIC]:ESCAPED{find_entry}(PARAMETERS{ESCAPED{feed_uri}, ESCAPED{name}, ESCAPED{id}, ESCAPED{report}})<font color='#777777'> : ESCAPED{String, Unknown}</font>:
   footer:METHOD:[PUBLIC]:ESCAPED{footer}(PARAMETERS{ESCAPED{message}}):
   footer:FIELD:[]:ESCAPED{footer}:
   good:METHOD:[PUBLIC]:ESCAPED{good}(PARAMETERS{ESCAPED{message}, ESCAPED{crumb_key}}):

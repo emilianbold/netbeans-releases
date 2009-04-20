@@ -152,7 +152,9 @@ public final class DynamicElementHandler {
         for (IndexedField indexedField : fields) {
             LOGGER.log(Level.FINEST, "field from index : {0} ", indexedField.getName());
 
-            if (indexedField.isProperty()) {
+            // FIXME perhaps we want gather even static props - in such
+            // case we would need more than just string
+            if (!indexedField.isStatic() && indexedField.isProperty()) {
                 result.add(indexedField.getName());
             }
         }

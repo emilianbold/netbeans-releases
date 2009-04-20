@@ -145,7 +145,7 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
                             }
                         }
                     } catch (NodeNotFoundException e) {
-                        e.printStackTrace();
+                        // OK, never mind
                     }
                     
                 }

@@ -41,9 +41,12 @@ package org.netbeans.modules.dlight.management.api.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
@@ -51,49 +54,55 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Lookup;
 
-
-
-
 public final class DataStorageManager {
 
-  private Collection<? extends DataStorageFactory> dataStorageFactories;//this is to create new ones
-  private List<DataStorage> activeDataStorages = new ArrayList<DataStorage>();
-  private static final Logger log = DLightLogger.getLogger(DataStorageManager.class);
-  private static final DataStorageManager instance = new DataStorageManager();
+    private Collection<? extends DataStorageFactory> dataStorageFactories;//this is to create new ones
+    private Map<DLightSession, List<DataStorage>> activeDataStorages = new HashMap<DLightSession, List<DataStorage>>();
+    private static final Logger log = DLightLogger.getLogger(DataStorageManager.class);
+    private static final DataStorageManager instance = new DataStorageManager();
+    private DLightSession lastSession;
 
-  private DataStorageManager() {
-    dataStorageFactories = Lookup.getDefault().lookupAll(DataStorageFactory.class);
-    log.info(dataStorageFactories.size() + " data storage(s) found!"); // NOI18N
-  }
-
-  public static DataStorageManager getInstance() {
-    return instance;
-  }
-
-  public void clearActiveStorages(){
-    activeDataStorages.clear();
-  }
-
-  /**
-   *  Returns previously created or created new instance of DataStorage
-   *  for requested schema (if it can be found within all available DataStorages)
-   */
-  public DataStorage getDataStorageFor(DataCollector collector) {
-    Collection<DataStorageType> supportedTypes = collector.getSupportedDataStorageTypes();
-    for (DataStorageType type : supportedTypes) {
-      DataStorage storage = getDataStorageFor(type, collector.getDataTablesMetadata());
-
-      if (storage != null) {
-        return storage;
-      }
-      
+    private DataStorageManager() {
+        dataStorageFactories = Lookup.getDefault().lookupAll(DataStorageFactory.class);
+        log.info(dataStorageFactories.size() + " data storage(s) found!"); // NOI18N
     }
-    return null;
-  }
 
-   public DataStorage getDataStorage(DataStorageType storageType){
-    return getDataStorageFor(storageType, Collections.<DataTableMetadata>emptyList());
-  }
+    public static DataStorageManager getInstance() {
+        return instance;
+    }
+
+     public List<DataStorage> closeSession(DLightSession session){
+         return activeDataStorages.remove(session);
+     }
+
+    public void clearActiveStorages(DLightSession session) {
+        List<DataStorage> storages = activeDataStorages.get(session);
+        if (storages != null) {
+            storages.clear();
+        }
+        lastSession = session;
+    }
+
+    /**
+     *  Returns previously created or created new instance of DataStorage
+     *  for requested schema (if it can be found within all available DataStorages)
+     */
+    public DataStorage getDataStorageFor(DLightSession session, DataCollector<?> collector) {
+        Collection<DataStorageType> supportedTypes = collector.getSupportedDataStorageTypes();
+        for (DataStorageType type : supportedTypes) {
+            DataStorage storage = getDataStorageFor(session, type, collector.getDataTablesMetadata());
+
+            if (storage != null) {
+                return storage;
+            }
+
+        }
+        return null;
+    }
+
+    public DataStorage getDataStorage(DataStorageType storageType) {
+        return getDataStorageFor(lastSession, storageType, Collections.<DataTableMetadata>emptyList());
+    }
 
 //
 //  public void registerDataStorage(DataStorage dataStorage){
@@ -102,26 +111,35 @@ public final class DataStorageManager {
 //    }
 //    if (activeDataStorages.contains(log))
 //  }
-
-  private DataStorage getDataStorageFor(DataStorageType storageType,List<DataTableMetadata> tableMetadatas) {
-    for (DataStorage storage :activeDataStorages){
-      if (storage.supportsType(storageType)) {
-        storage.createTables(tableMetadatas);
-        return storage;
-      }
-    }
-    //if no storage was created - create the new one
-    for (DataStorageFactory storage : dataStorageFactories) {
-      if (storage.getStorageTypes().contains(storageType)) {
-        DataStorage newStorage = storage.createStorage();
-        if (newStorage != null) {
-          newStorage.createTables(tableMetadatas);
-          activeDataStorages.add(newStorage);
-          return newStorage;
+    private DataStorage getDataStorageFor(DLightSession session, DataStorageType storageType, List<DataTableMetadata> tableMetadatas) {
+        if (session == null){
+            return null;
         }
-      }
+        List<DataStorage> activeSessionStorages = activeDataStorages.get(session);
+        if (activeSessionStorages != null){
+            for (DataStorage storage : activeSessionStorages) {
+                if (storage.supportsType(storageType)) {
+                    storage.createTables(tableMetadatas);
+                    return storage;
+                }
+            }
+        }
+        //if no storage was created - create the new one
+        for (DataStorageFactory storage : dataStorageFactories) {
+            if (storage.getStorageTypes().contains(storageType)) {
+                DataStorage newStorage = storage.createStorage();
+                if (newStorage != null) {
+                    newStorage.createTables(tableMetadatas);
+                    if (activeSessionStorages == null){
+                        activeSessionStorages = new ArrayList<DataStorage>();
+                    }
+                    activeSessionStorages.add(newStorage);
+                    activeDataStorages.put(session, activeSessionStorages);
+                    return newStorage;
+                }
+            }
+        }
+        return null;
     }
-    return null;
-  }
 }
 

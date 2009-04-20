@@ -48,7 +48,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
@@ -77,7 +77,8 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     // Constructors
     public CompilerSet2Configuration(DevelopmentHostConfiguration dhconf) {
         this.dhconf = dhconf;
-        String csName = getCompilerSetManager().getDefaultCompilerSet().getName();
+        CompilerSet cs = getCompilerSetManager().getDefaultCompilerSet();
+        String csName = (cs == null) ? null : cs.getName();
         if (csName == null || csName.length() == 0) {
             if (getCompilerSetManager().getCompilerSetNames().size() > 0) {
                 csName = getCompilerSetManager().getCompilerSet(0).getName();
@@ -292,7 +293,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     public void propertyChange(final PropertyChangeEvent evt) {
         CompilerSet ocs = null;
         String hkey = ((DevelopmentHostConfiguration) evt.getNewValue()).getName();
-        final ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
+        final ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(hkey);
         final String oldName = oldNameMap.get(hkey);
         if (oldName != null) {
             ocs = CompilerSetManager.getDefault(env).getCompilerSet(oldName);

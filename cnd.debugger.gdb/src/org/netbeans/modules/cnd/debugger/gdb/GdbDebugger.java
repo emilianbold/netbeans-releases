@@ -72,7 +72,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
@@ -86,7 +86,7 @@ import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.IOProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
-import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.cnd.debugger.gdb.utils.WinPath;
 import org.netbeans.modules.cnd.execution.Unbuffer;
@@ -205,6 +205,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private String sig = null;
     private IOProxy ioProxy = null;
     private GdbVersionPeculiarity versionPeculiarity = null;
+    private boolean core = false;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -227,7 +228,7 @@ public class GdbDebugger implements PropertyChangeListener {
         threadsViewInit();
         this.disassembly = new Disassembly(this);
         shareTab = null;
-        execEnv = ExecutionEnvironmentFactory.getLocalExecutionEnvironment();
+        execEnv = ExecutionEnvironmentFactory.getLocal();
     }
 
     public ContextProvider getLookup() {
@@ -290,13 +291,22 @@ public class GdbDebugger implements PropertyChangeListener {
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat", Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold())); // NOI18N
+            // Either Attach or Debug core
             if (pae.getType() == DEBUG_ATTACH) {
                 String pgm = null;
                 boolean isSharedLibrary = false;
                 final String path = getFullPath(baseDir, pae.getExecutable());
                 gdb.getLogger().logMessage("IDE: project executable: " + path); // NOI18N
 
-                programPID = lookupProvider.lookupFirst(null, Long.class);
+                Long pid = lookupProvider.lookupFirst(null, Long.class);
+                String corePath = lookupProvider.lookupFirst(null, String.class);
+                if (pid != null) {
+                    programPID = pid;
+                } else {
+                    core = true;
+                    continueAfterFirstStop = false;
+                }
+
                 if ((pae.getConfiguration()).isDynamicLibraryConfiguration()) {
                     pgm = getExePath(programPID);
                     gdb.file_exec_and_symbols(pgm);
@@ -304,7 +314,12 @@ public class GdbDebugger implements PropertyChangeListener {
                 } else {
                     gdb.file_exec_and_symbols(path);
                 }
-                CommandBuffer cb = gdb.target_attach(Long.toString(programPID));
+                CommandBuffer cb;
+                if (core) {
+                    cb = gdb.core(corePath);
+                } else {
+                    cb = gdb.target_attach(Long.toString(programPID));
+                }
                 String err = cb.getError();
                 if (err != null || cb.isTimedOut()) {
                     final String msg;
@@ -331,7 +346,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     // 1) see if path was explicitly loaded by target_attach (this is system dependent)
                     if (!symbolsRead(cb.getResponse(), path)) {
                         // 2) see if we can validate via /proc (or perhaps other platform specific means)
-                        if (validAttachViaSlashProc(programPID, path)) { // Linux or Solaris
+                        if (!core && validAttachViaSlashProc(programPID, path)) { // Linux or Solaris
                             if (isSolaris()) {
                                 gdb.file_symbol_file(path);
                             }
@@ -595,7 +610,6 @@ public class GdbDebugger implements PropertyChangeListener {
         }
         final boolean inDis = dis;
         SwingUtilities.invokeLater(new Runnable() {
-
             public void run() {
                 // show current line
                 EditorContextBridge.showSource(csf, inDis);
@@ -763,12 +777,13 @@ public class GdbDebugger implements PropertyChangeListener {
      */
     private boolean compareExePaths(String exe1, String exe2) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-            return comparePaths(removeExe(exe1), removeExe(exe2));
+            exe1 = removeExe(exe1);
+            exe2 = removeExe(exe2);
         } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
-            return exe1.toLowerCase().equals(exe2.toLowerCase());
-        } else {
-            return exe1.equals(exe2);
+            exe1 = exe1.toLowerCase();
+            exe2 = exe2.toLowerCase();
         }
+        return comparePaths(exe1, exe2);
     }
 
     private static String removeExe(String exe) {
@@ -795,7 +810,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 File exefile = new File(exepath);
                 if (exefile.exists()) {
                     String path = getPathFromSymlink(pathfile.getAbsolutePath());
-                    if (path.equals(exefile.getAbsolutePath())) {
+                    if (comparePaths(path, exefile.getAbsolutePath())) {
                         return true;
                     }
                 }
@@ -889,53 +904,57 @@ public class GdbDebugger implements PropertyChangeListener {
         return gdb;
     }
 
+    private final Object finishLock = new String("GDB debugger finish lock"); //NOI18N
+
     /**
      * Finish debugging session. Terminates execution of the inferior program, exits debugger,
      * closes terminal and console.
      *
      * Note: gdb can be null if we get an exception while starting a debug session.
      */
-    public synchronized void finish(boolean killTerm) {
-        if (isUnitTest()) {
-            setExited();
-        } else {
-            if (state != State.NONE && state != State.EXITED) {
-                if (killTerm) {
-                    firePropertyChange(PROP_KILLTERM, true, false);
-                }
-                if (gdb != null) {
-                    ProjectActionEvent pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-                    if (state == State.RUNNING) {
-                        gdb.exec_interrupt();
-                        if (pae.getType() != DEBUG_ATTACH) {
-                            gdb.exec_abort();
-                        }
-                    }
-                    if (pae.getType() == DEBUG_ATTACH) {
-                        gdb.target_detach();
-                    }
-                    gdb.gdb_exit();
-                    gdb.getProxyEngine().finish();
-                }
-
-                stackUpdate(new ArrayList<String>());
+    public void finish(boolean killTerm) {
+        synchronized (finishLock) {
+            if (isUnitTest()) {
                 setExited();
-                programPID = 0;
-                removeRTCBreakpoint();
-                gdbEngineProvider.getDestructor().killEngine();
-                GdbActionHandler gah = lookupProvider.lookupFirst(null, GdbActionHandler.class);
-                if (gah != null) { // gah is null if we attached (but we don't need it then)
-                    gah.executionFinished(0);
+            } else {
+                if (state != State.NONE && state != State.EXITED) {
+                    if (killTerm) {
+                        firePropertyChange(PROP_KILLTERM, true, false);
+                    }
+                    if (gdb != null) {
+                        ProjectActionEvent pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+                        if (state == State.RUNNING) {
+                            gdb.exec_interrupt();
+                            if (pae.getType() != DEBUG_ATTACH) {
+                                gdb.exec_abort();
+                            }
+                        }
+                        if (pae.getType() == DEBUG_ATTACH) {
+                            gdb.target_detach();
+                        }
+                        gdb.gdb_exit();
+                        gdb.getProxyEngine().finish();
+                    }
+
+                    stackUpdate(new ArrayList<String>());
+                    setExited();
+                    programPID = 0;
+                    removeRTCBreakpoint();
+                    gdbEngineProvider.getDestructor().killEngine();
+                    GdbActionHandler gah = lookupProvider.lookupFirst(null, GdbActionHandler.class);
+                    if (gah != null) { // gah is null if we attached (but we don't need it then)
+                        gah.executionFinished(0);
+                    }
+                    Disassembly.close();
+                    if (ioProxy != null) {
+                        ioProxy.stop();
+                    }
+                    if (iotab != null) {
+                        iotab.getOut().close();
+                    }
+                    GdbContext.getInstance().gdbExit();
+                    GdbTimer.getTimer("Step").reset(); // NOI18N
                 }
-                Disassembly.close();
-                if (ioProxy != null) {
-                    ioProxy.stop();
-                }
-                if (iotab != null) {
-                    iotab.getOut().close();
-                }
-                GdbContext.getInstance().gdbExit();
-                GdbTimer.getTimer("Step").reset(); // NOI18N
             }
         }
     }
@@ -1123,9 +1142,8 @@ public class GdbDebugger implements PropertyChangeListener {
 
     /** Handle gdb responses starting with '*' */
     public void execAsyncOutput(int token, String msg) {
-        Map<String, String> map;
-
         if (msg.startsWith("*stopped")) { // NOI18N
+            Map<String, String> map;
             if (msg.length() > 9) {
                 map = GdbUtils.createMapFromString(msg.substring(9));
             } else {
@@ -1274,7 +1292,13 @@ public class GdbDebugger implements PropertyChangeListener {
             int level = Integer.parseInt(frameMap.get("level")); // NOI18N
             String args = frameMap.get("args"); // NOI18N
             Collection<GdbVariable> vars = GdbUtils.createLocalsList(args);
-            callstack.get(level).setArguments(vars);
+            synchronized (callstack) {
+                if (level < callstack.size()) {
+                    callstack.get(level).setArguments(vars);
+                } else {
+                    log.info("GD.addArgsToLocalVariables: args for unknown level " + level); // NOI18N
+                }
+            }
             if (level == 0 && !vars.isEmpty()) {
                 log.finest("GD.addArgsToLocalVariables: Starting to add Args to localVariables"); // NOI18N
                 synchronized (localVariables) {
@@ -1562,7 +1586,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * @param token The token responsible for this stop
      * @param reason A reason why program is stopped
      */
-    public void stopped(int token, Map<String, String> map) {
+    private void stopped(int token, Map<String, String> map) {
         String reason = map.get("reason"); // NOI18N
 
         if (state == State.STARTING) {
@@ -1592,7 +1616,7 @@ public class GdbDebugger implements PropertyChangeListener {
             return;
         }
 
-        log.finest("GD.stopped[" + GdbUtils.threadId() + "]:\n"); // NOI18N
+        log.finest("GD.stopped[" + GdbUtils.threadId() + "]: Reason is " + reason);
         tlog("GD.stopped: Reason is " + reason); // NOI18N
         resetThreadInfo();
         if (reason != null) {
@@ -1988,13 +2012,21 @@ public class GdbDebugger implements PropertyChangeListener {
         return false;
     }
 
+    public static void debugCore(String corePath, ProjectInformation pinfo) throws DebuggerStartException {
+        attach2Target(corePath, pinfo);
+    }
+
     /**
      * Start the attach process.
      *
      * @param pid The process ID
      * @param pinfo Miscelaneous project information
      */
-    public static void attach(String pid, ProjectInformation pinfo) throws DebuggerStartException {
+    public static void attach(Long pid, ProjectInformation pinfo) throws DebuggerStartException {
+        attach2Target(pid, pinfo);
+    }
+
+    private static void attach2Target(Object target, ProjectInformation pinfo) throws DebuggerStartException {
         Project project = pinfo.getProject();
         ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor mcd = (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
@@ -2007,7 +2039,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 ProjectActionEvent pae = new ProjectActionEvent(project,
                         ProjectActionEvent.Type.CHECK_EXECUTABLE, pinfo.getDisplayName(), path, conf, null, false);
                 DebuggerEngine[] es = DebuggerManager.getDebuggerManager().startDebugging(
-                        DebuggerInfo.create(SESSION_PROVIDER_ID, new Object[] { pae, Long.valueOf(pid) }));
+                        DebuggerInfo.create(SESSION_PROVIDER_ID, new Object[] { pae, target }));
                 if (es == null) {
                     throw new DebuggerStartException(new InternalError());
                 }
@@ -2053,12 +2085,15 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private static boolean isAbsolute(MakeConfiguration conf, String path) {
-        int platform = conf.getPlatform().getValue();
-        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+        if (getDevelopmentHostPlatform(conf) == PlatformTypes.PLATFORM_WINDOWS) {
             return path.length() > 2 && path.charAt(1) == ':' && path.charAt(2) == '/';
         } else {
             return path.length() > 0 && path.charAt(0) == '/';
         }
+    }
+
+    private static int getDevelopmentHostPlatform(MakeConfiguration conf) {
+        return HostInfoProvider.getPlatform(conf.getDevelopmentHost().getExecutionEnvironment());
     }
 
     /**
@@ -2070,26 +2105,23 @@ public class GdbDebugger implements PropertyChangeListener {
      * @return true iff the input parameters get an executable
      */
     private static boolean isExecutableOrSharedLibrary(MakeConfiguration conf, String path) {
-        File file;
-        int platform = conf.getPlatform().getValue();
-
         if (conf.isApplicationConfiguration() || conf.isDynamicLibraryConfiguration()) {
             return true;
         } else if (conf.isMakefileConfiguration()) {
-            if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            if (getDevelopmentHostPlatform(conf) == PlatformTypes.PLATFORM_WINDOWS) {
                 if (path.endsWith(".dll")) { // NOI18N
                     return false;
                 } else if (!path.endsWith(".exe")) { // NOI18N
                     path = path + ".exe"; // NOI18N
                 }
-                file = new File(path);
+                File file = new File(path);
                 if (file.exists()) {
                     return true;
                 }
             }
-            file = new File(path);
+            File file = new File(path);
             if (file.exists()) {
-                String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(file));
+                String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(FileUtil.normalizeFile(file)));
                 if (mime_type != null && mime_type.startsWith("application/x-exe")) { // NOI18N
                     return true;
                 }
@@ -2332,9 +2364,11 @@ public class GdbDebugger implements PropertyChangeListener {
     private void restoreBreakpointsAndSignals() {
         gdb.set_unwindonsignal("off"); // NOI18N
         ArrayList<Integer> ids = new ArrayList<Integer>();
-        for (Map.Entry<Integer, BreakpointImpl> entry : getBreakpointList().entrySet()) {
-            if (entry.getValue().getBreakpoint().isEnabled()) {
-                ids.add(entry.getKey());
+        synchronized (breakpointList) {
+            for (Map.Entry<Integer, BreakpointImpl> entry : breakpointList.entrySet()) {
+                if (entry.getValue().getBreakpoint().isEnabled()) {
+                    ids.add(entry.getKey());
+                }
             }
         }
         gdb.break_enable(ids.toArray(new Integer[ids.size()]));
@@ -2358,13 +2392,15 @@ public class GdbDebugger implements PropertyChangeListener {
      *
      * @return current stack frame or null
      */
-    public synchronized CallStackFrame getCurrentCallStackFrame() {
-        if (currentCallStackFrame != null) {
-            return currentCallStackFrame;
-        } else if (!callstack.isEmpty()) {
-            return callstack.get(0);
+    public CallStackFrame getCurrentCallStackFrame() {
+        synchronized (callstack) {
+            if (currentCallStackFrame != null) {
+                return currentCallStackFrame;
+            } else if (!callstack.isEmpty()) {
+                return callstack.get(0);
+            }
+            return null;
         }
-        return null;
     }
 
     /**
@@ -2390,7 +2426,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private CallStackFrame setCurrentCallStackFrameNoFire(CallStackFrame callStackFrame) {
         CallStackFrame old;
 
-        synchronized (this) {
+        synchronized (callstack) {
             old = getCurrentCallStackFrame();
             if (callStackFrame == old) {
                 return callStackFrame;
@@ -2565,7 +2601,7 @@ public class GdbDebugger implements PropertyChangeListener {
             }
             ver = Double.parseDouble(msg.substring(0, last));
         } catch (Exception ex) {
-            log.warning("GdbDebugger: Failed to parse version string [" + ex.getClass().getName() + "]");
+            log.warning("GdbDebugger: Failed to parse version string (" + msg + ") [" + ex.getClass().getName() + "]");
             if (msg.contains("6.5")) { // NOI18N
                 ver = 6.5;
             } else if (msg.contains("6.6")) { // NOI18N
@@ -2577,6 +2613,7 @@ public class GdbDebugger implements PropertyChangeListener {
             } else {
                 log.warning("GdbDebugger: Failed to guess version string");
             }
+            log.warning("GdbDebugger: guessed version: " + ver);
         }
         return ver;
     }

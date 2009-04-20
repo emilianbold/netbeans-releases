@@ -40,6 +40,8 @@
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -49,6 +51,8 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
@@ -64,6 +68,16 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
     @Override
     public CsmClassifier getOriginalClassifier(CsmClassifier orig, CsmFile contextFile) {
         if (orig instanceof CsmOffsetable) {
+            CsmProject project = contextFile.getProject();
+            // we'd prefer to start from real project, not artificial one
+            if (project != null && project.isArtificial()) {
+                for (CsmCompilationUnit cu : CsmFileInfoQuery.getDefault().getCompilationUnits(contextFile, 0)) {
+                    if (cu.getStartFile() != null) {
+                        contextFile = cu.getStartFile();
+                        break;
+                    }
+                }
+            }
             return ResolverFactory.createResolver((CsmOffsetable) orig, contextFile).getOriginalClassifier(orig);
         }
         return orig;
@@ -87,8 +101,9 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
             assert result != null : "how can visible be true without a result?";
             return result;
         }
+        Collection<CsmProject> libraries = getLibraries(file, 0);
         // continue in libs
-        for (Iterator iter = project.getLibraries().iterator(); iter.hasNext();) {
+        for (Iterator iter = libraries.iterator(); iter.hasNext();) {
             visible.set(false);
             CsmProject lib = (CsmProject) iter.next();
             CsmClassifier visibleDecl = findVisibleDeclaration(lib, qualifiedName, file, visible, classesOnly);         
@@ -119,5 +134,21 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
             }
         }
         return first;
+    }
+
+    private Collection<CsmProject> getLibraries(CsmFile file, int contextOffset) {
+        CsmProject project = file.getProject();
+        if (project == null) {
+            return Collections.emptyList();
+        }
+        if (project.isArtificial()) {
+            Collection<CsmProject> out = new HashSet<CsmProject>(2);
+            for (CsmCompilationUnit cu : CsmFileInfoQuery.getDefault().getCompilationUnits(file, contextOffset)) {
+                out.addAll(cu.getStartProject().getLibraries());
+            }
+            return out;
+        } else {
+            return project.getLibraries();
+        }
     }
 }
