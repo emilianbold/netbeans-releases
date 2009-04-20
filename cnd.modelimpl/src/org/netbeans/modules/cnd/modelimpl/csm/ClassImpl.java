@@ -532,6 +532,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private CsmVisibility visibility;
         private CsmUID<CsmClass> classDefinition;
         private final CsmUID<CsmClass> containerUID;
+        private CsmClass containerRef;
 
         public ClassMemberForwardDeclaration(CsmClass containingClass, AST ast, CsmVisibility curentVisibility, boolean register) {
             super(ast, containingClass.getContainingFile(), register);
@@ -560,6 +561,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         @Override
         public void dispose() {
             super.dispose();
+            onDispose();
             CsmScope scope = getScope();
             if (scope instanceof MutableDeclarationsContainer) {
                 ((MutableDeclarationsContainer) scope).removeDeclaration(this);
@@ -575,8 +577,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return visibility;
         }
 
+        private void onDispose() {
+            if (containerRef == null) {
+                containerRef = UIDCsmConverter.UIDtoClass(containerUID);
+            }
+        }
+
         public CsmClass getContainingClass() {
-            return UIDCsmConverter.UIDtoIdentifiable(containerUID);
+            CsmClass out = containerRef;
+            if (out == null) {
+                out = containerRef = UIDCsmConverter.UIDtoClass(containerUID);
+            }
+            return out;
         }
 
         @Override
@@ -614,6 +626,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         @Override
         public CharSequence getQualifiedName() {
             CsmClass cls = getContainingClass();
+            if (cls == null) {
+                cls = getContainingClass();
+            }
             return CharSequenceKey.create(cls.getQualifiedName() + "::" + getName()); // NOI18N
         }
 
