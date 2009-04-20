@@ -92,11 +92,11 @@ public class ServerRegistry implements VetoableChangeListener {
     public List<RubyInstance> getServers() {
         List<RubyInstance> result = new ArrayList<RubyInstance>();
 
+        result.addAll(getRubyServers());
+        // see #162970 - move prelude to the bottom of the list (prefer gf gem over it)
         for (RubyInstanceProvider provider : Lookups.forPath("Servers/Ruby").lookupAll(RubyInstanceProvider.class)) {
             result.addAll(provider.getInstances());
         }
-        result.addAll(getRubyServers());
-
         return result;
     }
 
