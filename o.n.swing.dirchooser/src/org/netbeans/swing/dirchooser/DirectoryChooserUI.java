@@ -914,7 +914,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                         for(int i = 0; i < nodePath.length; i++) {
                             DirectoryNode nodeToDelete = (DirectoryNode)nodePath[i].getLastPathComponent();
                             try {
-                                DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
                                 FileObject fo = FileUtil.toFileObject(nodeToDelete.getFile());
                                 fo.delete();
                                 nodes2Remove.add(nodeToDelete);
