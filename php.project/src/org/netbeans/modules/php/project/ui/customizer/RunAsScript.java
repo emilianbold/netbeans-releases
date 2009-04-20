@@ -293,10 +293,9 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsScript.class, "LBL_RunAs")); // NOI18N
         indexFileLabel.setLabelFor(indexFileTextField);
 
-        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile")); // NOI18N
-        indexFileTextField.setEditable(false);
 
-        Mnemonics.setLocalizedText(indexFileBrowseButton,NbBundle.getMessage(RunAsScript.class, "LBL_Browse")); // NOI18N
+        Mnemonics.setLocalizedText(indexFileLabel,NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile")); // NOI18N
+        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsScript.class, "LBL_Browse"));
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 indexFileBrowseButtonActionPerformed(evt);
@@ -340,7 +339,6 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                                 .addPreferredGap(LayoutStyle.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .add(configureButton)))
                         .add(0, 0, 0))))
-        
         );
 
         layout.linkSize(new Component[] {configureButton, indexFileBrowseButton, interpreterBrowseButton}, GroupLayout.HORIZONTAL);
@@ -372,7 +370,6 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(hintLabel)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        
         );
 
         interpreterLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.interpreterLabel.AccessibleContext.accessibleName")); // NOI18N
