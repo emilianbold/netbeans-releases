@@ -41,7 +41,9 @@ package org.netbeans.modules.dlight.webstack.target;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.DLightTargetExecutionService;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  * Runs script in background which will look for apache installation and
@@ -60,13 +62,13 @@ public final class DeploymentPlatformTarget extends DLightTarget {
         //we will startdemon task, which will search for everything
         //needed for WebStack
         isStarted = true;
-        notifyListeners(DLightTarget.State.INIT, DLightTarget.State.RUNNING);
+        notifyListeners(new DLightTargetChangeEvent(this, DLightTarget.State.RUNNING));
     }
 
     private void terminate() {
         //  throw new UnsupportedOperationException("Not supported yet.");
         isStarted = false;
-        notifyListeners(DLightTarget.State.RUNNING, DLightTarget.State.TERMINATED);
+        notifyListeners(new DLightTargetChangeEvent(this, DLightTarget.State.TERMINATED));
     }
 
     public State getState() {
@@ -79,7 +81,12 @@ public final class DeploymentPlatformTarget extends DLightTarget {
         host_name = "129.159.126.238";
         int port_number = Integer.valueOf(System.getProperty("dlight.webstack.port_number", "2222"));
         // return new ExecutionEnvironment("masha", "129.159.126.238",  2222);
-        return new ExecutionEnvironment(user_name, host_name, port_number);
+        return ExecutionEnvironmentFactory.createNew(user_name, host_name, port_number);
+    }
+
+    @Override
+    public int getExitCode() throws InterruptedException {
+        return 0;
     }
 
     private static final class DeploymentPlatformTargetExecutionService implements
