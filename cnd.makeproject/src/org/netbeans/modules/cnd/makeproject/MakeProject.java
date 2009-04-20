@@ -996,11 +996,9 @@ public final class MakeProject implements Project, AntProjectListener {
             synchronized (this) {
                 if (currentEventId == eventId) {
                     resources = list;
-                    return resources;
-                } else {
-                    return list;
                 }
             }
+            return list;
         }
 
         public void addPropertyChangeListener(PropertyChangeListener listener) {
