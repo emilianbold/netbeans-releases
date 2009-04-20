@@ -23,7 +23,10 @@ import java.io.Reader;
 // SAS: Move most functionality into InputBuffer -- just the file-specific
 //      stuff is in here
 
-public class CharBuffer extends InputBuffer {
+public final class CharBuffer extends InputBuffer {
+    public CharBuffer(char[] data) {
+        super(data);
+    }
     /** Create a character buffer */
     public CharBuffer(Reader input) { // SAS: for proper text i/o
         super(input);
