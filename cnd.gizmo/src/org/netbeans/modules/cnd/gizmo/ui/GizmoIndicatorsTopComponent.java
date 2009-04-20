@@ -36,13 +36,14 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.ui.components;
+package org.netbeans.modules.cnd.gizmo.ui;
 
 import java.awt.CardLayout;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -64,30 +65,39 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-final class DLightIndicatorsTopComponent extends TopComponent {
+final class GizmoIndicatorsTopComponent extends TopComponent {
 
-    private static DLightIndicatorsTopComponent instance;
+    private static GizmoIndicatorsTopComponent instance;
     private DLightSession session;
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/dlight/core/ui/resources/indicators_small.png"; // NOI18N
-    private static final String PREFERRED_ID = "DLightIndicatorsTopComponent"; // NOI18N
+    private static final String PREFERRED_ID = "GizmoIndicatorsTopComponent"; // NOI18N
+    private static final AtomicInteger index = new AtomicInteger();
     private final CardLayout cardLayout = new CardLayout();
     private JPanel cardsLayoutPanel;
     private JPanel panel1;
     private JPanel panel2;
     private boolean showFirstPanel = true;
+    private boolean dock;
 
-    private DLightIndicatorsTopComponent() {
+    private GizmoIndicatorsTopComponent(boolean dock) {
         initComponents();
+        this.dock = dock;
         setSession(null);
         setName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
         //setToolTipText(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "HINT_DLightIndicatorsTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-//        if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){ // NOI18N
-//            if (WindowManager.getDefault().findMode("navigator") != null){ // NOI18N
-//                WindowManager.getDefault().findMode("navigator").dockInto(this);//NOI18N
-//            }
-//        }
+        if (dock) {
+            if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")) { // NOI18N
+                if (WindowManager.getDefault().findMode("navigator") != null) { // NOI18N
+                    WindowManager.getDefault().findMode("navigator").dockInto(this);//NOI18N
+                }
+            }
+        }
+    }
+
+    private GizmoIndicatorsTopComponent() {
+        this(false);
     }
 
     void initComponents() {
@@ -112,7 +122,7 @@ final class DLightIndicatorsTopComponent extends TopComponent {
     }
 
     public void setSession(DLightSession session) {
-        if (this.session != null && this.session != session){
+        if (this.session != null && this.session != session) {
             DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
         }
         this.session = session;
@@ -172,7 +182,7 @@ final class DLightIndicatorsTopComponent extends TopComponent {
 //            add(scrollPane);
             componentToAdd = scrollPane;
         } else {
-            JLabel emptyLabel = new JLabel(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent")); // NOI18N
+            JLabel emptyLabel = new JLabel(NbBundle.getMessage(GizmoIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent")); // NOI18N
             emptyLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
             componentToAdd = emptyLabel;
 //            add(emptyLabel);
@@ -190,9 +200,9 @@ final class DLightIndicatorsTopComponent extends TopComponent {
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
      * To obtain the singleton instance, use {@link #findInstance}.
      */
-    public static synchronized DLightIndicatorsTopComponent getDefault() {
+    public static synchronized GizmoIndicatorsTopComponent getDefault() {
         if (instance == null) {
-            instance = new DLightIndicatorsTopComponent();
+            instance = new GizmoIndicatorsTopComponent();
         }
         return instance;
     }
@@ -200,29 +210,32 @@ final class DLightIndicatorsTopComponent extends TopComponent {
     /**
      * Obtain the DLightIndicatorsTopComponent instance. Never call {@link #getDefault} directly!
      */
-    public static synchronized DLightIndicatorsTopComponent findInstance() {
+    public static synchronized GizmoIndicatorsTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-            Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
-                "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");//NOI18N
+            Logger.getLogger(GizmoIndicatorsTopComponent.class.getName()).warning(
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");//NOI18N
             return getDefault();
         }
-        if (win instanceof DLightIndicatorsTopComponent) {
-            return (DLightIndicatorsTopComponent) win;
+        if (win instanceof GizmoIndicatorsTopComponent) {
+            return (GizmoIndicatorsTopComponent) win;
         }
-        Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
-            "There seem to be multiple components with the '" + PREFERRED_ID + //NOI18N
-            "' ID. That is a potential source of errors and unexpected behavior.");//NOI18N
+        Logger.getLogger(GizmoIndicatorsTopComponent.class.getName()).warning(
+                "There seem to be multiple components with the '" + PREFERRED_ID + //NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior.");//NOI18N
         return getDefault();
     }
 
-    public static synchronized DLightIndicatorsTopComponent newInstance() {
-        return new DLightIndicatorsTopComponent();
+    public static synchronized GizmoIndicatorsTopComponent newInstance() {
+        return new GizmoIndicatorsTopComponent(true);
     }
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        if (!dock){
+            return TopComponent.PERSISTENCE_ALWAYS;
+        }
+        return TopComponent.PERSISTENCE_NEVER;
     }
 
     @Override
@@ -232,13 +245,13 @@ final class DLightIndicatorsTopComponent extends TopComponent {
 
     @Override
     public void componentClosed() {
-        if (session != null){
+        if (session != null) {
             DLightManager.getDefault().closeSessionOnExit(session);
         }
         super.componentClosed();
     }
 
-    DLightSession getSession(){
+    DLightSession getSession() {
         return session;
     }
 
@@ -250,7 +263,10 @@ final class DLightIndicatorsTopComponent extends TopComponent {
 
     @Override
     protected String preferredID() {
-        return PREFERRED_ID;
+        if (!dock){
+            return PREFERRED_ID;
+        }
+        return PREFERRED_ID + index.incrementAndGet();
     }
 
     final static class ResolvableHelper implements Serializable {
@@ -258,11 +274,11 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         private static final long serialVersionUID = 1L;
 
         public Object readResolve() {
-            return DLightIndicatorsTopComponent.getDefault();
+            return GizmoIndicatorsTopComponent.getDefault();
         }
     }
 
     private static String getMessage(String name, Object... params) {
-        return NbBundle.getMessage(DLightIndicatorsTopComponent.class, name, params);
+        return NbBundle.getMessage(GizmoIndicatorsTopComponent.class, name, params);
     }
 }

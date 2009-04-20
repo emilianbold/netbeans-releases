@@ -60,6 +60,7 @@ import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.util.Util;
 
 public final class H2DataStorage extends SQLDataStorage implements StackDataStorage {
 
@@ -70,6 +71,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     private SQLStackStorage stackStorage;
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
     private static final String url = "jdbc:h2:/tmp/dlight"; // NOI18N
+    private String dbURL;
 
 
     static {
@@ -93,6 +95,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
 
     private H2DataStorage(String url) throws SQLException {
         super(url);
+        dbURL = url;
         try {
             initStorageTypes();
             stackStorage = new SQLStackStorage(this);
@@ -102,6 +105,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
             logger.log(Level.SEVERE, null, ex);
         }
     }
+
 
     // FIXUP: deleting /tmp/dlight*
 
@@ -128,6 +132,27 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
             }
         }
     }
+
+    @Override
+    public boolean shutdown() {
+        boolean result= stackStorage.shutdown() && super.shutdown();
+        final String filesToDelete = dbURL.substring(dbURL.lastIndexOf("/") + 1);//NOI18N
+        File tmpDir = new File("/tmp"); // NOI18N
+        if (tmpDir.exists()) {
+            File[] files = tmpDir.listFiles(new FilenameFilter() {
+
+                public boolean accept(File dir, String name) {
+                    return name.startsWith(filesToDelete); // NOI18N
+                }
+            });
+            for (int i = 0; i < files.length; i++) {
+                result &=files[i].delete();
+            }
+        }
+        return result;
+    }
+
+
 
     @Override
     public boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {

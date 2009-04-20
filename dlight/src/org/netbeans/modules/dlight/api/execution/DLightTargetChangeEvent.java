@@ -46,6 +46,12 @@ public class DLightTargetChangeEvent {
     public final DLightTarget.State state;
     public final Integer status;
 
+      public DLightTargetChangeEvent(DLightTarget target, State state) {
+        this.target = target;
+        this.state = state;
+        this.status = null;
+    }
+
     public DLightTargetChangeEvent(DLightTarget target, State state, Integer status) {
         this.target = target;
         this.state = state;

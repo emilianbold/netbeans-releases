@@ -23,4 +23,16 @@
             </folder>
         </folder>
     </folder>
+  <folder name="Windows2">
+        <folder name="Components">
+            <file name="GizmoIndicatorsTopComponent.settings" url="GizmoIndicatorsTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="navigator">
+                <file name="GizmoIndicatorsTopComponent.wstcref" url="GizmoIndicatorsTopComponentWstcref.xml">
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

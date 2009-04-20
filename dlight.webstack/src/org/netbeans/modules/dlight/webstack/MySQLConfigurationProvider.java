@@ -76,7 +76,7 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
     toolConfiguration.addIndicatorDataProviderConfiguration(new TimerIDPConfiguration());
     IndicatorMetadata indicatorMetadata1 = new IndicatorMetadata(Arrays.asList(TimerIDPConfiguration.TIME_INFO));
     ClockIndicatorConfiguration clockIndicator = new ClockIndicatorConfiguration(indicatorMetadata1);
-    clockIndicator.setVisualizerConfiguration(new TableVisualizerConfiguration(mysqlDatatableMetadata));
+    clockIndicator.addVisualizerConfiguration(new TableVisualizerConfiguration(mysqlDatatableMetadata));
     toolConfiguration.addIndicatorConfiguration(clockIndicator);
     return toolConfiguration;
   }

@@ -94,7 +94,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
             "org/netbeans/modules/dlight/webstack/resources/script.d"), Arrays.asList(phpDatatableMetadata)); // NOI18N
     dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner")); // NOI18N
     toolConfiguration.addDataCollectorConfiguration(dcConfiguration);
-    cpuIndicator.setVisualizerConfiguration(new TableVisualizerConfiguration(phpDatatableMetadata));
+    cpuIndicator.addVisualizerConfiguration(new TableVisualizerConfiguration(phpDatatableMetadata));
 
     return toolConfiguration;
   }

@@ -112,7 +112,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         ClockIndicatorConfiguration clockIndicator =
                 new ClockIndicatorConfiguration(indicatorMetadata);
 
-        clockIndicator.setVisualizerConfiguration(
+        clockIndicator.addVisualizerConfiguration(
                 new TableVisualizerConfiguration(dtraceFopsMetadata));
 
         toolConfiguration.addIndicatorConfiguration(clockIndicator);
