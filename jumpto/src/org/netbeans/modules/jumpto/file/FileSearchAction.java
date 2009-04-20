@@ -71,6 +71,9 @@ import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.jumpto.type.GoToTypeAction;
 import org.netbeans.modules.jumpto.type.Models;
@@ -80,6 +83,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -429,18 +433,11 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 Collection <? extends FileObject> allFolders = new ArrayList<FileObject>();
                 final FileObjectFilter[] filters = new FileObjectFilter[]{SearchInfoFactory.VISIBILITY_FILTER, SearchInfoFactory.SHARABILITY_FILTER};
                 for (Project p : projects) {
-                    //Add src root dir to the list
-                    if (!roots.contains(p.getProjectDirectory()))
-                        ((Collection<FileObject>)allFolders).add(p.getProjectDirectory());
-                    projectFolders = p.getProjectDirectory().getFolders(false);
-                    while (projectFolders.hasMoreElements()) {
-                        FileObject current = projectFolders.nextElement();
-                        if (!roots.contains(current) && checkAgainstFilters(current, filters)) {
-                            ((Collection<FileObject>)allFolders).add(current);
-                            Enumeration <? extends FileObject> currentFolders = current.getFolders(true);
-                            while( currentFolders.hasMoreElements())
-                                ((Collection<FileObject>)allFolders).add(currentFolders.nextElement());
-                        }
+                    Sources s  = ProjectUtils.getSources(p);
+                    SourceGroup[] groups = s.getSourceGroups(Sources.TYPE_GENERIC);
+                    for (SourceGroup group: groups) {
+                        FileObject root = group.getRootFolder();
+                          allFolders = searchSources(root, allFolders, roots, filters);
                     }
                 }
                 //Looking for matching files in all found folders
@@ -454,9 +451,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         if (isMatchedFileObject(searchType, file, text)) {
                             Project project = FileOwnerQuery.getOwner(file);
                             boolean preferred = project != null && currentProject != null ? project.getProjectDirectory() == currentProject.getProjectDirectory() : false;
-                            String relativePath = file.getPath();
-                            relativePath = relativePath.substring(0,relativePath.length()-file.getNameExt().length());
-                            relativePath = relativePath.substring(project.getProjectDirectory().getPath().length()+1,relativePath.length());
+                            String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), file);
+                            if (relativePath == null)
+                                relativePath ="";
                             FileDescription fd = new FileDescription(
                                 file,
                                 relativePath,
@@ -514,6 +511,21 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 //            }
         }
     } // End of Worker class
+
+    private Collection<? extends FileObject> searchSources(FileObject root, Collection<? extends FileObject> result, Collection<? extends FileObject> exclude, FileObjectFilter[] filters) {
+        if (root.getChildren().length == 0 || exclude.contains(root) || !checkAgainstFilters(root, filters)) {
+            return result;
+        } else {
+//            if (!exclude.contains(root)) {
+                ((Collection<FileObject>)result).add(root);
+                Enumeration<? extends FileObject> subFolders = root.getFolders(false);
+                while (subFolders.hasMoreElements()) {
+                    searchSources(subFolders.nextElement(), result, exclude, filters);
+                }
+//            }
+        }
+        return result;
+    }
 
     private boolean isMatchedFileObject(QuerySupport.Kind searchType, FileObject file, String text) {
         boolean isMatched = false;

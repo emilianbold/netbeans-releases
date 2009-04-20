@@ -50,6 +50,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
+import org.openide.util.NbBundle;
 
 /**
  * Represens a bugtracking Issue
@@ -162,7 +163,7 @@ public abstract class Issue {
      * Opens this issue in the IDE
      */
     final public void open() {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle("Opening Issue..." + getID());
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[] {getID()}));
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 handle.start();
@@ -208,7 +209,8 @@ public abstract class Issue {
     public abstract String getSummary();
 
     /**
-     * 
+     * Returns a description summarizing the changes made
+     * in this issues since the last time it was set as seen.
      */
     public abstract String getRecentChanges();
 
@@ -230,6 +232,10 @@ public abstract class Issue {
         fireSeenChanged(oldValue, seen);
     }
 
+    /**
+     * Returns this issues attributes. 
+     * @return
+     */
     public abstract Map<String, String> getAttributes();
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {

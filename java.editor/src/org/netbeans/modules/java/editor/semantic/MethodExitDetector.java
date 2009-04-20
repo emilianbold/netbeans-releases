@@ -41,6 +41,7 @@
 package org.netbeans.modules.java.editor.semantic;
 
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodTree;
@@ -328,7 +329,6 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
             }
         }
         
-        super.visitNewClass(tree, d);
         return null;
     }
     
@@ -351,6 +351,11 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
         if (thenResult == Boolean.TRUE && elseResult == Boolean.TRUE)
             return Boolean.TRUE;
         
+        return null;
+    }
+
+    @Override
+    public Boolean visitClass(ClassTree node, Stack<Tree> p) {
         return null;
     }
     

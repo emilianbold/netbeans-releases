@@ -92,7 +92,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                     url = "https" + url.substring(4);                           // NOI18N
                 }
                 String productParamUrl = null;
-                String productAttribute = "product=";
+                String productAttribute = "product=";                           // NOI18N
                 String product = null;
                 idx = location.indexOf(productAttribute);
                 if (idx <= 0) {

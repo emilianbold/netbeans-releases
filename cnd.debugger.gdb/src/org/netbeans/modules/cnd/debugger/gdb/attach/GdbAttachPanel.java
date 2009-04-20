@@ -81,16 +81,8 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         procList = new ProcessList();
         controller = new GdbAttachController();
         initComponents();
-        filterField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                filterTextChanged();
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                filterTextChanged();
-            }
-
-            public void changedUpdate(DocumentEvent e) {
+        filterField.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
+            public void documentChanged(DocumentEvent e) {
                 filterTextChanged();
             }
         });
@@ -442,5 +434,21 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     private javax.swing.JComboBox projectCB;
     private javax.swing.JLabel projectLabel;
     // End of variables declaration//GEN-END:variables
-    
+
+    public static abstract class AnyChangeDocumentListener implements DocumentListener {
+        public abstract void documentChanged(DocumentEvent e);
+
+        public void changedUpdate(DocumentEvent e) {
+            documentChanged(e);
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            documentChanged(e);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            documentChanged(e);
+        }
+
+    }
 }

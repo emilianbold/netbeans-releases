@@ -106,7 +106,6 @@ class FilesystemHandler extends VCSInterceptor {
         if (!SvnUtils.isPartOfSubversionMetadata(file)) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
-                ISVNStatus status = getStatus(client, file);
                 /**
                  * Copy a folder, it becames svn added/copied.
                  * Revert its parent and check 'Delete new files', the folder becomes unversioned.
