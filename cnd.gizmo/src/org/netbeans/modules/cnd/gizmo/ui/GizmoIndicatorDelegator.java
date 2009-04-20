@@ -27,12 +27,14 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
         if (oldSession != null) {
             oldSession.removeSessionStateListener(this);
         }
-        if (newSession != null) {
+        if (newSession != null && newSession.getState() != SessionState.CLOSED) {
             newSession.addSessionStateListener(this);
+        }
+        if (newSession != null && newSession.getState() == SessionState.CLOSED){
+            return;
         }
 //        if (newSession.getState() != SessionState.CONFIGURATION)
         UIThread.invoke(new Runnable() {
-
             public void run() {
                 getComponent(newSession).setSession(newSession);
             }
@@ -83,7 +85,6 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
     public void sessionStateChanged(final DLightSession session, SessionState oldState, SessionState newState) {
         if (newState == SessionState.STARTING) {
             UIThread.invoke(new Runnable() {
-
                 public void run() {
                     GizmoIndicatorsTopComponent indicators = getComponent(session);
                     indicators.setSession(session);
