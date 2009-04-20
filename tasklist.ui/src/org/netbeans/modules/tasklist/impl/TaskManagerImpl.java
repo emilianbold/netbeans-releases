@@ -306,7 +306,7 @@ public class TaskManagerImpl extends TaskManager {
     }
 
     public void clearCache() {
-        IndexingManager.getDefault().refreshAllIndicies(TaskIndexerFactory.INDEXER_NAME);
+        IndexingManager.getDefault().refreshAllIndices(TaskIndexerFactory.INDEXER_NAME);
     }
 
     void makeCacheDirty() {
