@@ -73,7 +73,7 @@ public class ProjectsTabOperator extends TopComponentOperator {
     static final String PROJECT_CAPTION = Bundle.getStringTrimmed(
                                             "org.netbeans.modules.project.ui.Bundle", 
                                             "LBL_projectTabLogical_tc");
-    private static final ProjectViewAction viewAction = new ProjectViewAction();
+    protected static final ProjectViewAction viewAction = new ProjectViewAction();
     
     private JTreeOperator _tree;
     

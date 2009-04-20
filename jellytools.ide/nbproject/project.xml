@@ -128,9 +128,10 @@
             <public-packages>
                 <package>org.netbeans.jellytools</package>
                 <package>org.netbeans.jellytools.actions</package>
+                <package>org.netbeans.jellytools.modules.db</package>
+                <package>org.netbeans.jellytools.modules.db.actions</package>
+                <package>org.netbeans.jellytools.modules.db.nodes</package>
                 <package>org.netbeans.jellytools.modules.editor</package>
-                <package>org.netbeans.jellytools.modules.javacvs</package>
-                <package>org.netbeans.jellytools.modules.javacvs.actions</package>
                 <package>org.netbeans.jellytools.nodes</package>
             </public-packages>
         </data>

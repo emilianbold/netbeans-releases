@@ -57,4 +57,11 @@ public class JavaProjectsTabOperator extends ProjectsTabOperator {
     public JavaProjectRootNode getJavaProjectRootNode(String projectName) {
         return new JavaProjectRootNode(tree(), projectName);
     }
+
+    /** invokes Projects and returns new instance of ProjectsTabOperator
+     * @return new instance of ProjectsTabOperator */
+    public static JavaProjectsTabOperator invoke() {
+        viewAction.perform();
+        return new JavaProjectsTabOperator();
+    }
 }
