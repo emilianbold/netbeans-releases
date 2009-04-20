@@ -50,6 +50,7 @@ import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -82,6 +83,6 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
   }
 
   private static String getMessage(String name) {
-      NbBundle.getMessage(MySQLConfigurationProvider.class, name);
+      return NbBundle.getMessage(MySQLConfigurationProvider.class, name);
   }
 }
