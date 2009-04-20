@@ -36,7 +36,8 @@
     <!-- GlassFish V3 properties   -->   
     <property name="glassfish.v3.build.type"      value="prelude"/>
     <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish_branch/10.0/promoted"/>
-
+    <property name="glassfish.v3.build.number"    value="28c"/>
+    <!--
     <loadresource property="glassfish.v3.build.number">
           <url url="${glassfish.v3.location.prefix}/prelude/latest/archive/bundles"/>
           <filterchain>
@@ -46,12 +47,12 @@
             </tokenfilter>
           </filterchain>
     </loadresource>
-
+    -->
     <property name="glassfish.v3.display.version" value="v3 Prelude"/>
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3-${glassfish.v3.build.type}"/>    
-    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-v3-${glassfish.v3.build.type}-${glassfish.v3.version}.zip"/>
-    <!--<property name="glassfish_v3_location" value="file:${user.home}/releng/hudson/glassfish-v3-preview2-b10d.zip"/>-->
+    <!--<property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-v3-${glassfish.v3.build.type}-${glassfish.v3.version}.zip"/>-->
+    <property name="glassfish_v3_location"     value="${binary_cache_host}/glassfish/glassfish-v3-prelude.zip"/>
     <property name="glassfish_v3_location_ml"  value="${binary_cache_host}/glassfish/glassfish-v3-prelude-ml.zip"/>
     <property name="glassfish.v3.subdir"       value="glassfishv3-prelude"/>
     
