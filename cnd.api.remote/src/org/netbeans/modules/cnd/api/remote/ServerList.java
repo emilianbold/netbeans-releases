@@ -40,9 +40,11 @@
 package org.netbeans.modules.cnd.api.remote;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 
 /**
@@ -61,7 +63,86 @@ public class ServerList {
         ServerListImplementation result = DEFAULT;
         if (result == null) {
             result = Lookup.getDefault().lookup(ServerListImplementation.class);
-            assert result != null;
+//            assert result != null;
+            // FIXUP
+
+            final ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
+
+            final ServerRecord record = new ServerRecord() {
+
+                public ExecutionEnvironment getExecutionEnvironment() {
+                    return execEnv;
+                }
+
+                public String getName() {
+                    return execEnv.getDisplayName();
+                }
+
+                public String getServerName() {
+                    return execEnv.getHost();
+                }
+
+                public String getUserName() {
+                    return execEnv.getUser();
+                }
+
+                public boolean isDeleted() {
+                    return false;
+                }
+
+                public boolean isOffline() {
+                    return false;
+                }
+
+                public boolean isOnline() {
+                    return true;
+                }
+
+                public boolean isRemote() {
+                    return execEnv.isRemote();
+                }
+
+                public void validate(boolean force) {
+                }
+
+            };
+
+            result = new  ServerListImplementation() {
+
+                public int getDefaultIndex() {
+                    return 0;
+                }
+
+                public Collection<? extends ServerRecord> getRecords() {
+                    return Collections.singletonList(record);
+                }
+
+                public void setDefaultIndex(int defaultIndex) {}
+
+                public List<ExecutionEnvironment> getEnvironments() {
+                    return Collections.singletonList(execEnv);
+                }
+
+                public ServerRecord get(ExecutionEnvironment env) {
+                    return env.isLocal() ? record : null;
+                }
+
+                public ServerRecord getDefaultRecord() {
+                    return record;
+                }
+
+                public void clear() {
+                }
+
+                public ServerRecord addServer(ExecutionEnvironment env, boolean asDefault, boolean connect) {
+                    return null;
+                }
+
+                public boolean isValidExecutable(ExecutionEnvironment env, String path) {
+                    return true;
+                }
+            };
+
             DEFAULT = result;
         }
         return result;

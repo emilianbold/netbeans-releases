@@ -237,7 +237,6 @@ public abstract class BaseTestCase extends NbTestCase {
             ui = System.getenv("CND_REMOTE_TESTUSERINFO");
         }
         if (ui != null) {
-            System.err.print("initRemoteUserInfo:debug (ui: " + ui + "). ");
             int m = ui.indexOf(':');
             if (m>-1) {
                 int n = ui.indexOf('@');
