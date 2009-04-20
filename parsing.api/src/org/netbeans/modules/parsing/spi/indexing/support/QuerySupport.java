@@ -220,7 +220,7 @@ public final class QuerySupport {
             final Kind kind,
             final String... fieldsToLoad
     ) throws IOException {
-        // check if there are stale indicies
+        // check if there are stale indices
         for (Map.Entry<URL, IndexImpl> ie : indexes.entrySet()) {
             final IndexImpl index = ie.getValue();
             final Collection<? extends String> staleFiles = index.getStaleFiles();
