@@ -33,9 +33,9 @@ do
         sed '/'$jar_subpath_for_sed'/s/crc=\"[0-9]*\"/crc=\"'$crc32'\"/' < "$update_tracking_xml_file".back > "$update_tracking_xml_file"
 
         rm -rf "$update_tracking_xml_file".back
-        echo "File '$update_tracking_xml_file' is processed: "
-        echo "jar file = $jar"
-        echo "new crc32 = $crc32"
-        echo ""
+        echo "File '$update_tracking_xml_file' is processed"
+       # echo "jar file = $jar"
+       # echo "new crc32 = $crc32"
+       # echo ""
     fi
 done

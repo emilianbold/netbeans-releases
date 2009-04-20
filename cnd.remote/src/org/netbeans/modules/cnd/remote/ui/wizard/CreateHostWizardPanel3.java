@@ -44,7 +44,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class CreateHostWizardPanel3 implements WizardDescriptor.Panel<WizardDescriptor> {
+/*package*/ final class CreateHostWizardPanel3 implements WizardDescriptor.Panel<WizardDescriptor> {
 
     private CreateHostVisualPanel3 component;
 

@@ -145,9 +145,14 @@ public class KenaiException extends IOException {
     private void fillErrorData() {
         PojsonLoad load = PojsonLoad.create();
         try {
-            final HashMap toCollections = (HashMap) load.toCollections(errorResponse==null?"":errorResponse);
-            status = (String) toCollections.get("status");
-            errors = (HashMap<String, String>) toCollections.get("errors");
+            if (errorResponse==null) {
+                status = "unknown"; //NOI18N
+                errors = new HashMap<String, String>();
+            } else {
+                final HashMap toCollections = (HashMap) load.toCollections(errorResponse);
+                status = (String) toCollections.get("status");
+                errors = (HashMap<String, String>) toCollections.get("errors");
+            }
         } catch (IOException ex) {
             Logger.getLogger(KenaiException.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalArgumentException e) {
