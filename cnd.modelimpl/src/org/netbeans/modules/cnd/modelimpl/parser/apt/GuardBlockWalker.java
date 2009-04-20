@@ -45,7 +45,6 @@ import antlr.Token;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTIfndef;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 
 /**
@@ -58,8 +57,8 @@ public class GuardBlockWalker extends APTWalker {
     private Boolean hasGuard = null;
             
             /** Creates a new instance of GuardBlockWalker */
-    public GuardBlockWalker(APTFile apt, APTPreprocHandler preprocHandler) {
-        super(apt, preprocHandler == null ? null: preprocHandler.getMacroMap());
+    public GuardBlockWalker(APTFile apt) {
+        super(apt, null);
     }
 
     public Token getGuard(){

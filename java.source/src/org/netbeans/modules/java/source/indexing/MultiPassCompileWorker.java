@@ -292,10 +292,10 @@ final class MultiPassCompileWorker extends CompileWorker {
                             final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                             final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
                             final String message = String.format("MultiPassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
-                                        active.jfo.toUri().toString(),
+                                        active == null ? null : active.jfo.toUri().toString(),
                                         FileUtil.getFileDisplayName(context.getRoot()),
-                                        bootPath == null   ? null : bootPath.toString(),
-                                        classPath == null  ? null : classPath.toString(),
+                                        bootPath == null ? null : bootPath.toString(),
+                                        classPath == null ? null : classPath.toString(),
                                         sourcePath == null ? null : sourcePath.toString()
                                         );
                             JavaIndex.LOG.log(Level.WARNING, message, t);  //NOI18N

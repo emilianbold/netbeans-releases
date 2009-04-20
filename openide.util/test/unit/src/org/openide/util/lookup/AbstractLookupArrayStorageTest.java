@@ -41,10 +41,9 @@
 
 package org.openide.util.lookup;
 
-import org.openide.util.*;
-
 import junit.framework.*;
 import org.netbeans.junit.*;
+import org.openide.util.Lookup;
 
 public class AbstractLookupArrayStorageTest extends AbstractLookupBaseHid {
     public AbstractLookupArrayStorageTest(java.lang.String testName) {

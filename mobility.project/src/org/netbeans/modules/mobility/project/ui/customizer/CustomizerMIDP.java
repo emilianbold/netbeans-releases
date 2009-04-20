@@ -345,8 +345,8 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
             }
             //enable/disable profile radio boxes
             c = jPanelProfile.getComponents();
+            reset = c.length>0; //fix for 157499
             for (int i=0; i<c.length; i++) {
-                reset = true; //fix for 157499
                 if (c[i] instanceof JRadioButton) {
                     final JRadioButton rb = (JRadioButton)c[i];
                     vps.register(rb, DefaultPropertiesDescriptor.PLATFORM_PROFILE, useDefault);
@@ -355,7 +355,9 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
                     } else {
                         rb.setEnabled(false);
                     }
-                    if (rb.isSelected()) reset = false; //fix for 157499, we need to reset if profile is non sense to default
+                    if (rb.isSelected()) {
+                        reset = false; //fix for 157499, we need to reset if profile is non sense to default
+                    } 
                 }
             }
             //correct selection of profile to default if necessary

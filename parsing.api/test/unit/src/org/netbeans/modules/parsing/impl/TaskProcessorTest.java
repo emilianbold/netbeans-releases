@@ -57,6 +57,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
@@ -164,7 +165,7 @@ public class TaskProcessorTest extends NbTestCase {
                     filteredStackTrace.add(e);
                 }
             }
-            caller = TaskProcessor.findCaller(filteredStackTrace.toArray(new StackTraceElement[filteredStackTrace.size()]));
+            caller = Util.findCaller(filteredStackTrace.toArray(new StackTraceElement[filteredStackTrace.size()]));
         }
     }
 }
