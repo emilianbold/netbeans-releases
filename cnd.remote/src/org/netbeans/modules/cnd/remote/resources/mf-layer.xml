@@ -5,7 +5,7 @@
     <folder name="Services">
         <folder name="Hidden">
             <file name="org-netbeans-modules-cnd-remote-server-RemoteServerList.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.cnd.api.remote.ServerList"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.cnd.spi.remote.ServerListImplementation"/>
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.remote.server.RemoteServerList.getInstance"/>
             </file>
         </folder>

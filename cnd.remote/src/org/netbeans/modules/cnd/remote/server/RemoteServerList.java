@@ -50,10 +50,10 @@ import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
@@ -63,7 +63,7 @@ import org.openide.util.NbPreferences;
  * 
  * @author gordonp
  */
-public class RemoteServerList implements ServerList {
+public class RemoteServerList implements ServerListImplementation {
     
     private static final String CND_REMOTE = "cnd.remote"; // NOI18N
     private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
@@ -78,7 +78,7 @@ public class RemoteServerList implements ServerList {
     private final ArrayList<RemoteServerRecord> unlisted;
     private final ArrayList<RemoteServerRecord> items = new ArrayList<RemoteServerRecord>();
     
-    public synchronized static ServerList getInstance() {
+    public synchronized static ServerListImplementation getInstance() {
         if (instance == null) {
             instance = new RemoteServerList();
         }
@@ -111,6 +111,7 @@ public class RemoteServerList implements ServerList {
      * @param env specvifies the host
      * @return A RemoteServerRecord for env
      */
+    @Override
     public synchronized ServerRecord get(ExecutionEnvironment env) {
 
         // Search the active server list
@@ -134,19 +135,23 @@ public class RemoteServerList implements ServerList {
         return record;
     }
 
+    @Override
     public synchronized ServerRecord getDefaultRecord() {
         return items.get(defaultIndex);
     }
 
+    @Override
     public synchronized int getDefaultIndex() {
         return defaultIndex;
     }
 
+    @Override
     public synchronized void setDefaultIndex(int defaultIndex) {
         this.defaultIndex = defaultIndex;
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
     }
     
+    @Override
     public List<ExecutionEnvironment> getEnvironments() {
         List<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
         for (RemoteServerRecord item : items) {
@@ -161,6 +166,7 @@ public class RemoteServerList implements ServerList {
     }
 
 
+    @Override
     public synchronized ServerRecord addServer(final ExecutionEnvironment execEnv, boolean asDefault, boolean connect) {
         RemoteServerRecord record = null;
         
@@ -225,6 +231,7 @@ public class RemoteServerList implements ServerList {
         }
     }
     
+    @Override
     public synchronized void clear() {
         for (RemoteServerRecord record : items) {
             record.setDeleted(true);
@@ -255,6 +262,7 @@ public class RemoteServerList implements ServerList {
 
     //TODO: why this is here?
     //TODO: deprecate and remove
+    @Override
     public boolean isValidExecutable(ExecutionEnvironment env, String path) {
         if (path == null || path.length() == 0) {
             return false;
@@ -272,6 +280,7 @@ public class RemoteServerList implements ServerList {
         return exit_status == 0;
     }
     
+    @Override
     public synchronized Collection<? extends ServerRecord> getRecords() {
         return Collections.unmodifiableCollection(items);
     }

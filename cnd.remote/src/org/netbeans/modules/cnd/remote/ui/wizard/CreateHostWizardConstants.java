@@ -37,52 +37,18 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.server;
-
-import java.awt.Dialog;
-import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
-import org.netbeans.modules.cnd.ui.options.ServerListDisplayerEx;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.cnd.remote.ui.wizard;
 
 /**
- * ServerListDisplayer implementation
+ * Just a placeholder for all properties constants 
  * @author Vladimir Kvashin
  */
-@ServiceProvider(service = ServerListDisplayer.class)
-public class RemoteServerListDisplayer extends ServerListDisplayerEx {
+/*package-local*/ interface CreateHostWizardConstants {
 
-    @Override
-    protected boolean showServerListDialogImpl() {
-        ToolsCacheManager cacheManager = new ToolsCacheManager();
-        if (showServerListDialog(cacheManager)) {
-            cacheManager.applyChanges();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    protected boolean showServerListDialogImpl(ToolsCacheManager cacheManager) {
-        EditServerListDialog dlg = new EditServerListDialog(cacheManager);
-        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(getClass(), "TITLE_EditServerList"), true,
-                    DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
-        dlg.setDialogDescriptor(dd);
-        dd.addPropertyChangeListener(dlg);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            cacheManager.setHosts(dlg.getHosts());
-            cacheManager.setDefaultIndex(dlg.getDefaultIndex());
-            return true;
-        } else {
-            return false;
-        }
-    }
+    static final String PROP_HOST = "hostkey"; //NOI18N
+    static final String PROP_RUN_ON_FINISH = "run-on-finish"; //NOI18N
+    static final String PROP_CACHE_MANAGER = "cachemanager"; //NOI18N
+    static final String PROP_HOSTNAME = "hostname"; // NOI18N
+    static final String PROP_PORT = "port"; //NOI18N
 
 }
