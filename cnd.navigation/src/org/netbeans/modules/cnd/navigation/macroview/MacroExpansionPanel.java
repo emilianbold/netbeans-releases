@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  */
 public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
 
-    public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/includeview/resources/tree.png"; // NOI18N
+    public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/macroview/resources/macroexpansion.png"; // NOI18N
     private transient ExplorerManager explorerManager = new ExplorerManager();
 
     /** Creates new form MacroExpansionPanel. */
@@ -144,54 +144,37 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
      * @param local - is scope local
      */
     public void setLocalContext(boolean local) {
+        Document doc = jCodeExpansionEditorPane.getDocument();
+        if (doc == null) {
+            return;
+        }
+        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, isSyncCaretAndContext() && local);
         localContext.setSelected(local);
         fileContext.setSelected(!local);
     }
 
     /**
-     * Indicates is caret synchronization enabled or not.
+     * Indicates is context and caret synchronization enabled or not.
      *
      * @return is caret synchronization enabled
      */
-    public boolean isSyncCaret() {
-        return syncCaret.isSelected();
+    public boolean isSyncCaretAndContext() {
+        return autoRefresh.isSelected();
     }
 
     /**
-     * Sets caret synchronization.
+     * Sets caret and context synchronization.
      *
      * @param sync - is caret synchronization enabled
      */
-    public void setSyncCaret(boolean sync) {
+    public void setSyncCaretAndContext(boolean sync) {
         Document doc = jCodeExpansionEditorPane.getDocument();
         if (doc == null) {
             return;
         }
         doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CARET, sync);
-        syncCaret.setSelected(sync);
-    }
-
-    /**
-     * Indicates is context synchronization enabled or not.
-     *
-     * @return is context synchronization enabled
-     */
-    public boolean isSyncContext() {
-        return syncContext.isSelected();
-    }
-
-    /**
-     * Sets context synchronization.
-     *
-     * @param sync - is context synchronization enabled
-     */
-    public void setSyncContext(boolean sync) {
-        Document doc = jCodeExpansionEditorPane.getDocument();
-        if (doc == null) {
-            return;
-        }
-        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, sync);
-        syncContext.setSelected(sync);
+        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, sync && isLocalContext());
+        autoRefresh.setSelected(sync);
     }
 
     /**
@@ -279,14 +262,10 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jCodeExpansionEditorPane = new javax.swing.JEditorPane();
         jStatusBar = new javax.swing.JLabel();
         jToolBar1 = new javax.swing.JToolBar();
-        refresh = new javax.swing.JButton();
+        autoRefresh = new javax.swing.JToggleButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
         localContext = new javax.swing.JToggleButton();
         fileContext = new javax.swing.JToggleButton();
-        jSeparator2 = new javax.swing.JToolBar.Separator();
-        syncCaret = new javax.swing.JToggleButton();
-        jSeparator3 = new javax.swing.JToolBar.Separator();
-        syncContext = new javax.swing.JToggleButton();
         jSeparator4 = new javax.swing.JToolBar.Separator();
         prevMacro = new javax.swing.JButton();
         nextMacro = new javax.swing.JButton();
@@ -326,21 +305,20 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jToolBar1.setMaximumSize(new java.awt.Dimension(28, 240));
         jToolBar1.setPreferredSize(new java.awt.Dimension(28, 240));
 
-        refresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/refresh.png"))); // NOI18N
-        refresh.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.refresh.toolTipText")); // NOI18N
-        refresh.setFocusable(false);
-        refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        refresh.setMaximumSize(new java.awt.Dimension(24, 24));
-        refresh.setMinimumSize(new java.awt.Dimension(24, 24));
-        refresh.setPreferredSize(new java.awt.Dimension(24, 24));
-        refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        refresh.addActionListener(new java.awt.event.ActionListener() {
+        autoRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/sync.png"))); // NOI18N
+        autoRefresh.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.autoRefresh.toolTipText")); // NOI18N
+        autoRefresh.setFocusable(false);
+        autoRefresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        autoRefresh.setMaximumSize(new java.awt.Dimension(24, 24));
+        autoRefresh.setMinimumSize(new java.awt.Dimension(24, 24));
+        autoRefresh.setPreferredSize(new java.awt.Dimension(24, 24));
+        autoRefresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        autoRefresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshActionPerformed(evt);
+                autoRefreshActionPerformed(evt);
             }
         });
-        jToolBar1.add(refresh);
-        refresh.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.refresh.AccessibleContext.accessibleDescription")); // NOI18N
+        jToolBar1.add(autoRefresh);
 
         jSeparator1.setSeparatorSize(new java.awt.Dimension(0, 4));
         jToolBar1.add(jSeparator1);
@@ -359,7 +337,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
             }
         });
         jToolBar1.add(localContext);
-        localContext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.localContext.AccessibleContext.accessibleDescription")); // NOI18N
 
         fileContext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/filescope.png"))); // NOI18N
         fileContext.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.fileContext.toolTipText")); // NOI18N
@@ -375,44 +352,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
             }
         });
         jToolBar1.add(fileContext);
-        fileContext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.fileContext.AccessibleContext.accessibleDescription")); // NOI18N
-
-        jSeparator2.setSeparatorSize(new java.awt.Dimension(0, 4));
-        jToolBar1.add(jSeparator2);
-
-        syncCaret.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/synccaret.png"))); // NOI18N
-        syncCaret.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.syncCaret.toolTipText")); // NOI18N
-        syncCaret.setFocusable(false);
-        syncCaret.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        syncCaret.setMaximumSize(new java.awt.Dimension(24, 24));
-        syncCaret.setMinimumSize(new java.awt.Dimension(24, 24));
-        syncCaret.setPreferredSize(new java.awt.Dimension(24, 24));
-        syncCaret.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        syncCaret.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                syncCaretActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(syncCaret);
-        syncCaret.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.fileContext1.AccessibleContext.accessibleDescription")); // NOI18N
-
-        jSeparator3.setSeparatorSize(new java.awt.Dimension(0, 4));
-        jToolBar1.add(jSeparator3);
-
-        syncContext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/navigation/macroview/resources/synccontext.png"))); // NOI18N
-        syncContext.setToolTipText(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.syncContext.toolTipText")); // NOI18N
-        syncContext.setFocusable(false);
-        syncContext.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        syncContext.setMaximumSize(new java.awt.Dimension(24, 24));
-        syncContext.setMinimumSize(new java.awt.Dimension(24, 24));
-        syncContext.setPreferredSize(new java.awt.Dimension(24, 24));
-        syncContext.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        syncContext.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                syncContextActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(syncContext);
+        fileContext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacroExpansionPanel.class, "MacroExpansionPanel.localContext.AccessibleContext.accessibleDescription")); // NOI18N
 
         jSeparator4.setSeparatorSize(new java.awt.Dimension(0, 4));
         jToolBar1.add(jSeparator4);
@@ -474,23 +414,21 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         }
 }//GEN-LAST:event_prevMacroActionPerformed
 
-    private void syncContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_syncContextActionPerformed
-        Document doc = jCodeExpansionEditorPane.getDocument();
-        if (doc == null) {
-            return;
-        }
-        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, isSyncContext());
-        MacroExpansionViewUtils.updateView(getMainDocumentCursorPosition());
-}//GEN-LAST:event_syncContextActionPerformed
-
-    private void syncCaretActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_syncCaretActionPerformed
-        Document doc = jCodeExpansionEditorPane.getDocument();
-        if (doc == null) {
-            return;
-        }
-        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CARET, isSyncCaret());
-        updateCaretPosition();
-}//GEN-LAST:event_syncCaretActionPerformed
+    private void localContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localContextActionPerformed
+        fileContext.setSelected(false);
+        localContext.setSelected(true);
+        MacroExpansionTopComponent.setLocalContext(true);
+        update();
+//
+//        Document doc = jCodeExpansionEditorPane.getDocument();
+//        if (doc == null) {
+//            return;
+//        }
+//        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, isSyncCaretAndContext() && isLocalContext());
+//        if(isSyncCaretAndContext()) {
+//            MacroExpansionViewUtils.updateView(getMainDocumentCursorPosition());
+//        }
+}//GEN-LAST:event_localContextActionPerformed
 
     private void fileContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileContextActionPerformed
         fileContext.setSelected(true);
@@ -499,16 +437,20 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         update();
 }//GEN-LAST:event_fileContextActionPerformed
 
-    private void localContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localContextActionPerformed
-        localContext.setSelected(true);
-        fileContext.setSelected(false);
-        MacroExpansionTopComponent.setLocalContext(true);
-        update();
-}//GEN-LAST:event_localContextActionPerformed
-
-    private void refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshActionPerformed
-        update();
-}//GEN-LAST:event_refreshActionPerformed
+    private void autoRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoRefreshActionPerformed
+        Document doc = jCodeExpansionEditorPane.getDocument();
+        if (doc == null) {
+            return;
+        }
+        if(isSyncCaretAndContext()) {
+            doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CARET, true);
+            doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, isLocalContext());
+            update();
+        } else {
+            doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CARET, true);
+            doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, false);
+        }
+}//GEN-LAST:event_autoRefreshActionPerformed
 
     @Override
     public boolean requestFocusInWindow() {
@@ -521,6 +463,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JToggleButton autoRefresh;
     private javax.swing.JToggleButton fileContext;
     private javax.swing.JEditorPane jCodeExpansionEditorPane;
     private javax.swing.JScrollPane jCodeExpansionPane;
@@ -528,8 +471,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar.Separator jSeparator1;
-    private javax.swing.JToolBar.Separator jSeparator2;
-    private javax.swing.JToolBar.Separator jSeparator3;
     private javax.swing.JToolBar.Separator jSeparator4;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JLabel jStatusBar;
@@ -537,9 +478,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     private javax.swing.JToggleButton localContext;
     private javax.swing.JButton nextMacro;
     private javax.swing.JButton prevMacro;
-    private javax.swing.JButton refresh;
-    private javax.swing.JToggleButton syncCaret;
-    private javax.swing.JToggleButton syncContext;
     // End of variables declaration//GEN-END:variables
 
     public HelpCtx getHelpCtx() {

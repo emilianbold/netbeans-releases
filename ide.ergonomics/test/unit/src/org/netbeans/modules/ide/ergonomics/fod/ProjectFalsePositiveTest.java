@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -99,42 +100,11 @@ public class ProjectFalsePositiveTest extends NbTestCase implements PropertyChan
         clearWorkDir();
 
         ic.set(Collections.emptyList(), null);
-
         URI uri = ModuleInfo.class.getProtectionDomain().getCodeSource().getLocation().toURI();
         File jar = new File(uri);
         System.setProperty("netbeans.home", jar.getParentFile().getParent());
         System.setProperty("netbeans.user", getWorkDirPath());
-        StringBuffer sb = new StringBuffer();
-        boolean found = false;
-        Exception ex2 = null;
-        for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (info.getCodeNameBase().equals("org.netbeans.modules.autoupdate.ui")) {
-             Method m = null;
-                Class<?> c = info.getClass();
-                for (;;) {
-                    if (c == null) {
-                        throw ex2;
-                    }
-                    try {
-                        m = c.getDeclaredMethod("setEnabled", Boolean.TYPE);
-                    } catch (Exception ex) {
-                        ex2 = ex;
-                    }
-                    if (m != null) {
-                        break;
-                    }
-                    c = c.getSuperclass();
-                }
-                m.setAccessible(true);
-                m.invoke(info, false);
-                assertFalse("Module is disabled", info.isEnabled());
-                found = true;
-            }
-            sb.append(info.getCodeNameBase()).append('\n');
-        }
-        if (!found) {
-            fail("No module found:\n" + sb);
-        }
+        disableModule("org.netbeans.modules.autoupdate.ui");
 
         FeatureInfo info = FeatureInfo.create(
             "cluster",
@@ -241,5 +211,39 @@ public class ProjectFalsePositiveTest extends NbTestCase implements PropertyChan
             throw new UnsupportedOperationException("Not supported yet.");
         }
         
+    }
+
+    static void disableModule(String cnb) throws Exception, URISyntaxException {
+        StringBuffer sb = new StringBuffer();
+        boolean found = false;
+        Exception ex2 = null;
+        for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (info.getCodeNameBase().equals(cnb)) {
+                Method m = null;
+                Class<?> c = info.getClass();
+                for (;;) {
+                    if (c == null) {
+                        throw ex2;
+                    }
+                    try {
+                        m = c.getDeclaredMethod("setEnabled", Boolean.TYPE);
+                    } catch (Exception ex) {
+                        ex2 = ex;
+                    }
+                    if (m != null) {
+                        break;
+                    }
+                    c = c.getSuperclass();
+                }
+                m.setAccessible(true);
+                m.invoke(info, false);
+                assertFalse("Module is disabled", info.isEnabled());
+                found = true;
+            }
+            sb.append(info.getCodeNameBase()).append('\n');
+        }
+        if (!found) {
+            fail("No module found:\n" + sb);
+        }
     }
 }

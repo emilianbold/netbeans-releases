@@ -63,6 +63,18 @@
                     </xsl:element>
                 </xsl:element>
             </xsl:if>
+            <xsl:if test="//*/folder[@name='Menu']/folder[@name='Profile']">
+                <xsl:element name="folder">
+                    <xsl:attribute name="name">Menu</xsl:attribute>
+                    <xsl:element name="folder">
+                        <xsl:attribute name="name">Profile</xsl:attribute>
+                        <xsl:apply-templates
+                            select="//*/folder[@name='Menu']/folder[@name='Profile']/*"
+                            mode="project-wizard"
+                        />
+                    </xsl:element>
+                </xsl:element>
+            </xsl:if>
             <xsl:if test="//filesystem/folder[@name='Actions']">
                 <xsl:element name="folder">
                     <xsl:attribute name="name">Actions</xsl:attribute>
@@ -125,6 +137,19 @@
                 </xsl:element>
             </xsl:otherwise>
         </xsl:choose>
+    </xsl:template>
+    <xsl:template match="attr[@name = 'iconBase' or @name='iconResource']" mode="project-wizard">
+        <xsl:element name="attr">
+            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:attribute name="stringvalue">
+                <xsl:text>org/netbeans/modules/ide/ergonomics/</xsl:text>
+                <xsl:value-of select="$cluster.name"/>
+                <xsl:text>/</xsl:text>
+                <xsl:call-template name="filename">
+                    <xsl:with-param name="text" select="@stringvalue"/>
+                </xsl:call-template>
+            </xsl:attribute>
+        </xsl:element>
     </xsl:template>
     <xsl:template match="attr" mode="project-wizard">
         <xsl:copy-of select="."/>

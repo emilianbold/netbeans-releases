@@ -39,8 +39,8 @@
 package org.netbeans.modules.dlight.management.api;
 
 import org.netbeans.modules.dlight.api.execution.DLightSessionContext;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,6 +86,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private boolean isActive;
     private final DLightSessionContext sessionContext;
     private final String name;
+    private boolean closeOnRun = false;
 
     public static enum SessionState {
 
@@ -96,22 +97,22 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         ANALYZE,
     }
 
-    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case RUNNING:
-                targetStarted(source);
+                targetStarted(event.target);
                 break;
             case FAILED:
-                targetFinished(source);
+                targetFinished(event.target);
                 break;
             case TERMINATED:
-                targetFinished(source);
+                targetFinished(event.target);
                 break;
             case DONE:
-                targetFinished(source);
+                targetFinished(event.target);
                 break;
             case STOPPED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
         }
     }
@@ -133,6 +134,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     }
 
     void cleanVisualizers() {
+        if (visualizers == null){
+            return;
+        }
         visualizers.clear();
         visualizers = null;
     }
@@ -258,6 +262,11 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         }
     }
 
+
+    void closeOnRun(){
+        closeOnRun = true;
+    }
+
     synchronized void stop() {
         if (state == SessionState.ANALYZE) {
             return;
@@ -279,7 +288,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         Runnable sessionRunnable = new Runnable() {
 
             public void run() {
-                DataStorageManager.getInstance().clearActiveStorages();
+                DataStorageManager.getInstance().clearActiveStorages(DLightSession.this);
 
                 if (storages != null) {
                     storages.clear();
@@ -390,7 +399,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                                     subscribedIndicators.add(i);
                                 }
                                 target.addTargetListener(idp);
-                                log.info("I have subscribed indicator " + i + " to indicatorDataProvider " + idp);
+                                log.info("I have subscribed indicator " + i + " to indicatorDataProvider " + idp); // NOI18N
                             }
                         }
                     }
@@ -406,7 +415,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
 
         for (DataCollector toolCollector : collectors) {
-            DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(toolCollector);
+            DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(this, toolCollector);
             if (toolCollector instanceof DLightTarget.ExecutionEnvVariablesProvider) {
                 context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) toolCollector);
             }
@@ -429,7 +438,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 }
             } else {
                 // Cannot find storage for this collector!
-                log.severe("Cannot find storage for collector " + toolCollector);
+                log.severe("Cannot find storage for collector " + toolCollector); // NOI18N
             }
 
             target.addTargetListener(toolCollector);
@@ -471,6 +480,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             sessionStateListeners.clear();
             sessionStateListeners = null;
         }
+        DataStorageManager.getInstance().closeSession(this);
+        cleanVisualizers();
     }
 
     private void targetStarted(DLightTarget target) {
@@ -480,6 +491,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private void targetFinished(DLightTarget target) {
         setState(SessionState.ANALYZE);
         target.removeTargetListener(this);
+        if (closeOnRun){
+            close();
+        }
     }
 
     private void setState(SessionState state) {
@@ -543,9 +557,14 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         return result;
     }
 
+
+    boolean containsIndicator(Indicator indicator){
+        return getIndicators().contains(indicator);
+    }
+
     private void assertState(SessionState expectedState) {
         if (this.state != expectedState) {
-            throw new IllegalStateException("Session is in illegal state " + this.state + "; Must be in " + expectedState);
+            throw new IllegalStateException("Session is in illegal state " + this.state + "; Must be in " + expectedState); // NOI18N
         }
     }
 

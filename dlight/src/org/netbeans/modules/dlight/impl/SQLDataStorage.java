@@ -72,7 +72,7 @@ import org.openide.util.Exceptions;
  */
 public abstract class SQLDataStorage extends DataStorage {
 
-  public static final String SQL_DATA_STORAGE_TYPE = "db:sql";
+  public static final String SQL_DATA_STORAGE_TYPE = "db:sql"; // NOI18N
 
   private interface Request {
 
@@ -86,7 +86,7 @@ public abstract class SQLDataStorage extends DataStorage {
     public void execute() throws SQLException {
       PreparedStatement statement = getPreparedStatement();
       if (logger.isLoggable(Level.FINE)) {
-        logger.fine("EXECUTEEEEEEEEEEEEEEE !!!SQL: dispatching insert  " + statement.toString());
+        logger.fine("EXECUTEEEEEEEEEEEEEEE !!!SQL: dispatching insert  " + statement.toString()); //NOI18N
       }
       statement.execute();
     }
@@ -155,11 +155,11 @@ public abstract class SQLDataStorage extends DataStorage {
   private final Map<String, String> serviceInfoMap = new ConcurrentHashMap<String, String>();
 
   static {
-    classToType.put(Integer.class, "int");
-    classToType.put(Double.class, "double");
-    classToType.put(Float.class, "double");
-    classToType.put(Long.class, "bigint");
-    classToType.put(String.class, "varchar");
+    classToType.put(Integer.class, "int"); //NOI18N
+    classToType.put(Double.class, "double"); //NOI18N
+    classToType.put(Float.class, "double"); //NOI18N
+    classToType.put(Long.class, "bigint"); //NOI18N
+    classToType.put(String.class, "varchar"); //NOI18N
   }
 
   protected SQLDataStorage() {
@@ -205,17 +205,17 @@ public abstract class SQLDataStorage extends DataStorage {
       return true;
     }
     final String tableName = metadata.getName();
-    StringBuilder sb = new StringBuilder("create table " + tableName + "(");
+    StringBuilder sb = new StringBuilder("create table " + tableName + "("); //NOI18N
     sb.append(new EnumStringConstructor<DataTableMetadata.Column>().constructEnumString(metadata.getColumns(),
             new Convertor<DataTableMetadata.Column>() {
 
               public String toString(DataTableMetadata.Column item) {
-                return item.getColumnName() + " " + classToType(item.getColumnClass());
+                return item.getColumnName() + " " + classToType(item.getColumnClass()); //NOI18N
               }
             }));
-    sb.append(")" + getSQLQueriesDelimeter());
+    sb.append(")" + getSQLQueriesDelimeter()); //NOI18N
 
-    logger.info("About to execute query: " + sb.toString());
+    logger.info("About to execute query: " + sb.toString()); //NOI18N
 
     try {
       connection.prepareCall(sb.toString()).execute();
@@ -224,7 +224,7 @@ public abstract class SQLDataStorage extends DataStorage {
       return false;
     }
 
-    logger.info("Table " + tableName + " created");
+    logger.info("Table " + tableName + " created"); //NOI18N
 
     tables.put(tableName, metadata);
 
@@ -245,7 +245,7 @@ public abstract class SQLDataStorage extends DataStorage {
         return statement;
       }
       String tableName = tableDescription.getName();
-      StringBuilder query = new StringBuilder("insert into " + tableName + " (");
+      StringBuilder query = new StringBuilder("insert into " + tableName + " ("); //NOI18N
       query.append(new EnumStringConstructor<String>().constructEnumString(tableDescription.getColumnNames(),
               new Convertor<String>() {
 
@@ -254,17 +254,17 @@ public abstract class SQLDataStorage extends DataStorage {
                 }
               }));
 
-      query.append(") values (");
+      query.append(") values ("); //NOI18N
       int i = 0;
       int columnsCount = tableDescription.getColumnsCount();
       while (i < columnsCount - 1) {
-        query.append("?, ");
+        query.append("?, "); //NOI18N
         i++;
       }
-      query.append("? ) " + getSQLQueriesDelimeter());
+      query.append("? ) " + getSQLQueriesDelimeter()); //NOI18N
 
       if (logger.isLoggable(Level.FINE)) {
-        logger.fine("SQL: dispatching " + query.toString());
+        logger.fine("SQL: dispatching " + query.toString()); //NOI18N
       }
 
       try {
@@ -290,7 +290,7 @@ public abstract class SQLDataStorage extends DataStorage {
   public ResultSet select(String tableName, List<Column> columns, String sqlQuery) {
 
     if (sqlQuery == null) {
-      StringBuilder query = new StringBuilder("select ");
+      StringBuilder query = new StringBuilder("select "); //NOI18N
 
       query.append(new EnumStringConstructor<Column>().constructEnumString(columns,
               new Convertor<Column>() {
@@ -300,7 +300,7 @@ public abstract class SQLDataStorage extends DataStorage {
                 }
               }));
 
-      query.append(" from ").append(tableName);
+      query.append(" from ").append(tableName); //NOI18N
       sqlQuery = query.toString();
     }
 
@@ -323,11 +323,11 @@ public abstract class SQLDataStorage extends DataStorage {
     StringBuilder buf = new StringBuilder();
     Statement s = connection.createStatement();
     while ((line = reader.readLine()) != null) {
-      if (line.startsWith("-- ")) {
+      if (line.startsWith("-- ")) { //NOI18N
         continue;
       }
       buf.append(line);
-      if (line.endsWith(";")) {
+      if (line.endsWith(";")) { //NOI18N
         String sql = buf.toString();
         buf.setLength(0);
         String sqlToExecute = sql.substring(0, sql.length() - 1) + getSQLQueriesDelimeter();
@@ -357,9 +357,9 @@ public abstract class SQLDataStorage extends DataStorage {
    */
   private PreparedStatement createRowInsertStatement(String tableName, DataRow row) {
     if (logger.isLoggable(Level.INFO)) {
-      logger.fine("Will add to the queue with using prepared statement");
+      logger.fine("Will add to the queue with using prepared statement"); //NOI18N
     }
-    StringBuilder query = new StringBuilder("insert into " + tableName + " (");
+    StringBuilder query = new StringBuilder("insert into " + tableName + " ("); //NOI18N
 
     query.append(new EnumStringConstructor<String>().constructEnumString(row.getColumnNames(),
             new Convertor<String>() {
@@ -369,19 +369,19 @@ public abstract class SQLDataStorage extends DataStorage {
               }
             }));
 
-    query.append(") values (");
+    query.append(") values ("); //NOI18N
 
     query.append(new EnumStringConstructor<Object>().constructEnumString(row.getData(),
             new Convertor<Object>() {
 
               public String toString(Object item) {
-                return "" + item;
+                return String.valueOf(item);
               }
             }));
 
-    query.append(")" + getSQLQueriesDelimeter());
+    query.append(")" + getSQLQueriesDelimeter()); //NOI18N
     if (logger.isLoggable(Level.FINE)) {
-      logger.fine("----------SQL: dispatching " + query.toString());
+      logger.fine("----------SQL: dispatching " + query.toString()); //NOI18N
     }
     try {
       return connection.prepareStatement(query.toString());
@@ -404,11 +404,11 @@ public abstract class SQLDataStorage extends DataStorage {
 
   public final PreparedStatement prepareStatement(String sql) throws SQLException {
     if (logger.isLoggable(Level.FINE)) {
-      logger.fine("SQL: prepare statement " + sql);
+      logger.fine("SQL: prepare statement " + sql); //NOI18N
     }
     PreparedStatement stmt = stmts.get(sql);
     if (stmt == null) {
-      if (sql.startsWith("INSERT INTO ")) {
+      if (sql.startsWith("INSERT INTO ")) { //NOI18N
         stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
       } else {
         stmt = connection.prepareStatement(sql);
@@ -441,7 +441,7 @@ public abstract class SQLDataStorage extends DataStorage {
         item = i.next();
         sb.append(conv.toString(item));
         if (i.hasNext()) {
-          sb.append(", ");
+          sb.append(", "); //NOI18N
         }
       }
 
@@ -486,7 +486,7 @@ public abstract class SQLDataStorage extends DataStorage {
           } else {
             for (Request request : requestList) {
               if (logger.isLoggable(Level.FINE)) {
-                logger.fine("EXECUTEEEEEEEEEEEEEEE !!!SQL: dispatching request  " + request.toString());
+                logger.fine("EXECUTEEEEEEEEEEEEEEE !!!SQL: dispatching request  " + request.toString()); //NOI18N
               }
 
               request.execute();
@@ -496,7 +496,7 @@ public abstract class SQLDataStorage extends DataStorage {
         } catch (Exception e) {
           logger.log(
                   Level.WARNING,
-                  "SQLDataStorage.async_db_write_failed",
+                  "SQLDataStorage.async_db_write_failed", //NOI18N
                   e);
         }
         requestList.clear();
@@ -554,7 +554,7 @@ public abstract class SQLDataStorage extends DataStorage {
         } catch (Exception e) {
           logger.log(
                   Level.WARNING,
-                  "SQLDataStorage_db_write_failed",
+                  "SQLDataStorage_db_write_failed", //NOI18N
                   e);
         }
         requestList.clear();

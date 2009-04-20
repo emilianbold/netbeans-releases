@@ -88,6 +88,7 @@ import org.tigris.subversion.svnclientadapter.ISVNConflictResolver;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
+import org.tigris.subversion.svnclientadapter.ISVNLogMessageCallback;
 import org.tigris.subversion.svnclientadapter.ISVNMergeInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.ISVNProgressListener;
@@ -943,6 +944,18 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
                 notificationHandler.notifyListenersOfChange(newStatus.getPath()); /// onNotify(cmd.getAbsoluteFile(s.getFile().getAbsolutePath()), null);   
             }            
        }
+    }
+
+    public void getLogMessages(File arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, boolean arg4, boolean arg5, long arg6, boolean arg7, String[] arg8, ISVNLogMessageCallback arg9) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void getLogMessages(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, boolean arg4, boolean arg5, long arg6, boolean arg7, String[] arg8, ISVNLogMessageCallback arg9) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ISVNInfo[] getInfo(File arg0, boolean arg1) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     // unsupported start

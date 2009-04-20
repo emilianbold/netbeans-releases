@@ -36,96 +36,103 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.sps.impl;
 
-import java.io.CharArrayWriter;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.Computable;
-import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
-import org.openide.util.Exceptions;
-import org.openide.windows.InputOutput;
+import org.netbeans.modules.nativeexecution.support.Logger;
 
-public final class FetchPrivilegesTask implements Computable<ExecutionEnvironment, List<String>>{
+public final class FetchPrivilegesTask implements Computable<ExecutionEnvironment, List<String>> {
+
+    private static final java.util.logging.Logger log = Logger.getInstance();
 
     public List<String> compute(ExecutionEnvironment execEnv) {
         /*
          * To find out actual privileges that tasks will have use
-         * > /bin/ppriv -v $$ | /bin/grep [IL]
+         * > ppriv -v $$ | grep [IL]
          *
          * and return intersection of list of I (inherit) and L (limit)
          * privileges...
          */
 
-        CharArrayWriter outWriter = new CharArrayWriter();
-
-        NativeProcessBuilder npb =
-                new NativeProcessBuilder(execEnv, "/bin/sh").setArguments("-c", "/bin/ppriv -v $$ | /bin/grep [IL]"); // NOI18N
-
-        ExecutionDescriptor d = new ExecutionDescriptor();
-        d = d.inputOutput(InputOutput.NULL);
-        d = d.outLineBased(true);
-        d = d.outProcessorFactory(new InputRedirectorFactory(outWriter));
-
-        ExecutionService execService = ExecutionService.newService(
-                npb, d, "getExecutionPrivileges"); // NOI18N
-
-        Future<Integer> fresult = execService.run();
-        int result = -1;
-
+        NativeProcess ppriv = null;
         try {
-            result = fresult.get();
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
+            String shell = HostInfoUtils.getShell(execEnv);
+            String command = "ppriv -v $$ | grep [IL]"; // NOI18N
+
+            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, shell);
+            npb = npb.setArguments("-c", command); // NOI18N
+            ppriv = npb.call();
+            int result = ppriv.waitFor();
+
+            if (result != 0) {
+                throw new IOException("Unable to get current privileges. Command " + // NOI18N
+                        command + " failed with code " + result); // NOI18N
+            }
+
+            List<String> iprivs = new ArrayList<String>();
+            List<String> lprivs = new ArrayList<String>();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(ppriv.getInputStream()));
+            String str = br.readLine();
+
+            while (str != null) {
+                if (str.contains("I:")) { // NOI18N
+                    String[] privs = str.substring(
+                            str.indexOf(": ") + 2).split(","); // NOI18N
+                    iprivs = Arrays.asList(privs);
+                } else if (str.contains("L:")) { // NOI18N
+                    String[] privs = str.substring(
+                            str.indexOf(": ") + 2).split(","); // NOI18N
+                    lprivs = Arrays.asList(privs);
+                }
+                str = br.readLine();
+            }
+
+            if (iprivs == null || lprivs == null) {
+                return Collections.emptyList();
+            }
+
+            List<String> real_privs = new ArrayList<String>();
+
+            for (String ipriv : iprivs) {
+                if (lprivs.contains(ipriv)) {
+                    real_privs.add(ipriv);
+                }
+            }
+
+            return real_privs;
+        } catch (ConnectException ex) {
             return Collections.emptyList();
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            Thread.currentThread().interrupt();
             return Collections.emptyList();
-        }
-
-        if (result != 0) {
-            return Collections.emptyList();
-        }
-
-        List<String> iprivs = new ArrayList<String>();
-        List<String> lprivs = new ArrayList<String>();
-
-        String[] outArray = outWriter.toString().split("\n"); // NOI18N
-        for (String str : outArray) {
-
-            if (str.contains("I:")) { // NOI18N
-                String[] privs = str.substring(
-                        str.indexOf(": ") + 2).split(","); // NOI18N
-                iprivs = Arrays.asList(privs);
-            } else if (str.contains("L:")) { // NOI18N
-                String[] privs = str.substring(
-                        str.indexOf(": ") + 2).split(","); // NOI18N
-                lprivs = Arrays.asList(privs);
+        } catch (IOException ex) {
+            log.fine(ex.getMessage());
+            try {
+                if (ppriv != null) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(ppriv.getErrorStream()));
+                    String str = br.readLine();
+                    while (str != null) {
+                        log.finest(str);
+                        str = br.readLine();
+                    }
+                }
+            } catch (IOException ioex) {
             }
         }
 
-        if (iprivs == null || lprivs == null) {
-            return Collections.emptyList();
-        }
-
-        List<String> real_privs = new ArrayList<String>();
-
-        for (String ipriv : iprivs) {
-            if (lprivs.contains(ipriv)) {
-                real_privs.add(ipriv);
-            }
-        }
-
-        return real_privs;
+        return Collections.emptyList();
     }
-
 }

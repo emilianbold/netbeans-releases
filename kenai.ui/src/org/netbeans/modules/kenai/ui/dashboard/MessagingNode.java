@@ -159,6 +159,7 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
     @Override
     protected void dispose() {
         super.dispose();
-        messaging.removePropertyChangeListener(this);
+        if( null != messaging )
+            messaging.removePropertyChangeListener(this);
     }
 }

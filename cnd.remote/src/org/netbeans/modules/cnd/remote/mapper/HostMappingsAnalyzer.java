@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -56,7 +56,7 @@ public class HostMappingsAnalyzer {
     private final PlatformInfo firstPI;
 
     public HostMappingsAnalyzer(ExecutionEnvironment remoteExecEnv) {
-        this(remoteExecEnv, ExecutionEnvironmentFactory.getLocalExecutionEnvironment());
+        this(remoteExecEnv, ExecutionEnvironmentFactory.getLocal());
     }
 
     public HostMappingsAnalyzer(ExecutionEnvironment secondEnv, ExecutionEnvironment firstEnv) {

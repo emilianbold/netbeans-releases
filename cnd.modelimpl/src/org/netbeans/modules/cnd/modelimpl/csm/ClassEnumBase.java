@@ -91,6 +91,17 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
             if (rcurly instanceof CsmAST) {
                 return ((CsmAST) rcurly).getEndOffset();
             } else {
+                // this could be unnamed struct/union/class with enclosing typedef
+                switch (node.getType()) {
+                    case CPPTokenTypes.LITERAL_enum:
+                    case CPPTokenTypes.LITERAL_class:
+                    case CPPTokenTypes.LITERAL_struct:
+                    case CPPTokenTypes.LITERAL_union:
+                        rcurly = AstUtil.findSiblingOfType(node, CPPTokenTypes.RCURLY);
+                }
+                if (rcurly instanceof CsmAST) {
+                    return ((CsmAST) rcurly).getEndOffset();
+                }
                 return OffsetableBase.getEndOffset(node);
             }
         }

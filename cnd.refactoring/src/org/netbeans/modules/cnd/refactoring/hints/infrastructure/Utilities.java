@@ -40,11 +40,10 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints.infrastructure;
 
-import java.util.List;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -127,7 +126,7 @@ public class Utilities {
         }
         StringBuilder sb = new StringBuilder();
         char first = str.charAt(0);
-        if (Character.isJavaIdentifierStart(str.charAt(0))) {
+        if (CndLexerUtilities.isCppIdentifierStart(str.charAt(0))) {
             sb.append(first);
         }
 

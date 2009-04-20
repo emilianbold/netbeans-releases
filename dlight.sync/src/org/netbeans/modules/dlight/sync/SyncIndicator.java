@@ -54,6 +54,7 @@ import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.openide.util.NbBundle;
 
 /**
  * Thread usage indicator
@@ -90,8 +91,8 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
             String locks = row.getStringValue("locks"); // NOI18N
             String threads = row.getStringValue("threads"); // NOI18N
             if (locks != null && threads != null) {
-                lastLocks = (int) Float.parseFloat(locks);
                 lastThreads = Integer.parseInt(threads);
+                lastLocks = (int) (lastThreads * Float.parseFloat(locks) / 100);
             }
         }
     }
@@ -104,7 +105,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
     @Override
     protected void repairNeeded(boolean needed) {
         if (needed) {
-            final RepairPanel repairPanel = new RepairPanel(new ActionListener() {
+            final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus(), new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     final Future<Boolean> result = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {
@@ -126,9 +127,10 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
                 }
             });
         } else {
-            final JLabel label = new JLabel(getRepairActionProvider().isValid()?
-                "<html><center>Will show data on the next run</center></html>" ://NOI18N
-                "<html><center>Invalid</center></html>");//NOI18N
+            final JLabel label = new JLabel(
+                    "<html><center>" // NOI18N
+                    + getMessage(getRepairActionProvider().isValid()? "Repair.Valid" : "Repair.Invalid") // NOI18N
+                    + "</center></html>"); // NOI18N
             label.setForeground(GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {
                 public void run() {
@@ -136,5 +138,9 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
                 }
             });
         }
+    }
+
+    private static String getMessage(String name) {
+        return NbBundle.getMessage(SyncIndicator.class, name);
     }
 }

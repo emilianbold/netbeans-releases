@@ -194,12 +194,6 @@ public class CloneAction extends ContextAction {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 }finally {
-                    //#121581: Work around for ini4j bug on Windows not handling single '\' correctly
-                    // hg clone creates the default hgrc, we just overwrite it's contents with 
-                    // default path contianing '\\'
-                    if(isLocalClone && Utilities.isWindows()){ 
-                        fixLocalPullPushPathsOnWindows(cloneFolder.getAbsolutePath());
-                    }
                     // #125835 - Push to default was not being set automatically by hg after Clone
                     // but was after you opened the Mercurial -> Properties, inconsistent
                     HgConfigFiles hgConfigFiles = new HgConfigFiles(cloneFolder);

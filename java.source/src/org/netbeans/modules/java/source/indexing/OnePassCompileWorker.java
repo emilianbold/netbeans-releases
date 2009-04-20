@@ -42,6 +42,7 @@ package org.netbeans.modules.java.source.indexing;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.util.CouplingAbort;
+import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.File;
 import java.net.URI;
@@ -117,6 +118,7 @@ final class OnePassCompileWorker extends CompileWorker {
                             computeFQNs(file2FQNs, cut, tuple.jfo);
                         }
                     }
+                    Log.instance(jt.getContext()).nerrors = 0;
                 } catch (Throwable t) {
                     if (JavaIndex.LOG.isLoggable(Level.WARNING)) {
                         final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
@@ -189,6 +191,7 @@ final class OnePassCompileWorker extends CompileWorker {
                             // presumably should not happen
                         }
                     }
+                    Log.instance(jt.getContext()).nerrors = 0;
                     finished.add(active.indexable);
                 }
                 return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, root2Rebuild);

@@ -46,11 +46,12 @@ import org.openide.filesystems.FileUtil;
 /**
  * @author Radek Matous
  */
-abstract class FileOperationFactory  {
+abstract class FileOperationFactory {
     abstract Callable<Boolean> createCopyHandler(FileObject source);
     abstract Callable<Boolean> createDeleteHandler(FileObject source);
     abstract Callable<Boolean> createInitHandler(FileObject source);
     abstract Callable<Boolean> createRenameHandler(FileObject source, String oldName);
+    abstract void invalidate();
 
     protected static final boolean isSourceFileValid(FileObject sourceRoot, FileObject source) {
         return (FileUtil.isParentOf(sourceRoot, source) || source == sourceRoot) && !isNbProjectMetadata(source) && VisibilityQuery.getDefault().isVisible(source);

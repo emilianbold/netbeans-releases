@@ -65,7 +65,7 @@ import javax.swing.event.ChangeListener;
 import org.jdesktop.swingx.JXBusyLabel;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.ImageUtilities;
@@ -281,7 +281,7 @@ public class ChatTopComponent extends TopComponent {
 
     void showPopup() {
         JPopupMenu menu = new JPopupMenu();
-        for (KenaiProject prj : kec.getMyProjects()) {
+        for (KenaiFeature prj : kec.getMyChats()) {
             if (!open.contains(prj.getName())) {
                 menu.add(new OpenChatAction(prj));
             }
@@ -610,7 +610,7 @@ public class ChatTopComponent extends TopComponent {
                         if (e.getNewValue() == null) {
                             putLoginScreen();
                         } else {
-                            kec.getMyProjects();
+                            kec.getMyChats();
                             putChatsScreen();
                         }
                     }
@@ -625,15 +625,15 @@ public class ChatTopComponent extends TopComponent {
     
     private final class OpenChatAction extends AbstractAction {
 
-        private KenaiProject prj;
+        private KenaiFeature f;
 
-        public OpenChatAction(KenaiProject prj) {
-            super(prj.getName());
-            this.prj = prj;
+        public OpenChatAction(KenaiFeature f) {
+            super(f.getName());
+            this.f = f;
         }
 
         public void actionPerformed(ActionEvent e) {
-            addChat(new ChatPanel(kec.getChat(prj)));
+            addChat(new ChatPanel(kec.getChat(f)));
         }
     }
 }

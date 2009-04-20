@@ -123,6 +123,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
     private String prjNameCheckMessage = null;
 
+    private boolean licensesLoaded = true;
+
     public NameAndLicenseWizardPanelGUI(NameAndLicenseWizardPanel pnl) {
 
         panel = pnl;
@@ -205,10 +207,12 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                         model.addElement(license.getDisplayName());
                         licenseList.add(license);
                     }
+                    licensesLoaded = true;
                 } else {
                     // XXX this item needs to be selected
                     model.addElement(NbBundle.getMessage(NameAndLicenseWizardPanel.class,
                             "NameAndLicenseWizardPanelGUI.noLicensesError"));
+                    licensesLoaded = false;
                 }
                 if (!licenseList.isEmpty()) {
                     setLicenses(licenseList);
@@ -554,7 +558,11 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                 try {
                     prjNameCheckMessage = KenaiProject.checkName(getProjectName());
                 } catch (KenaiException ex) {
-                    Exceptions.printStackTrace(ex);
+                    String msg = ex.getAsString();
+                    if (msg==null) {
+                        msg = ex.getLocalizedMessage();
+                    }
+                    prjNameCheckMessage = msg;
                 }
                 panel.fireChangeEvent();
             }
@@ -667,6 +675,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             return "Project Description must to be shorter than 500 characters.";
         } else if (prjNameCheckMessage!=null) {
             return prjNameCheckMessage;
+        } else if (!licensesLoaded) {
+            return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.noLicensesErrMsg");
         }
         return null;
     }

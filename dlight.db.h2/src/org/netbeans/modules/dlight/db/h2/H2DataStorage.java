@@ -63,19 +63,19 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
 
 public final class H2DataStorage extends SQLDataStorage implements StackDataStorage {
 
-    private static final String SQL_QUERY_DELIMETER = ";";
+    private static final String SQL_QUERY_DELIMETER = ";"; // NOI18N
     private static final Logger logger = DLightLogger.getLogger(H2DataStorage.class);
     private static boolean driverLoaded = false;
     private static final AtomicInteger dbIndex = new AtomicInteger();
     private SQLStackStorage stackStorage;
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
-    private static final String url = "jdbc:h2:/tmp/dlight";
+    private static final String url = "jdbc:h2:/tmp/dlight"; // NOI18N
 
 
     static {
         try {
-            Class driver = Class.forName("org.h2.Driver");
-            logger.info("Driver for H2DB (" + driver.getName() + ") Loaded ");
+            Class driver = Class.forName("org.h2.Driver"); // NOI18N
+            logger.info("Driver for H2DB (" + driver.getName() + ") Loaded "); // NOI18N
         } catch (ClassNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
@@ -107,12 +107,12 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
 
 
     static {
-        File tmpDir = new File("/tmp");
+        File tmpDir = new File("/tmp"); // NOI18N
         if (tmpDir.exists()) {
             File[] files = tmpDir.listFiles(new FilenameFilter() {
 
                 public boolean accept(File dir, String name) {
-                    return name.startsWith("dlight");
+                    return name.startsWith("dlight"); // NOI18N
                 }
             });
             int newValue = 0;
@@ -149,7 +149,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
 
     @Override
     protected void connect(String dburl) throws SQLException {
-        connection = DriverManager.getConnection(dburl, "admin", "");
+        connection = DriverManager.getConnection(dburl, "admin", ""); // NOI18N
     }
 
     public int putStack(List<CharSequence> stack, long sampleDuration) {

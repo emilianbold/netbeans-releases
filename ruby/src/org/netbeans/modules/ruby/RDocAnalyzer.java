@@ -44,8 +44,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
 import org.netbeans.modules.parsing.api.Source;
 
 /**

@@ -39,10 +39,10 @@
 package org.netbeans.modules.cnd.gizmo.actions;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -56,8 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
@@ -69,8 +68,10 @@ import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
@@ -78,14 +79,16 @@ import org.openide.windows.InputOutput;
  */
 public class GizmoRunActionHandler implements ProjectActionHandler, DLightTargetListener {
 
+    private static final String GNU_FAMILIY = "gc++filt"; //NOI18N
+    private static final String SS_FAMILIY = "dem"; //NOI18N
     private ProjectActionEvent pae;
     private List<ExecutionListener> listeners;
     private DLightSessionHandler session;
-    private static final String GNU_FAMILIY = "gc++filt"; //NOI18N
-    private static final String SS_FAMILIY = "dem"; //NOI18N
+    private InputOutput io;
+    private long startTimeMillis;
 
     public GizmoRunActionHandler() {
-        this.listeners = new ArrayList<ExecutionListener>();
+        this.listeners = new CopyOnWriteArrayList<ExecutionListener>();
     }
 
     public void init(ProjectActionEvent pae) {
@@ -111,12 +114,12 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String binDir = compilerSet.getDirectory();
         String demangle_utility = SS_FAMILIY;
-        if (compilerSet.isGnuCompiler()){
+        if (compilerSet.isGnuCompiler()) {
             demangle_utility = GNU_FAMILIY;
         }
         String dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
         targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
-        
+
         if (execEnv.isRemote()) {
             targetConf.setHost(execEnv.getHost());
             targetConf.setUser(execEnv.getUser());
@@ -131,25 +134,27 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             if (termPath != null) {
                 String termBaseName = IpeUtils.getBaseName(termPath);
                 if (ExternalTerminalProvider.getSupportedTerminalIDs().contains(termBaseName)) {
-                    targetConf.useExternalTerminal(ExternalTerminalProvider.getTerminal(termBaseName));
+                    targetConf.useExternalTerminal(ExternalTerminalProvider.getTerminal(execEnv, termBaseName));
                 }
             }
         }
+        this.io = io;
         targetConf.setIO(io);
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);
         DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
-        if (options instanceof GizmoConfigurationOptions){
-            ((GizmoConfigurationOptions)options).configure(pae.getProject());
+        if (options instanceof GizmoConfigurationOptions) {
+            ((GizmoConfigurationOptions) options).configure(pae.getProject());
         }
-   
+
 
         //WE are here only when Profile On RUn 
         final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(
                 target, configuration, IpeUtils.getBaseName(pae.getExecutable()));
 
         DLightExecutorService.submit(new Runnable() {
+
             public void run() {
                 try {
                     session = handle.get();
@@ -165,7 +170,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     }
 
     private Map<String, String> createMap(String[][] array) {
-        Map<String, String> result = new HashMap<String,String>();
+        Map<String, String> result = new HashMap<String, String>();
         for (int i = 0; i < array.length; ++i) {
             result.put(array[i][0], array[i][1]);
         }
@@ -193,34 +198,93 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         listeners.remove(l);
     }
 
-    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case INIT:
             case STARTING:
                 break;
             case RUNNING:
-                notifyStarted();
+                targetStarted();
                 break;
             case FAILED:
             case STOPPED:
+                targetFailed();
+                break;
             case TERMINATED:
-                notifyFinished(1);
+                targetFinished(event.status);
                 break;
             case DONE:
-                notifyFinished(0);
+                targetFinished(event.status);
                 break;
         }
     }
 
-    private void notifyStarted() {
+    private void targetStarted() {
+        startTimeMillis = System.currentTimeMillis();
         for (ExecutionListener l : listeners) {
             l.executionStarted();
         }
     }
 
-    private void notifyFinished(int rc) {
+    private void targetFailed() {
+        StatusDisplayer.getDefault().setStatusText(
+                getMessage("Status.RunFailedToStart")); // NOI18N
+        io.getErr().println(getMessage("Output.RunFailedToStart")); // NOI18N);
+
         for (ExecutionListener l : listeners) {
-            l.executionFinished(rc);
+            l.executionFinished(-1);
         }
+    }
+
+    private void targetFinished(Integer status) {
+        int exitCode = -1;
+
+        io.getOut().println();
+        
+        if (status == null) {
+            StatusDisplayer.getDefault().setStatusText(getMessage("Status.RunTerminated")); // NOI18N
+            io.getErr().println(getMessage("Output.RunTerminated")); // NOI18N
+        } else {
+            exitCode = status.intValue();
+            boolean success = exitCode == 0;
+
+            StatusDisplayer.getDefault().setStatusText(
+                    getMessage(success ? "Status.RunSuccessful" : "Status.RunFailed")); // NOI18N
+
+            String time = formatTime(System.currentTimeMillis() - startTimeMillis);
+            if (success) {
+                io.getOut().println(getMessage("Output.RunSuccessful", time)); // NOI18N);
+            } else {
+                io.getErr().println(getMessage("Output.RunFailed", exitCode, time)); // NOI18N
+            }
+        }
+
+        for (ExecutionListener l : listeners) {
+            l.executionFinished(exitCode);
+        }
+    }
+
+    private static String formatTime(long millis) {
+        StringBuilder buf = new StringBuilder();
+        long seconds = millis / 1000;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        if (hours > 0) {
+            buf.append(' ').append(hours).append(getMessage("Time.Hour")); // NOI18N
+        }
+        if (minutes > 0) {
+            buf.append(' ').append(minutes % 60).append(getMessage("Time.Minute")); // NOI18N
+        }
+        if (seconds > 0) {
+            buf.append(' ').append(seconds % 60).append(getMessage("Time.Second")); // NOI18N
+        }
+        if (hours == 0 && minutes == 0 && seconds == 0) {
+            buf.append(' ').append(millis).append(getMessage("Time.Millisecond")); // NOI18N
+        }
+        return buf.toString();
+    }
+
+    private static String getMessage(String name, Object... params) {
+        return NbBundle.getMessage(GizmoRunActionHandler.class, name, params);
     }
 }

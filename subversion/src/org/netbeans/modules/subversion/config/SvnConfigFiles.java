@@ -54,6 +54,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.ini4j.Config;
 import org.ini4j.Ini;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
@@ -128,7 +129,8 @@ public class SvnConfigFiles implements PreferenceChangeListener {
      * Creates a new instance
      */
     private SvnConfigFiles() {      
-        // copy config file        
+        Config.getGlobal().setEscape(false); // do not escape characters
+        // copy config file
         config = copyConfigFileToIDEConfigDir("config", new ConfigIniFilePatcher());    // NOI18N
         // get the system servers file 
         svnServers = loadSystemIniFile("servers");

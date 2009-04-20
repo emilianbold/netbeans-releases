@@ -421,9 +421,9 @@ public final class NbMavenProjectImpl implements Project {
             oldProject = project;
             project = null;
         }
+        ACCESSOR.doFireReload(watcher);
         projectInfo.reset();
         problemReporter.clearReports();
-        ACCESSOR.doFireReload(watcher);
         doBaseProblemChecks();
     }
     

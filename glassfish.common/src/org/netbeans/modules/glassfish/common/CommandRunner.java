@@ -113,7 +113,7 @@ public class CommandRunner extends BasicTask<OperationState> {
      * 
      */
     public Future<OperationState> stopServer() {
-        return execute(Commands.STOP, "MSG_STOP_SERVER_IN_PROGRESS");
+        return execute(Commands.STOP, "MSG_STOP_SERVER_IN_PROGRESS"); // NOI18N
         
     }
     
@@ -133,9 +133,9 @@ public class CommandRunner extends BasicTask<OperationState> {
                 result = cmd.getApplicationMap();
             }
         } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
         } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
         }
         return result;
     }
@@ -151,9 +151,9 @@ public class CommandRunner extends BasicTask<OperationState> {
                 result = cmd.getResourceList();
             }
         } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
         } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
         }
         return result;
     }
@@ -271,7 +271,7 @@ public class CommandRunner extends BasicTask<OperationState> {
     private String addName(final String compName, final String itemsNotUpdated) {
         String retVal = itemsNotUpdated;
         if (null != itemsNotUpdated) {
-            retVal += ", "+compName;
+            retVal += ", "+compName; // NOI18N
         } else {
             retVal = compName;
         }
@@ -290,7 +290,7 @@ public class CommandRunner extends BasicTask<OperationState> {
      */
     @Override
     public OperationState call() {
-        fireOperationStateChanged(OperationState.RUNNING, "MSG_ServerCmdRunning", 
+        fireOperationStateChanged(OperationState.RUNNING, "MSG_ServerCmdRunning", // NOI18N
                 serverCmd.toString(), instanceName);
         
         boolean httpSucceeded = false;
@@ -302,14 +302,12 @@ public class CommandRunner extends BasicTask<OperationState> {
         try {
             commandUrl = constructCommandUrl(serverCmd.getCommand(), serverCmd.getQuery());
         } catch (URISyntaxException ex) {
-            return fireOperationStateChanged(OperationState.FAILED, "MSG_ServerCmdException",
+            return fireOperationStateChanged(OperationState.FAILED, "MSG_ServerCmdException",  // NOI18N
                     serverCmd.toString(), instanceName, ex.getLocalizedMessage());
         }
 
         int retries = 1; // disable ("version".equals(cmd) || "__locations".equals(cmd)) ? 1 : 3;
-        Logger.getLogger("glassfish").log(Level.FINEST, 
-                "CommandRunner.call(" + commandUrl + ") called on thread \"" + 
-                Thread.currentThread().getName() + "\"");
+        Logger.getLogger("glassfish").log(Level.FINEST, "CommandRunner.call(" + commandUrl + ") called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
         
         // Create a connection for this command
         try {
@@ -317,7 +315,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 
             while(!httpSucceeded && retries-- > 0) {
                 try {
-                    Logger.getLogger("glassfish").log(Level.FINE, "HTTP Command: " + commandUrl );
+                    Logger.getLogger("glassfish").log(Level.FINE, "HTTP Command: " + commandUrl ); // NOI18N
 
                     conn = urlToConnectTo.openConnection();
                     if(conn instanceof HttpURLConnection) {
@@ -331,7 +329,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                         hconn.setDoOutput(serverCmd.getDoOutput());
                         String contentType = serverCmd.getContentType();
                         if(contentType != null && contentType.length() > 0) {
-                            hconn.setRequestProperty("Content-Type", contentType);
+                            hconn.setRequestProperty("Content-Type", contentType); // NOI18N
                         }
                         hconn.setRequestProperty("User-Agent", "hk2-agent"); // NOI18N
 
@@ -358,8 +356,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 
                         // !PW FIXME log status for debugging purposes
                         if(Boolean.getBoolean("org.netbeans.modules.hk2.LogManagerCommands")) { // NOI18N
-                            Logger.getLogger("glassfish").log(Level.FINE, 
-                                    "  receiving response, code: " + respCode);
+                            Logger.getLogger("glassfish").log(Level.FINE, "  receiving response, code: " + respCode); // NOI18N
                         }
 
                         // Process the response message
@@ -369,8 +366,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                         
                         httpSucceeded = true;
                     } else {
-                        Logger.getLogger("glassfish").log(Level.INFO, "Unexpected connection type: " +
-                                urlToConnectTo);
+                        Logger.getLogger("glassfish").log(Level.INFO, "Unexpected connection type: " + urlToConnectTo); // NOI18N
                     }
                 } catch(ProtocolException ex) {
                     fireOperationStateChanged(OperationState.FAILED, "MSG_Exception", // NOI18N
@@ -390,7 +386,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                 }
             } // while
         } catch(MalformedURLException ex) {
-            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex); // NOI18N
         }
         
         if(commandSucceeded) {
@@ -439,20 +435,20 @@ public class CommandRunner extends BasicTask<OperationState> {
                 try {
                     istream.close();
                 } catch(IOException ex) {
-                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                 }
                 
                 if(ostream != null) {
                     try { 
                         ostream.close(); 
                     } catch(IOException ex) {
-                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);  // NOI18N
                     }
                     ostream = null;
                 }
             }
-        } else if("PUT".equalsIgnoreCase(serverCmd.getRequestMethod())) {
-            Logger.getLogger("glassfish").log(Level.INFO, "HTTP PUT request but no data stream provided");
+        } else if("PUT".equalsIgnoreCase(serverCmd.getRequestMethod())) { // NOI18N
+            Logger.getLogger("glassfish").log(Level.INFO, "HTTP PUT request but no data stream provided"); // NOI18N
         }
     }
     
@@ -465,7 +461,7 @@ public class CommandRunner extends BasicTask<OperationState> {
             try {
                 httpInputStream.close();
             } catch (IOException ex) {
-                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);  // NOI18N
             }
         }
         return result;
