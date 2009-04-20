@@ -231,8 +231,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
         indexFileLabel.setLabelFor(indexFileTextField);
 
-        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile")); // NOI18N
-        indexFileTextField.setEditable(false);
+        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile"));
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsScript.class, "LBL_BrowseIndex"));
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -264,7 +263,6 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                             .add(GroupLayout.TRAILING, configureButton)
                             .add(GroupLayout.TRAILING, indexFileBrowseButton))))
                 .add(0, 0, 0))
-        
         );
 
         layout.linkSize(new Component[] {configureButton, indexFileBrowseButton}, GroupLayout.HORIZONTAL);
@@ -285,7 +283,6 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                     .add(indexFileLabel)
                     .add(indexFileBrowseButton)
                     .add(indexFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-        
         );
 
         interpreterLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.interpreterLabel.AccessibleContext.accessibleName")); // NOI18N
