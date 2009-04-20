@@ -705,7 +705,7 @@ final class ModuleListParser {
                     for (int j = 0; j < clustersS.length; j++) {
                         File cluster = new File(clustersS[j]);
                         if (! cluster.isDirectory()) {
-                            throw new IOException("No such cluster " + cluster + " referred to from ${cluster.path}: " + clusterPath);
+                            throw new IOException("No such cluster " + cluster + " referred to from ${cluster.path.final}: " + clusterPath);
                         }
                         clusters[j] = cluster;
                     }
@@ -713,7 +713,7 @@ final class ModuleListParser {
             }
 
             if (clusters == null || clusters.length == 0)
-                throw new IOException("Invalid ${cluster.path}: " + clusterPath);
+                throw new IOException("Invalid ${cluster.path.final}: " + clusterPath);
 
             // External module.
             if (nball != null && project != null) {
