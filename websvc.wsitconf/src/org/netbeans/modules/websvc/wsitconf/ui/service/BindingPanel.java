@@ -210,7 +210,10 @@ public class BindingPanel extends SectionInnerPanel {
                     (ConfigVersion) supportedConfigVersions.toArray()[supportedConfigVersions.size() - 1],
                     project);
             } else {
-                PolicyModelHelper.setConfigVersion(binding, ConfigVersion.CONFIG_1_0, project);
+                ConfigVersion cfgVersion = ConfigVersion.CONFIG_1_0;
+                PolicyModelHelper.setConfigVersion(binding, cfgVersion, project);
+                supportedConfigVersions.add(cfgVersion);
+                cfgVersionCombo.addItem(cfgVersion);
             }
         }
 
