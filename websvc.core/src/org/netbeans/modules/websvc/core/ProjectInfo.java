@@ -50,6 +50,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxrpc.JaxRpc;
+import org.netbeans.modules.websvc.wsstack.jaxrpc.JaxRpcStackProvider;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 
@@ -87,11 +89,12 @@ public class ProjectInfo {
                     if (wsStack != null) {
                         jsr109Supported = wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
                         serverType = WSStackUtils.getServerType(project);
-                        jsr109oldSupported = (serverType == ServerType.GLASSFISH || serverType == ServerType.GLASSFISH_V3);
-                        //jsr109oldSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
-                        //wsgenSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN);
                         wsgenSupported = true;
                         wsimportSupported = true;                      
+                    }
+                    WSStack<JaxRpc> jaxRpcStack = JaxRpcStackProvider.getJaxWsStack(j2eePlatform);
+                    if (jaxRpcStack != null) {
+                        jsr109oldSupported = jaxRpcStack.isFeatureSupported(JaxRpc.Feature.JSR109_OLD);
                     }
                 } catch (InstanceRemovedException ex) {
                     Logger.getLogger(getClass().getName()).log(Level.FINE, "Failed to find J2eePlatform", ex);
