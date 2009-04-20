@@ -1493,6 +1493,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         </path>
         <javac srcdir="test/unit/src" destdir="build/test/unit/classes" debug="true" source="1.5">
             <classpath refid="test.cp"/>
+            <compilerarg line="-Xlint -Xlint:-serial"/>
         </javac>
         <copy todir="build/test/unit/classes">
             <fileset dir="test/unit/src" excludes="**/*.java"/>
