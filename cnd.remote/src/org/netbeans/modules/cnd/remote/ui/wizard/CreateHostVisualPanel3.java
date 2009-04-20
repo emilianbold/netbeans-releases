@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-public final class CreateHostVisualPanel3 extends JPanel {
+/*package*/ final class CreateHostVisualPanel3 extends JPanel {
 
     public CreateHostVisualPanel3() {
         initComponents();
@@ -67,7 +67,7 @@ public final class CreateHostVisualPanel3 extends JPanel {
         textHostDisplayName.setText(execEnv.getHost());
         CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(execEnv);
         labelPlatformValue.setText(PlatformTypes.toString(csm.getPlatform()));
-        labelUsernameValue.setText(execEnv.getHost());
+        labelUsernameValue.setText(execEnv.getUser());
         labelHostnameValue.setText(execEnv.getHost());
         List<String> sets = csm.getCompilerSetDisplayNames();
         cbDefaultToolchain.setModel(new javax.swing.DefaultComboBoxModel(sets.toArray(new String[sets.size()])));

@@ -63,7 +63,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-public final class CreateHostVisualPanel2 extends JPanel {
+/*package*/ final class CreateHostVisualPanel2 extends JPanel {
 
     private final ChangeListener wizardListener;
 
