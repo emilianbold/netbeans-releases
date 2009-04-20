@@ -45,7 +45,7 @@ import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.Utils;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
@@ -87,7 +87,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         FileObject[] selectedFiles = CommandUtils.filesForContextOrSelectedNodes(context);
         assert selectedFiles.length > 0 : "At least one node must be selected for Download action";
 
-        FileObject[] sources = Utils.getSourceObjects(getProject());
+        FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(getProject());
 
         InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
         RemoteClient remoteClient = getRemoteClient(remoteLog);
@@ -96,7 +96,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         TransferInfo transferInfo = null;
         try {
             progressHandle.start();
-            Set<TransferFile> forDownload = remoteClient.prepareDownload(sources[0], selectedFiles);
+            Set<TransferFile> forDownload = remoteClient.prepareDownload(sources, selectedFiles);
             // avoid timeout errors
             remoteClient.disconnect();
 
@@ -109,7 +109,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
                 progressHandle.finish();
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
                 progressHandle.start();
-                transferInfo = remoteClient.download(sources[0], forDownload);
+                transferInfo = remoteClient.download(sources, forDownload);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(UploadCommand.class, "MSG_DownloadFinished", getProject().getName()));
             }
