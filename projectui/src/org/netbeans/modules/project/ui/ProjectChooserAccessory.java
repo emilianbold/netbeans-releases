@@ -247,7 +247,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             final List<String> projectNames = new ArrayList<String>(projectDirs.length);
             for (File dir : projectDirs) {
                 if (dir != null) {
-                    if (Thread.currentThread().isInterrupted()) {
+                    if (Thread.interrupted()) {
                         return;
                     }
                     Project project = getProject(FileUtil.normalizeFile(dir));
@@ -257,7 +257,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     }
                 }
             }
-            if (Thread.currentThread().isInterrupted()) {
+            if (Thread.interrupted()) {
                 return;
             }
             EventQueue.invokeLater(new Runnable() {

@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -193,7 +194,7 @@ public final class AdvancedPanel extends JPanel {
         if (selectedIndex != -1) {
             String category = tabbedPanel.getTitleAt(selectedIndex);
             if (tabbedPanel.getSelectedComponent() instanceof JLabel) {
-                tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), model.getPanel(category));
+                tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), new JScrollPane(model.getPanel(category)));
                 ((JComponent)tabbedPanel.getSelectedComponent()).setBorder (new EmptyBorder(11,11,11,11));
             }
             model.update(category);

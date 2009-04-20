@@ -705,7 +705,7 @@ public class NodeTableModel extends AbstractTableModel {
         for (int i = 0; i < allPropertyColumns.length; i++) {
             oldvalues[i] = isVisible(allPropertyColumns[i].getProperty());
             boxtext = getDisplayNameWithMnemonic( allPropertyColumns[i].getProperty() ) 
-                    + ": " 
+                    + ": "                                                       // NOI18N
                     + allPropertyColumns[i].getProperty().getShortDescription(); // NOI18N
             sort.put(boxtext, Integer.valueOf(i));
         }

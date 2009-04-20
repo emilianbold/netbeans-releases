@@ -1656,6 +1656,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
     void beforeActualTest(String n) {
         if (n.equals("testEqualsIsNotCalledTooMuch")) {
             CntPair.cnt = 0;
+            CntPair.hashCnt = 0;
             CntPair.instances = 0;
             int how = 1000;
 
