@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.CndModule;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -202,7 +203,7 @@ public class ExternalTerminal implements PropertyChangeListener {
             if (pid == 0) {
                 log.warning("Killing zero pid detected from log: " + gdbHelperLog);
             }
-            debugger.kill(15, pid);
+            debugger.kill(Signal.TERM, pid);
         }
     }
 }

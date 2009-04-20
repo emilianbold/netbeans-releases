@@ -158,6 +158,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                     typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
                                 }
                             }
+                            if (typedefs.getEnclosingClassifier() != null && !ForwardClass.isForwardClass(typedefs.getEnclosingClassifier())) {
+                                addMember(typedefs.getEnclosingClassifier(), !isRenderingLocalContext());
+                            }
                         }
                         renderVariableInClassifier(token, innerClass, null, null);
                         break;
@@ -219,6 +222,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                     if (typedefs.getEnclosingClassifier() != null) {
                                         typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
                                     }
+                                }
+                                if (typedefs.getEnclosingClassifier() != null && !ForwardClass.isForwardClass(typedefs.getEnclosingClassifier())) {
+                                    addMember(typedefs.getEnclosingClassifier(), !isRenderingLocalContext());
                                 }
                                 break;
                             }
