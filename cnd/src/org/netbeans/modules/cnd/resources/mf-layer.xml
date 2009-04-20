@@ -344,8 +344,9 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CndClassWizardIterator"/>
                 <attr name="templateCategory" stringvalue="cpp-types"/>
             </file>
+
             <file name="class.h" url="templates/cpp/class-h.template">
-                <attr name="position" intvalue="10"/>
+                <attr name="position" intvalue="410"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="hidden"/>
             </file>
