@@ -894,7 +894,9 @@ public final class SearchBar extends JPanel {
             if (target != null) {
                 EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
                 if (eui != null) {
-                    JComponent comp = eui.getExtComponent();
+                    //need to find if it has extended editor first, otherwise getExtComponent() will create all sidebars
+                    //and other parts of full editor if action is assigned to just editor pane and broke later action logic.
+                    JComponent comp = eui.hasExtComponent() ? eui.getExtComponent() : null;
                     if (comp != null) {
                         SearchBar issb = findComponent(comp,SearchBar.class, 5);
                         if (issb != null) {
@@ -919,7 +921,9 @@ public final class SearchBar extends JPanel {
             if (target != null) {
                 EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
                 if (eui != null) {
-                    JComponent comp = eui.getExtComponent();
+                    //need to find if it has extended editor first, otherwise getExtComponent() will create all sidebars
+                    //and other parts of full editor if action is assigned to just editor pane and broke later action logic.
+                    JComponent comp = eui.hasExtComponent() ? eui.getExtComponent() : null;
                     if (comp != null) {
                         SearchBar issb = findComponent(comp,SearchBar.class, 5);
                         if (issb != null) {
