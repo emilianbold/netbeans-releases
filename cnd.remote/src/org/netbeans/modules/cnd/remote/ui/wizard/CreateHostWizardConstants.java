@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,54 +34,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
+/**
+ * Just a placeholder for all properties constants 
+ * @author Vladimir Kvashin
+ */
+/*package-local*/ interface CreateHostWizardConstants {
 
-/*package*/ final class CreateHostWizardPanel3 implements WizardDescriptor.Panel<WizardDescriptor> {
+    static final String PROP_HOST = "hostkey"; //NOI18N
+    static final String PROP_RUN_ON_FINISH = "run-on-finish"; //NOI18N
+    static final String PROP_CACHE_MANAGER = "cachemanager"; //NOI18N
+    static final String PROP_HOSTNAME = "hostname"; // NOI18N
+    static final String PROP_PORT = "port"; //NOI18N
 
-    private CreateHostVisualPanel3 component;
-
-    public CreateHostVisualPanel3 getComponent() {
-        if (component == null) {
-            component = new CreateHostVisualPanel3();
-        }
-        return component;
-    }
-
-    public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    public boolean isValid() {
-        return true;
-    }
-
-    public final void addChangeListener(ChangeListener l) {
-    }
-
-    public final void removeChangeListener(ChangeListener l) {
-    }
-
-    public void readSettings(WizardDescriptor settings) {
-        getComponent().init(
-            (ExecutionEnvironment)settings.getProperty(CreateHostWizardConstants.PROP_HOST),
-            (ToolsCacheManager)settings.getProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER)
-        );
-    }
-
-    private static final String PROP_DEFAULT_TC = "defaulttoolchain"; //NOI18N
-
-    public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(PROP_DEFAULT_TC, getComponent().getDefaultCompilerSetDisplayName());
-        //Lookup.getDefault().lookup(ServerList.class).addServer((String)settings.getProperty(CreateHostWizardPanel2.PROP_HOSTKEY), false, false);
-    }
 }
-

@@ -129,25 +129,23 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     public void removeChangeListener(ChangeListener l) {
     }
 
-    static final String PROP_CACHE_MANAGER = "cachemanager"; //NOI18N
-
     public static ExecutionEnvironment invokeMe(ToolsCacheManager cacheManager) {
         WizardDescriptor.Iterator<WizardDescriptor> iterator = new CreateHostWizardIterator();
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); //NOI18N
         wizardDescriptor.setTitle(getString("CreateNewHostWizardTitle"));
-        wizardDescriptor.putProperty(PROP_CACHE_MANAGER, cacheManager);
+        wizardDescriptor.putProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER, cacheManager);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
-            Runnable r = (Runnable) wizardDescriptor.getProperty(CreateHostWizardPanel2.PROP_RUN_ON_FINISH);
+            Runnable r = (Runnable) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_RUN_ON_FINISH);
             CndUtils.assertFalse(r == null);
             if (r != null) {
                 r.run();
             }
-            return (ExecutionEnvironment)wizardDescriptor.getProperty(CreateHostWizardPanel2.PROP_HOST);
+            return (ExecutionEnvironment)wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_HOST);
         } else {
             return null;
         }
