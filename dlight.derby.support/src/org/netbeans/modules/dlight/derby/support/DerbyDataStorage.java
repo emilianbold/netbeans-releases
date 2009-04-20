@@ -116,6 +116,16 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     }
 
     @Override
+    public boolean shutdown() {
+        //remove folder
+        boolean result = stackStorage.shutdown() && super.shutdown();
+        Util.deleteLocalDirectory(new File("/tmp/derby_dlight" + (dbIndex -1))); // NOI18N
+        return result;
+    }
+
+
+
+    @Override
     protected String classToType(Class clazz) {
         if (clazz == Integer.class) {
             return "integer"; // NOI18N

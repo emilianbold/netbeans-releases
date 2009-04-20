@@ -69,7 +69,6 @@ import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
 import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -87,6 +86,7 @@ public final class SQLStackStorage {
     private int funcIdSequence;
     private int nodeIdSequence;
     private final ExecutorThread executor;
+    private boolean isRunning =  true;
     private final DemanglingFunctionNameService demanglingService;
 
     public SQLStackStorage(SQLDataStorage sqlStorage) throws SQLException, IOException {
@@ -115,6 +115,13 @@ public final class SQLStackStorage {
         } finally {
             reader.close();
         }
+    }
+
+    public boolean shutdown(){
+       isRunning = false;
+       funcCache.clear();
+       nodeCache.clear();
+       return true;
     }
 
     public int putStack(List<CharSequence> stack, long sampleDuration) {
@@ -254,16 +261,16 @@ public final class SQLStackStorage {
                     try {
                         func_name = demanglingService.demangle(func_name).get();
                     } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
+//                        Exceptions.printStackTrace(ex);
                     } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
+//                        Exceptions.printStackTrace(ex);
                     }
                 }
                 result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(functionUniqueID), func_name, func_name), offesetColumnName != null ? rs.getLong(offesetColumnName): -1, metricValues));
             }
             rs.close();
             return result;
-        } catch (SQLException ex) {
+        } catch (SQLException ex) {            
         }
         return Collections.emptyList();
     }
@@ -574,7 +581,7 @@ public final class SQLStackStorage {
                 Map<Integer, UpdateMetrics> funcMetrics = new HashMap<Integer, UpdateMetrics>();
                 Map<Integer, UpdateMetrics> nodeMetrics = new HashMap<Integer, UpdateMetrics>();
                 List<Object> cmds = new LinkedList<Object>();
-                while (true) {
+                while (isRunning) {
                     // Taking commands from queue and executing them should be one atomic action.
                     synchronized (this) {
                         queue.drainTo(cmds, MAX_COMMANDS);
@@ -582,6 +589,9 @@ public final class SQLStackStorage {
                         // first pass: collect metrics
                         Iterator<Object> cmdIterator = cmds.iterator();
                         while (cmdIterator.hasNext()) {
+                            if (!isRunning){
+                                return;
+                            }
                             Object cmd = cmdIterator.next();
                             if (cmd instanceof UpdateMetrics) {
                                 UpdateMetrics updateMetricsCmd = (UpdateMetrics) cmd;
@@ -599,6 +609,9 @@ public final class SQLStackStorage {
                         // second pass: execute inserts
                         cmdIterator = cmds.iterator();
                         while (cmdIterator.hasNext()) {
+                            if (!isRunning){
+                                return;
+                            }
                             Object cmd = cmdIterator.next();
                             try {
                                 if (cmd instanceof AddFunction) {
