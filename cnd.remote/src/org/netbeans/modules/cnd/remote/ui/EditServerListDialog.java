@@ -141,7 +141,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
 
     private void revalidateRecord(final ExecutionEnvironment env, String password, boolean rememberPassword) {
-        final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(env);
+        final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
         if (!record.isOnline()) {
             record.resetOfflineState(); // this is a do-over
             setButtons(false);
@@ -240,7 +240,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         int idx = lstDevHosts.getSelectedIndex();
         if (idx >= 0) {
             ExecutionEnvironment env = getSelectedEnvironment();
-            RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(env);
+            RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
             tfStatus.setText(record.getStateAsText());
             btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
             btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(env));
