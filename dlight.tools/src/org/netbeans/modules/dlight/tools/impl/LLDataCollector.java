@@ -177,7 +177,7 @@ public class LLDataCollector
         if (env.isLocal()) {
             return localPath.getAbsolutePath();
         } else {
-            return HostInfoUtils.getHostInfo(env, true).getTempDir() + localPath.getName();
+            return HostInfoUtils.getHostInfo(env).getTempDir() + localPath.getName();
         }
     }
 

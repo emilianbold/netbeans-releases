@@ -78,7 +78,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         state = State.INITIAL;
         id = info.getCommandLine();
         stateLock = new String("StateLock: " + id); // NOI18N
-        hostInfo = HostInfoUtils.getHostInfo(info.getExecutionEnvironment(), false);
+        hostInfo = HostInfoUtils.getHostInfo(info.getExecutionEnvironment());
 
         Collection<ChangeListener> ll = info.getListeners();
         listeners = (ll == null || ll.isEmpty()) ? null

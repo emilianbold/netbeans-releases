@@ -65,7 +65,7 @@ public class UnbufferSupport {
         }
 
         final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
-        final HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv, true);
+        final HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
 
         boolean isWindows = hinfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
         boolean isMacOS = hinfo.getOSFamily() == HostInfo.OSFamily.MACOSX;

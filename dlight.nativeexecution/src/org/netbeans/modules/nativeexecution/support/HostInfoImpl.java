@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
-import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.openide.modules.InstalledFileLocator;
 
@@ -80,13 +79,10 @@ public class HostInfoImpl implements HostInfo {
 
     public static HostInfoImpl getHostInfo(ExecutionEnvironment execEnv) {
         HostInfoImpl hi = new HostInfoImpl();
-        Properties props = execEnv.isLocal() ? getLocalHostInfo() : getRemoteHostInfo(execEnv);
+        Properties props = execEnv.isLocal()
+                ? getLocalHostInfo() : getRemoteHostInfo(execEnv);
         hi.init(props);
-        if (log.isLoggable(Level.FINEST)) {
-            System.err.println("HostInfo received for " + // NOI18N
-                    execEnv.toString() + ":"); // NOI18N
-            props.list(System.err);
-        }
+//        props.list(System.err);
         return hi;
     }
 
@@ -182,7 +178,7 @@ public class HostInfoImpl implements HostInfo {
         _os.setBitness(getInt(props, "BITNESS", 32)); // NOI18N
         _os.setFamily(props.getProperty("OSFAMILY", UNKNOWN));
         _os.setName(props.getProperty("OSNAME", UNKNOWN));
-        _os.getVersion(props.getProperty("OSVERSION", UNKNOWN)); // NOI18N
+        _os.setVersion(props.getProperty("OSBUILD", UNKNOWN)); // NOI18N
         os = _os;
 
         hostname = props.getProperty("HOSTNAME", UNKNOWN); // NOI18N
@@ -261,7 +257,7 @@ public class HostInfoImpl implements HostInfo {
             return name;
         }
 
-        private void getVersion(String version) {
+        private void setVersion(String version) {
             this.version = version;
         }
 

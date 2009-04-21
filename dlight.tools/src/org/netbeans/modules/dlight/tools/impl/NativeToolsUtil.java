@@ -58,7 +58,7 @@ class NativeToolsUtil {
     }
 
     public static String getLdPreloadName(ExecutionEnvironment execEnv) {
-        HostInfo info = HostInfoUtils.getHostInfo(execEnv, true);
+        HostInfo info = HostInfoUtils.getHostInfo(execEnv);
         return info.getOSFamily() == HostInfo.OSFamily.MACOSX
                 ? "DYLD_INSERT_LIBRARIES" : "LD_PRELOAD"; // NOI18N
     }
