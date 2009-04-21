@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output method="xml" omit-xml-declaration="yes"/>
     <xsl:param name="cluster.name"/>
+    <xsl:param name="filename"/>
 
     <xsl:template match="filesystem/folder[@name='Templates']">
         <xsl:element name="folder">
@@ -119,6 +120,14 @@
             <xsl:attribute name="methodvalue">org.netbeans.modules.ide.ergonomics.api.Factory.newProject</xsl:attribute>
         </xsl:element>
     </xsl:template>
+    <xsl:template match="attr[@name='urlvalue']" mode="project-wizard">
+        <xsl:element name="attr">
+            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:call-template name="urlvalue">
+                <xsl:with-param name="url" select="@urlvalue"/>
+            </xsl:call-template>
+        </xsl:element>
+    </xsl:template>
     <xsl:template match="attr" mode="project-wizard">
         <xsl:copy-of select="."/>
     </xsl:template>
@@ -127,9 +136,9 @@
     <xsl:template match="file" mode="mime-resolvers">
         <xsl:element name="file">
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
-            <xsl:if test="@url">
-                <xsl:attribute name="url"><xsl:value-of select="@url"/></xsl:attribute>
-            </xsl:if>
+            <xsl:call-template name="url">
+                <xsl:with-param name="url" select="@url"/>
+            </xsl:call-template>
             <xsl:apply-templates mode="mime-resolvers"/>
         </xsl:element>
     </xsl:template>
@@ -142,9 +151,9 @@
         <xsl:if test="attr[@stringvalue='org.netbeans.spi.debugger.ui.AttachType']">
             <xsl:element name="file">
                 <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
-                <xsl:if test="@url">
-                    <xsl:attribute name="url"><xsl:value-of select="@url"/></xsl:attribute>
-                </xsl:if>
+                <xsl:call-template name="url">
+                    <xsl:with-param name="url" select="@url"/>
+                </xsl:call-template>
                 <xsl:apply-templates mode="attach-types"/>
             </xsl:element>
         </xsl:if>
@@ -166,9 +175,9 @@
     <xsl:template match="file" mode="actions">
         <xsl:element name="file">
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
-            <xsl:if test="@url">
-                <xsl:attribute name="url"><xsl:value-of select="@url"/></xsl:attribute>
-            </xsl:if>
+            <xsl:call-template name="url">
+                <xsl:with-param name="url" select="@url"/>
+            </xsl:call-template>
             <xsl:apply-templates mode="actions"/>
         </xsl:element>
     </xsl:template>
@@ -222,9 +231,9 @@
     <xsl:template match="file" mode="project-types">
         <xsl:element name="file">
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
-            <xsl:if test="@url">
-                <xsl:attribute name="url"><xsl:value-of select="@url"/></xsl:attribute>
-            </xsl:if>
+            <xsl:call-template name="url">
+                <xsl:with-param name="url" select="@url"/>
+            </xsl:call-template>
             <xsl:apply-templates mode="project-types"/>
         </xsl:element>
     </xsl:template>
@@ -245,5 +254,49 @@
 
     <xsl:template match="attr" mode="project-types">
         <xsl:copy-of select="."/>
+    </xsl:template>
+
+    <!-- convert relative URLs to absolute -->
+    <xsl:template name="url">
+        <xsl:param name="url"/>
+
+        <xsl:choose>
+            <xsl:when test="not($url)"/>
+            <xsl:when test="contains($url,'/')">
+                <xsl:attribute name="url">
+                    <xsl:value-of select="$url"/>
+                </xsl:attribute>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:variable name="prefix" select="substring-before($filename, '.xml')"/>
+                <xsl:attribute name="url">
+                    <xsl:text>nbresloc:/</xsl:text>
+                    <xsl:value-of select="translate($prefix, '.', '/')"/>
+                    <xsl:text>/</xsl:text>
+                    <xsl:value-of select="$url"/>
+                </xsl:attribute>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    <xsl:template name="urlvalue">
+        <xsl:param name="url"/>
+
+        <xsl:choose>
+            <xsl:when test="not($url)"/>
+            <xsl:when test="contains($url,'/')">
+                <xsl:attribute name="urlvalue">
+                    <xsl:value-of select="$url"/>
+                </xsl:attribute>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:variable name="prefix" select="substring-before($filename, '.xml')"/>
+                <xsl:attribute name="urlvalue">
+                    <xsl:text>nbresloc:/</xsl:text>
+                    <xsl:value-of select="translate($prefix, '.', '/')"/>
+                    <xsl:text>/</xsl:text>
+                    <xsl:value-of select="$url"/>
+                </xsl:attribute>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 </xsl:stylesheet>

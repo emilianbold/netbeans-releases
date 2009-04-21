@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.mercurial.ui.pull;
 
+import java.net.URISyntaxException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -71,6 +72,9 @@ import org.openide.windows.OutputWriter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
+import org.openide.DialogDescriptor;
+import static org.openide.DialogDescriptor.INFORMATION_MESSAGE;
 
 /**
  * Pull action for mercurial:
@@ -183,13 +187,12 @@ public class PullAction extends ContextAction {
     public static void pull(final VCSContext ctx) {
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
-        String repository = root.getAbsolutePath();
 
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() { getDefaultAndPerformPull(ctx, root, this.getLogger()); } };
 
-        support.start(rp, repository, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
+        support.start(rp, root, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
     }
 
     public boolean isEnabled() {
@@ -197,31 +200,74 @@ public class PullAction extends ContextAction {
     }
 
     static void getDefaultAndPerformPull(VCSContext ctx, File root, OutputLogger logger) {
-        final String pullPath = HgRepositoryContextCache.getInstance().getPullDefault(ctx);
+        final String pullSourceString = HgRepositoryContextCache.getInstance().getPullDefault(ctx);
         // If the repository has no default pull path then inform user
-        if(pullPath == null) {
-            logger.outputInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N
-            logger.outputInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE_SEP")); // NOI18N
-            logger.output(NbBundle.getMessage(PullAction.class, "MSG_NO_DEFAULT_PULL_SET_MSG")); // NOI18N
-            logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_DONE")); // NOI18N
-            logger.output(""); // NOI18N
-            JOptionPane.showMessageDialog(null,
-                NbBundle.getMessage(PullAction.class,"MSG_NO_DEFAULT_PULL_SET"),
-                NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE"),
-                JOptionPane.INFORMATION_MESSAGE);
+        if (pullSourceString == null) {
+            notifyDefaultPullUrlNotSpecified(logger);
             return;
         }
+
+        HgURL pullSource;
+        try {
+            pullSource = new HgURL(pullSourceString);
+        } catch (URISyntaxException ex) {
+            notifyDefaultPullUrlInvalid(pullSourceString, ex.getReason(), logger);
+            return;
+        }
+
         // We assume that if fromPrjName is null that it is a remote pull.
         // This is not true as a project which is in a subdirectory of a
         // repository will report a project name of null. This does no harm.
-        final String fromPrjName = HgProjectUtils.getProjectName(new File(pullPath));
+        String fromPrjName;
+        PullType pullType;
+
+        if (pullSource.isFile()) {
+            fromPrjName = HgProjectUtils.getProjectName(new File(pullSource.getPath()));
+            pullType = (fromPrjName != null) ? PullType.LOCAL
+                                             : PullType.OTHER;
+        } else {
+            fromPrjName = null;
+            pullType = PullType.OTHER;
+        }
         Project proj = HgUtils.getProject(ctx);
         final String toPrjName = HgProjectUtils.getProjectName(proj);
-        performPull(fromPrjName != null ? PullType.LOCAL : PullType.OTHER, ctx, root, pullPath, fromPrjName, toPrjName, logger);
+        performPull(pullType, ctx, root, pullSource, fromPrjName, toPrjName, logger);
     }
 
-    static void performPull(PullType type, VCSContext ctx, File root, String pullPath, String fromPrjName, String toPrjName, OutputLogger logger) {
-        if(root == null || pullPath == null) return;
+    private static void notifyDefaultPullUrlNotSpecified(OutputLogger logger) {
+        String title = getMessage("MSG_PULL_TITLE");                    //NOI18N
+
+        logger.outputInRed(title);
+        logger.outputInRed(getMessage("MSG_PULL_TITLE_SEP"));           //NOI18N
+        logger.output     (getMessage("MSG_NO_DEFAULT_PULL_SET_MSG"));  //NOI18N
+        logger.outputInRed(getMessage("MSG_PULL_DONE"));                //NOI18N
+        logger.output     ("");                                         //NOI18N
+        DialogDisplayer.getDefault().notify(
+                new DialogDescriptor.Confirmation(
+                        getMessage("MSG_NO_DEFAULT_PULL_SET"),          //NOI18N
+                        title,
+                        INFORMATION_MESSAGE));
+    }
+
+    private static void notifyDefaultPullUrlInvalid(String pullUrl,
+                                                    String reason,
+                                                    OutputLogger logger) {
+        String title = getMessage("MSG_PULL_TITLE");                    //NOI18N
+        String msg = getMessage("MSG_DEFAULT_PULL_INVALID", pullUrl);   //NOI18N
+
+        logger.outputInRed(title);
+        logger.outputInRed(getMessage("MSG_PULL_TITLE_SEP"));           //NOI18N
+        logger.output     (msg);
+        logger.outputInRed(getMessage("MSG_PULL_DONE"));                //NOI18N
+        logger.output     ("");                                         //NOI18N
+        DialogDisplayer.getDefault().notify(
+                new DialogDescriptor.Confirmation(msg,
+                                                  title,
+                                                  INFORMATION_MESSAGE));
+    }
+
+    static void performPull(PullType type, VCSContext ctx, File root, HgURL pullSource, String fromPrjName, String toPrjName, OutputLogger logger) {
+        if(root == null || pullSource == null) return;
         File bundleFile = null; 
         
         try {
@@ -230,10 +276,15 @@ public class PullAction extends ContextAction {
 
             if (fromPrjName != null) {
                 logger.outputInRed(NbBundle.getMessage(
-                        PullAction.class, "MSG_PULLING_FROM", fromPrjName, HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
+                        PullAction.class,
+                        "MSG_PULLING_FROM",                             //NOI18N
+                        fromPrjName,
+                        HgUtils.stripDoubleSlash(pullSource.toString())));
             } else {
                 logger.outputInRed(NbBundle.getMessage(
-                        PullAction.class, "MSG_PULLING_FROM_NONAME", HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
+                        PullAction.class,
+                        "MSG_PULLING_FROM_NONAME",                      //NOI18N
+                        HgUtils.stripDoubleSlash(pullSource.toString())));
             }
 
             List<String> listIncoming;
@@ -246,7 +297,7 @@ public class PullAction extends ContextAction {
                         break;
                     }
                 }
-                listIncoming = HgCommand.doIncoming(root, pullPath, bundleFile, logger);
+                listIncoming = HgCommand.doIncoming(root, pullSource, bundleFile, logger);
             }
             if (listIncoming == null || listIncoming.isEmpty()) return;
             
@@ -280,10 +331,10 @@ public class PullAction extends ContextAction {
                 logger.output(HgUtils.replaceHttpPassword(list));
                 if (fromPrjName != null) {
                     logger.outputInRed(NbBundle.getMessage(
-                            PullAction.class, "MSG_PULL_FROM", fromPrjName, HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
+                            PullAction.class, "MSG_PULL_FROM", fromPrjName, HgUtils.stripDoubleSlash(pullSource.toString()))); // NOI18N
                 } else {
                     logger.outputInRed(NbBundle.getMessage(
-                            PullAction.class, "MSG_PULL_FROM_NONAME", HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
+                            PullAction.class, "MSG_PULL_FROM_NONAME", HgUtils.stripDoubleSlash(pullSource.toString()))); // NOI18N
                 }
                 if (toPrjName != null) {
                     logger.outputInRed(NbBundle.getMessage(
@@ -340,4 +391,9 @@ public class PullAction extends ContextAction {
             logger.output(""); // NOI18N
         }
     }
+
+    private static String getMessage(String msgKey, String... args) {
+        return NbBundle.getMessage(PullAction.class, msgKey, args);
+    }
+
 }

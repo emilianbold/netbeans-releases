@@ -243,12 +243,15 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         componentsScrollPane = new NbiScrollPane(componentsList);
         componentsScrollPane.setVerticalScrollBarPolicy(
                 NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        componentsScrollPane.setFocusable(false);
+
         messageLabel.setLabelFor(componentsScrollPane);
         
         // descriptionPane //////////////////////////////////////////////////////////
         descriptionPane = new NbiTextPane();
         descriptionPane.setBorder(
                 new EmptyBorder(5, 5, 5, 5));
+        descriptionPane.setFocusable(false);
         
         // descriptionScrollPane ////////////////////////////////////////////////////
         descriptionScrollPane = new NbiScrollPane(descriptionPane);
@@ -257,6 +260,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         descriptionScrollPane.setBorder(
                 new TitledBorder(FEATURE_DESCRIPTION_TITLE));
         descriptionScrollPane.setPreferredSize(new Dimension(200, 10));
+        descriptionScrollPane.setFocusable(false);
         
         // componentPanel ///////////////////////////////////////////////////////////
         componentPanel = new NbiPanel();
@@ -266,7 +270,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         
         // sizesLabel ///////////////////////////////////////////////////////////////
         sizesLabel = new NbiLabel();
-        sizesLabel.setFocusable(true);
+        //sizesLabel.setFocusable(true);
         
         // errorMessageLabel ////////////////////////////////////////////////////////
         errorLabel = new NbiLabel();
@@ -355,7 +359,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                okButtonPressed();
+                cancelButtonPressed();
             }
         });
         getRootPane().setDefaultButton(okButton);

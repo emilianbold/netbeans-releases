@@ -101,8 +101,8 @@ public class KenaiTest extends NbTestCase {
                 passw = br.readLine();
                 br.close();
             }
-            instance.login(uname, passw.toCharArray());
             if (firstRun) {
+                instance.login(uname, passw.toCharArray());
                 UNITTESTUNIQUENAME = UNITTESTUNIQUENAME_BASE + System.currentTimeMillis();
                 System.out.println("== Name: " + UNITTESTUNIQUENAME);
                 firstRun = false;

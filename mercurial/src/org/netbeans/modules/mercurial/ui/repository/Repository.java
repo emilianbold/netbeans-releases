@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,54 +45,50 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
-import java.text.MessageFormat;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
-import javax.swing.BorderFactory;
-import javax.swing.ComboBoxModel;
+import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.ui.repository.HgURL.Scheme;
 import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
  * @author Tomas Stupka
+ * @author Marian Petras
  */
-public class Repository implements ActionListener, DocumentListener, FocusListener, ItemListener {
+public class Repository implements ActionListener, FocusListener, ItemListener {
     
-    public final static int FLAG_URL_EDITABLE           = 2;
     public final static int FLAG_URL_ENABLED            = 4;
     public final static int FLAG_ACCEPT_REVISION        = 8;
-    public final static int FLAG_SHOW_REMOVE            = 16;
     public final static int FLAG_SHOW_HINTS             = 32;    
     public final static int FLAG_SHOW_PROXY             = 64;    
     
-    private final static String LOCAL_URL_HELP          = "file:///repository_path";              // NOI18N
+    private final static String LOCAL_URL_HELP          = "file:/repository_path";              // NOI18N
     private final static String HTTP_URL_HELP           = Utilities.isWindows()? 
         "http://[DOMAIN%5C[username[:password]@]hostname/repository_path":      // NOI18N
         "http://[username[:password]@]hostname/repository_path";      // NOI18N
@@ -104,10 +100,12 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                
     private RepositoryPanel repositoryPanel;
     private boolean valid = true;
-    private List<PropertyChangeListener> listeners;
+    private List<ChangeListener> listeners;
+    private final ChangeEvent changeEvent = new ChangeEvent(this);
     
-    private RepositoryConnection editedRC;
-    
+    private RepositoryConnection repositoryConnection;
+    private HgURL url;
+
     public static final String PROP_VALID = "valid";                                                    // NOI18N
 
     private String message;            
@@ -116,10 +114,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private boolean bPushPull;
     private static int HG_PUSH_PULL_VERT_PADDING = 30;
     
-    public Repository(String titleLabel) {
-        this(0, titleLabel, false);
-    }
-            
+    private JTextComponent urlComboEditor;
+    private Document urlDoc, usernameDoc, passwordDoc, tunnelCmdDoc;
+    private boolean urlBeingSelectedFromPopup = false;
+
     public Repository(int modeMask, String titleLabel, boolean bPushPull) {
         
         this.modeMask = modeMask;
@@ -128,11 +126,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         
         repositoryPanel.titleLabel.setText(titleLabel);
                                         
-        repositoryPanel.urlComboBox.setEditable(isSet(FLAG_URL_EDITABLE));
         repositoryPanel.urlComboBox.setEnabled(isSet(FLAG_URL_ENABLED));        
         repositoryPanel.tunnelHelpLabel.setVisible(isSet(FLAG_SHOW_HINTS));
         repositoryPanel.tipLabel.setVisible(isSet(FLAG_SHOW_HINTS));
-        repositoryPanel.removeButton.setVisible(isSet(FLAG_SHOW_REMOVE));        
         
         //repositoryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 0));
         
@@ -147,26 +143,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         refreshUrlHistory();
     }
     
-    //public void selectUrl(SVNUrl url, boolean force) {
-    //    DefaultComboBoxModel dcbm = (DefaultComboBoxModel) repositoryPanel.urlComboBox.getModel();
-    //    int idx = dcbm.getIndexOf(url.toString());
-    //    if(idx > -1) {
-    //        dcbm.setSelectedItem(url.toString());    
-    //    } else if(force) {
-    //        RepositoryConnection rc = new RepositoryConnection(url.toString());
-    //        dcbm.addElement(rc);
-    //        dcbm.setSelectedItem(rc);    
-    //    }                        
-    //}
-    
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource() == repositoryPanel.proxySettingsButton) {
-            onProxyConfiguration();
-        } else if(e.getSource() == repositoryPanel.removeButton) {
-            onRemoveClick();
-        } else if(e.getSource() == repositoryPanel.savePasswordCheckBox) {
-            onSavePasswordChange();
-        }
+        assert e.getSource() == repositoryPanel.proxySettingsButton;
+
+        onProxyConfiguration();
     }
     
     private void onProxyConfiguration() {
@@ -176,228 +156,190 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private void initPanel() {        
         repositoryPanel = new RepositoryPanel();
 
-        repositoryPanel.proxySettingsButton.addActionListener(this);
-        repositoryPanel.removeButton.addActionListener(this);        
-       
-        repositoryPanel.urlComboBox.addActionListener(this);
-        getUrlComboEditor().getDocument().addDocumentListener(this);
-        
-        repositoryPanel.userPasswordField.getDocument().addDocumentListener(this);
-        repositoryPanel.userPasswordField.addFocusListener(this);
-        
-        repositoryPanel.userTextField.getDocument().addDocumentListener(this);
-        repositoryPanel.tunnelCommandTextField.getDocument().addDocumentListener(this);
-        repositoryPanel.savePasswordCheckBox.addActionListener(this);
-        
+        urlComboEditor = (JTextComponent) repositoryPanel.urlComboBox
+                                          .getEditor().getEditorComponent();
+        urlDoc = urlComboEditor.getDocument();
+        usernameDoc = repositoryPanel.userTextField.getDocument();
+        passwordDoc = repositoryPanel.userPasswordField.getDocument();
+        tunnelCmdDoc = repositoryPanel.tunnelCommandTextField.getDocument();
+
+        DocumentListener documentListener = new DocumentChangeHandler();
+        urlDoc.addDocumentListener(documentListener);
+        passwordDoc.addDocumentListener(documentListener);
+        usernameDoc.addDocumentListener(documentListener);
+        tunnelCmdDoc.addDocumentListener(documentListener);
+
+        repositoryPanel.savePasswordCheckBox.addItemListener(this);
         repositoryPanel.urlComboBox.addItemListener(this);
-        
-        onSelectedRepositoryChange();
+
+        repositoryPanel.proxySettingsButton.addActionListener(this);
+
+        repositoryPanel.userPasswordField.addFocusListener(this);
+
+        tweakComboBoxEditor();
+    }
+
+    /**
+     * Tweaks the combo-box's editor in two ways:
+     * <ul>
+     *     <li>displays a complete repository URI (including name and password)
+     *         when a repository connection is selected</li>
+     *     <li>sets a flag (urlBeingSelectedFromPopup) for the period
+     *         the text in the editor is being changed</li>
+     * </ul>
+     */
+    private void tweakComboBoxEditor() {
+        final ComboBoxEditor origEditor = repositoryPanel.urlComboBox.getEditor();
+        ComboBoxEditor tweakedEditor = new ComboBoxEditor() {
+
+            public void setItem(Object anObject) {
+                if (anObject instanceof RepositoryConnection) {
+                    urlBeingSelectedFromPopup = true;
+                    try {
+                        origEditor.setItem(((RepositoryConnection) anObject)
+                                           .getUrl().toCompleteUrlString());
+                    } finally {
+                        urlBeingSelectedFromPopup = false;
+                    }
+                } else {
+                    origEditor.setItem(anObject);
+                }
+            }
+
+            public Component getEditorComponent() {
+                return origEditor.getEditorComponent();
+            }
+            public Object getItem() {
+                return origEditor.getItem();
+            }
+            public void selectAll() {
+                origEditor.selectAll();
+            }
+            public void addActionListener(ActionListener l) {
+                origEditor.addActionListener(l);
+            }
+            public void removeActionListener(ActionListener l) {
+                origEditor.removeActionListener(l);
+            }
+
+        };
+        repositoryPanel.urlComboBox.setEditor(tweakedEditor);
     }
     
     public void refreshUrlHistory() {
+        repositoryPanel.urlComboBox.setModel(
+                new DefaultComboBoxModel(createPresetComboEntries()));
         
+        urlComboEditor.selectAll();
+    }
+
+    private Vector<?> createPresetComboEntries() {
+        assert repositoryPanel.urlComboBox.isEditable();
+
+        Vector<Object> result;
+
         List<RepositoryConnection> recentUrls = HgModuleConfig.getDefault().getRecentUrls();
-                
-        Set<RepositoryConnection> recentRoots = new LinkedHashSet<RepositoryConnection>();
-        recentRoots.addAll(recentUrls);                               
-        
-        if(repositoryPanel.urlComboBox.isEditable()) {
-            // templates for supported connection methods        
-            recentRoots.add(new RepositoryConnection("file:///"));      // NOI18N
-            recentRoots.add(new RepositoryConnection("http://"));       // NOI18N
-            recentRoots.add(new RepositoryConnection("https://"));      // NOI18N
-            recentRoots.add(new RepositoryConnection("static-http://"));        // NOI18N
-            recentRoots.add(new RepositoryConnection("ssh://"));        // NOI18N
-        };
-        
-        ComboBoxModel rootsModel = new RepositoryModel(new Vector<RepositoryConnection>(recentRoots));                        
-        repositoryPanel.urlComboBox.setModel(rootsModel);
-        
-        if (recentRoots.size() > 0 ) {         
-            repositoryPanel.urlComboBox.setSelectedIndex(0);
-            refresh(getSelectedRC());         
-        }         
-        
-        if(repositoryPanel.urlComboBox.isEditable()) {
-            JTextComponent textEditor = getUrlComboEditor();
-            textEditor.selectAll();            
-        }         
-        updateVisibility();
-    }
+        Scheme[] schemes = HgURL.Scheme.values();
 
-    public void storeRecentUrls() {
-        HgModuleConfig.getDefault().setRecentUrls(getRecentUrls());
-    }
-    
-    private List<RepositoryConnection> getRecentUrls() {
-        ComboBoxModel model = repositoryPanel.urlComboBox.getModel();
-        List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(model.getSize());
-        for (int i = 0; i < model.getSize(); i++) {
-            ret.add((RepositoryConnection)model.getElementAt(i));
+        result = new Vector<Object>(recentUrls.size() + schemes.length);
+        result.addAll(recentUrls);
+        for (Scheme scheme : schemes) {
+            result.add(createURIPrefixForScheme(scheme));
         }
-        return ret;
+
+        return result;
     }
-    
-    private JTextComponent getUrlComboEditor() {
-        Component editor = repositoryPanel.urlComboBox.getEditor().getEditorComponent();
-        JTextComponent textEditor = (JTextComponent) editor;
-        return textEditor;
-    }     
-    
-    public void setEditable(boolean editable) {
-        repositoryPanel.urlComboBox.setEditable(editable);
-        repositoryPanel.userPasswordField.setEditable(editable);
-        repositoryPanel.userTextField.setEditable(editable);        
-        repositoryPanel.proxySettingsButton.setEnabled(editable);        
-        //repositoryPanel.savePasswordCheckBox.setEnabled(editable);        
-    }
-    
-    public void storeConfigValues() {
-        RepositoryConnection rc = getSelectedRC();        
-        if(rc==null) {
-            return; // uups 
+
+    private static String createURIPrefixForScheme(Scheme scheme) {
+        if (scheme == Scheme.FILE) {
+            return scheme + ":/";                                       //NOI18N
+        } else {
+            return scheme + "://";                                      //NOI18N
         }
-        
-        //try {
-            //SVNUrl repositoryUrl = rc.getSvnUrl();
-            //if(repositoryUrl.getProtocol().startsWith("svn+")) { // NOI18N
-            //    SvnConfigFiles.getInstance().setExternalCommand(getTunnelName(repositoryUrl.getProtocol()), repositoryPanel.tunnelCommandTextField.getText());
-            //}    
-        //} catch (MalformedURLException mue) {
-            // should not happen
-        //    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); 
-        //}
-        
-    }
-    
-    public void insertUpdate(DocumentEvent e) {
-        textChanged(e);
     }
 
-    public void removeUpdate(DocumentEvent e) {
-        textChanged(e);
-    }
+    private final class DocumentChangeHandler implements DocumentListener,
+                                                         Runnable {
 
-    public void changedUpdate(DocumentEvent e) { 
-        textChanged(e);
-    }
+        private final Document modifiedDocument;
+        private final boolean urlSelectedFromPopup;
 
-    private void textChanged(final DocumentEvent e) {
-        // repost later to AWT otherwise it can deadlock because
-        // the document is locked while firing event and we try
-        // synchronously access its content from selected repository
-        Runnable awt = new Runnable() {
-            public void run() {
-                if (e.getDocument() == repositoryPanel.userTextField.getDocument()) {
-                    onUsernameChange();
-                } else if (e.getDocument() == repositoryPanel.userPasswordField.getDocument()) {
-                    onPasswordChange();
-                } else if (e.getDocument() == ((JTextComponent) repositoryPanel.urlComboBox.getEditor().getEditorComponent()).getDocument()) {
-                    onSelectedRepositoryChange();
-                } else if (e.getDocument() == (repositoryPanel.tunnelCommandTextField.getDocument())) {
-                    onTunnelCommandChange();
-                }
-                validateHgUrl();
+        private DocumentChangeHandler() { 
+            this(null);
+        }
+
+        private DocumentChangeHandler(Document modifiedDocument) {
+            this(modifiedDocument, false);
+        }
+
+        private DocumentChangeHandler(Document modifiedDocument, boolean urlSelectedFromPopup) {
+            this.modifiedDocument = modifiedDocument;
+            this.urlSelectedFromPopup = urlSelectedFromPopup;
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            textChanged(e);
+        }
+        public void removeUpdate(DocumentEvent e) {
+            textChanged(e);
+        }
+        public void changedUpdate(DocumentEvent e) { 
+            textChanged(e);
+        }
+
+        private void textChanged(final DocumentEvent e) {
+            // repost later to AWT otherwise it can deadlock because
+            // the document is locked while firing event and we try
+            // synchronously access its content from selected repository
+            assert (e.getDocument() == urlDoc) || !urlBeingSelectedFromPopup;
+            SwingUtilities.invokeLater(
+                    new DocumentChangeHandler(e.getDocument(),
+                                              urlBeingSelectedFromPopup));
+        }
+
+        public void run() {
+            assert EventQueue.isDispatchThread();
+            assert modifiedDocument != null;
+
+            if (modifiedDocument == urlDoc) {
+                onUrlChange(urlSelectedFromPopup);
+            } else if (modifiedDocument == usernameDoc) {
+                onUsernameChange();
+            } else if (modifiedDocument == passwordDoc) {
+                onPasswordChange();
+            } else if (modifiedDocument == tunnelCmdDoc) {
+                onTunnelCommandChange();
             }
-        };
-        SwingUtilities.invokeLater(awt);
-    }
+        }
             
+    }
+
     /**
      * Fast url syntax check. It can invalidate the whole step
      */
-    private void validateHgUrl() {
-        boolean valid = true;
-
-        RepositoryConnection rc = null; 
-        try {
-            rc = getSelectedRC();            
-            // check for a valid svnurl
-            rc.getHgUrl();                             
-            //if(!isSet(FLAG_ACCEPT_REVISION) && !rc.getSvnRevision().equals(SVNRevision.HEAD)) 
-            //{
-            //    message = NbBundle.getMessage(Repository.class, "MSG_Repository_OnlyHEADRevision"); // NOI18N
-            //    valid = false;
-            //} else {
-            //      // check for a valid svnrevision
-            //    rc.getSvnRevision();
-            //}
-        } catch (Exception ex) {             
-            message = ex.getLocalizedMessage();
-            valid = false;
+    private void quickValidateUrl() {
+        String errMsg = HgURL.validateQuickly(getUrlString());
+        if (errMsg == null) {
+            setValid(true, "");
+        } else {
+            setValid(false, errMsg);
         }        
-        
-        if(valid) {            
-            valid = rc != null && !rc.getUrl().equals(""); // NOI18N
-            //if(rc.getUrl().startsWith("svn+") && repositoryPanel.tunnelCommandTextField.getText().trim().equals("")) { // NOI18N
-            //    valid = false;
-            //}
-        }
-        
-        setValid(valid, message);
-        repositoryPanel.proxySettingsButton.setEnabled(valid);
-        repositoryPanel.userPasswordField.setEnabled(valid);
-        repositoryPanel.userTextField.setEnabled(valid);
-        //repositoryPanel.savePasswordCheckBox.setEnabled(valid);
-
-        repositoryPanel.removeButton.setEnabled(rc != null && rc.getUrl().length() > 0);
     }
     
     /**    
      * Always updates UI fields visibility.
      */
-    private void onSelectedRepositoryChange() {
-        setValid(true, "");                                                                            // NOI18N     
-        String urlString = "";                                                                         // NOI18N         
-        try {
-            urlString = getUrlString();
-        } catch (InterruptedException ex) {
-            return; // should not happen
+    private void onUrlChange(boolean urlSelectedFromPopup) {
+        if (!urlSelectedFromPopup) {
+            repositoryConnection = null;
+            url = null;
         }
-                
-        if(urlString != null) {
-                       
-            RepositoryConnection editedrc = getEditedRC();
-            editedrc.setUrl(urlString);
-            
-            DefaultComboBoxModel dcbm = (DefaultComboBoxModel) repositoryPanel.urlComboBox.getModel();                
-            int idx = dcbm.getIndexOf(editedrc);       
-            if(idx > -1) {
-                //dcbm.setSelectedItem(urlString);                                                
-                refresh((RepositoryConnection)dcbm.getElementAt(idx));                
-            } 
-            if(urlString.startsWith("svn+")) { // NOI18N
-                String tunnelName = getTunnelName(urlString).trim();
-                if( repositoryPanel.tunnelCommandTextField.getText().trim().equals("") &&  // NOI18N
-                    tunnelName != null && 
-                    !tunnelName.equals("") )  // NOI18N
-                {
-                    //repositoryPanel.tunnelCommandTextField.setText(SvnConfigFiles.getInstance().getExternalCommand(tunnelName));
-                } 
-            }     
-            
-            editedrc.setUsername(repositoryPanel.userTextField.getText());
-            editedrc.setPassword(new String(repositoryPanel.userPasswordField.getPassword()));
-            editedrc.setExternalCommand(repositoryPanel.tunnelCommandTextField.getText());                                               
-            editedrc.setSavePassword(repositoryPanel.savePasswordCheckBox.isSelected());
-        }
-        message = "";                                                                                   // NOI18N
+        quickValidateUrl();
         updateVisibility();
     }            
 
-    private RepositoryConnection getEditedRC() {
-        if(editedRC == null) {
-            editedRC = new RepositoryConnection(""); // NOI18N
-        }
-        return editedRC;
-    }
-
     private void updateVisibility() {
-        try {
-            updateVisibility(getUrlString());
-        } catch (InterruptedException ex) {
-            return;
-        }        
+        updateVisibility(getUrlString());
     }   
     
     /** Shows proper fields depending on Mercurial connection method. */
@@ -460,114 +402,85 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         return SSH_URL_HELP;
     }
             
-    private String getTunnelName(String urlString) {
-        int idx = urlString.indexOf(":", 4); // NOI18N
-        if(idx < 0) {
-            idx = urlString.length();
-        }
-        return urlString.substring(4, idx);
-    }
-    
     /**
      * Load selected root from Swing structures (from arbitrary thread).
      * @return null on failure
      */
-    private String getUrlString() throws InterruptedException {        
-        if(!repositoryPanel.urlComboBox.isEditable()) {
-            Object selection = repositoryPanel.urlComboBox.getSelectedItem();
-            if(selection != null) {
-                return selection.toString().trim();    
-            }
-            return "";     // NOI18N
-        } else {
-            final String[] hgUrl = new String[1];
-            try {
-                Runnable awt = new Runnable() {
-                    public void run() {
-                        hgUrl[0] = (String) repositoryPanel.urlComboBox.getEditor().getItem().toString().trim();
-                    }
-                };
-                if (SwingUtilities.isEventDispatchThread()) {
-                    awt.run();
-                } else {
-                    SwingUtilities.invokeAndWait(awt);
-                }
-                return hgUrl[0].trim();
-            } catch (InvocationTargetException e) {
-                ErrorManager err = ErrorManager.getDefault();
-                err.notify(e);
-            }
-            return null;            
-        }
+    public String getUrlString() {
+        return urlComboEditor.getText().trim();
     }
 
-    public RepositoryConnection getSelectedRC() {
-        String urlString;
-        try {
-            urlString = getUrlString();            
-        }
-        catch (InterruptedException ex) {
-            // should not happen
-            ErrorManager.getDefault().notify(ex);
-            return null;
-        };
-        
-        DefaultComboBoxModel dcbm = (DefaultComboBoxModel) repositoryPanel.urlComboBox.getModel();                
-        int idx = dcbm.getIndexOf(urlString);        
-        
-        if(idx > -1) {
-            return (RepositoryConnection) dcbm.getElementAt(idx);
-        }        
-        return getEditedRC();        
+    private String getUsername() {
+        return repositoryPanel.userTextField.getText().trim();
     }
-    
-    public boolean savePassword() {
+
+    private String getPassword() {
+        char[] password = repositoryPanel.userPasswordField.getPassword();
+        String result = new String(password);
+        Arrays.fill(password, (char) 0);
+        return result;
+    }
+
+    private String getExternalCommand() {
+        return repositoryPanel.tunnelCommandTextField.getText();
+    }
+
+    private boolean isSavePassword() {
         return repositoryPanel.savePasswordCheckBox.isSelected();
     }
 
-    private void onUsernameChange() {
-        RepositoryConnection rc = getSelectedRC();
-        if (rc != null) {
-            rc.setUsername(repositoryPanel.userTextField.getText());
+    public HgURL getUrl() throws URISyntaxException {
+        prepareUrl();
+        assert (url != null);
+        return url;
+    }
+
+    public RepositoryConnection getRepositoryConnection() throws URISyntaxException {
+        prepareRepositoryConnection();
+        assert (repositoryConnection != null);
+        return repositoryConnection;
+    }
+    
+    private void prepareUrl() throws URISyntaxException {
+        if (url != null) {
+            return;
         }
-        setValid(true, "");         // NOI18N
+
+        String username = getUsername();
+        String password = getPassword();
+        if ((username.length() == 0) && (password.length() == 0)) {
+            url = new HgURL(getUrlString());
+        } else {
+            url = new HgURL(getUrlString(), getUsername(), getPassword());
+        }
+    }
+
+    private void prepareRepositoryConnection() {
+        if (repositoryConnection != null) {
+            return;
+        }
+        String extCommand = getExternalCommand();
+        boolean savePassword = isSavePassword();
+        repositoryConnection = new RepositoryConnection(url, extCommand, savePassword);
+    }
+
+    private void onUsernameChange() {
+        repositoryConnection = null;
+        url = null;
     }
     
     private void onPasswordChange() {        
-        RepositoryConnection rc = getSelectedRC();
-        if (rc != null) {
-            rc.setPassword(new String(repositoryPanel.userPasswordField.getPassword()));
-        }        
-        setValid(true, ""); // NOI18N
+        repositoryConnection = null;
+        url = null;
     }
 
     private void onTunnelCommandChange() {
-        RepositoryConnection rc = getSelectedRC();
-        if (rc != null) {
-            rc.setExternalCommand(repositoryPanel.tunnelCommandTextField.getText());
-        }        
+        repositoryConnection = null;
     }
-
-    private void onRemoveClick() {
-        RepositoryConnection rc = getSelectedRC();
-        if (rc != null) {                      
-            remove(rc);                                                                
-        }        
-    }    
 
     private void onSavePasswordChange() {
-        Runnable awt = new Runnable() {
-            public void run() {
-                RepositoryConnection rc = getSelectedRC();
-                if (rc != null) {
-                    rc.setSavePassword(repositoryPanel.savePasswordCheckBox.isSelected());
-                }
-                validateHgUrl();
-            }
-        };
-        SwingUtilities.invokeLater(awt);
+        repositoryConnection = null;
     }
-
 
     public RepositoryPanel getPanel() {
         return repositoryPanel;
@@ -578,30 +491,39 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     }
 
     private void setValid(boolean valid, String message) {
-        boolean oldValue = this.valid;
-        this.message = message;
-        this.valid = valid;
-        fireValidPropertyChanged(oldValue, valid);
-    }
-
-    private void fireValidPropertyChanged(boolean oldValue, boolean valid) {
-        if(listeners==null) {
+        if ((valid == this.valid) && message.equals(this.message)) {
             return;
         }
-        for (Iterator it = listeners.iterator();  it.hasNext();) {
-            PropertyChangeListener l = (PropertyChangeListener) it.next();
-            l.propertyChange(new PropertyChangeEvent(this, PROP_VALID, new Boolean(oldValue), new Boolean(valid)));
+
+        if (valid != this.valid) {
+            repositoryPanel.proxySettingsButton.setEnabled(valid);
+            repositoryPanel.userPasswordField.setEnabled(valid);
+            repositoryPanel.userTextField.setEnabled(valid);
+            //repositoryPanel.savePasswordCheckBox.setEnabled(valid);
+        }
+
+        this.valid = valid;
+        this.message = message;
+
+        fireStateChanged();
+    }
+
+    private void fireStateChanged() {
+        if ((listeners != null) && !listeners.isEmpty()) {
+            for (ChangeListener l : listeners) {
+                l.stateChanged(changeEvent);
+            }
         }
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
+    public void addChangeListener(ChangeListener l) {
         if(listeners==null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<ChangeListener>(4);
         }
         listeners.add(l);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener l) {
+    public void removeChangeListener(ChangeListener l) {
         if(listeners==null) {
             return;
         }
@@ -622,27 +544,48 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         // do nothing
     }    
     
-    public void remove(RepositoryConnection toRemove) {
-        RepositoryModel model = (RepositoryModel) repositoryPanel.urlComboBox.getModel();        
-        model.removeElement(toRemove);        
+    public void itemStateChanged(ItemEvent evt) {
+        Object source = evt.getSource();
+
+        if (source == repositoryPanel.urlComboBox) {
+            if(evt.getStateChange() == ItemEvent.SELECTED) {
+                comboBoxItemSelected(evt.getItem());
+            }
+        } else if (source == repositoryPanel.savePasswordCheckBox) {
+            onSavePasswordChange();
+        } else {
+            assert false;
+        }
     }
 
-    public void itemStateChanged(ItemEvent evt) {
-        if(evt.getStateChange() == ItemEvent.SELECTED) {
-            RepositoryConnection rc = (RepositoryConnection) evt.getItem();
-            refresh(rc);
-            updateVisibility();  
-            editedRC = new RepositoryConnection(rc);           
-        } else if(evt.getStateChange() == ItemEvent.DESELECTED) {
-            updateVisibility();  
-        }       
+    private void comboBoxItemSelected(Object selectedItem) {
+        if (selectedItem.getClass() == String.class) {
+            urlPrefixSelected();
+        } else if (selectedItem instanceof RepositoryConnection) {
+            repositoryConnectionSelected((RepositoryConnection) selectedItem);
+        } else {
+            assert false;
+        }
+    }
+
+    private void urlPrefixSelected() {
+        repositoryPanel.userTextField.setText(null);
+        repositoryPanel.userPasswordField.setText(null);
+        repositoryPanel.tunnelCommandTextField.setText(null);
+        repositoryPanel.savePasswordCheckBox.setSelected(false);
+
+        url = null;
+        repositoryConnection = null;
     }
     
-    private void refresh(RepositoryConnection rc) {        
+    private void repositoryConnectionSelected(RepositoryConnection rc) {
         repositoryPanel.userTextField.setText(rc.getUsername());
         repositoryPanel.userPasswordField.setText(rc.getPassword());        
         repositoryPanel.tunnelCommandTextField.setText(rc.getExternalCommand());           
-        repositoryPanel.savePasswordCheckBox.setSelected(rc.getSavePassword());
+        repositoryPanel.savePasswordCheckBox.setSelected(rc.isSavePassword());
+
+        url = rc.getUrl();
+        repositoryConnection = rc;
     } 
 
     public void setTipVisible(Boolean flag) {        
@@ -701,65 +644,4 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         return (modeMask & flag) != 0;
     }
     
-    public class RepositoryModel  extends DefaultComboBoxModel {
-
-        public RepositoryModel(Vector v) {
-            super(v);
-        }
-
-        public void setSelectedItem(Object obj) {
-            if(obj instanceof String) {
-                int idx = getIndexOf(obj);
-                if(idx > -1) {
-                    obj = getElementAt(idx);
-                } else {
-                    obj = createNewRepositoryConnection((String) obj);                   
-                }                
-            }            
-            super.setSelectedItem(obj);
-        }
-
-        public int getIndexOf(Object obj) {
-            if(obj instanceof String) {
-                obj = createNewRepositoryConnection((String)obj);                
-            }
-            return super.getIndexOf(obj);
-        }
-
-        public void addElement(Object obj) {
-            if(obj instanceof String) {
-                obj = createNewRepositoryConnection((String)obj);                
-            }
-            super.addElement(obj);
-        }
-
-        public void insertElementAt(Object obj,int index) {
-            if(obj instanceof String) {
-                String str = (String) obj;
-                RepositoryConnection rc = null;
-                try {
-                    rc = (RepositoryConnection) getElementAt(index);                    
-                } catch (ArrayIndexOutOfBoundsException e) {
-                }
-                if(rc != null) {
-                    rc.setUrl(str);
-                    obj = rc;
-                }                
-                obj = createNewRepositoryConnection(str);
-            } 
-            super.insertElementAt(obj, index);
-        }         
-
-        public void removeElement(Object obj) {
-            int index = getIndexOf(obj);
-            if ( index != -1 ) {
-                removeElementAt(index);
-            }
-        }
-        
-        private RepositoryConnection createNewRepositoryConnection(String url) {
-            editedRC.setUrl(url);
-            return new RepositoryConnection(editedRC);
-        }
-    }    
 }
