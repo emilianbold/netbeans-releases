@@ -51,8 +51,7 @@ public interface ServerRecord {
     
     public String getUserName();
 
-    /** TODO: deprcate and remove */
-    public String getName();
+    public String getDisplayName();
 
     public ExecutionEnvironment getExecutionEnvironment();
 

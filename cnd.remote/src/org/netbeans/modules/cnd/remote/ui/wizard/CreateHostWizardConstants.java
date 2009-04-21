@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 /*package-local*/ interface CreateHostWizardConstants {
 
     static final String PROP_HOST = "hostkey"; //NOI18N
+    static final String PROP_DISPLAY_NAME = "display-name"; // NOI18N
     static final String PROP_RUN_ON_FINISH = "run-on-finish"; //NOI18N
     static final String PROP_CACHE_MANAGER = "cachemanager"; //NOI18N
     static final String PROP_HOSTNAME = "hostname"; // NOI18N
