@@ -243,13 +243,13 @@ public final class NbMavenProjectImpl implements Project {
      * @return
      */
     public synchronized MavenProject loadMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
-        AggregateProgressHandle hndl = createDownloadHandle();
+//        AggregateProgressHandle hndl = createDownloadHandle();
         try {
-            ProgressTransferListener.setAggregateHandle(hndl);
-            hndl.start();
+//            ProgressTransferListener.setAggregateHandle(hndl);
+//            hndl.start();
             MavenExecutionRequest req = new DefaultMavenExecutionRequest();
-            ProgressTransferListener ptl = new ProgressTransferListener();
-            req.setTransferListener(ptl);
+//            ProgressTransferListener ptl = new ProgressTransferListener();
+//            req.setTransferListener(ptl);
 
             req.addActiveProfiles(activeProfiles);
             req.setPomFile(projectFile.getAbsolutePath());
@@ -283,8 +283,8 @@ public final class NbMavenProjectImpl implements Project {
             //#136184 NumberFormatException
             Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
         } finally {
-            hndl.finish();
-            ProgressTransferListener.clearAggregateHandle();
+//            hndl.finish();
+//            ProgressTransferListener.clearAggregateHandle();
         }
         File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
         try {
@@ -318,13 +318,14 @@ public final class NbMavenProjectImpl implements Project {
         return props;
     }
 
-    private AggregateProgressHandle createDownloadHandle() {
-        AggregateProgressHandle hndl = AggregateProgressFactory.createSystemHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
-                            new ProgressContributor[] {
-                                AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
-                            null, null);
-        return hndl;
-    }
+//    private AggregateProgressHandle createDownloadHandle() {
+//        AggregateProgressHandle hndl = AggregateProgressFactory.createSystemHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
+//                            new ProgressContributor[] {
+//                                AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
+//                            null, null);
+//        hndl.setInitialDelay(2000);
+//        return hndl;
+//    }
 
     /**
      * getter for the maven's own project representation.. this instance is cached but gets reloaded
@@ -333,14 +334,14 @@ public final class NbMavenProjectImpl implements Project {
     public synchronized MavenProject getOriginalMavenProject() {
         if (project == null) {
             long startLoading = System.currentTimeMillis();
-            AggregateProgressHandle hndl = createDownloadHandle();
+//            AggregateProgressHandle hndl = createDownloadHandle();
 
             try {
-                ProgressTransferListener.setAggregateHandle(hndl);
-                hndl.start();
+//                ProgressTransferListener.setAggregateHandle(hndl);
+//                hndl.start();
                 MavenExecutionRequest req = new DefaultMavenExecutionRequest();
-                ProgressTransferListener ptl = new ProgressTransferListener();
-                req.setTransferListener(ptl);
+//                ProgressTransferListener ptl = new ProgressTransferListener();
+//                req.setTransferListener(ptl);
                 req.addActiveProfiles(getCurrentActiveProfiles());
                 req.setPomFile(projectFile.getAbsolutePath());
                 req.setNoSnapshotUpdates(true);
@@ -406,8 +407,8 @@ public final class NbMavenProjectImpl implements Project {
                 problemReporter.addReport(report);
                 
             } finally {
-                hndl.finish();
-                ProgressTransferListener.clearAggregateHandle();
+//                hndl.finish();
+//                ProgressTransferListener.clearAggregateHandle();
 
                 if (project == null) {
                     File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
