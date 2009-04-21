@@ -1622,7 +1622,9 @@ public class GdbDebugger implements PropertyChangeListener {
                     tlog("GdbDebugger.stopped: Stopped with state " + state + " and reason " + reason); // NOI18N
                 }
             } else {
-                log.warning("GdbDebugger.stopped: Ignoring stop while in state " + state);
+                if (!"signal-received".equals(reason)) { // NOI18N
+                    log.warning("GdbDebugger.stopped: Ignoring stop while in state " + state);
+                }
             }
             return;
         }
