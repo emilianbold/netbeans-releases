@@ -175,6 +175,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         this.viewComponent = viewComponent;
         this.performanceMonitorViewsArea.add(viewComponent);
         this.setName( toolName);
+        this.setToolTipText(toolName);
         validate();
         repaint();
     }
@@ -212,6 +213,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         this.viewComponent = viewComponent;
         this.performanceMonitorViewsArea.add(viewComponent);
         this.setName( toolName);
+        this.setToolTipText(toolName);
         validate();
         repaint();
 

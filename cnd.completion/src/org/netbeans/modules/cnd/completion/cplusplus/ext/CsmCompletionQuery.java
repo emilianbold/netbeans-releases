@@ -1932,6 +1932,9 @@ abstract public class CsmCompletionQuery {
                             default:
                                 CsmType type = resolveType(paramInst);
                                 if (type != null) {
+                                    if (type.getContainingFile() == null) {
+                                        System.err.printf("no file in %s of %s\n", type, type.getClass());
+                                    }
                                     params.add(ip.createTypeBasedSpecializationParameter(type));
                                 } else {
                                     params.add(ip.createExpressionBasedSpecializationParameter(paramInst.getTokenText(0),

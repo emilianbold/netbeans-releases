@@ -66,7 +66,7 @@ public abstract class RemoteTestBase extends BaseTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        final ExecutionEnvironment execEnv = getExecutionEnvironment();
+        final ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
         if (execEnv != null) {
             ConnectionManager.getInstance().connectTo(execEnv,getRemotePassword(), false);
         }

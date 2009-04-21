@@ -78,6 +78,9 @@ import org.apache.maven.project.InvalidProjectModelException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.reactor.MissingModuleException;
+import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
+import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
@@ -113,6 +116,7 @@ import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.cos.CosChecker;
 import org.netbeans.modules.maven.debug.DebuggerChecker;
 import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
+import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.execute.BackwardCompatibilityWithMevenideChecker;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
@@ -239,8 +243,14 @@ public final class NbMavenProjectImpl implements Project {
      * @return
      */
     public synchronized MavenProject loadMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
+//        AggregateProgressHandle hndl = createDownloadHandle();
         try {
+//            ProgressTransferListener.setAggregateHandle(hndl);
+//            hndl.start();
             MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+//            ProgressTransferListener ptl = new ProgressTransferListener();
+//            req.setTransferListener(ptl);
+
             req.addActiveProfiles(activeProfiles);
             req.setPomFile(projectFile.getAbsolutePath());
             req.setNoSnapshotUpdates(true);
@@ -272,7 +282,10 @@ public final class NbMavenProjectImpl implements Project {
             //guard against exceptions that are not processed by the embedder
             //#136184 NumberFormatException
             Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
-        } 
+        } finally {
+//            hndl.finish();
+//            ProgressTransferListener.clearAggregateHandle();
+        }
         File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
         try {
             return embedder.readProject(fallback);
@@ -305,6 +318,15 @@ public final class NbMavenProjectImpl implements Project {
         return props;
     }
 
+//    private AggregateProgressHandle createDownloadHandle() {
+//        AggregateProgressHandle hndl = AggregateProgressFactory.createSystemHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
+//                            new ProgressContributor[] {
+//                                AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
+//                            null, null);
+//        hndl.setInitialDelay(2000);
+//        return hndl;
+//    }
+
     /**
      * getter for the maven's own project representation.. this instance is cached but gets reloaded
      * when one the pom files have changed.
@@ -312,8 +334,14 @@ public final class NbMavenProjectImpl implements Project {
     public synchronized MavenProject getOriginalMavenProject() {
         if (project == null) {
             long startLoading = System.currentTimeMillis();
+//            AggregateProgressHandle hndl = createDownloadHandle();
+
             try {
+//                ProgressTransferListener.setAggregateHandle(hndl);
+//                hndl.start();
                 MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+//                ProgressTransferListener ptl = new ProgressTransferListener();
+//                req.setTransferListener(ptl);
                 req.addActiveProfiles(getCurrentActiveProfiles());
                 req.setPomFile(projectFile.getAbsolutePath());
                 req.setNoSnapshotUpdates(true);
@@ -379,6 +407,9 @@ public final class NbMavenProjectImpl implements Project {
                 problemReporter.addReport(report);
                 
             } finally {
+//                hndl.finish();
+//                ProgressTransferListener.clearAggregateHandle();
+
                 if (project == null) {
                     File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
                     try {

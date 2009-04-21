@@ -32,6 +32,9 @@ else
    elif [ -f /etc/redhat-release ]; then
       OSNAME="${OS}-Redhat"
       OSBUILD=`head -1 /etc/redhat-release`
+   elif [ -f /etc/gentoo-release ]; then
+      OSNAME="${OS}-Gentoo"
+      OSBUILD=`head -1 /etc/gentoo-release`
    elif [ -f /etc/lsb-release ]; then
       OSNAME="${OS}-"`cat /etc/lsb-release | grep DISTRIB_ID | sed 's/.*=//'`
       OSBUILD=`cat /etc/lsb-release | grep DISTRIB_DESCRIPTION | sed 's/.*=//' | sed 's/"//g'`
@@ -43,7 +46,7 @@ OSFAMILY=${OSFAMILY:-`test "$OS" = "Darwin" && echo MACOSX`}
 OSFAMILY=${OSFAMILY:-`test "$OS" = "Linux" && echo LINUX`}
 OSFAMILY=${OSFAMILY:-${OS}}
 
-CPUFAMILY=`(echo ${CPUTYPE} | egrep "^i|x86_64|athlon" >/dev/null && echo x86)` || echo ${CPUTYPE}
+CPUFAMILY=`(echo ${CPUTYPE} | egrep "^i|x86_64|athlon|Intel" >/dev/null && echo x86)` || echo ${CPUTYPE}
 
 if [ "${OSFAMILY}" = "LINUX" ]; then
    CPUNUM=`cat /proc/cpuinfo | grep processor | wc -l | sed 's/^ *//'`

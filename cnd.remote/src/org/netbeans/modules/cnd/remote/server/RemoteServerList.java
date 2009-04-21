@@ -63,13 +63,13 @@ import org.openide.util.NbPreferences;
  * 
  * @author gordonp
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.ServerListImplementation.class)
 public class RemoteServerList implements ServerListImplementation {
     
     private static final String CND_REMOTE = "cnd.remote"; // NOI18N
     private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
     private static final String DEFAULT_INDEX = CND_REMOTE + ".default"; // NOI18N
     
-    private static RemoteServerList instance = null;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     private int defaultIndex;
@@ -78,14 +78,7 @@ public class RemoteServerList implements ServerListImplementation {
     private final ArrayList<RemoteServerRecord> unlisted;
     private final ArrayList<RemoteServerRecord> items = new ArrayList<RemoteServerRecord>();
     
-    public synchronized static ServerListImplementation getInstance() {
-        if (instance == null) {
-            instance = new RemoteServerList();
-        }
-        return instance;
-    }
-    
-    private RemoteServerList() {
+    public RemoteServerList() {
         String slist = getPreferences().get(REMOTE_SERVERS, null);
         defaultIndex = getPreferences().getInt(DEFAULT_INDEX, 0);
         pcs = new PropertyChangeSupport(this);

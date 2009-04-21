@@ -188,41 +188,25 @@ public final class EmbedderFactory {
             req.setConfigurationCustomizer(new ContainerCustomizer() {
 
                 public void customize(PlexusContainer plexusContainer) {
-                    try {
-                        ComponentDescriptor desc = plexusContainer.getComponentDescriptor(ArtifactFactory.ROLE);
-                        desc.setImplementation(NbArtifactFactory.class.getName()); //NOI18N
-                        
-                        desc = plexusContainer.getComponentDescriptor("org.apache.maven.extension.ExtensionManager");
-                        desc.setImplementation(NbExtensionManager.class.getName()); //NOI18N
+                    ComponentDescriptor desc = plexusContainer.getComponentDescriptor(ArtifactFactory.ROLE);
+                    desc.setImplementation(NbArtifactFactory.class.getName()); //NOI18N
 
-                        desc = plexusContainer.getComponentDescriptor(ResolutionListener.ROLE);
-                        if (desc == null) {
-                            desc = new ComponentDescriptor();
-                            desc.setRole(ResolutionListener.ROLE);
-                            plexusContainer.addComponentDescriptor(desc);
-                        }
-                        desc.setImplementation(MyResolutionListener.class.getName()); //NOI18N
+                    desc = plexusContainer.getComponentDescriptor("org.apache.maven.extension.ExtensionManager");
+                    desc.setImplementation(NbExtensionManager.class.getName()); //NOI18N
 
-                        desc = plexusContainer.getComponentDescriptor(ArtifactResolver.ROLE);
-                        ComponentRequirement requirement = new ComponentRequirement();
-                        requirement.setRole(ResolutionListener.ROLE);
-                        desc.addRequirement(requirement);
-                        desc.setImplementation(NbArtifactResolver.class.getName()); //NOI18N
+                    desc = plexusContainer.getComponentDescriptor(ArtifactResolver.ROLE);
+                    desc.setImplementation(NbArtifactResolver.class.getName()); //NOI18N
 
-                        desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
-                        desc.setImplementation(NbWagonManager.class.getName()); //NOI18N
-                        
-                        //MEVENIDE-634 
-                        desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
-                        desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
+                    desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
+                    desc.setImplementation(NbWagonManager.class.getName()); //NOI18N
 
-                        //MEVENIDE-634 
-                        desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "null"); //NOI18N
-                        desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
-                        
-                    } catch (ComponentRepositoryException ex) {
-                        ex.printStackTrace();
-                    }
+                    //MEVENIDE-634
+                    desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
+                    desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
+
+                    //MEVENIDE-634
+                    desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "null"); //NOI18N
+                    desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
                 }
             });
             MavenEmbedder embedder = null;
@@ -291,28 +275,13 @@ public final class EmbedderFactory {
         req.setConfigurationCustomizer(new ContainerCustomizer() {
 
             public void customize(PlexusContainer plexusContainer) {
-                try {
-                    ComponentDescriptor desc = new ComponentDescriptor();
-                    desc.setRole(TransferListener.class.getName());
-                    plexusContainer.addComponentDescriptor(desc);
-                    desc.setImplementation(ProgressTransferListener.class.getName()); //NOI18N
-
-                    desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
-                    ComponentRequirement requirement = new ComponentRequirement();
-                    requirement.setRole(TransferListener.class.getName());
-                    desc.addRequirement(requirement);
-                    
                     //MEVENIDE-634 
-                    desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
+                    ComponentDescriptor desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
                     desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
                     
                     //MEVENIDE-634 
                     desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "null"); //NOI18N
                     desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
-                    
-                } catch (ComponentRepositoryException ex) {
-                    ex.printStackTrace();
-                }
             }
         });
 
@@ -437,20 +406,6 @@ public final class EmbedderFactory {
                 } catch (PlexusConfigurationException ex) {
                     ex.printStackTrace();
                 }
-                try {
-                    desc = new ComponentDescriptor();
-                    desc.setRole(TransferListener.class.getName());
-                    plexusContainer.addComponentDescriptor(desc);
-                    desc.setImplementation(ProgressTransferListener.class.getName()); //NOI18N
-                    desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
-                    ComponentRequirement requirement = new ComponentRequirement();
-                    requirement.setRole(TransferListener.class.getName());
-                    desc.addRequirement(requirement);
-                } catch (ComponentRepositoryException ex) {
-                    ex.printStackTrace();
-                }
-                
-
             }
         });
 

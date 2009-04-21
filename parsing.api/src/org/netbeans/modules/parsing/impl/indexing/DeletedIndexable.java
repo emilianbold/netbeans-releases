@@ -90,4 +90,9 @@ public final class DeletedIndexable implements IndexableImpl {
         throw new IOException();
     }
 
+    @Override
+    public String toString() {
+        return "DeletedIndexable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + getURL() + "]"; //NOI18N
+    }
+
 }

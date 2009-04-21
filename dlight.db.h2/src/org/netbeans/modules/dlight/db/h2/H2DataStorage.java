@@ -60,6 +60,8 @@ import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 public final class H2DataStorage extends SQLDataStorage implements StackDataStorage {
 
@@ -69,7 +71,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     private static final AtomicInteger dbIndex = new AtomicInteger();
     private SQLStackStorage stackStorage;
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
-    private static final String tmpDir = System.getProperty("java.io.tmpdir");
+    private static final String tmpDir = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getTempDir();
     private static final String url = "jdbc:h2:" + tmpDir  + "/dlight"; // NOI18N
     private String dbURL;
 

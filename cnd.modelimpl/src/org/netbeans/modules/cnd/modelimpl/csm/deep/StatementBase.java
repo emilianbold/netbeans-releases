@@ -50,9 +50,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Common ancestor for all statements
@@ -66,11 +68,12 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     private CsmUID<CsmScope> scopeUID;
     
     public StatementBase(AST ast, CsmFile file, CsmScope scope) {
-            super(ast, file);
-            this.ast = ast;
-	    if( scope != null ) {
-		setScope(scope);
-	    }
+        super(ast, file);
+        CndUtils.assertTrue(file != null, "File can not be null", Level.WARNING);
+        this.ast = ast;
+        if( scope != null ) {
+            setScope(scope);
+        }
     }
     
     public CsmScope getScope() {

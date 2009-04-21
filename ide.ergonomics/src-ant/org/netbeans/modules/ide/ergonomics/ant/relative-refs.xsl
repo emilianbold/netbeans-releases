@@ -156,17 +156,31 @@
     </xsl:template>
 
 
-    <!-- utility to generate just file name after last slash -->
     <xsl:template name="filename">
         <xsl:param name="text"/>
-        <xsl:variable name="after" select="substring-after($text,'/')"/>
+        <xsl:variable name="after">
+            <xsl:choose>
+                <xsl:when test="contains($text,':/')">
+                    <xsl:value-of select="substring-after($text,':/')"/>
+                </xsl:when>
+                <xsl:when test="contains($text,'nbresloc:')">
+                    <xsl:value-of select="substring-after($text,'nbresloc:')"/>
+                </xsl:when>
+                <xsl:when test="contains($text,'/')">
+                    <xsl:value-of select="$text"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="''"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
         <xsl:choose>
             <xsl:when test="$after">
-                <xsl:call-template name="filename">
-                    <xsl:with-param name="text" select="$after"/>
-                </xsl:call-template>
+                <xsl:value-of select="translate($after,'/','-')"/>
             </xsl:when>
-            <xsl:otherwise><xsl:value-of select="$text"/></xsl:otherwise>
+            <xsl:otherwise>
+                <xsl:value-of select="translate($text,'/','-')"/>
+            </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 </xsl:stylesheet>

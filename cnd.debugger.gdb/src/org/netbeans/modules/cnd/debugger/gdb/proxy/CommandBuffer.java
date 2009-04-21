@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.debugger.gdb.proxy;
 import org.netbeans.modules.cnd.debugger.gdb.utils.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 
 /**
  * This class is intended for gathering multiline responses to a single gdb command.
@@ -130,22 +129,22 @@ public class CommandBuffer {
     }
     
     public void done() {
-        String time = getTimePrefix(timerOn && log.isLoggable(Level.FINEST));
         synchronized (lock) {
             state = State.OK;
-            log.finest("CB.done[" + time + token + "]: Released lock on " + GdbUtils.threadId());
-            //gdb.removeCB(token);
+            log.finest("CB.done[" + 
+                    addTimePrefix(timerOn && log.isLoggable(Level.FINEST), token) +
+                    "]: Released lock on " + GdbUtils.threadId()); // NOI18N
             lock.notifyAll();
         }
     }
     
     public void error(String msg) {
-        String time = getTimePrefix(timerOn && log.isLoggable(Level.FINEST));
         synchronized (lock) {
             err = msg;
             state = State.ERROR;
-            log.finest("CB.error[" + time + token + "]: Releasing lock on " + GdbUtils.threadId());
-            //gdb.removeCB(token);
+            log.finest("CB.error[" + 
+                    addTimePrefix(timerOn && log.isLoggable(Level.FINEST), token) +
+                    "]: Releasing lock on " + GdbUtils.threadId()); // NOI18N
             lock.notifyAll();
         }
     }
@@ -179,14 +178,14 @@ public class CommandBuffer {
     }
 
     /**
-     * @param show - if true - return empty string
+     * @param show - if false - return msg arg
      * @return
      */
-    public static String getTimePrefix(boolean show) {
+    public static String addTimePrefix(boolean show, Object msg) {
         if (show) {
-            return Long.toString(System.currentTimeMillis()) + ':';
+            return Long.toString(System.currentTimeMillis()) + ':' + msg;
         } else {
-            return "";
+            return msg.toString();
         }
     }
 }
