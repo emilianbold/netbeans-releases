@@ -1033,7 +1033,7 @@ public final class ModuleList {
         Properties p = System.getProperties();
         Map<String,String> predefs;
         synchronized (p) {
-            predefs = NbCollections.checkedMapByFilter(p, String.class, String.class, false);
+            predefs = NbCollections.checkedMapByCopy(p, String.class, String.class, false);
         }
         predefs.put("basedir", basedir.getAbsolutePath()); // NOI18N
         PropertyProvider predefsProvider = PropertyUtils.fixedPropertyProvider(predefs);
