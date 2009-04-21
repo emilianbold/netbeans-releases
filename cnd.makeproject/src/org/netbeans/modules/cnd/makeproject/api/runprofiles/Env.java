@@ -208,10 +208,12 @@ public class Env implements Cloneable {
     } 
 
     public void assign(Env env) {
-        removeAll();
-        String[][] pairs = env.getenvAsPairs();
-        for (int i = 0; i < pairs.length; i++) {
-            putenv(pairs[i][0], pairs[i][1]);
+        if (this != env) {
+            removeAll();
+            String[][] pairs = env.getenvAsPairs();
+            for (int i = 0; i < pairs.length; i++) {
+                putenv(pairs[i][0], pairs[i][1]);
+            }
         }
     }
 

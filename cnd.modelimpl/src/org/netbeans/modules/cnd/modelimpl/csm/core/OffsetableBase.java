@@ -46,9 +46,11 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Base class for CsmOffsetable
@@ -73,6 +75,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     }
     
     public OffsetableBase(CsmFile file, int start, int end) {
+        CndUtils.assertTrue(file != null, "File can not be null", Level.WARNING);
         this.fileUID = UIDCsmConverter.fileToUID(file);
         this.fileRef = null;// to prevent error with "final"
         this.startPosition = start;

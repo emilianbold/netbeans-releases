@@ -151,7 +151,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     }
 
     public VisualizerContainer getDefaultContainer() {
-        return VisualizerTopComponentTopComponent.getDefault();
+        return VisualizerTopComponentTopComponent.findInstance();
     }
 
     public void refresh() {

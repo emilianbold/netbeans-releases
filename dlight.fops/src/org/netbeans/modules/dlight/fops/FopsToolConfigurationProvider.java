@@ -50,6 +50,7 @@ import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -112,7 +113,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         ClockIndicatorConfiguration clockIndicator =
                 new ClockIndicatorConfiguration(indicatorMetadata);
 
-        clockIndicator.setVisualizerConfiguration(
+        clockIndicator.addVisualizerConfiguration(
                 new TableVisualizerConfiguration(dtraceFopsMetadata));
 
         toolConfiguration.addIndicatorConfiguration(clockIndicator);

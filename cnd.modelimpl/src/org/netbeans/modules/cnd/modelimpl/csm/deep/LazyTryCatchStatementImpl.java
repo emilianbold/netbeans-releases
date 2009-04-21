@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,36 +38,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.openide.filesystems.FileObject;
+import antlr.TokenStream;
 
+import org.netbeans.modules.cnd.api.model.deep.*;
+
+import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
- * @author ads
+ * Lazy try-catch statements
+ *
+ * @author Nick Krasilnikov
  */
-public final class Utils {
+public final class LazyTryCatchStatementImpl extends LazyStatementImpl implements CsmCompoundStatement {
 
-    // avoid instantiation
-    private Utils() {
+    public LazyTryCatchStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
+        super(ast, file, scope);
+        assert (ast.getType() == CPPTokenTypes.CSM_TRY_CATCH_STATEMENT_LAZY);
     }
 
-    public static SourceGroup[] getSourceGroups(Project phpProject) {
-        Sources sources = ProjectUtils.getSources(phpProject);
-        return sources.getSourceGroups(PhpSources.SOURCES_TYPE_PHP);
-    }
-
-    public static FileObject[] getSourceObjects(Project phpProject) {
-        SourceGroup[] groups = getSourceGroups(phpProject);
-
-        FileObject[] fileObjects = new FileObject[groups.length];
-        for (int i = 0; i < groups.length; i++) {
-            fileObjects[i] = groups[i].getRootFolder();
+    @Override
+    protected AST resolveLazyStatement(TokenStream tokenStream) {
+        int flags = CPPParserEx.CPP_CPLUSPLUS;
+        if (!TraceFlags.REPORT_PARSING_ERRORS || TraceFlags.DEBUG) {
+            flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
         }
-        return fileObjects;
+        CPPParserEx parser = CPPParserEx.getInstance(getContainingFile().getName().toString(), tokenStream, flags);
+        parser.setLazyCompound(false);
+        parser.function_try_block();
+        AST out = parser.getAST();
+        return out;
     }
+
+    @Override
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+    }
+
+    public LazyTryCatchStatementImpl(DataInput input) throws IOException {
+        super(input);
+    }
+
 }

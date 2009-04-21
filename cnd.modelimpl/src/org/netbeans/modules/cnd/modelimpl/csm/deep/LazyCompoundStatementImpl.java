@@ -41,96 +41,33 @@
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 import antlr.TokenStream;
-import java.lang.ref.SoftReference;
-import java.util.*;
 
-import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
- * Lazy statements
+ * Lazy compound statements
+ * 
  * @author Vladimir Kvashin
  */
-public final class LazyCompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
-
-    private SoftReference<List<CsmStatement>> statements = null;
+public final class LazyCompoundStatementImpl extends LazyStatementImpl implements CsmCompoundStatement {
 
     public LazyCompoundStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
         super(ast, file, scope);
         assert (ast.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY);
-        // we need to throw away the compound statement AST under this element
-        ast.setFirstChild(null);
     }
 
-    public CsmStatement.Kind getKind() {
-        return CsmStatement.Kind.COMPOUND;
-    }
-
-    public List<CsmStatement> getStatements() {
-        if (statements == null) {
-            return createStatements();
-        } else {
-            List<CsmStatement> list = statements.get();
-            return (list == null) ? createStatements() : list;
-        }
-    }
-
-    /**
-     * 1) Creates a list of statements
-     * 2) If it is created successfully, stores a soft reference to this list
-     *	  and returns this list,
-     *    otherwise just returns empty list
-     */
-    public List<CsmStatement> createStatements() {
-        List<CsmStatement> list = new ArrayList<CsmStatement>();
-        if (renderStatements(list)) {
-            statements = new SoftReference<List<CsmStatement>>(list);
-            return list;
-        } else {
-            return Collections.emptyList();
-        }
-    }
-
-    private boolean renderStatements(List<CsmStatement> list) {
-        FileImpl file = (FileImpl) getContainingFile();
-        TokenStream stream = file.getTokenStream(getStartOffset(), getEndOffset(), true);
-        if (stream == null) {
-            Utils.LOG.severe("Can't create compound statement: can't create token stream for file " + file.getAbsolutePath()); // NOI18N
-            return false;
-        } else {
-            AST resolvedAst = resolveLazyCompoundStatement(stream);
-            file.releaseTokenStream(stream);
-            renderStatements(resolvedAst, list);
-            return true;
-        }
-    }
-
-    private void renderStatements(AST ast, List<CsmStatement> list) {
-        for (ast = (ast == null ? null : ast.getFirstChild()); ast != null; ast = ast.getNextSibling()) {
-            CsmStatement stmt = AstRenderer.renderStatement(ast, getContainingFile(), this);
-            if (stmt != null) {
-                list.add(stmt);
-            }
-        }
-    }
-
-    public Collection<CsmScopeElement> getScopeElements() {
-        // statements are scope elements
-        @SuppressWarnings("unchecked")
-        Collection<CsmScopeElement> out = (Collection<CsmScopeElement>) ((List<? extends CsmScopeElement>) getStatements());
-        return out;
-    }
-
-    private AST resolveLazyCompoundStatement(TokenStream tokenStream) {
+    @Override
+    protected AST resolveLazyStatement(TokenStream tokenStream) {
         int flags = CPPParserEx.CPP_CPLUSPLUS;
         if (!TraceFlags.REPORT_PARSING_ERRORS || TraceFlags.DEBUG) {
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
@@ -149,6 +86,5 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
 
     public LazyCompoundStatementImpl(DataInput input) throws IOException {
         super(input);
-        this.statements = null;
     }
 }
