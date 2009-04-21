@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
         <fail unless="netbeans.dest.dir" message="Property netbeans.dest.dir doesn't exist."/>
         <available file="${netbeans.dest.dir}/etc/netbeans.conf" property="exist.netbeans.dest.dir"/>
         <fail unless="exist.netbeans.dest.dir" message="Path netbeans.dest.dir doesn't contain  netbeans dir."/>
-        <taskdef name="testdistfilter" classpath="../tasks.jar" classname="org.netbeans.nbbuild.TestDistFilter"/>
+        <taskdef name="testdistfilter" classpath="../tasks.jar" classname="org.netbeans.nbbuild.testdist.TestDistFilter"/>
         <!-- only for these module on runtime classpath -->
         <property name="test.required.modules" value=""/>
         <property name="test.dist.dir" location=".."/>

@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
                 <path path="${extra.test.libs}"/>
                <path path="${test.run.cp}"/>
        </path> 
-       <taskdef name="validatepath" classpath="../../../tasks.jar" classname="org.netbeans.nbbuild.ValidatePath"/>
+       <taskdef name="validatepath" classpath="../../../tasks.jar" classname="org.netbeans.nbbuild.testdist.ValidatePath"/>
 
        <validatepath pathref="test.cp" failedproperty="wrong.classpath"/>
     </target>

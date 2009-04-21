@@ -219,7 +219,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         int wildcard = containsWildCard(text);
                 
         if (exact) {
-            nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
+            //nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
+            nameKind = SearchType.EXACT_NAME;
         }
         else if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
             nameKind = SearchType.CAMEL_CASE;
