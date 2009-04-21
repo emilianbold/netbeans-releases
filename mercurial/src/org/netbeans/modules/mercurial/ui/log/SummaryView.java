@@ -427,21 +427,21 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
 
     static void revert(final RepositoryRevision [] revisions, final RepositoryRevision.Event [] events) {
-        String url;        
+        File root;
         if(revisions == null || revisions.length == 0){
             if(events == null || events.length == 0 || events[0].getLogInfoHeader() == null) return;
-            url = events[0].getLogInfoHeader().getRepositoryRootUrl();             
+            root = events[0].getLogInfoHeader().getRepositoryRoot();
         }else{
-            url = revisions[0].getRepositoryRootUrl(); 
+            root = revisions[0].getRepositoryRoot();
         }
         
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(url);
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
                 revertImpl(revisions, events, this);
             }
         };
-        support.start(rp, url, NbBundle.getMessage(SummaryView.class, "MSG_Revert_Progress")); // NOI18N
+        support.start(rp, root, NbBundle.getMessage(SummaryView.class, "MSG_Revert_Progress")); // NOI18N
     }
 
     private static void revertImpl(RepositoryRevision[] revisions, RepositoryRevision.Event[] events, HgProgressSupport progress) {
@@ -449,7 +449,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         boolean doBackup = HgModuleConfig.getDefault().getBackupOnRevertModifications();
         if (revisions != null) {
             for (RepositoryRevision revision : revisions) {
-                File root = new File(revision.getRepositoryRootUrl());
+                File root = revision.getRepositoryRoot();
                 for (RepositoryRevision.Event event : revision.getEvents()) {
                     if (event.getFile() == null) {
                         continue;
