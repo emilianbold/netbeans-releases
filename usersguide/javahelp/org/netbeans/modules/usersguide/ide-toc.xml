@@ -60,7 +60,7 @@
               <tocitem text="Kenai Project Tasks: Quick Reference" target="kenai_quickref" />
               <tocitem text="Opening a Kenai Project" target="kenai_opening" />
               <tocitem text="Working With Kenai Projects" target="kenai_workingwith" />
-              <tocitem text="Collaborating With Project Members" target="kenai_members" />
+              <tocitem text="Collaborating With Kenai Project Members" target="kenai_members" />
           </tocitem>
           <tocitem text="Working With Issue Tracking">
               <tocitem text="About Issue Trackers" target="issues_trackers" />
