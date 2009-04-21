@@ -386,9 +386,12 @@ public class GdbProxyEngine {
         if (msg.charAt(0) == '&') {
             msg = msg.substring(2, msg.length() - 1).replace("\\n", ""); // NOI18N
             synchronized (commandList) {
-                for (int i = nextCommandPos-1; i != nextCommandPos; i--) {
+                for (int i = nextCommandPos-1;;i--) {
                     if (i < 0) {
                         i = commandList.length-1;
+                    }
+                    if (i == nextCommandPos) {
+                        break;
                     }
                     MICommand command = commandList[i];
                     if (command != null && command.getText().equals(msg)) {
