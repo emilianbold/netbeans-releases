@@ -306,6 +306,11 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline(
             "<Table>\n    <tr><td></td></tr>\n</table>^",
             "<Table>\n    <tr><td></td></tr>\n</table>\n^", null);
+
+        //#163238
+        insertNewline(
+            "<table width = '100%'><tr><td id='picture'>^</a></td></tr></table>",
+            "<table width = '100%'><tr><td id='picture'>\n            ^</a></td></tr></table>", null);
     }
 
 }
