@@ -45,14 +45,15 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.DebugUrl;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
 import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
@@ -325,7 +326,7 @@ class ConfigActionLocal extends ConfigAction {
         Lookup debuggerLookup = null;
         if (mapperFactory != null) {
             URI appContext = CommandUtils.getBaseURL(project).toURI();
-            FileObject[] srcRoots = Utils.getSourceObjects(project);
+            FileObject[] srcRoots = PhpProjectUtils.getSourceObjects(project);
 
             JSToNbJSLocationMapper forwardMapper =
                     mapperFactory.getJSToNbJSLocationMapper(srcRoots, appContext, null);
