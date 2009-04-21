@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.gizmo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -100,6 +101,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     public void configure(Project project) {
+        areCollectorsTurnedOn = true;
         this.currentProject = project;
 //        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
         //set up as following:
@@ -154,8 +156,9 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     private boolean setForLinux() {
+        areCollectorsTurnedOn = false;
         String platform = ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName();
-        if (platform.indexOf("Linux") != -1 || platform.equals("MacOS")) {//NOI18N
+        if (platform.indexOf("Linux") != -1) {//NOI18N
             DLightCollectorString = SUNSTUDIO;
             DLightIndicatorDPStrings = Arrays.asList(PROC_READER, LL_MONITOR);
             return true;
@@ -172,6 +175,9 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     public List<DataCollector<?>> getCollectors(DLightTool tool) {
+        if (!areCollectorsTurnedOn) {
+            return Collections.emptyList();
+        }
         List<DataCollector<?>> collectors = tool.getCollectors();
         List<DataCollector<?>> result = new ArrayList<DataCollector<?>>();
         for (DataCollector collector : collectors) {

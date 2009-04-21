@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,21 +55,21 @@ public class RepositoryRevision {
 
     private HgLogMessage message;
 
-    private String repositoryRootUrl;
+    private File repositoryRoot;
 
     /**
      * List of events associated with the revision.
      */ 
     private final List<Event> events = new ArrayList<Event>(1);
 
-    public RepositoryRevision(HgLogMessage message, String rootUrl) {
+    public RepositoryRevision(HgLogMessage message, File root) {
         this.message = message;
-        this.repositoryRootUrl = rootUrl;
+        this.repositoryRoot = root;
         initEvents();
     }
 
-    public String getRepositoryRootUrl() {
-        return repositoryRootUrl;
+    public File getRepositoryRoot() {
+        return repositoryRoot;
     }
 
     private void initEvents() {

@@ -68,8 +68,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         
         PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
             public void platformChanged() {
-                fireChangeEvent();
                 initServerComboBox();
+                fireChangeEvent();
                 initWarCheckBox();
             }
         });
@@ -213,6 +213,12 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         } else {
             serverComboBox.setModel(new DefaultComboBoxModel(new Object[]{}));
         }
+        serverComboBox.addItemListener(new ItemListener() {
+
+            public void itemStateChanged(ItemEvent e) {
+                fireChangeEvent();
+            }
+        });
     }
 
     RubyPlatform getPlatform() {
@@ -228,8 +234,13 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
 
     boolean valid(WizardDescriptor settings) {
+        settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
         if (warCheckBox.isSelected() && !isJdk()) {
             settings.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(PanelOptionsVisual.class, "MSG_NoJDK"));
+        }
+        if (RailsServerUiUtils.isGlassFishGem(getServer()) && !isJdk6()) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelOptionsVisual.class, "MSG_GfGemRequiresJDK6"));
+            return false;
         }
         if (PlatformComponentFactory.getPlatform(platforms) == null) {
             return false;
@@ -262,6 +273,15 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     
     private void fireChangeEvent() {
         this.panel.fireChangeEvent();
+    }
+
+    private boolean isJdk6() {
+        // TODO: 
+        // - does the gf gem run on jdk 7 or on JRE 6?
+        // - the user can also specify jruby.java.home to run jruby on
+        // a different jdk than the IDE, need to address this for FCS
+        String javaVersion = System.getProperty("java.version"); //NOI18N
+        return isJdk() && javaVersion.startsWith("1.6"); //NOI18N
     }
 
     private boolean isJdk() {

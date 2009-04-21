@@ -153,6 +153,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         target.select(mainRegion.getStartOffset(), mainRegion.getEndOffset());
     }
 
+    public static boolean isInstantRenameInProgress(JTextComponent target) {
+        return target.getClientProperty(InstantRenamePerformer.class) != null;
+    }
+
     public static void performInstantRename(JTextComponent target, Set<OffsetRange> highlights, int caretOffset) throws BadLocationException {
 	new InstantRenamePerformer(target, highlights, caretOffset);
     }

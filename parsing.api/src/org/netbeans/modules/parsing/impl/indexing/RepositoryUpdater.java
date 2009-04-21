@@ -859,6 +859,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         final CustomIndexer indexer = factory.createIndexer();
                         if (LOGGER.isLoggable(Level.FINE)) {
                             LOGGER.fine("Indexing " + indexables.size() + " indexables; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
+//                            LOGGER.fine("Indexing " + indexables + "; using " + indexer + "; mimeType='" + mimeType + "'"); //NOI18N
                         }
                         try {
                             SPIAccessor.getInstance().index(indexer, Collections.unmodifiableCollection(indexables), ctx);
@@ -983,7 +984,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             this.files = new HashSet<FileObject>();
             this.files.addAll(files);
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("FileListWork: root=" + root + ", file=" + files); //NOI18N
+                LOGGER.fine("FileListWork@" + Integer.toHexString(System.identityHashCode(this)) + ": root=" + root + ", file=" + files); //NOI18N
             }
         }
 
@@ -1037,13 +1038,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         public DeleteWork (URL root, String relativePath) {
             super(false, false);
             
-            Parameters.notNull("root", root);
-            Parameters.notNull("relativePath", relativePath);
+            Parameters.notNull("root", root); //NOI18N
+            Parameters.notNull("relativePath", relativePath); //NOI18N
             
             this.root = root;
             this.relativePaths.add(relativePath);
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("DeleteWork: root=" + root + ", files=" + relativePaths);
+                LOGGER.fine("DeleteWork@" + Integer.toHexString(System.identityHashCode(this)) + ": root=" + root + ", files=" + relativePaths); //NOI18N
             }
         }
 

@@ -179,7 +179,7 @@ public class ErrorHintsProviderTest extends NbTestCase {
         doc.putProperty(Language.class, JavaTokenId.language());
         
         for (ErrorDescription ed : new ErrorHintsProvider().computeErrors(info, doc))
-            ref(ed.toString());
+            ref(ed.toString().replaceFirst("\\p{Space}*:", ":"));
         
         compareReferenceFiles();
     }

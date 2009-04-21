@@ -21,8 +21,8 @@
 |org.netbeans.modules.maven.kit|Maven|Java|java
 |org.netbeans.modules.apisupport.kit|NetBeans Plugin Development|Java|apisupport
 |org.netbeans.modules.spring.beans|Spring Beans|Java|java
+|org.netbeans.modules.j2ee.kit|EJB and EAR|Java Web and EE|enterprise
 |org.netbeans.modules.identity.kit|Identity|Java Web and EE|identity
-|org.netbeans.modules.j2ee.kit|Java EE|Java Web and EE|enterprise
 |org.netbeans.modules.web.kit|Java Web Applications|Java Web and EE|enterprise
 |org.netbeans.modules.web.jsf.kit|JSF|Java Web and EE|enterprise
 |org.netbeans.modules.websvc.restkit|RESTful Web Services|Java Web and EE|enterprise
