@@ -880,7 +880,15 @@ public class WebProjectValidation extends J2eeTestCase {
     public void waitBuildSuccessful() {
         OutputTabOperator console = new OutputTabOperator(PROJECT_NAME);
         console.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
-        console.waitText(BUILD_SUCCESSFUL);
+        boolean ok = false;
+        try{
+            console.waitText(BUILD_SUCCESSFUL);
+            ok = true;
+        }finally{
+            if (!ok){
+                System.err.println(console.getText());
+            }
+        }
     }
 
     public void initDisplayer() {

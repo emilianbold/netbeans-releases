@@ -77,7 +77,7 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     static {
         Util.deleteLocalDirectory(new File("/tmp/derby_dlight")); // NOI18N
         try {
-            String systemDir = "/tmp/derby_dlight"; // NOI18N
+            String systemDir = System.getProperty("java.io.tmpdir")  + "/derby_dlight"; // NOI18N
             System.setProperty("derby.system.home", systemDir); // NOI18N
             Class driver = Class.forName("org.apache.derby.jdbc.EmbeddedDriver"); // NOI18N
             logger.info("Driver for Derby(JavaDB) (" + driver.getName() + ") Loaded "); // NOI18N
@@ -114,6 +114,16 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
             logger.log(Level.SEVERE, null, ex);
         }
     }
+
+    @Override
+    public boolean shutdown() {
+        //remove folder
+        boolean result = stackStorage.shutdown() && super.shutdown();
+        Util.deleteLocalDirectory(new File( System.getProperty("java.io.tmpdir") + "/derby_dlight" + (dbIndex -1))); // NOI18N
+        return result;
+    }
+
+
 
     @Override
     protected String classToType(Class clazz) {

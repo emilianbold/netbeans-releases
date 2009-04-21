@@ -48,6 +48,8 @@ package org.netbeans.modules.jumpto.file;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -163,7 +165,15 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
                    }
                }
                else {
-                   setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
+                   if (getText()!=null) {
+                       try {
+                           Pattern.compile(getText().replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ), Pattern.CASE_INSENSITIVE); // NOI18N
+                           setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
+                       } catch (PatternSyntaxException pse) {
+                           setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_SyntaxError", pse.getDescription(),pse.getIndex()) ,false ); // NOI18N
+                       }
+                   } else
+                       setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
                }
            }
        });

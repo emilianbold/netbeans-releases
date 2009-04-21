@@ -69,7 +69,9 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     private static final AtomicInteger dbIndex = new AtomicInteger();
     private SQLStackStorage stackStorage;
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
-    private static final String url = "jdbc:h2:/tmp/dlight"; // NOI18N
+    private static final String tmpDir = System.getProperty("java.io.tmpdir");
+    private static final String url = "jdbc:h2:" + tmpDir  + "/dlight"; // NOI18N
+    private String dbURL;
 
 
     static {
@@ -93,6 +95,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
 
     private H2DataStorage(String url) throws SQLException {
         super(url);
+        dbURL = url;
         try {
             initStorageTypes();
             stackStorage = new SQLStackStorage(this);
@@ -103,13 +106,14 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
         }
     }
 
+
     // FIXUP: deleting /tmp/dlight*
 
 
     static {
-        File tmpDir = new File("/tmp"); // NOI18N
-        if (tmpDir.exists()) {
-            File[] files = tmpDir.listFiles(new FilenameFilter() {
+        File tmpDirFile = new File(tmpDir); // NOI18N
+        if (tmpDirFile.exists()) {
+            File[] files = tmpDirFile.listFiles(new FilenameFilter() {
 
                 public boolean accept(File dir, String name) {
                     return name.startsWith("dlight"); // NOI18N
@@ -128,6 +132,27 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
             }
         }
     }
+
+    @Override
+    public boolean shutdown() {
+        boolean result= stackStorage.shutdown() && super.shutdown();
+        final String filesToDelete = dbURL.substring(dbURL.lastIndexOf("/") + 1);//NOI18N
+        File tmpDirFile = new File(tmpDir); // NOI18N
+        if (tmpDirFile.exists()) {
+            File[] files = tmpDirFile.listFiles(new FilenameFilter() {
+
+                public boolean accept(File dir, String name) {
+                    return name.startsWith(filesToDelete); // NOI18N
+                }
+            });
+            for (int i = 0; i < files.length; i++) {
+                result &=files[i].delete();
+            }
+        }
+        return result;
+    }
+
+
 
     @Override
     public boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {

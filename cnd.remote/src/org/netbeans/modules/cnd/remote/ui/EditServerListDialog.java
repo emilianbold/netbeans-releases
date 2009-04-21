@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.remote.ui.wizard.CreateHostWizardIterator;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -117,11 +116,10 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         model = new DefaultListModel();
 
         if (cache == null) {
-            ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-            for (ExecutionEnvironment env : registry.getEnvironments()) {
+            for (ExecutionEnvironment env : ServerList.getEnvironments()) {
                 model.addElement(env);
             }
-            defaultIndex = registry.getDefaultIndex();
+            defaultIndex = ServerList.getDefaultIndex();
         } else {
             for (ExecutionEnvironment env : cache.getHosts()) {
                 model.addElement(env);
@@ -280,7 +278,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 ExecutionEnvironment execEnv = CreateHostWizardIterator.invokeMe(cacheManager);
                 if (execEnv != null) {
                     if (!model.contains(execEnv)) {
-                        Lookup.getDefault().lookup(ServerList.class).addServer(execEnv, false, false);
+                        ServerList.addServer(execEnv, false, false);
                         model.addElement(execEnv);
                         lstDevHosts.setSelectedValue(execEnv, true);
                     }

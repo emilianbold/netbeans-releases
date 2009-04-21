@@ -68,7 +68,7 @@ public final class FetchPrivilegesTask implements Computable<ExecutionEnvironmen
 
         NativeProcess ppriv = null;
         try {
-            String shell = HostInfoUtils.getShell(execEnv);
+            String shell = HostInfoUtils.getHostInfo(execEnv).getShell();
             String command = "ppriv -v $$ | grep [IL]"; // NOI18N
 
             NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, shell);

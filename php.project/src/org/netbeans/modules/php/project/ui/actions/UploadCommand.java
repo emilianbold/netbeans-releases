@@ -47,8 +47,8 @@ import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ProjectSettings;
-import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
@@ -96,7 +96,11 @@ public class UploadCommand extends RemoteCommand implements Displayable {
 
     public void uploadFiles(FileObject[] filesToUpload, FileObject[] preselectedFiles) {
 
-        FileObject[] sources = Utils.getSourceObjects(getProject());
+        FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(getProject());
+
+        if (!sourcesFilesOnly(sources, filesToUpload)) {
+            return;
+        }
 
         InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
         RemoteClient remoteClient = getRemoteClient(remoteLog);
@@ -105,11 +109,11 @@ public class UploadCommand extends RemoteCommand implements Displayable {
         TransferInfo transferInfo = null;
         try {
             progressHandle.start();
-            Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], filesToUpload);
+            Set<TransferFile> forUpload = remoteClient.prepareUpload(sources, filesToUpload);
 
             // manage preselected files - it is just enough to touch the file
             if (preselectedFiles != null && preselectedFiles.length > 0) {
-                File baseLocalDir = FileUtil.toFile(sources[0]);
+                File baseLocalDir = FileUtil.toFile(sources);
                 String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
                 for (FileObject fo : preselectedFiles) {
                     TransferFile transferFile = TransferFile.fromFileObject(fo, baseLocalAbsolutePath);
@@ -130,12 +134,12 @@ public class UploadCommand extends RemoteCommand implements Displayable {
                 progressHandle.finish();
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
                 progressHandle.start();
-                transferInfo = remoteClient.upload(sources[0], forUpload);
+                transferInfo = remoteClient.upload(sources, forUpload);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
                 if (!remoteClient.isCancelled()
                         && transferInfo.hasAnyTransfered()) { // #153406
-                    rememberLastUpload(sources[0], filesToUpload);
+                    rememberLastUpload(sources, filesToUpload);
                 }
             }
         } catch (RemoteException ex) {

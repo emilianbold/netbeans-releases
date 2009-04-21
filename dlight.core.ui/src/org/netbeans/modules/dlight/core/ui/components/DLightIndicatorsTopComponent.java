@@ -83,11 +83,11 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         setName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
         //setToolTipText(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "HINT_DLightIndicatorsTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){ // NOI18N
-            if (WindowManager.getDefault().findMode("navigator") != null){ // NOI18N
-                WindowManager.getDefault().findMode("navigator").dockInto(this);//NOI18N
-            }
-        }
+//        if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){ // NOI18N
+//            if (WindowManager.getDefault().findMode("navigator") != null){ // NOI18N
+//                WindowManager.getDefault().findMode("navigator").dockInto(this);//NOI18N
+//            }
+//        }
     }
 
     void initComponents() {
@@ -112,6 +112,9 @@ final class DLightIndicatorsTopComponent extends TopComponent {
     }
 
     public void setSession(DLightSession session) {
+        if (this.session != null && this.session != session){
+            DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
+        }
         this.session = session;
         List<Indicator> indicators = null;
         if (session != null) {
@@ -198,25 +201,28 @@ final class DLightIndicatorsTopComponent extends TopComponent {
      * Obtain the DLightIndicatorsTopComponent instance. Never call {@link #getDefault} directly!
      */
     public static synchronized DLightIndicatorsTopComponent findInstance() {
-//        TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
-//        if (win == null) {
-//            Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
-//                "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
-//            return getDefault();
-//        }
-//        if (win instanceof DLightIndicatorsTopComponent) {
-//            return (DLightIndicatorsTopComponent) win;
-//        }
-//        Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
-//            "There seem to be multiple components with the '" + PREFERRED_ID +
-//            "' ID. That is a potential source of errors and unexpected behavior.");
-//        return getDefault();
+        TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
+        if (win == null) {
+            Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
+                "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");//NOI18N
+            return getDefault();
+        }
+        if (win instanceof DLightIndicatorsTopComponent) {
+            return (DLightIndicatorsTopComponent) win;
+        }
+        Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
+            "There seem to be multiple components with the '" + PREFERRED_ID + //NOI18N
+            "' ID. That is a potential source of errors and unexpected behavior.");//NOI18N
+        return getDefault();
+    }
+
+    public static synchronized DLightIndicatorsTopComponent newInstance() {
         return new DLightIndicatorsTopComponent();
     }
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
+        return TopComponent.PERSISTENCE_ALWAYS;
     }
 
     @Override
@@ -230,6 +236,10 @@ final class DLightIndicatorsTopComponent extends TopComponent {
             DLightManager.getDefault().closeSessionOnExit(session);
         }
         super.componentClosed();
+    }
+
+    DLightSession getSession(){
+        return session;
     }
 
     /** replaces this in object stream */

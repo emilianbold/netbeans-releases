@@ -92,18 +92,15 @@ import org.openide.util.HelpCtx;
     // settings
     public void readSettings(WizardDescriptor settings) {
         getComponent().init(
-            (String)settings.getProperty(CreateHostWizardPanel1.PROP_HOSTNAME),
-            (Integer)settings.getProperty(CreateHostWizardPanel1.PROP_PORT),
-            (ToolsCacheManager)settings.getProperty(CreateHostWizardIterator.PROP_CACHE_MANAGER)
+            (String)settings.getProperty(CreateHostWizardConstants.PROP_HOSTNAME),
+            (Integer)settings.getProperty(CreateHostWizardConstants.PROP_PORT),
+            (ToolsCacheManager)settings.getProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER)
         );
     }
 
-    static final String PROP_HOST = "hostkey"; //NOI18N
-    static final String PROP_RUN_ON_FINISH = "run-on-finish"; //NOI18N
-
     public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(PROP_HOST, getComponent().getHost());
-        settings.putProperty(PROP_RUN_ON_FINISH, getComponent().getRunOnFinish());
+        settings.putProperty(CreateHostWizardConstants.PROP_HOST, getComponent().getHost());
+        settings.putProperty(CreateHostWizardConstants.PROP_RUN_ON_FINISH, getComponent().getRunOnFinish());
     }
 }
 

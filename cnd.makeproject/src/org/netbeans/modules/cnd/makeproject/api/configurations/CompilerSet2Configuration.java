@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -313,15 +312,12 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             final CompilerSet focs = ocs;
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    ServerList server = Lookup.getDefault().lookup(ServerList.class);
-                    if (server != null) {
-                        ServerRecord record = server.get(env);
-                        if (record != null) {
-                            // Not sure why we do this in an RP, but don't want to remove it this late in the release
-                            setValue(focs.getName());
-                            if (compilerSetNodeProp != null) {
-                                compilerSetNodeProp.repaint();
-                            }
+                    ServerRecord record = ServerList.get(env);
+                    if (record != null) {
+                        // Not sure why we do this in an RP, but don't want to remove it this late in the release
+                        setValue(focs.getName());
+                        if (compilerSetNodeProp != null) {
+                            compilerSetNodeProp.repaint();
                         }
                     }
                 }

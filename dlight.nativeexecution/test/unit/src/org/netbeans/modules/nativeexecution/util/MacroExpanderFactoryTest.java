@@ -52,6 +52,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.modules.nativeexecution.NativeExecutionTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -64,7 +65,7 @@ import org.openide.windows.InputOutput;
  *
  * @author ak119685
  */
-public class MacroExpanderFactoryTest {
+public class MacroExpanderFactoryTest extends NativeExecutionTest {
 
     public MacroExpanderFactoryTest() {
     }
@@ -88,13 +89,11 @@ public class MacroExpanderFactoryTest {
     /**
      * Test of getExpander method, of class MacroExpanderFactory.
      */
-//    @Test
+    @Test
     public void testGetExpander_ExecutionEnvironment_String() {
         System.out.println("getExpander"); // NOI18N
-//        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "brighton.russia.sun.com");
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
-//        ConnectionManager.getInstance().getConnectToAction(execEnv, null).invoke();
-        MacroExpander expander = MacroExpanderFactory.getExpander(execEnv, "SunStudio"); // NOI18N
+        MacroExpander expander = MacroExpanderFactory.getExpander(execEnv);//, "SunStudio"); // NOI18N
 
         Map<String, String> myenv = new HashMap<String, String>();
         try {
@@ -105,6 +104,7 @@ public class MacroExpanderFactoryTest {
         }
 
         System.out.println(myenv.toString());
+
         try {
             System.out.println("$osname-${platform}$_isa -> " + expander.expandPredefinedMacros("$osname-$platform$_isa")); // NOI18N
         } catch (ParseException ex) {
@@ -112,7 +112,7 @@ public class MacroExpanderFactoryTest {
         }
     }
 
-    @Test
+//    @Test
     public void testPath() {
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("test", "localhost"); // NOI18N
         NativeProcessBuilder npb = new NativeProcessBuilder(
