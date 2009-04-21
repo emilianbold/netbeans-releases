@@ -68,7 +68,7 @@ public final class HostInfoUtils {
     public static void dumpInfo(HostInfo hostinfo, PrintStream stream) {
         stream.println("------------"); // NOI18N
         if (hostinfo == null) {
-            stream.println("HostInfo is NULL");
+            stream.println("HostInfo is NULL"); // NOI18N
         } else {
             stream.println("Hostname      : "  + hostinfo.getHostname()); // NOI18N
             stream.println("OS Family     : "  + hostinfo.getOSFamily()); // NOI18N
