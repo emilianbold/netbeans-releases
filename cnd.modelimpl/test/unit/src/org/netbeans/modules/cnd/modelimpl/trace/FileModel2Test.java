@@ -249,4 +249,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#156696 : model miss extern property if declaration statement has two objects
         performTest("iz156696.cc");
     }
+
+    public void testIZ142674() throws Exception {
+        // IZ#142674 : Function-try-catch (C++) in editor shows error
+        performTest("iz142674.cc");
+    }
 }
