@@ -201,11 +201,15 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 currentProjects = null;
                 allProjects = null;
             }
-        } else {
+        } else if (refObject != null) {
             defaultScope = Scope.CURRENT;
             ProjectScope prjScope = new ProjectScope(null, ((CsmVariable)refObject).getContainingFile().getProject());
             currentProjects = new ArrayList<ProjectScope>();
             currentProjects.add(prjScope);
+            allProjects = null;
+        } else {
+            defaultScope = Scope.ALL;
+            currentProjects = null;
             allProjects = null;
         }
         final String labelText;
@@ -295,7 +299,9 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             labelText = getString("DSC_ElNotAvail", this.name); // NOI18N
         }
 
-        this.name = labelText;
+        if (refObject != null) {
+            this.name = labelText;
+        }
         
 //        final Set<Modifier> modifiers = modif;
         final String isBaseClassText = _isBaseClassText;
