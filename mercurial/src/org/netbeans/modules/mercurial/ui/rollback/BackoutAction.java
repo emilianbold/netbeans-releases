@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -95,15 +95,14 @@ public class BackoutAction extends ContextAction {
         final File root;        
         File[] files = ctx != null? ctx.getFiles().toArray(new File[0]): null;
         if(repoRev != null){
-            if(repoRev.getRepositoryRootUrl() == null || repoRev.getRepositoryRootUrl().equals("")){
+            root = repoRev.getRepositoryRoot();
+            if ((root == null) || (root.getPath().equals(""))) {        //NOI18N
                 return;
             }
-            root = new File(repoRev.getRepositoryRootUrl());
         }else{
             root = HgUtils.getRootFile(ctx);
         }
         if (root == null) return;
-        final String repository = root.getAbsolutePath();
          
         String rev = null;
         String commitMsg = null;
@@ -120,7 +119,7 @@ public class BackoutAction extends ContextAction {
         commitMsg = commitMsg.replaceAll(HG_BACKOUT_REVISION_REPLACE, revStr); //NOI18N
         final String commitMsgStr = commitMsg;
         
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
                 
@@ -202,7 +201,7 @@ public class BackoutAction extends ContextAction {
                 }
             }
         };
-        support.start(rp, repository,org.openide.util.NbBundle.getMessage(BackoutAction.class, "MSG_BACKOUT_PROGRESS")); // NOI18N
+        support.start(rp, root, org.openide.util.NbBundle.getMessage(BackoutAction.class, "MSG_BACKOUT_PROGRESS")); // NOI18N
     }
     
     public boolean isEnabled() {

@@ -218,60 +218,22 @@ public class CompletionResolverImpl implements CompletionResolver {
                 result = buildResult(context, resImpl);
                 return;
             }
+            CsmDeclaration decl = null;
             if (fun != null) {
-                CsmUID uid = UIDs.get(fun);
-                //if (CsmKindUtilities.isMethodDeclaration(fun)) {
-                //    uid = ((CsmMethod)fun).getContainingClass().getUID();
-                //}
-                if (fileReferncesContext != null) {
-                    key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
-                    Result res = fileReferncesContext.getSymTabCache().get(key);
-                    if (res != null) {
-                        result = res;
-                        return;
-                    } else {
-                        fileReferncesContext.getSymTabCache().setScope(uid);
-                    }
-                }
+                decl = fun;
             } else if (CsmKindUtilities.isVariable(context.getLastObject())) {
-                CsmVariable var = (CsmVariable) context.getLastObject();
-                CsmUID uid = UIDs.get(var);
-                //if (CsmKindUtilities.isField(var)) {
-                //    uid = ((CsmField)var).getContainingClass().getUID();
-                //}
-                if (fileReferncesContext != null) {
-                    key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
-                    Result res = fileReferncesContext.getSymTabCache().get(key);
-                    if (res != null) {
-                        result = res;
-                        return;
-                    } else {
-                        fileReferncesContext.getSymTabCache().setScope(uid);
-                    }
+                decl = (CsmVariable) context.getLastObject();
+            }
+            if (CsmBaseUtilities.isValid(decl) && fileReferncesContext != null) {
+                CsmUID uid = UIDs.get(decl);
+                key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
+                Result res = fileReferncesContext.getSymTabCache().get(key);
+                if (res != null) {
+                    result = res;
+                    return;
+                } else {
+                    fileReferncesContext.getSymTabCache().setScope(uid);
                 }
-                //} else {
-                //    CsmScope scope = context.getLastScope();
-                //    if (CsmKindUtilities.isClass(scope)) {
-                //        CsmUID uid = ((CsmClass)scope).getUID();
-                //        key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
-                //        Result res = SymTabCache.get(key);
-                //        if (res != null) {
-                //            result = res;
-                //            return;
-                //        } else {
-                //            SymTabCache.setScope(uid);
-                //        }
-                //    } else if (CsmKindUtilities.isNamespaceDefinition(scope)) {
-                //        CsmUID uid = ((CsmNamespaceDefinition)scope).getUID();
-                //        key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
-                //        Result res = SymTabCache.get(key);
-                //        if (res != null) {
-                //            result = res;
-                //            return;
-                //        } else {
-                //            SymTabCache.setScope(uid);
-                //        }
-                //    }
             }
         }
         //long timeStart = System.nanoTime();

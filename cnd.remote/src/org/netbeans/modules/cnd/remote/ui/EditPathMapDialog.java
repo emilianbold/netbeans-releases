@@ -23,8 +23,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -43,7 +43,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }
 
     public static boolean showMe(ExecutionEnvironment host, String pathToValidate) {
-        List<ExecutionEnvironment> envs = RemoteServerList.getInstance().getEnvironments();
+        List<ExecutionEnvironment> envs = ServerList.getEnvironments();
         return showMe(host, pathToValidate, envs);
     }
 

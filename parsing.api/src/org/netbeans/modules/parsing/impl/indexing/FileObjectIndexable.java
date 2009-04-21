@@ -90,4 +90,31 @@ public final class FileObjectIndexable implements IndexableImpl {
         return this.file.getInputStream();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FileObjectIndexable other = (FileObjectIndexable) obj;
+        if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 83 * hash + (this.file != null ? this.file.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        return "FileObjectIndexable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + getURL() + "]"; //NOI18N
+    }
+
 }

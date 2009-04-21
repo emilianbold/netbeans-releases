@@ -69,23 +69,24 @@ import org.openide.util.WeakListeners;
 public class SubprojectProviderImpl implements SubprojectProvider {
 
     private NbMavenProjectImpl project;
+    private NbMavenProject watcher;
     private List<ChangeListener> listeners;
     private ChangeListener listener2;
+    private PropertyChangeListener propertyChange;
 
     /** Creates a new instance of SubprojectProviderImpl */
     public SubprojectProviderImpl(NbMavenProjectImpl proj, NbMavenProject watcher) {
         project = proj;
+        this.watcher = watcher;
         listeners = new ArrayList<ChangeListener>();
-        watcher.addPropertyChangeListener(new PropertyChangeListener() {
-
+        propertyChange = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                     fireChange();
                 }
             }
-        });
+        };
         listener2 = new ChangeListener() {
-
             public void stateChanged(ChangeEvent event) {
                 fireChange();
             }
@@ -190,11 +191,17 @@ public class SubprojectProviderImpl implements SubprojectProvider {
     }
 
     public synchronized void addChangeListener(ChangeListener changeListener) {
+        if (listeners.size() == 0) {
+            watcher.addPropertyChangeListener(propertyChange);
+        }
         listeners.add(changeListener);
     }
 
     public synchronized void removeChangeListener(ChangeListener changeListener) {
         listeners.remove(changeListener);
+        if (listeners.size() == 0) {
+            watcher.removePropertyChangeListener(propertyChange);
+        }
     }
 
     private void fireChange() {

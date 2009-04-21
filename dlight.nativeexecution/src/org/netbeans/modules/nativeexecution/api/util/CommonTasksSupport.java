@@ -68,6 +68,8 @@ import org.openide.windows.InputOutput;
  */
 public final class CommonTasksSupport {
 
+    private CommonTasksSupport() {}
+
     /**
      * Starts <tt>srcFileName</tt> file upload from the localhost to the host,
      * specified by the <tt>dstExecEnv</tt> saving it in the
@@ -193,14 +195,25 @@ public final class CommonTasksSupport {
         return execService.run();
     }
 
-    // TODO: implement
-    public static void chmod(ExecutionEnvironment execEnv, String file, int mode) {
-//        NativeProcessBuilder npb = new NativeProcessBuilder("chmod").setArguments(String.format("0%03", mode), file); // NOI18N
-//        try {
-//            npb.call();
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
+    /**
+     * Changes file permissions.
+     *
+     * @param execEnv  execution environment where the file is located
+     * @param file  file to change permissions for
+     * @param mode  new file permissions in octal form, e.g. <tt>0755</tt>
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
+     *         of the chmod task. <tt>0</tt> means success, any other value
+     *         means failure.
+     */
+    public static Future<Integer> chmod(ExecutionEnvironment execEnv, String file, int mode) {
+        NativeProcessBuilder npb = new NativeProcessBuilder("chmod"); // NOI18N
+        npb = npb.setArguments(String.format("0%03o", mode), file); // NOI18N
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
+                InputOutput.NULL);
+
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "Changing permissions for " + file); // NOI18N
+        return execService.run();
     }
 
     /**

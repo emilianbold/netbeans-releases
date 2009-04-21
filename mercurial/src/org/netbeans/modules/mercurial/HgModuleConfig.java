@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,16 +44,19 @@ package org.netbeans.modules.mercurial;
 
 import java.awt.EventQueue;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.regex.Pattern;
 import java.util.*;
 import java.util.prefs.Preferences;
 import java.io.File;
 import java.net.InetAddress;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 //import org.netbeans.modules.mercurial.options.AnnotationExpression;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.versioning.util.Utils;
@@ -423,24 +426,19 @@ public class HgModuleConfig {
         getPreferences().putBoolean(SET_MAIN_PROJECT, bl);
     }
     
-    public RepositoryConnection getRepositoryConnection(String url) {
-        List<RepositoryConnection> rcs = getRecentUrls();
-        for (Iterator<RepositoryConnection> it = rcs.iterator(); it.hasNext();) {
-            RepositoryConnection rc = it.next();
-            if(url.equals(rc.getUrl())) {
-                return rc;
-            }            
-        }
-        return null;
-    }            
-    
     public void insertRecentUrl(RepositoryConnection rc) {        
         Preferences prefs = getPreferences();
         
-        List<String> urlValues = Utils.getStringList(prefs, RECENT_URL);        
-        for (Iterator<String> it = urlValues.iterator(); it.hasNext();) {
-            String rcOldString = it.next();
-            RepositoryConnection rcOld =  RepositoryConnection.parse(rcOldString);
+        for (String rcOldString : Utils.getStringList(prefs, RECENT_URL)) {
+            RepositoryConnection rcOld;
+            try {
+                rcOld = RepositoryConnection.parse(rcOldString);
+            } catch (URISyntaxException ex) {
+                Logger.global.throwing(getClass().getName(),
+                                       "insertRecentUrl",               //NOI18N
+                                       ex);
+                continue;
+            }
             if(rcOld.equals(rc)) {
                 Utils.removeFromArray(prefs, RECENT_URL, rcOldString);
             }
@@ -463,11 +461,16 @@ public class HgModuleConfig {
     
     public List<RepositoryConnection> getRecentUrls() {
         Preferences prefs = getPreferences();
-        List<String> urls = Utils.getStringList(prefs, RECENT_URL);                
+        List<String> urls = Utils.getStringList(prefs, RECENT_URL);
         List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(urls.size());
-        for (Iterator<String> it = urls.iterator(); it.hasNext();) {
-            RepositoryConnection rc = RepositoryConnection.parse(it.next());
-            ret.add(rc);
+        for (String urlString : urls) {
+            try {
+                ret.add(RepositoryConnection.parse(urlString));
+            } catch (URISyntaxException ex) {
+                Logger.global.throwing(getClass().getName(),
+                                       "getRecentUrls",                 //NOI18N
+                                       ex);
+            }
         }
         return ret;
     }
