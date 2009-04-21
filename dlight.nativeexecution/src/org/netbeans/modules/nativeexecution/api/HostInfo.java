@@ -36,75 +36,80 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.api;
 
-import org.netbeans.modules.nativeexecution.PlatformAccessor;
+import java.io.PrintStream;
 
-/**
- * Describes a platform - operating system and hardware
- * of the local or remote host.
- *
- * @author Vladimir Kvashin
- */
-public final class Platform {
+public interface HostInfo {
 
-//    public static final Platform DUMMY = new Platform(HardwareType.UNKNOWN, OSType.UNKNOWN);
+    public static enum CpuFamily {
 
-    public enum OSType {
+        SPARC,
+        X86,
+        UNKNOWN;
+    }
 
-        SOLARIS,
+    public static enum OSFamily {
+
+        SUNOS,
         LINUX,
-        MACOSX,
         WINDOWS,
-        GENUNIX,
+        MACOSX,
         UNKNOWN;
 
         public boolean isUnix() {
-            switch(this) {
-                case GENUNIX:
+            switch (this) {
                 case LINUX:
                 case MACOSX:
-                case SOLARIS:
+                case SUNOS:
                     return true;
                 case WINDOWS:
                     return false;
                 case UNKNOWN:
                     return false;
                 default:
-                    throw new IllegalStateException("Unexpected OSType: " + this); //NOI18N
+                    throw new IllegalStateException("Unexpected OSFamily: " + this); //NOI18N
             }
         }
     }
 
-    public enum HardwareType {
-        X86,
-        SPARC,
-        UNKNOWN
+    public static enum Bitness {
+
+        _32,
+        _64;
+
+        public static Bitness valueOf(int bitness) {
+            return bitness == 64 ? _64 : _32;
+        }
+
+        @Override
+        public String toString() {
+            return (this == _32) ? "32" : "64"; // NOI18N
+        }
     }
 
-    public OSType getOSType() {
-        return oSType;
+    public static interface OS {
+
+        public OSFamily getFamily();
+
+        public String getName();
+
+        public String getVersion();
+
+        public Bitness getBitness();
     }
 
-    public HardwareType getHardwareType() {
-        return hardwareType;
-    }
+    public OS getOS();
 
-    private final HardwareType hardwareType;
-    private final OSType oSType;
+    public CpuFamily getCpuFamily();
 
-    private Platform(HardwareType hardwareType, OSType oSType) {
-        this.hardwareType = hardwareType;
-        this.oSType = oSType;
-    }
+    public int getCpuNum();
 
-    static {
-        PlatformAccessor.setDefault(new PlatformAccessor() {
-            protected Platform createImpl(HardwareType hardwareType, OSType oSType) {
-                return new Platform(hardwareType, oSType);
-            }
-        });
-    }
+    public OSFamily getOSFamily();
 
+    public String getHostname();
+
+    public String getShell();
+
+    public String getTempDir();
 }

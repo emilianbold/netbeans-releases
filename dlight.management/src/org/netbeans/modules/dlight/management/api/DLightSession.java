@@ -95,6 +95,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         RUNNING,
         PAUSED,
         ANALYZE,
+        CLOSED
     }
 
     public void targetStateChanged(DLightTargetChangeEvent event) {
@@ -128,6 +129,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         sessionID = sessionCount++;
         sessionContext = DLightSessionContextAccessor.getDefault().newContext();
     }
+    
 
     public DLightSessionContext getSessionContext() {
         return sessionContext;
@@ -470,12 +472,17 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 //    runner.run();
     }
 
-    List<DataStorage> getStorages() {
+    /**
+     * Returns storages this session is using
+     * @return data storage list this session is using to save data if any
+     */
+    public List<DataStorage> getStorages() {
         return (storages == null) ? Collections.<DataStorage>emptyList() : storages;
     }
 
     void close() {
         // Unsubscribe listeners
+        setState(SessionState.CLOSED);
         if (sessionStateListeners != null) {
             sessionStateListeners.clear();
             sessionStateListeners = null;
@@ -547,6 +554,19 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             result.addAll(c.getTools());
         }
         return result;
+    }
+
+    DLightTool getToolByName(String toolName){
+        if (toolName == null){
+            throw new IllegalArgumentException("Cannot use NULL as a tool name ");//NOI18N
+        }
+        for (ExecutionContext c : contexts) {
+            DLightTool tool = c.getToolByName(toolName);
+            if (tool != null){
+                return tool;
+            }
+        }
+        return null;
     }
 
     public List<Indicator> getIndicators() {

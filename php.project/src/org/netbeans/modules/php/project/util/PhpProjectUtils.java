@@ -50,7 +50,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -184,5 +188,20 @@ public final class PhpProjectUtils {
         } catch (IndexOutOfBoundsException exc) {
             LOGGER.log(Level.FINE, null, exc);
         }
+    }
+
+    public static SourceGroup[] getSourceGroups(Project phpProject) {
+        Sources sources = ProjectUtils.getSources(phpProject);
+        return sources.getSourceGroups(PhpSources.SOURCES_TYPE_PHP);
+    }
+
+    public static FileObject[] getSourceObjects(Project phpProject) {
+        SourceGroup[] groups = getSourceGroups(phpProject);
+
+        FileObject[] fileObjects = new FileObject[groups.length];
+        for (int i = 0; i < groups.length; i++) {
+            fileObjects[i] = groups[i].getRootFolder();
+        }
+        return fileObjects;
     }
 }

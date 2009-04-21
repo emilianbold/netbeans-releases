@@ -220,6 +220,7 @@ public class AstUtil {
                     continue;
                 case CPPTokenTypes.CSM_COMPOUND_STATEMENT:
                 case CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY:
+                case CPPTokenTypes.CSM_TRY_CATCH_STATEMENT_LAZY:
                 case CPPTokenTypes.COLON:
                     break;
                 default:

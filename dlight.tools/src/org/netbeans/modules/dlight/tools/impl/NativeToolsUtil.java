@@ -36,12 +36,13 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.tools.impl;
 
 import java.io.File;
 import java.text.ParseException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.openide.modules.InstalledFileLocator;
@@ -53,14 +54,13 @@ import org.openide.modules.InstalledFileLocator;
 // package-local
 class NativeToolsUtil {
 
-    private NativeToolsUtil() {}
+    private NativeToolsUtil() {
+    }
 
-    public static String getLdPreloadName(String osname) {
-        if ("Mac_OS_X".equals(osname)) { // NOI18N
-            return "DYLD_INSERT_LIBRARIES"; // NOI18N
-        } else {
-            return "LD_PRELOAD"; // NOI18N
-        }
+    public static String getLdPreloadName(ExecutionEnvironment execEnv) {
+        HostInfo info = HostInfoUtils.getHostInfo(execEnv);
+        return info.getOSFamily() == HostInfo.OSFamily.MACOSX
+                ? "DYLD_INSERT_LIBRARIES" : "LD_PRELOAD"; // NOI18N
     }
 
     public static String getExecutable(String name) {
@@ -84,5 +84,4 @@ class NativeToolsUtil {
             return null;
         }
     }
-
 }

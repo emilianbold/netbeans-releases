@@ -202,6 +202,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz150827.cpp");
     }
 
+    public void testIZ142674() throws Exception {
+        // IZ#142674 : Function-try-catch (C++) in editor shows error
+        performStaticTest("iz142674.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

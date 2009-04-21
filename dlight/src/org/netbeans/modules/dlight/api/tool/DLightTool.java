@@ -69,7 +69,8 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 public final class DLightTool implements Validateable<DLightTarget> {
 
     private static final Logger log = DLightLogger.getLogger(DLightTool.class);
-    private String toolName;
+    private final String toolName;
+    private final String detailedToolName;
     private boolean enabled;
     private final List<DataCollector<?>> dataCollectors;
     private final List<IndicatorDataProvider<?>> indicatorDataProviders;
@@ -88,14 +89,16 @@ public final class DLightTool implements Validateable<DLightTarget> {
     }
 
     private DLightTool(DLightToolConfiguration configuration) {
-        this.toolName = DLightToolConfigurationAccessor.getDefault().getToolName(configuration);
-        this.iconPath = DLightToolConfigurationAccessor.getDefault().getIconPath(configuration);
+        DLightToolConfigurationAccessor toolConfAccessor =  DLightToolConfigurationAccessor.getDefault();
+        this.toolName = toolConfAccessor.getToolName(configuration);
+        this.detailedToolName =toolConfAccessor.getDetailedToolName(configuration);
+        this.iconPath = toolConfAccessor.getIconPath(configuration);
         dataCollectors = Collections.synchronizedList(new ArrayList<DataCollector<?>>());
         indicators = Collections.synchronizedList(new ArrayList<Indicator<?>>());
         this.configuration = configuration;
         indicatorDataProviders = Collections.synchronizedList(new ArrayList<IndicatorDataProvider<?>>());
-        List<DataCollectorConfiguration> configurations = DLightToolConfigurationAccessor.getDefault().getDataCollectors(configuration);
-        List<IndicatorDataProviderConfiguration> idpConfigurations = DLightToolConfigurationAccessor.getDefault().getIndicatorDataProviders(configuration);
+        List<DataCollectorConfiguration> configurations =toolConfAccessor.getDataCollectors(configuration);
+        List<IndicatorDataProviderConfiguration> idpConfigurations = toolConfAccessor.getIndicatorDataProviders(configuration);
 
         for (DataCollectorConfiguration conf : configurations) {
             DataCollector collector = DataCollectorProvider.getInstance().createDataCollector(conf);
@@ -163,6 +166,10 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
     public final String getName() {
         return toolName;
+    }
+
+    public final String getDetailedName(){
+        return detailedToolName;
     }
 
     public final boolean hasIcon(){

@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -170,8 +169,7 @@ public class GdbProfile implements ConfigurationAuxObject {
                 }
             } else {
                 // Remote gdb...
-                ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
-                if (serverList != null && serverList.isValidExecutable(execEnv, gdbPath)) {
+                if (ServerList.isValidExecutable(execEnv, gdbPath)) {
                     return gdbPath;
                 }
             }
