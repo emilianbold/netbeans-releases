@@ -85,10 +85,10 @@ public class ProgressTransferListener implements TransferListener {
     }
     
     public void transferStarted(TransferEvent transferEvent) {
-        String smer = transferEvent.getRequestType() == TransferEvent.REQUEST_GET ? 
-                              "Downloading: " : "Uploading: "; //NOI18N - ends up in the maven output. 
-        System.out.println(smer + transferEvent.getWagon().getRepository().getUrl() + "/" + transferEvent.getResource().getName()); //NOI18N
-        if (contribRef.get() == null) {
+//        String smer = transferEvent.getRequestType() == TransferEvent.REQUEST_GET ?
+//                              "Downloading: " : "Uploading: "; //NOI18N - ends up in the maven output.
+//        System.out.println(smer + transferEvent.getWagon().getRepository().getUrl() + "/" + transferEvent.getResource().getName()); //NOI18N
+        if (contribRef.get() == null || handleRef.get() == null) {
             return;
         }
         Resource res = transferEvent.getResource();
