@@ -353,7 +353,11 @@ public final class SourceCache {
             tasks1 = new ArrayList<SchedulerTask> ();
             pendingTasks1 = new HashSet<SchedulerTask> ();
             Lookup lookup = MimeLookup.getLookup (mimeType);
-            for (TaskFactory factory : lookup.lookupAll (TaskFactory.class)) {
+            Collection<? extends TaskFactory> factories = lookup.lookupAll (TaskFactory.class);
+            //Issue #162990 workaround >>>
+            Collection<? extends TaskFactory> resortedFactories = resortTaskFactories(factories);
+            //<<< End of workaround
+            for (TaskFactory factory : resortedFactories) {
                 Collection<? extends SchedulerTask> newTasks = factory.create (getSnapshot());
                 if (newTasks != null) {
                     tasks1.addAll (newTasks);
@@ -376,6 +380,21 @@ public final class SourceCache {
         // recurse and hope
         return createTasks();
     }
+
+    //Issue #162990 workaround >>>
+    //Move the JsEmbeddingProvider$Factory to the beginning of the factories list
+    private Collection<? extends TaskFactory> resortTaskFactories(Collection<? extends TaskFactory> factories) {
+        List<TaskFactory> resorted = new ArrayList<TaskFactory>(factories);
+        for(TaskFactory tf : resorted) {
+            if(tf.getClass().getName().equals("org.netbeans.modules.javascript.editing.embedding.JsEmbeddingProvider$Factory")) { //NOI18N
+                resorted.remove(tf); 
+                resorted.add(0, tf);
+                break;
+            }
+        }
+        return resorted;
+    }
+    //<<< End of workaround
 
     //tzezula: probably has race condition
     public void scheduleTasks (Class<? extends Scheduler> schedulerType) {

@@ -45,7 +45,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -61,7 +60,10 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  *
- * @author vita
+ * @see "org.netbeans.modules.parsing.impl.SourceCache.resortTaskFactories() which
+ * depends on fully qualified name of this class Factory. See issue #162990 for more information."
+ *
+ * @author vita, mfukala@netbeans.org
  */
 public final class JsEmbeddingProvider extends EmbeddingProvider {
 
