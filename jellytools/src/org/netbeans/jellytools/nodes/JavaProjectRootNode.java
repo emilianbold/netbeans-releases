@@ -38,80 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.jellytools;
+package org.netbeans.jellytools.nodes;
 
-import java.io.IOException;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTest;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jellytools.actions.*;
+import org.netbeans.jemmy.operators.JTreeOperator;
 
-/** Test FavoritesOperator.
- *
- * @author Jiri.Skrivanek@sun.com
+/**
+ * Java-specific extension to ProjectRootNode - adds "Build Project" and "Clean Project"
+ * actions.
+ *  
+ * @author Vojtech.Sigler@sun.com
  */
-public class FavoritesOperatorTest extends JellyTestCase {
+public class JavaProjectRootNode extends ProjectRootNode {
 
-    public FavoritesOperatorTest(java.lang.String testName) {
-        super(testName);
+    static final BuildProjectAction buildProjectAction = new BuildProjectAction();
+    static final CleanProjectAction cleanProjectAction = new CleanProjectAction();
+    
+
+    /** tests popup menu items for presence */
+    public void verifyPopup() {
+        super.verifyPopup();
+        verifyPopup(new Action[]{
+            cleanProjectAction,
+            buildProjectAction            
+        });
     }
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-
-    public static NbTest suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        // suites have to be in particular order
-        suite.addTest(new FavoritesOperatorTest("testInvoke"));
-        suite.addTest(new FavoritesOperatorTest("testTree"));
-        suite.addTest(new FavoritesOperatorTest("testVerify"));
-        return suite;
-         */
-        return (NbTest) NbModuleSuite.create(
-        NbModuleSuite.createConfiguration(FavoritesOperatorTest.class).
-                addTest("testInvoke").
-                //addTest("testTree").
-                addTest("testVerify").
-                enableModules(".*").clusters(".*"));
-    }
-    
-    /** Print out test name. */
-    public void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
-        openDataProjects("SampleProject");
-    }
-    
-    private static FavoritesOperator favoritesOper;
-    
-    /**
-     * Test of invoke method.
+    /** creates new ProjectRootNode instance
+     * @param treeOperator treeOperator JTreeOperator of tree with Filesystems repository
+     * @param projectName display name of project
      */
-    public void testInvoke() {
-        FavoritesOperator.invoke().close();
-        favoritesOper = FavoritesOperator.invoke();
+    public JavaProjectRootNode(JTreeOperator treeOperator, String projectName) {
+        super(treeOperator, projectName);
     }
 
+    /** build project */
+    public void buildProject() {
+        buildProjectAction.perform(this);
+    }
 
-    /**
-     * Test of tree method.
-     */
-    //this test will not compile if this is uncommented, because it uses
-    //an operator from the IDE cluster
-    //TODO: fix this test
-    /*
-    public void testTree() {
-        RuntimeTabOperator rto = RuntimeTabOperator.invoke();
-        // has to make tab visible
-        favoritesOper.tree();
+    /** Clean project */
+    public void cleanProject() {
+        cleanProjectAction.perform(this);
     }
-    */
-    
-    /**
-     * Test of verify method.
-     */
-    public void testVerify() {
-        favoritesOper.verify();
-        favoritesOper.close();
-    }
+
 }

@@ -56,7 +56,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.WindowOperator;
 
-/** Class implementing all necessary methods for handling "IDE Help" Frame.
+/** Class implementing all necessary methods for handling "Help" Frame.
  * Normally the Help window is a JFrame.
  * But the Help window can be transformed to a JDialog 
  * when another modal dialog is shown. This operator can handle both states.
