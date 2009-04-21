@@ -42,13 +42,17 @@
 package org.netbeans.modules.cnd.test;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import junit.framework.Assert;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
@@ -57,7 +61,6 @@ import org.netbeans.modules.cnd.editor.cplusplus.HKit;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
 /**
  * IMPORTANT NOTE:
@@ -88,6 +91,64 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
  * @author Vladimir Voskresensky
  */
 public abstract class BaseTestCase extends NbTestCase {
+
+    static {
+        // Setting netbeans.dirs makes installedFileLocator work properly
+        File[] clusters = findClusters();
+        StringBuilder sb = new StringBuilder();
+        for (File cluster : clusters) {
+            if (sb.length() > 0) {
+                sb.append(File.pathSeparator);
+            }
+            sb.append(cluster.getPath());
+        }
+        System.setProperty("netbeans.dirs", sb.toString());
+    }
+
+    // it's like what org.netbeans.junit.NbModuleSuite does,
+    // but reusing NbModuleSuite will cause too massive changes in existing CND tests
+    private static File[] findClusters() {
+        File netbeans = findNetbeans();
+        assert netbeans != null;
+        File[] clusters = netbeans.listFiles(new FileFilter() {
+            public boolean accept(File dir) {
+                if (dir.isDirectory()) {
+                    File m = new File(new File(dir, "config"), "Modules");
+                    return m.exists();
+                }
+                return false;
+            }
+        });
+        return clusters;
+    }
+
+    // it's like what org.netbeans.junit.NbModuleSuite does,
+    // but reusing NbModuleSuite will cause too massive changes in existing CND tests
+    private static File findNetbeans() {
+        try {
+            Class<?> lookup = Class.forName("org.openide.util.Lookup"); // NOI18N
+            File util = new File(lookup.getProtectionDomain().getCodeSource().getLocation().toURI());
+            Assert.assertTrue("Util exists: " + util, util.exists());
+            return util.getParentFile().getParentFile().getParentFile();
+        } catch (Exception ex) {
+            try {
+                File nbjunit = new File(NbModuleSuite.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                File harness = nbjunit.getParentFile().getParentFile();
+                Assert.assertEquals("NbJUnit is in harness", "harness", harness.getName());
+                TreeSet<File> sorted = new TreeSet<File>();
+                for (File p : harness.getParentFile().listFiles()) {
+                    if (p.getName().startsWith("platform")) {
+                        sorted.add(p);
+                    }
+                }
+                Assert.assertFalse("Platform shall be found in " + harness.getParent(), sorted.isEmpty());
+                return sorted.last();
+            } catch (Exception ex2) {
+                Assert.fail("Cannot find utilities JAR: " + ex + " and: " + ex2);
+            }
+            return null;
+        }
+    }
     
     /** Creates a new instance of BaseTestCase */
     public BaseTestCase(String testName) {
@@ -244,10 +305,10 @@ public abstract class BaseTestCase extends NbTestCase {
                 String remoteHKey = ui.substring(0,m) + ui.substring(n);
                 execEnv = ExecutionEnvironmentFactory.fromString(remoteHKey);
                 remotePassword = passwd.toCharArray();
-                System.err.println("mode 0. hkey: " + remoteHKey + ", pkey: " + passwd);
+                //System.err.println("mode 0. hkey: " + remoteHKey + ", pkey: " + passwd);
             } else {
                 String remoteHKey = ui;
-                System.err.println("mode 1. hkey: " + remoteHKey );
+                //System.err.println("mode 1. hkey: " + remoteHKey );
                 execEnv = ExecutionEnvironmentFactory.fromString(remoteHKey);
             }
             return true;
