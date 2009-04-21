@@ -48,7 +48,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.support.Encrypter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
@@ -99,15 +102,13 @@ public final class SPSLocalImpl extends SPSCommonImpl {
             throw new SignatureException("Wrong privp executable! CRC check failed!"); // NOI18N
         }
 
-        Process p = null;
-
+        // Set execution privileges ...
+        Future<Integer> chmod = CommonTasksSupport.chmod(execEnv, privpCmd, 0755);
         try {
-            // Set execution privileges ...
-            p = new ProcessBuilder("/bin/chmod", "755", privpCmd).start(); // NOI18N
-            p.waitFor();
-        } catch (InterruptedException ex) {
+            chmod.get();
+        } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
+        } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
 
