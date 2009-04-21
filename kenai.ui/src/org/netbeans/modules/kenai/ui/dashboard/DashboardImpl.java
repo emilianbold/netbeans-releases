@@ -49,6 +49,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
@@ -124,6 +125,8 @@ public final class DashboardImpl extends Dashboard {
 
     private final Object LOCK = new Object();
 
+    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+
     private DashboardImpl() {
         dashboardComponent = new JScrollPane();
         dashboardComponent.setBorder(BorderFactory.createEmptyBorder());
@@ -183,6 +186,16 @@ public final class DashboardImpl extends Dashboard {
             }
         }
         return open;
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
     }
 
     private static class Holder {
@@ -268,6 +281,7 @@ public final class DashboardImpl extends Dashboard {
                 switchContent();
             }
         }
+        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
     public void removeProject( ProjectHandle project ) {
@@ -289,6 +303,7 @@ public final class DashboardImpl extends Dashboard {
             }
         }
         project.firePropertyChange(ProjectHandle.PROP_CLOSE, null, null);
+        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
     ActionListener createLoginAction() {
@@ -514,6 +529,7 @@ public final class DashboardImpl extends Dashboard {
                 switchContent();
             }
         }
+        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
     private void switchMemberProjects() {
@@ -573,6 +589,7 @@ public final class DashboardImpl extends Dashboard {
                 switchContent();
             }
         }
+        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
     private void addProjectsToModel( int index, List<ProjectHandle> projects ) {

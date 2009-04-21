@@ -547,9 +547,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 List<IndentCommand> kept = new ArrayList<IndentCommand>();
                 boolean keepRemoving = true;
                 for (IndentCommand ic : l.lineIndent) {
-                    // if this indent was created from a continue command then do not move it
-                    // and leave it on line for which it was generated:
-                    if (keepRemoving && ic.getType() == IndentCommand.Type.INDENT && !ic.wasContinue()) {
+                    if (keepRemoving && ic.getType() == IndentCommand.Type.INDENT) {
                         removed.add(ic);
                     } else {
                         kept.add(ic);

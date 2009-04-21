@@ -44,7 +44,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
-public class CreateHostWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+/*package*/ final class CreateHostWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
 
     private CreateHostVisualPanel1 component;
 

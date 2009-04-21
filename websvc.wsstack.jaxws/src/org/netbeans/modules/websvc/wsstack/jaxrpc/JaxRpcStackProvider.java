@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,61 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.nbbuild;
+package org.netbeans.modules.websvc.wsstack.jaxrpc;
 
-import java.io.File;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.Path;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.api.WSTool;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 
 /**
- * It tests ValidatePath ant tasks
- * @author pzajac, Jesse Glick
+ *
+ * @author mkuchtiak
  */
-public class ValidatePathTest extends NbTestCase {
-
-    public ValidatePathTest(String name) {
-        super(name);
+public class JaxRpcStackProvider {
+    
+    private static WSStack<JaxRpc> ideJaxWsStack;
+    
+    public static WSStack<JaxRpc> getJaxWsStack(J2eePlatform j2eePlatform) {
+        return WSStack.findWSStack(j2eePlatform.getLookup(), JaxRpc.class);
     }
-
-    private ValidatePath vp;
-    private Path path;
-
-    protected void setUp() throws Exception {
-        super.setUp();
-        clearWorkDir();
-        Project prj = new Project();
-        prj.setBaseDir(getWorkDir());
-        path = new Path(prj);
-        vp = new ValidatePath();
-        vp.setPath(path);
-    }
-
-    public void testEmptyPath() throws Exception {
-        vp.execute();
-    }
-
-    public void testValidFile() throws Exception {
-        File f = new File(getWorkDir(),"file1");
-        assertTrue("Cannot create temporary file",f.createNewFile());
-        path.setPath(f.getAbsolutePath());
-        vp.execute();
-    }
-
-    public void testValidPlusInvalidFile() throws Exception {
-        File f = new File(getWorkDir(),"file1");
-        assertTrue("Cannot create temporary file",f.createNewFile());
-        File f2 = new File(getWorkDir(),"file2");
-        path.setPath(f.getAbsolutePath() + ":" + f2.getAbsolutePath());
-        try {
-            vp.execute();
-            fail("File " + f2.getPath() + " doesn't exist but task passed");
-        } catch (BuildException be) {
-            // ok
+    
+    public static WSTool getJaxWsStackTool(J2eePlatform j2eePlatform, JaxRpc.Tool toolId) {
+        WSStack<JaxRpc> wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxRpc.class);
+        if (wsStack != null) {
+            return wsStack.getWSTool(toolId);
+        } else {
+            return null;
         }
+    }
+
+    public static synchronized WSStack<JaxRpc> getIdeJaxWsStack() {
+        if (ideJaxWsStack == null) {
+            ideJaxWsStack =  WSStackFactory.createWSStack(JaxRpc.class, new IdeJaxRpcStack(new JaxRpc()), WSStack.Source.IDE);
+        }
+        return ideJaxWsStack;
     }
 
 }

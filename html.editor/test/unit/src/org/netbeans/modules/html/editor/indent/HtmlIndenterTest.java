@@ -296,6 +296,16 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline(
             "<html>\n    <body>\n        <table>\n            <tr>\n                <td><table></table><p>text^",
             "<html>\n    <body>\n        <table>\n            <tr>\n                <td><table></table><p>text\n                        ^", null);
+
+        //#162945
+        insertNewline(
+            "<style>^</style>",
+            "<style>\n    ^\n</style>", null);
+
+        //#162913
+        insertNewline(
+            "<Table>\n    <tr><td></td></tr>\n</table>^",
+            "<Table>\n    <tr><td></td></tr>\n</table>\n^", null);
     }
 
 }

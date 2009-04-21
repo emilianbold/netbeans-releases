@@ -30,7 +30,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.nbbuild;
+package org.netbeans.nbbuild.testdist;
 
 import java.io.File;
 import java.io.IOException;
