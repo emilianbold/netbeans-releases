@@ -53,6 +53,15 @@ import org.openide.util.NbBundle;
 
 public final class CreateHostWizardIterator implements WizardDescriptor.Iterator<WizardDescriptor> {
 
+    public static class Result {
+        public final ExecutionEnvironment executionEnvironment;
+        public final String displayName;
+        public Result(ExecutionEnvironment executionEnvironment, String displayName) {
+            this.executionEnvironment = executionEnvironment;
+            this.displayName = displayName;
+        }
+    }
+
     private int index;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
 
@@ -129,7 +138,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     public void removeChangeListener(ChangeListener l) {
     }
 
-    public static ExecutionEnvironment invokeMe(ToolsCacheManager cacheManager) {
+    public static Result invokeMe(ToolsCacheManager cacheManager) {
         WizardDescriptor.Iterator<WizardDescriptor> iterator = new CreateHostWizardIterator();
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); //NOI18N
@@ -145,7 +154,12 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
             if (r != null) {
                 r.run();
             }
-            return (ExecutionEnvironment)wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_HOST);
+            ExecutionEnvironment execEnv = (ExecutionEnvironment)wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_HOST);
+            String displayName = (String) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_DISPLAY_NAME);
+            if (displayName == null) {
+                displayName = execEnv.getDisplayName();
+            }
+            return new Result(execEnv, displayName);
         } else {
             return null;
         }

@@ -123,7 +123,7 @@ public final class ToolsCacheManager {
                 liveServers = new ArrayList<ExecutionEnvironment>();
                 ServerList.clear();
                 for (ExecutionEnvironment env : serverUpdateCache.getHosts()) {
-                    ServerList.addServer(env, false, false);
+                    ServerList.addServer(env, env.getDisplayName(), false, false);
                     liveServers.add(env);
                 }
                 ServerList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
