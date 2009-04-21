@@ -41,13 +41,12 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,7 +65,6 @@ public class DevelopmentHostConfiguration {
     private boolean modified;
     private boolean dirty = false;
     private PropertyChangeSupport pcs;
-    private static ServerList serverList = null;
 
     public DevelopmentHostConfiguration(ExecutionEnvironment execEnv) {
         servers = getServerEnvironments();
@@ -148,11 +146,8 @@ public class DevelopmentHostConfiguration {
     }
 
     private boolean addDevelopmentHost(String host) {
-        ServerList list = Lookup.getDefault().lookup(ServerList.class);
-        if (list != null) {
-            list.addServer(ExecutionEnvironmentFactory.fromString(host), false, false);
-        }
-        return list != null;
+        final ServerRecord record = ServerList.addServer(ExecutionEnvironmentFactory.fromString(host), false, false);
+        return record != null;
     }
 
     public void reset() {
@@ -214,17 +209,8 @@ public class DevelopmentHostConfiguration {
     }
 
     public List<ExecutionEnvironment> getServerEnvironments() {
-        if (getServerList() != null) {
-            return getServerList().getEnvironments();
-        }
-        return Arrays.asList(ExecutionEnvironmentFactory.getLocal());
-    }
-
-    private static ServerList getServerList() {
-        if (serverList == null) {
-            serverList = Lookup.getDefault().lookup(ServerList.class);
-        }
-        return serverList;
+        return ServerList.getEnvironments();
+//        return Arrays.asList(ExecutionEnvironmentFactory.getLocal());
     }
 
     public boolean isLocalhost() {

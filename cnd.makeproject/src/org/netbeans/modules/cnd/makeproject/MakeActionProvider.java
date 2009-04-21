@@ -286,9 +286,7 @@ public class MakeActionProvider implements ActionProvider {
         if (exeEnv.isLocal()) {
             actionWorker.run();
         } else {
-            ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-            assert registry != null;
-            ServerRecord record = registry.get(exeEnv);
+            ServerRecord record = ServerList.get(exeEnv);
             assert record != null;
             invokeRemoteHostAction(record, actionWorker);
         }
@@ -319,9 +317,7 @@ public class MakeActionProvider implements ActionProvider {
                 message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getName());
                 res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
                 if (res == JOptionPane.YES_OPTION) {
-                    ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-                    assert registry != null;
-                    registry.addServer(record.getExecutionEnvironment(), false, true);
+                    ServerList.addServer(record.getExecutionEnvironment(), false, true);
                 }
             } else if (!record.isOnline()) {
                 message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
@@ -1085,7 +1081,6 @@ public class MakeActionProvider implements ActionProvider {
         CompilerSet cs;
         String csname;
         File file;
-        ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
         boolean cRequired = conf.hasCFiles(pd);
         boolean cppRequired = conf.hasCPPFiles(pd);
         boolean fRequired = conf.hasFortranFiles(pd);
@@ -1097,8 +1092,7 @@ public class MakeActionProvider implements ActionProvider {
         }
 
         if (!conf.getDevelopmentHost().isLocalhost()) {
-            assert serverList != null;
-            ServerRecord record = serverList.get(env);
+            ServerRecord record = ServerList.get(env);
             assert record != null;
             record.validate(false);
             if (cancelled.get()) {
@@ -1156,10 +1150,8 @@ public class MakeActionProvider implements ActionProvider {
                 runBTA = true;
             }
         } else {
-            if (serverList != null && !unknownCompilerSet) {
-                if (!serverList.isValidExecutable(env, makeTool.getPath())) {
-                    runBTA = true;
-                }
+            if (!ServerList.isValidExecutable(env, makeTool.getPath())) {
+                runBTA = true;
             }
         }
 

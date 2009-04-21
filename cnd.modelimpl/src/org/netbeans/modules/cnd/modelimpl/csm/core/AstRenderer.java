@@ -835,7 +835,7 @@ public class AstRenderer {
 
                     CsmClassForwardDeclaration cfdi = null;
 
-                    for (AST curr = ast.getFirstChild(); curr != null; curr = curr.getNextSibling()) {
+                    for (AST curr = firstChild; curr != null; curr = curr.getNextSibling()) {
                         switch (curr.getType()) {
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
@@ -1587,6 +1587,8 @@ public class AstRenderer {
                     return new CompoundStatementImpl(token, file, owner);
                 case CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY:
                     return new LazyCompoundStatementImpl(token, file, owner);
+                case CPPTokenTypes.CSM_TRY_CATCH_STATEMENT_LAZY:
+                    return new LazyTryCatchStatementImpl(token, file, owner);
             }
         }
         // prevent null bodies

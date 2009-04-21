@@ -194,7 +194,8 @@ tokens {
 	CSM_EXPRESSION_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_DECLARATION_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_COMPOUND_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-        CSM_COMPOUND_STATEMENT_LAZY<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+    CSM_COMPOUND_STATEMENT_LAZY<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+    CSM_TRY_CATCH_STATEMENT_LAZY<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	// selection
 	CSM_IF_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -683,17 +684,14 @@ public translation_unit:
 //
 protected
 template_explicit_specialization
-	:
-	LITERAL_template LESSTHAN GREATERTHAN   
-	(
-	// Template explicit specialisation function definition (VK 30/05/06)
-		(declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=>
-		{if(statementTrace >= 1)
-			printf("external_declaration_0a[%d]: template " +
-				"explicit-specialisation function definition\n", LT(1).getLine());
-		}
-		function_definition
-		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+    :
+    LITERAL_template LESSTHAN GREATERTHAN
+    (
+        // Template explicit specialisation function definition (VK 30/05/06)
+        (declaration_specifiers[false, false] function_declarator[true, false] (LCURLY | LITERAL_try))=>
+        {if(statementTrace >= 1) printf("external_declaration_0a[%d]: template " + "explicit-specialisation function definition\n", LT(1).getLine());}
+        function_definition
+        { #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
     |
         // Template explicit specialisation ctor definition
         (   ctor_decl_spec ctor_declarator[true]
@@ -836,17 +834,13 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 			}
 			declaration[declOther]
 			{ #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #external_declaration_template); }
-		|  
-			// Templated function definition
-			((template_head)? declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=> 
-			{if (statementTrace>=1) 
-				printf("external_declaration_template_11d[%d]: Function template " +
-					"definition\n", LT(1).getLine());
-			}
-			(template_head)? function_definition
-			{ #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #external_declaration_template); }
-
-		|
+    |
+        // Templated function definition
+        ((template_head)? declaration_specifiers[false, false] function_declarator[true, false] (LCURLY | LITERAL_try))=>
+        {if (statementTrace>=1) printf("external_declaration_template_11d[%d]: Function template " + "definition\n", LT(1).getLine());}
+        (template_head)? function_definition
+        { #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #external_declaration_template); }
+    |
 			// Destructor DEFINITION (templated)
 			( dtor_head[true] LCURLY)=>
 			{if (statementTrace>=1) 
@@ -1006,7 +1000,8 @@ external_declaration {String s; K_and_R = false; boolean definition;}
             (options {greedy=true;} :function_attribute_specification!)?
             declaration_specifiers[false, false]
             (options {greedy=true;} :function_attribute_specification!)? 
-            function_declarator[true, false] LCURLY)=>
+            function_declarator[true, false] (LCURLY | LITERAL_try)
+        ) =>
         {if (statementTrace>=1) printf("external_declaration_8[%d]: Function definition\n", LT(1).getLine());}
         (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? function_definition
         { #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
@@ -1187,16 +1182,13 @@ member_declaration_template
 			}
 			declaration[declOther]
 			{ #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #member_declaration_template); }
-		|  
-			// Templated function definition
-			// Function definition DW 2/6/97
-			(declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=> 
-			{if (statementTrace>=1) 
-				printf("member_declaration_13c[%d]: Function template " +
-					    "definition\n", LT(1).getLine());
-			}
-			function_definition
-			{ #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #member_declaration_template); }
+    |
+        // Templated function definition
+        // Function definition DW 2/6/97
+        (declaration_specifiers[false, false] function_declarator[true, false] (LCURLY | LITERAL_try))=>
+        {if (statementTrace>=1) printf("member_declaration_13c[%d]: Function template " + "definition\n", LT(1).getLine());}
+        function_definition
+        { #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #member_declaration_template); }
     |
         (   ((options {greedy=true;} :function_attribute_specification)|literal_inline)*
             conversion_function_decl_or_def
@@ -1282,35 +1274,27 @@ member_declaration
                         #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #cds, #cd); //end_of_stmt();
                     }
                 }
-		
-	|  
-		// JEL Predicate to distinguish ctor from function
-		// This works now that ctor cannot have VIRTUAL
-		// It unfortunately matches A::A where A is not enclosing
-		// class -- this will have to be checked semantically
-		(	ctor_decl_spec
-			/*{qualifiedItemIsOneOf(qiCtor)}?*/
-			ctor_declarator[true]
-			(COLON        // DEFINITION :ctor_initializer
-			|LCURLY       // DEFINITION (compound Statement) ?
-			)
-		)=>
-		{if (statementTrace>=1) 
-			printf("member_declaration_4[%d]: Constructor or no-ret type fun definition\n",
-				LT(1).getLine());
-		}
-                ctor_decl_spec
-                {ctrName = qualifiedItemIsOneOf(qiCtor);}
-                ctor_declarator[true]
-                ctor_body
-		{ 
-                    if (ctrName) {
-                        #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration); 
-                    } else {
-                        #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); 
-                    }
-                }
-	|  
+    |
+        // JEL Predicate to distinguish ctor from function
+        // This works now that ctor cannot have VIRTUAL
+        // It unfortunately matches A::A where A is not enclosing
+        // class -- this will have to be checked semantically
+        (   ctor_decl_spec
+            /*{qualifiedItemIsOneOf(qiCtor)}?*/
+            ctor_declarator[true]
+            (COLON        // DEFINITION :ctor_initializer
+            |LCURLY       // DEFINITION (compound Statement) ?
+            |LITERAL_try  // DEFINITION try ... catch ...
+            )
+        )=>
+        {if (statementTrace>=1) printf("member_declaration_4[%d]: Constructor or no-ret type fun definition\n", LT(1).getLine());}
+        ctor_decl_spec
+        {ctrName = qualifiedItemIsOneOf(qiCtor);}
+        ctor_declarator[true]
+        ctor_body
+        {if (ctrName) { #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration);}
+         else { #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration);}}
+    |
 		// No template_head allowed for dtor member
 		// Backtrack if not a dtor (no TILDE)
 		(dtor_head[false] (EOF|SEMICOLON))=>
@@ -1347,7 +1331,7 @@ member_declaration
         (   (LITERAL___extension__)?
             declaration_specifiers[false, false]
             function_declarator[true, false]
-            LCURLY
+            (LCURLY | LITERAL_try)
         ) =>
         {beginFieldDeclaration(); if(statementTrace>=1) printf("member_declaration_7[%d]: Function definition\n", LT(1).getLine());}
         function_definition
@@ -1526,7 +1510,9 @@ function_definition
         (function_K_R_parameter_list)?
         {in_parameter_list = false;}
     )?
-    compound_statement
+    (   compound_statement
+    |   function_try_block
+    )
     //	|	// Next line is equivalent to guarded predicate in PCCTS
     //		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiPtrMember)>>?
     //		//{( !(LA(1)==SCOPE||LA(1)==ID) || (qualifiedItemIsOneOf(qiPtrMember)) )}?
@@ -2281,10 +2267,11 @@ qualified_ctor_id returns [String q = ""]
 	;
 
 ctor_body
-	:
-	(ctor_initializer)?
-	compound_statement
-	;
+    :
+    (ctor_initializer)?
+    (   compound_statement
+    |   function_try_block)
+    ;
 
 ctor_initializer
 	:
@@ -2878,6 +2865,20 @@ compound_statement
             )                      
 	;
 
+function_try_block
+    :
+        {isLazyCompound()}?
+        LITERAL_try balanceCurlies 
+        (options {greedy=true;} : LITERAL_catch
+        LPAREN exception_declaration RPAREN
+        balanceCurlies)*
+        {#function_try_block = #(#[CSM_TRY_CATCH_STATEMENT_LAZY, "CSM_TRY_CATCH_STATEMENT_LAZY"], #function_try_block);}
+    |
+        {!isLazyCompound()}?
+        try_block
+        {#function_try_block = #(#[CSM_COMPOUND_STATEMENT, "CSM_COMPOUND_STATEMENT"], #function_try_block);}
+    ;
+
 protected 
 condition
 	:
@@ -3004,9 +3005,10 @@ jump_statement
 	;
 
 try_block
-	:	LITERAL_try compound_statement (handler)*
-	    {#try_block = #(#[CSM_TRY_STATEMENT, "CSM_TRY_STATEMENT"], #try_block);}
-	;
+    :
+    LITERAL_try compound_statement (options {greedy=true;} : handler)*
+    {#try_block = #(#[CSM_TRY_STATEMENT, "CSM_TRY_STATEMENT"], #try_block);}
+    ;
 
 
 handler

@@ -42,8 +42,6 @@ Contributor(s):
      this file, with minor diffs, in ide/applemenu.  Any changes made here should
      be made there too -->                            
 <bindings>
-    <bind actionName="comment" key="DS-T"/>
-    <bind actionName="uncomment" key="DS-D"/>  
     <bind actionName="complete-line" key="D-SEMICOLON"/>
     <bind actionName="complete-line-newline" key="DS-SEMICOLON"/>
     <!-- 

@@ -573,6 +573,14 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             if (CloneableEditor.this.equals(getRegistry().getActivated())) {
                 requestFocusInWindow();
             }
+            //#162961: Force repaint of editor on Mac. Undocked editor stays empty otherwise sometimes.
+            if (org.openide.util.Utilities.isMac()) {
+                SwingUtilities.invokeLater(new Runnable () {
+                    public void run () {
+                        revalidate();
+                    }
+                });
+            }
             isInInitVisual = false;
         }
         

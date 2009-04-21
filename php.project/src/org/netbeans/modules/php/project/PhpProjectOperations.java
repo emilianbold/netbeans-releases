@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
@@ -97,7 +98,7 @@ public class PhpProjectOperations implements DeleteOperationImplementation, Copy
 
     public List<FileObject> getDataFiles() {
         // all the sources, including external
-        return Arrays.asList(Utils.getSourceObjects(project));
+        return Arrays.asList(PhpProjectUtils.getSourceObjects(project));
     }
 
     public List<FileObject> getMetadataFiles() {
