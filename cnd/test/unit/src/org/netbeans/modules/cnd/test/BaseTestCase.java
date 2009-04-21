@@ -276,12 +276,12 @@ public abstract class BaseTestCase extends NbTestCase {
         return isRemoteSupported;
     }
 
-    protected String getHKey(){
-        assert execEnv != null : "Run canTestRemote() before any remote development tests logic."; //NOI18N
-        return ExecutionEnvironmentFactory.toString(execEnv);
-    }
-
-    protected ExecutionEnvironment getExecutionEnvironment() {
+//    protected String getHKey(){
+//        assert execEnv != null : "Run canTestRemote() before any remote development tests logic."; //NOI18N
+//        return ExecutionEnvironmentFactory.toString(execEnv);
+//    }
+//
+    protected ExecutionEnvironment getRemoteExecutionEnvironment() {
         return execEnv;
     }
 
