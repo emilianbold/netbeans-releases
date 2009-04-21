@@ -53,8 +53,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -178,6 +180,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private final Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
     private final Map<Integer, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<Integer, BreakpointImpl>());
     private final List<String> temporaryBreakpoints = new ArrayList<String>();
+    private final Set<Integer> runAfterTokens = Collections.synchronizedSet(new HashSet<Integer>());
     private static final Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private static final Logger tlog = Logger.getLogger("gdb.testlogger"); // NOI18N
@@ -206,6 +209,8 @@ public class GdbDebugger implements PropertyChangeListener {
     private IOProxy ioProxy = null;
     private GdbVersionPeculiarity versionPeculiarity = null;
     private boolean core = false;
+    // to skip SIGCONT after breakpoint set on the fly (see IZ 160749)
+    private boolean skipSignal = false;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -999,6 +1004,10 @@ public class GdbDebugger implements PropertyChangeListener {
         gdb.stack_list_frames();
     }
 
+    public void addRunAfterToken(int token) {
+        runAfterTokens.add(token);
+    }
+
     /** Handle geb responses starting with '^' */
     public void resultRecord(int token, String msg) {
         currentToken = token + 1;
@@ -1016,10 +1025,7 @@ public class GdbDebugger implements PropertyChangeListener {
             if (msg.startsWith("^done,bkpt=")) { // NOI18N (-break-insert)
                 msg = msg.substring(12, msg.length() - 1);
                 Map<String, String> map = GdbUtils.createMapFromString(msg);
-                boolean isTmp = breakpointValidation(token, map);
-                if (!isTmp && getState() == State.SILENT_STOP && pendingBreakpointMap.isEmpty()) {
-                    setRunning();
-                }
+                validateBreakpoint(token, map);
             } else if (msg.startsWith("^done,stack=")) { // NOI18N (-stack-list-frames)
                 if (state == State.STOPPED) { // Ignore data if we've resumed running
                     stackUpdate(GdbUtils.createListFromString((msg.substring(13, msg.length() - 1))));
@@ -1065,6 +1071,12 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 } else if (pendingBreakpointMap.get(token) != null) {
                     breakpointValidation(token, null);
+                }
+            }
+            //check if we need to run after
+            if (runAfterTokens.remove(token) && runAfterTokens.isEmpty()) {
+                if (state == State.SILENT_STOP) {
+                    setRunning();
                 }
             }
         // end of ^done block
@@ -1136,6 +1148,14 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
+    private void validateBreakpoint(int token, Map<String, String> map) {
+        boolean checked = breakpointValidation(token, map);
+        if (!checked && getState() == State.SILENT_STOP && pendingBreakpointMap.isEmpty()) {
+            // TODO: check this looks like not reachable
+            setRunning();
+        }
+    }
+
     public void fireDisUpdate(boolean open) {
         firePropertyChange(DIS_UPDATE, open, !open);
     }
@@ -1174,10 +1194,7 @@ public class GdbDebugger implements PropertyChangeListener {
             String num = msg.substring(11, pos);
             Map<String, String> map = new HashMap<String, String>();
             map.put("number", num); // NOI18N
-            boolean isTmp = breakpointValidation(token, map);
-            if (!isTmp && getState() == State.SILENT_STOP && pendingBreakpointMap.isEmpty()) {
-                setRunning();
-            }
+            validateBreakpoint(token, map);
         } else if (msg.contains("(no debugging symbols found)") && state == State.STARTING && !isAttaching()) { // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                     "ERR_NoDebuggingSymbolsFound"))); // NOI18N
@@ -1407,6 +1424,10 @@ public class GdbDebugger implements PropertyChangeListener {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
+                // see IZ 160749 - skip sigcont and sigint
+                if (signal == Signal.INT) {
+                    skipSignal = true;
+                }
                 gdb.getLogger().logMessage("External Command: " + killcmd.toString()); // NOI18N
             }
         }
@@ -1534,7 +1555,7 @@ public class GdbDebugger implements PropertyChangeListener {
         setState(State.READY);
     }
 
-    public void setRunning() {
+    private void setRunning() {
         setState(State.RUNNING);
     }
 
@@ -1548,6 +1569,10 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private void setExited() {
         setState(State.EXITED);
+    }
+
+    public boolean isStopped() {
+        return state == State.STOPPED;
     }
 
     /*public Boolean evaluateIn(Expression expression, final Object frame) {
@@ -1737,38 +1762,51 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private void signalReceived(Map<String, String> map) {
         String signal = map.get("signal-name"); // NOI18N
-        if (getState() == State.RUNNING) {
+        if (skipSignal) {
+            if ("SIGCONT".equals(signal)) { // NOI18N
+                skipSignal = false;
+                resume();
+                return;
+            } else if ("SIGINT".equals(signal)) { // NOI18N
+                gdb.stack_list_frames();
+                setStopped();
+                return;
+            }
+        }
+        skipSignal = false;
+
+        if (state == State.RUNNING) {
             String tid = map.get("thread-id"); // NOI18N
             if (tid != null && !tid.equals(currentThreadID)) {
                 currentThreadID = tid;
             }
             sig = signal; // NOI18N
-            gdb.stack_list_frames();
-            setStopped();
-        }
         
-        String STOP = NbBundle.getMessage(GdbDebugger.class, "TXT_DISCARD_STOP");
-        String CONTINUE = NbBundle.getMessage(GdbDebugger.class, "TXT_DISCARD_CONTINUE");
-        String PASS = NbBundle.getMessage(GdbDebugger.class, "TXT_PASS_CONTINUE");
-        // see IZ:160393 - inform user about signals
-        NotifyDescriptor nd = new NotifyDescriptor(
-                NbBundle.getMessage(GdbDebugger.class, "ERR_SignalReceived", map.get("signal-name"), map.get("signal-meaning")), // NOI18N
-                NbBundle.getMessage(GdbDebugger.class, "LBL_SignalReceived"),
-                NotifyDescriptor.DEFAULT_OPTION,
-                NotifyDescriptor.INFORMATION_MESSAGE,
-                new String[]{STOP,CONTINUE,PASS},
-                STOP
-                );
-        Object res = DialogDisplayer.getDefault().notify(nd);
-        if (res == STOP) {
-            // we stop anyway
-            gdb.handle(signal, GdbProxy.HandleAction.nopass);
-        } else if (res == CONTINUE) {
-            gdb.handle(signal, GdbProxy.HandleAction.nopass);
-            gdb.exec_continue();
-        } else if (res == PASS) {
-            gdb.handle(signal, GdbProxy.HandleAction.pass);
-            gdb.exec_continue();
+            String STOP = NbBundle.getMessage(GdbDebugger.class, "TXT_DISCARD_STOP");
+            String CONTINUE = NbBundle.getMessage(GdbDebugger.class, "TXT_DISCARD_CONTINUE");
+            String PASS = NbBundle.getMessage(GdbDebugger.class, "TXT_PASS_CONTINUE");
+            // see IZ:160393 - inform user about signals
+            NotifyDescriptor nd = new NotifyDescriptor(
+                    NbBundle.getMessage(GdbDebugger.class, "ERR_SignalReceived", map.get("signal-name"), map.get("signal-meaning")), // NOI18N
+                    NbBundle.getMessage(GdbDebugger.class, "LBL_SignalReceived"),
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.INFORMATION_MESSAGE,
+                    new String[]{STOP,CONTINUE,PASS},
+                    STOP
+                    );
+            Object res = DialogDisplayer.getDefault().notify(nd);
+            if (res == STOP) {
+                // we stop anyway
+                gdb.handle(signal, GdbProxy.HandleAction.nopass);
+                gdb.stack_list_frames();
+                setStopped();
+            } else if (res == CONTINUE) {
+                gdb.handle(signal, GdbProxy.HandleAction.nopass);
+                gdb.exec_continue();
+            } else if (res == PASS) {
+                gdb.handle(signal, GdbProxy.HandleAction.pass);
+                gdb.exec_continue();
+            }
         }
     }
 
@@ -1974,9 +2012,6 @@ public class GdbDebugger implements PropertyChangeListener {
             }
             if (pendingBreakpointMap.isEmpty() && state == State.LOADING) {
                 setReady();
-            } else if (impl.isRunWhenValidated()) {
-                impl.setRunWhenValidated(false);
-                setRunning();
             }
             return true;
         } else if (o instanceof Map) { // temporary breakpoints aren't NetBeans breakpoints...
@@ -2339,7 +2374,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * updates so functions called don't stop.
      */
     private void suspendBreakpointsAndSignals() {
-        gdb.break_disable();
+        gdb.break_disableCMD().send();
         gdb.set_unwindonsignal("on"); // NOI18N
     }
 
@@ -2357,7 +2392,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             }
         }
-        gdb.break_enable(ids.toArray(new Integer[ids.size()]));
+        gdb.break_enableCMD(ids.toArray(new Integer[ids.size()])).send();
     }
 
     /**

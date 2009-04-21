@@ -239,7 +239,7 @@ public class SunStudioDataCollector
             this.target = target;
 
             ExecutionEnvironment execEnv = target.getExecEnv();
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv, true);
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
 
             switch (hostInfo.getOSFamily()) {
                 case LINUX:
@@ -348,7 +348,7 @@ public class SunStudioDataCollector
             DLightLogger.assertTrue(this.target == target,
                     "Validation was performed against another target"); // NOI18N
 
-            String tmpDirBase = HostInfoUtils.getHostInfo(target.getExecEnv(), true).getTempDir();
+            String tmpDirBase = HostInfoUtils.getHostInfo(target.getExecEnv()).getTempDir();
             this.experimentDir = tmpDirBase + "/experiment_" + uid.incrementAndGet() + ".er"; // NOI18N
             this.storage = (PerfanDataStorage) dataStorage;
 

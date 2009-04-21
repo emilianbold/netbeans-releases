@@ -344,7 +344,7 @@ public final class ConnectionManager {
                 NativeTaskExecutorService.submit(new Runnable() {
 
                     public void run() {
-                        HostInfoUtils.getHostInfo(env, true);
+                        HostInfoUtils.getHostInfo(env);
                     }
                 }, "Fetch hosts info " + env.toString()); // NOI18N
 

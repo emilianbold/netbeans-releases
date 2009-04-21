@@ -149,7 +149,7 @@ public final class ExternalTerminal {
                 }
 
                 if ("$shell".equals(arg)) { // NOI18N
-                    result.add(HostInfoUtils.getHostInfo(execEnv, true).getShell());
+                    result.add(HostInfoUtils.getHostInfo(execEnv).getShell());
                     continue;
                 }
 

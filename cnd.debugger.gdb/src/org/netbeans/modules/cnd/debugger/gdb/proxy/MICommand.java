@@ -36,80 +36,15 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api;
 
-import java.io.PrintStream;
+package org.netbeans.modules.cnd.debugger.gdb.proxy;
 
-public interface HostInfo {
-
-    public static enum CpuFamily {
-
-        SPARC,
-        X86,
-        UNKNOWN;
-    }
-
-    public static enum OSFamily {
-
-        SUNOS,
-        LINUX,
-        WINDOWS,
-        MACOSX,
-        UNKNOWN;
-
-        public boolean isUnix() {
-            switch (this) {
-                case LINUX:
-                case MACOSX:
-                case SUNOS:
-                    return true;
-                case WINDOWS:
-                    return false;
-                case UNKNOWN:
-                    return false;
-                default:
-                    throw new IllegalStateException("Unexpected OSFamily: " + this); //NOI18N
-            }
-        }
-    }
-
-    public static enum Bitness {
-
-        _32,
-        _64;
-
-        public static Bitness valueOf(int bitness) {
-            return bitness == 64 ? _64 : _32;
-        }
-
-        @Override
-        public String toString() {
-            return (this == _32) ? "32" : "64"; // NOI18N
-        }
-    }
-
-    public static interface OS {
-
-        public OSFamily getFamily();
-
-        public String getName();
-
-        public String getVersion();
-
-        public Bitness getBitness();
-    }
-
-    public OS getOS();
-
-    public CpuFamily getCpuFamily();
-
-    public int getCpuNum();
-
-    public OSFamily getOSFamily();
-
-    public String getHostname();
-
-    public String getShell();
-
-    public String getTempDir();
+/**
+ *
+ * @author Egor Ushakov
+ */
+public interface MICommand {
+    int getToken();
+    String getText();
+    void send();
 }

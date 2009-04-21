@@ -84,6 +84,7 @@ public class HostInfoFetcher {
             } catch (IOException ex) {
                 log.fine("IOException while connecting to " + execEnv + ": " + ex); // NOI18N
             } catch (CancellationException ex) {
+                log.fine("Connection initiation cancelled by user."); // NOI18N
             }
 
             return info;
