@@ -164,7 +164,7 @@ public class ConfigurationMakefileWriterTest {
         try {
             ConfigurationMakefileWriter configurationMakefileWriter = new ConfigurationMakefileWriter(makeConfigurationDescriptor);
             bw.write("LDLIBSOPTIONS=" + conf.getLinkerConfiguration().getLibraryItems() + "\n"); // NOI18N
-            configurationMakefileWriter.writeLinkTarget(makeConfigurationDescriptor, conf, bw);
+            ConfigurationMakefileWriter.writeLinkTarget(makeConfigurationDescriptor, conf, bw);
             bw.flush();
             bw.close();
         } catch (IOException ioe) {
@@ -229,8 +229,8 @@ public class ConfigurationMakefileWriterTest {
         // Generate (parts of) makefile
         try {
             ConfigurationMakefileWriter configurationMakefileWriter = new ConfigurationMakefileWriter(makeConfigurationDescriptor);
-            configurationMakefileWriter.writeCompileTargets(makeConfigurationDescriptor, conf, bw);
-            configurationMakefileWriter.writeLinkTarget(makeConfigurationDescriptor, conf, bw);
+            ConfigurationMakefileWriter.writeCompileTargets(makeConfigurationDescriptor, conf, bw);
+            ConfigurationMakefileWriter.writeLinkTarget(makeConfigurationDescriptor, conf, bw);
             bw.flush();
             bw.close();
         } catch (IOException ioe) {

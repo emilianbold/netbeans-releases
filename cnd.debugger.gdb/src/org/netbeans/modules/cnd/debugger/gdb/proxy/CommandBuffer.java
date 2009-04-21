@@ -133,7 +133,7 @@ public class CommandBuffer {
             state = State.OK;
             log.finest("CB.done[" + 
                     addTimePrefix(timerOn && log.isLoggable(Level.FINEST), token) +
-                    "]: Released lock on " + GdbUtils.threadId());
+                    "]: Released lock on " + GdbUtils.threadId()); // NOI18N
             lock.notifyAll();
         }
     }
@@ -144,7 +144,7 @@ public class CommandBuffer {
             state = State.ERROR;
             log.finest("CB.error[" + 
                     addTimePrefix(timerOn && log.isLoggable(Level.FINEST), token) +
-                    "]: Releasing lock on " + GdbUtils.threadId());
+                    "]: Releasing lock on " + GdbUtils.threadId()); // NOI18N
             lock.notifyAll();
         }
     }
