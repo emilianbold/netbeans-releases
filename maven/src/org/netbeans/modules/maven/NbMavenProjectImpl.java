@@ -319,7 +319,7 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     private AggregateProgressHandle createDownloadHandle() {
-        AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
+        AggregateProgressHandle hndl = AggregateProgressFactory.createSystemHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
                             new ProgressContributor[] {
                                 AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
                             null, null);
