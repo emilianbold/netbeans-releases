@@ -57,6 +57,7 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionName;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
@@ -69,6 +70,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
     private static final int INDICATOR_POSITION = 200;
     private static final String TOOL_NAME = loc("MemoryTool.ToolName"); // NOI18N
+    private static final String TOOL_NAME_DETAILED = loc("MemoryTool.ToolName.Detailed"); // NOI18N
     private static final Column totalColumn;
     private static final DataTableMetadata rawTableMetadata;
 //    /** this is for the case of using DTrace for indicator only  */
@@ -108,7 +110,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     }
 
     public DLightToolConfiguration create() {
-        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME);
+        DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(TOOL_NAME, TOOL_NAME_DETAILED);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/memory/resources/memory.png"); // NOI18N
         DataCollectorConfiguration dcc = initSunStudioDataCollectorConfiguration();
         toolConfiguration.addDataCollectorConfiguration(dcc);
@@ -117,11 +119,9 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         // it's an indicator data provider as well!
         toolConfiguration.addIndicatorDataProviderConfiguration(mdcc);
         toolConfiguration.addIndicatorDataProviderConfiguration(
-            initDtraceIndicatorDataProviderConfiguration());
-
+                initDtraceIndicatorDataProviderConfiguration());
         toolConfiguration.addIndicatorDataProviderConfiguration(initSunStudioIndicatorDataProviderConfiguration());
         LLDataCollectorConfiguration lldcc = initLLDataCollectorConfiguration();
-//                toolConfiguration.addDataCollectorConfiguration(lldcc);
         toolConfiguration.addIndicatorDataProviderConfiguration(lldcc);
         toolConfiguration.addIndicatorConfiguration(initIndicatorConfiguration());
 
@@ -154,9 +154,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
         DTDCConfiguration dataCollectorConfiguration =
                 new DTDCConfiguration(getScriptFile(), Arrays.asList(rawTableMetadata)); // indicatorTableMetadata
-
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
-        // DTDCConfiguration collectorConfiguration = new DtraceDataAndStackCollector(dataCollectorConfiguration);
         dataCollectorConfiguration.setScriptArgs(" -DNOSTACK"); // NOI18N
         dataCollectorConfiguration.setStackSupportEnabled(true); // true
 
@@ -172,7 +170,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private LLDataCollectorConfiguration initLLDataCollectorConfiguration() {
 
         LLDataCollectorConfiguration memIndicatorDataProvider =
-            new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.MEM);
+                new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.MEM);
 
         return memIndicatorDataProvider;
     }
@@ -189,17 +187,18 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 new MemoryIndicatorConfiguration(indicatorMetadata, INDICATOR_POSITION); // NOI18N
 
         DataTableMetadata detailedViewTableMetadata =
-            SunStudioDCConfiguration.getMemTableMetadata(
-            SunStudioDCConfiguration.c_name,
-            SunStudioDCConfiguration.c_leakSize,
-            SunStudioDCConfiguration.c_leakCount);
+                SunStudioDCConfiguration.getMemTableMetadata(
+                SunStudioDCConfiguration.c_name,
+                SunStudioDCConfiguration.c_leakSize,
+                SunStudioDCConfiguration.c_leakCount);
 
-        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName() ,null, SunStudioDCConfiguration.c_name.getColumnName());
-//        indicatorConfiguration.addVisualizerConfiguration(
-//            new AdvancedTableViewVisualizerConfiguration(detailedViewTableMetadata, SunStudioDCConfiguration.c_name.getColumnName(), SunStudioDCConfiguration.c_name.getColumnName()));
-
+        ColumnsUIMapping columnsUIMapping = new ColumnsUIMapping();
+        columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_name.getColumnName(), loc("MemoryTool.ColumnName.func_name"), loc("MemoryTool.ColumnTooltip.func_name"));
+        columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_leakSize.getColumnName(), loc("MemoryTool.ColumnName.leak"), loc("MemoryTool.ColumnTooltip.leak"));
+        FunctionDatatableDescription functionDesc = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
         FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
-            new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadata, functionDesc, Arrays.asList(SunStudioDCConfiguration.c_leakSize, SunStudioDCConfiguration.c_leakCount));
+                new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadata, functionDesc, Arrays.asList(SunStudioDCConfiguration.c_leakSize, SunStudioDCConfiguration.c_leakCount));
+        tableVisualizerConfiguration.setColumnsUIMapping(columnsUIMapping);
         indicatorConfiguration.addVisualizerConfiguration(tableVisualizerConfiguration);
 
         indicatorConfiguration.addVisualizerConfiguration(getDetails(rawTableMetadata));
@@ -207,10 +206,9 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     }
 
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
-
-        Column metricColumn = new Column("leak", Long.class, loc("MemoryTool.ColumnName.leak"), null); // NOI18N
+        Column metricColumn = new Column("leak", Long.class, loc("MemoryTool.ColumnName.leak"), loc("MemoryTool.ColumnTooltip.leak"), null); // NOI18N
         List<Column> viewColumns = Arrays.asList(
-                new Column("func_name", FunctionName.class, loc("MemoryTool.ColumnName.func_name"), null), // NOI18N
+                new Column("func_name", FunctionName.class, loc("MemoryTool.ColumnName.func_name"), loc("MemoryTool.ColumnTooltip.func_name"), null), // NOI18N
                 metricColumn);
 
         String sql =
@@ -229,114 +227,13 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 "mem", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N
 
         FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
-            new FunctionsListViewVisualizerConfiguration(viewTableMetadata, functionDesc, Arrays.asList(metricColumn));
+                new FunctionsListViewVisualizerConfiguration(viewTableMetadata, functionDesc, Arrays.asList(metricColumn));
 
         return tableVisualizerConfiguration;
     }
 
-//    private static class TrussClioParser implements CLIOParser {
-//
-//        private List<String> colNames;
-//        private long allocated;
-//        private Logger log = DLightLogger.instance;
-//
-//        /**
-//         * Maps a thread  (string pair process-thread printed by truss in 1-st column)
-//         * to size (string hex representation, including 0x prefix)
-//         */
-//        private Map<String, String> threadToSize = new LinkedHashMap<String, String>();
-//
-//        private Map<Long, Long> addressToSize = new HashMap<Long, Long>();
-//
-//        public TrussClioParser(Column totalColumn) {
-//            colNames = Arrays.asList(totalColumn.getColumnName());
-//            allocated = 0;
-//        }
-//
-//        public DataRow process(String line) {
-//
-//            if (line == null) {
-//                return null;
-//            }
-//            String l = line.trim();
-//            if (log.isLoggable(Level.FINE)) { log.fine(line); }
-//
-//            // The example of line is:
-//            //      /1@1:   14.9686 -> libc:malloc(0x1388, 0x2710, 0x88, 0x1)
-//            //      /1@1:   14.9700 <- libc:malloc() = 0x8064c08
-//            //      /1@1:   14.9720 -> libc:free(0x8064c08, 0x2710, 0x88, 0x1)
-//            //      /1@1:   14.9728 <- libc:free() = 0
-//
-//            String[] tokens = l.split("[ \t(),]+"); //NOI18N
-//
-//            if (tokens.length < 4) {
-//                return null;
-//            }
-//            try {
-//                String threadName = tokens[0];
-//                String direction = tokens[2];
-//                String funcName = tokens[3];
-//                if ( "libc:malloc".equals(funcName)) { //NOI18N
-//                    if ("->".equals(direction)) { //NOI18N
-//                        String strSize = tokens[4];
-//                        threadToSize.put(threadName, strSize);
-//                    } else if ("<-".equals(direction)) { //NOI18N
-//                        String strSize = threadToSize.remove(threadName);
-//                        if ("0".equals(tokens[5])) {
-//                            if (log.isLoggable(Level.FINE)) { log.fine("alloc FAILED"); } //NOI18N
-//                        } else {
-//                            if (strSize != null) {
-//                                int size = parseHex(strSize);
-//                                allocated += size;
-//                                long address = parseHex(tokens[5]);
-//                                addressToSize.put(new Long(address), new Long(size));
-//                                if (log.isLoggable(Level.FINE)) { log.fine(String.format("allocated %d address %X total %d extents %d",  //NOI18N
-//                                        size, address, allocated, addressToSize.size())); }
-//                                return new DataRow(colNames, Arrays.asList(new Long[] { allocated }));
-//                            }
-//                        }
-//                    }
-//                }
-//                else if ( "libc:free".equals(funcName) && "->".equals(direction)) { //NOI18N
-//                    if ("0x0".equals(tokens[4])) {
-//                        if (log.isLoggable(Level.FINE)) { log.fine("free FAILED"); } //NOI18N
-//                    } else {
-//                        long address = parseHex(tokens[4]);
-//                        Long size = addressToSize.remove(address);
-//                        if (size == null) {
-//                            if (log.isLoggable(Level.FINE)) {
-//                                log.fine(String.format("free: wrong address %X", address)); //NOI18N
-//                            }
-//                        } else {
-//                            allocated -= size.longValue();
-//                            if (log.isLoggable(Level.FINE)) {
-//                                log.fine(String.format("freed %d total %d extents %d", size.longValue(), allocated, addressToSize.size())); //NOI18N
-//                            }
-//                            return new DataRow(colNames, Arrays.asList(new Long[] { allocated }));
-//                        }
-//                    }
-//                }
-//            } catch (NumberFormatException nfe) {
-//                nfe.printStackTrace();
-//            }
-//            return null;
-//        }
-//
-//        int parseHex(String s) throws NumberFormatException {
-//            DLightLogger.assertTrue(s != null);
-//            DLightLogger.assertTrue(s.startsWith("0x"));
-//            return Integer.parseInt(s.substring(2), 16);
-//        }
-//    }
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(
                 MemoryToolConfigurationProvider.class, key, params);
     }
-
-//    private static class _Column extends Column {
-//
-//        public _Column(Class clazz, String name) {
-//            super(name, clazz, loc("MemoryTool.ColumnName." + name), null); // NOI18N
-//        }
-//    }
 }

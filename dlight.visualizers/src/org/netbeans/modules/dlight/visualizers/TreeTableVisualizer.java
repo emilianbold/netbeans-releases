@@ -70,6 +70,7 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -113,12 +114,14 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
     private Future task;
     private Future<List<T>> syncFillDataTask;
     private final Object syncFillInLock = new Object();
+    private final ColumnsUIMapping columnsUIMapping;
 
     TreeTableVisualizer(TreeTableVisualizerConfiguration configuration,
             TreeTableDataProvider<T> dataProvider) {
         //timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.configuration = configuration;
         this.dataProvider = dataProvider;
+        this.columnsUIMapping = TreeTableVisualizerConfigurationAccessor.getDefault().getColumnsUIMapping(configuration);
         treeModel = new DefaultTreeModel(TREE_ROOT);
         setLoadingContent();
 
@@ -317,11 +320,11 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         Column[] tableColumns = configInfo.getTableColumns(configuration);
 
         for (final Column column : tableColumns) {
-            columns.add(new TreeTableVisualizerColumnModel(column));
+            columns.add(new TreeTableVisualizerColumnModel(column, columnsUIMapping));
         }
 
         Column treeColumn = configInfo.getTreeColumn(configuration);
-        columns.add(new TreeTableVisualizerColumnModel(treeColumn) {
+        columns.add(new TreeTableVisualizerColumnModel(treeColumn, columnsUIMapping) {
 
             @Override
             public Class getType() {

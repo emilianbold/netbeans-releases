@@ -182,7 +182,7 @@ public class LLDataCollector
             }catch(ConnectException ex){
 
             }
-            return "/tmp/" + localPath.getName(); // NOI18N
+            return "/var/tmp/" + localPath.getName(); // NOI18N
         }
     }
 
