@@ -452,7 +452,7 @@ public class GdbProxy {
      * @param threadID The thread number for this breakpoint
      * @return token number
      */
-    public int break_insert(int flags, boolean temporary, String name, String threadID) {
+    public MICommand break_insertCMD(int flags, boolean temporary, String name, String threadID) {
         StringBuilder cmd = new StringBuilder();
 
         if (GdbUtils.isMultiByte(name)) {
@@ -482,7 +482,7 @@ public class GdbProxy {
             cmd.append("-p " + threadID + " "); // NOI18N
         }
         cmd.append(name);
-        return engine.sendCommand(cmd.toString());
+        return engine.createMICommand(cmd.toString());
     }
 
     /**
@@ -494,14 +494,14 @@ public class GdbProxy {
      * @return token number
      */
     public void break_insert(String name) {
-        break_insert(0, false, name, null);
+        break_insertCMD(0, false, name, null).send();
     }
 
     /**
      * Insert temporary breakpoint
      */
     public void break_insert_temporary(String name) {
-        break_insert(0, true, name, null);
+        break_insertCMD(0, true, name, null).send();
     }
 
     /**
@@ -511,19 +511,8 @@ public class GdbProxy {
      *
      * @param number - breakpoint's number
      */
-    public void break_delete(int number) {
-        engine.sendCommand("-break-delete " + Integer.toString(number)); // NOI18N
-    }
-
-    /**
-     * Send "-break-delete number" to the debugger
-     * This command deletes the breakpoints
-     * whose number(s) are specified in the argument list.
-     *
-     * @param number - breakpoint's number
-     */
-    public void break_delete(String number) {
-        engine.sendCommand("-break-delete " + number); // NOI18N
+    public MICommand break_deleteCMD(Object number) {
+        return engine.createMICommand("-break-delete " + number); // NOI18N
     }
 
     /**
@@ -534,12 +523,13 @@ public class GdbProxy {
      *
      * @param ids - breakpoints number array
      */
-    public void break_enable(Integer... ids) {
+    public MICommand break_enableCMD(Integer... ids) {
         StringBuilder cmd = new StringBuilder("-break-enable"); // NOI18N
         for (int id : ids) {
-            cmd.append(" " + id); // NOI18N
+            cmd.append(' ');
+            cmd.append(id);
         }
-        engine.sendCommand(cmd.toString());
+        return engine.createMICommand(cmd.toString());
     }
 
     /**
@@ -550,20 +540,21 @@ public class GdbProxy {
      *
      * @param ids - breakpoints number array
      */
-    public void break_disable(Integer... ids) {
+    public MICommand break_disableCMD(Integer... ids) {
         StringBuilder cmd = new StringBuilder("-break-disable"); // NOI18N
         for (int id : ids) {
-            cmd.append(" " + id); // NOI18N
+            cmd.append(' ');
+            cmd.append(id);
         }
-        engine.sendCommand(cmd.toString());
+        return engine.createMICommand(cmd.toString());
     }
     
-    public void break_condition(int number, String condition) {
-        engine.sendCommand("-break-condition " + Integer.toString(number) + " " + condition); // NOI18N
+    public MICommand break_conditionCMD(int number, String condition) {
+        return engine.createMICommand("-break-condition " + Integer.toString(number) + " " + condition); // NOI18N
     }
     
-    public void break_after(int number, int count) {
-        engine.sendCommand("-break-after " + Integer.toString(number) + " " + Integer.toString(count)); // NOI18N
+    public MICommand break_afterCMD(int number, int count) {
+        return engine.createMICommand("-break-after " + Integer.toString(number) + " " + Integer.toString(count)); // NOI18N
     }
 
     /** Send "-stack-list-locals" to the debugger */
