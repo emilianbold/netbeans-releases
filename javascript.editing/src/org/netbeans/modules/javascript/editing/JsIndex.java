@@ -632,8 +632,6 @@ public final class JsIndex {
      * methods etc, it matches by exact signature.
      */
     private String getSimpleType(String fqn) {
-        final Set<SearchResult> result = new HashSet<SearchResult>();
-
         String field = JsIndexer.FIELD_FQN;
         String [] terms = TERMS_FQN;
         String lcsymbol = fqn.toLowerCase();
