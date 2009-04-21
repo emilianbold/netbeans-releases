@@ -835,7 +835,7 @@ public class AstRenderer {
 
                     CsmClassForwardDeclaration cfdi = null;
 
-                    for (AST curr = ast.getFirstChild(); curr != null; curr = curr.getNextSibling()) {
+                    for (AST curr = firstChild; curr != null; curr = curr.getNextSibling()) {
                         switch (curr.getType()) {
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
