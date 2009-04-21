@@ -138,6 +138,15 @@ public class ChatTopComponent extends TopComponent {
             }
         };
 
+        Kenai.getDefault().addPropertyChangeListener(new KenaiL());
+        chats.addChangeListener(changeListener);
+        chats.addPropertyChangeListener(TabbedPaneFactory.PROP_CLOSE, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
+                    removeChat(((Component) evt.getNewValue()));
+                }
+            }
+        });
         if (kec.isConnected()) {
             putChatsScreen();
             if (open.isEmpty()) {
@@ -154,15 +163,6 @@ public class ChatTopComponent extends TopComponent {
                 putLoginScreen();
             }
         }
-        Kenai.getDefault().addPropertyChangeListener(new KenaiL());
-        chats.addChangeListener(changeListener);
-        chats.addPropertyChangeListener(TabbedPaneFactory.PROP_CLOSE, new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
-                    removeChat(((Component) evt.getNewValue()));
-                }
-            }
-        });
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             chats.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
             chats.setOpaque(true);

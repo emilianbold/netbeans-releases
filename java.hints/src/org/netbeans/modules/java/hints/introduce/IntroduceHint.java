@@ -90,6 +90,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JButton;
@@ -182,6 +183,10 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             }
 
             TypeMirror type = ci.getTrees().getTypeMirror(tp);
+
+            if (type.getKind() == TypeKind.ERROR) {
+                type = ci.getTrees().getOriginalType((ErrorType) type);
+            }
 
             if (type == null || NOT_ACCEPTED_TYPES.contains(type.getKind()))
                 continue;
