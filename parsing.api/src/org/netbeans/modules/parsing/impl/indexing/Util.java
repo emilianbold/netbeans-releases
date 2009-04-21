@@ -128,7 +128,7 @@ public final class Util {
     public static URL resolveUrl(URL root, String relativePath) throws MalformedURLException {
         try {
             if ("file".equals(root.getProtocol())) { //NOI18N
-                return new File(new File(root.toURI()), relativePath).toURL();
+                return new File(new File(root.toURI()), relativePath).toURI().toURL();
             } else {
                 return new URL(root, relativePath);
             }
