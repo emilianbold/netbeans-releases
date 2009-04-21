@@ -37,50 +37,44 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.visualizers.api.impl;
+package org.netbeans.modules.dlight.visualizers.api;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
-import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
-import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author mt154047
  */
-public abstract class FunctionsListViewVisualizerConfigurationAccessor {
-    private static volatile FunctionsListViewVisualizerConfigurationAccessor DEFAULT;
+public final class ColumnsUIMapping {
+    private final Map<String, String> columnDisplayedNames;
+    private final Map<String, String> columnTooltips;
 
-    public static FunctionsListViewVisualizerConfigurationAccessor getDefault() {
-        FunctionsListViewVisualizerConfigurationAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-
-        try {
-            Class.forName(FunctionsListViewVisualizerConfiguration.class.getName(), true,
-                FunctionsListViewVisualizerConfiguration.class.getClassLoader());//
-        } catch (Exception e) {
-        }
-        return DEFAULT;
+    public ColumnsUIMapping() {
+        columnDisplayedNames = new HashMap<String, String>();
+        columnTooltips = new HashMap<String, String>();
     }
 
-    public static void setDefault(FunctionsListViewVisualizerConfigurationAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
+    public String  setDisplayedName(String columnName, String displayedName){
+        return columnDisplayedNames.put(columnName, displayedName);
     }
 
-    public FunctionsListViewVisualizerConfigurationAccessor() {
+    public String setTooltip(String columnName, String tooltip){
+        return columnTooltips.put(columnName, tooltip);
     }
 
-    public abstract FunctionDatatableDescription getFunctionDatatableDescription(FunctionsListViewVisualizerConfiguration configuration);
-    
-    public abstract List<Column> getMetricsList(FunctionsListViewVisualizerConfiguration configuration);
+    public void setColumnUI(String columnName, String displayedName, String tooltip){
+        columnDisplayedNames.put(columnName, displayedName);
+        columnTooltips.put(columnName, tooltip);
+    }
 
-    public abstract ColumnsUIMapping getColumnsUIMapping(FunctionsListViewVisualizerConfiguration configuration);
+    public String getTooltip(String columnName){
+        return columnTooltips.get(columnName);
+    }
 
-    public abstract String getID();
+    public String getDisplayedName(String columnName){
+        return columnDisplayedNames.get(columnName);
+    }
+
+
 }
