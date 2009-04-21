@@ -84,7 +84,6 @@ public class GdbProxy {
     private final GdbDebugger debugger;
     private final GdbProxyEngine engine;
     private final GdbLogger gdbLogger;
-    private static final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
     
     private final Map<Integer, CommandBuffer> map = Collections.synchronizedMap(new HashMap<Integer, CommandBuffer>());
 
@@ -100,8 +99,6 @@ public class GdbProxy {
     public GdbProxy(GdbDebugger debugger, String debuggerCommand, String[] debuggerEnvironment,
             String workingDirectory, String termpath, String cspath) throws IOException {
         this.debugger = debugger;
-
-        log.setLevel(Level.FINE);
 
         ArrayList<String> dc = new ArrayList<String>();
         dc.add(debuggerCommand);

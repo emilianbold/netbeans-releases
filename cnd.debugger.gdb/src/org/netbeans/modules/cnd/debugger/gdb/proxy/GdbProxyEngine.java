@@ -116,6 +116,8 @@ public class GdbProxyEngine {
             if (tty != null) {
                 debuggerCommand.add("-tty"); // NOI18N
                 debuggerCommand.add(tty);
+            } else {
+                throw new IllegalStateException(NbBundle.getMessage(GdbProxyEngine.class, "ERR_ExternalTerminalFailedMessage")); // NOI18N
             }
         }
         this.debugger = debugger;
