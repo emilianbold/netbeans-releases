@@ -55,15 +55,15 @@ import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
- * Lazy compound statements
- * 
- * @author Vladimir Kvashin
+ * Lazy try-catch statements
+ *
+ * @author Nick Krasilnikov
  */
-public final class LazyCompoundStatementImpl extends LazyStatementImpl implements CsmCompoundStatement {
+public final class LazyTryCatchStatementImpl extends LazyStatementImpl implements CsmCompoundStatement {
 
-    public LazyCompoundStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
+    public LazyTryCatchStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
         super(ast, file, scope);
-        assert (ast.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY);
+        assert (ast.getType() == CPPTokenTypes.CSM_TRY_CATCH_STATEMENT_LAZY);
     }
 
     @Override
@@ -74,7 +74,7 @@ public final class LazyCompoundStatementImpl extends LazyStatementImpl implement
         }
         CPPParserEx parser = CPPParserEx.getInstance(getContainingFile().getName().toString(), tokenStream, flags);
         parser.setLazyCompound(false);
-        parser.compound_statement();
+        parser.function_try_block();
         AST out = parser.getAST();
         return out;
     }
@@ -84,7 +84,8 @@ public final class LazyCompoundStatementImpl extends LazyStatementImpl implement
         super.write(output);
     }
 
-    public LazyCompoundStatementImpl(DataInput input) throws IOException {
+    public LazyTryCatchStatementImpl(DataInput input) throws IOException {
         super(input);
     }
+
 }

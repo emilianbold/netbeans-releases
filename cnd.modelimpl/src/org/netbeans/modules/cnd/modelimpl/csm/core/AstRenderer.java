@@ -1587,6 +1587,8 @@ public class AstRenderer {
                     return new CompoundStatementImpl(token, file, owner);
                 case CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY:
                     return new LazyCompoundStatementImpl(token, file, owner);
+                case CPPTokenTypes.CSM_TRY_CATCH_STATEMENT_LAZY:
+                    return new LazyTryCatchStatementImpl(token, file, owner);
             }
         }
         // prevent null bodies
