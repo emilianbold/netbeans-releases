@@ -4,7 +4,6 @@
     <folder name="Editors">
         <file name="org-netbeans-modules-javascript-editing-embedding-JsEmbeddingProvider$Factory.instance">
             <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
-            <attr name="position" intvalue="10"/>
         </file>
         <folder name="text">
             <folder name="javascript">

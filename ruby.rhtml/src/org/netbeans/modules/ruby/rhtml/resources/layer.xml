@@ -95,10 +95,7 @@
         <folder name="application">
             <folder name="x-httpd-eruby">
                 <file name="org-netbeans-modules-ruby-rhtml-editor-RubyEmbeddingProvider$Factory.instance" />
-                <!-- this embedding provider needs to be after JsEmbeddingProvider (javascript.editing module). -->
-                <file name="org-netbeans-modules-ruby-rhtml-editor-HtmlEmbeddingProvider$Factory.instance">
-                    <attr name="position" intvalue="70"/>
-                </file>
+                <file name="org-netbeans-modules-ruby-rhtml-editor-HtmlEmbeddingProvider$Factory.instance"/>
 
                 <file name="org-netbeans-modules-ruby-rhtml-RhtmlIndentTaskFactory.instance"/>
                 <file name="org-netbeans-modules-ruby-rhtml-EmbeddedSectionsHighlighting$Factory.instance"/>
