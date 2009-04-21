@@ -635,7 +635,7 @@ public final class JsIndex {
         final Set<SearchResult> result = new HashSet<SearchResult>();
 
         String field = JsIndexer.FIELD_FQN;
-        String [] terms = TERMS_BASE;
+        String [] terms = TERMS_FQN;
         String lcsymbol = fqn.toLowerCase();
         int symbolLength = fqn.length();
         Collection<? extends IndexResult> results = query(field, lcsymbol, QuerySupport.Kind.PREFIX, terms);
