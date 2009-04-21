@@ -85,7 +85,7 @@ public class GdbProxyEngine {
     private PrintStream toGdb;
     private final GdbDebugger debugger;
     private final GdbProxy gdbProxy;
-    private final List<CommandInfo> tokenList = Collections.synchronizedList(new LinkedList<CommandInfo>());
+    private final List<MICommand> tokenList = Collections.synchronizedList(new LinkedList<MICommand>());
     
     //TODO: int may not be enough here, consider using long
     private int nextToken = MIN_TOKEN;
@@ -266,7 +266,7 @@ public class GdbProxyEngine {
                 public void run() {
                     String time = CommandBuffer.getTimePrefix(timerOn);
                     if (cmd.charAt(0) != '-') {
-                        tokenList.add(new CommandInfo(token, cmd));
+                        tokenList.add(new MICommandImpl(token, cmd));
                     }
                     StringBuilder fullcmd = new StringBuilder(String.valueOf(token));
                     fullcmd.append(cmd);
@@ -374,12 +374,12 @@ public class GdbProxyEngine {
     private int getCurrentToken(String msg) {
         char ch1 = msg.charAt(0);
         if (ch1 == '&') {
-            CommandInfo ci = getCommandInfo(msg);
+            MICommand ci = getCommandInfo(msg);
             if (ci != null) {
                 synchronized (tokenList) {
-                    for (Iterator<CommandInfo> iter = tokenList.iterator(); iter.hasNext();) {
-                        CommandInfo info = iter.next();
-                        if (ci.getCommand().equals(info.getCommand())) {
+                    for (Iterator<MICommand> iter = tokenList.iterator(); iter.hasNext();) {
+                        MICommand info = iter.next();
+                        if (ci.getText().equals(info.getText())) {
                             iter.remove();
                         }
                     }
@@ -390,12 +390,12 @@ public class GdbProxyEngine {
         return currentToken;
     }
     
-    private CommandInfo getCommandInfo(String msg) {
+    private MICommand getCommandInfo(String msg) {
         msg = msg.substring(2, msg.length() - 1).replace("\\n", ""); // NOI18N
 
         synchronized (tokenList) {
-            for (CommandInfo ci : tokenList) {
-                if (ci.getCommand().equals(msg)) {
+            for (MICommand ci : tokenList) {
+                if (ci.getText().equals(msg)) {
                     return ci;
                 }
             }
@@ -464,40 +464,55 @@ public class GdbProxyEngine {
         }
         return msg;
     }
-    
+   
     private GdbLogger getLogger() {
         return gdbProxy.getLogger();
     }
+
+    public MICommand createMICommand(String cmd) {
+        return new MICommandImpl(nextToken(), cmd);
+    }
     
-    private static class CommandInfo {
-        
+    private class MICommandImpl implements MICommand {
         private final int token;
         private final String cmd;
+        private boolean sent = false;
         
-        public CommandInfo(int token, String cmd) {
+        public MICommandImpl(int token, String cmd) {
             this.token = token;
             this.cmd = cmd;
         }
         
-        private String getCommand() {
+        public String getText() {
             return cmd;
         }
         
         public int getToken() {
             return token;
         }
+
+        public synchronized void send() {
+            assert !sent : "sending command " + this + " twice"; // NOI18N
+            sendCommand(getToken(), getText());
+            sent = true;
+        }
         
         @Override
         public boolean equals(Object o) {
-            if (o instanceof CommandInfo) {
-                return token == ((CommandInfo) o).token;
+            if (o instanceof MICommand) {
+                return getToken() == ((MICommand) o).getToken();
             }
             return false;
         }
 
         @Override
         public int hashCode() {
-            return token;
+            return getToken();
+        }
+
+        @Override
+        public String toString() {
+            return token + cmd;
         }
     }
     
