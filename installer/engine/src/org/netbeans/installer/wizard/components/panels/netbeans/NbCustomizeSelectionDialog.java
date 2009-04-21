@@ -355,7 +355,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                okButtonPressed();
+                cancelButtonPressed();
             }
         });
         getRootPane().setDefaultButton(okButton);
