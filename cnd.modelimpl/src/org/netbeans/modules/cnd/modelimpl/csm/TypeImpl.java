@@ -95,7 +95,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         this.pointerDepth = (byte) pointerDepth;
         this.reference = reference;
         this.arrayDepth = (byte) arrayDepth;
-        _const = initIsConst(ast);
+        _const = isTypeDefAST(ast) ? initIsConst(ast.getFirstChild()) : initIsConst(ast);
         if (classifier == null) {
             CndUtils.assertTrue(false, "why null classifier?", Level.INFO);
             this._setClassifier(initClassifier(ast));
@@ -136,6 +136,16 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
             this.instantiationParams.addAll(type.instantiationParams);
         }
         instantiationParams.trimToSize();
+    }
+
+    private static boolean isTypeDefAST(AST ast){
+        if (ast != null ) {
+            if (ast.getType() == CPPTokenTypes.CSM_FIELD ||
+                ast.getType() == CPPTokenTypes.CSM_GENERIC_DECLARATION) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // package-local - for factory only
@@ -186,6 +196,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         AST ast = node;
         if( ast == null ) {
             return 0;
+        }
+        if (isTypeDefAST(ast)) {
+            return OffsetableBase.getEndOffset(ast);
         }
         ast = getLastNode(ast);
         if( ast instanceof CsmAST ) {

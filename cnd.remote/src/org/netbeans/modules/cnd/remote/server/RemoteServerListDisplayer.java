@@ -70,7 +70,7 @@ public class RemoteServerListDisplayer extends ServerListDisplayerEx {
     @Override
     protected boolean showServerListDialogImpl(ToolsCacheManager cacheManager) {
         EditServerListDialog dlg = new EditServerListDialog(cacheManager);
-        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true,
+        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(getClass(), "TITLE_EditServerList"), true,
                     DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
         dlg.setDialogDescriptor(dd);
         dd.addPropertyChangeListener(dlg);

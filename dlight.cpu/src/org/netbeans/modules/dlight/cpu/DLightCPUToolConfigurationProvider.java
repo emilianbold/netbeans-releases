@@ -69,10 +69,11 @@ public final class DLightCPUToolConfigurationProvider
 
     public static final int INDICATOR_POSITION = 100;
     private static final String TOOL_NAME = loc("CPUMonitorTool.ToolName"); // NOI18N
+    private static final String DETAILED_TOOL_NAME = loc("CPUMonitorTool.DetailedToolName"); // NOI18N
 
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration =
-            new DLightToolConfiguration(TOOL_NAME);
+            new DLightToolConfiguration(TOOL_NAME, DETAILED_TOOL_NAME);
         toolConfiguration.setIcon("org/netbeans/modules/dlight/cpu/resources/cpu.png"); // NOI18N
 
         // SunStudio should collect data about most CPU-expensive functions

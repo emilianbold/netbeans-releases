@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -150,10 +149,7 @@ public final class ExternalTerminal {
                 }
 
                 if ("$shell".equals(arg)) { // NOI18N
-                    try {
-                        result.add(HostInfoUtils.getShell(execEnv));
-                    } catch (ConnectException ex) {
-                    }
+                    result.add(HostInfoUtils.getHostInfo(execEnv).getShell());
                     continue;
                 }
 

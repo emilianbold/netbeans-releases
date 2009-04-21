@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
+import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.ui.spi.DetailsViewEmptyContentProvider;
 import java.awt.BorderLayout;
 import javax.swing.JComponent;
@@ -89,6 +90,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     private final List<DLightSessionListener> sessionListeners = Collections.synchronizedList(new ArrayList<DLightSessionListener>());
     private final List<DLightSession> sessions = new ArrayList<DLightSession>();
     private DLightSession activeSession;
+    private final DLightManagerSessionStateListener sessionStateListener = new DLightManagerSessionStateListener();
 
     /**
      *
@@ -117,6 +119,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         // TODO: For now just create new session every time we set a target...
         DLightSession session = newSession(target, configuration, sessionName);
         setActiveSession(session);
+        if (session != null) {
+            session.addSessionStateListener(sessionStateListener);//we should not remove it later, it will be removed automatically when session will be closed
+        }
         return session;
     }
 
@@ -137,12 +142,12 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     }
 
     public void closeSessionOnExit(DLightSession session) {
-        if (session.isRunning()) {
+        SessionState currentSessionState = session.getState();
+        if (currentSessionState != SessionState.ANALYZE) {
             session.closeOnRun();
+        } else {
+            session.close();
         }
-         cleanupSession(session);
-        
-
     }
 
     private void cleanupSession(DLightSession session) {
@@ -168,7 +173,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         if (sessions.isEmpty()) {
             setActiveSession(null);
         } else {
-            setActiveSession(sessions.get(0));
+            setActiveSession(sessions.get(sessions.size() -1));//last one will be active
         }
     }
 
@@ -187,7 +192,6 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             session.close();
 
         }
-        cleanupSession(session);
     }
 
     public DLightSession getActiveSession() {
@@ -279,9 +283,14 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         Visualizer visualizer = null;
         //Check if we have already instance in the session:
         if (dlightSession.hasVisualizer(toolName, configuration.getID())) {
-            visualizer = dlightSession.getVisualizer(toolName, configuration.getID());            
+            visualizer = dlightSession.getVisualizer(toolName, configuration.getID());
             VisualizerContainer container = visualizer.getDefaultContainer();
-            container.addVisualizer(toolName, visualizer);
+            DLightTool tool = dlightSession.getToolByName(toolName);
+            if (tool != null) {
+                container.addVisualizer(tool.getDetailedName(), visualizer);
+            } else {
+                container.addVisualizer(toolName, visualizer);
+            }
             container.showup();
             visualizer.refresh();
             return visualizer;
@@ -370,7 +379,12 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
         }
         VisualizerContainer container = visualizer.getDefaultContainer();
-        container.addVisualizer(toolName, visualizer);
+        DLightTool tool = dlightSession.getToolByName(toolName);
+        if (tool != null) {
+            container.addVisualizer(tool.getDetailedName(), visualizer);
+        } else {
+            container.addVisualizer(toolName, visualizer);
+        }
         container.showup();
         dlightSession.putVisualizer(toolName, configuration.getID(), visualizer);
         return visualizer;
@@ -386,25 +400,22 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         if (Lookup.getDefault().lookup(EmptyVisualizerContainerProvider.class) == null) {
             return;
         }
-        DLightTool tool = null;
-        List<DLightTool> tools = session.getTools();
-        for (DLightTool t : tools) {
-            if (toolName != null && toolName.equals(t.getName())) {
-                tool = t;
-                break;
-            }
-        }
+        DLightTool tool = session.getToolByName(toolName);
         if (tool == null) {
             return;//nothing to show
         }
         VisualizerContainer container = Lookup.getDefault().lookup(EmptyVisualizerContainerProvider.class).getEmptyVisualizerContainer();
+        String name = toolName;
+        if (tool != null) {
+            name = tool.getDetailedName();
+        }
         for (ExecutionContext context : session.getExecutionContexts()) {
             view = emptyContentProvider.getEmptyView(context.getDLightConfiguration(), tool, context.getTarget());
             if (isFirstView) {
-                container.setContent(toolName, view);
+                container.setContent(name, view);
                 isFirstView = false;
             } else {
-                container.addContent(toolName, view);
+                container.addContent(name, view);
             }
         }
         container.showup();
@@ -492,6 +503,15 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
     }
 
+    private class DLightManagerSessionStateListener implements SessionStateListener {
+
+        public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
+            if (newState == SessionState.CLOSED) {
+                cleanupSession(session);
+            }
+        }
+    }
+
     private static final class DefaultDetailsViewEmptyContentProvider implements DetailsViewEmptyContentProvider {
 
         private static final DefaultDetailsViewEmptyContentProvider instance = new DefaultDetailsViewEmptyContentProvider();
@@ -509,5 +529,4 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
         }
     }
-
 }

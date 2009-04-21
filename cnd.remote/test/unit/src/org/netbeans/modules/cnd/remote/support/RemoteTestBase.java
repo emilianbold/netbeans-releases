@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.test.BaseTestCase;
@@ -65,7 +66,10 @@ public abstract class RemoteTestBase extends BaseTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        ConnectionManager.getInstance().connectTo(getExecutionEnvironment(), getRemotePassword(), false);
+        final ExecutionEnvironment execEnv = getExecutionEnvironment();
+        if (execEnv != null) {
+            ConnectionManager.getInstance().connectTo(execEnv,getRemotePassword(), false);
+        }
     }
 
 

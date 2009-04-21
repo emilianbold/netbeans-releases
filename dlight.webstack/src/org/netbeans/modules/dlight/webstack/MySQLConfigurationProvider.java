@@ -50,6 +50,7 @@ import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,12 +77,12 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
     toolConfiguration.addIndicatorDataProviderConfiguration(new TimerIDPConfiguration());
     IndicatorMetadata indicatorMetadata1 = new IndicatorMetadata(Arrays.asList(TimerIDPConfiguration.TIME_INFO));
     ClockIndicatorConfiguration clockIndicator = new ClockIndicatorConfiguration(indicatorMetadata1);
-    clockIndicator.setVisualizerConfiguration(new TableVisualizerConfiguration(mysqlDatatableMetadata));
+    clockIndicator.addVisualizerConfiguration(new TableVisualizerConfiguration(mysqlDatatableMetadata));
     toolConfiguration.addIndicatorConfiguration(clockIndicator);
     return toolConfiguration;
   }
 
   private static String getMessage(String name) {
-      NbBundle.getMessage(MySQLConfigurationProvider.class, name);
+      return NbBundle.getMessage(MySQLConfigurationProvider.class, name);
   }
 }

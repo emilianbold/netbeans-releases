@@ -193,6 +193,16 @@ public final class CommonTasksSupport {
         return execService.run();
     }
 
+    // TODO: implement
+    public static void chmod(ExecutionEnvironment execEnv, String file, int mode) {
+//        NativeProcessBuilder npb = new NativeProcessBuilder("chmod").setArguments(String.format("0%03", mode), file); // NOI18N
+//        try {
+//            npb.call();
+//        } catch (IOException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+    }
+
     /**
      * Creates a task for removing a directory <tt>dirname</tt> from the host
      * identified by the <tt>execEnv</tt>.

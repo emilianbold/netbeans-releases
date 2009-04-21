@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,51 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.nativeexecution;
+package org.netbeans.modules.cnd.spi.remote;
 
-import org.netbeans.modules.nativeexecution.api.Platform;
-import org.netbeans.modules.nativeexecution.api.Platform.HardwareType;
-import org.netbeans.modules.nativeexecution.api.Platform.OSType;
+import org.netbeans.modules.cnd.api.remote.*;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * A factory class for org.netbeans.modules.nativeexecution.api.Platform
- * @author Vladimir Kvashin
+ * This is a place holder for a RemoteServerList which will be implemented in cnd.remote.
+ * 
+ * @author gordonp
  */
-public abstract class PlatformAccessor {
+public interface ServerListImplementation {
+    
+    /** The index of the default development server */
+    public abstract int getDefaultIndex();
 
-    private static PlatformAccessor DEFAULT;
+    public abstract Collection<? extends ServerRecord> getRecords();
+    
+    /** Set the index of the default development server */
+    public abstract void setDefaultIndex(int defaultIndex);
+    
+    public abstract List<ExecutionEnvironment> getEnvironments();
 
-    protected PlatformAccessor() {
-    }
+    public abstract ServerRecord get(ExecutionEnvironment env);
+    
+    public abstract ServerRecord getDefaultRecord();
+    
+    public abstract void clear();
 
-    public static Platform createNew(HardwareType hardwareType, OSType oSType) {
-        return getDefault().createImpl(hardwareType, oSType);
-    }
+    public abstract ServerRecord addServer(ExecutionEnvironment env, boolean asDefault, boolean connect);
 
-    public static void setDefault(PlatformAccessor accessor) {
-        if (DEFAULT != null) {
-          throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
-    }
-
-    public static PlatformAccessor getDefault() {
-        PlatformAccessor a = DEFAULT;
-        if (a != null) {
-          return a;
-        }
-        try {
-          Class.forName(Platform.class.getName(), true, Platform.class.getClassLoader());
-        } catch (Exception e) {
-        }
-        return DEFAULT;
-    }
-
-    protected abstract Platform createImpl(HardwareType hardwareType, OSType oSType);
+    public abstract boolean isValidExecutable(ExecutionEnvironment env, String path);
 }
