@@ -52,6 +52,8 @@ import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  *
@@ -66,10 +68,11 @@ final class DtraceDataAndStackParser extends DtraceParser {
 
     private static final boolean TRACE = Boolean.getBoolean("dlight.dns.parser.trace"); // NOI18N
     private static PrintStream traceStream;
+    private static final String tmpDir = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getTempDir();
     static {
         if (TRACE) {
             try {
-                traceStream = new PrintStream("/tmp/dsp.log"); // NOI18N
+                traceStream = new PrintStream(tmpDir + "/dsp.log"); // NOI18N
             } catch (FileNotFoundException ex) {
                 ex.printStackTrace();
                 traceStream = System.err;

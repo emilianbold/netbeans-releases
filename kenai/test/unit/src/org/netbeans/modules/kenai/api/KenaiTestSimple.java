@@ -64,6 +64,7 @@ public class KenaiTestSimple extends NbTestCase {
     private static Kenai instance;
     private static String uname = null;
     private static String passw = null;
+    private static boolean firstRun = true;
 
     private String UNITTESTUNIQUENAME =  "java-inline";
 
@@ -98,7 +99,10 @@ public class KenaiTestSimple extends NbTestCase {
                 passw = br.readLine();
                 br.close();
             }
-            instance.login(uname, passw.toCharArray());
+            if (firstRun) {
+                instance.login(uname, passw.toCharArray());
+                firstRun = false;
+            }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

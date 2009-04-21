@@ -56,7 +56,6 @@ import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -65,8 +64,6 @@ import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.nodes.DependenciesNode;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -191,11 +188,13 @@ public final class NbMavenProject {
                             null, null);
 
                     boolean ok = true;
+                    ProgressTransferListener ptl = new ProgressTransferListener();
                     try {
                         ProgressTransferListener.setAggregateHandle(hndl);
                         hndl.start();
                         MavenExecutionRequest req = new DefaultMavenExecutionRequest();
                         req.setPom(pomFile);
+                        req.setTransferListener(ptl);
                         MavenExecutionResult res = online.readProjectWithDependencies(req); //NOI18N
                         if (res.hasExceptions()) {
                             ok = false;
@@ -209,7 +208,9 @@ public final class NbMavenProject {
                     if (ok) {
                         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbMavenProject.class, "MSG_Done"));
                     }
-                    NbMavenProject.fireMavenProjectReload(project);
+                    if (support.hasListeners(NbMavenProject.PROP_PROJECT)) {
+                        NbMavenProject.fireMavenProjectReload(project);
+                    }
             }
         });
     }
