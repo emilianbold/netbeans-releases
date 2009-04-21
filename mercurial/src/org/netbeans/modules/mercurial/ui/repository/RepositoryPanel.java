@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -82,8 +82,6 @@ public class RepositoryPanel extends javax.swing.JPanel {
                 tipLabel.setText("-"); // NOI18N
                 tipLabel.setMaximumSize(new java.awt.Dimension(32767, 32767));
 
-                removeButton.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0008")); // NOI18N
-
                 userPasswordField.setColumns(8);
                 userPasswordField.setMinimumSize(new java.awt.Dimension(11, 22));
 
@@ -131,22 +129,21 @@ public class RepositoryPanel extends javax.swing.JPanel {
                                                 .add(savePasswordCheckBox)
                                                 .addContainerGap())
                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                                .add(tipLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .add(tipLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 601, Short.MAX_VALUE)
                                                 .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                        .add(urlComboBox, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                        .add(removeButton))
+                                                        .add(urlComboBox, 0, 601, Short.MAX_VALUE)
+                                                        .add(0, 0, 0))
                                                 .add(layout.createSequentialGroup()
                                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                                                                 .add(org.jdesktop.layout.GroupLayout.LEADING, userPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                                 .add(org.jdesktop.layout.GroupLayout.LEADING, userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                        .add(leaveBlankLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                        .add(leaveBlankLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
                                                         .addContainerGap()))))
                         .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, tunnelHelpLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(org.jdesktop.layout.GroupLayout.LEADING, tunnelHelpLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 779, Short.MAX_VALUE)
                                         .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                                 .add(tunnelLabel)
                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -161,7 +158,6 @@ public class RepositoryPanel extends javax.swing.JPanel {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                                         .add(jLabel2)
-                                        .add(removeButton)
                                         .add(urlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(tipLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -199,8 +195,6 @@ public class RepositoryPanel extends javax.swing.JPanel {
                 urlComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryURL")); // NOI18N
                 urlComboBox.getAccessibleContext().setAccessibleParent(this);
                 proxySettingsButton.getAccessibleContext().setAccessibleParent(this);
-                removeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSN_RemoveHistory")); // NOI18N
-                removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RemoveHistory")); // NOI18N
                 userPasswordField.getAccessibleContext().setAccessibleParent(this);
                 passwordLabel.getAccessibleContext().setAccessibleParent(this);
                 userLabel.getAccessibleContext().setAccessibleParent(this);
@@ -218,7 +212,6 @@ public class RepositoryPanel extends javax.swing.JPanel {
         final javax.swing.JLabel leaveBlankLabel = new javax.swing.JLabel();
         final javax.swing.JLabel passwordLabel = new javax.swing.JLabel();
         final javax.swing.JButton proxySettingsButton = new javax.swing.JButton();
-        final javax.swing.JButton removeButton = new javax.swing.JButton();
         final javax.swing.JCheckBox savePasswordCheckBox = new javax.swing.JCheckBox();
         final javax.swing.JLabel tipLabel = new javax.swing.JLabel();
         final javax.swing.JLabel titleLabel = new javax.swing.JLabel();
