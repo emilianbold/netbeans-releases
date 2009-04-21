@@ -114,9 +114,25 @@ public final class Indexable {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Indexable other = (Indexable) obj;
+        return delegate.equals(other.delegate);
+    }
+
+    @Override
+    public int hashCode() {
+        return delegate.hashCode();
+    }
+
+    @Override
     public String toString() {
-        final URL url = this.delegate.getURL();
-        return String.format("Indexable[%s]", url == null ? "null" : url.toString());
+        return delegate.toString();
     }
 
     private static class MyAccessor extends SPIAccessor {
