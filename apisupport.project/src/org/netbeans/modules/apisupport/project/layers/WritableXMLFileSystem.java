@@ -54,6 +54,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -281,7 +282,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         TreeAttribute urlAttr = el.getAttribute("url"); // NOI18N
         if (urlAttr != null) {
             try {
-                URL[] u = LayerUtils.currentify(new URL(location, urlAttr.getValue()), suffix, classpath);
+                URL[] u = LayerUtils.currentify(new URL(location, new URI(null, urlAttr.getValue(), null).getRawPath()), suffix, classpath);
                 URLConnection conn = u[0].openConnection();
                 conn.connect();
                 InputStream is = conn.getInputStream();
@@ -296,6 +297,8 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 return buf;
             } catch (IOException ioe) {
                 throw new FileNotFoundException(ioe.getMessage());
+            } catch (URISyntaxException use) {
+                throw new FileNotFoundException(use.getMessage());
             }
         } else {
             StringBuffer buf = new StringBuffer();
@@ -1027,12 +1030,19 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             return new Date(0L);
         }
         String u = attr.getValue();
-        if (URI.create(u).isAbsolute()) {
+        URI uri = null;
+        try {
+            uri = new URI(null, u, null);
+            if (uri.isAbsolute()) {
+                return new Date(0L);
+            }
+        } catch (URISyntaxException e) {
+            assert false : e;
             return new Date(0L);
         }
         FileObject external;
         try {
-            external = URLMapper.findFileObject(new URL(location, u));
+            external = URLMapper.findFileObject(new URL(location, uri == null ? u : uri.getRawPath()));
         } catch (MalformedURLException e) {
             assert false : e;
             return new Date(0L);
