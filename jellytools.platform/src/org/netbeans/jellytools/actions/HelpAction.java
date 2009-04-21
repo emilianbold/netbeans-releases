@@ -43,12 +43,10 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jemmy.JemmyException;
 
-/** Used to invoke help on a property sheet from popup menu or using the F1 shortcut
- * If you also include the jellytools.ide module, you should use IDEHelpAction instead.
- * It is the same, but also provides option of calling help by "Help|Help Contents" menu.
- * It was split, because the "Help Contents" bundle message is only in the
- * ide cluster.
+/** Used to invoke help using "Help|Help Contents" menu or the F1 shortcut.
+ * Can also invoke help on a property sheet from popup menu.
  *
  * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
@@ -57,12 +55,40 @@ public class HelpAction extends Action {
     // String used in property sheets
     private static final String popupPath = Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Help");    
     private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0);
+    private static final String helpMenu = getHelpMenu();
+
+
+    /**
+     * Gets the bundle message for the "Help Contents" menu item. In case it is
+     * unavailable, it falls back to a hard-coded message.
+     *
+     * @return String message for "Help Contents" menu item
+     */
+    public static String getHelpMenu()
+    {
+        String lsRetVal;
+
+        try
+        {
+            lsRetVal = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Help")
+                                         + "|"
+                                         + Bundle.getStringTrimmed("org.netbeans.modules.usersguide.Bundle",
+                                         "Menu/Help/org-netbeans-modules-usersguide-master.xml");
+        }
+        catch (JemmyException e)
+        {
+            System.err.println("Warning: " + e.getMessage() + " Falling back to hard-coded message!");
+            lsRetVal = "Help &Contents";
+        }
+
+        return lsRetVal;
+    }
 
     /** Creates new HelpAction instance for master help set (Help|Contents)
      * or for generic use e.g. in property sheets.
      */
     public HelpAction() {
-        super(null, popupPath, keystroke);
+        super(helpMenu, popupPath, keystroke);
     }
 
 }

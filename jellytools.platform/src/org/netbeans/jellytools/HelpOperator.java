@@ -45,7 +45,7 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Window;
-import org.netbeans.jellytools.actions.IDEHelpAction;
+import org.netbeans.jellytools.actions.HelpAction;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -56,7 +56,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.WindowOperator;
 
-/** Class implementing all necessary methods for handling "IDE Help" Frame.
+/** Class implementing all necessary methods for handling "Help" Frame.
  * Normally the Help window is a JFrame.
  * But the Help window can be transformed to a JDialog 
  * when another modal dialog is shown. This operator can handle both states.
@@ -85,7 +85,7 @@ public class HelpOperator extends WindowOperator {
         super(WindowOperator.waitWindow(new HelpWindowChooser(title)));
     }
 
-    private static final IDEHelpAction helpAction = new IDEHelpAction();
+    private static final HelpAction helpAction = new HelpAction();
     
     private JButtonOperator _btBack;
     private JButtonOperator _btNext;
