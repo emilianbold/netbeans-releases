@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.maven.embedder.exec;
 
-import java.io.File;
 import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.events.TransferListener;
 import org.apache.maven.wagon.resource.Resource;
@@ -70,12 +69,15 @@ public class ProgressTransferListener implements TransferListener {
         handleRef.remove();
         contribRef.remove();
     }
+
+    private String getResourceName(Resource res) {
+        int lastSlash = res.getName().lastIndexOf("/"); //NOI18N
+        return lastSlash > -1 ? res.getName().substring(lastSlash + 1) : res.getName();
+    }
     
     public void transferInitiated(TransferEvent transferEvent) {
         Resource res = transferEvent.getResource();
-        File fil = transferEvent.getLocalFile();
-        int lastSlash = res.getName().lastIndexOf("/"); //NOI18N
-        String resName = lastSlash > -1 ? res.getName().substring(lastSlash + 1) : res.getName();
+        String resName = getResourceName(res);
         if (!resName.endsWith(".pom")) { //NOI18N
             String name = (transferEvent.getRequestType() == TransferEvent.REQUEST_GET
                               ? NbBundle.getMessage(ProgressTransferListener.class, "TXT_Download", resName) 
@@ -101,7 +103,7 @@ public class ProgressTransferListener implements TransferListener {
         }
         lengthRef.set(total);
         countRef.set(0);
-        contribRef.get().progress(org.openide.util.NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started")); 
+        contribRef.get().progress(org.openide.util.NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", getResourceName(res)));
     }
     
     public void transferProgress(TransferEvent transferEvent, byte[] b, int i) {
@@ -114,10 +116,10 @@ public class ProgressTransferListener implements TransferListener {
         }
         cnt = Math.min((long)Integer.MAX_VALUE, cnt);
         if (lengthRef.get() < 0) {
-            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferring")); 
+            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferring", getResourceName(transferEvent.getResource())));
         } else {
             cnt = Math.min(cnt, (long)lengthRef.get());
-            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferred", cnt), (int)cnt);
+            contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferred", getResourceName(transferEvent.getResource()), cnt), (int)cnt);
         }
         countRef.set((int)cnt);
     }
