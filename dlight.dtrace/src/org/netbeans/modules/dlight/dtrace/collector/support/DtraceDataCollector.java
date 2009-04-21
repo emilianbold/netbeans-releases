@@ -243,7 +243,7 @@ public final class DtraceDataCollector
             Util.setExecutionPermissions(Arrays.asList(scriptPath));
         } else {
             File script = new File(localScriptPath);
-            scriptPath = HostInfoUtils.getHostInfo(execEnv, true).getTempDir() + "/" + script.getName(); // NOI18N
+            scriptPath = HostInfoUtils.getHostInfo(execEnv).getTempDir() + "/" + script.getName(); // NOI18N
             Future<Integer> copyResult = CommonTasksSupport.uploadFile(
                     localScriptPath, execEnv, scriptPath, 0777, null);
             try {
@@ -317,7 +317,7 @@ public final class DtraceDataCollector
         boolean connected = true;
         String error = ""; // NOI18N
 
-        final HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv, true);
+        final HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
 
         if (hostInfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
             return ValidationStatus.invalidStatus(

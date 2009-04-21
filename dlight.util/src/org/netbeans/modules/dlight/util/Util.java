@@ -81,7 +81,7 @@ public class Util {
                 return null;
             }
 
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal(), true);
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
             String prefix = "_dlight_" + getBriefName(resourceFileName);//NOI18N
             File result_file = File.createTempFile(prefix, ".d", new File(hostInfo.getTempDir()));//NOI18N
             result_file.deleteOnExit();

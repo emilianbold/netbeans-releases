@@ -126,7 +126,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
 
     private ValidationStatus doValidation(DLightTarget target) {
         ExecutionEnvironment env = target.getExecEnv();
-        OSFamily osFamily = HostInfoUtils.getHostInfo(env, true).getOSFamily();
+        OSFamily osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
 
         if (osFamily != OSFamily.LINUX && osFamily != OSFamily.SUNOS) {
             return ValidationStatus.invalidStatus(getMessage("ValidationStatus.OSNotSupported")); // NOI18N
@@ -185,7 +185,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
      */
     private synchronized void targetStarted(DLightTarget target) {
         ExecutionEnvironment env = target.getExecEnv();
-        HostInfo hostInfo = HostInfoUtils.getHostInfo(env, true);
+        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
         NativeProcessBuilder npb = new NativeProcessBuilder(env, hostInfo.getShell());
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.inputOutput(InputOutput.NULL);

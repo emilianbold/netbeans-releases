@@ -56,6 +56,7 @@ import static org.junit.Assert.*;
 public class HostInfoTest extends NativeExecutionTest {
 
     private final static String password = ""; // NOI18N
+
     public HostInfoTest() {
     }
 
@@ -79,17 +80,16 @@ public class HostInfoTest extends NativeExecutionTest {
     public void testGetHostInfo() {
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew("ak119685", "tulos", 22); // NOI18N
         ConnectionManager cm = ConnectionManager.getInstance();
-        
         try {
             cm.connectTo(execEnv, password.toCharArray(), false);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println(ex);
         } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println(ex);
         }
 
-        HostInfo hi = HostInfoUtils.getHostInfo(execEnv, true);
-        System.out.println("Tempdir is " + hi.getTempDir()); // NOI18N
+        HostInfo hi = HostInfoUtils.getHostInfo(execEnv);
+        HostInfoUtils.dumpInfo(hi, System.out);
     }
 
     /**
@@ -101,7 +101,7 @@ public class HostInfoTest extends NativeExecutionTest {
         String expResult = "SunOS"; // NOI18N
         String result;
         expResult = "SunOS"; // NOI18N
-        HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.createNew("ak119685", "127.0.0.1"), false); // NOI18N
+        HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.createNew("ak119685", "127.0.0.1")); // NOI18N
         result = hi.getOS().getName();
         System.out.printf("Expected result is %s, actual result is %s\n", expResult, result); // NOI18N
         assertEquals(expResult, result);
@@ -255,6 +255,5 @@ public class HostInfoTest extends NativeExecutionTest {
         boolean result = HostInfoUtils.isLocalhost(host);
         assertEquals(expResult, result);
     }
-
 }
 

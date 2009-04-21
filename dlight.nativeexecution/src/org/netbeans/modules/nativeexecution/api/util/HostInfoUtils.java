@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -57,6 +58,29 @@ public final class HostInfoUtils {
         } catch (SocketException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    /**
+     * Utility method that dumps HostInfo to specified stream
+     * @param hostinfo hostinfo that should be dumped
+     * @param stream stream to dump to
+     */
+    public static void dumpInfo(HostInfo hostinfo, PrintStream stream) {
+        stream.println("------------"); // NOI18N
+        if (hostinfo == null) {
+            stream.println("HostInfo is NULL");
+        } else {
+            stream.println("Hostname      : "  + hostinfo.getHostname()); // NOI18N
+            stream.println("OS Family     : "  + hostinfo.getOSFamily()); // NOI18N
+            stream.println("OS            : "  + hostinfo.getOS().getName()); // NOI18N
+            stream.println("OS Version    : "  + hostinfo.getOS().getVersion()); // NOI18N
+            stream.println("OS Bitness    : "  + hostinfo.getOS().getBitness()); // NOI18N
+            stream.println("CPU Family    : "  + hostinfo.getCpuFamily()); // NOI18N
+            stream.println("CPU #         : "  + hostinfo.getCpuNum()); // NOI18N
+            stream.println("shell to use  : "  + hostinfo.getShell()); // NOI18N
+            stream.println("tmpdir to use : "  + hostinfo.getTempDir()); // NOI18N
+        }
+        stream.println("------------"); // NOI18N
     }
 
     /**
@@ -137,7 +161,7 @@ public final class HostInfoUtils {
         Process p;
 
         try {
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv, true);
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
 
             if (hostInfo == null) {
                 return null;
@@ -208,9 +232,47 @@ public final class HostInfoUtils {
         return result;
     }
 
-    // blocking - if true - initiate connection and wait for info (if required)
-    //            if false - just return null in case no info available yet
-    public static HostInfo getHostInfo(final ExecutionEnvironment execEnv, boolean blocking) {
+    /**
+     * Tests whether host info has been already fetched for the particular
+     * execution environment.
+     *
+     * @param execEnv environment to perform test against
+     * @return <tt>true</tt> if info is available and getHostInfo() could be
+     * called without a risk to be blocked for a significant time.
+     * <tt>false</tt> otherwise.
+     */
+    public static boolean isHostInfoAvailable(final ExecutionEnvironment execEnv) {
+        HostInfoFetcher infoFetcher;
+
+        synchronized (hostInfoProviders) {
+            infoFetcher = hostInfoProviders.get(execEnv);
+        }
+
+        if (infoFetcher == null) {
+            return false;
+        }
+
+        return infoFetcher.getInfo(false) != null;
+    }
+
+    /**
+     * Returns <tt>HostInfo</tt> with information about the host identified
+     * by <tt>execEnv</tt>. Invocation of this method may block current thread
+     * for rather significant amount of time or can even initiate UI-user
+     * interraction. This happens when execEnv represents remote host and no
+     * active connection to that host is available.
+     * An attempt to establish new connection will be performed. This may initiate
+     * password prompt.
+     *
+     * One should avoid to call this method from within AWT thread without prior 
+     * call to isHostInfoAvailable().
+     *
+     * @param execEnv execution environment to get information about
+     * @return information about the host represented by execEnv. <tt>null</tt>
+     * if interrupted of connection initiation is cancelled by user.
+     * @see #isHostInfoAvailable(org.netbeans.modules.nativeexecution.api.ExecutionEnvironment)
+     */
+    public static HostInfo getHostInfo(final ExecutionEnvironment execEnv) {
         HostInfoFetcher infoFetcher;
 
         synchronized (hostInfoProviders) {
@@ -221,6 +283,6 @@ public final class HostInfoUtils {
             }
         }
 
-        return infoFetcher.getInfo(blocking);
+        return infoFetcher.getInfo(true);
     }
 }
