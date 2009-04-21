@@ -72,12 +72,12 @@ import org.openide.util.HelpCtx;
 
     public void readSettings(WizardDescriptor settings) {
         getComponent().init(
-            (ExecutionEnvironment)settings.getProperty(CreateHostWizardPanel2.PROP_HOST),
-            (ToolsCacheManager)settings.getProperty(CreateHostWizardIterator.PROP_CACHE_MANAGER)
+            (ExecutionEnvironment)settings.getProperty(CreateHostWizardConstants.PROP_HOST),
+            (ToolsCacheManager)settings.getProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER)
         );
     }
 
-    static final String PROP_DEFAULT_TC = "defaulttoolchain"; //NOI18N
+    private static final String PROP_DEFAULT_TC = "defaulttoolchain"; //NOI18N
 
     public void storeSettings(WizardDescriptor settings) {
         settings.putProperty(PROP_DEFAULT_TC, getComponent().getDefaultCompilerSetDisplayName());

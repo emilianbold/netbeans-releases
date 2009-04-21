@@ -42,11 +42,9 @@ import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OS;
 
 public final class MacroExpanderFactory {
 
@@ -93,13 +91,11 @@ public final class MacroExpanderFactory {
         };
         private final StringBuilder res = new StringBuilder();
         private final StringBuilder buf = new StringBuilder();
-        private Future<HostInfo> hostInfoFetchingTaskResult;
+        private boolean initialized;
 
         public CommonMacroExpander(ExecutionEnvironment execEnv) {
             this.execEnv = execEnv;
-            hostInfoFetchingTaskResult = NativeTaskExecutorService.submit(
-                    new HostInfoFetchingTask(execEnv), 
-                    "Fetch host info for " + execEnv.toString()); // NOI18N
+            initialized = false;
         }
 
         private int getCharClass(char c) {
@@ -126,38 +122,6 @@ public final class MacroExpanderFactory {
             return 2;
         }
 
-        /**
-         * In case if hostInfoFetchingTask succeeded, and predefined macros
-         * already filled - do nothing.
-         *
-         * If hostInfoFetchingTask is in progress - wait it's completion and,
-         * if it succeeded - fill the map.
-         *
-         * If task failed, do not fill the map and start new fetching task... 
-         */
-        private synchronized void maybeInitPredefined() {
-            if (hostInfoFetchingTaskResult == null) {
-                return;
-            }
-
-            try {
-                HostInfo hi = hostInfoFetchingTaskResult.get();
-                if (hi != null) {
-                    setupPredefined(hi);
-                    hostInfoFetchingTaskResult = null;
-                }
-            } catch (InterruptedException ex) {
-            } catch (ExecutionException ex) {
-            } finally {
-                if (hostInfoFetchingTaskResult != null) {
-                    hostInfoFetchingTaskResult =
-                            NativeTaskExecutorService.submit(
-                            new HostInfoFetchingTask(execEnv),
-                            "Fetch host info for " + execEnv.toString()); // NOI18N
-                }
-            }
-        }
-
         private String valueOf(String macro, Map<String, String> map) {
             String result = map.get(macro);
             return result == null ? "${" + macro + "}" : result; // NOI18N
@@ -176,7 +140,12 @@ public final class MacroExpanderFactory {
                 return string;
             }
 
-            maybeInitPredefined();
+            synchronized (this) {
+                if (!initialized) {
+                    setupPredefined(HostInfoUtils.getHostInfo(execEnv));
+                    initialized = true;
+                }
+            }
 
             res.setLength(0);
             buf.setLength(0);
@@ -247,32 +216,38 @@ public final class MacroExpanderFactory {
             return res.toString();
         }
 
-        protected void setupPredefined(HostInfo hi) {
-            String platform = hi.platform;
-
-            if ("i386".equals(platform) || // NOI18N
-                    "i686".equals(platform) || // NOI18N
-                    "x86_64".equals(platform) || // NOI18N
-                    "amd64".equals(platform) || // NOI18N
-                    "athlon".equals(platform)) { // NOI18N
-                platform = "x86"; // NOI18N
-            }
-
+        protected void setupPredefined(final HostInfo hi) {
             String soext;
-
-            if (hi.os.startsWith("Windows")) { // NOI18N
-                soext = "dll"; // NOI18N
-            } else if ("Mac_OS_X".equals(hi.os)) { // NOI18N
-                soext = "dylib"; // NOI18N
-            } else {
-                soext = "so"; // NOI18N
+            String osname;
+            switch (hi.getOSFamily()) {
+                case WINDOWS:
+                    soext = "dll"; // NOI18N
+                    osname = "Windows"; // NOI18N
+                    break;
+                case MACOSX:
+                    soext = "dylib"; // NOI18N
+                    osname = "MacOSX"; // NOI18N
+                    break;
+                case SUNOS:
+                    soext = "so"; // NOI18N
+                    osname = "SunOS"; // NOI18N
+                    break;
+                case LINUX:
+                    soext = "so"; // NOI18N
+                    osname = "Linux"; // NOI18N
+                    break;
+                default:
+                    osname = hi.getOSFamily().name();
+                    soext = "so"; // NOI18N
             }
 
-            predefinedMacros.put("osname", hi.os); // NOI18N
-            predefinedMacros.put("platform", platform); // NOI18N
-            predefinedMacros.put("isa", hi.hostIsaBits); // NOI18N
-            predefinedMacros.put("_isa", "64".equals(hi.hostIsaBits) ? "_64" : ""); // NOI18N
+            OS os = hi.getOS();
+
             predefinedMacros.put("soext", soext); // NOI18N
+            predefinedMacros.put("platform", hi.getCpuFamily().name().toLowerCase()); // NOI18N
+            predefinedMacros.put("osname", osname); // NOI18N
+            predefinedMacros.put("isa", os.getBitness().toString()); // NOI18N
+            predefinedMacros.put("_isa", os.getBitness() == HostInfo.Bitness._64 ? "_64" : ""); // NOI18N
         }
     }
 
@@ -293,47 +268,13 @@ public final class MacroExpanderFactory {
                 platform = "intel"; // NOI18N
             }
 
-            if ("SunOS".equals(hi.os)) { // NOI18N
+            if (hi.getOSFamily() == HostInfo.OSFamily.SUNOS) { // NOI18N
                 platform += "-S2"; // NOI18N
             } else {
-                platform += "-" + hi.os; // NOI18N
+                platform += "-" + hi.getOSFamily().name(); // NOI18N
             }
 
             predefinedMacros.put("platform", platform); // NOI18N
-        }
-    }
-
-    private static class HostInfo {
-
-        final String platform;
-        final String os;
-        final String hostIsaBits;
-
-        public HostInfo(String platform, String os, String hostIsaBits) {
-            this.platform = platform;
-            this.os = os;
-            this.hostIsaBits = hostIsaBits;
-        }
-    }
-
-    private static class HostInfoFetchingTask implements Callable<HostInfo> {
-
-        private final ExecutionEnvironment execEnv;
-
-        public HostInfoFetchingTask(ExecutionEnvironment execEnv) {
-            this.execEnv = execEnv;
-        }
-
-        public HostInfo call() throws Exception {
-            try {
-                String os = HostInfoUtils.getOS(execEnv);
-                String platform = HostInfoUtils.getCpuType(execEnv);
-                String hostIsaBits = HostInfoUtils.getIsaBits(execEnv);
-
-                return new HostInfo(platform, os, hostIsaBits);
-            } catch (Exception e) {
-                return null;
-            }
         }
     }
 }

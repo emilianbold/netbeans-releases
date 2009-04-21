@@ -62,6 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -81,6 +82,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -466,6 +468,8 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 }
                 Collections.sort(files, new FileDescription.FDComarator(panel.isPreferedProject(), panel.isCaseSensitive()));
                 return files;
+            } catch (PatternSyntaxException pse) {
+                return Collections.<FileDescription>emptyList();
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);
                 return Collections.<FileDescription>emptyList();

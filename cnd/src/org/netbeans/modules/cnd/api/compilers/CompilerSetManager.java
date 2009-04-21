@@ -658,10 +658,8 @@ public class CompilerSetManager {
             return;
         }
         final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
-        ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-        assert registry != null;
         assert provider != null;
-        ServerRecord record = registry.get(executionEnvironment);
+        ServerRecord record = ServerList.get(executionEnvironment);
         assert record != null;
 
         log.fine("CSM.initRemoteCompilerSets for " + executionEnvironment + " [" + state + "]");
@@ -1191,12 +1189,7 @@ public class CompilerSetManager {
     }
 
     public static ExecutionEnvironment getDefaultExecutionEnvironment() {
-        ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-        if (registry == null) {
-            return ExecutionEnvironmentFactory.getLocal();
-        } else {
-            return registry.getDefaultRecord().getExecutionEnvironment();
-        }
+        return ServerList.getDefaultRecord().getExecutionEnvironment();
     }
 
     /**

@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.ui.options.IsChangedListener;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public class ParserSettingsPanel extends JPanel implements ChangeListener, ActionListener, IsChangedListener {
@@ -129,22 +128,19 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
 
         CompilerSetPresenter toSelect = null;
         List<CompilerSetPresenter> allCS = new ArrayList<CompilerSetPresenter>();
-        ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
-        if (serverList != null) {
-            List<ExecutionEnvironment> servers = serverList.getEnvironments();
-            if (servers.size() > 1) {
-                for (ExecutionEnvironment execEnv : servers) {
-                    for (CompilerSet cs : getCompilerSetManager(execEnv).getCompilerSets()) {
-                        CompilerSetPresenter csp = new CompilerSetPresenter(cs, execEnv.getHost() + " : " + cs.getName()); //NOI18N
-                        if (csToSelect == cs) {
-                            toSelect = csp;
-                        }
-                        allCS.add(csp);
+        List<ExecutionEnvironment> servers = ServerList.getEnvironments();
+        if (servers.size() > 1) {
+            for (ExecutionEnvironment execEnv : servers) {
+                for (CompilerSet cs : getCompilerSetManager(execEnv).getCompilerSets()) {
+                    CompilerSetPresenter csp = new CompilerSetPresenter(cs, execEnv.getHost() + " : " + cs.getName()); //NOI18N
+                    if (csToSelect == cs) {
+                        toSelect = csp;
                     }
+                    allCS.add(csp);
                 }
-            } else {
-                assert servers.get(0).isLocal();
             }
+        } else {
+            assert servers.get(0).isLocal();
         }
 
         if (allCS.size() == 0) {
