@@ -1,7 +1,7 @@
 Name: Bugzilla Connector
 Version: 3.1.1
 License: EPL-v10
-OSR: 10108
+OSR: 11720
 Origin: http://www.eclipse.org/mylyn/
 Description: Java connector to Bugzilla issue tracking system
 
