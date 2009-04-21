@@ -57,6 +57,7 @@ public final class FunctionsListViewVisualizerConfiguration implements Visualize
     private final FunctionDatatableDescription functionDatatableDescription;
     private final DataTableMetadata metadata;
     private final List<Column> metrics;
+    private ColumnsUIMapping columnsUIMapping;
 
     static{
         FunctionsListViewVisualizerConfigurationAccessor.setDefault(new FunctionsListViewVisualizerConfigurationAccessorImpl());
@@ -70,6 +71,10 @@ public final class FunctionsListViewVisualizerConfiguration implements Visualize
         this.metrics = metrics;
     }
 
+
+    public void setColumnsUIMapping(ColumnsUIMapping columnsUIMapping){
+        this.columnsUIMapping = columnsUIMapping;
+    }
     
      private FunctionDatatableDescription getFunctionDatatableDescription() {
         return functionDatatableDescription;
@@ -101,6 +106,11 @@ public final class FunctionsListViewVisualizerConfiguration implements Visualize
         @Override
         public String getID() {
             return ID;
+        }
+
+        @Override
+        public ColumnsUIMapping getColumnsUIMapping(FunctionsListViewVisualizerConfiguration configuration) {
+            return configuration.columnsUIMapping;
         }
         
     }

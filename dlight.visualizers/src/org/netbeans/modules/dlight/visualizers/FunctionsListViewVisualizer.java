@@ -71,6 +71,7 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.FunctionsListViewVisualizerConfigurationAccessor;
 import org.openide.explorer.ExplorerManager;
@@ -104,6 +105,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private final FunctionDatatableDescription functionDatatableDescription;
     private final FunctionsListDataProvider dataProvider;
     private final DataTableMetadata metadata;
+    private final ColumnsUIMapping  columnsUIMapping;
     private final List<Column> metrics;
     private final FunctionsListViewVisualizerConfiguration configuration;
 
@@ -112,17 +114,23 @@ public class FunctionsListViewVisualizer extends JPanel implements
         this.configuration = configuration;
         this.functionDatatableDescription = FunctionsListViewVisualizerConfigurationAccessor.getDefault().getFunctionDatatableDescription(configuration);
         this.metrics = FunctionsListViewVisualizerConfigurationAccessor.getDefault().getMetricsList(configuration);
+        columnsUIMapping = FunctionsListViewVisualizerConfigurationAccessor.getDefault().getColumnsUIMapping(configuration);
         this.dataProvider = dataProvider;
         this.metadata = configuration.getMetadata();
         setLoadingContent();
         addComponentListener(this);
-        outlineView = new OutlineView(metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnUName());
+        String nodeLabel = columnsUIMapping == null || columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn()) == null?
+            metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnUName() :
+             columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn());
+        outlineView = new OutlineView(nodeLabel);
         outlineView.getOutline().setRootVisible(false);
         outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
         List<Property> result = new ArrayList<Property>();
         for (Column c : metrics) {
+            String displayedName = columnsUIMapping == null || columnsUIMapping.getDisplayedName(c.getColumnName()) == null ? c.getColumnUName() : columnsUIMapping.getDisplayedName(c.getColumnName());
+            String displayedTooltip = columnsUIMapping == null || columnsUIMapping.getTooltip(c.getColumnName()) == null ? c.getColumnLongUName() : columnsUIMapping.getTooltip(c.getColumnName());
             result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
-                    c.getColumnUName(), c.getColumnUName(), true, false) {
+                    displayedName, displayedTooltip, true, false) {
 
                 @Override
                 public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -392,7 +400,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
                     //create for metrics
                     for (final Column metric : metrics) {
                         result.add(new PropertySupport(metric.getColumnName(), metric.getColumnClass(),
-                                metric.getColumnUName(), metric.getColumnUName(), true, false) {
+                                metric.getColumnUName(), metric.getColumnLongUName(), true, false) {
 
                             @Override
                             public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -401,8 +409,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
                             @Override
                             public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                                //throw new UnsupportedOperationException("Not supported yet.");
-                                }
+                              }
                         });
                     }
                     return result.toArray(new Property[0]);
