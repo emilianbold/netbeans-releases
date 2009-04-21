@@ -119,7 +119,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         if (prefs==null)
             return null;
         try {
-            String uriString = prefs.get("working.dir." + feature.getLocation().toString(), null);
+            String uriString = prefs.get("working.dir." + feature.getLocation(), null);
             if (uriString!=null) {
                 URI uri = new URI(uriString);
                 return new File(uri);
@@ -173,7 +173,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
             //external repository not supported
             return;
         }
-        List<String> roots = getStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation().toString());
+        List<String> roots = getStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation());
         for (String root:roots) {
             try {
                 NbProjectHandleImpl nbH = RecentProjectsCache.getDefault().getProjectHandle(new URL(root));
@@ -190,7 +190,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         if (remoteLocation==null || remoteLocation.length()==0) {
             return false;
         }
-        if (feature.getLocation().toASCIIString().equals(remoteLocation))
+        if (feature.getLocation().equals(remoteLocation))
             return true;
         return false;
     }
@@ -201,7 +201,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
             value.add(((NbProjectHandleImpl) nbp).url.toString());
         }
         if (prefs!=null)
-            putStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation().toString(), value);
+            putStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation(), value);
     }
 
 
