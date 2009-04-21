@@ -1,5 +1,5 @@
 Name: JSch
-Version: 0.1.39
+Version: 0.1.41
 License: BSD-jsch-variant
 OSR: 3548
 Origin: http://www.jcraft.com/jsch/

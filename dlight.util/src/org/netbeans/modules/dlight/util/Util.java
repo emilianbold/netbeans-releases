@@ -45,6 +45,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -78,8 +81,9 @@ public class Util {
                 return null;
             }
 
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
             String prefix = "_dlight_" + getBriefName(resourceFileName);//NOI18N
-            File result_file = File.createTempFile(prefix, ".d");//NOI18N
+            File result_file = File.createTempFile(prefix, ".d", new File(hostInfo.getTempDir()));//NOI18N
             result_file.deleteOnExit();
 
             OutputStream os = new FileOutputStream(result_file);

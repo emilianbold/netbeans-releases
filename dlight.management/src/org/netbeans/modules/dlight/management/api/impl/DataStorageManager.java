@@ -55,7 +55,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Lookup;
 
 public final class DataStorageManager {
-
+    
     private Collection<? extends DataStorageFactory> dataStorageFactories;//this is to create new ones
     private Map<DLightSession, List<DataStorage>> activeDataStorages = new HashMap<DLightSession, List<DataStorage>>();
     private static final Logger log = DLightLogger.getLogger(DataStorageManager.class);
@@ -72,6 +72,20 @@ public final class DataStorageManager {
     }
 
      public List<DataStorage> closeSession(DLightSession session){
+         if (session == null){
+             return null;
+         }
+         List<DataStorage> storages = activeDataStorages.get(session);
+         if (storages == null){
+             return null;
+         }
+         for (DataStorage storage : storages){
+             if (!storage.shutdown()){
+                 log.finest("DataStorage " + storage + " is not closed");//NOI18N
+             }else{
+                 log.finest("DataStorage " + storage + " successfully closed");//NOI18N
+             }
+         }
          return activeDataStorages.remove(session);
      }
 

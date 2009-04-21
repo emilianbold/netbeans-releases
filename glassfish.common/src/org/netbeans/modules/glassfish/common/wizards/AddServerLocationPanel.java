@@ -356,6 +356,37 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                 }
             }));
             
+            pathList.add(new TreeParser.Path("/domain/configs/config/network-config/network-listeners/network-listener",
+                    new TreeParser.NodeReader() {
+                @Override
+                public void readAttributes(String qname, Attributes attributes) throws SAXException {
+                    // <http-listener
+                    //   id="http-listener-1" port="8080" xpowered-by="true"
+                    //   enabled="true" address="0.0.0.0" security-enabled="false"
+                    //   family="inet" default-virtual-server="server"
+                    //   server-name="" blocking-enabled="false" acceptor-threads="1">
+                    try {
+                        String id = attributes.getValue("name");
+                        if(id != null && id.length() > 0) {
+                            int port = Integer.parseInt(attributes.getValue("port"));
+                            boolean secure = "true".equals(attributes.getValue("security-enabled"));
+                            boolean enabled = !"false".equals(attributes.getValue("enabled"));
+                            if(enabled) {
+                                HttpData data = new HttpData(id, port, secure);
+                                Logger.getLogger("glassfish").log(Level.FINER, " Adding " + data);
+                                httpMap.put(id, data);
+                            } else {
+                                Logger.getLogger("glassfish").log(Level.FINER, "http-listener " + id + " is not enabled and won't be used.");
+                            }
+                        } else {
+                            Logger.getLogger("glassfish").log(Level.FINEST, "http-listener found with no name");
+                        }
+                    } catch(NumberFormatException ex) {
+                        throw new SAXException(ex);
+                    }
+                }
+            }));
+
             try {
                 TreeParser.readXml(domainXml, pathList);
                 

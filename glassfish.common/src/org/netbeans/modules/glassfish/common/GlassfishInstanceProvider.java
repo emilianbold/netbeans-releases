@@ -180,6 +180,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         this.requiredFiles = requiredFiles;
         this.excludedFiles = excludedFiles;
         this.needsJdk6 = needsJdk6;
+        init();
     }
 
     public static synchronized boolean initialized() {

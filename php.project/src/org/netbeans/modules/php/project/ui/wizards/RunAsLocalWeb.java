@@ -251,8 +251,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
         indexFileLabel.setLabelFor(indexFileTextField);
 
-        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile")); // NOI18N
-        indexFileTextField.setEditable(false);
+        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile"));
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_BrowseIndex"));
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -286,7 +285,6 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(indexFileBrowseButton)))))
                 .add(0, 0, 0))
-
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -306,7 +304,6 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
                 .add(18, 18, 18)
                 .add(copyFilesPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-
         );
 
         urlLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlLabel.AccessibleContext.accessibleName")); // NOI18N

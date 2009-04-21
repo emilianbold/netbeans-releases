@@ -267,7 +267,6 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     public void finishServerInitialization() throws ServerInitializationException {
         try {
             // remove any invalid server definitions...
-            commonUtilities.finishServerInitialization();
             String[] urls = InstanceProperties.getInstanceList();
             if (null != urls) {
                 List<String> needToRemove = new ArrayList<String>();

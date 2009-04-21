@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.ConnectException;
 import java.security.acl.NotOwnerException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,6 +76,7 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -243,20 +243,15 @@ public final class DtraceDataCollector
             Util.setExecutionPermissions(Arrays.asList(scriptPath));
         } else {
             File script = new File(localScriptPath);
+            scriptPath = HostInfoUtils.getHostInfo(execEnv).getTempDir() + "/" + script.getName(); // NOI18N
+            Future<Integer> copyResult = CommonTasksSupport.uploadFile(
+                    localScriptPath, execEnv, scriptPath, 0777, null);
             try {
-                scriptPath = HostInfoUtils.getTempDir(execEnv) + "/" + script.getName(); // NOI18N
-                Future<Integer> copyResult = CommonTasksSupport.uploadFile(
-                        localScriptPath, execEnv, scriptPath, 0777, null);
-                try {
-                    copyResult.get();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } catch (ConnectException ex) {
-                // should not happen as validation assures that host is connected
-                DLightLogger.instance.severe("Host must be connected at this stage"); // NOI18N
+                copyResult.get();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -322,11 +317,15 @@ public final class DtraceDataCollector
         boolean connected = true;
         String error = ""; // NOI18N
 
+        final HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+
+        if (hostInfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
+            return ValidationStatus.invalidStatus(
+                    NbBundle.getMessage(DtraceDataCollector.class,
+                    "DtraceDataCollector.DtraceIsSupportedOnSunOSOnly")); // NOI18N
+        }
+
         try {
-            if (!HostInfoUtils.getOS(execEnv).equals("SunOS")) { // NOI18N
-                return ValidationStatus.invalidStatus(
-                        NbBundle.getMessage(DtraceDataCollector.class, "DtraceDataCollector.DtraceIsSupportedOnSunOSOnly")); // NOI18N
-            }
             fileExists = HostInfoUtils.fileExists(execEnv, command);
         } catch (IOException ex) {
             error = ex.getMessage();
@@ -368,7 +367,8 @@ public final class DtraceDataCollector
 
         if (sps == null) {
             return ValidationStatus.invalidStatus(
-                    NbBundle.getMessage(DtraceDataCollector.class, "DtraceDataCollector.NoPrivSupport", execEnv.toString()));//NOI18N
+                    NbBundle.getMessage(DtraceDataCollector.class, 
+                    "DtraceDataCollector.NoPrivSupport", execEnv.toString())); // NOI18N
         }
 
         boolean status = sps.hasPrivileges(requiredPrivilegesList);

@@ -114,6 +114,7 @@ public class PlatformImpl extends J2eePlatformImpl {
     private static final String JAXWSA_RI_JAR = "lib/jaxwsa-ri.jar"; //NOI18N
     
     // wsit jars
+    private static final String WEBSERVICES_API_JAR = "lib/endorsed/webservices-api.jar"; //NOI18N
     private static final String WEBSERVICES_RT_JAR = "lib/webservices-rt.jar"; //NOI18N
     private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N
     
@@ -251,6 +252,7 @@ public class PlatformImpl extends J2eePlatformImpl {
                 // WSIT - just add additional libraries to the above
                 lib = lp.createLibrary();
                 lib.setName(NbBundle.getMessage(PlatformImpl.class, "wsit")); // NOI18N
+                l.add(fileToUrl(new File(root, WEBSERVICES_API_JAR)));
                 l.add(fileToUrl(new File(root, WEBSERVICES_TOOLS_JAR)));
                 l.add(fileToUrl(new File(root, WEBSERVICES_RT_JAR)));
 
@@ -406,6 +408,7 @@ public class PlatformImpl extends J2eePlatformImpl {
                     new File(root, "lib/jaxrpc-impl.jar"),      //NOI18N
                     new File(root, "lib/endorsed/jaxp-api.jar"),//NOI18N
                     new File(root, APPSERV_WS_JAR),        // possibly for AS 9
+                    new File(root, WEBSERVICES_API_JAR),   // possibly for AS 9.1
                     new File(root, WEBSERVICES_TOOLS_JAR), // possibly for AS 9.1
                     new File(root, WEBSERVICES_RT_JAR),    // possibly for AS 9.1
                 };
@@ -438,8 +441,9 @@ public class PlatformImpl extends J2eePlatformImpl {
                     new File(root, "lib/activation.jar"),       // NOI18N
                     
                     // GF V2 -- not present in other environments
-                    new File(root, "lib/webservices-rt.jar"),       //NOI18N
-                    new File(root, "lib/webservices-tools.jar"),       //NOI18N
+                    new File(root, WEBSERVICES_API_JAR),       //NOI18N
+                    new File(root, WEBSERVICES_RT_JAR),       //NOI18N
+                    new File(root, WEBSERVICES_TOOLS_JAR),       //NOI18N
                     
                     // GF V1U1 and V2 -- not present in 8.2
                     new File(root, "lib/appserv-ws.jar"),       //NOI18N
@@ -510,18 +514,34 @@ public class PlatformImpl extends J2eePlatformImpl {
             File jwsdpJar = new File(root, JWSDP_JAR);  //NOI18N
             File wsToolsJar = new File(root, WEBSERVICES_TOOLS_JAR);  //NOI18N
 
+            File wsEndorsedApiJar = new File(root, WEBSERVICES_API_JAR);  //NOI18N
+
             if (wsToolsJar.exists()) {          // WSIT installed on top
                 if (isValidPlatformRoot(root).equals("")) {
-                    return new File[] {
-                        new File(root, WEBSERVICES_TOOLS_JAR),     // NOI18N
-                        new File(root, WEBSERVICES_RT_JAR),           // NOI18N
-                        new File(root, TOOLS_JAR),      //NOI18N
-                        new File(root, JSTL_JAR),       //NOI18N
-                        new File(root, JAVA_EE_JAR),    //NOI18N
-                        new File(root, APPSERV_WS_JAR), //NOI18N
-                        new File(root, MAIL_JAR),       //NOI18N
-                        new File(root, ACTIVATION_JAR)  //NOI18N
-                    };
+                    if (wsEndorsedApiJar.exists()) {
+                        return new File[] {
+                            new File(root, WEBSERVICES_API_JAR),     // NOI18N
+                            new File(root, WEBSERVICES_TOOLS_JAR),     // NOI18N
+                            new File(root, WEBSERVICES_RT_JAR),           // NOI18N
+                            new File(root, TOOLS_JAR),      //NOI18N
+                            new File(root, JSTL_JAR),       //NOI18N
+                            new File(root, JAVA_EE_JAR),    //NOI18N
+                            new File(root, APPSERV_WS_JAR), //NOI18N
+                            new File(root, MAIL_JAR),       //NOI18N
+                            new File(root, ACTIVATION_JAR)  //NOI18N
+                        };
+                    } else {
+                        return new File[] {
+                            new File(root, WEBSERVICES_TOOLS_JAR),     // NOI18N
+                            new File(root, WEBSERVICES_RT_JAR),           // NOI18N
+                            new File(root, TOOLS_JAR),      //NOI18N
+                            new File(root, JSTL_JAR),       //NOI18N
+                            new File(root, JAVA_EE_JAR),    //NOI18N
+                            new File(root, APPSERV_WS_JAR), //NOI18N
+                            new File(root, MAIL_JAR),       //NOI18N
+                            new File(root, ACTIVATION_JAR)  //NOI18N
+                        };
+                    }
                 }
             } else if (jwsdpJar.exists()) { // JWSDP installed on top
                 if (isValidPlatformRoot (root).equals("")) {
