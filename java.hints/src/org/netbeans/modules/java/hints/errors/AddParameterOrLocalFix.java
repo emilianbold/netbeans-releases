@@ -77,6 +77,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.java.hints.errors.Utilities.isEnhancedForLoopIdentifier;
 
 
 /**
@@ -167,7 +168,7 @@ public class AddParameterOrLocalFix implements Fix {
 
                     working.rewrite(targetTree, result);
                 } else {
-                    if (ErrorFixesFakeHint.isCreateLocalVariableInPlace()) {
+                    if (ErrorFixesFakeHint.isCreateLocalVariableInPlace() || isEnhancedForLoopIdentifier(tp)) {
                         resolveLocalVariable(working, tp, make, proposedType);
                     } else {
                         resolveLocalVariable55(working, tp, make, proposedType);
@@ -298,7 +299,9 @@ public class AddParameterOrLocalFix implements Fix {
         Tree statementParent = firstUse.getParentPath().getLeaf();
         VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(proposedType), null);
 
-        if (statementParent.getKind() == Kind.BLOCK) {
+        if (isEnhancedForLoopIdentifier(tp)) {
+            wc.rewrite(tp.getParentPath().getLeaf(), vt);
+        } else if (statementParent.getKind() == Kind.BLOCK) {
             BlockTree block = (BlockTree) statementParent;
 
             FirstUsage fu = new FirstUsage();
@@ -325,6 +328,12 @@ public class AddParameterOrLocalFix implements Fix {
                     }
                 }
 
+            }
+
+            //there in an incomplete ENHACED_FOR_LOOP as a parent, see testEnhancedForLoopInsideItsBody
+            if (result.getParentPath().getLeaf().getKind() == Kind.ENHANCED_FOR_LOOP && resultLeaf.getKind() == Kind.VARIABLE) {
+                wc.rewrite(resultLeaf, vt);
+                return;
             }
 
             BlockTree nueBlock = make.insertBlockStatement(block, block.getStatements().indexOf(statement), vt);

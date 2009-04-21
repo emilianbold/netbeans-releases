@@ -61,6 +61,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
@@ -423,10 +424,10 @@ public class GdbProxy {
      */
     public void exec_interrupt() {
         if (debugger.getState() == GdbDebugger.State.RUNNING || debugger.getState() == GdbDebugger.State.SILENT_STOP) {
-            if (debugger.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                debugger.kill(18);
+            if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+                debugger.kill(Signal.TRAP);
             } else {
-                debugger.kill(2);
+                debugger.kill(Signal.INT);
             }
         }
         //return 0;

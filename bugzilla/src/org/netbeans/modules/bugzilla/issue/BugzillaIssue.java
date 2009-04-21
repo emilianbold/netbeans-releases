@@ -82,6 +82,7 @@ import org.openide.util.NbBundle;
  */
 public class BugzillaIssue extends Issue {
 
+    public static final String RESOLVE_FIXED = "FIXED";                         // NOI18N
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
 
@@ -91,12 +92,12 @@ public class BugzillaIssue extends Issue {
     private IssueController controller;
     private IssueNode node;
 
-    static final String LABEL_NAME_ID           = "bugzilla.issue.id"; // NOI18N
-    static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity"; // NOI18N
-    static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority"; // NOI18N
-    static final String LABEL_NAME_STATUS       = "bugzilla.issue.status"; // NOI18N
-    static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution"; // NOI18N
-    static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary"; // NOI18N
+    static final String LABEL_NAME_ID           = "bugzilla.issue.id";          // NOI18N
+    static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity";    // NOI18N
+    static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority";    // NOI18N
+    static final String LABEL_NAME_STATUS       = "bugzilla.issue.status";      // NOI18N
+    static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution";  // NOI18N
+    static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary";     // NOI18N
 
     /**
      * Issue wasn't seen yet
@@ -184,8 +185,8 @@ public class BugzillaIssue extends Issue {
     }
 
     void opened() {
-        String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh");
-        if(refresh != null && refresh.equals("true")) {
+        String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh"); // NOI18N
+        if(refresh != null && refresh.equals("true")) {                                      // NOI18N
             return;
         }
         repository.scheduleForRefresh(getID());
@@ -290,7 +291,7 @@ public class BugzillaIssue extends Issue {
         }
         int status = repository.getIssueCache().getStatus(getID());
         if(status == Issue.ISSUE_STATUS_NEW) {
-            return "New";
+            return NbBundle.getMessage(BugzillaIssue.class, "LBL_NEW_STATUS");
         } else if(status == Issue.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             Map<String, String> seenAtributes = getSeenAttributes();
@@ -312,20 +313,20 @@ public class BugzillaIssue extends Issue {
                 for (IssueField changedField : changedFields) {
                     switch(changedField) {
                         case SUMMARY :
-                            ret = "Summary changed";
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_SUMMARY_CHANGED_STATUS");
                             break;
                         case CC :
-                            ret = "CC field changed";
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CC_FIELD_CHANGED_STATUS");
                             break;
                         case KEYWORDS :
-                            ret ="Keywords changed";
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_KEYWORDS_CHANGED_STATUS");
                             break;
                         case DEPENDS_ON :
                         case BLOCKS :
-                            ret ="Dependence changed";
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS");
                             break;
                         default :
-                            ret = changedField.name() + " changed to " + getFieldValue(changedField);
+                            ret = changedField.name() +  NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO") + getFieldValue(changedField);
                     }
                 }
                 return ret;
@@ -334,47 +335,47 @@ public class BugzillaIssue extends Issue {
                 for (IssueField changedField : changedFields) {
                     switch(changedField) {
                         case SUMMARY :
-                            ret = changedCount + " changes, incl. summary";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SUMMARY");
                             break;
                         case PRIORITY :
-                            ret = changedCount + " changes, incl. priority";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRIORITY");
                             break;
                         case SEVERITY :
-                            ret = changedCount + " changes, incl. severity";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SEVERITY");
                             break;
                         case PRODUCT :
-                            ret = changedCount + " changes, incl. product";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRODUCT");
                             break;
                         case COMPONENT :
-                            ret = changedCount + " changes, incl. component";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_COMPONENT");
                             break;
                         case PLATFORM :
-                            ret = changedCount + " changes, incl. platform";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PLATFORM");
                             break;
                         case VERSION :
-                            ret = changedCount + " changes, incl. version";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_VERSION");
                             break;
                         case MILESTONE :
-                            ret = changedCount + " changes, incl. milestone";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_MILESTONE");
                             break;
                         case KEYWORDS :
-                            ret = changedCount + " changes, incl. keywords";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_KEYWORDS");
                             break;
                         case URL :
-                            ret = changedCount + " changes, incl. url";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_URL");
                             break;
                         case ASSIGNED_TO :
-                            ret = changedCount + " changes, incl. Assignee";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_ASSIGNEE");
                             break;
                         case QA_CONTACT :
-                            ret = changedCount + " changes, incl. qa contact";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_QA_CONTACT");
                             break;
                         case DEPENDS_ON :
                         case BLOCKS :
-                            ret = changedCount + " changes, inclusive dependence";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCLUSIVE_DEPENDENCE");
                             break;
                         default :
-                            ret = changedCount + " changes";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES");
                     }
                     return ret;
                 }
@@ -397,7 +398,7 @@ public class BugzillaIssue extends Issue {
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
-        return "";
+        return "";                                                              // NOI18N
     }
 
     TaskRepository getTaskRepository() {
@@ -653,7 +654,7 @@ public class BugzillaIssue extends Issue {
 
         // resolved attrs
         if(close) {
-            resolve("FIXED"); // XXX constant?
+            resolve(RESOLVE_FIXED); // XXX constant?
         }
         if(comment != null) {
             addComment(comment);

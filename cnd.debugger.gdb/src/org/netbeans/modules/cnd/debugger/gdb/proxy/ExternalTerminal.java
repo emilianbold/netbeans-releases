@@ -49,10 +49,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.CndModule;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -140,7 +143,6 @@ public class ExternalTerminal implements PropertyChangeListener {
     }
     
     private void initGdbHelpers() {
-        
         try {
             gdbHelperLog = File.createTempFile("gdb_helper_", ".log"); // NOI18N
             gdbHelperScript = File.createTempFile("gdb_helper_", ".sh"); // NOI18N
@@ -160,11 +162,7 @@ public class ExternalTerminal implements PropertyChangeListener {
             fw.close();
         } catch (IOException ioe) {
         }
-        ProcessBuilder pb = new ProcessBuilder("/bin/chmod", "755", gdbHelperScript.getAbsolutePath()); // NOI18N
-        try {
-            pb.start().waitFor();
-        } catch (Exception ex) {
-        }
+        CndModule.chmod755(Collections.singletonList(gdbHelperScript.getAbsolutePath()), log);
     }
     
     /**
@@ -205,7 +203,7 @@ public class ExternalTerminal implements PropertyChangeListener {
             if (pid == 0) {
                 log.warning("Killing zero pid detected from log: " + gdbHelperLog);
             }
-            debugger.kill(15, pid);
+            debugger.kill(Signal.TERM, pid);
         }
     }
 }

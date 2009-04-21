@@ -197,6 +197,8 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                 predefinedPanel = new PredefinedPanel((CCCCompiler) tool, this);
                 predefinedPanels.put(key, predefinedPanel);
             //modified = true; // See 126368
+            } else {
+                predefinedPanel.updateCompiler((CCCCompiler) tool);
             }
             tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
         }

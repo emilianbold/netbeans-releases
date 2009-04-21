@@ -111,22 +111,22 @@ public final class IndexingManager {
     }
 
     /**
-     * Schedules a new job for refreshing all indicies created by the given indexer.
+     * Schedules a new job for refreshing all indices created by the given indexer.
      * This method only works for <code>CustomIndexer</code>s. It is not possible to
-     * refresh indicies created by <code>EmbeddedIndexer</code>s or <code>BinaryIndexer</code>s.
+     * refresh indices created by <code>EmbeddedIndexer</code>s or <code>BinaryIndexer</code>s.
      *
      * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
      * very expensive operation and the more files you ask to reindex the longer the
      * job will take.
      *
-     * @param indexerName The name of the indexer, which indicies should be refreshed.
-     *   Can be <code>null</code> in which case all indicies created by <b>all</b>
+     * @param indexerName The name of the indexer, which indices should be refreshed.
+     *   Can be <code>null</code> in which case all indices created by <b>all</b>
      *   indexers will be refreshed (ie. all types of indexers will used,
      *   not just <code>CustomIndexers</code>).
      *
      * @since 1.8
      */
-    public void refreshAllIndicies(String indexerName) {
+    public void refreshAllIndices(String indexerName) {
         if (indexerName != null) {
             RepositoryUpdater.getDefault().addIndexingJob(indexerName);
         } else {
@@ -143,12 +143,12 @@ public final class IndexingManager {
      * job will take.
      *
      * @param folders The list of folders that may contain some of previously
-     *   indexed roots. Can be <code>null</code> in which case all indicies for
+     *   indexed roots. Can be <code>null</code> in which case all indices for
      *   all roots will be refreshed.
      *
      * @since 1.11
      */
-    public void refreshAllIndicies(FileObject... folders) {
+    public void refreshAllIndices(FileObject... folders) {
         // XXX: we should actually implement a special job for this and not just
         // refresh everything
         RepositoryUpdater.getDefault().refreshAll();

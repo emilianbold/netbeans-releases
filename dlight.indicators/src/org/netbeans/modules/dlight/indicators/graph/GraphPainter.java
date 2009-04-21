@@ -221,22 +221,29 @@ class GraphPainter {
             int[] xx = new int[sampleCount + 2];
             int[] yy = new int[sampleCount + 2];
             int firstSample = Math.max(0, data.size() - sampleCount);
-            int effectiveHeight = (int)(h - GraphConfig.FONT_SIZE / 2);
+            int effectiveHeight = (int)(h - 2 - GraphConfig.FONT_SIZE / 2);
             for (int ser = 0; ser < seriesCount; ++ser) {
                 int lastx = 0;
                 int lasty = 0;
                 for (int i = 0; i < sampleCount; ++i) {
                     int[] values = data.get(firstSample + i);
                     int value = values[ser];
+                    int bonus = 0;
                     if (descriptors[ser].getKind() == GraphDescriptor.Kind.REL_SURFACE) {
                         for (int j = ser + 1; j < seriesCount; ++j) {
                             if (descriptors[j].getKind() == GraphDescriptor.Kind.REL_SURFACE) {
                                 value += values[j];
                             }
                         }
+                    } else if (descriptors[ser].getKind() == GraphDescriptor.Kind.ABS_SURFACE) {
+                        for (int j = ser + 1; j < seriesCount; ++j) {
+                            if (descriptors[j].getKind() == GraphDescriptor.Kind.ABS_SURFACE) {
+                                bonus += 2;
+                            }
+                        }
                     }
                     xx[i] = lastx = x + GraphConfig.STEP_SIZE * i;
-                    yy[i] = lasty = (int)(y + h - 2 - (long)value * effectiveHeight / scale); // int may overflow in multiplication
+                    yy[i] = lasty = (int)(y + h - 2 - (long)value * effectiveHeight / scale) - bonus; // int can overflow in multiplication
                 }
                 g2.setColor(descriptors[ser].getColor());
                 switch (descriptors[ser].getKind()) {
