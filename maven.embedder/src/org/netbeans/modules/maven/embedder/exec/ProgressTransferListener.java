@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.embedder.exec;
 
+import java.util.Stack;
 import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.events.TransferListener;
 import org.apache.maven.wagon.resource.Resource;
@@ -56,18 +57,28 @@ public class ProgressTransferListener implements TransferListener {
     private static ThreadLocal<Integer> lengthRef = new ThreadLocal<Integer>();
     private static ThreadLocal<Integer> countRef = new ThreadLocal<Integer>();
     private static ThreadLocal<ProgressContributor> contribRef = new ThreadLocal<ProgressContributor>();
+    private static ThreadLocal<ProgressContributor> pomcontribRef = new ThreadLocal<ProgressContributor>();
+    private static ThreadLocal<Stack<ProgressContributor>> contribStackRef = new ThreadLocal<Stack<ProgressContributor>>();
     private static ThreadLocal<AggregateProgressHandle> handleRef = new ThreadLocal<AggregateProgressHandle>();
+    private static final int POM_MAX = 20;
     /** Creates a new instance of ProgressTransferListener */
     public ProgressTransferListener() {
     }
     
     public static void setAggregateHandle(AggregateProgressHandle hndl) {
         handleRef.set(hndl);
+        contribStackRef.set(new Stack<ProgressContributor>());
+        ProgressContributor pc = AggregateProgressFactory.createProgressContributor("Pom files");
+        hndl.addContributor(pc);
+        pc.start(POM_MAX);
+        pomcontribRef.set(pc);
     }
     
     public static void clearAggregateHandle() {
         handleRef.remove();
         contribRef.remove();
+        contribStackRef.remove();
+        pomcontribRef.remove();
     }
 
     private String getResourceName(Resource res) {
@@ -79,10 +90,28 @@ public class ProgressTransferListener implements TransferListener {
         Resource res = transferEvent.getResource();
         String resName = getResourceName(res);
         if (!resName.endsWith(".pom")) { //NOI18N
+            Stack<ProgressContributor> stack = contribStackRef.get();
+            ProgressContributor pc = stack != null && !stack.empty() ? stack.pop() : null;
+            if (pc == null) {
+                String name = (transferEvent.getRequestType() == TransferEvent.REQUEST_GET
+                        ? NbBundle.getMessage(ProgressTransferListener.class, "TXT_Download", resName)
+                        : NbBundle.getMessage(ProgressTransferListener.class, "TXT_Uploading", resName));
+                pc = AggregateProgressFactory.createProgressContributor(name);
+                handleRef.get().addContributor(pc);
+            }
+            contribRef.set(pc);
+        } else {
             String name = (transferEvent.getRequestType() == TransferEvent.REQUEST_GET
-                              ? NbBundle.getMessage(ProgressTransferListener.class, "TXT_Download", resName) 
-                              : NbBundle.getMessage(ProgressTransferListener.class, "TXT_Uploading", resName));
-            contribRef.set(AggregateProgressFactory.createProgressContributor(name));
+                    ? NbBundle.getMessage(ProgressTransferListener.class, "TXT_Download", resName)
+                    : NbBundle.getMessage(ProgressTransferListener.class, "TXT_Uploading", resName));
+            ProgressContributor pc = AggregateProgressFactory.createProgressContributor(name);
+            contribStackRef.get().add(pc);
+            handleRef.get().addContributor(pc);
+            if (contribStackRef.get().size() < POM_MAX) {
+                pomcontribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", resName), contribStackRef.get().size());
+            } else {
+                pomcontribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", resName));
+            }
         }
     }
     
@@ -95,7 +124,6 @@ public class ProgressTransferListener implements TransferListener {
         }
         Resource res = transferEvent.getResource();
         int total = (int)Math.min((long)Integer.MAX_VALUE, res.getContentLength());
-        handleRef.get().addContributor(contribRef.get());
         if (total < 0) {
             contribRef.get().start(0);
         } else {
@@ -103,7 +131,7 @@ public class ProgressTransferListener implements TransferListener {
         }
         lengthRef.set(total);
         countRef.set(0);
-        contribRef.get().progress(org.openide.util.NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", getResourceName(res)));
+        contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", getResourceName(res)));
     }
     
     public void transferProgress(TransferEvent transferEvent, byte[] b, int i) {
