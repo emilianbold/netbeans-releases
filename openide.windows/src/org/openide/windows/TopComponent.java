@@ -1662,7 +1662,26 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             TopComponent.Cloneable self = (TopComponent.Cloneable) am.getComponent();
             if (self != null) {
                 TopComponent cloned = self.cloneComponent();
-                cloned.open();
+                int openIndex = -1;
+                if( self instanceof TopComponent ) {
+                    Mode m = WindowManager.getDefault().findMode((TopComponent)self);
+                    if( null != m ) {
+                        TopComponent[] tcs = m.getTopComponents();
+                        for( int i=0; i<tcs.length; i++ ) {
+                            if( tcs[i] == self ) {
+                                openIndex = i + 1;
+                                break;
+                            }
+                        }
+                        if( openIndex >= tcs.length )
+                            openIndex = -1;
+                    }
+                }
+                if( openIndex >= 0 ) {
+                    cloned.openAtTabPosition(openIndex);
+                } else {
+                    cloned.open();
+                }
                 cloned.requestActive();
             }
         }
