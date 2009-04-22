@@ -268,7 +268,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                     if (!KenaiService.Names.JIRA.equals(f.getService())) { 
                         return null;
                     }
-                    url = f.getLocation().toString();
+                    url = f.getLocation();
                     break;
                 }
             } catch (KenaiException kenaiException) {
