@@ -779,6 +779,9 @@ public class AstRenderer {
                             case CPPTokenTypes.COMMA:
                             case CPPTokenTypes.SEMICOLON:
                                 TypeImpl typeImpl = TypeFactory.createType(cls, ptrOperator, arrayDepth, ast, file);
+                                if (typeImpl != null) {
+                                    typeImpl.setTypeOfTypedef();
+                                }
                                 CsmTypedef typedef = createTypedef((nameToken == null) ? ast : nameToken, file, container, typeImpl, name);
                                 if (cls != null && cls.getName().length() == 0) {
                                     ((TypedefImpl) typedef).setTypeUnnamed();
@@ -888,6 +891,7 @@ public class AstRenderer {
                                     typeImpl = TypeFactory.createType(results.getEnclosingClassifier(), ptrOperator, arrayDepth, ast, file);
                                 }
                                 if (typeImpl != null) {
+                                    typeImpl.setTypeOfTypedef();
                                     CsmTypedef typedef = createTypedef(ast/*nameToken*/, file, scope, typeImpl, name);
                                     if (typedef != null) {
                                         if (results.getEnclosingClassifier() != null && results.getEnclosingClassifier().getName().length() == 0) {
