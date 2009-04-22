@@ -200,6 +200,7 @@ public class ViewTest extends TestBase {
         sf.appendChild(doc.createElementNS(Util.NAMESPACE, "location")).appendChild(doc.createTextNode("s"));
         Util.putPrimaryConfigurationData(helper, data);
         ProjectManager.getDefault().saveProject(p);
+        new java.awt.Robot().waitForIdle();
         Node r = p.getLookup().lookup(LogicalViewProvider.class).createLogicalView();
         assertEquals(appearanceEverything, expand(r));
         // Now configure includes and excludes.
@@ -214,6 +215,7 @@ public class ViewTest extends TestBase {
                 appendChild(doc.createTextNode("config.properties"));
         Util.putPrimaryConfigurationData(helper, data);
         ProjectManager.getDefault().saveProject(p);
+        new java.awt.Robot().waitForIdle();
         data = Util.getPrimaryConfigurationData(helper);
         doc = data.getOwnerDocument();
         sf = (Element) data.getElementsByTagName("source-folder").item(0);
@@ -223,21 +225,23 @@ public class ViewTest extends TestBase {
                 appendChild(doc.createTextNode("${excludes}"));
         Util.putPrimaryConfigurationData(helper, data);
         ProjectManager.getDefault().saveProject(p);
+        new java.awt.Robot().waitForIdle();
         assertEquals(appearanceIncludesExcludes, expand(r));
         // Now change them.
         ep = helper.getProperties("config.properties");
         ep.remove("includes");
         helper.putProperties("config.properties", ep);
         ProjectManager.getDefault().saveProject(p);
+        new java.awt.Robot().waitForIdle();
         assertEquals(appearanceExcludes, expand(r));
         // Also check floating includes.
         ep = helper.getProperties("config.properties");
         ep.put("includes", "relevant/included/");
         helper.putProperties("config.properties", ep);
         ProjectManager.getDefault().saveProject(p);
+        new java.awt.Robot().waitForIdle();
         assertEquals(appearanceFloating, expand(r));
     }
-    @RandomlyFails
     public void testIncludesExcludes() throws Exception {
         doTestIncludesExcludes(this, "tree",
                 "prj{s{ignored{file} relevant{excluded{file} included{file}}}}",

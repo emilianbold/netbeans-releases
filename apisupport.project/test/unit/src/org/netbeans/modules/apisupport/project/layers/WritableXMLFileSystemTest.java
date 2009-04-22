@@ -109,7 +109,21 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertEquals("more stuff", TestBase.slurp(x));
         // XXX check that using a nbres: or nbresloc: URL protocol works here too (if we specify a classpath)
     }
-    
+
+    /** #150902 - test spaces in url attribute are escaped to get valid URL. */
+    public void testURLAttr() throws Exception {
+        FileSystem fs = new Layer("<file name='x' url='A B C.txt'/>", Collections.singletonMap("A B C.txt", "stuff")).read();
+        FileObject x = null;
+        try {
+            x = fs.findResource("x");
+            assertNotNull(x);
+            assertEquals(5L, x.getSize());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("url attribute with spaces in path wrongly handled.");
+        }
+    }
+
     public void testSimpleAttributeReads() throws Exception {
         FileSystem fs = new Layer("<file name='x'><attr name='a' stringvalue='v'/> <attr name='b' urlvalue='file:/nothing'/></file> " +
                 "<folder name='y'> <file name='ignore'/><attr name='a' boolvalue='true'/><!--ignore--></folder>").read();
