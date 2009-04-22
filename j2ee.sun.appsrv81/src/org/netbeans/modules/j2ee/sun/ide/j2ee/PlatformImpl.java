@@ -401,6 +401,7 @@ public class PlatformImpl extends J2eePlatformImpl {
         if (J2eePlatform.TOOL_WSCOMPILE.equals(toolName)) {
             if (isValidPlatformRoot(root).equals("")) {
                 return new File[] {
+                    new File(root, WEBSERVICES_API_JAR),   // possibly for AS 9.1
                     new File(root, "lib/j2ee.jar"),             //NOI18N
                     new File(root, "lib/saaj-api.jar"),         //NOI18N
                     new File(root, "lib/saaj-impl.jar"),        //NOI18N
@@ -408,7 +409,6 @@ public class PlatformImpl extends J2eePlatformImpl {
                     new File(root, "lib/jaxrpc-impl.jar"),      //NOI18N
                     new File(root, "lib/endorsed/jaxp-api.jar"),//NOI18N
                     new File(root, APPSERV_WS_JAR),        // possibly for AS 9
-                    new File(root, WEBSERVICES_API_JAR),   // possibly for AS 9.1
                     new File(root, WEBSERVICES_TOOLS_JAR), // possibly for AS 9.1
                     new File(root, WEBSERVICES_RT_JAR),    // possibly for AS 9.1
                 };
@@ -429,6 +429,8 @@ public class PlatformImpl extends J2eePlatformImpl {
                     // GF V1U1 and V2 -- not in 8.2
                     new File(root, "lib/javaee.jar"),             //NOI18N
                     
+                    new File(root, WEBSERVICES_API_JAR),       //NOI18N
+
                     // 8.2 -- api's included in javaee.jar
                     new File(root, "lib/j2ee.jar"),             //NOI18N
                     
@@ -441,7 +443,6 @@ public class PlatformImpl extends J2eePlatformImpl {
                     new File(root, "lib/activation.jar"),       // NOI18N
                     
                     // GF V2 -- not present in other environments
-                    new File(root, WEBSERVICES_API_JAR),       //NOI18N
                     new File(root, WEBSERVICES_RT_JAR),       //NOI18N
                     new File(root, WEBSERVICES_TOOLS_JAR),       //NOI18N
                     
