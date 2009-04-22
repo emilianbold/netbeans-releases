@@ -59,6 +59,7 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
+import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -68,11 +69,14 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class JiraRepository extends Repository {
 
+    private static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/repository.png"; // NOI18N
+
     private String name;
     private TaskRepository taskRepository;
     private RepositoryController controller;
     private Set<Query> queries = null;
     private IssueCache cache;
+    private Image icon;
 
     private final Set<String> issuesToRefresh = new HashSet<String>(5);
     private final Set<JiraQuery> queriesToRefresh = new HashSet<JiraQuery>(3);
@@ -81,6 +85,7 @@ public class JiraRepository extends Repository {
     private RequestProcessor refreshProcessor;
 
     public JiraRepository() {
+        icon = ImageUtilities.loadImage(ICON_PATH, true);
     }
 
     public JiraRepository(String repoName, String url, String user, String password, String httpUser, String httpPassword) {
@@ -94,7 +99,6 @@ public class JiraRepository extends Repository {
         }
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
     }
-
 
     JiraRepository(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
@@ -116,6 +120,12 @@ public class JiraRepository extends Repository {
     public String getTooltip() {
         return name + " : " + taskRepository.getCredentials(AuthenticationType.REPOSITORY).getUserName() + "@" + taskRepository.getUrl(); // NOI18N
     }
+
+    @Override
+    public Image getIcon() {
+        return icon;
+    }
+    
     public TaskRepository getTaskRepository() {
         return taskRepository;
     }
@@ -140,11 +150,6 @@ public class JiraRepository extends Repository {
             controller = new RepositoryController(this);
         }
         return controller;
-    }
-
-    @Override
-    public Image getIcon() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

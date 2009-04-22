@@ -278,7 +278,7 @@ public class NbJiraIssue extends Issue {
 
     public static ColumnDescriptor[] getColumnDescriptors() {
         if(DESCRIPTORS == null) {
-            ResourceBundle loc = NbBundle.getBundle(JiraIssue.class);
+            ResourceBundle loc = NbBundle.getBundle(NbJiraIssue.class);
             DESCRIPTORS = new ColumnDescriptor[] {
                 new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
                                                   loc.getString("CTL_Issue_ID_Title"), // NOI18N
