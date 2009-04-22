@@ -276,10 +276,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     }
 
     private void addPathToRoot(ArtifactGraphNode node, List<ArtifactGraphEdge> edges, List<ArtifactGraphNode> nodes) {
-        DependencyNode parentDepN = node.getParentAfterFix();
-        if (parentDepN == null) {
-            parentDepN = node.getArtifact().getParent();
-        }
+        DependencyNode parentDepN = node.getArtifactParent();
         addPathToRoot(node.getArtifact(), parentDepN, edges, nodes);
     }
 
@@ -291,7 +288,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             edges.addAll(findEdgesBetween(grNode, getGraphNodeRepresentant(depN)));
             nodes.add(grNode);
             depN = parentDepN;
-            parentDepN = parentDepN.getParent();
+            parentDepN = grNode.getArtifactParent();
         }
     }
 
@@ -507,12 +504,12 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         return false;
     }
 
-    static ArtifactVersion findNewest (ArtifactGraphNode node) {
+    static ArtifactVersion findNewest (ArtifactGraphNode node, boolean all) {
         Set<DependencyNode> conf = node.getDuplicatesOrConflicts();
         ArtifactVersion result = new DefaultArtifactVersion(node.getArtifact().getArtifact().getVersion());
         ArtifactVersion curV = null;
         for (DependencyNode dn : conf) {
-            if (dn.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+            if (all || dn.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
                 curV = new DefaultArtifactVersion(dn.getArtifact().getVersion());
                 if (result.compareTo(curV) < 0) {
                     result = curV;
@@ -645,7 +642,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                     setEdgeSource(ed, rootNode);
 
                     node.setPrimaryLevel(1);
-                    node.setParentAfterFix(rootNode.getArtifact());
+                    node.setArtifactParent(rootNode.getArtifact());
                     rootNode.getArtifact().addChild(node.getArtifact());
 
                     shouldValidate = true;
@@ -671,10 +668,14 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 List<ArtifactGraphEdge> edges2Exclude = new ArrayList<ArtifactGraphEdge>();
                 Collection<ArtifactGraphEdge> incoming = findNodeEdges(node, false, true);
                 ArtifactGraphNode sourceNode = null;
+                boolean primaryExcluded = false;
                 for (ArtifactGraphEdge age : incoming) {
                     sourceNode = getEdgeSource(age);
                     if (sourceNode != null) {
                         for (DependencyNode dn : fixContent.conflictParents) {
+                            if (sourceNode.getArtifact().equals(dn)) {
+                                primaryExcluded = true;
+                            }
                             if (sourceNode.represents(dn)) {
                                 edges2Exclude.add(age);
                                 break;
@@ -693,6 +694,17 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 }
 
                 incoming = findNodeEdges(node, false, true);
+
+                if (primaryExcluded) {
+                    ArtifactVersion newVersion = findNewest(node, true);
+                    node.getArtifact().getArtifact().setVersion(newVersion.toString());
+                    for (ArtifactGraphEdge age : incoming) {
+                        EdgeWidget curEw = (EdgeWidget) findWidget(age);
+                        if (curEw != null) {
+                            curEw.modelChanged();
+                        }
+                    }
+                }
 
                 if (incoming.isEmpty()) {
                     removeNodeWithEdges(node);

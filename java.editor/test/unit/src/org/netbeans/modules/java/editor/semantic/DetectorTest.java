@@ -363,6 +363,10 @@ public class DetectorTest extends TestBase {
     public void testUsedImport132980() throws Exception {
 	performTest("UsedImport132980");
     }
+
+    public void testUsedImport159773() throws Exception {
+	performTest("UsedImport159773");
+    }
     
     public void testReadUse132342() throws Exception {
 	performTest("ReadUse132342");

@@ -104,6 +104,8 @@ class SSStackDataProvider implements StackDataProvider {
             TimeMetric.UserFuncTimeInclusive,
             TimeMetric.SyncWaitCallInclusive,
             TimeMetric.SyncWaitTimeInclusive,
+            TimeMetric.SyncWaitCallExclusive,
+            TimeMetric.SyncWaitTimeExclusive,
             MemoryMetric.LeakBytesMetric,
             MemoryMetric.LeaksCountMetric);
     private PerfanDataStorage storage;

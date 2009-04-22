@@ -124,12 +124,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         Artifact artifact = node.getArtifact().getArtifact();
         setLayout(LayoutFactory.createVerticalFlowLayout());
 
-        tooltipText = NbBundle.getMessage(DependencyGraphScene.class,
-                "TIP_Artifact", new Object[]{artifact.getGroupId(),
-                    artifact.getArtifactId(), artifact.getVersion(),
-                    artifact.getScope(), artifact.getType(), constructConflictText(node)});
-        setToolTipText(tooltipText);
-
+        updateTooltip();
         initContent(scene, artifact);
 
         hoverTimer = new Timer(500, this);
@@ -146,39 +141,49 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         doHightlightText(searchTerm);
     }
 
-    private String constructConflictText(ArtifactGraphNode node) {
-        StringBuilder toRet = new StringBuilder();
+    private void updateTooltip () {
+        StringBuilder tooltip = new StringBuilder();
         int conflictCount = 0;
         DependencyNode firstConflict = null;
-        for (DependencyNode nd : node.getDuplicatesOrConflicts()) {
-            if (nd.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                conflictCount++;
-                if (firstConflict == null) {
-                    firstConflict = nd;
+        int conflictType = node.getConflictType();
+        if (conflictType != ArtifactGraphNode.NO_CONFLICT) {
+            for (DependencyNode nd : node.getDuplicatesOrConflicts()) {
+                if (nd.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+                    conflictCount++;
+                    if (firstConflict == null) {
+                        firstConflict = nd;
+                    }
                 }
             }
         }
 
         if (conflictCount == 1) {
-            toRet.append(NbBundle.getMessage(ArtifactWidget.class, "TIP_SingleConflict",
+            tooltip.append(NbBundle.getMessage(ArtifactWidget.class, 
+                    conflictType == ArtifactGraphNode.CONFLICT ? "TIP_SingleConflict" : "TIP_SingleWarning" ,
                     firstConflict.getArtifact().getVersion(),
                     firstConflict.getParent().getArtifact().getArtifactId()));
         } else if (conflictCount > 1) {
-            toRet.append(NbBundle.getMessage(ArtifactWidget.class, "TIP_MultipleConflict"));
+            tooltip.append(NbBundle.getMessage(ArtifactWidget.class,
+                    conflictType == ArtifactGraphNode.CONFLICT ? "TIP_MultipleConflict" : "TIP_MultipleWarning"));
             for (DependencyNode nd : node.getDuplicatesOrConflicts()) {
                 if (nd.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                    toRet.append("<tr><td>");
-                    toRet.append(nd.getArtifact().getVersion());
-                    toRet.append("</td>");
-                    toRet.append("<td>");
-                    toRet.append(nd.getParent().getArtifact().getArtifactId());
-                    toRet.append("</td></tr>");
+                    tooltip.append("<tr><td>");
+                    tooltip.append(nd.getArtifact().getVersion());
+                    tooltip.append("</td>");
+                    tooltip.append("<td>");
+                    tooltip.append(nd.getParent().getArtifact().getArtifactId());
+                    tooltip.append("</td></tr>");
                 }
             }
-            toRet.append("</tbody></table>");
+            tooltip.append("</tbody></table>");
         }
 
-        return toRet.toString();
+        Artifact artifact = node.getArtifact().getArtifact();
+        tooltipText = NbBundle.getMessage(DependencyGraphScene.class,
+                "TIP_Artifact", new Object[]{artifact.getGroupId(),
+                    artifact.getArtifactId(), artifact.getVersion(),
+                    artifact.getScope(), artifact.getType(), tooltip.toString()});
+        setToolTipText(tooltipText);
     }
 
     private void doHightlightText(String searchTerm) {
@@ -315,6 +320,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
             fixHintW.setVisible(false);
             fixHintW = null;
         }
+        updateTooltip();
         
         repaint();
     }

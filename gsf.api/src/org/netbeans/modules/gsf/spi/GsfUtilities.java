@@ -196,11 +196,12 @@ public class GsfUtilities {
         }
 
         try {
-            DataObject dobj = DataObject.find(fileObject);
-
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            if (ec != null) {
-                return (BaseDocument)(openIfNecessary ? ec.openDocument() : ec.getDocument());
+            if (fileObject.isValid()) {
+                DataObject dobj = DataObject.find(fileObject);
+                EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                if (ec != null) {
+                    return (BaseDocument)(openIfNecessary ? ec.openDocument() : ec.getDocument());
+                }
             }
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
