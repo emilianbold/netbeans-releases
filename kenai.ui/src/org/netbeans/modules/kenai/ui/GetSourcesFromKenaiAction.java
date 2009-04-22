@@ -101,10 +101,10 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                         try {
 
                             if (passwdAuth != null) {
-                                Subversion.checkoutRepositoryFolder(feature.getLocation().toASCIIString(), sourcesInfo.relativePaths,
+                                Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
                                     new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
                             } else {
-                                Subversion.checkoutRepositoryFolder(feature.getLocation().toASCIIString(), sourcesInfo.relativePaths,
+                                Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
                                     new File(sourcesInfo.localFolderPath), true);
                             }
 
@@ -119,10 +119,10 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                         try {
 
                             if (passwdAuth != null) {
-                                Mercurial.cloneRepository(feature.getLocation().toASCIIString(), new File(sourcesInfo.localFolderPath),
+                                Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
                                     "", "", "", passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
                             } else {
-                                Mercurial.cloneRepository(feature.getLocation().toASCIIString(), new File(sourcesInfo.localFolderPath),
+                                Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
                                     "", "", "");
                             }
 
