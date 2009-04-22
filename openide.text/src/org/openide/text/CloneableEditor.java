@@ -85,6 +85,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     private StringBuffer sb = new StringBuffer(1024);
 
+    private final Object CLOSE_LAST_LOCK = new Object();
+
     // #20647. More important custom component.
 
     /** Custom editor component, which is used if specified by document
@@ -258,7 +260,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             int phaseNow = phase;
             switch (phase++) {
             case 0:
-                initNonVisual();
+                synchronized (CLOSE_LAST_LOCK) {
+                    initNonVisual();
+                }
                 if (newInitialize()) {
                     WindowManager.getDefault().invokeWhenUIReady(this);
                     break;
@@ -674,7 +678,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
 
         // close everything and do not ask
-        support.notifyClosed();
+        synchronized (CLOSE_LAST_LOCK) {
+            support.notifyClosed();
+        }
 
         if (support.getLastSelected() == this) {
             support.setLastSelected(null);
