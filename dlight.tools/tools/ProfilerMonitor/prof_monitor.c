@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
                         ((double) syncbuf.lock_ticks) / per_sec,
                         syncbuf.thr_count
                         );
-				fflush(stdout);
+                        fflush(stdout);
             }
         }
         if (monitor_mem) {
@@ -119,8 +119,8 @@ int main(int argc, char** argv) {
                     numget--;
                 }
             } else {
-                printf("mem: %ld\n", membuf.heapused);
-				fflush(stdout);
+                printf("mem: %d\n", membuf.heapused);
+                fflush(stdout);
             }
         }
         if (monitor_cpu) {
@@ -131,8 +131,8 @@ int main(int argc, char** argv) {
                     numget--;
                 }
             } else {
-                printf("cpu: %f\t%f\n", cpubuf.user, cpubuf.sys);
-				fflush(stdout);
+                printf("cpu: %d\t%d\n", cpubuf.user, cpubuf.sys);
+                fflush(stdout);
             }
         }
         if (numget) {
