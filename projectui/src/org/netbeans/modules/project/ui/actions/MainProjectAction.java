@@ -98,7 +98,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
 
         String presenterName = "";
         if (name != null) {
-            presenterName = MessageFormat.format(name, new Object[] { 0 });
+            presenterName = MessageFormat.format(name, new Object[] { -1 });
         }
         setDisplayName(presenterName);
         if ( icon != null ) {
