@@ -346,11 +346,17 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
             if (prepend != null) {
                 sb.append(prepend + " "); // NOI18N
             }
+            boolean sepAdded = false;
             for (Iterator<String> it = errMap.keySet().iterator(); it.hasNext(); ) {
                 String fld = it.next();
-                sb.append(errMap.get(fld));
+                sb.append(errMap.get(fld) + ". ");
+                sepAdded = true;
             }
-            errMsg = sb.toString();
+            if (sepAdded) {
+                errMsg = sb.substring(0, sb.length() - 2);
+            } else {
+                errMsg = sb.toString();
+            }
         } else {
             errMsg = kex.getLocalizedMessage();
         }
