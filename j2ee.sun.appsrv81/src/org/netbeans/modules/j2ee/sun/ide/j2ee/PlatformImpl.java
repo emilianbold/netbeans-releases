@@ -209,8 +209,22 @@ public class PlatformImpl extends J2eePlatformImpl {
                 List<URL> javadoc = dmProps.getJavadocs();
                 J2eeLibraryTypeProvider lp = new J2eeLibraryTypeProvider();
                 LibraryImplementation lib = lp.createLibrary();
-                lib.setName(NbBundle.getMessage(PlatformImpl.class, "j2ee14")); // NOI18N
+
+                // WSIT - just add additional libraries to the above
                 List l = new ArrayList();
+                lib.setName(NbBundle.getMessage(PlatformImpl.class, "wsit")); // NOI18N
+                l.add(fileToUrl(new File(root, WEBSERVICES_API_JAR)));
+                l.add(fileToUrl(new File(root, WEBSERVICES_TOOLS_JAR)));
+                l.add(fileToUrl(new File(root, WEBSERVICES_RT_JAR)));
+
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, sources);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, javadoc);
+                libs.add(lib);
+
+                lib = lp.createLibrary();
+                lib.setName(NbBundle.getMessage(PlatformImpl.class, "j2ee14")); // NOI18N
+                l = new ArrayList();
                 File ff = (new File(root, JAVA_EE_JAR));
                 if (!ff.exists()){
                     l.add(fileToUrl(new File(root, J2EE_14_JAR)));
@@ -247,18 +261,6 @@ public class PlatformImpl extends J2eePlatformImpl {
                 l.add(fileToUrl(new File(root, JAXWSA_RI_JAR)));
                 
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
-                libs.add(lib);
-
-                // WSIT - just add additional libraries to the above
-                lib = lp.createLibrary();
-                lib.setName(NbBundle.getMessage(PlatformImpl.class, "wsit")); // NOI18N
-                l.add(fileToUrl(new File(root, WEBSERVICES_API_JAR)));
-                l.add(fileToUrl(new File(root, WEBSERVICES_TOOLS_JAR)));
-                l.add(fileToUrl(new File(root, WEBSERVICES_RT_JAR)));
-
-                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
-                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, sources);
-                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, javadoc);
                 libs.add(lib);
                 
                 lib = lp.createLibrary();
@@ -418,6 +420,8 @@ public class PlatformImpl extends J2eePlatformImpl {
             if (isValidPlatformRoot(root).equals("")) {
                 return new File[] {
                     
+                    new File(root, WEBSERVICES_API_JAR),       //NOI18N
+
                     // 8.2 only -- not in GF based servers
                     new File(root, "lib/dom.jar"),            //NOI18N
                     new File(root, "lib/xalan.jar"),            //NOI18N
@@ -428,8 +432,6 @@ public class PlatformImpl extends J2eePlatformImpl {
                     
                     // GF V1U1 and V2 -- not in 8.2
                     new File(root, "lib/javaee.jar"),             //NOI18N
-                    
-                    new File(root, WEBSERVICES_API_JAR),       //NOI18N
 
                     // 8.2 -- api's included in javaee.jar
                     new File(root, "lib/j2ee.jar"),             //NOI18N
