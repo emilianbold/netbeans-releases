@@ -91,6 +91,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion.BaseType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
 import org.openide.util.NbBundle;
 
@@ -1583,8 +1584,11 @@ abstract public class CsmCompletionQuery {
                         CsmCompletionExpression param = item.getParameter(0);
                         staticOnly = false;
                         lastType = resolveType(param);
-                    // TODO: we need to wrap lastType with pointer and address-of
-                    // based on the zero token of 'item' expression
+                        // TODO: we need to wrap lastType with pointer and address-of
+                        // based on the zero token of 'item' expression
+                        if(lastType != null) {
+                            lastType = new BaseType(lastType.getClassifier(), lastType.getPointerDepth() + 1, lastType.isReference(), lastType.getArrayDepth());
+                        }
                     }
                     break;
 
