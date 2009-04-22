@@ -111,13 +111,13 @@ public class ConvertConditionals extends RubyAstRule {
         }
         
         int start = ifNode.getPosition().getStartOffset();
-        if (body != null && (
+        if (!RubyHints.isNullOrInvisible(body) && (
                 // Can't convert blocks with multiple statements
                 body.getNodeType() == NodeType.BLOCKNODE ||
                 // Already a statement modifier?
                 body.getPosition().getStartOffset() <= start)) {
             return;
-        } else if (elseNode != null && (
+        } else if (!RubyHints.isNullOrInvisible(elseNode) && (
                 elseNode.getNodeType() == NodeType.BLOCKNODE ||
                 elseNode.getPosition().getStartOffset() <= start)) {
             return;

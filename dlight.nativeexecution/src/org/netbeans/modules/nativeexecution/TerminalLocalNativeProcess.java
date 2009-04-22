@@ -82,7 +82,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         dorunScript = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
 
         if (dorunScript != null) {
-            CommonTasksSupport.chmod(ExecutionEnvironmentFactory.getLocal(), dorunScript.getAbsolutePath(), 0755);
+            CommonTasksSupport.chmod(ExecutionEnvironmentFactory.getLocal(),
+                    dorunScript.getAbsolutePath(), 0755, null);
         } else {
             log.severe("Unable to locate bin/nativeexecution/dorun.sh file!"); // NOI18N
         }

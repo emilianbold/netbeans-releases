@@ -76,6 +76,16 @@ public class AcceptorFactory {
           }
       };
 
+    public static final Acceptor UNICODE_IDENTIFIER
+    = new Acceptor() {
+          public final boolean accept(char ch) {
+              return Character.isUnicodeIdentifierPart(ch);
+          }
+          public @Override String toString() {
+            return "o.n.m.e.lib2.AcceptorFactory.UNICODE_IDENTIFIER"; //NOI18N
+          }
+      };
+
     public static final Acceptor JAVA_IDENTIFIER
     = new Acceptor() {
           public final boolean accept(char ch) {
