@@ -372,7 +372,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         if (featureItem != null) {
             String title = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                     "GetSourcesFromKenaiPanel.SelectRepositoryFolderTitle");
-            String repoUrl = featureItem.feature.getLocation().toASCIIString();
+            String repoUrl = featureItem.feature.getLocation();
             try {
                 if (passwdAuth != null) {
                     svnFolders = Subversion.selectRepositoryFolders(title, repoUrl,
@@ -487,7 +487,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
         @Override
         public String toString() {
-            return feature.getLocation().toString();
+            return feature.getLocation();
         }
 
     }
@@ -533,7 +533,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     private void updateRepoPath() {
         KenaiFeatureListItem selItem = (KenaiFeatureListItem) kenaiRepoComboBox.getSelectedItem();
         if (!localFolderPathEdited && selItem != null) {
-            String urlString = selItem.feature.getLocation().toASCIIString();
+            String urlString = selItem.feature.getLocation();
             String repoName = urlString.substring(urlString.lastIndexOf("/") + 1); // NOI18N
             localFolderTextField.setText(Utilities.getDefaultRepoFolder().getPath() + File.separator + repoName);
         }

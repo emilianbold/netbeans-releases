@@ -138,10 +138,10 @@ public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer
 
         if (feature != null) {
             if (index == -1) {
-                return new JLabel(((KenaiFeatureListItem) value).feature.getLocation().toString());
+                return new JLabel(((KenaiFeatureListItem) value).feature.getLocation());
             }
             projectNameLabel.setText(project.getDisplayName() + " (" + project.getName() + ")"); // NOI18N
-            projectRepoLabel.setText(feature.getLocation().toString());
+            projectRepoLabel.setText(feature.getLocation());
             repoTypeLabel.setText("(" + feature.getService() + ")"); // NOI18N
         }
 
