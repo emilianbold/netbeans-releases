@@ -50,7 +50,10 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.log.SearchHistoryAction;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
+import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbPreferences;
 
 /**
@@ -185,5 +188,39 @@ public class Mercurial {
 
         RepositoryConnection rc = new RepositoryConnection(url);
         HgModuleConfig.getDefault().insertRecentUrl(rc);
+    }
+
+    /**
+     * Tries to resolve the given URL and determine if the URL represents a mercurial repository.
+     * Should not be called inside AWT, this accesses network.
+     * @param url repository URL
+     * @return true if given url denotes an existing mercurial repository
+     */
+    public static boolean isRepository (final String url) {
+        boolean retval = false;
+        HgURL hgUrl = null;
+        try {
+            hgUrl = new HgURL(url);
+        } catch (MalformedURLException ex) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.FINE, "Invalid mercurial url " + url, ex);
+        }
+
+        if (hgUrl != null) {
+            // temporary folder will be deleted manually
+            retval = HgCommand.checkRemoteRepository(url);
+        }
+
+        return retval;
+    }
+
+    /**
+     * Opens standard clone wizard
+     * @param url repository url to checkout
+     * @throws java.net.MalformedURLException in case the url is invalid
+     */
+    public static void openCloneWizard (final String url) throws MalformedURLException {
+        addRecentUrl(url);
+        CloneWizardAction wiz = CloneWizardAction.getInstance();
+        wiz.performAction();
     }
 }
