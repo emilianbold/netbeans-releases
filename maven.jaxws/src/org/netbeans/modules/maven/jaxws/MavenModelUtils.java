@@ -84,45 +84,6 @@ public final class MavenModelUtils {
     private static final String JAXWS_PLUGIN_KEY = JAXWS_GROUP_ID+":"+JAXWS_ARTIFACT_ID; //NOI18N
     private static final String JAXWS_CATALOG = "jax-ws-catalog.xml"; //NOI18N
 
-    private MavenModelUtils() { }
-
-    /**
-     * returns a RESOLVED project instance of the
-     * plugin if defined in the pom.xml or any of the parents.
-     * @param handle
-     * @return
-     */
-    public static org.apache.maven.model.Plugin getJaxWSPlugin(MavenProject project) {
-        @SuppressWarnings("unchecked")
-        List<org.apache.maven.model.Plugin> plugins = project.getBuildPlugins();
-        for (org.apache.maven.model.Plugin plg : plugins) {
-            if (JAXWS_PLUGIN_KEY.equalsIgnoreCase(plg.getKey())) {
-                //TODO CHECK THE ACTUAL PARAMETER VALUES..
-                return plg;
-            }
-        }
-        return null;
-    }
-
-    /** Returns WAR plugin.
-     * returns a RESOLVED project instance of the
-     * plugin if defined in the pom.xml or any of the parents.
-     *
-     * @param project
-     * @return WAR plugin
-     */
-    public static org.apache.maven.model.Plugin getWarPlugin(MavenProject project) {
-        @SuppressWarnings("unchecked")
-        List<org.apache.maven.model.Plugin> plugins = project.getBuildPlugins();
-        for (org.apache.maven.model.Plugin plg : plugins) {
-            if (JAXWS_PLUGIN_KEY.equalsIgnoreCase(plg.getKey())) {
-                //TODO CHECK THE ACTUAL PARAMETER VALUES..
-                return plg;
-            }
-        }
-        return null;
-    }
-
     /**
      * adds jaxws plugin, requires the model to have a transaction started,
      * eg. by calling as part of Utilities.performPOMModelOperations(ModelOperation<POMModel>)
@@ -461,7 +422,7 @@ public final class MavenModelUtils {
      * @param project Maven project instance
      * @return list of wsdl files
      */
-    public static List<WsimportPomInfo> getWsdlFiles(Project project) {
+    static List<WsimportPomInfo> getWsdlFiles(Project project) {
         MavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
         assert mavenProject != null;
         @SuppressWarnings("unchecked")
@@ -507,33 +468,11 @@ public final class MavenModelUtils {
         return null;
     }
 
-    public static void updateLibraryScope(Project prj, POMModel model) {
+    private static void updateLibraryScope(POMModel model, String targetScope) {
         assert model.isIntransaction() : "need to call model modifications under transaction."; //NOI18N
         Dependency wsDep = model.getProject().findDependencyById("com.sun.xml.ws", "webservices-rt", null); //NOI18N
         if (wsDep != null) {
-            WSStack<JaxWs> wsStack = new WSStackUtils(prj).getWsStack(JaxWs.class);
-            if (wsStack != null) {
-                boolean isMetro = wsStack.isFeatureSupported(JaxWs.Feature.WSIT);
-                if (wsDep != null) {
-                    String scope = wsDep.getScope();
-                    if (isMetro) {
-                        if (scope == null || "compile".equals(scope)) { //NOI18N
-                            wsDep.setScope("provided"); //NOI18N
-                        }
-                    } else {
-                        if ("provided".equals(scope)) {
-                            wsDep.setScope("compile"); //NOI18N
-                        }
-                    }
-                }
-            } else { // wsStack is null
-                if (wsDep != null) {
-                    String scope = wsDep.getScope();
-                    if (scope == null || "compile".equals(scope)) { //NOI18N
-                        wsDep.setScope("provided"); //NOI18N
-                    }
-                }
-            }
+            wsDep.setScope(targetScope);
         }
     }
 
@@ -541,20 +480,50 @@ public final class MavenModelUtils {
      *
      * @param prj Project
      */
-    public static void reactOnServerChanges(final Project prj) {
-        ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-            public void performOperation(POMModel model) {
-                // update webservices-rt library dependency scope (provided or compile)
-                // depending whether J2EE Server contains metro jars or not
-                MavenModelUtils.updateLibraryScope(prj, model);
+    static void reactOnServerChanges(final Project prj) {
+        NbMavenProject nb = prj.getLookup().lookup(NbMavenProject.class);
+        @SuppressWarnings("unchecked")
+        List<org.apache.maven.model.Dependency> deps = nb.getMavenProject().getDependencies();
+        String metroScope = null;
+        boolean foundMetroDep = false;
+        for (org.apache.maven.model.Dependency dep:deps) {
+            if ("com.sun.xml.ws".equals(dep.getGroupId()) && "webservices-rt".equals(dep.getArtifactId())) { //NOI18N
+                String scope = dep.getScope();
+                metroScope = scope == null ? "compile" : scope; //NOI18N
+                foundMetroDep = true;
+                break;
             }
-        };
-        Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), //NOI18N
-                Collections.singletonList(operation));
-        // add|remove sun-jaxws.xml and WS entries to web.xml file
-        // depending on selected target server
-        if (WSUtils.isWeb(prj)) {
-            WSUtils.checkNonJSR109Entries(prj);
+        }
+        String updateScopeTo = null;
+        if (foundMetroDep) {
+            WSStack<JaxWs> wsStack = new WSStackUtils(prj).getWsStack(JaxWs.class);
+            if (wsStack != null) {
+                if (wsStack.isFeatureSupported(JaxWs.Feature.WSIT)) {
+                    if ("compile".equals(metroScope)) { //NOI18N
+                        updateScopeTo = "provided"; //NOI18N
+                    }
+                } else {
+                    if ("provided".equals(metroScope)) {
+                        updateScopeTo = "compile"; //NOI18N
+                    }
+                }
+            } else {
+                if ("compile".equals(metroScope)) { //NOI18N
+                    updateScopeTo = "provided"; //NOI18N
+                }
+            }
+            if (updateScopeTo != null) {
+                final String targetScope = updateScopeTo;
+                ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                    public void performOperation(POMModel model) {
+                        // update webservices-rt library dependency scope (provided or compile)
+                        // depending whether J2EE Server contains metro jars or not
+                        updateLibraryScope(model, targetScope);
+                    }
+                };
+                Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), //NOI18N
+                        Collections.singletonList(operation));
+            }
         }
     }
 

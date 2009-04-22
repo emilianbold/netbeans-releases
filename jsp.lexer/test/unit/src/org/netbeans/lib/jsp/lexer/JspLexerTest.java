@@ -145,7 +145,32 @@ public class JspLexerTest extends NbTestCase {
         assertEquals(" ", ts.token().text().toString());
         assertEquals(JspTokenId.WHITESPACE, ts.token().id());
 
-        
+
+    }
+
+    //test whether content of <jsp:expression>...</jsp:expression> is java
+    //http://www.netbeans.org/issues/show_bug.cgi?id=162546
+    public void testExpressionTagContent() {
+        TokenHierarchy th = TokenHierarchy.create("<jsp:expression>\"x\"</jsp:expression>", JspTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+
+        assertToken(ts, "<", JspTokenId.SYMBOL);
+        assertToken(ts, "jsp:expression", JspTokenId.TAG);
+        assertToken(ts, ">", JspTokenId.SYMBOL);
+        assertToken(ts, "\"x\"", JspTokenId.SCRIPTLET);
+        assertToken(ts, "</", JspTokenId.SYMBOL);
+        assertToken(ts, "jsp:expression", JspTokenId.ENDTAG);
+        assertToken(ts, ">", JspTokenId.SYMBOL);
+
+        assertFalse(ts.moveNext());
+
+    }
+
+    private void assertToken(TokenSequence ts, String tokenText, JspTokenId tokenId) {
+        assertTrue(ts.moveNext());
+        assertEquals(tokenId, ts.token().id());
+        assertEquals(tokenText, ts.token().text().toString());
     }
 
     public void testRegressions() throws Exception {

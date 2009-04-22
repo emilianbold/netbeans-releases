@@ -349,12 +349,6 @@ made subject to such option by the copyright holder.
                 <project>../../javascript.editing</project>
                 <project>../../javascript.hints</project>
                 <project>../../javascript.kit</project>
-                <project>../../javascript.libraries</project>
-                <project>../../javascript.libraries.dojo</project>
-                <project>../../javascript.libraries.jquery</project>
-                <project>../../javascript.libraries.prototype</project>
-                <project>../../javascript.libraries.scriptaculous</project>
-                <project>../../javascript.libraries.yahooui</project>
                 <project>../../javascript.refactoring</project>
                 <project>../../javawebstart</project>
                 <project>../../jellytools</project>
@@ -366,10 +360,8 @@ made subject to such option by the copyright holder.
                 <project>../../kenai</project>
                 <project>../../kenai.collab</project>
                 <project>../../kenai.ui</project>
-                <project>../../languages.bat</project>
                 <project>../../languages.diff</project>
                 <project>../../languages.manifest</project>
-                <project>../../languages.sh</project>
                 <project>../../languages.yaml</project>
                 <project>../../lexer</project>
                 <project>../../lexer.editorbridge</project>

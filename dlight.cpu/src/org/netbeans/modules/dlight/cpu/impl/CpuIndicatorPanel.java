@@ -55,17 +55,23 @@ import org.openide.util.NbBundle;
  */
 public class CpuIndicatorPanel {
 
-    private static final Color COLOR_SYS = GraphConfig.COLOR_1;
-    private static final Color COLOR_USR = GraphConfig.COLOR_3;
-    private static final GraphDescriptor SYS_DESCRIPTOR = new GraphDescriptor(COLOR_SYS, NbBundle.getMessage(CpuIndicatorPanel.class, "graph.description.system"));//NOI18N
-    private static final GraphDescriptor USR_DESCRIPTOR = new GraphDescriptor(COLOR_USR, NbBundle.getMessage(CpuIndicatorPanel.class, "graph.description.user"));//NOI18N
+    private static final Color COLOR_SYS = GraphConfig.COLOR_3;
+    private static final Color COLOR_USR = GraphConfig.COLOR_1;
+    private static final GraphDescriptor SYS_DESCRIPTOR = new GraphDescriptor(
+            COLOR_SYS, NbBundle.getMessage(CpuIndicatorPanel.class, "graph.description.system"), GraphDescriptor.Kind.REL_SURFACE);//NOI18N
+    private static final GraphDescriptor USR_DESCRIPTOR = new GraphDescriptor(
+            COLOR_USR, NbBundle.getMessage(CpuIndicatorPanel.class, "graph.description.user"), GraphDescriptor.Kind.REL_SURFACE);//NOI18N
+    private static final String TIME_DETAIL_ID = "elapsed-time"; // NOI18N
+    private static final int SECONDS_PER_MINUTE = 60;
 
     private final PercentageGraph graph;
+    private final Legend legend;
     private final GraphPanel<PercentageGraph, Legend> panel;
 
     /*package*/ CpuIndicatorPanel() {
         graph = createGraph();
-        panel = new GraphPanel<PercentageGraph, Legend>(getTitle(), graph, createLegend(), null, graph.getVerticalAxis());
+        legend = createLegend();
+        panel = new GraphPanel<PercentageGraph, Legend>(getTitle(), graph, legend, null, graph.getVerticalAxis());
     }
 
     public GraphPanel getPanel() {
@@ -89,7 +95,10 @@ public class CpuIndicatorPanel {
     }
 
     private static Legend createLegend() {
-        return new Legend(Arrays.asList(SYS_DESCRIPTOR, USR_DESCRIPTOR), Collections.<String, String>emptyMap());
+        Legend legend = new Legend(Arrays.asList(USR_DESCRIPTOR, SYS_DESCRIPTOR),
+                Collections.singletonMap(TIME_DETAIL_ID, NbBundle.getMessage(CpuIndicatorPanel.class, "label.time"))); // NOI18N
+        legend.updateDetail(TIME_DETAIL_ID, formatTime(0));
+        return legend;
     }
 
     /*package*/ void addData(int sys, int usr) {
@@ -104,4 +113,11 @@ public class CpuIndicatorPanel {
         //getLegend().setUsrValue(formatValue(v));
     }
 
+    /*package*/ void setTime(int seconds) {
+        legend.updateDetail(TIME_DETAIL_ID, formatTime(seconds));
+    }
+
+    private static String formatTime(int seconds) {
+        return String.format("%d:%02d", seconds / SECONDS_PER_MINUTE, seconds % SECONDS_PER_MINUTE); // NOI18N
+    }
 }

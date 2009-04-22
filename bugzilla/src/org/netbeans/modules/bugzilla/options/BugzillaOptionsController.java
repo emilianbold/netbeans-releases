@@ -46,6 +46,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -90,9 +91,13 @@ public final class BugzillaOptionsController extends OptionsPanelController impl
     private boolean isValidRefreshValue(String s) {
         if(!s.equals("")) {                                                     // NOI18N
             try {
-                Integer.parseInt(s);
+                int i = Integer.parseInt(s);
+                if(i < 5) {
+                    panel.errorLabel.setText(NbBundle.getMessage(BugzillaOptionsController.class, "MSG_MUST_BE_GREATER_THEN_5")); 
+                    return false;
+                }
             } catch (NumberFormatException e) {
-                panel.errorLabel.setText("Invalid value."); // XXX bundle me
+                panel.errorLabel.setText(NbBundle.getMessage(BugzillaOptionsController.class, "MSG_INVALID_VALUE")); 
                 return false;
             }
         }

@@ -42,28 +42,94 @@
 package org.netbeans.modules.welcome.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.welcome.content.BackgroundPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
-import org.netbeans.modules.welcome.content.Utils;
 
 /**
  *
  * @author S. Aubrecht
  */
-public class StartPageContent extends BackgroundPanel implements Constants {
+public class StartPageContent extends JPanel implements Constants {
+
+    private final static Color COLOR_TOP = new Color(198, 211, 223);
+    private final static Color COLOR_BOTTOM = new Color(235, 235, 235);
 
     public StartPageContent() {
         super( new BorderLayout() );
-        
+
         add( new TopBar(), BorderLayout.NORTH );
-        add( new Tabs( BundleSupport.getLabel( "WelcomeTab" ), new WelcomeTab(), //NOI18N
-                       BundleSupport.getLabel( "MyNetBeansTab"), new MyNetBeansTab()), //NOI18N
-                       BorderLayout.CENTER  );
+
+        JComponent tabs = new TabbedPane( BundleSupport.getLabel( "WelcomeTab" ), new WelcomeTab(), //NOI18N
+                       BundleSupport.getLabel( "MyNetBeansTab"), new MyNetBeansTab()); //NOI18N
+        tabs.setBorder(BorderFactory.createEmptyBorder(10,15,15,15));
+        tabs.setOpaque(false);
+
+        JPanel panel = new JPanel( new GridBagLayout() );
+        panel.setOpaque(false);
+        panel.add( tabs, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0) );
+
+        JScrollPane scroll = new JScrollPane(panel);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.getViewport().setOpaque(false);
+        scroll.setOpaque(false);
+        scroll.getViewport().setPreferredSize(new Dimension(Constants.START_PAGE_MIN_WIDTH,100));
+        JScrollBar vertical = scroll.getVerticalScrollBar();
+        if( null != vertical ) {
+            vertical.setBlockIncrement(30*FONT_SIZE);
+            vertical.setUnitIncrement(FONT_SIZE);
+        }
+
+        add( scroll, BorderLayout.CENTER  );
         
-        setBackground( Utils.getColor( COLOR_SCREEN_BACKGROUND ) );
-        setPreferredSize( new Dimension(START_PAGE_MIN_WIDTH,100) );
+        setOpaque(false);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setPaint(new GradientPaint(0, 0, COLOR_TOP, 0, getHeight(), COLOR_BOTTOM));
+        g2d.fillRect(0, 0, getWidth(), getHeight());
+    }
+
+    private static class TabsPanel extends JPanel {// implements Scrollable {
+        public TabsPanel( JComponent content ) {
+            super( new GridBagLayout() );
+            setOpaque(false);
+            add( content, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0) );
+        }
+
+        public Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+
+        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return Constants.FONT_SIZE;
+        }
+
+        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return 30*getScrollableUnitIncrement(visibleRect, orientation, direction);
+        }
+
+        public boolean getScrollableTracksViewportWidth() {
+            return false;
+        }
+
+        public boolean getScrollableTracksViewportHeight() {
+            return false;
+        }
     }
 }

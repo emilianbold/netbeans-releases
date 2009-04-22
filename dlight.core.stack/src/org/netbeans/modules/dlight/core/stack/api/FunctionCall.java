@@ -42,36 +42,39 @@ package org.netbeans.modules.dlight.core.stack.api;
  * Function Call with metrics for function.
  * As an example: you have the following
  */
-public abstract class FunctionCall{
-  private final Function function;
-  private final long offset;
+public abstract class FunctionCall {
 
-  protected FunctionCall(Function function) {
-    this(function, -1);
-  }
+    private final Function function;
+    private final long offset;
 
-  protected FunctionCall(Function function, long offset) {
-    this.function = function;
-    this.offset = offset;
-  }
+    protected FunctionCall(Function function) {
+        this(function, -1);
+    }
 
-  public String getDisplayedName(){
-    return getFunction().getName();
-  }
-  
-  public final Function getFunction() {
-    return function;
-  }
+    protected FunctionCall(Function function, long offset) {
+        this.function = function;
+        this.offset = offset;
+    }
 
-  public final long getOffset(){
-      return offset;
-  }
+    public String getDisplayedName() {
+        return getFunction().getName();
+    }
 
-  public final boolean hasOffset(){
-      return offset >= 0;
-  }
+    public final Function getFunction() {
+        return function;
+    }
 
-  public abstract Object getMetricValue(FunctionMetric metric);
-  public abstract Object getMetricValue(String metric_id);
-  public abstract boolean hasMetric(String metric_id);
+    public final long getOffset() {
+        return offset;
+    }
+
+    public final boolean hasOffset() {
+        return offset >= 0;
+    }
+
+    public abstract Object getMetricValue(FunctionMetric metric);
+
+    public abstract Object getMetricValue(String metric_id);
+
+    public abstract boolean hasMetric(String metric_id);
 }

@@ -167,7 +167,7 @@ public class VerifyLibsAndLicenses extends Task {
             }
         }
         //System.err.println("binaries: " + new TreeSet<String>(binaries.values()));
-        pseudoTests.put("testBinaryUniqueness", msg.length() > 0 ? "Some binaries are duplicated" + msg : null);
+        pseudoTests.put("testBinaryUniqueness", msg.length() > 0 ? "Some binaries are duplicated (edit nbbuild/antsrc/org/netbeans/nbbuild/extlibs/ignored-overlaps as needed)" + msg : null);
     }
     private static void maybeAppendDuplicateMessage(StringBuffer msg, String path1, String path2, List<String> ignoredPatterns) {
         if (path1 == null || path2 == null) {
@@ -464,7 +464,7 @@ public class VerifyLibsAndLicenses extends Task {
         if (violations.isEmpty()) {
             pseudoTests.put("testNoStrayThirdPartyBinaries", null);
         } else {
-            StringBuffer msg = new StringBuffer("Some binaries were found outside of <module>/external/ directories");
+            StringBuffer msg = new StringBuffer("Some binaries were found outside of <module>/external/ directories (edit nbbuild/antsrc/org/netbeans/nbbuild/extlibs/ignored-binaries as needed)");
             for (String v : violations) {
                 msg.append("\n" + v);
             }

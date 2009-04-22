@@ -56,6 +56,7 @@ import javax.swing.text.Keymap;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.EditorUI;
@@ -171,6 +172,7 @@ public class ExtKit extends BaseKit {
     private static ReplaceAction replaceActionDef = new ReplaceAction();
     private static GotoAction gotoActionDef = new GotoAction();
 
+    private static final String editorBundleHash = "org.netbeans.editor.Bundle#";
 
     /** Whether editor popup menu creation should be dumped to console */
     private static final boolean debugPopupMenu
@@ -213,23 +215,15 @@ public class ExtKit extends BaseKit {
 
     protected @Override Action[] createActions() {
         ArrayList<Action> actions = new ArrayList<Action>();
-        
-        actions.add(new BuildPopupMenuAction());
-        actions.add(new ShowPopupMenuAction());
-        actions.add(new BuildToolTipAction());
+
+        actions.add(new ExtDefaultKeyTypedAction());
         actions.add(replaceActionDef);
         actions.add(gotoActionDef);
-        actions.add(new ToggleCaseIdentifierBeginAction());
 // XXX: remove
 //        if (!ExtCaret.NO_HIGHLIGHT_BRACE_LAYER) {
 //            actions.add(new MatchBraceAction(matchBraceAction, false));
 //            actions.add(new MatchBraceAction(selectionMatchBraceAction, true));
 //        }
-        actions.add(new ExtDefaultKeyTypedAction());
-        actions.add(new CompletionShowAction());
-        actions.add(new AllCompletionShowAction());
-        actions.add(new DocumentationShowAction());
-        actions.add(new CompletionTooltipShowAction());
         actions.add(new CommentAction()); // to make ctrl-shift-T in Netbeans55 profile work
         actions.add(new UncommentAction()); // to make ctrl-shift-D in Netbeans55 profile work
                 
@@ -242,7 +236,15 @@ public class ExtKit extends BaseKit {
      * <code>BaseKit.class</code> is used as a bundle class.
      */
     private abstract static class BaseKitLocalizedAction extends BaseAction {
-        
+
+        public BaseKitLocalizedAction() {
+            super();
+        }
+
+        public BaseKitLocalizedAction(int updateMask) {
+            super(updateMask);
+        }
+
         public BaseKitLocalizedAction(String name) {
             super(name);
         }
@@ -260,12 +262,16 @@ public class ExtKit extends BaseKit {
     /** Called before the popup menu is shown to possibly rebuild
     * the popup menu.
     */
+    @EditorActionRegistration(
+            name = buildPopupMenuAction,
+            shortDescription = editorBundleHash + buildPopupMenuAction
+    )
     public static class BuildPopupMenuAction extends BaseKitLocalizedAction {
 
         static final long serialVersionUID =4257043398248915291L;
 
         public BuildPopupMenuAction() {
-            super(buildPopupMenuAction, NO_RECORDING);
+            super(NO_RECORDING);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
@@ -387,7 +393,13 @@ public class ExtKit extends BaseKit {
             if (a instanceof BaseAction) {
                 itemText = ((BaseAction)a).getPopupMenuText(target);
             } else {
-                itemText = actionName;
+                itemText = (String) a.getValue("popupText");
+                if (itemText == null) {
+                    itemText = (String) a.getValue("menuText");
+                    if (itemText == null) {
+                        itemText = actionName;
+                    }
+                }
             }
             return itemText;
         }
@@ -396,12 +408,16 @@ public class ExtKit extends BaseKit {
 
     /** Show the popup menu.
     */
+    @EditorActionRegistration(
+            name = showPopupMenuAction,
+            shortDescription = editorBundleHash + showPopupMenuAction
+    )
     public static class ShowPopupMenuAction extends BaseKitLocalizedAction {
 
         static final long serialVersionUID =4257043398248915291L;
 
         public ShowPopupMenuAction() {
-            super(showPopupMenuAction, NO_RECORDING);
+            super(NO_RECORDING);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -423,14 +439,17 @@ public class ExtKit extends BaseKit {
 
     }
 
+    @EditorActionRegistration(
+            name = buildToolTipAction,
+            shortDescription = editorBundleHash + buildToolTipAction
+    )
     public static class BuildToolTipAction extends BaseAction {
 
         static final long serialVersionUID =-2701131863705941250L;
 
         public BuildToolTipAction() {
-            super(buildToolTipAction, NO_RECORDING);
+            super(NO_RECORDING);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
-            putValue(Action.SHORT_DESCRIPTION, ""); // No explicit description NOI18N
         }
 
         protected String buildText(JTextComponent target) {
@@ -455,6 +474,7 @@ public class ExtKit extends BaseKit {
      * @deprecated Without any replacement.
      */
     public static class FindAction extends BaseKitLocalizedAction {
+    // Not registered by annotation since it's not actively used
 
         static final long serialVersionUID =719554648887497427L;
 
@@ -577,13 +597,13 @@ public class ExtKit extends BaseKit {
         }
     }
 
+    @EditorActionRegistration(name = toggleCaseIdentifierBeginAction, shortDescription = "")
     public static class ToggleCaseIdentifierBeginAction extends BaseKitLocalizedAction {
 
         static final long serialVersionUID =584392193824931979L;
 
-        ToggleCaseIdentifierBeginAction() {
-            super(toggleCaseIdentifierBeginAction, ABBREV_RESET
-                  | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+        public ToggleCaseIdentifierBeginAction() {
+            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -997,6 +1017,10 @@ public class ExtKit extends BaseKit {
 
 
     // Completion customized actions
+//    @EditorActionRegistration(
+//            name = defaultKeyTypedAction,
+//            shortDescription = editorBundleHash + defaultKeyTypedAction
+//    )
     public static class ExtDefaultKeyTypedAction extends DefaultKeyTypedAction {
 
         static final long serialVersionUID =5273032708909044812L;
@@ -1104,12 +1128,15 @@ public class ExtKit extends BaseKit {
      * @deprecated Please use Editor Code Completion API instead, for details see
      *   <a href="@org-netbeans-modules-editor-completion@/overview-summary.html">Editor Code Completion</a>.
      */
+    @EditorActionRegistration(
+            name = completionShowAction,
+            shortDescription = editorBundleHash + completionShowAction
+    )
     public static class CompletionShowAction extends BaseKitLocalizedAction {
 
         static final long serialVersionUID =1050644925893851146L;
 
         public CompletionShowAction() {
-            super(completionShowAction);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1121,10 +1148,13 @@ public class ExtKit extends BaseKit {
      * @deprecated Please use Editor Code Completion API instead, for details see
      *   <a href="@org-netbeans-modules-editor-completion@/overview-summary.html">Editor Code Completion</a>.
      */
+    @EditorActionRegistration(
+            name = allCompletionShowAction,
+            shortDescription = editorBundleHash + allCompletionShowAction
+    )
     public static class AllCompletionShowAction extends BaseKitLocalizedAction {
 
         public AllCompletionShowAction() {
-            super(allCompletionShowAction);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1136,10 +1166,13 @@ public class ExtKit extends BaseKit {
      * @deprecated Please use Editor Code Completion API instead, for details see
      *   <a href="@org-netbeans-modules-editor-completion@/overview-summary.html">Editor Code Completion</a>.
      */
+    @EditorActionRegistration(
+            name = documentationShowAction,
+            shortDescription = editorBundleHash + documentationShowAction
+    )
     public static class DocumentationShowAction extends BaseKitLocalizedAction {
 
         public DocumentationShowAction() {
-            super(documentationShowAction);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1151,10 +1184,13 @@ public class ExtKit extends BaseKit {
      * @deprecated Please use Editor Code Completion API instead, for details see
      *   <a href="@org-netbeans-modules-editor-completion@/overview-summary.html">Editor Code Completion</a>.
      */
+    @EditorActionRegistration(
+            name = completionTooltipShowAction,
+            shortDescription = editorBundleHash + completionTooltipShowAction
+    )
     public static class CompletionTooltipShowAction extends BaseKitLocalizedAction {
 
         public CompletionTooltipShowAction() {
-            super(completionTooltipShowAction);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {

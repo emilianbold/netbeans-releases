@@ -119,7 +119,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
 //        assertEquals(1, is.length);
 
         nl.reset();
-        q.refresh(p);
+        q.refresh(p, false);
         assertTrue(nl.started);
         assertTrue(nl.finished);
         il = nl.getIssues(Issue.ISSUE_STATUS_ALL);
@@ -157,7 +157,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         assertEquals(id1, i.getID());
 
         nl.reset();
-        q.refresh(p);
+        q.refresh(p, false);
         assertTrue(nl.started);
         assertTrue(nl.finished);
         assertEquals(1, nl.getIssues(Issue.ISSUE_STATUS_ALL).size());
@@ -169,7 +169,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         // query for issue1 & issue2
         p =  MessageFormat.format(PARAMETERS_FORMAT, ts);
         nl.reset();
-        q.refresh(p);
+        q.refresh(p, false);
         issues = q.getIssues();
         assertTrue(nl.started);
         assertTrue(nl.finished);
@@ -216,7 +216,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         long ts = System.currentTimeMillis();
 
         ts = System.currentTimeMillis();
-        q.refresh("whatever");
+        q.refresh("whatever", false);
         assertTrue(q.getLastRefresh() >= ts);
 
         ts = System.currentTimeMillis();

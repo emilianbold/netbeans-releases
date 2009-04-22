@@ -54,7 +54,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.ListSelectionModel;
-import javax.swing.text.EditorKit;
 import javax.swing.text.html.HTMLEditorKit;
 import org.apache.maven.model.Plugin;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -64,9 +63,9 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Children.Array;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
@@ -87,7 +86,7 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
         initComponents();
         manager = new ExplorerManager();
         project = prj;
-        okbutton = new JButton("OK");
+        okbutton = new JButton(NbBundle.getMessage(AddPropertyDialog.class, "BTN_OK"));
         manager.setRootContext(Node.EMPTY);
         tpDesc.setEditorKit(new HTMLEditorKit());
         manager.addPropertyChangeListener(new PropertyChangeListener() {
@@ -109,8 +108,8 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
         });
         ((BeanTreeView)tvExpressions).setRootVisible(false);
         ((BeanTreeView)tvExpressions).setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        RequestProcessor.getDefault().post(new Loader());
         this.goalsText = goalsText;
+        RequestProcessor.getDefault().post(new Loader());
     }
 
     public JButton getOkButton() {
@@ -226,13 +225,14 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
             Set<String> extensionsids = new HashSet<String>();
             @SuppressWarnings("unchecked")
             List<Plugin> plgns = project.getOriginalMavenProject().getBuildPlugins();
-            for (Plugin plg : plgns) {
-                if (plg.isExtensions()) {
-                    extensionsids.add(plg.getGroupId() + ":" + plg.getArtifactId() + ":" + plg.getVersion()); //NOI18N
-                    continue;
+            if (plgns != null) {
+                for (Plugin plg : plgns) {
+                    if (plg != null && plg.isExtensions()) {
+                        extensionsids.add(plg.getGroupId() + ":" + plg.getArtifactId() + ":" + plg.getVersion()); //NOI18N
+                        continue;
+                    }
+                    //only add those with executions and goals..
                 }
-                //only add those with executions and goals..
-
             }
             String mvnVersion = MavenSettings.getCommandLineMavenVersion();
             String packaging = project.getOriginalMavenProject().getPackaging();
@@ -276,6 +276,7 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
                         continue;
                     }
                     AbstractNode param = new AbstractNode(Children.LEAF, Lookups.singleton(el));
+                    param.setIconBaseWithExtension("org/netbeans/modules/maven/customizer/param.png");
                     param.setDisplayName(el.getExpression() + " (" + el.getName() + ")"); //NOI18N
                     pluginChilds.add(new Node[]{param});
                 }
@@ -284,6 +285,7 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
             Logger.getLogger(AddPropertyDialog.class.getName()).log(Level.INFO, "Error while retrieving list of expressions", exception); //NOI18N
         }
         AbstractNode plugin = new AbstractNode(pluginChilds);
+        plugin.setIconBaseWithExtension("org/netbeans/modules/maven/customizer/mojo.png");
         plugin.setDisplayName(groupId + ":" + artifactId + (mojo != null ? (" [" + mojo + "]") : "")); //NOI18N
         rootChilds.add(new Node[]{plugin});
     }

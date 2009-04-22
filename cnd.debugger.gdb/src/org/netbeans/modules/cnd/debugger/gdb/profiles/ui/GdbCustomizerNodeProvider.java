@@ -92,7 +92,7 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
             return GDB_PRIORITY;
         }
 
-        public boolean canHandle(ProjectActionEvent.Type type) {
+        public boolean canHandle(ProjectActionEvent.Type type, Configuration conf) {
             switch (type) {
                 case DEBUG:
                 case DEBUG_LOAD_ONLY:

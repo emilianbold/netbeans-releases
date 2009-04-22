@@ -50,7 +50,9 @@ import com.sun.jdi.ByteType;
 import com.sun.jdi.ByteValue;
 import com.sun.jdi.CharType;
 import com.sun.jdi.CharValue;
+import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.DoubleType;
 import com.sun.jdi.DoubleValue;
@@ -168,6 +170,7 @@ import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.ScriptVariable;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -687,11 +690,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         String className = ElementUtilities.getBinaryName((TypeElement) ((DeclaredType) type).asElement());
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
         if (vm == null) return null;
-        List<ReferenceType> classes = vm.classesByName(className);
-        if (classes.size() == 0) {
+        ReferenceType clazz = getOrLoadClass(vm, className, evaluationContext);
+        if (clazz == null) {
             Assert2.error(tree, "unknownType", className);
         }
-        return classes.get(0);
+        return clazz;
     }
 
     public static boolean instanceOf(Type left, Type right) {
@@ -1364,7 +1367,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             ObjectReference objRef = (ObjectReference)exprValue;
             ReferenceType objType = objRef.referenceType();
             VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
-            ReferenceType collType = vm.classesByName("java.util.Collection").get(0);
+            ReferenceType collType = getOrLoadClass(vm, "java.util.Collection", evaluationContext);
             if (!instanceOf(objRef.type(), collType)) {
                 Assert2.error(arg0, "forEachNotApplicable");
             }
@@ -1535,6 +1538,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 return val;
             }
         }
+        // Try to load the class as a last try...
+        ReferenceType rt = getOrLoadClass(vm, name, evaluationContext);
+        if (rt != null) {
+            return rt;
+        }
         Assert2.error(arg0, "unknownVariable", name);
         return null;
     }
@@ -1582,9 +1590,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 String className = ElementUtilities.getBinaryName(te);
                 VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
                 if (vm == null) return null;
-                List<ReferenceType> classes = vm.classesByName(className);
-                if (classes.size() > 0) {
-                    return classes.get(0);
+                ReferenceType rt = getOrLoadClass(vm, className, evaluationContext);
+                if (rt != null) {
+                    return rt;
                 }
                 Assert2.error(arg0, "unknownType", className);
             case ENUM_CONSTANT:
@@ -1904,11 +1912,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             String arrayClassName = type.name()+"[]";
             for (int i = 0; i < numDimensions; i++, arrayClassName += "[]") {
                 dimensions[i] = ((PrimitiveValue) dimensionTrees.get(numDimensions - 1 - i).accept(this, evaluationContext)).intValue();
-                List<ReferenceType> classes = type.virtualMachine().classesByName(arrayClassName);
-                if (classes.size() == 0) {
+                ReferenceType rt = getOrLoadClass(type.virtualMachine(), arrayClassName, evaluationContext);
+                if (rt == null) {
                     Assert2.error(arg0, "unknownType", arrayClassName);
                 }
-                arrayTypes[i] = (ArrayType) classes.get(0);
+                arrayTypes[i] = (ArrayType) rt;
             }
             return constructNewArray(arrayTypes, dimensions, numDimensions - 1);
         } else {
@@ -1941,7 +1949,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         List<Value> elements = new ArrayList<Value>(n);
         for (int i = 0; i < n; i++) {
             ExpressionTree exp = initializerTrees.get(i);
-            newArrayType = getSubArrayType(arg0, type);
+            newArrayType = getSubArrayType(arg0, type, evaluationContext);
             // might call visitNewArray()
             Value elementValue = (Value) exp.accept(this, evaluationContext);
             if (elementValue instanceof ArtificialMirror) {
@@ -1950,12 +1958,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             elements.add(elementValue);
         }
         int depth = 1;
-        ArrayReference array = getArrayType(arg0, type, depth).newInstance(n);
+        ArrayReference array = getArrayType(arg0, type, depth, evaluationContext).newInstance(n);
         autoboxElements(arg0, type, elements, evaluationContext);
         try {
             array.setValues(elements);
         } catch (InvalidTypeException ex) {
-            throw new IllegalStateException("ArrayType "+getArrayType(arg0, type, depth)+" can not have "+elements+" elements.");
+            throw new IllegalStateException("ArrayType "+getArrayType(arg0, type, depth, evaluationContext)+" can not have "+elements+" elements.");
         } catch (ClassNotLoadedException ex) {
             throw new IllegalStateException(ex);
         }
@@ -1964,7 +1972,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     private static final String BRACKETS = "[][][][][][][][][][][][][][][][][][][][]"; // NOI18N
 
-    private ArrayType getArrayType(NewArrayTree arg0, Type type, int depth) {
+    private ArrayType getArrayType(NewArrayTree arg0, Type type, int depth, EvaluationContext evaluationContext) {
         String arrayClassName;
         if (depth < BRACKETS.length()/2) {
             arrayClassName = type.name() + BRACKETS.substring(0, 2*depth);
@@ -1974,14 +1982,14 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 arrayClassName += "[]"; // NOI18N
             }
         }
-        List<ReferenceType> classes = type.virtualMachine().classesByName(arrayClassName);
-        if (classes.size() == 0) {
+        ReferenceType rt = getOrLoadClass(type.virtualMachine(), arrayClassName, evaluationContext);
+        if (rt == null) {
             Assert2.error(arg0, "unknownType", arrayClassName);
         }
-        return (ArrayType) classes.get(0);
+        return (ArrayType) rt;
     }
 
-    private Type getSubArrayType(Tree arg0, Type type) {
+    private Type getSubArrayType(Tree arg0, Type type, EvaluationContext evaluationContext) {
         String name = type.name();
         if (name.endsWith("[]")) {
             name = name.substring(0, name.length() - 2);
@@ -1989,11 +1997,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 Type pType = getPrimitiveType(name, type.virtualMachine());
                 if (pType != null) return pType;
             }
-            List<ReferenceType> classes = type.virtualMachine().classesByName(name);
-            if (classes.size() == 0) {
+            type = getOrLoadClass(type.virtualMachine(), name, evaluationContext);
+            if (type == null) {
                 Assert2.error(arg0, "unknownType", name);
             }
-            type = classes.get(0);
         }
         return type;
     }
@@ -2034,18 +2041,19 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             TreePath identifierPath = TreePath.getPath(currentPath, arg0);
             if (identifierPath == null) identifierPath = currentPath;
             Element elm = evaluationContext.getTrees().getElement(identifierPath);
-            if (elm == null) {
-                // Unresolved class
-                Assert2.error(arg0, "unknownType", arg0.getIdentifier());
-            }
-            if (elm.asType().getKind() == TypeKind.ERROR) {
-                cType = null;
-            } else {
-                if (elm.getKind() != ElementKind.CONSTRUCTOR) {
-                    throw new IllegalStateException("Element "+elm+" is of "+elm.getKind()+" kind. Tree = "+arg0);
+            if (elm != null) {
+                if (elm.asType().getKind() == TypeKind.ERROR) {
+                    cType = null;
+                } else {
+                    if (elm.getKind() != ElementKind.CONSTRUCTOR) {
+                        throw new IllegalStateException("Element "+elm+" is of "+elm.getKind()+" kind. Tree = "+arg0);
+                    }
+                    ExecutableElement cElem = (ExecutableElement) elm;
+                    cType = cElem.asType();
                 }
-                ExecutableElement cElem = (ExecutableElement) elm;
-                cType = cElem.asType();
+            } else {
+                // Unresolved class
+                cType = null;
             }
         } else {
             cType = null;
@@ -2241,11 +2249,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             // try class
             VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
             if (vm == null) return null;
-            List<ReferenceType> classes = vm.classesByName(name);
-            if (classes.size() == 0) {
+            ReferenceType rt = getOrLoadClass(vm, name, evaluationContext);
+            if (rt == null) {
                 Assert2.error(arg0, "unknownType", name);
             }
-            return classes.get(0);
+            return rt;
         }
         // We have the path and resolved elements
         switch(elm.getKind()) {
@@ -2278,11 +2286,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         return clazz.classObject();
                     }
                     Field f = clazz.fieldByName(fieldName);
-                    if (!f.isStatic()) {
-                        Assert2.error(arg0, "accessInstanceVariableFromStaticContext", fieldName);
-                        return null;
-                    }
                     if (f != null) {
+                        if (!f.isStatic()) {
+                            Assert2.error(arg0, "accessInstanceVariableFromStaticContext", fieldName);
+                            return null;
+                        }
                         evaluationContext.putField(arg0, f, null);
                         return clazz.getValue(f);
                     } else {
@@ -2331,11 +2339,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 String className = ElementUtilities.getBinaryName(te);
                 VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
                 if (vm == null) return null;
-                List<ReferenceType> classes = vm.classesByName(className);
-                if (classes.size() == 0) {
+                ReferenceType rt = getOrLoadClass(vm, className, evaluationContext);
+                if (rt == null) {
                     Assert2.error(arg0, "unknownType", className);
                 }
-                return classes.get(0);
+                return rt;
             case PACKAGE:
                 return (Value) Assert2.error(arg0, "notExpression");
             default:
@@ -2434,9 +2442,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         Type type = (Type) arg0.getType().accept(this, evaluationContext);
         if (type == null) return null;
         String arrayClassName = type.name()+"[]";
-        List<ReferenceType> aTypes = type.virtualMachine().classesByName(arrayClassName);
-        if (aTypes.size() > 0) {
-            return aTypes.get(0);
+        ReferenceType aType = getOrLoadClass(type.virtualMachine(), arrayClassName, evaluationContext);
+        if (aType != null) {
+            return aType;
         } else {
             Assert2.error(arg0, "unknownType", arrayClassName);
             return null;
@@ -3098,30 +3106,31 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         throw new RuntimeException("Invalid type while unboxing: " + type.signature());    // never happens
     }
 
-    private static ReferenceType adjustBoxingType(ReferenceType type, PrimitiveType primitiveType) {
+    private static ReferenceType adjustBoxingType(ReferenceType type, PrimitiveType primitiveType,
+                                                  EvaluationContext evaluationContext) {
         if (primitiveType instanceof BooleanType) {
-            type = type.virtualMachine().classesByName(Boolean.class.getName()).get(0);
+            type = getOrLoadClass(type.virtualMachine(), Boolean.class.getName(), evaluationContext);
         } else
         if (primitiveType instanceof ByteType) {
-            type = type.virtualMachine().classesByName(Byte.class.getName()).get(0);
+            type = getOrLoadClass(type.virtualMachine(), Byte.class.getName(), evaluationContext);
         } else
         if (primitiveType instanceof CharType) {
-            type = type.virtualMachine().classesByName(Character.class.getName()).get(0);
+            type = getOrLoadClass(type.virtualMachine(), Character.class.getName(), evaluationContext);
         } else
         if (primitiveType instanceof ShortType) {
-            type = type.virtualMachine().classesByName(Short.class.getName()).get(0);
+            type = getOrLoadClass(type.virtualMachine(), Short.class.getName(), evaluationContext);
         } else
         if (primitiveType instanceof IntegerType) {
-            type = type.virtualMachine().classesByName(Integer.class.getName()).get(0);
+            type = getOrLoadClass(type.virtualMachine(), Integer.class.getName(), evaluationContext);
         } else
         if (primitiveType instanceof LongType) {
-            type = type.virtualMachine().classesByName(Long.class.getName()).get(0);
+            type = getOrLoadClass(type.virtualMachine(), Long.class.getName(), evaluationContext);
         } else
         if (primitiveType instanceof FloatType) {
-            type = type.virtualMachine().classesByName(Float.class.getName()).get(0);
+            type = getOrLoadClass(type.virtualMachine(), Float.class.getName(), evaluationContext);
         } else
         if (primitiveType instanceof DoubleType) {
-            type = type.virtualMachine().classesByName(Double.class.getName()).get(0);
+            type = getOrLoadClass(type.virtualMachine(), Double.class.getName(), evaluationContext);
         }
         return type;
     }
@@ -3134,7 +3143,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                                                                                   InvocationException {
         try {
             Method constructor = null;
-            type = adjustBoxingType(type, (PrimitiveType) v.type());
+            type = adjustBoxingType(type, (PrimitiveType) v.type(), evaluationContext);
             List<Method> methods = type.methodsByName("<init>");
             String signature = "("+v.type().signature()+")";
             for (Method method : methods) {
@@ -3311,6 +3320,60 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             return new DoubleVal(context, ((Double)value).doubleValue());
         }
         return null;
+    }
+
+    /**
+     * Find a class by it's name. If the class is not found loaded in the virtual
+     * machine, an attempt to load it is made.
+     * 
+     * @param name The class name
+     * @return Found or loaded ReferenceType
+     */
+    private static ReferenceType getOrLoadClass(VirtualMachine vm, String name,
+                                                EvaluationContext evaluationContext) {
+        List<ReferenceType> types = vm.classesByName(name);
+        if (types.size() > 0) {
+            return types.get(0);
+        }
+        // DO NOT TRY TO LOAD THE CLASS ON JDK 5 AND OLDER!
+        // See http://www.netbeans.org/issues/show_bug.cgi?id=50315
+        if (!JPDAUtils.IS_JDK_16) {
+            return null;
+        }
+        // The bug is in JVMTI code, therefore the target VM must be JDK 6 at least.
+        String targetVersion = vm.version();
+        if (targetVersion.startsWith("1.5") || // NOI18N
+            targetVersion.startsWith("1.4") || // NOI18N
+            targetVersion.startsWith("1.3") || // NOI18N
+            targetVersion.startsWith("1.2") || // NOI18N
+            targetVersion.startsWith("1.1") || // NOI18N
+            targetVersion.startsWith("1.0")) { // NOI18N
+            return null;
+        }
+
+        evaluationContext.methodToBeInvoked();
+        try {
+            ClassType clazz = (ClassType) vm.classesByName(Class.class.getName()).get(0);
+            com.sun.jdi.Method forName = clazz.concreteMethodByName("forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
+            StackFrame frame = evaluationContext.getFrame();
+            ClassLoaderReference executingClassloader = frame.location().declaringType().classLoader();
+            List args = new ArrayList();
+            args.add(vm.mirrorOf(name));
+            args.add(vm.mirrorOf(true));
+            args.add(executingClassloader);
+            ClassObjectReference cor = (ClassObjectReference) clazz.invokeMethod(frame.thread(), forName, args, 0);
+            return cor.reflectedType();
+        } catch (Exception ex) {
+            return null;
+        } finally {
+            try {
+                evaluationContext.methodInvokeDone();
+            } catch (IncompatibleThreadStateException itsex) {
+                InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+                ieex.initCause(itsex);
+                throw new IllegalStateException(ieex);
+            }
+        }
     }
 
     // *************************************************************************

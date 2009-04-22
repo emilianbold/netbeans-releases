@@ -104,6 +104,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="isProjectOpen">
+            <api name="general"/>
+            <summary>Utility method OpenProjects.isProjectOpen</summary>
+            <version major="1" minor="34"/>
+            <date day="7" month="4" year="2009"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                <p>
+                  It came to our attention that often users of <code>OpenProjects</code>
+                  want to find out if their project is opened or not. To simplify
+                  such code we offer a handy utility method.
+                </p>
+            </description>
+            <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
+            <issue number="161120"/>
+        </change>
         <change id="nodefactory-ann">
             <api name="general"/>
             <summary>Add annotation @NodeFactory.Registration</summary>

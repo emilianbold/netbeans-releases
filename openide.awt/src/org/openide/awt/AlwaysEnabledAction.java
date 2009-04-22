@@ -9,6 +9,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -24,6 +26,10 @@ import org.openide.util.Lookup;
  */
 final class AlwaysEnabledAction extends AbstractAction
 implements PropertyChangeListener, ContextAwareAction {
+
+    // -J-Dorg.openide.awt.AlwaysEnabledAction.level=FINE
+    private static final Logger LOG = Logger.getLogger(AlwaysEnabledAction.class.getName());
+
     private final Map map;
     private ActionListener delegate;
     private final Lookup context;
@@ -61,15 +67,35 @@ implements PropertyChangeListener, ContextAwareAction {
             }
             delegate = bindToContext((ActionListener)listener, context);
             if (delegate instanceof Action) {
-                ((Action)delegate).addPropertyChangeListener(this);
+                Action actionDelegate = (Action) delegate;
+                actionDelegate.addPropertyChangeListener(this);
+                // Ensure display names and other properties are in sync or propagate them
+                syncActionDelegateProperty(Action.NAME, actionDelegate);
             }
         }
         return delegate;
     }
 
+    private void syncActionDelegateProperty(String propertyName, Action actionDelegate) {
+        Object value = extractCommonAttribute(map, this, propertyName);
+        Object delegateValue = actionDelegate.getValue(propertyName);
+        if (value != null) {
+            if (delegateValue == null) {
+                actionDelegate.putValue(propertyName, value);
+            } else {
+                if (!delegateValue.equals(value)) { // Values differ
+                    LOG.log(Level.FINE, "Value of property \"{0}\" of AlwaysEnabledAction " +
+                            "is \"{1}\" but delegate {2} has \"{3}\"",
+                            new Object[] {propertyName, value, delegate, delegateValue});
+                }
+            }
+        } // else either both values are null or
+        // this has null and delegate has non-null which is probably fine (declarer does not care)
+    }
+
     @Override
     public boolean isEnabled() {
-        assert EventQueue.isDispatchThread();
+//        assert EventQueue.isDispatchThread();
         if (delegate instanceof Action) {
             return ((Action)delegate).isEnabled();
         }
@@ -142,6 +168,10 @@ implements PropertyChangeListener, ContextAwareAction {
                 KeyStroke[] arr = map.getKeyStrokesForAction(action);
                 return arr.length > 0 ? arr[0] : null;
             }
+        }
+        // Delegate query to other properties to "fo" ignoring special properties
+        if (!"delegate".equals(name) && !"instanceCreate".equals(name)) {
+            return fo.get(name);
         }
 
         return null;

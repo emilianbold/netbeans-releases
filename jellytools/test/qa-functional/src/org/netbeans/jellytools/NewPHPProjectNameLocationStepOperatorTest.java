@@ -104,7 +104,8 @@ public class NewPHPProjectNameLocationStepOperatorTest extends JellyTestCase {
         assertEquals(project_name, lsop.getProjectName());
 
         lsop.browseSourceFolder();
-        new NbDialogOperator("Select Source Folder").cancel(); //TODO I18N
+        String selectSourceFolder = Bundle.getString("org.netbeans.modules.php.project.ui.wizards.Bundle", "LBL_SelectSourceFolderTitle");
+        new NbDialogOperator(selectSourceFolder).cancel(); // I18N
         
         String folder = lsop.getSelectedSourcesFolder() + File.separator + "test";
         lsop.typeSourcesFolder(folder);
@@ -122,7 +123,9 @@ public class NewPHPProjectNameLocationStepOperatorTest extends JellyTestCase {
         assertEquals(folder, lsop.getMetadataFolder());
 
         lsop.browseMetadataFolder();
-        new NbDialogOperator("Select Project Folder").cancel(); //TODO I18N
+
+        String selectProjectFolder = Bundle.getString("org.netbeans.modules.php.project.ui.wizards.Bundle", "LBL_SelectProjectFolder");
+        new NbDialogOperator(selectProjectFolder).cancel(); // I18N
         
         lsop.cancel();
     }

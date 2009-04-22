@@ -46,13 +46,13 @@ import com.jcraft.jsch.UserInfo;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -74,17 +74,17 @@ import org.openide.util.NbBundle;
  */
 public final class ConnectionManager {
 
-    private final static Object lock = new String(ConnectionManager.class.getName());
     private final static java.util.logging.Logger log = Logger.getInstance();
 
     // Instance of the ConnectionManager
     private final static ConnectionManager instance;
-
+    private final static Object sessionsLock = new String(ConnectionManager.class.getName());
     // Map that contains all connected sessions;
-    private final Map<String, Session> sessions;
+    private final HashMap<ExecutionEnvironment, Session> sessions;
 
     // Actual sessions pool
     private final JSch jsch;
+    private volatile boolean connecting;
 
 
     static {
@@ -93,7 +93,23 @@ public final class ConnectionManager {
     }
 
     private ConnectionManager() {
+        JSch.setConfig("PreferredAuthentications", "password,keyboard-interactive"); // NOI18N
         jsch = new JSch();
+
+        if (log.isLoggable(Level.FINEST)) {
+            JSch.setLogger(new com.jcraft.jsch.Logger() {
+
+                public boolean isEnabled(int level) {
+                    return true;
+                }
+
+                public void log(int level, String message) {
+                    log.log(Level.FINEST, "JSCH: " + message); // NOI18N
+                }
+            });
+        }
+
+        connecting = false;
 
         try {
             jsch.setKnownHosts(System.getProperty("user.home") + // NOI18N
@@ -102,7 +118,7 @@ public final class ConnectionManager {
             log.warning("Unable to setKnownHosts for jsch. " + ex.getMessage()); // NOI18N
         }
 
-        sessions = new HashMap<String, Session>();
+        sessions = new HashMap<ExecutionEnvironment, Session>();
     }
 
     /**
@@ -112,7 +128,6 @@ public final class ConnectionManager {
     public static ConnectionManager getInstance() {
         return instance;
     }
-
     /**
      * Returns the ssh session for requested <tt>ExecutionEnvironment</tt>
      * or <tt>null</tt> if no active session exists.
@@ -123,17 +138,33 @@ public final class ConnectionManager {
      *         Already existent <tt>Session</tt> for specified
      *         <tt>execEnv</tt> on success.
      */
+    AtomicInteger idx = new AtomicInteger();
 
-    /* package-visible */
-    Session getSession(final ExecutionEnvironment env) {
-        final String sessionKey = env.toString();
+    private Session getSession(final ExecutionEnvironment env, boolean restoreLostConnection) {
+        synchronized (sessionsLock) {
+            Session session = sessions.get(env);
 
-        synchronized (lock) {
-            Session session = sessions.get(sessionKey);
+            if (session != null && !session.isConnected() && restoreLostConnection) {
+                // Session is not null and at the same time is not connected...
+                // This means that it was connected before and RemoteUserInfoProvider
+                // holds required user info already...
+                // do reconnect ...
 
-            if (session != null && !session.isConnected()) {
-                sessions.remove(sessionKey);
-                return null;
+                synchronized (jsch) {
+                    session.disconnect();
+                }
+
+                try {
+                    doConnect(env, RemoteUserInfoProvider.getUserInfo(env, false));
+                } catch (IOException ex) {
+                    log.log(Level.FINEST, Thread.currentThread() +
+                            " : ConnectionManager.getSession()", ex); // NOI18N
+                    session = null;
+                } catch (CancellationException ex) {
+                    log.log(Level.FINEST, Thread.currentThread() +
+                            " : ConnectionManager.getSession()", ex); // NOI18N
+                    session = null;
+                }
             }
 
             return session;
@@ -158,20 +189,19 @@ public final class ConnectionManager {
         if (env.isLocal()) {
             return true;
         }
-        
-        synchronized (lock) {
-            Session session = getSession(env);
-            if (session != null && session.isConnected()) {
-                // just return if already connected ...
-                return false;
-            }
 
-            if (password != null) {
-                PasswordManager.getInstance().put(env, password, storePassword);
-            }
+        Session session = getSession(env, false);
 
-            return doConnect(env, RemoteUserInfoProvider.getUserInfo(env, false));
+        if (session != null && session.isConnected()) {
+            // just return if already connected ...
+            return true;
         }
+
+        if (password != null) {
+            PasswordManager.getInstance().put(env, password, storePassword);
+        }
+
+        return doConnect(env, RemoteUserInfoProvider.getUserInfo(env, false));
     }
 
     /**
@@ -182,27 +212,37 @@ public final class ConnectionManager {
      */
     public boolean connectTo(
             final ExecutionEnvironment env) throws IOException, CancellationException {
-        synchronized (lock) {
+
+        synchronized (this) {
+            if (connecting) {
+                return false;
+            }
+
+            connecting = true;
+        }
+
+        try {
             boolean result = false;
             /*
             try {
-                result = connectTo(env, PasswordManager.getInstance().get(env), false);
+            result = connectTo(env, PasswordManager.getInstance().get(env), false);
             } catch (ConnectException ex) {
-                if (ex.getMessage().equals("Auth fail")) { // NOI18N
-                    // Try with user-interaction
-                    result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, true));
-                } else {
-                    throw ex;
-                }
+            if (ex.getMessage().equals("Auth fail")) { // NOI18N
+            // Try with user-interaction
+            result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, true));
+            } else {
+            throw ex;
             }
-            */
+            }
+             */
             final char[] passwd = PasswordManager.getInstance().get(env);
+
             if (passwd == null || passwd.length == 0) {
                 // I don't know the password: trying with user-interaction
                 result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, true));
             } else {
                 try {
-                    result = connectTo(env, PasswordManager.getInstance().get(env), false);
+                    result = connectTo(env, passwd, false);
                 } catch (ConnectException ex) {
                     if (ex.getMessage().equals("Auth fail")) { // NOI18N
                         // Try with user-interaction
@@ -212,14 +252,18 @@ public final class ConnectionManager {
                     }
                 }
             }
+
             return result;
+        } finally {
+            connecting = false;
         }
     }
 
     private boolean doConnect(
             final ExecutionEnvironment env,
             final UserInfo userInfo) throws IOException, CancellationException {
-        synchronized (lock) {
+
+        try {
             Callable<Session> connectRunnable = new Callable<Session>() {
 
                 public Session call() throws Exception {
@@ -242,9 +286,9 @@ public final class ConnectionManager {
                         }
 
                         Throwable cause = e.getCause();
-                        
+
                         if (cause != null && cause instanceof IOException) {
-                            throw (IOException)cause;
+                            throw (IOException) cause;
                         }
 
                         // Should not happen
@@ -279,11 +323,11 @@ public final class ConnectionManager {
                 Throwable cause = ex.getCause();
                 if (cause != null) {
                     if (cause instanceof IOException) {
-                        throw (IOException)cause;
+                        throw (IOException) cause;
                     }
 
                     if (cause instanceof CancellationException) {
-                        throw (CancellationException)cause;
+                        throw (CancellationException) cause;
                     }
                 }
                 // Should not happen
@@ -293,14 +337,24 @@ public final class ConnectionManager {
             }
 
             if (session != null) {
-                sessions.put(env.toString(), session);
-                HostInfoUtils.updateHostInfo(env);
-                
-                log.info("New connection established: " + env.toString()); // NOI18N
+                synchronized (sessionsLock) {
+                    sessions.put(env, session);
+                }
+
+                NativeTaskExecutorService.submit(new Runnable() {
+
+                    public void run() {
+                        HostInfoUtils.getHostInfo(env);
+                    }
+                }, "Fetch hosts info " + env.toString()); // NOI18N
+
+                log.fine("New connection established: " + env.toString()); // NOI18N
                 return true;
             }
 
             return false;
+        } finally {
+            connecting = false;
         }
     }
 
@@ -312,13 +366,13 @@ public final class ConnectionManager {
      * localhost environment. false otherwise.
      */
     public boolean isConnectedTo(ExecutionEnvironment execEnv) {
-        synchronized (lock) {
-            if (execEnv.isLocal()) {
-                return true;
-            }
+        if (execEnv.isLocal()) {
+            return true;
+        }
 
-            if (sessions.containsKey(execEnv.toString())) {
-                return sessions.get(execEnv.toString()).isConnected();
+        synchronized (sessionsLock) {
+            if (sessions.containsKey(execEnv)) {
+                return sessions.get(execEnv).isConnected();
             }
 
             return false;
@@ -389,8 +443,8 @@ public final class ConnectionManager {
             extends ConnectionManagerAccessor {
 
         @Override
-        public Session getConnectionSession(ConnectionManager mgr, ExecutionEnvironment env) {
-            return mgr.getSession(env);
+        public Session getConnectionSession(ConnectionManager mgr, ExecutionEnvironment env, boolean restoreLostConnection) {
+            return mgr.getSession(env, restoreLostConnection);
         }
     }
 }

@@ -64,7 +64,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import javax.swing.BorderFactory;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -79,6 +78,8 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
+import org.netbeans.modules.kenai.ui.spi.Dashboard;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.DialogDescriptor;
@@ -114,8 +115,6 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         updatePanelUI();
         updateRepoPath();
 
-        //setupCombo();
-        
     }
 
     public GetSourcesFromKenaiPanel() {
@@ -419,42 +418,41 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     private class KenaiRepositoriesComboModel extends DefaultComboBoxModel implements PropertyChangeListener {
 
         public KenaiRepositoriesComboModel() {
-            Kenai.getDefault().addPropertyChangeListener(this);
-            if (prjAndFeature != null) {
-                try {
-                    KenaiProject prj = Kenai.getDefault().getProject(prjAndFeature.projectName);
-                    KenaiFeatureListItem item = new KenaiFeatureListItem(prj, prjAndFeature.feature);
-                    addElement(item);
-                    setSelectedItem(item);
-                } catch (KenaiException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            if (Utilities.isUserLoggedIn()) {
-                addAllMyProjects();
-            }
+            Dashboard.getDefault().addPropertyChangeListener(this);
+            addOpenedProjects();
         }
 
-        private void addAllMyProjects() {
+        private void addOpenedProjects() {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     Iterator<KenaiProject> myProjectsIter = null;
-                    try {
-                        myProjectsIter = Kenai.getDefault().getMyProjects().iterator();
-                    } catch (KenaiException ex) {
-                        // XXX
-                        Exceptions.printStackTrace(ex);
-                    }
-                    if (myProjectsIter != null) {
-                        while (myProjectsIter.hasNext() ) {
-                            final KenaiProject project = myProjectsIter.next();
+                    ProjectHandle[] openedProjects = Dashboard.getDefault().getOpenProjects();
+                        for (ProjectHandle prjHandle : openedProjects) {
+                            KenaiProject kProject = null;
+                            if (prjHandle != null) {
+                                try {
+                                    kProject = Kenai.getDefault().getProject(prjHandle.getId());
+                                } catch (KenaiException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                            final KenaiProject project = kProject;
+                            if (project != null) {
                             try {
                                 KenaiFeature features[] = project.getFeatures(Type.SOURCE);
                                 for (final KenaiFeature feature : features) {
                                     EventQueue.invokeLater(new Runnable() {
-
                                         public void run() {
-                                            addElement(new KenaiFeatureListItem(project, feature));
+                                            if (KenaiService.Names.MERCURIAL.equals(feature.getService()) ||
+                                                KenaiService.Names.SUBVERSION.equals(feature.getService())) {
+                                                KenaiFeatureListItem item = new KenaiFeatureListItem(project, feature);
+                                                addElement(item);
+                                                if (prjAndFeature != null && 
+                                                    prjAndFeature.projectName.equals(project.getName()) &&
+                                                    prjAndFeature.feature.equals(feature)) {
+                                                    setSelectedItem(item);
+                                                }
+                                            }
                                         }
                                     });
                                 }
@@ -467,55 +465,12 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             });
         }
 
-        // listening for user login
+        // listening for opened projects in dashboard
         public void propertyChange(PropertyChangeEvent evt) {
-            if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
-                PasswordAuthentication oldAuth = (PasswordAuthentication) evt.getOldValue();
-                PasswordAuthentication newAuth = (PasswordAuthentication) evt.getNewValue();
-                if (newAuth != null && !newAuth.equals(oldAuth)) {
-                    addAllMyProjects();
-                }
+            if (Dashboard.PROP_OPENED_PROJECTS.equals(evt.getPropertyName())) {
+                removeAllElements();
+                addOpenedProjects();
             }
-        }
-
-    }
-
-
-    private class KenaiRepositoriesModel extends DefaultComboBoxModel implements PropertyChangeListener {
-
-        public KenaiRepositoriesModel(final Iterator<KenaiProject> projects) {
-            if (prjAndFeature != null) {
-                try {
-                    KenaiProject prj = Kenai.getDefault().getProject(prjAndFeature.projectName);
-                    KenaiFeatureListItem item = new KenaiFeatureListItem(prj, prjAndFeature.feature);
-                    addElement(item);
-                    setSelectedItem(item);
-                } catch (KenaiException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    if (projects != null) {
-                        while (projects.hasNext() ) {
-                            KenaiProject project = projects.next();
-                            try {
-                                KenaiFeature features[] = project.getFeatures(Type.SOURCE);
-                                for (KenaiFeature feature : features) {
-                                    addElement(new KenaiFeatureListItem(project, feature));
-                                }
-                            } catch (KenaiException kenaiException) {
-                                Exceptions.printStackTrace(kenaiException);
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // listening for user login
-        public void propertyChange(PropertyChangeEvent evt) {
-            
         }
 
     }
@@ -623,36 +578,6 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             usernameLabel.setEnabled(false);
         }
     }
-
-//    private void setupCombo() {
-//        if (Utilities.isUserLoggedIn()) {
-//            RequestProcessor.getDefault().post(new Runnable() {
-//                public void run() {
-//                    Iterator<KenaiProject> myProjectsIter = null;
-//                    try {
-//                        myProjectsIter = Kenai.getDefault().getMyProjects().iterator();
-//                    } catch (KenaiException ex) {
-//                        // XXX
-//                        Exceptions.printStackTrace(ex);
-//                    }
-//                    final ComboBoxModel model = (ComboBoxModel) new KenaiRepositoriesModel(myProjectsIter);
-//                    //setComboModel((DefaultComboBoxModel) new KenaiRepositoriesModel(myProjectsIter));
-//                    EventQueue.invokeLater(new Runnable() {
-//                        public void run() {
-//                            kenaiRepoComboBox.setModel(model);
-//                            updatePanelUI();
-//                            updateRepoPath();
-//                        }
-//                    });
-//                }
-//            });
-//        } else { // user not logged in
-//            setComboModel(new DefaultComboBoxModel());
-//        }
-//
-//        KenaiFeatureCellRenderer renderer = new KenaiFeatureCellRenderer();
-//        kenaiRepoComboBox.setRenderer(renderer);
-//    }
 
     private synchronized void setComboModel(DefaultComboBoxModel model) {
         comboModel = model;

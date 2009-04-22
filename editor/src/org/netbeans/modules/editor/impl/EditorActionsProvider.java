@@ -73,11 +73,11 @@ public final class EditorActionsProvider extends ActionsList implements  Class2L
     }
     
     public EditorActionsProvider() {
-        super(null);
+        this(null);
     }
 
     private EditorActionsProvider(List<FileObject> keys) {
-        super(keys);
+        super(keys, false, true); // prohibit separators and action-names
     }
     
     public Class<EditorActionsProvider> getClazz(){

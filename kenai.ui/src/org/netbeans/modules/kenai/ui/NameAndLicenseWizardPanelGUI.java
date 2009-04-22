@@ -86,6 +86,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiLicense;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -107,13 +108,14 @@ import org.openide.util.RequestProcessor;
  * @author Milan Kubec
  */
 public class NameAndLicenseWizardPanelGUI extends JPanel {
+    private RequestProcessor errorChecker = new RequestProcessor("Error Checker");
 
     private WizardDescriptor settings;
 
     private NameAndLicenseWizardPanel panel;
     private Pattern prjNamePattern;
 
-    private static final String PRJ_NAME_REGEXP = "[a-z]{1}[a-z0-9_-]+";
+    private static final String PRJ_NAME_REGEXP = "[a-z]{1}[a-z0-9-]+";
     private static final String PRJ_NAME_PREVIEW_PREFIX = "http://kenai.com/projects/";
 
     private static final String EMPTY_ELEMENT = "";
@@ -121,6 +123,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     private List<KenaiLicense> licensesList = null;
 
     private String prjNameCheckMessage = null;
+
+    private boolean licensesLoaded = true;
 
     public NameAndLicenseWizardPanelGUI(NameAndLicenseWizardPanel pnl) {
 
@@ -140,12 +144,15 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         DocumentListener firingDocListener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
+                prjNameCheckMessage = null;
                 panel.fireChangeEvent();
             }
             public void removeUpdate(DocumentEvent e) {
+                prjNameCheckMessage = null;
                 panel.fireChangeEvent();
             }
             public void changedUpdate(DocumentEvent e) {
+                prjNameCheckMessage = null;
                 panel.fireChangeEvent();
             }
         };
@@ -201,10 +208,12 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                         model.addElement(license.getDisplayName());
                         licenseList.add(license);
                     }
+                    licensesLoaded = true;
                 } else {
                     // XXX this item needs to be selected
                     model.addElement(NbBundle.getMessage(NameAndLicenseWizardPanel.class,
                             "NameAndLicenseWizardPanelGUI.noLicensesError"));
+                    licensesLoaded = false;
                 }
                 if (!licenseList.isEmpty()) {
                     setLicenses(licenseList);
@@ -540,20 +549,23 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
     private void projectNameTextFieldFocusLost(FocusEvent evt) {//GEN-FIRST:event_projectNameTextFieldFocusLost
 
-        // XXX 
-        new Thread(new Runnable() {
+        if (getProjectName().length()<2) {
+            prjNameCheckMessage = "Project Name length must be between 2 and 20 characters.";
+            panel.fireChangeEvent();
+            return;
+        }
+        errorChecker.post(new Runnable() {
             public void run() {
-                String message = null;
                 try {
-                    message = KenaiProject.checkName(getProjectName());
-                    System.out.println("checkName message: " + message);
+                    prjNameCheckMessage = KenaiProject.checkName(getProjectName());
                 } catch (KenaiException ex) {
-                    Exceptions.printStackTrace(ex);
+                    String msg = ex.getAsString();
+                    if (msg==null) {
+                        msg = ex.getLocalizedMessage();
+                    }
+                    prjNameCheckMessage = msg;
                 }
-                if (message != null) {
-                    prjNameCheckMessage = message;
-                    panel.fireChangeEvent();
-                }
+                panel.fireChangeEvent();
             }
         });
 
@@ -652,13 +664,21 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     // - not all errors are checked!
     private String checkForErrors() {
         String prjName = getProjectName();
-        if (prjName.length() > 0 && !checkPrjName(prjName)) {
+
+        if (prjName.length()>20) {
+            return "Project Name length must be between 2 and 20 characters.";
+        } else if (prjName.length() > 2 && !checkPrjName(prjName)) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.invalidPrjName");
         } else if (/*getProjectTitle().length() < 2 ||*/ getProjectTitle().length() > 40) {
             return "Project Title length must be between 2 and 40 characters.";
         } else if (getProjectDesc().length() > 500) {
             return "Project Description must to be shorter than 500 characters.";
+        } else if (prjNameCheckMessage!=null) {
+            return prjNameCheckMessage;
+        } else if (!licensesLoaded) {
+            return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.noLicensesErrMsg");
         }
         return null;
     }
@@ -767,7 +787,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_PRJ_LICENSE, getProjectLicense());
 
         if (panel.isFinishPanel()) {
-            settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES, "issues");
+            settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES, KenaiService.Names.BUGZILLA);
             //settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES_URL, "nevim");
             settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_LOCAL, getFolderToShare());
             settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_NAME, SourceAndIssuesWizardPanelGUI.SVN_DEFAULT_NAME);

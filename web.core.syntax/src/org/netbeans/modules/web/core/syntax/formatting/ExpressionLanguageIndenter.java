@@ -97,6 +97,8 @@ public class ExpressionLanguageIndenter extends AbstractIndenter<ELTokenId> {
                     start++;
                 }
                 indent = start - lineRealFirstNonWhite;
+            } else {
+                indent = -1;
             }
         }
         result.add(ic);

@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
+AutoUpdate-Show-In-Client: true
 OpenIDE-Module: org.netbeans.modules.javascript.libraries.jquery/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javascript/libraries/jquery/Bundle.properties
 OpenIDE-Module-Implementation-Version: 127

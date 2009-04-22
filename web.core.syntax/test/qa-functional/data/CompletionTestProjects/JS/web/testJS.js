@@ -5,7 +5,14 @@ function myfunction(){
 
 var myvariable="variable";
 
+x = "foo";
+y = x;
 
+/**CC
+y.cha
+charCodeAt(index) : Number
+y.charCodeAt(index)
+*/
 
 /**CC
 de|

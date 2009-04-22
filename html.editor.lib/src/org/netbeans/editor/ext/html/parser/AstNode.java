@@ -39,12 +39,20 @@
 
 package org.netbeans.editor.ext.html.parser;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.dtd.DTD.Content;
+import org.netbeans.editor.ext.html.dtd.DTD.ContentLeaf;
+import org.netbeans.editor.ext.html.dtd.DTD.ContentModel;
+import org.netbeans.editor.ext.html.dtd.DTD.Element;
 
 /**
  *
@@ -62,6 +70,15 @@ public class AstNode {
     private List<AstNode> children = null;
     private AstNode parent = null;
     private Map<String, Object> attributes = null;
+    private Content content = null;
+    private ContentModel contentModel = null;
+    private Collection<String> errorMessages = null;
+
+    AstNode(String name, NodeType nodeType, int startOffset, int endOffset, ContentModel contentModel) {
+        this(name, nodeType, startOffset, endOffset);
+        this.contentModel = contentModel;
+        this.content = contentModel != null ? contentModel.getContent() : null;
+    }
 
     AstNode(String name, NodeType nodeType, int startOffset, int endOffset) {
         this.name = name;
@@ -69,7 +86,106 @@ public class AstNode {
         this.startOffset = startOffset;
         this.endOffset = endOffset;
     }
-    
+
+    boolean reduce(Element element) {
+        if(contentModel == null) {
+            return true; //unknown tag can contain anything, error reports done somewhere else
+        }
+
+        //explicitly exluded or included elements doesn't affect the reduction!
+        if(contentModel.getExcludes().contains(element)) {
+            return false;
+        }
+        if(contentModel.getIncludes().contains(element)) {
+            return true;
+        }
+        Content c = content.reduce(element.getName());
+        if(c != null) {
+            content = c;
+            return true;
+        } else {
+            //hack!?!?!!
+            //nothing reduced, it still may be valid of one of the expected elements
+            //has optional start && end
+            for(Object o : contentModel.getContent().getPossibleElements()) {
+                Element e = (Element)o;
+                if(e != null && e.hasOptionalStart() && e.hasOptionalEnd()) {
+                    //try to reduce here
+                    Content c2 = e.getContentModel().getContent().reduce(element.getName());
+                    if(c2 != null) {
+                        //hmmm, the element can contain the element
+                        content = Content.EMPTY_CONTENT; //?????????????????
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+//    void dumpContent() {
+//        for(Object o : content.getPossibleElements()) {
+//            Element e = (Element)o;
+//            System.out.print(e + ", ");
+//        }
+//    }
+
+    boolean isResolved() {
+        if(content == null) {
+            return false;
+        }
+        //CDATA
+        if(content instanceof DTD.ContentLeaf) {
+            if( "CDATA".equals(((DTD.ContentLeaf)content).getElementName()) ) {
+                return true;
+            }
+        }
+
+        //#PCDATA hack
+        if(content.getPossibleElements().size() == 1) {
+            if(content.getPossibleElements().iterator().next() == null) {
+                //#PCDATA - consider resolved
+                return true;
+            }
+        }
+        
+        return content == Content.EMPTY_CONTENT || content.isDiscardable(); //XXX: is that correct???
+    }
+
+    Collection<Element> getUnresolvedElements() {
+        if(!isResolved()) {
+            return (Collection<Element>)content.getPossibleElements();
+        } else {
+            return null;
+        }
+    }
+
+    Collection<Element> getAllPossibleElements() {
+        Collection<Element> col = new ArrayList<Element>();
+        col.addAll((Collection<Element>)content.getPossibleElements());
+        col.addAll(contentModel.getIncludes());
+        col.removeAll(contentModel.getExcludes());
+        return col;
+    }
+
+    public synchronized void addErrorMessage(String message) {
+        if(errorMessages == null) {
+            errorMessages = new ArrayList<String>(2);
+        }
+        errorMessages.add(message);
+    }
+
+    public synchronized void addErrorMessages(Collection<String> messages) {
+        if(errorMessages == null) {
+            errorMessages = new HashSet<String>(2);
+        }
+        errorMessages.addAll(messages);
+    }
+
+    public Collection<String> getErrorMessages() {
+        return errorMessages == null ? Collections.<String>emptyList() : errorMessages;
+    }
+
     public String name() {
         return name;
     }

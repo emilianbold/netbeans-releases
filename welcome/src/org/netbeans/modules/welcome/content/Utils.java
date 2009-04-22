@@ -128,22 +128,6 @@ public class Utils {
         }
         return null;
     }
-
-    public static Action createSampleProjectAction() {
-        ClassLoader loader = Lookup.getDefault().lookup( ClassLoader.class );
-        if( null == loader )
-            loader = ClassLoader.getSystemClassLoader();
-        try {
-            Class clazz = Class.forName( "org.netbeans.modules.project.ui.actions.NewProject", true, loader ); // NOI18N
-            Method getDefault = clazz.getMethod( "newSample"); // NOI18N
-            Object newSample = getDefault.invoke( null );
-            if( newSample instanceof Action )
-                return (Action)newSample;
-        } catch( Exception e ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
-        }
-        return null;
-    }
     
     public static Color getColor( String resId ) {
         ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.welcome.resources.Bundle"); // NOI18N

@@ -23,9 +23,9 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblLocalFolderDescription" alignment="0" pref="663" max="32767" attributes="0"/>
+                  <Component id="lblLocalFolderDescription" alignment="0" pref="667" max="32767" attributes="0"/>
                   <Component id="chkPrintDebugInfo" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="lblDescription" alignment="0" pref="663" max="32767" attributes="0"/>
+                  <Component id="lblDescription" alignment="0" pref="667" max="32767" attributes="0"/>
                   <Component id="lblAuthenticationDescription" alignment="0" min="-2" pref="297" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
@@ -35,14 +35,14 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="txtPassword" pref="172" max="32767" attributes="2"/>
-                          <Component id="txtUser" alignment="0" pref="172" max="32767" attributes="2"/>
+                          <Component id="txtPassword" pref="174" max="32767" attributes="2"/>
+                          <Component id="txtUser" alignment="0" pref="174" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="lblActhenticationHint" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="166" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="lblConnection" alignment="0" pref="663" max="32767" attributes="0"/>
+                  <Component id="lblConnection" alignment="0" pref="667" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                       <Component id="lblLocalFolder" min="-2" max="-2" attributes="0"/>
@@ -50,11 +50,11 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                              <Component id="lblFolderError" pref="549" max="32767" attributes="1"/>
+                              <Component id="lblFolderError" pref="555" max="32767" attributes="1"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="txtFolder" pref="450" max="32767" attributes="0"/>
+                              <Component id="txtFolder" pref="470" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btnFile" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -185,9 +185,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtFolder">
-      <Events>
-        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="txtFolderKeyReleased"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnFile">
       <Properties>

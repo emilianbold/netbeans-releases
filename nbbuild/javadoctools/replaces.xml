@@ -182,3 +182,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-api-annotations-common@" value="${javadoc.docs.org-netbeans-api-annotations-common}"/>
 <replacefilter token="@org-netbeans-modules-kenai-ui@" value="${javadoc.docs.org-netbeans-modules-kenai-ui}"/>
 <replacefilter token="@org-netbeans-spi-editor-hints@" value="${javadoc.docs.org-netbeans-spi-editor-hints}"/>
+<replacefilter token="@org-netbeans-core-ide@" value="${javadoc.docs.org-netbeans-core-ide}"/>

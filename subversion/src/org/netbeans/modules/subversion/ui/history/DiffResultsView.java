@@ -163,7 +163,10 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                             } else {
                                 revOlder = (RepositoryRevision.Event) nodes[1].getLookup().lookup(RepositoryRevision.Event.class);
                             }
-                            if (r1 == null || revOlder == null || revOlder.getFile() == null || !revOlder.getFile().equals(r1.getFile())) {
+                            if (r1 == null || revOlder == null || revOlder.getFile() == null || 
+                                    (!revOlder.getFile().equals(r1.getFile()) 
+                                        && (revOlder.getChangedPath() == null || r1.getChangedPath() == null || !revOlder.getChangedPath().getPath().equals(r1.getChangedPath().getCopySrcPath())) // two files with different names, fileA is copied to fileB
+                                    )) {
                                 throw new Exception();
                             }
                             long revisionNumberOlder = r1.getLogInfoHeader().getLog().getRevision().getNumber();

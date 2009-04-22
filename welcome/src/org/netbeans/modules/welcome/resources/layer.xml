@@ -72,90 +72,27 @@ made subject to such option by the copyright holder.
     <folder name="WelcomePage">
         <folder name="GettingStartedLinks">
 
-            <file name="quickstart_java.url" url="nbresloc:/org/netbeans/modules/welcome/resources/quickstart_java.url">
+            <file name="tour_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tour.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="100"/>
-                <attr name="imageKey" stringvalue="IMG_QuickStart"/>
-            </file>
-
-            <file name="quickstart_ruby.url" url="nbresloc:/org/netbeans/modules/welcome/resources/quickstart_ruby.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="101"/>
-                <attr name="imageKey" stringvalue="IMG_QuickStart"/>
-            </file>
-
-            <file name="quickstart_cnd.url" url="nbresloc:/org/netbeans/modules/welcome/resources/quickstart_cnd.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="102"/>
-                <attr name="imageKey" stringvalue="IMG_QuickStart"/>
-            </file>
-
-            <file name="quickstart_php.url" url="nbresloc:/org/netbeans/modules/welcome/resources/quickstart_php.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="103"/>
-                <attr name="imageKey" stringvalue="IMG_QuickStart"/>
             </file>
 
             <file name="whatsnew_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/whatsnew.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="300"/>
-                <attr name="imageKey" stringvalue="IMG_WhatsNew"/>
-            </file>
-
-            <file name="tour_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tour.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="400"/>
-                <attr name="imageKey" stringvalue="IMG_Tour"/>
-            </file>
-        </folder>
-        
-        <folder name="LearnMoreLinks">
-
-            <file name="general.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_general.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="100"/>
-            </file>
-
-            <file name="swing.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_swing.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="200"/>
             </file>
 
-            <file name="webapps.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_webapps.url">
+            <file name="sampleproject_default.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.welcome.ui.SampleProjectAction"/>
+                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
                 <attr name="position" intvalue="300"/>
             </file>
-            
-            <file name="javaee.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_javaee.url">
+
+            <file name="learnmore_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learnmore.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="400"/>
             </file>
-            
-            <file name="ruby.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_ruby.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="500"/>
-            </file>
-            
-            <file name="mobility.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_mobility.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="600"/>
-            </file>
-            
-            <file name="soa.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_soa.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="700"/>
-            </file>
-            
-            <file name="uml.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_uml.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="900"/>
-            </file>
-            
-            <file name="php.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_php.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="1000"/>
-            </file>
-
         </folder>
         
     </folder>

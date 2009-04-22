@@ -40,25 +40,21 @@
 package org.netbeans.modules.cnd.remote.execution;
 
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.api.execution.NativeExecutionProvider;
+import org.netbeans.modules.cnd.spi.compilers.NativeExecutionProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
  * @author gordonp
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.execution.NativeExecutionProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.compilers.NativeExecutionProvider.class)
 public class RemoteNativeExecutionProvider implements NativeExecutionProvider {
     
-    protected ExecutionEnvironment host = null;
-    
-    public NativeExecution getNativeExecution() {
-        NativeExecution ne = new RemoteNativeExecution();
-        ne.setHost(host);
-        return ne;
+    public NativeExecution getNativeExecution(ExecutionEnvironment execEnv) {
+        return new RemoteNativeExecution(execEnv);
     }
-    
-    public void setHost(ExecutionEnvironment host) {
-        this.host = host;
+
+    public boolean isApplicable(ExecutionEnvironment execEnv) {
+        return execEnv.isRemote();
     }
 }

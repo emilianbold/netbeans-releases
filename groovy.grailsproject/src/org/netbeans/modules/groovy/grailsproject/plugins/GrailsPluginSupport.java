@@ -244,6 +244,7 @@ public class GrailsPluginSupport {
 
         boolean installed = true;
 
+        final GrailsPlatform platform = GrailsProjectConfig.forProject(project).getGrailsPlatform();
         final ExecutorService executor = Executors.newFixedThreadPool(1);
         try {
             for (GrailsPlugin plugin : selectedPlugins) {
@@ -265,7 +266,7 @@ public class GrailsPluginSupport {
                 });
 
                 // FIXME should it be FS atomic action ?
-                Callable<Boolean> runner = getPluginHandlerCallable(plugin, descriptor, dlg, uninstall);
+                Callable<Boolean> runner = getPluginHandlerCallable(platform, plugin, descriptor, dlg, uninstall);
 
                 final Future<Boolean> result = executor.submit(runner);
 
@@ -294,7 +295,7 @@ public class GrailsPluginSupport {
         return installed;
     }
 
-    private Callable<Boolean> getPluginHandlerCallable(final GrailsPlugin plugin,
+    private Callable<Boolean> getPluginHandlerCallable(final GrailsPlatform platform, final GrailsPlugin plugin,
             final ProgressDialogDescriptor desc, final Dialog dlg, final boolean uninstall) {
         final String command = uninstall ? "uninstall-plugin" : "install-plugin"; // NOI18N
 
@@ -303,12 +304,19 @@ public class GrailsPluginSupport {
                 ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
                 String displayName = inf.getDisplayName() + " (" + command + ")"; // NOI18N
 
-                String[] args = plugin.getPath() == null
-                        ? new String[] {plugin.getName(), plugin.getVersion()}
-                        : new String[] {plugin.getPath()};
+                List<String> args = new ArrayList<String>(3);
+                if (GrailsPlatform.Version.VERSION_1_1.compareTo(platform.getVersion()) <= 0) {
+                    args.add("--non-interactive"); // NOI18N
+                }
+                if (plugin.getPath() == null) {
+                    args.add(plugin.getName());
+                    args.add(plugin.getVersion());
+                } else {
+                    args.add(plugin.getPath());
+                }
 
                 Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
-                        command, GrailsProjectConfig.forProject(project), args);
+                        command, GrailsProjectConfig.forProject(project), args.toArray(new String[args.size()]));
                 ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true)
                         .postExecution(new RefreshProjectRunnable(project));
 

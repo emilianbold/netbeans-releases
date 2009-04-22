@@ -328,7 +328,11 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
             if (m == null) {
                 return;
             }
-            Object o = m.watchToVariable.remove(watch); // FIXME - check that o is non-null
+            Object o = m.watchToVariable.remove(watch);
+            // fix for the IZ 163112
+            if (o != null && o instanceof GdbWatchVariable) {
+                ((GdbWatchVariable)o).remove();
+            }
             watch.removePropertyChangeListener(this);
             m.fireWatchesChanged();
         }

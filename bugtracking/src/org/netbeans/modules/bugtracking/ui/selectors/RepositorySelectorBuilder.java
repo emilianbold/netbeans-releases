@@ -104,8 +104,10 @@ public final class RepositorySelectorBuilder implements ItemListener,
 
     private boolean emptyPanelInitialized;
     private RepositoryFormPanel repositoryFormsPanel;
+    private ChangeListener repositoryFormPanelListener;
 
     private boolean isValidData;
+    private boolean repositoryFormVisible;
 
     private List<ChangeListener> changeListeners;
     private ChangeEvent changeEvent;
@@ -122,6 +124,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
     private boolean labelAbove = false;
     private boolean labelVisible = true;
     private boolean comboVisible = true;
+    private boolean displayFormForExistingRepo = true;
     private String bugtrackingConnectorDisplayFormat;
     private String initialErrorMessage;
     private Repository repoToPreselect;
@@ -167,6 +170,10 @@ public final class RepositorySelectorBuilder implements ItemListener,
 
     public void setLabelNextToComboBox() {
         labelAbove = false;
+    }
+
+    public void setDisplayFormForExistingRepositories(boolean display) {
+        displayFormForExistingRepo = display;
     }
 
     public void setExistingRepositories(Repository[] repositories) {
@@ -223,6 +230,11 @@ public final class RepositorySelectorBuilder implements ItemListener,
     }
 
     public JComponent getFormPanel() {
+        if (!comboVisible
+                && (repositoryFormsPanel == null)
+                && (repoToPreselect != null)) {
+            initializeCardsPanel();
+        }
         return cardsPanel;
     }
 
@@ -264,11 +276,18 @@ public final class RepositorySelectorBuilder implements ItemListener,
             combo.setSelectedItem(repoToPreselect);
         }
         itemSelected(combo.getSelectedItem());
-        updateDataValidity(combo.getSelectedItem());
         combo.addItemListener(this);
 
         if (label != null) {
             bindLabelToCombo();
+        }
+    }
+
+    private void initializeCardsPanel() {
+        if (!comboVisible
+                && (repositoryFormsPanel == null)
+                && (repoToPreselect != null)) {
+            displayRepositoryForm(repoToPreselect);
         }
     }
 
@@ -281,8 +300,10 @@ public final class RepositorySelectorBuilder implements ItemListener,
     public JComponent createPanel() {
         label = getLabel();
         combo = getComboBox();
+        initializeCardsPanel();
 
         if ((label == null) && (combo == null)) {
+            addInsetsToPanel(cardsPanel);
             return cardsPanel;
         }
 
@@ -357,7 +378,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         }
         private HelpCtx getHelpFor(Repository repository) {
             return (repository != null)
-                   ? repository.getController().getHelpContext()
+                   ? repository.getController().getHelpCtx()
                    : null;
         }
 
@@ -455,7 +476,9 @@ public final class RepositorySelectorBuilder implements ItemListener,
     }
 
     public void itemStateChanged(ItemEvent e) {
-        itemSelected(e.getItem());
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            itemSelected(e.getItem());
+        }
     }
 
     private void itemSelected(Object selectedItem) {
@@ -463,22 +486,16 @@ public final class RepositorySelectorBuilder implements ItemListener,
             NewRepositoryInfo newRepoInfo = (NewRepositoryInfo) selectedItem;
             displayRepositoryForm(newRepoInfo);
         } else {
-            displayEmptyPanel();
+            assert selectedItem instanceof Repository;
+            if (displayFormForExistingRepo) {
+                Repository repository = (Repository) selectedItem;
+                displayRepositoryForm(repository);
+            } else {
+                displayEmptyPanel();
+            }
         }
 
-        updateDataValidity(selectedItem);
         fireSelectionChanged();
-    }
-
-    private void updateDataValidity() {
-        updateDataValidity(combo.getSelectedItem());
-    }
-
-    private void updateDataValidity(Object selectedItem) {
-        boolean valid = (selectedItem instanceof NewRepositoryInfo)
-                        ? repositoryFormsPanel.isValidData()
-                        : true;
-        setDataValid(valid);
     }
 
     private void setDataValid(boolean valid) {
@@ -496,6 +513,12 @@ public final class RepositorySelectorBuilder implements ItemListener,
             emptyPanelInitialized = true;
         }
         ((CardLayout) cardsPanel.getLayout()).show(cardsPanel, EMPTY_PANEL);
+
+        if (repositoryFormVisible) {
+            repositoryFormsPanel.removeChangeListener(repositoryFormPanelListener);
+            repositoryFormVisible = false;
+        }
+        setDataValid(true);
     }
 
     private void displayRepositoryForm(NewRepositoryInfo newRepoInfo) {
@@ -523,8 +546,16 @@ public final class RepositorySelectorBuilder implements ItemListener,
     public void displayRepositoryForm(Repository repository) {
         makeSureRepositoryFormsPanelExists();
 
+        boolean wasRepositoryFormVisible = repositoryFormVisible;
+
         boolean firstUsed = repositoryFormsPanel.displayForm(repository);
         ((CardLayout) cardsPanel.getLayout()).show(cardsPanel, NEW_REPO_PANEL);
+
+        if (!wasRepositoryFormVisible) {
+            repositoryFormsPanel.addChangeListener(repositoryFormPanelListener);
+            setDataValid(repositoryFormsPanel.isValidData());
+            repositoryFormVisible = true;
+        }
 
         if (firstUsed) {
             notifyResizeListeners();
@@ -540,11 +571,13 @@ public final class RepositorySelectorBuilder implements ItemListener,
         if (initialErrorMessage != null) {
             repositoryFormsPanel.displayErrorMessage(initialErrorMessage);
         }
-        repositoryFormsPanel.addChangeListener(new ChangeListener() {
+        if (repositoryFormPanelListener == null) {
+            repositoryFormPanelListener = new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
-                    updateDataValidity();
+                    setDataValid(repositoryFormsPanel.isValidData());
                 }
-        });
+            };
+        }
 
         cardsPanel.add(repositoryFormsPanel, NEW_REPO_PANEL);
     }
@@ -680,7 +713,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
             repository = connector.createRepository();
             return repository;
         }
-    }
+            }
 
     private static final class ComboItemsRenderer implements ListCellRenderer {
 

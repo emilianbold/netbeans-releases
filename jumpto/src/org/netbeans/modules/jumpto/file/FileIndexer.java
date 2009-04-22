@@ -173,7 +173,7 @@ public final class FileIndexer extends CustomIndexer {
         if (lastSlash != -1) {
             return path.substring(lastSlash + 1);
         } else {
-            return i.getName();
+            return i.getRelativePath();
         }
     }
 

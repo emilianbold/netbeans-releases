@@ -48,7 +48,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Entlicher
  */
-public class VariablesFormatter {
+public class VariablesFormatter implements Cloneable {
 
     private String name;
     private boolean enabled = true;
@@ -59,6 +59,7 @@ public class VariablesFormatter {
     private Map<String, String> childrenVariables = new LinkedHashMap<String, String>();
     private boolean useChildrenVariables = false;
     private String childrenExpandTestCode = ""; // NOI18N
+    private boolean isDefault = false;
 
     public VariablesFormatter(String name) {
         this.name = name;
@@ -258,6 +259,30 @@ public class VariablesFormatter {
         this.childrenExpandTestCode = childrenExpandTestCode;
     }
 
+    /**
+     * Test if this formatter is the default one.
+     * @return true if this formatter is default
+     */
+    public boolean isDefault() {
+        return isDefault;
+    }
+
+    @Override
+    public VariablesFormatter clone() {
+        VariablesFormatter f = new VariablesFormatter(name);
+        f.childrenExpandTestCode = childrenExpandTestCode;
+        f.childrenFormatCode = childrenFormatCode;
+        f.childrenVariables = childrenVariables;
+        f.classTypes = classTypes;
+        f.enabled = enabled;
+        f.includeSubTypes = includeSubTypes;
+        f.useChildrenVariables = useChildrenVariables;
+        f.valueFormatCode = valueFormatCode;
+        return f;
+    }
+
+
+
     public static VariablesFormatter[] loadFormatters() {
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         VariablesFormatter[] formatters = (VariablesFormatter[]) p.getArray("VariableFormatters", createDefaultFormatters());
@@ -271,12 +296,14 @@ public class VariablesFormatter {
         collection.setIncludeSubTypes(true);
         collection.setChildrenFormatCode("toArray()");
         collection.setValueFormatCode("\"size = \"+size()");
+        collection.isDefault = true;
 
         VariablesFormatter map = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_MapFormatter"));
         map.setClassTypes("java.util.Map");
         map.setIncludeSubTypes(true);
         map.setChildrenFormatCode("entrySet()");
         map.setValueFormatCode("\"size = \"+size()");
+        map.isDefault = true;
 
         VariablesFormatter mapEntry = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_MapEntryFormatter"));
         mapEntry.setClassTypes("java.util.Map$Entry");
@@ -287,6 +314,7 @@ public class VariablesFormatter {
         childrenMap.put("value", "value");
         mapEntry.setChildrenVariables(childrenMap);
         mapEntry.setValueFormatCode("key+\" => \"+value");
+        mapEntry.isDefault = true;
 
         return new VariablesFormatter[] { collection, map, mapEntry };
     }
@@ -310,6 +338,7 @@ public class VariablesFormatter {
             f.setChildrenVariables(properties.getMap("childrenVariables", f.getChildrenVariables()));
             f.setUseChildrenVariables(properties.getBoolean("useChildrenVariables", f.isUseChildrenVariables()));
             f.setChildrenExpandTestCode(properties.getString("childrenExpandTestCode", f.getChildrenExpandTestCode()));
+            f.isDefault = properties.getBoolean("isDefault", f.isDefault);
             return f;
         }
 
@@ -324,6 +353,7 @@ public class VariablesFormatter {
             properties.setMap("childrenVariables", f.getChildrenVariables());
             properties.setBoolean("useChildrenVariables", f.isUseChildrenVariables());
             properties.setString("childrenExpandTestCode", f.getChildrenExpandTestCode());
+            properties.setBoolean("isDefault", f.isDefault);
         }
         
     }

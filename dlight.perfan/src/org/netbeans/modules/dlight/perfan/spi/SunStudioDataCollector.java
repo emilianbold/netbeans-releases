@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.perfan.spi;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -61,7 +60,7 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -80,11 +79,13 @@ import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
@@ -143,7 +144,7 @@ public class SunStudioDataCollector
                 SunStudioDCConfiguration.c_iSync,
                 SunStudioDCConfiguration.c_iSyncn));
 
-        memInfoTable = new DataTableMetadata("SunStudioMemDetailedData",
+        memInfoTable = new DataTableMetadata("SunStudioMemDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,
                 SunStudioDCConfiguration.c_leakCount,
                 SunStudioDCConfiguration.c_leakSize));
@@ -185,7 +186,7 @@ public class SunStudioDataCollector
                     dtm.add(memSummaryInfoTable);
                     bAttachable = false;
                     break;
-                case SYNCHRONIZARION:
+                case SYNCHRONIZATION:
                     dtm.add(syncInfoTable);
                     bAttachable = false;
                     break;
@@ -203,8 +204,8 @@ public class SunStudioDataCollector
         }
     }
 
-    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case STARTING:
                 if (warmUpTaskResult == null) {
                     // This means that re-starting occured
@@ -212,19 +213,19 @@ public class SunStudioDataCollector
                 }
                 return;
             case RUNNING:
-                targetStarted(source);
+                targetStarted(event.target);
                 return;
             case FAILED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case TERMINATED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case DONE:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case STOPPED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
         }
     }
@@ -238,19 +239,22 @@ public class SunStudioDataCollector
             this.target = target;
 
             ExecutionEnvironment execEnv = target.getExecEnv();
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+
+            switch (hostInfo.getOSFamily()) {
+                case LINUX:
+                case SUNOS:
+                    break;
+                default:
+                    validationStatus = ValidationStatus.invalidStatus(
+                            "SunStudioDataCollector works on SunOS or Linux only."); // NOI18N
+                    return validationStatus;
+            }
 
             String command = null;
             String sprohome = null;
 
             try {
-                String os = HostInfoUtils.getOS(execEnv);
-
-                if (os == null || !("SunOS".equals(os) || os.indexOf("Linux") >= 0)) { // NOI18N
-                    validationStatus = ValidationStatus.invalidStatus(
-                            "SunStudioDataCollector works on SunOS or Linux only."); // NOI18N
-                    return validationStatus;
-                }
-
                 Collection<? extends SunStudioLocatorFactory> factories =
                         Lookup.getDefault().lookupAll(SunStudioLocatorFactory.class);
 
@@ -275,11 +279,11 @@ public class SunStudioDataCollector
                 }
 
                 if (notFound) {
-                    validationStatus = ValidationStatus.invalidStatus("No SunStudio Found"); //NOI18N
+                    validationStatus = ValidationStatus.invalidStatus("No SunStudio Found, use link http://developers.sun.com/sunstudio/ to download latest SunStudio"); //NOI18N
                     return validationStatus;
                 }
 
-            } catch (ConnectException ex) {
+            } catch (IOException ex) {
                 final ConnectionManager mgr = ConnectionManager.getInstance();
                 Runnable onConnect = new Runnable() {
 
@@ -290,7 +294,8 @@ public class SunStudioDataCollector
 
                 AsynchronousAction connectAction = mgr.getConnectToAction(execEnv, onConnect);
 
-                validationStatus = ValidationStatus.unknownStatus("Host is not connected...", // NOI18N
+                validationStatus = ValidationStatus.unknownStatus(
+                        loc("ValidationStatus.ErrorWhileValidation", ex.getMessage()), // NOI18N
                         connectAction);
                 return validationStatus;
             }
@@ -343,8 +348,8 @@ public class SunStudioDataCollector
             DLightLogger.assertTrue(this.target == target,
                     "Validation was performed against another target"); // NOI18N
 
-            this.experimentDir = "/var/tmp/dlightExperiment_" + target.getExecEnv().getUser() + '_' + uid.incrementAndGet() + ".er"; // NOI18N
-
+            String tmpDirBase = HostInfoUtils.getHostInfo(target.getExecEnv()).getTempDir();
+            this.experimentDir = tmpDirBase + "/experiment_" + uid.incrementAndGet() + ".er"; // NOI18N
             this.storage = (PerfanDataStorage) dataStorage;
 
             startWarmUp();
@@ -392,7 +397,7 @@ public class SunStudioDataCollector
             args.add("-l"); // NOI18N
             args.add("USR1"); // NOI18N
 
-            if (collectedInfo.contains(CollectedInfo.SYNCHRONIZARION) ||
+            if (collectedInfo.contains(CollectedInfo.SYNCHRONIZATION) ||
                     collectedInfo.contains(CollectedInfo.SYNCSUMMARY)) {
                 args.add("-s"); // NOI18N
                 args.add("30"); // NOI18N
@@ -451,7 +456,7 @@ public class SunStudioDataCollector
         }
     }
 
-    final void updateIndicators(List<DataRow> data) {
+    protected void updateIndicators(List<DataRow> data) {
         this.notifyIndicators(data);
     }
 
@@ -506,6 +511,10 @@ public class SunStudioDataCollector
 
             monitorsUpdater.start();
         }
+    }
+
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(SunStudioDataCollector.class, key, params);
     }
 
     private static class StdErrRedirectorFactory

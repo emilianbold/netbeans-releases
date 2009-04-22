@@ -144,9 +144,6 @@ public class JaxWsClientCreator implements ClientCreator {
                         } else { // J2SE Project
                             MavenModelUtils.addWsdlResources(model);
                         }
-                        if (libraryAdded) {
-                            MavenModelUtils.updateLibraryScope(project, model);
-                        }
                     }
                 };
                 Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"),

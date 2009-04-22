@@ -233,8 +233,9 @@ public final class Startup {
             if (in == null && UIManager.getLookAndFeel().getClass() == MetalLookAndFeel.class) {
                 in = new Integer (11);
             }
-
-            if (in != null) {
+            
+            //#161761: Do not want to use font size param for GTK L&F because it causes mixed font size
+            if ((in != null) && !UIUtils.isGtkLF()) {
                 AllLFCustoms.initCustomFontSize (in.intValue());
             }
             installLFCustoms (curCustoms);

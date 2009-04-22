@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
+import java.io.InterruptedIOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import org.netbeans.modules.dlight.perfan.util.TasksCachedProcessor;
@@ -95,17 +96,17 @@ import org.openide.util.Lookup;
 class SSStackDataProvider implements StackDataProvider {
 
     private static final Logger log = DLightLogger.getLogger(SSStackDataProvider.class);
-    private final Computable<HotSpotFunctionsFetcherParams, List<FunctionCall>> hotSpotFunctionsFetcher =
-        new TasksCachedProcessor<HotSpotFunctionsFetcherParams, List<FunctionCall>>(new HotSpotFunctionsFetcher(), true);
-    private List<FunctionMetric> metricsList = Arrays.asList(
-        TimeMetric.UserFuncTimeExclusive,
-        TimeMetric.UserFuncTimeInclusive,
-        TimeMetric.SyncWaitCallInclusive,
-        TimeMetric.SyncWaitTimeInclusive,
-        MemoryMetric.LeakBytesMetric,
-        MemoryMetric.LeaksCountMetric);
-    private PerfanDataStorage storage;
     private static Pattern linesCommandPattern = Pattern.compile("^([a-zA-Z_][^,]*), line ([0-9]+) in \"(.*)\""); // NOI18N
+    private final Computable<HotSpotFunctionsFetcherParams, List<FunctionCall>> hotSpotFunctionsFetcher =
+            new TasksCachedProcessor<HotSpotFunctionsFetcherParams, List<FunctionCall>>(new HotSpotFunctionsFetcher(), true);
+    private final List<FunctionMetric> metricsList = Arrays.asList(
+            TimeMetric.UserFuncTimeExclusive,
+            TimeMetric.UserFuncTimeInclusive,
+            TimeMetric.SyncWaitCallInclusive,
+            TimeMetric.SyncWaitTimeInclusive,
+            MemoryMetric.LeakBytesMetric,
+            MemoryMetric.LeaksCountMetric);
+    private PerfanDataStorage storage;
 
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
         //throw new UnsupportedOperationException("Not supported yet.");
@@ -169,17 +170,20 @@ class SSStackDataProvider implements StackDataProvider {
     }
 
     public List<FunctionCall> getFunctionCalls(final List<Column> columns, final List<Column> orderBy, final int limit) {
+        List<FunctionCall> result = Collections.emptyList();
+
         try {
-            return hotSpotFunctionsFetcher.compute(new HotSpotFunctionsFetcherParams("lines", columns, orderBy, limit));//NOI18N
+            result = hotSpotFunctionsFetcher.compute(
+                    new HotSpotFunctionsFetcherParams("lines", columns, orderBy, limit)); // NOI18N
         } catch (InterruptedException ex) {
-            log.fine("HotSpotFunctionsFetcher interrupted."); // NOI18N
+            log.fine("HotSpotFunctionsFetcher interrupted"); // NOI18N
         }
 
-        return Collections.emptyList();
+        return result;
     }
 
     public List<FunctionCall> getHotSpotFunctions(
-        final List<Column> columns, final List<Column> orderBy, final int limit) {
+            final List<Column> columns, final List<Column> orderBy, final int limit) {
 
         try {
             return hotSpotFunctionsFetcher.compute(new HotSpotFunctionsFetcherParams("lines", columns, orderBy, limit));//NOI18N
@@ -210,7 +214,7 @@ class SSStackDataProvider implements StackDataProvider {
             this.storage = (PerfanDataStorage) storage;
         } else {
             String msg = "Attempt to attach SSStackDataProvider to storage " + // NOI18N
-                "'" + storage + "'"; // NOI18N
+                    "'" + storage + "'"; // NOI18N
 
             throw new IllegalArgumentException(msg);
         }
@@ -222,19 +226,19 @@ class SSStackDataProvider implements StackDataProvider {
         if (functionCall instanceof FunctionCallImpl) {
             FunctionCallImpl functionCallImpl = (FunctionCallImpl) functionCall;
             if (functionCallImpl.hasOffset()) {
-                if (!functionCallImpl.hasSourceFileDefined()){
+                if (!functionCallImpl.hasSourceFileDefined()) {
                     FunctionStatistic fStatistic = storage.getFunctionStatistic(functionCall.getFunction().getName());
-                    if (fStatistic != null){
+                    if (fStatistic != null) {
                         functionCallImpl.setSourceFile(fStatistic.getSourceFile());
                     }
                 }
-                if (functionCallImpl.hasSourceFileDefined()){
-                    return new SourceFileInfo(functionCallImpl.getSourceFile(), (int)functionCallImpl.getOffset(), 0);
+                if (functionCallImpl.hasSourceFileDefined()) {
+                    return new SourceFileInfo(functionCallImpl.getSourceFile(), (int) functionCallImpl.getOffset(), 0);
                 }
             }
         }
         Collection<? extends SourceFileInfoProvider> sourceInforFileProviders =
-            Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
+                Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         if (sourceInforFileProviders.isEmpty()) {
             return null;
@@ -264,9 +268,9 @@ class SSStackDataProvider implements StackDataProvider {
         private final Metrics metrics;
 
         HotSpotFunctionsFetcherParams(String command,
-            final List<Column> columns,
-            final List<Column> orderBy,
-            final int limit) {
+                final List<Column> columns,
+                final List<Column> orderBy,
+                final int limit) {
 
             if (columns == null) {
                 throw new NullPointerException();
@@ -276,7 +280,7 @@ class SSStackDataProvider implements StackDataProvider {
                 throw new IllegalArgumentException("HotSpotFunctionsFetcherParams: empty columns list!"); // NOI18N
             }
             if (command == null) {
-                this.command = "functions";//NOI18N
+                this.command = "functions"; // NOI18N
             } else {
                 this.command = command;
             }
@@ -287,7 +291,7 @@ class SSStackDataProvider implements StackDataProvider {
         }
 
         boolean isDefaultCommand() {
-            return "functions".equals(command);//NOI18N
+            return "functions".equals(command); // NOI18N
         }
 
         @Override
@@ -309,7 +313,7 @@ class SSStackDataProvider implements StackDataProvider {
     }
 
     private class HotSpotFunctionsFetcher
-        implements Computable<HotSpotFunctionsFetcherParams, List<FunctionCall>> {
+            implements Computable<HotSpotFunctionsFetcherParams, List<FunctionCall>> {
 
         private final DecimalFormat df = new DecimalFormat();
 
@@ -318,13 +322,24 @@ class SSStackDataProvider implements StackDataProvider {
         }
 
         public List<FunctionCall> compute(HotSpotFunctionsFetcherParams taskArguments) throws InterruptedException {
-            log.fine("Started to fetch Hot Spot Functions"); // NOI18N
+            log.finest("Started to fetch Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
 
             Metrics metrics = taskArguments.metrics;
 
-            String[] er_result = storage.getTopFunctions(taskArguments.command, metrics, taskArguments.limit);
+            String[] er_result = null;
 
-            if (er_result == null || er_result.length == 0) {
+            try {
+                er_result = storage.getTopFunctions(taskArguments.command, metrics, taskArguments.limit);
+            } catch (InterruptedException ex) {
+                log.finest("Fetching Interrupted! Hot Spot Functions @ " + Thread.currentThread()); // NOI18N
+                return null;
+            }
+
+            if (er_result == null) {
+                return null;
+            }
+
+            if (er_result.length == 0) {
                 return Collections.emptyList();
             }
 
@@ -341,9 +356,9 @@ class SSStackDataProvider implements StackDataProvider {
                 String name = info[colCount - 1];
                 if (!taskArguments.isDefaultCommand()) {
                     //parse
-                    if ("lines".equals(taskArguments.command)) {//NOI18N
+                    if ("lines".equals(taskArguments.command)) { // NOI18N
                         //if name.startsWith< will skip
-                        if (name.startsWith("<")) {//NOI18N
+                        if (name.startsWith("<")) { // NOI18N
                             continue;
                         }
                         Matcher match = linesCommandPattern.matcher(name);
@@ -360,7 +375,7 @@ class SSStackDataProvider implements StackDataProvider {
                 Function f = new FunctionImpl(name, name.hashCode());
 
                 Map<FunctionMetric, Object> metricsValues =
-                    new HashMap<FunctionMetric, Object>();
+                        new HashMap<FunctionMetric, Object>();
 
                 // Will skip function if value of primary sorting metric == 0
                 boolean skipFunction = false;
@@ -416,5 +431,4 @@ class SSStackDataProvider implements StackDataProvider {
             return result;
         }
     }
-
 }

@@ -38,63 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.gizmo.spi;
 
+import java.util.Collection;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+
 public interface GizmoOptions {
-    
-    public static enum DataProvider {
+
+    static enum DataProvider {
+
         SUN_STUDIO,
         DTRACE,
+        SIMPLE
     };
 
     /**
      * @return the profileOnRun
      */
-    public boolean getProfileOnRunValue();
+    boolean getProfileOnRunValue();
 
     /**
      * @param profileOnRunOption the profileOnRunOption value to set
      */
-    public void setProfileOnRunValue(boolean profileOnRunValue);
+    void setProfileOnRunValue(boolean profileOnRunValue);
 
-    /**
-     * @return the cpu
-     */
-    public boolean getCpuValue();
+    boolean getValueByName(String name);
 
-    /**
-     * @param cpu the cpu value to set
-     */
-    public void setCpuValue(boolean cpu);
+    void setValueByName(String name, boolean value);
 
-    /**
-     * @return the memory
-     */
-    public boolean getMemoryValue();
-
-    /**
-     * @param memory the memory value to set
-     */
-    public void setMemoryValue(boolean memory);
-
-    /**
-     * @return the synchronization
-     */
-    public boolean getSynchronizationValue();
-
-    /**
-     * @param synchronization the synchronization value to set
-     */
-    public void setSynchronizationValue(boolean synchronization);
+    Collection<String> getNames();
 
     /**
      * @return the dataProvider
      */
-    public DataProvider getDataProviderValue();
+    DataProvider getDataProviderValue();
 
     /**
      * @param dataProvider the dataProvider to set
      */
-    public void setDataProviderValue(DataProvider dataProvider);
+    void setDataProviderValue(DataProvider dataProvider);
+
+    void init(Configuration conf);
 }

@@ -21,20 +21,18 @@
 |org.netbeans.modules.maven.kit|Maven|Java|java
 |org.netbeans.modules.apisupport.kit|NetBeans Plugin Development|Java|apisupport
 |org.netbeans.modules.spring.beans|Spring Beans|Java|java
+|org.netbeans.modules.j2ee.kit|EJB and EAR|Java Web and EE|enterprise
+|org.netbeans.modules.identity.kit|Identity|Java Web and EE|identity
+|org.netbeans.modules.web.kit|Java Web Applications|Java Web and EE|enterprise
+|org.netbeans.modules.web.jsf.kit|JSF|Java Web and EE|enterprise
+|org.netbeans.modules.websvc.restkit|RESTful Web Services|Java Web and EE|enterprise
+|org.netbeans.modules.websvc.kit|SOAP Web Services|Java Web and EE|enterprise
+|org.netbeans.modules.spring.webmvc|Spring Web MVC|Java Web and EE|enterprise
+|org.netbeans.modules.web.struts|Struts|Java Web and EE|enterprise
 |org.netbeans.modules.mobility.kit|Mobility|Mobility|mobility
 |org.netbeans.modules.mobility.end2end.kit|Mobility End to End|Mobility|mobility
 |org.netbeans.modules.php.kit|PHP|PHP|php
 |org.netbeans.modules.core.kit|RCP Platform|RCP Platform|platform
 |org.netbeans.modules.ruby.kit|Ruby and Rails|Ruby|ruby
-|org.netbeans.modules.hibernateweb|Hibernate Web|Web & Java EE|enterprise
-|org.netbeans.modules.identity.kit|Identity|Web & Java EE|identity
-|org.netbeans.modules.j2ee.kit|Java EE|Web & Java EE|enterprise
-|org.netbeans.modules.web.jsf.kit|JSF|Web & Java EE|enterprise
-|org.netbeans.modules.websvc.restkit|RESTful Web Services|Web & Java EE|enterprise
-|org.netbeans.modules.spring.webmvc|Spring Web MVC|Web & Java EE|enterprise
-|org.netbeans.modules.web.struts|Struts|Web & Java EE|enterprise
-|org.netbeans.modules.web.kit|Web Applications|Web & Java EE|enterprise
-|org.netbeans.modules.websvc.kit|Web Services|Web & Java EE|enterprise
-|org.netbeans.modules.websvc.saas.kit|SaaS Services|Web Applications|websvccommon
-|org.netbeans.modules.web.client.tools.kit|Web Client Tools|Web Applications|webcommon
-|org.netbeans.modules.websvc.metro.model|Configuration model for metro.xml file|Web Services Interoperability|enterprise
+|org.netbeans.modules.web.client.tools.kit|JavaScript Debugger|Web Applications|webcommon
+|org.netbeans.modules.websvc.saas.kit|Software as a Service|Web Applications|websvccommon

@@ -126,7 +126,8 @@ public class BundleTest extends JellyTestCase {
             // right, should fail
         }
         try {
-            Bundle.getString("org.netbeans.core.Bundle", "nonsense key - @#$%^");
+            String bundleString = "org.netbeans.core.Bundle";
+            Bundle.getString(bundleString, "nonsense key - @#$%^");
             fail("Should not find nonsense key.");
         } catch (JemmyException e) {
             // right, should fail

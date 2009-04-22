@@ -48,10 +48,10 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
@@ -73,12 +73,15 @@ import org.openide.util.TaskListener;
 public class ConfigurationPanel extends JPanel {
     private static final long serialVersionUID = 27938464212508L;
     
-    final ProgressMonitor progressMonitor = new DownloadProgressMonitor();
+    final DownloadProgressMonitor progressMonitor = new DownloadProgressMonitor();
     private FeatureInfo featureInfo;
     private Callable<JComponent> callable;
     private final Boolean autoActivate;
 
     public ConfigurationPanel(String displayName, final Callable<JComponent> callable, FeatureInfo info, Boolean auto) {
+        if (displayName == null) {
+
+        }
         FeatureManager.logUI("ERGO_QUESTION", info.clusterName, displayName);
         initComponents();
         this.callable = callable;
@@ -132,14 +135,10 @@ public class ConfigurationPanel extends JPanel {
     private void initComponents() {
 
 
-
-        errorLabel = new JLabel();
+        errorLabel = BrokenProjectInfo.getErrorPane("dummy");
         infoLabel = new JLabel();
         downloadButton = new JButton();
         progressPanel = new JPanel();
-
-        errorLabel.setForeground(UIManager.getDefaults().getColor("nb.errorForeground"));
-        Mnemonics.setLocalizedText(errorLabel, "dummy");
         Mnemonics.setLocalizedText(infoLabel, "dummy");
         Mnemonics.setLocalizedText(downloadButton, "dummy");
         downloadButton.addActionListener(new ActionListener() {
@@ -160,20 +159,19 @@ public class ConfigurationPanel extends JPanel {
                     .add(progressPanel, GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
                     .add(infoLabel)
                     .add(downloadButton)
-                    .add(errorLabel))
+                    .add(errorLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(errorLabel)
+                .add(errorLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(infoLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(downloadButton)
                 .add(18, 18, 18)
-                .add(progressPanel, GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
+                .add(progressPanel, GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -181,18 +179,17 @@ public class ConfigurationPanel extends JPanel {
     private void downloadButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
         FeatureManager.logUI("ERGO_DOWNLOAD");
         downloadButton.setEnabled(false);
-        final boolean[] success = new boolean[1];
         final FeatureInfo info = featureInfo;
         Task task = RequestProcessor.getDefault().create(new Runnable() {
 
             public void run() {
-                success[0] = ModulesInstaller.installModules(progressMonitor, info);
+                ModulesInstaller.installModules(progressMonitor, info);
             }
         });
         task.addTaskListener(new TaskListener() {
 
             public void taskFinished(org.openide.util.Task task) {
-                if (success[0]) {
+                if (!progressMonitor.error) {
                     SwingUtilities.invokeLater(new Runnable() {
                         private String msg;
 
@@ -228,12 +225,13 @@ public class ConfigurationPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton downloadButton;
-    private JLabel errorLabel;
+    private JEditorPane errorLabel;
     private JLabel infoLabel;
     private JPanel progressPanel;
     // End of variables declaration//GEN-END:variables
 
     private final class DownloadProgressMonitor implements ProgressMonitor {
+        private boolean error = false;
 
         public void onDownload(ProgressHandle progressHandle) {
             updateProgress(progressHandle);
@@ -262,6 +260,19 @@ public class ConfigurationPanel extends JPanel {
                     progressPanel.add(tmpProgressPanel);
                     progressPanel.revalidate();
                     progressPanel.repaint();
+                }
+            });
+        }
+
+        public void onError(final String message) {
+            error = true;
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    // TODO: mark as html
+                    setError("<html>" + message + "</html>"); // NOI18N
+                    progressPanel.removeAll();
+                    progressPanel.add(errorLabel);
                 }
             });
         }

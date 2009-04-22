@@ -273,6 +273,11 @@ public class Operator {
                             suspendedThread = debugger.getThread(tref);
                             eventAccessLock = suspendedThread.accessLock.writeLock();
                             eventAccessLock.lock();
+                            if (logger.isLoggable(Level.FINE)) {
+                                try {
+                                    logger.fine(" event thread "+tref.name()+" is suspended = "+tref.isSuspended());
+                                } catch (Exception ex) {}
+                            }
                             suspendedThread.notifySuspended();
                          }
                      }
@@ -335,6 +340,15 @@ public class Operator {
                          if (exec != null)
                              try {
                                  startEventOnly = false;
+                                 if (logger.isLoggable(Level.FINE)) {
+                                     ThreadReference tref = getEventThread(e);
+                                     if (tref != null) {
+                                         try {
+                                            logger.fine(" event thread "+tref.name()+" suspend before exec = "+tref.isSuspended());
+                                         } catch (Exception ex) {}
+                                         //System.err.println("\nOperator: event thread "+tref.name()+" suspend before exec = "+tref.isSuspended()+"\n");
+                                     }
+                                 }
                                  resume = resume & exec.exec (e);
                              } catch (VMDisconnectedException exc) {
 //                                 disconnected = true;
@@ -348,25 +362,33 @@ public class Operator {
                                  ErrorManager.getDefault().notify(ex);
                              }
                      } // while
-                     } finally {
-                         if (eventAccessLock != null) {
-                             eventAccessLock.unlock();
-                         }
-                     }
+
                      //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
                      if (logger.isLoggable(Level.FINE)) {
                          logger.fine("JDI events dispatched (resume " + (resume && (!startEventOnly)) + ")");
                          logger.fine("  resume = "+resume+", startEventOnly = "+startEventOnly);
                      }
+
+                     // Notify the resume under eventAccessLock so that nobody can get in between,
+                     // which would result in resuming the thread twice.
+                     if (resume) {
+                         if (!silent && suspendedAll) {
+                             //TODO: Not really all might be suspended!
+                             debugger.notifyToBeResumedAll();
+                         }
+                         if (!silent && suspendedThread != null) {
+                             suspendedThread.notifyToBeResumed();
+                         }
+                     }
+
+
+                     } finally {
+                         if (eventAccessLock != null) {
+                             eventAccessLock.unlock();
+                         }
+                     }
                      if (!startEventOnly) {
                          if (resume) {
-                             if (!silent && suspendedAll) {
-                                 //TODO: Not really all might be suspended!
-                                 debugger.notifyToBeResumedAll();
-                             }
-                             if (!silent && suspendedThread != null) {
-                                 suspendedThread.notifyToBeResumed();
-                             }
                              resumeLock.writeLock().lock();
                              try {
                                 EventSetWrapper.resume(eventSet);

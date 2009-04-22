@@ -94,14 +94,16 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     public static final int INDEX_OF_SETTINGS_TAB = 4;
 
     public static final String[] TAB_NAMES = { "update", "available", "local", "installed" }; //NOI18N
-    private final int initialTabToSelect;
+    private int initialTabToSelect;
+    private boolean advancedView;
     
     public PluginManagerUI (JButton closeButton ) {
-        this( closeButton, null );
+        this(closeButton, null, true);
     }
     
     /** Creates new form PluginManagerUI */
-    public PluginManagerUI (JButton closeButton, Object initialTab) {
+    public PluginManagerUI (JButton closeButton, Object initialTab, boolean advancedView) {
+        this.advancedView = advancedView;
         this.closeButton = closeButton;
         int selIndex = -1;
         for( int i=0; i<TAB_NAMES.length; i++ ) {
@@ -123,7 +125,15 @@ public class PluginManagerUI extends javax.swing.JPanel  {
             }
         });
     }
-    
+
+    boolean isAdvancedView() {
+        return advancedView;
+    }
+
+    void setAdvancedView(boolean advancedView) {
+        this.advancedView = advancedView;
+    }
+
     private Window findWindowParent () {
         Component c = this;
         while(c != null) {
@@ -303,17 +313,28 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     }
 
     private void setSelectedTab() {
+        if( initialTabToSelect >= 0 && initialTabToSelect != tpTabs.getSelectedIndex()
+                && initialTabToSelect < tpTabs.getComponentCount() ) {
+            Component c = tpTabs.getComponentAt(initialTabToSelect);
+            if (c instanceof UnitTab) {
+                UnitTab unitTab = (UnitTab) c;
+                if (unitTab.getModel().isTabEnabled() && unitTab.getModel().canBePrimaryTab() ) {
+                    tpTabs.setSelectedIndex(initialTabToSelect);
+                    initialTabToSelect = -1;
+                    return;
+                }
+            }
+        }
+        initialTabToSelect = -1;
         Component component = tpTabs.getSelectedComponent();
         if (component instanceof UnitTab) {
             UnitTab unitTab = (UnitTab) component;
-            if (!unitTab.getModel().isTabEnabled() 
-                    || (initialTabToSelect >= 0 && initialTabToSelect != tpTabs.getSelectedIndex())) {
+            if (!unitTab.getModel().isTabEnabled()) {
                 for (int i = 0; i < tpTabs.getComponentCount(); i++) {
                     component = tpTabs.getComponentAt(i);
                     if (component instanceof UnitTab) {
                         unitTab = (UnitTab) component;
-                        if (unitTab.getModel().isTabEnabled() && unitTab.getModel().canBePrimaryTab()
-                                && (initialTabToSelect < 0 || initialTabToSelect == i)) {
+                        if (unitTab.getModel().isTabEnabled() && unitTab.getModel().canBePrimaryTab()) {
                             tpTabs.setSelectedIndex(i);
                             break;
                         }
@@ -554,13 +575,18 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             //which is synchronized and may wait until cache is created
             //even more AutoUpdateCatalog.getUpdateItems () can at first start call refresh and thus writeToCache again
             units = UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes());
-            UnitCategoryTableModel installTableModel = ((UnitCategoryTableModel)installedTable.getModel());
+            InstalledTableModel installTableModel = (InstalledTableModel)installedTable.getModel();
             UnitCategoryTableModel updateTableModel = ((UnitCategoryTableModel)updateTable.getModel());
             UnitCategoryTableModel availableTableModel = ((UnitCategoryTableModel)availableTable.getModel());
             LocallyDownloadedTableModel localTableModel = ((LocallyDownloadedTableModel)localTable.getModel());
             
             updateTableModel.setUnits(units);
-            installTableModel.setUnits(units);
+            List<UpdateUnit> features = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.FEATURE);
+            if (isAdvancedView() && !features.isEmpty()) {
+                installTableModel.setUnits(units);
+            } else {
+                installTableModel.setUnits(units, features);
+            }
             availableTableModel.setUnits(units);
             localTableModel.setUnits(units);
             selectFirstRow(installedTable);

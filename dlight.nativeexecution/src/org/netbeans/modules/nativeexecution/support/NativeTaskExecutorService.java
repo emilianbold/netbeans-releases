@@ -50,16 +50,28 @@ import org.openide.util.RequestProcessor;
 public class NativeTaskExecutorService {
 
     private static final String PREFIX = "NATIVEEXECUTOR: "; // NOI18N
+    private static final RequestProcessor processor = new RequestProcessor(PREFIX, 50); // NOI18N
 
-    public static <T> Future<T> submit(final Callable<T> task, String name) {
-        final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
-        final FutureTask<T> ftask = new FutureTask<T>(task);
+    public static <T> Future<T> submit(final Callable<T> task, final String name) {
+        final FutureTask<T> ftask = new FutureTask<T>(new Callable<T>() {
+
+            public T call() throws Exception {
+                Thread.currentThread().setName(PREFIX + name);
+                return task.call();
+            }
+        });
+
         processor.post(ftask);
         return ftask;
     }
 
-    public static void submit(final Runnable task, String name) {
-        final RequestProcessor processor = new RequestProcessor(PREFIX + name, 1);
-        processor.post(task);
+    public static void submit(final Runnable task, final String name) {
+        processor.post(new Runnable() {
+
+            public void run() {
+                Thread.currentThread().setName(PREFIX + name);
+                task.run();
+            }
+        });
     }
 }

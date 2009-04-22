@@ -41,7 +41,9 @@
 package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.ComponentOperator;
 
 /** Used to call "Save" popup menu item, "File|Save" main menu item,
  * "org.openide.actions.SaveAction" or Ctrl+S shortcut.
@@ -61,6 +63,29 @@ public class SaveAction extends Action {
         super(saveMenu, savePopup, "org.openide.actions.SaveAction");
     }
     
+     /** Performs popup action Save on given component operator
+     * which is activated before the action. It only accepts TopComponentOperator
+     * as parameter.
+     * @param compOperator operator which should be activated and saved
+     */
+    public void performPopup(ComponentOperator compOperator) {
+        if(compOperator instanceof TopComponentOperator) {
+            performPopup((TopComponentOperator)compOperator);
+        } else {
+            throw new UnsupportedOperationException(
+                    "SaveAction can only be called on TopComponentOperator.");
+        }
+    }
+
+    /** Performs popup action Save on given top component operator
+     * which is activated before the action. It only accepts TopComponentOperator
+     * as parameter.
+     * @param tco top component operator which should be activated and saved
+     */
+    public void performPopup(TopComponentOperator tco) {
+        tco.pushMenuOnTab(popupPath);
+    }
+
     /** Throws UnsupportedOperationException because SaveAction doesn't have
      * popup representation on nodes.
      * @param nodes array of nodes

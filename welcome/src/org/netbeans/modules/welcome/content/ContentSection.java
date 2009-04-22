@@ -49,84 +49,68 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author S. Aubrecht
  */
-public class ContentSection extends BackgroundPanel implements Constants {
+public class ContentSection extends JPanel implements Constants {
 
     private static final int PANEL_MAX_WIDTH = 800;
     private int location;
     private boolean maxSize;
     
-    private Image center;
-    
     private JLabel lblTitle;
     
-    public ContentSection( String title, int location, JComponent content, boolean maxSize ) {
+    public ContentSection( String title, String imgLabelKey, int location, JComponent content, boolean maxSize ) {
         super( new GridBagLayout() );
+        setOpaque(false);
         this.location = location;
         this.maxSize = maxSize;
+
+        if( title.length() > 0 ) {
+            lblTitle = new JLabel( title );
+            lblTitle.setFont( SECTION_HEADER_FONT );
+        } else {
+            Image img = ImageUtilities.loadImage(imgLabelKey);
+            lblTitle = new JLabel( new ImageIcon(img) );
+        }
         
-        lblTitle = new JLabel( title );
-        lblTitle.setFont( SECTION_HEADER_FONT );
-        
-        lblTitle.setHorizontalAlignment( JLabel.RIGHT );
         lblTitle.setBorder( BorderFactory.createEmptyBorder(0, 0, 8, 0) );
         lblTitle.setForeground( Utils.getColor( COLOR_SECTION_HEADER ) );
-        add( lblTitle, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.EAST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
+        add( lblTitle, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.EAST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
+//        add( new JLabel(), new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.EAST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
         
-        add( content, new GridBagConstraints(0,1,1,1,1.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
+        add( content, new GridBagConstraints(0,1,2,1,1.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
         
         setBorder( BorderFactory.createEmptyBorder(8,12,6,12) );
-        
-        String centerImageName = null;
-        switch( location ) {
-        case SwingConstants.NORTH_EAST:
-            centerImageName = "section_upper_right.png"; //NOI18N
-            break;
-        case SwingConstants.NORTH_WEST:
-            centerImageName = "section_upper_left.png"; //NOI18N
-            break;
-        case SwingConstants.SOUTH_WEST:
-            centerImageName = "section_bottom_left.png"; //NOI18N
-            break;
-        case SwingConstants.SOUTH_EAST:
-            centerImageName = "section_bottom_right.png"; //NOI18N
-            break;
-        }
-        center = ImageUtilities.loadImage( "org/netbeans/modules/welcome/resources/" + centerImageName ); //NOI18N
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         int width = getWidth();
         int height = getHeight();
-        int centerWidth = center.getWidth(null);
-        int centerHeight = center.getHeight(null);
         g.setColor( Utils.getColor( COLOR_SECTION_HEADER ) );
         switch( location ) {
         case SwingConstants.NORTH_EAST:
-            g.drawImage( center, 1, height-centerHeight-1, null );
-            g.drawLine( 0, height-1, width-13, height-1 );
+            g.drawLine( 0, height-1, width-25, height-1 );
             g.drawLine( 0, 25, 0, height );
             break;
         case SwingConstants.NORTH_WEST:
-            g.drawImage( center, width-centerWidth, height-centerHeight-1, null );
-            g.drawLine( 13, height-1, width, height-1 );
-            break;
-        case SwingConstants.SOUTH_WEST:
-            g.drawImage( center, width-centerWidth, 0, null );
+            g.drawLine( 25, height, width, height );
+            g.drawLine( 25, height-1, width, height-1 );
             break;
         case SwingConstants.SOUTH_EAST:
-            g.drawImage( center, 1, 0, null );
             g.drawLine( 0, 0, 0, height-25 );
+            break;
+        case SwingConstants.EAST:
+            g.drawLine( 0, 25, 0, height );
             break;
         }
     }

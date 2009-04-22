@@ -42,22 +42,24 @@ package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
+import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PlatformConfiguration;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
@@ -65,8 +67,9 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
 
     /** Key for remembering project in JMenuItem
      */
-    private static final String HOST_KEY = "org.netbeans.modules.cnd.makeproject.ui.RemoteHost"; // NOI18N
+    private static final String HOST_ENV = "org.netbeans.modules.cnd.makeproject.ui.RemoteHost"; // NOI18N
     private static final String CONF = "org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration"; // NOI18N
+    private static final String PROJECT = "org.netbeans.modules.cnd.makeproject.api.configurations.MakeProject"; // NOI18N
     private JMenu subMenu;
     private Project project;
 
@@ -109,13 +112,14 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             return;
         }
         MakeConfiguration mconf = (MakeConfiguration) conf;
-        String currentHkey = mconf.getDevelopmentHost().getName();
+        ExecutionEnvironment currExecEnv = mconf.getDevelopmentHost().getExecutionEnvironment();
 
-        for (String hkey : mconf.getDevelopmentHost().getServerNames()) {
-            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(hkey, currentHkey.equals(hkey));
+        for (ExecutionEnvironment execEnv : mconf.getDevelopmentHost().getServerEnvironments()) {
+            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(execEnv.getDisplayName(), currExecEnv.equals(execEnv));
             subMenu.add(jmi);
-            jmi.putClientProperty(HOST_KEY, hkey);
+            jmi.putClientProperty(HOST_ENV, execEnv);
             jmi.putClientProperty(CONF, mconf);
+            jmi.putClientProperty(PROJECT, project);
             jmi.addActionListener(jmiActionListener);
         }
 
@@ -126,11 +130,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         managePlatformsItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                ToolsCacheManager cacheManager = new ToolsCacheManager();
-                ServerListDisplayer d = Lookup.getDefault().lookup(ServerListDisplayer.class);
-                if (d != null && d.showServerListDialog(cacheManager)) {
-                    cacheManager.applyChanges();
-                }
+                ServerListDisplayer.showServerListDialog();
             }
         });
     }
@@ -140,16 +140,22 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof JMenuItem) {
                 JMenuItem jmi = (JMenuItem) e.getSource();
-                String hkey = (String) jmi.getClientProperty(HOST_KEY);
+                ExecutionEnvironment execEnv = (ExecutionEnvironment) jmi.getClientProperty(HOST_ENV);
                 MakeConfiguration mconf = (MakeConfiguration) jmi.getClientProperty(CONF);
-                if (mconf != null && hkey != null) {
-                    DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(
-                            ExecutionEnvironmentFactory.getExecutionEnvironment(hkey));
+                if (mconf != null && execEnv != null) {
+                    DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(execEnv);
+                    DevelopmentHostConfiguration oldDhc = mconf.getDevelopmentHost();
                     mconf.setDevelopmentHost(dhc);
                     mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
+                    PlatformConfiguration platformConfiguration = mconf.getPlatform();
+                    platformConfiguration.propertyChange(new PropertyChangeEvent(
+                            jmi, DevelopmentHostConfiguration.PROP_DEV_HOST, oldDhc, dhc));
+                    Object o = jmi.getClientProperty(PROJECT);
+                    assert (o instanceof Project);
+                    NativeProjectProvider npp = ((Project) o).getLookup().lookup(NativeProjectProvider.class);
+                    npp.propertyChange(new PropertyChangeEvent(this, Configurations.PROP_ACTIVE_CONFIGURATION, null, mconf));
                 }
             }
-
         }
     }
 }

@@ -79,6 +79,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
         AbstractFileSystem.Attr, AbstractFileSystem.Change, AbstractFileSystem.List, AbstractFileSystem.Info {
 
     private static final Logger LOG = Logger.getLogger(RemoteFileSystem.class.getName());
+    private static final int TIMEOUT = 10000;
 
     /** base URL of filesystem */
     private final URL baseURL;
@@ -156,7 +157,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
         String fSlash = f.length() > 0 ? f + "/" : ""; // NOI18N
         try {
             URL url = new URL(baseURL, fSlash + "*plain*"); // NOI18N
-            URLConnection conn = new ConnectionBuilder().job(job).url(url).connection();
+            URLConnection conn = new ConnectionBuilder().job(job).url(url).timeout(TIMEOUT).connection();
             String contentType = conn.getContentType();
             if (contentType == null || !contentType.startsWith("text/plain")) { // NOI18N
                 // Missing workspace, or Hudson prior to SVN 13601 (i.e. 1.264).
@@ -197,12 +198,17 @@ final class RemoteFileSystem extends AbstractFileSystem implements
 
     private URLConnection connection(String name, boolean cacheMetadata) throws IOException {
         LOG.log(Level.FINE, "metadata in {0}: {1}", new Object[] {baseURL, name});
-        URLConnection conn = new ConnectionBuilder().job(job).url(new URL(baseURL, name)).connection();
+        URLConnection conn = new ConnectionBuilder().job(job).url(new URL(baseURL, name)).timeout(TIMEOUT).connection();
         if (cacheMetadata) {
             assert Thread.holdsLock(nonDirs);
             lastModified.put(name, conn.getLastModified());
             int contentLength = conn.getContentLength();
-            size.put(name, Math.max(0, contentLength));
+            if (contentLength == -1) {
+                LOG.warning("unknown content length for " + name + " in " + baseURL);
+                size.put(name, 0);
+            } else {
+                size.put(name, contentLength);
+            }
             if (contentLength >= 0) {
                 byte[] buf = new byte[Math.min(contentLength, /* BufferedInputStream.defaultBufferSize */ 8192)];
                 InputStream is = conn.getInputStream();

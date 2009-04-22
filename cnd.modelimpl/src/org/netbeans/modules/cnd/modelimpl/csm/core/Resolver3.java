@@ -298,6 +298,7 @@ public class Resolver3 implements Resolver {
                 CsmClass cls = (CsmClass) decl;
                 if( cls.getStartOffset() < this.offset && this.offset < cls.getEndOffset()  ) {
                     containingClass = cls;
+                    findContext(CsmSelect.getClassMembers(containingClass, filter), filter);
                 }
             } else if( decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) {
                 CsmFunctionDefinition fd = (CsmFunctionDefinition) decl;

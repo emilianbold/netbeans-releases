@@ -53,6 +53,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
@@ -68,7 +69,7 @@ public class BugzillaQuery extends Query {
     private final BugzillaRepository repository;
     protected QueryController controller;
     private final Set<String> issues = new HashSet<String>();
-    private Set<String> obsoleteIssues = new HashSet<String>();
+    private Set<String> archivedIssues = new HashSet<String>();
 
     protected String urlParameters;
     private boolean firstRun = true;
@@ -132,7 +133,11 @@ public class BugzillaQuery extends Query {
     }
 
     @Override
-    public boolean refresh() { // XXX sync???
+    public boolean refresh() { // XXX what if already running! - cancel task
+        return refreshIntern(false);
+    }
+
+    boolean refreshIntern(final boolean autoRefresh) { // XXX what if already running! - cancel task
 
         assert urlParameters != null;
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
@@ -148,26 +153,19 @@ public class BugzillaQuery extends Query {
                     // - and the obsolete ones
                     Set<String> queryIssues = new HashSet<String>();
                     
+                    issues.clear();
+                    archivedIssues.clear();
                     if(isSaved()) {
-                        if(!wasRun()) {
-                            if(issues.size() != 0) {
+                        if(!wasRun() && issues.size() != 0) {
                                 Bugzilla.LOG.warning("query " + getDisplayName() + " supposed to be run for the first time yet already contains issues."); // NOI18N
                                 assert false;
-                            }
-                            // read the stored state if query wasn't run yet ...
-                            // we have to query them ...
-                            queryIssues.addAll(repository.getIssueCache().readQuery(BugzillaQuery.this.getDisplayName()));
-                            // ... and they might be rendered obsolete if not returned by the query
-                            obsoleteIssues.addAll(queryIssues);
-                        } else {
-                            // all previously queried issues are candidates to become obsolete
-                            obsoleteIssues.addAll(issues);
-                            queryIssues.addAll(obsoleteIssues);
                         }
-                        // ... and store all you got
-                        repository.getIssueCache().storeQuery(BugzillaQuery.this.getDisplayName(), queryIssues.toArray(new String[queryIssues.size()]));
+                        // read the stored state ...
+                        queryIssues.addAll(repository.getIssueCache().readQueryIssues(BugzillaQuery.this.getDisplayName()));
+                        queryIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(BugzillaQuery.this.getDisplayName()));
+                        // ... and they might be rendered obsolete if not returned by the query
+                        archivedIssues.addAll(queryIssues);
                     }
-                    issues.clear();
                     firstRun = false;
 
                     // run query to know what matches the criteria
@@ -176,24 +174,30 @@ public class BugzillaQuery extends Query {
                     url.append(urlParameters); // XXX encode url?
                     // IssuesIdCollector will populate the issues set
                     PerformQueryCommand queryCmd = new PerformQueryCommand(repository, url.toString(), new IssuesIdCollector());
-                    repository.getExecutor().execute(queryCmd);
+                    repository.getExecutor().execute(queryCmd, !autoRefresh);
                     ret[0] = queryCmd.hasFailed();
                     if(ret[0]) {
                         return;
                     }
 
                     // only issues not returned by the query are obsolete
-                    obsoleteIssues.removeAll(issues);
+                    archivedIssues.removeAll(issues);
+                    if(isSaved()) {
+                        // ... and store all you got
+                        repository.getIssueCache().storeQueryIssues(BugzillaQuery.this.getDisplayName(), issues.toArray(new String[issues.size()]));
+                        repository.getIssueCache().storeArchivedQueryIssues(BugzillaQuery.this.getDisplayName(), archivedIssues.toArray(new String[archivedIssues.size()]));
+                    }
 
                     // now get the task data for
                     // - all issue returned by the query
-                    // - and issues which were returned by some previous run
+                    // - and issues which were returned by some previous run and are archived now
                     queryIssues.addAll(issues);
 
                     GetMultiTaskDataCommand dataCmd = new GetMultiTaskDataCommand(repository, queryIssues, new IssuesCollector());
-                    repository.getExecutor().execute(dataCmd);
+                    repository.getExecutor().execute(dataCmd, !autoRefresh);
                     ret[0] = dataCmd.hasFailed();
                 } finally {
+                    logQueryEvent(issues.size(), autoRefresh);
                     Bugzilla.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
                 }
             }
@@ -201,10 +205,19 @@ public class BugzillaQuery extends Query {
         return ret[0];
     }
 
-    public void refresh(String urlParameters) {
+    protected void logQueryEvent(int count, boolean autoRefresh) {
+        BugtrackingUtil.logQueryEvent(
+            BugzillaConnector.getConnectorName(),
+            name,
+            count,
+            false,
+            autoRefresh);
+    }
+
+    void refresh(String urlParameters, boolean autoReresh) {
         assert urlParameters != null;
         this.urlParameters = urlParameters;
-        refresh();
+        refreshIntern(autoReresh);
     }
 
     void remove() {

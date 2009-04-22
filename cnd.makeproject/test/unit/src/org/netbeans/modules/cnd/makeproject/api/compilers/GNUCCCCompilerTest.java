@@ -50,7 +50,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 
 /**
@@ -117,7 +117,7 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of MinGW on Windows");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("MinGW", Platform.PLATFORM_WINDOWS);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), flavor, Tool.CCCompiler, "MinGW", "MinGW", "C:\\MinGW\\bin") {
+        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "MinGW", "MinGW", "C:\\MinGW\\bin") {
 
             @Override
             protected String normalizePath(String path) {
@@ -195,7 +195,7 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of TDM MinGW on Windows");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("MinGW_TDM", Platform.PLATFORM_WINDOWS);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), flavor, Tool.CCCompiler, "MinGW_TDM", "MinGW_TDM", "D:\\tec\\mingw\\bin") {
+        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "MinGW_TDM", "MinGW_TDM", "D:\\tec\\mingw\\bin") {
 
             @Override
             protected String normalizePath(String path) {
@@ -265,7 +265,7 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of Cygwin on Windows");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("Cygwin", Platform.PLATFORM_WINDOWS);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), flavor, Tool.CCCompiler, "Cygwin", "Cygwin", "C:\\cygwin\\bin") {
+        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "Cygwin", "Cygwin", "C:\\cygwin\\bin") {
 
             @Override
             protected String normalizePath(String path) {
@@ -330,7 +330,7 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of GCC on Solaris");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("GNU", Platform.PLATFORM_SOLARIS_INTEL);
-        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), flavor, Tool.CCCompiler, "GNU", "GNU", "/usr/sfw/bin") {
+        GNUCCCompiler instance = new GNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "GNU", "GNU", "/usr/sfw/bin") {
 
             @Override
             protected String normalizePath(String path) {

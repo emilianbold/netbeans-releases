@@ -39,8 +39,8 @@
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.ConnectException;
 import java.security.acl.NotOwnerException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,7 +58,7 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.Validateable;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
@@ -76,6 +76,7 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -242,10 +243,9 @@ public final class DtraceDataCollector
             Util.setExecutionPermissions(Arrays.asList(scriptPath));
         } else {
             File script = new File(localScriptPath);
-            scriptPath = "/tmp/" + script.getName(); // NOI18N
-
+            scriptPath = HostInfoUtils.getHostInfo(execEnv).getTempDir() + "/" + script.getName(); // NOI18N
             Future<Integer> copyResult = CommonTasksSupport.uploadFile(
-                    localScriptPath, execEnv, scriptPath, 777, null);
+                    localScriptPath, execEnv, scriptPath, 0777, null);
             try {
                 copyResult.get();
             } catch (InterruptedException ex) {
@@ -315,14 +315,20 @@ public final class DtraceDataCollector
         ValidationStatus result = null;
         boolean fileExists = false;
         boolean connected = true;
+        String error = ""; // NOI18N
+
+        final HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+
+        if (hostInfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
+            return ValidationStatus.invalidStatus(
+                    NbBundle.getMessage(DtraceDataCollector.class,
+                    "DtraceDataCollector.DtraceIsSupportedOnSunOSOnly")); // NOI18N
+        }
 
         try {
-            if (!HostInfoUtils.getOS(execEnv).equals("SunOS")) { // NOI18N
-                return ValidationStatus.invalidStatus(
-                        NbBundle.getMessage(DtraceDataCollector.class, "DtraceDataCollector.DtraceIsSupportedOnSunOSOnly")); // NOI18N
-            }
             fileExists = HostInfoUtils.fileExists(execEnv, command);
-        } catch (ConnectException ex) {
+        } catch (IOException ex) {
+            error = ex.getMessage();
             connected = false;
         }
 
@@ -347,7 +353,7 @@ public final class DtraceDataCollector
             AsynchronousAction connectAction = mgr.getConnectToAction(execEnv, doOnConnect);
 
             result = ValidationStatus.unknownStatus(
-                    loc("ValidationStatus.HostNotConnected"), // NOI18N
+                    loc("ValidationStatus.ErrorWhileValidation", error), // NOI18N
                     connectAction);
         }
 
@@ -361,7 +367,8 @@ public final class DtraceDataCollector
 
         if (sps == null) {
             return ValidationStatus.invalidStatus(
-                NbBundle.getMessage(DtraceDataCollector.class, "DtraceDataCollector.NoPrivSupport", execEnv.toString()));//NOI18N
+                    NbBundle.getMessage(DtraceDataCollector.class, 
+                    "DtraceDataCollector.NoPrivSupport", execEnv.toString())); // NOI18N
         }
 
         boolean status = sps.hasPrivileges(requiredPrivilegesList);
@@ -397,15 +404,15 @@ public final class DtraceDataCollector
         return validate(target, this, true);
     }
 
-    ValidationStatus validate(final DLightTarget target, Validateable validatebleSource ,boolean notify) {
+    ValidationStatus validate(final DLightTarget target, Validateable validatebleSource, boolean notify) {
         if (validationStatus.isValid()) {
             return validationStatus;
         }
 
         ValidationStatus oldStatus = validationStatus;
         ValidationStatus newStatus = doValidation(target);
-        if (notify){
-          notifyStatusChanged(validatebleSource, oldStatus, newStatus);
+        if (notify) {
+            notifyStatusChanged(validatebleSource, oldStatus, newStatus);
         }
         validationStatus = newStatus;
         return newStatus;
@@ -471,8 +478,8 @@ public final class DtraceDataCollector
         ValidationListener[] ll =
                 validationListeners.toArray(new ValidationListener[0]);
 
-        if (validatable == null){
-          validatable = this;
+        if (validatable == null) {
+            validatable = this;
         }
         for (ValidationListener l : ll) {
             l.validationStateChanged(validatable, oldStatus, newStatus);
@@ -481,27 +488,25 @@ public final class DtraceDataCollector
 
     protected void notifyStatusChanged(
             ValidationStatus oldStatus, ValidationStatus newStatus) {
-       notifyStatusChanged(this, oldStatus, newStatus);
+        notifyStatusChanged(this, oldStatus, newStatus);
     }
 
-    public void targetStateChanged(
-            DLightTarget source, State oldState, State newState) {
-
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case RUNNING:
-                targetStarted(source);
+                targetStarted(event.target);
                 break;
             case FAILED:
-                targetFinished(source);
+                targetFinished(event.target);
                 break;
             case TERMINATED:
-                targetFinished(source);
+                targetFinished(event.target);
                 break;
             case DONE:
-                targetFinished(source);
+                targetFinished(event.target);
                 break;
             case STOPPED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
         }
     }

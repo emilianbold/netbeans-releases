@@ -55,6 +55,7 @@ public final class InvalidException extends IOException {
 
     private final Module m;
     private final Manifest man;
+    private String localizedMessage;
 
     public InvalidException(String detailMessage) {
         super(detailMessage);
@@ -73,7 +74,12 @@ public final class InvalidException extends IOException {
         this.m = null;
         this.man = manifest;
     }
-    
+
+    public InvalidException(Module m, String detailMessage, String localizedMessage) {
+        this(m, detailMessage);
+        this.localizedMessage = localizedMessage;
+    }
+
     /** Affected module. May be null if this is hard to determine
      * (for example a problem which would make the module ill-formed,
      * during creation or reloading).
@@ -94,5 +100,14 @@ public final class InvalidException extends IOException {
             return m.getManifest();
         }
         return null;
+    }
+
+    @Override
+    public String getLocalizedMessage() {
+        if (localizedMessage != null) {
+            return localizedMessage;
+        } else {
+            return super.getLocalizedMessage();
+        }
     }
 }

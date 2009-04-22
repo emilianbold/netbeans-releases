@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.util.Collections;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -77,7 +78,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         AST qid = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
-        classForwardUID = (cfd != null) ? UIDs.get(cfd) : null;
+        classForwardUID = UIDCsmConverter.declarationToUID(cfd);
         AST templateParams = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LITERAL_template);
         if (templateParams != null) {
             List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, file, parent, register);
@@ -129,23 +130,22 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
 
     public CsmClass getReferencedClass(Resolver resolver) {
         CsmClass cls = UIDCsmConverter.UIDtoClass(friendUID);
-        if(cls == null) {
+        if(!CsmBaseUtilities.isValid(cls)|| ForwardClass.isForwardClass(cls)) {
+            cls = null;
             CsmClassForwardDeclaration cfd = UIDCsmConverter.UIDtoCsmObject(classForwardUID);
-            if(cfd != null) {
+            if(CsmBaseUtilities.isValid(cfd)) {
                 cls = cfd.getCsmClass();
-                friendUID = UIDCsmConverter.declarationToUID(cls);
-                if (cls != null) {
-                    return cls;
-                }
+            }
+            friendUID = UIDCsmConverter.declarationToUID(cls);
+        }
+        if (!CsmBaseUtilities.isValid(cls) || ForwardClass.isForwardClass(cls)) {
+            CsmObject o = resolve(resolver);
+            if (CsmKindUtilities.isClass(o)) {
+                cls = (CsmClass) o;
+                friendUID = UIDCsmConverter.objectToUID(cls);
             }
         }
-        CsmObject o = resolve(resolver);
-        if (CsmKindUtilities.isClass(o)) {
-            cls = (CsmClass) o;
-            friendUID = UIDCsmConverter.objectToUID(cls);
-            return cls;
-        }
-        return null;
+        return cls;
     }
     
     private CharSequence[] initNameParts(AST qid) {

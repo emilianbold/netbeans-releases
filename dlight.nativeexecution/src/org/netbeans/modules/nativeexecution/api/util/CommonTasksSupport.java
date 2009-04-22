@@ -68,6 +68,8 @@ import org.openide.windows.InputOutput;
  */
 public final class CommonTasksSupport {
 
+    private CommonTasksSupport() {}
+
     /**
      * Starts <tt>srcFileName</tt> file upload from the localhost to the host,
      * specified by the <tt>dstExecEnv</tt> saving it in the
@@ -115,7 +117,7 @@ public final class CommonTasksSupport {
             return null;
         }
 
-        final String cmd = "/bin/scp -p -t " + dstFileName; // NOI18N
+        final String cmd = "scp -p -t " + dstFileName; // NOI18N
 
         ChangeListener processListener = new ChangeListener() {
 
@@ -177,7 +179,7 @@ public final class CommonTasksSupport {
             ExecutionEnvironment execEnv,
             String fname, final Writer error) {
         NativeProcessBuilder npb =
-                new NativeProcessBuilder(execEnv, "/bin/rm"); // NOI18N
+                new NativeProcessBuilder(execEnv, "rm"); // NOI18N
         npb = npb.setArguments("-f", fname); // NOI18N
 
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
@@ -190,6 +192,27 @@ public final class CommonTasksSupport {
 
         ExecutionService execService = ExecutionService.newService(
                 npb, descriptor, "Remove file " + fname); // NOI18N
+        return execService.run();
+    }
+
+    /**
+     * Changes file permissions.
+     *
+     * @param execEnv  execution environment where the file is located
+     * @param file  file to change permissions for
+     * @param mode  new file permissions in octal form, e.g. <tt>0755</tt>
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
+     *         of the chmod task. <tt>0</tt> means success, any other value
+     *         means failure.
+     */
+    public static Future<Integer> chmod(ExecutionEnvironment execEnv, String file, int mode) {
+        NativeProcessBuilder npb = new NativeProcessBuilder("chmod"); // NOI18N
+        npb = npb.setArguments(String.format("0%03o", mode), file); // NOI18N
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
+                InputOutput.NULL);
+
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "Changing permissions for " + file); // NOI18N
         return execService.run();
     }
 
@@ -208,7 +231,7 @@ public final class CommonTasksSupport {
      */
     public static Future<Integer> rmDir(final ExecutionEnvironment execEnv,
             String dirname, boolean recursively, final Writer error) {
-        String cmd = recursively ? "/bin/rm" : "/bin/rmdir"; // NOI18N
+        String cmd = recursively ? "rm" : "rmdir"; // NOI18N
 
         String[] args = recursively
                 ? new String[]{"-rf", dirname} : new String[]{"-f", dirname}; // NOI18N

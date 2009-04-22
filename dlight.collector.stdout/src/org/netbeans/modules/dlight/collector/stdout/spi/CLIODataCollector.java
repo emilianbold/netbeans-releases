@@ -39,7 +39,7 @@
 package org.netbeans.modules.dlight.collector.stdout.spi;
 
 import java.io.File;
-import java.net.ConnectException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,7 +56,7 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -255,7 +255,7 @@ public final class CLIODataCollector
         }
     }
 
-    private static String loc(String key, Object... params) {
+    private static String loc(String key, String... params) {
         return NbBundle.getMessage(CLIODataCollector.class, key, params);
     }
 
@@ -284,10 +284,12 @@ public final class CLIODataCollector
         boolean fileExists = false;
         boolean connected = true;
         final ExecutionEnvironment execEnv = target.getExecEnv();
+        String error = ""; // NOI18N
 
         try {
             fileExists = HostInfoUtils.fileExists(execEnv, command);
-        } catch (ConnectException ex) {
+        } catch (IOException ex) {
+            error = ex.getMessage();
             connected = false;
         }
 
@@ -312,7 +314,7 @@ public final class CLIODataCollector
             AsynchronousAction connectAction = mgr.getConnectToAction(execEnv, doOnConnect);
 
             result = ValidationStatus.unknownStatus(
-                    loc("ValidationStatus.HostNotConnected"), // NOI18N
+                    loc("ValidationStatus.ErrorWhileValidation", error), // NOI18N
                     connectAction);
         }
 
@@ -323,24 +325,22 @@ public final class CLIODataCollector
         return validationStatus;
     }
 
-    public void targetStateChanged(final DLightTarget source,
-            final State oldState, final State newState) {
-
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case RUNNING:
-                targetStarted(source);
+                targetStarted(event.target);
                 break;
             case FAILED:
-                targetFinished(source);
+                targetFinished(event.target);
                 break;
             case TERMINATED:
-                targetFinished(source);
+                targetFinished(event.target);
                 break;
             case DONE:
-                targetFinished(source);
+                targetFinished(event.target);
                 break;
             case STOPPED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
         }
     }

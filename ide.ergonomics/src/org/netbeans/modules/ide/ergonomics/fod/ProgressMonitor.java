@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
-import org.netbeans.modules.ide.ergonomics.debugger.*;
 import org.netbeans.api.progress.ProgressHandle;
 
 /**
@@ -60,6 +59,8 @@ public interface ProgressMonitor {
 
     void onEnable(ProgressHandle progressHandle);
 
+    void onError(String message);
+    
     static final class DevNullProgressMonitor implements ProgressMonitor {
         public void onDownload(ProgressHandle progressHandle) {
         }
@@ -71,6 +72,9 @@ public interface ProgressMonitor {
         }
 
         public void onEnable(ProgressHandle progressHandle) {
+        }
+
+        public void onError(String message) {
         }
     }
 }

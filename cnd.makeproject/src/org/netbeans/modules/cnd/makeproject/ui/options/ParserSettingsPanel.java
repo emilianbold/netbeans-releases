@@ -56,13 +56,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.ui.options.IsChangedListener;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public class ParserSettingsPanel extends JPanel implements ChangeListener, ActionListener, IsChangedListener {
@@ -129,27 +128,24 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
 
         CompilerSetPresenter toSelect = null;
         List<CompilerSetPresenter> allCS = new ArrayList<CompilerSetPresenter>();
-        ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
-        if (serverList != null) {
-            List<ExecutionEnvironment> servers = serverList.getEnvironments();
-            if (servers.size() > 1) {
-                for (ExecutionEnvironment execEnv : servers) {
-                    for (CompilerSet cs : getCompilerSetManager(execEnv).getCompilerSets()) {
-                        CompilerSetPresenter csp = new CompilerSetPresenter(cs, execEnv.getHost() + " : " + cs.getName()); //NOI18N
-                        if (csToSelect == cs) {
-                            toSelect = csp;
-                        }
-                        allCS.add(csp);
+        List<ExecutionEnvironment> servers = ServerList.getEnvironments();
+        if (servers.size() > 1) {
+            for (ExecutionEnvironment execEnv : servers) {
+                for (CompilerSet cs : getCompilerSetManager(execEnv).getCompilerSets()) {
+                    CompilerSetPresenter csp = new CompilerSetPresenter(cs, execEnv.getHost() + " : " + cs.getName()); //NOI18N
+                    if (csToSelect == cs) {
+                        toSelect = csp;
                     }
+                    allCS.add(csp);
                 }
-            } else {
-                assert servers.get(0).isLocal();
             }
+        } else {
+            assert servers.get(0).isLocal();
         }
 
         if (allCS.size() == 0) {
             // localhost only mode (either cnd.remote is not installed or no devhosts were specified
-            for (CompilerSet cs : getCompilerSetManager(ExecutionEnvironmentFactory.getLocalExecutionEnvironment()).getCompilerSets()) {
+            for (CompilerSet cs : getCompilerSetManager(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
                 CompilerSetPresenter csp = new CompilerSetPresenter(cs, cs.getName());
                 if (csToSelect == cs) {
                     toSelect = csp;
@@ -197,6 +193,8 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                 predefinedPanel = new PredefinedPanel((CCCCompiler) tool, this);
                 predefinedPanels.put(key, predefinedPanel);
             //modified = true; // See 126368
+            } else {
+                predefinedPanel.updateCompiler((CCCCompiler) tool);
             }
             tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
         }

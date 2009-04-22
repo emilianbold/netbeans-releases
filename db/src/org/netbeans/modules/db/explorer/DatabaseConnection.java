@@ -79,6 +79,8 @@ import org.netbeans.modules.db.explorer.node.RootNode;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -673,6 +675,11 @@ public class DatabaseConnection implements DBConnection {
             }
 
             throw ddle;
+        } catch (Throwable t) {
+            String message = NbBundle.getMessage (DatabaseConnection.class, "EXC_CannotEstablishConnection", // NOI18N
+                        db, drv, t.getMessage());
+            DialogDisplayer.getDefault ().notifyLater (new NotifyDescriptor.Exception (t, message));
+            propertySupport.firePropertyChange("failed", null, null);
         } finally {
             getOpenConnection().disable();
         }

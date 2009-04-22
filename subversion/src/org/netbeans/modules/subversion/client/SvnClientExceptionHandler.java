@@ -746,6 +746,16 @@ public class SvnClientExceptionHandler {
         msg = msg.toLowerCase();
         return (msg.indexOf("refers to a directory") > -1);                                         // NOI18N
     }
+
+    /**
+     * Is relocating to a wrong repository URL?
+     * @param msg
+     * @return
+     */
+    public static boolean isWrongUUID(String msg) {
+        msg = msg.toLowerCase();
+        return (msg.contains("has uuid") && msg.contains("but the wc has")); //NOI18N
+    }
     
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
         if(isNoCliSvnClient(ex.getMessage())) {
@@ -795,8 +805,10 @@ public class SvnClientExceptionHandler {
         if (isHTTP405(exception.getMessage())) {
             msg = exception.getMessage() + "\n\n" + NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error405");                                // NOI18N
         } else if(isOutOfDate(exception.getMessage()) || isMissingOrLocked(exception.getMessage())) {
-            msg = exception.getMessage() + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_OutOfDate") + "\n"; // NOI18N            
-        } 
+            msg = exception.getMessage() + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_OutOfDate") + "\n"; // NOI18N
+        } else if(isWrongUUID(exception.getMessage())) {
+            msg = exception.getMessage() + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_RelocateWrongUUID") + "\n"; // NOI18N
+        }
         return msg;
     }
 

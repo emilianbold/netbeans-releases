@@ -51,7 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.execution.OutputWindowWriter;
 import org.netbeans.modules.cnd.execution.Unbuffer;
@@ -136,7 +136,7 @@ public class NativeExecutor implements Runnable {
             String actionName,
             boolean parseOutputForErrors,
             boolean showInput) {
-        this(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), runDir, executable,
+        this(ExecutionEnvironmentFactory.getLocal(), runDir, executable,
                 arguments, envp, tabName, actionName, parseOutputForErrors, showInput, false);
     }
     
@@ -226,7 +226,8 @@ public class NativeExecutor implements Runnable {
      *  Call execute(), not this method directly!
      */
     synchronized public void run() {
-        io.setFocusTaken(true);
+        // IZ162493: no need to switch each time into Ouput window
+//        io.setFocusTaken(true);
         io.setErrVisible(false);
         io.setErrSeparated(false);
         if (showInput) {
@@ -252,7 +253,7 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            nativeExecution = NativeExecution.getDefault(execEnv).getNativeExecution();
+            nativeExecution = NativeExecution.getDefault(execEnv);
             rc = nativeExecution.executeCommand(
                     runDirFile,
                     executable,
@@ -331,7 +332,7 @@ public class NativeExecutor implements Runnable {
     private void executionStarted() {
         if(showHeader) {
             String runDirToShow = execEnv.isLocal() ?
-                runDir : HostInfoProvider.getDefault().getMapper(execEnv).getRemotePath(runDir);
+                runDir : HostInfoProvider.getMapper(execEnv).getRemotePath(runDir);
             
             String preText = MessageFormat.format(getString("PRETEXT"),
 		    exePlusArgsQuoted(executable, arguments), runDirToShow);

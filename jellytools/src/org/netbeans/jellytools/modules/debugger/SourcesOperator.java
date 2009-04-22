@@ -71,8 +71,8 @@ public class SourcesOperator extends TopComponentOperator {
     /** Waits for Sessions top component and creates a new operator for it. */
     public SourcesOperator() {
         super(waitTopComponent(null,
-                Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle",
-                                        "CTL_Sourcess_view"),
+                Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle",
+                                        "CTL_Sources_view"),
                 0, viewSubchooser));
     }
     

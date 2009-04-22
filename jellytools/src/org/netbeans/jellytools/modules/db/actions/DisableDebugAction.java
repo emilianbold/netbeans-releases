@@ -52,8 +52,8 @@ public class DisableDebugAction extends ActionNoBlock {
 
     /** creates new "Disable Debug" action */
     public DisableDebugAction() {
-        super(null,Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+        super(null, Bundle.getStringTrimmed(
+                "org.netbeans.modules.db.explorer.action.Bundle",
                 "DisableDebug"));
     }
 }

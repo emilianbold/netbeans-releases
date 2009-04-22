@@ -212,7 +212,7 @@ class AntGrammar implements GrammarQuery {
                 return null;
             default:
                 // We must be data.
-                String clazz = getAntGrammar().getElements(ptype.name).get(name);
+                String clazz = getAntGrammar().isKnown(ptype.name) ? getAntGrammar().getElements(ptype.name).get(name) : null;
                 if (clazz != null) {
                     return new ElementType(Kind.DATA, clazz);
                 } else {

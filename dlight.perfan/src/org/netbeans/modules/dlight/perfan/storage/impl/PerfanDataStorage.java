@@ -38,6 +38,9 @@
  */
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.StringWriter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -47,11 +50,15 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.openide.util.Exceptions;
 
 public final class PerfanDataStorage extends DataStorage {
 
     private final Map<String, String> serviceInfoMap = new ConcurrentHashMap<String, String>();
-    private Erprint erprint;
+    private ErprintSession er_print;
+    private String experimentDirectory = null;
+    private ExecutionEnvironment env;
 
     public PerfanDataStorage() {
         super();
@@ -65,17 +72,32 @@ public final class PerfanDataStorage extends DataStorage {
         return serviceInfoMap.get(name);
     }
 
+    @Override
+    public boolean shutdown() {
+        if (er_print != null){
+            er_print.close();
+        }
+        if (experimentDirectory != null){
+            StringWriter writer = new StringWriter();
+            CommonTasksSupport.rmDir(env, experimentDirectory, true, writer);
+            return writer.toString().trim().equals("");
+        }
+        return true;
+    }
+
+    
+
     public final String put(String name, String value) {
         return serviceInfoMap.put(name, value);
     }
 
     public void init(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory) {
         synchronized (this) {
-            if (erprint != null) {
-                erprint.stop();
+            if (er_print != null) {
+                er_print.close();
             }
 
-            erprint = new Erprint(execEnv, sproHome, experimentDirectory);
+            er_print = new ErprintSession(execEnv, sproHome, experimentDirectory);
         }
     }
 
@@ -94,19 +116,60 @@ public final class PerfanDataStorage extends DataStorage {
      * TODO: change the behavior later...
      */
     public String[] getTopFunctions(Metrics metrics, int limit) {
-        return erprint.getHotFunctions(metrics, limit, true);
+        String[] result = null;
+
+        try {
+            result = er_print.getHotFunctions(metrics, limit, 0, true);
+        } catch (InterruptedIOException ex) {
+            // it was terminated while getting functions list...
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return result == null ? new String[0] : result;
     }
 
-    public String[] getTopFunctions(String command, Metrics metrics, int limit) {
-        return erprint.getHotFunctions(command, metrics, limit, true);
+    public String[] getTopFunctions(String command, Metrics metrics, int limit) throws InterruptedException {
+        String[] result = null;
+
+        try {
+            result = er_print.getHotFunctions(command, metrics, limit, true);
+        } catch (InterruptedIOException ex) {
+            // it was terminated while getting functions list...
+            throw new InterruptedException();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return result;
     }
 
-    public FunctionStatistic getFunctionStatistic(String function){
-        return erprint.getFunctionStatistic(function, true);
+    public FunctionStatistic getFunctionStatistic(String function) {
+        FunctionStatistic result = null;
+
+        try {
+            result = er_print.getFunctionStatistic(function, true);
+        } catch (InterruptedIOException ex) {
+            // it was terminated while getting functions list...
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return result;
     }
 
     public ExperimentStatistics fetchSummaryData() {
-        return erprint.getExperimentStatistics(true);
+        ExperimentStatistics result = null;
+
+        try {
+            result = er_print.getExperimentStatistics(0, true);
+        } catch (InterruptedIOException ex) {
+            // it was terminated while getting functions list...
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return result;
     }
 
     @Override
@@ -114,9 +177,6 @@ public final class PerfanDataStorage extends DataStorage {
         return PerfanDataStorageFactory.supportedTypes;
     }
 
-    public void shutdown() {
-        erprint.stop();
-    }
 
     @Override
     protected boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {

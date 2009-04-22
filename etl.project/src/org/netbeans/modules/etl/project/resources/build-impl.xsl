@@ -51,6 +51,13 @@ is divided into following sections:
             </xsl:attribute>
             <xsl:attribute name="basedir">..
             </xsl:attribute>
+            <fail message="Please build using Ant 1.7.1 or higher.">
+                <condition>
+                    <not>
+                        <antversion atleast="1.7.1"/>
+                    </not>
+                </condition>
+            </fail>
             <target name="default">
                 <xsl:attribute name="depends">dist,javadoc
                 </xsl:attribute>

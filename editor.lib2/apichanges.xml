@@ -105,6 +105,21 @@ is the proper place.
 
     <changes>
 
+        <change id="added-editoractionregistration">
+            <summary>EditorActionRegistration annotation added</summary>
+            <version major="1" minor="10"/>
+            <date day="7" month="4" year="2009"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                EditorActionRegistration allows to easily register an editor action
+                into the list of actions of an editor kit. It also allows a lazy
+                action's class loading (more details in javadoc).
+            </description>
+            <class package="org.netbeans.api.editor" name="EditorActionRegistration"/>
+            <issue number="150875"/>
+        </change>
+
         <change id="added-codegen-spi">
             <summary>Code Generation SPI added</summary>
             <version major="1" minor="8"/>
@@ -118,7 +133,7 @@ is the proper place.
                 them into documents on the Insert Code editor action invocation.
                 The <code>CodeGeneratorContextProvider</code> implementations
                 registered for the mime types could provide the respective
-                CodeGenerators with an additional context information. 
+                CodeGenerators with an additional context information.
             </description>
             <issue number="134239"/>
         </change>

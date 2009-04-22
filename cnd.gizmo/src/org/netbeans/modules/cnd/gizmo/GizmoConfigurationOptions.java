@@ -38,14 +38,18 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
-import java.io.IOException;
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
+import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -54,9 +58,6 @@ import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  *
@@ -64,82 +65,105 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
  */
 public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
+    private static Logger log = DLightLogger.getLogger(GizmoConfigurationOptions.class);
     private String DLightCollectorString = "SunStudio";//NOI18N
     private List<String> DLightIndicatorDPStrings = Arrays.asList("SunStudio");//NOI18N
     private static final String SUNSTUDIO = "SunStudio";//NOI18N
     private static final String LL_MONITOR = "LLTool";//NOI18N
     private static final String DTRACE = "DTrace";//NOI18N
     private static final String PRSTAT_INDICATOR = "prstat";//NOI18N
+    private static final String PROC_READER = "ProcReader";//NOI18N
     private Project currentProject;
     private boolean areCollectorsTurnedOn = false;
+    private boolean profileOnRun = true;
+    private GizmoOptions gizmoOptions = null;
 
     public void turnCollectorsState(boolean turnState) {
         areCollectorsTurnedOn = turnState;
     }
 
-    public void configure(Project project){
+    public boolean profileOnRun() {
+        return profileOnRun;
+    }
+
+    public Collection<String> getActiveToolNames() {
+        if (gizmoOptions == null) {
+            return null;
+        }
+        Collection<String> result = new ArrayList<String>();
+        Collection<String> allNames = gizmoOptions.getNames();
+        for (String name : allNames) {
+            if (gizmoOptions.getValueByName(name)) {
+                result.add(name);
+            }
+        }
+        return result;
+    }
+
+    public void configure(Project project) {
+        areCollectorsTurnedOn = true;
         this.currentProject = project;
-        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
-        turnCollectorsState(options.getDataCollectorEnabled());
+//        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
         //set up as following:
         //get data from the project about selected provider of detailed voew
         Configuration activeConfiguration = getActiveConfiguration();
+        gizmoOptions = GizmoOptionsProvider.getOptions(activeConfiguration);
+        gizmoOptions.init(activeConfiguration);
+        turnCollectorsState(true);
+        profileOnRun = gizmoOptions.getProfileOnRunValue();
         String hkey = null;
         if (!(activeConfiguration instanceof MakeConfiguration)) {
             return;
         }
+
         hkey = ((MakeConfiguration) activeConfiguration).getDevelopmentHost().getName();
         //if we have sun studio compiler along compiler collections presentedCompiler
         CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
         List<CompilerSet> compilers = compilerSetManager.getCompilerSets();
         boolean hasSunStudio = false;
-        for (CompilerSet cs : compilers){
-            if (cs.isSunCompiler()){
+        for (CompilerSet cs : compilers) {
+            if (cs.isSunCompiler()) {
                 hasSunStudio = true;
                 break;
             }
         }
 
-//        try {
-//            isLinux = HostInfoUtils.getOS(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment()).indexOf("linux") != -1;
-//            isSolaris = HostInfoUtils.getOS(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment()).equals("SunOS");
-//
-//        } catch (ConnectException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
+        GizmoOptions.DataProvider currentProvider = gizmoOptions.getDataProviderValue();
 
-        String dataCollectorSelectName = options.getDataCollectorName();//DTrace or SunStudio
-        if (dataCollectorSelectName == null || dataCollectorSelectName.trim().equals("")){
-            dataCollectorSelectName = "SunStudio";//NOI18N
-        }
+
         DLightCollectorString = DTRACE;
-        DLightIndicatorDPStrings = Arrays.asList(PRSTAT_INDICATOR, DTRACE);
+        DLightIndicatorDPStrings = Arrays.asList(PROC_READER, PRSTAT_INDICATOR, DTRACE);
 
-        if (hasSunStudio && dataCollectorSelectName.equals("SunStudio")) {//NOI18N
+        if (currentProvider == GizmoOptions.DataProvider.SUN_STUDIO) {//NOI18N
             DLightCollectorString = SUNSTUDIO;
             DLightIndicatorDPStrings = new ArrayList<String>();
             DLightIndicatorDPStrings.add(SUNSTUDIO);
             DLightIndicatorDPStrings.add(PRSTAT_INDICATOR);
-        } else {
+            DLightIndicatorDPStrings.add(PROC_READER);
+//            if (!hasSunStudio) {
+//                //if we are on Linux set LL, I do not think it is correct if user had selected Sun Studio in Project Properties
+//                setForLinux();
+//            }
+        } else if (currentProvider == GizmoOptions.DataProvider.SIMPLE) {//On Linux - LL On Solaris Dtrace + Proc + PRSTATE
+            log.log(Level.FINEST, "Simple Data provider is used will try to set LL monitor + proc reader");//NOI18N
+            if (!setForLinux()) {
+                log.log(Level.FINEST, "Looks like it is not linux and not MacOS platform is " + ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName());//NOI18N
+            }
 
-            ExecutionEnvironment execEnv = ((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment();
-            if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-                try {
-                    ConnectionManager.getInstance().connectTo(execEnv);
-                } catch (IOException ex) {
-                    DLightLogger.instance.warning(ex.toString());
-                }
-            }
-            try {
-                String osName = HostInfoUtils.getOS(execEnv);
-                if (osName.indexOf("Linux") != -1 || osName.equals("MacOS")){//NOI18N
-                    DLightCollectorString = LL_MONITOR;
-                    DLightIndicatorDPStrings = Arrays.asList(LL_MONITOR);
-                }
-            } catch (ConnectException ex) {
-                //Exceptions.printStackTrace(ex);
-            }
+        } else {//DTRACE?
+            setForLinux();
         }
+    }
+
+    private boolean setForLinux() {
+        areCollectorsTurnedOn = false;
+        String platform = ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName();
+        if (platform.indexOf("Linux") != -1) {//NOI18N
+            DLightCollectorString = SUNSTUDIO;
+            DLightIndicatorDPStrings = Arrays.asList(PROC_READER, LL_MONITOR);
+            return true;
+        }
+        return false;
     }
 
     private Configuration getActiveConfiguration() {
@@ -151,6 +175,9 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     public List<DataCollector<?>> getCollectors(DLightTool tool) {
+        if (!areCollectorsTurnedOn) {
+            return Collections.emptyList();
+        }
         List<DataCollector<?>> collectors = tool.getCollectors();
         List<DataCollector<?>> result = new ArrayList<DataCollector<?>>();
         for (DataCollector collector : collectors) {
@@ -165,7 +192,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         List<IndicatorDataProvider<?>> idps = tool.getIndicatorDataProviders();
         List<IndicatorDataProvider<?>> result = new ArrayList<IndicatorDataProvider<?>>();
         for (IndicatorDataProvider idp : idps) {
-            for (String idpStringName : DLightIndicatorDPStrings){
+            for (String idpStringName : DLightIndicatorDPStrings) {
                 if (idp.getName().equals(idpStringName)) {
                     result.add(idp);
                 }
@@ -175,8 +202,6 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     public boolean validateToolsRequiredUserInteraction() {
-//        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
-//        return options.getUserInteractionRequiredActionsEnabled();
         return false;
     }
 }

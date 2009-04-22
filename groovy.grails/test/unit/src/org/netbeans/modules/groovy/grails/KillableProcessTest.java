@@ -40,6 +40,8 @@
 package org.netbeans.modules.groovy.grails;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -52,15 +54,29 @@ public class KillableProcessTest extends NbTestCase {
         super(name);
     }
 
-    public void testPidLineProcessor() throws IOException {
+    public void testPidLineProcessor() throws IOException, InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
         String line = "cmd /c \"\"C:\\Program Files (x86)\\Java stuff\\Grails-1.1\\bin\\grails.bat\" run-app REM NB:0D:\\sandbox\\grails\\Webapp\"  6008       ";
-        KillableProcess.PidLineProcessor processor = new KillableProcess.PidLineProcessor("run-app", "0D:\\sandbox\\grails\\Webapp");
+        KillableProcess.PidLineProcessor processor = new KillableProcess.PidLineProcessor(latch,
+                "run-app", "0D:\\sandbox\\grails\\Webapp");
         processor.processLine(line);
+        latch.await(10, TimeUnit.MILLISECONDS);
         assertEquals(6008, processor.getPid());
 
+        latch = new CountDownLatch(1);
         line = "cmd /c C:\\software\\grails-1.1\\bin\\grails.bat run-app REM NB:0C:\\Users\\sickboy\\Documents\\NetBeansProjects\\GrailsApplication2  6116";
-        processor = new KillableProcess.PidLineProcessor("run-app", "0C:\\Users\\sickboy\\Documents\\NetBeansProjects\\GrailsApplication2");
+        processor = new KillableProcess.PidLineProcessor(latch,
+                "run-app", "0C:\\Users\\sickboy\\Documents\\NetBeansProjects\\GrailsApplication2");
         processor.processLine(line);
+        latch.await(10, TimeUnit.MILLISECONDS);
         assertEquals(6116, processor.getPid());
+
+        latch = new CountDownLatch(1);
+        line = "cmd /c \"\"C:\\Program Files (x86)\\Java stuff\\Grails-1.1\\bin\\grails.bat\" dev run-app REM NB:0D:\\sandbox\\web-app\"  7596       ";
+        processor = new KillableProcess.PidLineProcessor(latch,
+                "run-app", "0D:\\sandbox\\web-app");
+        processor.processLine(line);
+        latch.await(10, TimeUnit.MILLISECONDS);
+        assertEquals(7596, processor.getPid());
     }
 }

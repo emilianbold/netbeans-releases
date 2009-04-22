@@ -62,6 +62,10 @@ import org.netbeans.modules.vmd.midp.screen.CommandEventSourceSRItemPresenter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
+import org.netbeans.modules.vmd.midp.codegen.ui.RenameCommandAction;
+import org.openide.util.actions.SystemAction;
 
 
 /**
@@ -97,7 +101,9 @@ public final class CommandEventSourceCD extends ComponentDescriptor {
     
     @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        EventSourceSupport.addActionsPresentres(presenters);
+        EventSourceSupport.addActionsPresentres(presenters, false);
+        presenters.add(ActionsPresenter.create(30,
+                SystemAction.get(RenameCommandAction.class)));
         super.gatherPresenters(presenters);
     }
     

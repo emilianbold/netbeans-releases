@@ -44,7 +44,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -197,7 +197,7 @@ public class RemoteServerRecord implements ServerRecord {
 
     /** TODO: deprcate and remove */
     public String getName() {
-        return ExecutionEnvironmentFactory.getHostKey(executionEnvironment);
+        return ExecutionEnvironmentFactory.toString(executionEnvironment);
     }
 
     public String getServerName() {

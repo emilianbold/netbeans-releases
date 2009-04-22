@@ -60,11 +60,13 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *  A support class for helping execution of an executable, a makefile, or a script.
  */
-public class LocalNativeExecution extends NativeExecution {
+/* package-local */
+class LocalNativeExecution extends NativeExecution {
     /** Script file that merges stdout and stderr on Unix */
     //private static File stdOutErrFile = null;
     //private static boolean hasWarned = false;
@@ -77,6 +79,11 @@ public class LocalNativeExecution extends NativeExecution {
     //private PrintWriter out;
 
     private static Logger execLog;
+
+    /* package-local */
+    LocalNativeExecution(ExecutionEnvironment execEnv) {
+        assert execEnv.isLocal();
+    }
 
     /**
      * Execute an executable, a makefile, or a script

@@ -89,13 +89,7 @@ public final class CsmRefactoringUtils {
             return false;
         }
         Project p = FileOwnerQuery.getOwner(f);
-        Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i < opened.length; i++) {
-            if (p.equals(opened[i]) || opened[i].equals(p)) {
-                return true;
-            }
-        }
-        return false;
+        return OpenProjects.getDefault().isProjectOpen(p);
     }
 
     public static boolean isRefactorable(FileObject fo) {
@@ -154,7 +148,8 @@ public final class CsmRefactoringUtils {
             Collection<CsmProject> all = CsmModelAccessor.getModel().projects();
             out = new HashSet<CsmProject>(all);
             Collection<CsmProject> prjs = getContextCsmProjects(origObject);
-            for (CsmProject prj : prjs) {
+            out.addAll(prjs);
+            for (CsmProject prj : out) {
                 if (prj != null && prj.isArtificial()) {
                     // add all libraries as well
                     Set<CsmProject> libs = new HashSet<CsmProject>();

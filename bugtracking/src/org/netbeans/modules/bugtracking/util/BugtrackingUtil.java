@@ -47,11 +47,15 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -94,6 +98,34 @@ import org.openide.windows.TopComponent;
  * @author Marian Petras
  */
 public class BugtrackingUtil {
+
+    /**
+     * Metrics logger
+     */
+    private static Logger METRICS_LOG = Logger.getLogger("org.netbeans.ui.metrics.bugtracking"); // NOI18N
+
+    /**
+     * The automatic refresh was set on or off.<br>
+     * Parameters:
+     * <ol>
+     *  <li>connector name : String
+     *  <li>is on : Boolean
+     * </ol>
+     */
+    public static final String USG_BUGTRACKING_AUTOMATIC_REFRESH = "USG_BUGTRACKING_AUTOMATIC_REFRESH"; // NOI18N
+
+    /**
+     * A query was refreshed.<br>
+     * Parameters:
+     * <ol>
+     *  <li>connector name : String
+     *  <li>query name : String
+     *  <li>issues count : Integer
+     *  <li>is a kenai query : Boolean
+     *  <li>is a automatic refresh : Boolean
+     * </ol>
+     */
+    public static final String USG_BUGTRACKING_QUERY             = "USG_BUGTRACKING_QUERY"; // NOI18N
 
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
@@ -321,6 +353,9 @@ public class BugtrackingUtil {
             file = FileUtil.toFile(fileObj);
         }
 
+        if (fileObj == null) {
+            return null;
+        }
         if (!fileObj.isValid()) {
             return null;
         }
@@ -409,4 +444,57 @@ public class BugtrackingUtil {
         return scrollingFocusListener;
     }
 
+    public static void logQueryEvent(String connector, String name, int count, boolean isKenai, boolean isAutoRefresh) {
+        name = obfuscateQueryName(name);
+        logBugtrackingEvents(USG_BUGTRACKING_QUERY, new Object[] {connector, name, count, isKenai, isAutoRefresh} );
+    }
+
+    public static void logAutoRefreshEvent(String connector, String queryName, boolean isKenai, boolean on) {
+        queryName = obfuscateQueryName(queryName);
+        logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, queryName, isKenai, on} );
+    }
+
+    /**
+     * Logs bugtracking events
+     *
+     * @param key - the events key
+     * @param parameters - the parameters for the given event
+     */
+    private static void logBugtrackingEvents(String key, Object[] parameters) {
+        LogRecord rec = new LogRecord(Level.INFO, key);
+        rec.setParameters(parameters);
+        rec.setLoggerName(METRICS_LOG.getName());
+        METRICS_LOG.log(rec);
+    }
+
+    private static String getMD5(String name) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("MD5");                          // NOI18N
+        } catch (NoSuchAlgorithmException e) {
+            // should not happen
+            return null;
+        }
+        digest.update(name.getBytes());
+        byte[] hash = digest.digest();
+        StringBuffer ret = new StringBuffer();
+        for (int i = 0; i < hash.length; i++) {
+            String hex = Integer.toHexString(hash[i] & 0x000000FF);
+            if(hex.length()==1) {
+                hex = "0" + hex;                                                // NOI18N
+            }
+            ret.append(hex);
+        }
+        return ret.toString();
+    }
+
+    private static String obfuscateQueryName(String name) {
+        if (name == null) {
+            name = "Find Issues"; // NOI18N
+        } else {
+            name = getMD5(name);
+        }
+        return name;
+    }
+    
 }

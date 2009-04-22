@@ -43,7 +43,7 @@ package org.netbeans.jellytools.modules.form.actions;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
 
-/** Used to call "Window|GUI Editor|Inspector" main menu item,
+/** Used to call "Window|Navigating|Inspector" main menu item,
  * "org.netbeans.modules.form.actions.InspectorAction" or shortcut.
  * @see Action
  * @author Jiri.Skrivanek@sun.com
@@ -54,8 +54,7 @@ public class InspectorAction extends Action {
     private static final String inspectorMenu =
         Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")+
         "|" +
-        Bundle.getStringTrimmed("org.netbeans.modules.form.resources.Bundle", 
-                                "Menu/Window/Form")+
+        Bundle.getStringTrimmed("org.netbeans.modules.navigator.Bundle", "Menu/Window/Navigator")+
         "|" +
         Bundle.getStringTrimmed("org.netbeans.modules.form.actions.Bundle", 
                                 "CTL_InspectorAction");

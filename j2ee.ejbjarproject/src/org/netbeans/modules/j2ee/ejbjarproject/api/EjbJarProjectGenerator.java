@@ -493,21 +493,9 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
         
         if (h.isSharableProject() && serverLibraryName != null) {
-            // TODO constants
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH,
-                    "${libs." + serverLibraryName + "." + "classpath" + "}"); // NOI18N             
-            ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH,
-                    "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
-            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                     "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
-            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                     "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
-            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
-                     "${libs." + serverLibraryName + "." + "wsgenerate" + "}"); //NOI18N
-            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
-                     "${libs." + serverLibraryName + "." + "wsinterop" + "}"); //NOI18N
-            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
-                     "${libs." + serverLibraryName + "." + "wsjwsdp" + "}"); //NOI18N
+                    "${libs." + serverLibraryName + "." + "classpath" + "}"); // NOI18N
+            setServerProperties(ep, serverLibraryName);
         } else {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, "");
         }
@@ -653,6 +641,22 @@ public class EjbJarProjectGenerator {
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         return h;
+    }
+
+    public static void setServerProperties(EditableProperties ep, String serverLibraryName) {
+        // TODO constants
+        ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH,
+                "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
+        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
+                 "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
+        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
+                 "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
+        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
+                 "${libs." + serverLibraryName + "." + "wsgenerate" + "}"); //NOI18N
+        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH,
+                 "${libs." + serverLibraryName + "." + "wsinterop" + "}"); //NOI18N
+        ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH,
+                 "${libs." + serverLibraryName + "." + "wsjwsdp" + "}"); //NOI18N
     }
     
     // AB: this method is also called from the enterprise application, so we can't pass UpdateHelper here

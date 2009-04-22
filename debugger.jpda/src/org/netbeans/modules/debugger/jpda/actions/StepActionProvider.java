@@ -60,6 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
@@ -117,6 +118,7 @@ implements Executor {
     private MethodExitBreakpointListener lastMethodExitBreakpointListener;
     //private SingleThreadedStepWatch stepWatch;
     private boolean smartSteppingStepOut;
+    private Properties p;
 
     
     private static boolean ssverbose = 
@@ -144,6 +146,7 @@ implements Executor {
         if (properties != null) {
             smartSteppingStepOut = properties.containsKey (StepIntoActionProvider.SS_STEP_OUT);
         }
+        p = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N
     }
 
 
@@ -174,6 +177,10 @@ implements Executor {
     }
     
     public void runAction(final Object action) {
+        runAction(action, true);
+    }
+
+    private void runAction(final Object action, boolean doResume) {
         //S ystem.out.println("\nStepAction.doAction");
         int suspendPolicy = getDebuggerImpl().getSuspend();
         JPDAThreadImpl resumeThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
@@ -187,6 +194,23 @@ implements Executor {
         try {
             // 1) init info about current state & remove old
             //    requests in the current thread
+            // We have to assure that the thread is suspended so that we
+            // do not randomly resume threads
+            while (!resumeThread.isSuspended()) {
+                // The thread is not suspended, release the lock so that others
+                // can process what they want with the resumed thread...
+                lock.unlock();
+                Thread.yield();
+                try {
+                    Thread.sleep(100); // Wait for a moment
+                } catch (InterruptedException iex) {}
+                lock.lock(); // Take the lock again to repeat the test
+                if (!resumeThread.isSuspended() && !resumeThread.isInStep() && !resumeThread.isMethodInvoking()) {
+                    // Explicitely suspend the thread if it's not in a step
+                    // or in a method invocation:
+                    resumeThread.suspend();
+                }
+            }
             resumeThread.waitUntilMethodInvokeDone();
             ThreadReference tr = resumeThread.getThreadReference ();
             removeStepRequests (tr);
@@ -229,12 +253,14 @@ implements Executor {
             resumeThread.disableMethodInvokeUntilResumed();
             // 3) resume JVM
             resumeThread.setInStep(true, stepRequest);
-            if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
-                //stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
-                getDebuggerImpl().resumeCurrentThread();
-                //resumeThread.resume();
-            } else {
-                getDebuggerImpl ().resume ();
+            if (doResume) {
+                if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
+                    //stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
+                    getDebuggerImpl().resumeCurrentThread();
+                    //resumeThread.resume();
+                } else {
+                    getDebuggerImpl ().resume ();
+                }
             }
         } catch (VMDisconnectedExceptionWrapper e) {
             // Debugger is disconnected => the action will be ignored.
@@ -385,10 +411,22 @@ implements Executor {
             // do not stop here -> start smart stepping!
             if (ssverbose)
                 System.out.println("\nSS:  SMART STEPPING START! ********** ");
-            if (smartSteppingStepOut) {
-                getStepIntoActionProvider ().doAction(ActionsManager.ACTION_STEP_OUT);
+            boolean useStepFilters = p.getBoolean("UseStepFilters", true);
+            boolean stepThrough = useStepFilters && p.getBoolean("StepThroughFilters", false);
+            if (!stepThrough || smartSteppingStepOut) {
+                // Assure that the action does not resume anything. Resume is done by Operator.
+                getStepIntoActionProvider ().runAction(ActionsManager.ACTION_STEP_OUT, false);
             } else {
-                getStepIntoActionProvider ().doAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO);
+                // Assure that the action does not resume anything. Resume is done by Operator.
+                int origDepth = StepRequestWrapper.depth(sr);
+                if (origDepth == StepRequest.STEP_OVER) {
+                    runAction(ActionsManager.ACTION_STEP_OVER, false);
+                    //getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false);
+                } else if (origDepth == StepRequest.STEP_OUT) {
+                    runAction(ActionsManager.ACTION_STEP_OUT, false);
+                } else { // if (origDepth == StepRequest.STEP_INTO) {
+                    getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false);
+                }
             }
             //S ystem.out.println("/nStepAction.exec end - resume");
             return true; // resume

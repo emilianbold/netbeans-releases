@@ -71,11 +71,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JCheckBoxMenuItem;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
-import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.View;
+import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
@@ -102,13 +103,16 @@ public class ActionFactory {
     private ActionFactory() {
         // no instantiation
     }
-    
+
+    // No registration since shared instance gets created
+    //@EditorActionRegistration(name = BaseKit.removeTabAction)
     public static class RemoveTabAction extends LocalBaseAction {
 
         static final long serialVersionUID =-1537748600593395706L;
 
         public RemoveTabAction() {
-            super(BaseKit.removeTabAction, MAGIC_POSITION_RESET | ABBREV_RESET | WORD_MATCH_RESET);
+            super(BaseKit.removeTabAction,
+                    MAGIC_POSITION_RESET | ABBREV_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
@@ -197,11 +201,13 @@ public class ActionFactory {
     }
      */
 
+    // Disabled annotations due to overriding by camel-case actions in GSF (no concrete mimetype)
+//    @EditorActionRegistration(name = BaseKit.removePreviousWordAction)
     public static class RemoveWordPreviousAction extends LocalBaseAction {
 
         public RemoveWordPreviousAction() {
-            super(BaseKit.removePreviousWordAction, MAGIC_POSITION_RESET
-                  | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+            super(BaseKit.removePreviousWordAction,
+                    MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
@@ -233,12 +239,13 @@ public class ActionFactory {
         }
     }
 
-    
+    // Disabled annotations due to overriding by camel-case actions in GSF (no concrete mimetype)
+//    @EditorActionRegistration(name = BaseKit.removeNextWordAction)
     public static class RemoveWordNextAction extends LocalBaseAction {
 
         public RemoveWordNextAction() {
-            super(BaseKit.removeNextWordAction, MAGIC_POSITION_RESET
-                  | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+            super(BaseKit.removeNextWordAction,
+                    MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
@@ -271,13 +278,13 @@ public class ActionFactory {
     }
 
     
+    @EditorActionRegistration(name = BaseKit.removeLineBeginAction)
     public static class RemoveLineBeginAction extends LocalBaseAction {
 
         static final long serialVersionUID =9193117196412195554L;
 
         public RemoveLineBeginAction() {
-            super(BaseKit.removeLineBeginAction, MAGIC_POSITION_RESET
-                  | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
@@ -321,13 +328,13 @@ public class ActionFactory {
         }
     }
 
+    @EditorActionRegistration(name = BaseKit.removeLineAction)
     public static class RemoveLineAction extends LocalBaseAction {
 
         static final long serialVersionUID =-536315497241419877L;
 
         public RemoveLineAction() {
-            super(BaseKit.removeLineAction, MAGIC_POSITION_RESET
-                  | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
@@ -359,13 +366,13 @@ public class ActionFactory {
         }
     }
     
-    /* package */ static class MoveSelectionElseLineUpAction extends LocalBaseAction {
+    @EditorActionRegistration(name = BaseKit.moveSelectionElseLineUpAction)
+    public static class MoveSelectionElseLineUpAction extends LocalBaseAction {
 
         static final long serialVersionUID = 1L;
 
         public MoveSelectionElseLineUpAction() {
-            super(BaseKit.moveSelectionElseLineUpAction, MAGIC_POSITION_RESET
-                  | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
@@ -455,13 +462,13 @@ public class ActionFactory {
         }
     }
     
-    /* package */ static class MoveSelectionElseLineDownAction extends LocalBaseAction {
+    @EditorActionRegistration(name = BaseKit.moveSelectionElseLineDownAction)
+    public static class MoveSelectionElseLineDownAction extends LocalBaseAction {
 
         static final long serialVersionUID = 1L;
 
         public MoveSelectionElseLineDownAction() {
-            super(BaseKit.moveSelectionElseLineDownAction, MAGIC_POSITION_RESET
-                  | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
@@ -552,13 +559,13 @@ public class ActionFactory {
         }
     }
     
-    /* package */ static class CopySelectionElseLineUpAction extends LocalBaseAction {
+    @EditorActionRegistration(name = BaseKit.copySelectionElseLineUpAction)
+    public static class CopySelectionElseLineUpAction extends LocalBaseAction {
 
         static final long serialVersionUID = 1L;
         
         public CopySelectionElseLineUpAction() {
-            super(BaseKit.copySelectionElseLineUpAction, MAGIC_POSITION_RESET
-                  | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
@@ -639,13 +646,13 @@ public class ActionFactory {
         }
     }
     
-    /* package */ static class CopySelectionElseLineDownAction extends LocalBaseAction {
+    @EditorActionRegistration(name = BaseKit.copySelectionElseLineDownAction)
+    public static class CopySelectionElseLineDownAction extends LocalBaseAction {
 
         static final long serialVersionUID = 1L;
 
         public CopySelectionElseLineDownAction() {
-            super(BaseKit.copySelectionElseLineDownAction, MAGIC_POSITION_RESET
-                  | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
@@ -727,13 +734,15 @@ public class ActionFactory {
     }
 
     /* Useful for popup menu - remove selected block or do nothing */
+    // No annotation registration since shared instance exists in BaseKit
+    //@EditorActionRegistration(name = BaseKit.removeSelectionAction)
     public static class RemoveSelectionAction extends LocalBaseAction {
 
         static final long serialVersionUID =-1419424594746686573L;
 
         public RemoveSelectionAction() {
-            super(BaseKit.removeSelectionAction, MAGIC_POSITION_RESET
-                  | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+            super(BaseKit.removeSelectionAction,
+                    MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
             //#54893 putValue ("helpID", RemoveSelectionAction.class.getName ()); // NOI18N
         }
 
@@ -760,12 +769,13 @@ public class ActionFactory {
     }
 
     /** Switch to overwrite mode or back to insert mode */
+    @EditorActionRegistration(name = BaseKit.toggleTypingModeAction)
     public static class ToggleTypingModeAction extends LocalBaseAction {
 
         static final long serialVersionUID =-2431132686507799723L;
 
         public ToggleTypingModeAction() {
-            super(BaseKit.toggleTypingModeAction);
+            super();
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -916,6 +926,7 @@ public class ActionFactory {
      * @deprecated Without any replacement. This action is not used anymore.
      */
     public static class StartMacroRecordingAction extends LocalBaseAction {
+    // Not registered by annotation since it's not actively used
 
         static final long serialVersionUID =1L;
 
@@ -937,6 +948,7 @@ public class ActionFactory {
      * is no longer functional.
      */
     public static class StopMacroRecordingAction extends LocalBaseAction {
+    // Not registered by annotation since it's not actively used
 
         static final long serialVersionUID =1L;
 
@@ -1010,13 +1022,27 @@ public class ActionFactory {
 
     public static class ChangeCaseAction extends LocalBaseAction {
 
+        @EditorActionRegistration(name = BaseKit.toUpperCaseAction)
+        public static ChangeCaseAction createToUpperCase() {
+            return new ChangeCaseAction(Utilities.CASE_UPPER);
+        }
+
+        @EditorActionRegistration(name = BaseKit.toLowerCaseAction)
+        public static ChangeCaseAction createToLowerCase() {
+            return new ChangeCaseAction(Utilities.CASE_LOWER);
+        }
+
+        @EditorActionRegistration(name = BaseKit.switchCaseAction)
+        public static ChangeCaseAction createSwitchCase() {
+            return new ChangeCaseAction(Utilities.CASE_SWITCH);
+        }
+
         int changeCaseMode;
 
         static final long serialVersionUID =5680212865619897402L;
 
-        public ChangeCaseAction(String name, int changeCaseMode) {
-            super(name, ABBREV_RESET
-                  | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+        private ChangeCaseAction(int changeCaseMode) {
+            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
             this.changeCaseMode = changeCaseMode;
         }
 
@@ -1047,16 +1073,14 @@ public class ActionFactory {
         }
     }
 
-
+    @EditorActionRegistration(name = BaseKit.findNextAction,
+            iconResource = "org/netbeans/modules/editor/resources/find_next.png") // NOI18N
     public static class FindNextAction extends LocalBaseAction {
 
         static final long serialVersionUID =6878814427731642684L;
 
         public FindNextAction() {
-            super(BaseKit.findNextAction, ABBREV_RESET
-                  | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
-            putValue(BaseAction.ICON_RESOURCE_PROPERTY,
-                "org/netbeans/modules/editor/resources/find_next.png"); // NOI18N
+            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1066,15 +1090,14 @@ public class ActionFactory {
         }
     }
 
+    @EditorActionRegistration(name = BaseKit.findPreviousAction,
+            iconResource = "org/netbeans/modules/editor/resources/find_previous.png") // NOI18N
     public static class FindPreviousAction extends LocalBaseAction {
 
         static final long serialVersionUID =-43746947902694926L;
 
         public FindPreviousAction() {
-            super(BaseKit.findPreviousAction, ABBREV_RESET
-                  | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
-            putValue(BaseAction.ICON_RESOURCE_PROPERTY,
-                "org/netbeans/modules/editor/resources/find_previous.png"); // NOI18N
+            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1087,14 +1110,14 @@ public class ActionFactory {
     /** Finds either selection or if there's no selection it finds
     * the word where the cursor is standing.
     */
+    @EditorActionRegistration(name = BaseKit.findSelectionAction,
+            iconResource = "org/netbeans/modules/editor/resources/find_selection.png") // NOI18N
     public static class FindSelectionAction extends LocalBaseAction {
 
         static final long serialVersionUID =-5601618936504699565L;
 
         public FindSelectionAction() {
-            super(BaseKit.findSelectionAction);
-            putValue(BaseAction.ICON_RESOURCE_PROPERTY,
-                "org/netbeans/modules/editor/resources/find_selection.png"); // NOI18N
+            super();
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1152,13 +1175,14 @@ public class ActionFactory {
         }
     }
 
+    @EditorActionRegistration(name = BaseKit.toggleHighlightSearchAction,
+            iconResource = "org/netbeans/modules/editor/resources/toggle_highlight.png")
     public static class ToggleHighlightSearchAction extends LocalBaseAction implements Presenter.Toolbar {
 
         static final long serialVersionUID =4603809175771743200L;
 
         public ToggleHighlightSearchAction() {
-            super(BaseKit.toggleHighlightSearchAction, CLEAR_STATUS_TEXT);
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/toggle_highlight.png", false)); // NOI18N
+            super(CLEAR_STATUS_TEXT);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1301,22 +1325,26 @@ public class ActionFactory {
         }
     }
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = BaseKit.wordMatchNextAction,
+            iconResource = "org/netbeans/modules/editor/resources/next_matching.png"),
+        @EditorActionRegistration(name = BaseKit.wordMatchPrevAction,
+            iconResource = "org/netbeans/modules/editor/resources/previous_matching.png")
+    })
     public static class WordMatchAction extends LocalBaseAction {
 
-        private boolean direction;
+        private boolean matchNext;
 
         static final long serialVersionUID =595571114685133170L;
 
-        public WordMatchAction(String name, boolean direction) {
-            super(name, ABBREV_RESET
-                  | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
-            this.direction = direction;
-            putValue(BaseAction.ICON_RESOURCE_PROPERTY,
-                direction
-                    ? "org/netbeans/modules/editor/resources/next_matching.png" // NOI18N
-                    : "org/netbeans/modules/editor/resources/previous_matching.png" // NOI18N
-            );
-                        
+        public WordMatchAction() {
+            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
+        }
+
+        @Override
+        protected void actionNameUpdate(String actionName) {
+            super.actionNameUpdate(actionName);
+            this.matchNext = BaseKit.wordMatchNextAction.equals(actionName);
         }
 
         public void actionPerformed(final ActionEvent evt, final  JTextComponent target) {
@@ -1336,7 +1364,7 @@ public class ActionFactory {
                 }
 
                 final int dotPos = caret.getDot();
-                final String s = editorUI.getWordMatch().getMatchWord(dotPos, direction);
+                final String s = editorUI.getWordMatch().getMatchWord(dotPos, matchNext);
                 final String prevWord = editorUI.getWordMatch().getPreviousWord();
                 if (s != null) {
                     doc.runAtomicAsUser (new Runnable () {
@@ -1359,24 +1387,27 @@ public class ActionFactory {
                 }
             }
         }
+
     }
 
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = BaseKit.shiftLineLeftAction,
+            iconResource = "org/netbeans/modules/editor/resources/shift_line_left.png"),
+        @EditorActionRegistration(name = BaseKit.shiftLineRightAction,
+            iconResource = "org/netbeans/modules/editor/resources/shift_line_right.png")
+    })
     public static class ShiftLineAction extends LocalBaseAction {
-
-        boolean right;
 
         static final long serialVersionUID =-5124732597493699582L;
 
-        public ShiftLineAction(String name, boolean right) {
-            super(name, MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
-            this.right = right;
-            putValue(BaseAction.ICON_RESOURCE_PROPERTY,
-                right
-                    ? "org/netbeans/modules/editor/resources/shift_line_right.png" // NOI18N
-                    : "org/netbeans/modules/editor/resources/shift_line_left.png" // NOI18N
-            );
+        public ShiftLineAction() {
+            super(MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
+        }
 
+        @Override
+        protected void actionNameUpdate(String actionName) {
+            super.actionNameUpdate(actionName);
         }
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
@@ -1393,6 +1424,7 @@ public class ActionFactory {
                         DocumentUtilities.setTypingModification(doc, true);
                         Formatter.pushFormattingContextDocument(doc);
                         try {
+                            boolean right = BaseKit.shiftLineRightAction.equals(getValue(Action.NAME));
                             if (Utilities.isSelectionShowing(caret)) {
                                 doc.getFormatter().changeBlockIndent(doc,
                                 target.getSelectionStart(), target.getSelectionEnd(),
@@ -1414,14 +1446,14 @@ public class ActionFactory {
         }
     }
 
+    @EditorActionRegistration(name = BaseKit.reindentLineAction)
     public static class ReindentLineAction extends LocalBaseAction {
 
         static final long serialVersionUID =1L;
 
         public ReindentLineAction() {
             // TODO: figure out what these flags are all about
-            super(BaseKit.reindentLineAction,
-                  ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
+            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
             //putValue ("helpID", ReindentLineAction.class.getName ());
         }
 
@@ -1495,12 +1527,26 @@ public class ActionFactory {
     
     public static class AdjustWindowAction extends LocalBaseAction {
 
+        @EditorActionRegistration(name = BaseKit.adjustWindowTopAction)
+        public static AdjustWindowAction createAdjustTop() {
+            return new AdjustWindowAction(0);
+        }
+
+        @EditorActionRegistration(name = BaseKit.adjustWindowCenterAction)
+        public static AdjustWindowAction createAdjustCenter() {
+            return new AdjustWindowAction(50);
+        }
+
+        @EditorActionRegistration(name = BaseKit.adjustWindowBottomAction)
+        public static AdjustWindowAction createAdjustBottom() {
+            return new AdjustWindowAction(100);
+        }
+
         int percentFromWindowTop;
 
         static final long serialVersionUID =8864278998999643292L;
 
-        public AdjustWindowAction(String name, int percentFromWindowTop) {
-            super(name);
+        public AdjustWindowAction(int percentFromWindowTop) {
             this.percentFromWindowTop = percentFromWindowTop;
         }
 
@@ -1513,12 +1559,26 @@ public class ActionFactory {
 
     public static class AdjustCaretAction extends LocalBaseAction {
 
+        @EditorActionRegistration(name = BaseKit.adjustCaretTopAction)
+        public static AdjustCaretAction createAdjustTop() {
+            return new AdjustCaretAction(0);
+        }
+
+        @EditorActionRegistration(name = BaseKit.adjustCaretCenterAction)
+        public static AdjustCaretAction createAdjustCenter() {
+            return new AdjustCaretAction(50);
+        }
+
+        @EditorActionRegistration(name = BaseKit.adjustCaretBottomAction)
+        public static AdjustCaretAction createAdjustBottom() {
+            return new AdjustCaretAction(100);
+        }
+
         int percentFromWindowTop;
 
         static final long serialVersionUID =3223383913531191066L;
 
-        public AdjustCaretAction(String name, int percentFromWindowTop) {
-            super(name);
+        public AdjustCaretAction(int percentFromWindowTop) {
             this.percentFromWindowTop = percentFromWindowTop;
         }
 
@@ -1529,13 +1589,13 @@ public class ActionFactory {
         }
     }
 
+    @EditorActionRegistration(name = BaseKit.formatAction)
     public static class FormatAction extends LocalBaseAction {
 
         static final long serialVersionUID =-7666172828961171865L;
 
         public FormatAction() {
-            super(BaseKit.formatAction,
-                  ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
+            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
             //#54893 putValue ("helpID", FormatAction.class.getName ()); // NOI18N
         }
 
@@ -1619,16 +1679,16 @@ public class ActionFactory {
         
     }
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = BaseKit.firstNonWhiteAction),
+        @EditorActionRegistration(name = BaseKit.selectionFirstNonWhiteAction)
+    })
     public static class FirstNonWhiteAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =-5888439539790901158L;
 
-        public FirstNonWhiteAction(String nm, boolean select) {
-            super(nm, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
-                  | WORD_MATCH_RESET);
-            this.select = select;
+        public FirstNonWhiteAction() {
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1638,6 +1698,7 @@ public class ActionFactory {
                     int pos = Utilities.getRowFirstNonWhite((BaseDocument)target.getDocument(),
                                                             caret.getDot());
                     if (pos >= 0) {
+                        boolean select = BaseKit.selectionFirstNonWhiteAction.equals(getValue(Action.NAME));
                         if (select) {
                             caret.moveDot(pos);
                         } else {
@@ -1651,16 +1712,16 @@ public class ActionFactory {
         }
     }
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = BaseKit.lastNonWhiteAction),
+        @EditorActionRegistration(name = BaseKit.selectionLastNonWhiteAction)
+    })
     public static class LastNonWhiteAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =4503533041729712917L;
 
-        public LastNonWhiteAction(String nm, boolean select) {
-            super(nm, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
-                  | WORD_MATCH_RESET);
-            this.select = select;
+        public LastNonWhiteAction() {
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1670,6 +1731,7 @@ public class ActionFactory {
                     int pos = Utilities.getRowLastNonWhite((BaseDocument)target.getDocument(),
                                                            caret.getDot());
                     if (pos >= 0) {
+                        boolean select = BaseKit.selectionLastNonWhiteAction.equals(getValue(Action.NAME));
                         if (select) {
                             caret.moveDot(pos);
                         } else {
@@ -1683,12 +1745,13 @@ public class ActionFactory {
         }
     }
 
+    @EditorActionRegistration(name = BaseKit.selectIdentifierAction)
     public static class SelectIdentifierAction extends LocalBaseAction {
 
         static final long serialVersionUID =-7288216961333147873L;
 
         public SelectIdentifierAction() {
-            super(BaseKit.selectIdentifierAction, MAGIC_POSITION_RESET);
+            super(MAGIC_POSITION_RESET);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1712,6 +1775,7 @@ public class ActionFactory {
         }
     }
 
+    @EditorActionRegistration(name = BaseKit.selectNextParameterAction)
     public static class SelectNextParameterAction extends LocalBaseAction {
 
         static final long serialVersionUID =8045372985336370934L;
@@ -1762,6 +1826,7 @@ public class ActionFactory {
      * in the editor module.
      */
     public static class JumpListNextAction extends LocalBaseAction {
+    // Not registered by annotation since it's not actively used
 
         static final long serialVersionUID =6891721278404990446L;
         PropertyChangeListener pcl;
@@ -1790,6 +1855,7 @@ public class ActionFactory {
      * in the editor module.
      */
     public static class JumpListPrevAction extends LocalBaseAction {
+    // Not registered by annotation since it's not actively used
 
         static final long serialVersionUID =7174907031986424265L;
         PropertyChangeListener pcl;
@@ -1818,6 +1884,7 @@ public class ActionFactory {
      * in the editor module.
      */
     public static class JumpListNextComponentAction extends LocalBaseAction {
+    // Not registered by annotation since it's not actively used
 
         static final long serialVersionUID =-2059070050865876892L;
 
@@ -1837,6 +1904,7 @@ public class ActionFactory {
      * in the editor module.
      */
     public static class JumpListPrevComponentAction extends LocalBaseAction {
+    // Not registered by annotation since it's not actively used
 
         static final long serialVersionUID =2032230534727849525L;
 
@@ -1851,10 +1919,10 @@ public class ActionFactory {
         }
     }
 
+    @EditorActionRegistration(name = BaseKit.scrollUpAction)
     public static class ScrollUpAction extends LocalBaseAction {
 
         public ScrollUpAction() {
-            super(BaseKit.scrollUpAction);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1869,10 +1937,10 @@ public class ActionFactory {
 
     }
 
+    @EditorActionRegistration(name = BaseKit.scrollDownAction)
     public static class ScrollDownAction extends LocalBaseAction {
 
         public ScrollDownAction() {
-            super(BaseKit.scrollDownAction);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1887,13 +1955,13 @@ public class ActionFactory {
 
     }
 
+    @EditorActionRegistration(name = BaseKit.insertDateTimeAction)
     public static class InsertDateTimeAction extends LocalBaseAction {
         
         static final long serialVersionUID =2865619897402L;
         
         public InsertDateTimeAction() {
-            super(BaseKit.insertDateTimeAction,
-            ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1921,12 +1989,12 @@ public class ActionFactory {
     }
     
     /** Select text of whole document */
+    @EditorActionRegistration(name = BaseKit.generateGutterPopupAction)
     public static class GenerateGutterPopupAction extends LocalBaseAction {
 
         static final long serialVersionUID =-3502499718130556525L;
 
         public GenerateGutterPopupAction() {
-            super(BaseKit.generateGutterPopupAction);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
@@ -1945,6 +2013,8 @@ public class ActionFactory {
     }
 
     /** Switch visibility of line numbers in editor */
+    //@EditorActionRegistration(name = BaseKit.toggleLineNumbersAction)
+    // Registration in createActions() due to getPopupMenuItem()
     public static class ToggleLineNumbersAction extends LocalBaseAction {
 
         static final long serialVersionUID =-3502499718130556526L;
@@ -1952,7 +2022,7 @@ public class ActionFactory {
         private JCheckBoxMenuItem item = null;
 
         public ToggleLineNumbersAction() {
-            super(BaseKit.toggleLineNumbersAction);
+            super(BaseKit.toggleLineNumbersAction); // Due to creation from MainMenuAction
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1981,10 +2051,10 @@ public class ActionFactory {
     }
     
     /** Cycle through annotations on the current line */
+    @EditorActionRegistration(name = BaseKit.annotationsCyclingAction)
     public static class AnnotationsCyclingAction extends LocalBaseAction {
         
         public AnnotationsCyclingAction() {
-            super(BaseKit.annotationsCyclingAction);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
@@ -2079,9 +2149,9 @@ public class ActionFactory {
     }
     
     /** Collapse a fold. Depends on the current caret position. */
+    @EditorActionRegistration(name = BaseKit.collapseFoldAction)
     public static class CollapseFold extends LocalBaseAction {
         public CollapseFold(){
-            super(BaseKit.collapseFoldAction);
         }
         
         private boolean dotInFoldArea(JTextComponent target, Fold fold, int dot) throws BadLocationException{
@@ -2121,9 +2191,9 @@ public class ActionFactory {
     }
     
     /** Expand a fold. Depends on the current caret position. */
+    @EditorActionRegistration(name = BaseKit.expandFoldAction)
     public static class ExpandFold extends LocalBaseAction {
         public ExpandFold(){
-            super(BaseKit.expandFoldAction);
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -2148,9 +2218,9 @@ public class ActionFactory {
     }
     
     /** Collapse all existing folds in the document. */
+    @EditorActionRegistration(name = BaseKit.collapseAllFoldsAction)
     public static class CollapseAllFolds extends LocalBaseAction {
         public CollapseAllFolds(){
-            super(BaseKit.collapseAllFoldsAction);
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -2161,9 +2231,9 @@ public class ActionFactory {
     }
 
     /** Expand all existing folds in the document. */
+    @EditorActionRegistration(name = BaseKit.expandAllFoldsAction)
     public static class ExpandAllFolds extends LocalBaseAction {
         public ExpandAllFolds(){
-            super(BaseKit.expandAllFoldsAction);
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -2174,10 +2244,10 @@ public class ActionFactory {
     }
 
     /** Expand all existing folds in the document. */
+    @EditorActionRegistration(name = "dump-view-hierarchy")
     public static class DumpViewHierarchyAction extends LocalBaseAction {
 
         public DumpViewHierarchyAction() {
-            super("dump-view-hierarchy"); // NOI18N
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
         
@@ -2223,10 +2293,10 @@ public class ActionFactory {
     }
     
     /** Starts a new line in code. */
+    @EditorActionRegistration(name = BaseKit.startNewLineAction)
     public static class StartNewLine extends LocalBaseAction {
         public StartNewLine(){
-            super( BaseKit.startNewLineAction, ABBREV_RESET
-                  | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
+            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
         }
         
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
@@ -2268,22 +2338,19 @@ public class ActionFactory {
      * Cut text from the caret position to either begining or end
      * of the line with the caret.
      */
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = BaseKit.cutToLineBeginAction),
+        @EditorActionRegistration(name = BaseKit.cutToLineEndAction)
+    })
     public static class CutToLineBeginOrEndAction extends LocalBaseAction {
-        
-        /**
-         * Whether cutting to line end instead of line begin.
-         */
-        private final boolean toLineEnd;
         
         /**
          * Construct new action.
          *
          * @param toLineEnd whether cutting to line end instead of line begin.
          */
-        public CutToLineBeginOrEndAction(boolean toLineEnd) {
-            super(toLineEnd ? BaseKit.cutToLineEndAction : BaseKit.cutToLineBeginAction,
-                ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
-            this.toLineEnd = toLineEnd;
+        public CutToLineBeginOrEndAction() {
+            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
         }
         
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
@@ -2304,6 +2371,7 @@ public class ActionFactory {
                     if (actionMap != null && (cutAction = actionMap.get(DefaultEditorKit.cutAction)) != null) {
                         Caret caret = target.getCaret();
                         int caretOffset = caret.getDot();
+                        boolean toLineEnd = BaseKit.cutToLineEndAction.equals(getValue(Action.NAME));
                         int boundOffset = toLineEnd
                                 ? Utilities.getRowEnd(target, caretOffset)
                                 : Utilities.getRowStart(target, caretOffset);

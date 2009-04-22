@@ -45,7 +45,11 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -53,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -88,12 +93,15 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class IssuePanel extends javax.swing.JPanel {
+    private static final DateFormat creationFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
+    private static final DateFormat modificationFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
     private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
     private BugzillaIssue issue;
     private CommentsPanel commentsPanel;
     private AttachmentsPanel attachmentsPanel;
     private int resolvedIndex;
     private Map<BugzillaIssue.IssueField,String> initialValues = new HashMap<BugzillaIssue.IssueField,String>();
+    private List<String> keywords = new LinkedList<String>();
     private boolean reloading;
     private boolean submitting;
     private boolean usingTargetMilestones;
@@ -163,9 +171,25 @@ public class IssuePanel extends javax.swing.JPanel {
                     updateNoSummary();
                 }
             });
+            keywordsField.getDocument().addDocumentListener(new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    changedUpdate(e);
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    changedUpdate(e);
+                }
+                public void changedUpdate(DocumentEvent e) {
+                    updateInvalidKeyword();
+                }
+            });
         }
         this.issue = issue;
         initCombos();
+        List<String> kws = issue.getRepository().getConfiguration().getKeywords();
+        keywords.clear();
+        for (String keyword : kws) {
+            keywords.add(keyword.toUpperCase());
+        }
         reloadForm(true);
     }
 
@@ -240,12 +264,33 @@ public class IssuePanel extends javax.swing.JPanel {
             }
             reloadField(force, urlField, BugzillaIssue.IssueField.URL, urlWarning, urlLabel);
             reloadField(force, keywordsField, BugzillaIssue.IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
-            format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
-            String reportedTxt = MessageFormat.format(format, issue.getFieldValue(BugzillaIssue.IssueField.CREATION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER));
-            reportedField.setText(reportedTxt);
-            fixPrefSize(reportedField);
-            modifiedField.setText(issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION));
-            fixPrefSize(modifiedField);
+
+            // reported field
+            if (!isNew) {
+                format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
+                String creationTxt = issue.getFieldValue(BugzillaIssue.IssueField.CREATION);
+                try {
+                    Date creation = creationFormat.parse(creationTxt);
+                    creationTxt = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(creation);
+                } catch (ParseException pex) {
+                    Bugzilla.LOG.log(Level.INFO, null, pex);
+                }
+                String reportedTxt = MessageFormat.format(format, creationTxt, issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME));
+                reportedField.setText(reportedTxt);
+                fixPrefSize(reportedField);
+
+                // modified field
+                String modifiedTxt = issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION);
+                try {
+                    Date modification = modificationFormat.parse(modifiedTxt);
+                    modifiedTxt = DateFormat.getDateTimeInstance().format(modification);
+                } catch (ParseException pex) {
+                    Bugzilla.LOG.log(Level.INFO, null, pex);
+                }
+                modifiedField.setText(modifiedTxt);
+                fixPrefSize(modifiedField);
+            }
+
             reloadField(force, assignedField, BugzillaIssue.IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
             reloadField(force, qaContactField, BugzillaIssue.IssueField.QA_CONTACT, qaContactWarning, qaContactLabel);
             reloadField(force, ccField, BugzillaIssue.IssueField.CC, ccWarning, ccLabel);
@@ -260,7 +305,9 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
         oldCommentCount = newCommentCount;
-        commentsPanel.setIssue(issue);
+        if (!isNew) {
+            commentsPanel.setIssue(issue);
+        }
         attachmentsPanel.setIssue(issue);
         BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
         BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
@@ -510,7 +557,24 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    private void updateInvalidKeyword() {
+        boolean invalidFound = false;
+        StringTokenizer st = new StringTokenizer(keywordsField.getText(), ", \t\n\r\f"); // NOI18N
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if (!keywords.contains(token.toUpperCase())) {
+                invalidFound = true;
+                break;
+            }
+        }
+        if (invalidFound != invalidKeyword) {
+            invalidKeyword = invalidFound;
+            updateMessagePanel();
+        }
+    }
+
     private boolean noSummary = false;
+    private boolean invalidKeyword = false;
     private boolean cyclicDependency = false;
     private List<String> fieldErrors = new LinkedList<String>();
     private List<String> fieldWarnings = new LinkedList<String>();
@@ -529,7 +593,13 @@ public class IssuePanel extends javax.swing.JPanel {
             cyclicDependencyLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
             messagePanel.add(cyclicDependencyLabel);
         }
-        if (noSummary || cyclicDependency) {
+        if (invalidKeyword) {
+            JLabel invalidKeywordLabel = new JLabel();
+            invalidKeywordLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.invalidKeyword")); // NOI18N
+            invalidKeywordLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            messagePanel.add(invalidKeywordLabel);
+        }
+        if (noSummary || cyclicDependency || invalidKeyword) {
             submitButton.setEnabled(false);
         } else {
             submitButton.setEnabled(true);
@@ -544,7 +614,7 @@ public class IssuePanel extends javax.swing.JPanel {
             warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
             messagePanel.add(warningLabel);
         }
-        if (noSummary || cyclicDependency || (fieldErrors.size() + fieldWarnings.size() > 0)) {
+        if (noSummary || cyclicDependency || invalidKeyword || (fieldErrors.size() + fieldWarnings.size() > 0)) {
             messagePanel.setVisible(true);
             messagePanel.revalidate();
         } else {
@@ -1336,8 +1406,8 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void keywordsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keywordsButtonActionPerformed
         String message = NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsButton.message"); // NOI18N
-        String keywords = BugzillaUtil.getKeywords(message, keywordsField.getText(), issue.getRepository());
-        keywordsField.setText(keywords);
+        String kws = BugzillaUtil.getKeywords(message, keywordsField.getText(), issue.getRepository());
+        keywordsField.setText(kws);
     }//GEN-LAST:event_keywordsButtonActionPerformed
 
     private void blocksButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blocksButtonActionPerformed

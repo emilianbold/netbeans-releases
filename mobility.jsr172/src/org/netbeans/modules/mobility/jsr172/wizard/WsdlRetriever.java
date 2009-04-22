@@ -207,6 +207,10 @@ public class WsdlRetriever implements Runnable {
             }
             
             wsdlUrl = new URL(wsdlUrlName);
+            // Fix for IZ#162522 - IllegalArgumentException: protocol = http host = null
+            if ( "".equals(wsdlUrl.getHost())){
+                throw new MalformedURLException();
+            }
             setState(STATUS_CONNECTING);
             connection = wsdlUrl.openConnection();
             in = connection.getInputStream();

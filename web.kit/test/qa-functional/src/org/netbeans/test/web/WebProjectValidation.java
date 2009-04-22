@@ -198,7 +198,9 @@ public class WebProjectValidation extends J2eeTestCase {
         connection = url.openConnection();
         try {
             connection.connect();
-            fail("Connection to http://localhost:8025 established, but tomcat should not be running.");
+            //server is running -> try to stop it
+            server.stop();
+            verifyServerIsStopped();
         } catch (ConnectException e) {  }
         initDisplayer();
     }
@@ -678,6 +680,20 @@ public class WebProjectValidation extends J2eeTestCase {
         assertEquals("NAVIGATION TARGET", 325, caretPosition);
         EditorOperator.closeDiscardAll();
     }
+
+    private void dumpNode(TreeModel model, Object node, int offset) {
+        for (int i = 0; i < offset; i++) {
+            getLog().print("\t");
+        }
+        getLog().println(node.toString());
+        if (model.isLeaf(node)){
+            return;
+        }
+        for (int i = 0; i < model.getChildCount(node); i++) {
+            Object object = model.getChild(node, i);
+            dumpNode(model, object, offset + 1);
+        }
+    }
     
     private void open(String fileName)throws Exception{
         DataObject dataObj = DataObject.find(FileUtil.toFileObject(new File(getDataDir(), fileName)));
@@ -710,6 +726,7 @@ public class WebProjectValidation extends J2eeTestCase {
         TreeModel model = treeOperator.getModel();
         Object root = model.getRoot();
         assertNotNull(root);
+        dumpNode(model, root, 0);
         assertEquals(1, treeOperator.getChildCount(root));
         Object htmlChild = treeOperator.getChild(root, 0);//HTML
         assertNotNull(htmlChild);
@@ -727,7 +744,7 @@ public class WebProjectValidation extends J2eeTestCase {
         assertFalse("move in document", finalCaretPossition == startCaretPos);
         return finalCaretPossition;
     }
-    
+
     public void testRunHTML() {
         initDisplayer();
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
@@ -778,14 +795,7 @@ public class WebProjectValidation extends J2eeTestCase {
     
     public void testStopServer() throws Exception {
         server.stop();
-        //try { Thread.currentThread().sleep(5000); } catch (InterruptedException e) {}
-        URL url = server.getServerURL();
-        URLConnection connection = url.openConnection();
-        try {
-            connection.connect();
-            fail("Connection to: "+url+" established, but the server" +
-                    " should not be running.");
-        } catch (ConnectException e) {  }
+        verifyServerIsStopped();
     }
     
     public void testStartServer() throws Exception {
@@ -870,7 +880,15 @@ public class WebProjectValidation extends J2eeTestCase {
     public void waitBuildSuccessful() {
         OutputTabOperator console = new OutputTabOperator(PROJECT_NAME);
         console.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
-        console.waitText(BUILD_SUCCESSFUL);
+        boolean ok = false;
+        try{
+            console.waitText(BUILD_SUCCESSFUL);
+            ok = true;
+        }finally{
+            if (!ok){
+                System.err.println(console.getText());
+            }
+        }
     }
 
     public void initDisplayer() {
@@ -910,7 +928,7 @@ public class WebProjectValidation extends J2eeTestCase {
             throw new JemmyException("Cannot install Jemmy Queue.", ex);
         }
     }
-    
+
     private static class ServerInstance {
         private String host;
         private int serverPort;
@@ -958,6 +976,16 @@ public class WebProjectValidation extends J2eeTestCase {
         public void start() {
             getServerNode().start();
         }
+    }
+
+    private void verifyServerIsStopped() throws IOException {
+        URL url = server.getServerURL();
+        URLConnection connection = url.openConnection();
+        try {
+            connection.connect();
+            fail("Connection to: "+url+" established, but the server" +
+                    " should not be running.");
+        } catch (ConnectException e) {  }
     }
 }
 

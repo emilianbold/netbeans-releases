@@ -40,24 +40,30 @@
  */
 package org.netbeans.modules.cnd.gizmo.options;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.xml.AttrValuePair;
 import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
+import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.xml.sax.Attributes;
 
 public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
+    private final Logger log = DLightLogger.getLogger(GizmoOptionsXMLCodec.class);
     private GizmoOptionsImpl gizmoOptions;
-
     private final static String PROFILE_ON_RUN_ELEMENT = "profileOnRun"; // NOI18N
-    private final static String CPU_ELEMENT = "cpu"; // NOI18N
-    private final static String MEMORY_ELEMENT = "memory"; // NOI18N
-    private final static String SYNCHRONIZATION_ELEMENT = "synchronization"; // NOI18N
+//    private final static String CPU_ELEMENT = "cpu"; // NOI18N
+//    private final static String MEMORY_ELEMENT = "memory"; // NOI18N
+//    private final static String SYNCHRONIZATION_ELEMENT = "synchronization"; // NOI18N
     private final static String DATA_PROVIDER_ELEMENT = "dataprovider"; // NOI18N
-
+    private final static String TOOL_ELEMENT = "tool"; // NOI18N
+    private final static String TOOL_NAME_ATTRIBUTE = "name";//NOI18N
+    private final static String TOOL_ENABLED_ATTRIBUTE = "enabled";//NOI18N
     public final static String TRUE_VALUE = "true"; // NOI18N
     public final static String FALSE_VALUE = "false"; // NOI18N
-
     private final static int thisversion = 1;
 
     public GizmoOptionsXMLCodec(GizmoOptionsImpl gizmoOptions) {
@@ -87,45 +93,40 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
 
     // interface XMLDecoder
     public void startElement(String element, Attributes atts) {
+        log.log(Level.FINEST, "start element with the name " + element);//NOI18N
+        if (element.equals(TOOL_ELEMENT)) {
+            String toolName = atts.getValue(TOOL_NAME_ATTRIBUTE);
+            boolean b = atts.getValue(TOOL_ENABLED_ATTRIBUTE).equals(TRUE_VALUE);
+            gizmoOptions.setValueByName(toolName, b);
+        }
     }
 
     // interface XMLDecoder
     public void endElement(String element, String currentText) {
+        log.log(Level.FINEST, "end element with the name " + element);//NOI18N
         if (element.equals(PROFILE_ON_RUN_ELEMENT)) {
             boolean b = currentText.equals(TRUE_VALUE);
             gizmoOptions.getProfileOnRun().setValue(b);
-        }
-        if (element.equals(CPU_ELEMENT)) {
-            boolean b = currentText.equals(TRUE_VALUE);
-            gizmoOptions.getCpu().setValue(b);
-        }
-        if (element.equals(MEMORY_ELEMENT)) {
-            boolean b = currentText.equals(TRUE_VALUE);
-            gizmoOptions.getMemory().setValue(b);
-        }
-        if (element.equals(SYNCHRONIZATION_ELEMENT)) {
-            boolean b = currentText.equals(TRUE_VALUE);
-            gizmoOptions.getSynchronization().setValue(b);
-        }
-        else if (element.equals(DATA_PROVIDER_ELEMENT)) {
+        }else if (element.equals(DATA_PROVIDER_ELEMENT)) {
             int i = new Integer(currentText).intValue();
             gizmoOptions.getDataProvider().setValue(i);
         }
     }
+    
 
     private static void encode(XMLEncoderStream xes, GizmoOptionsImpl gizmoOptions) {
         xes.elementOpen(GizmoOptionsImpl.PROFILE_ID, getVersion());
         if (gizmoOptions.getProfileOnRun().getModified()) {
             xes.element(PROFILE_ON_RUN_ELEMENT, "" + gizmoOptions.getProfileOnRun().getValue()); // NOI18N
         }
-        if (gizmoOptions.getCpu().getModified()) {
-            xes.element(CPU_ELEMENT, "" + gizmoOptions.getCpu().getValue()); // NOI18N
-        }
-        if (gizmoOptions.getMemory().getModified()) {
-            xes.element(MEMORY_ELEMENT, "" + gizmoOptions.getMemory().getValue()); // NOI18N
-        }
-        if (gizmoOptions.getSynchronization().getModified()) {
-            xes.element(SYNCHRONIZATION_ELEMENT, "" + gizmoOptions.getSynchronization().getValue()); // NOI18N
+        for (String toolName : gizmoOptions.getNames()) {
+            BooleanConfiguration conf = gizmoOptions.getByName(toolName);
+            if (conf.getModified()) {
+                AttrValuePair[] attributes = new AttrValuePair[2];
+                attributes[0] = new AttrValuePair(TOOL_NAME_ATTRIBUTE, toolName);
+                attributes[1] = new AttrValuePair(TOOL_ENABLED_ATTRIBUTE, "" + conf.getValue());
+                xes.element(TOOL_ELEMENT, attributes);
+            }
         }
         if (gizmoOptions.getDataProvider().getModified()) {
             xes.element(DATA_PROVIDER_ELEMENT, "" + gizmoOptions.getDataProvider().getValue()); // NOI18N

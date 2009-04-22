@@ -166,10 +166,10 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
 
         // "Web Services"
         String webServicesLabel = Bundle.getString(
-                "org.netbeans.modules.websvc.dev.wizard.Bundle", "Templates/WebServices");
+                "org.netbeans.modules.websvc.core.client.wizard.Bundle", "Templates/WebServices");
         // "Web Service"
-        String webServiceLabel = org.netbeans.jellytools.Bundle.getString(
-                "org.netbeans.modules.websvc.dev.wizard.Bundle", "Templates/WebServices/WebService");
+        String webServiceLabel = Bundle.getString(
+                "org.netbeans.modules.websvc.core.dev.wizard.Bundle", "Templates/WebServices/WebService.java");
         NewFileWizardOperator.invoke(projectRootNode, webServicesLabel, webServiceLabel);
         NewFileNameLocationStepOperator nameStepOper = new NewFileNameLocationStepOperator();
         nameStepOper.setPackage("dummy"); // NOI18N
@@ -180,7 +180,7 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
 
         // "Web Services"
         String webServicesNodeLabel = Bundle.getString(
-                "org.netbeans.modules.websvc.core.webservices.ui.Bundle", "LBL_WebServices");
+                "org.netbeans.modules.websvc.core.Bundle", "LBL_WebServices");
         FolderNode wsNode = new FolderNode(projectRootNode, webServicesNodeLabel+"|"+SAMPLE_WEB_SERVICE_NAME);
         wsNode.exploreFromHere();
         new TopComponentOperator(SAMPLE_WEB_SERVICE_NAME).close();  // NOI18N

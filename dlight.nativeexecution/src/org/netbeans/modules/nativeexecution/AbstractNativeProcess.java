@@ -38,21 +38,21 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.openide.util.NbBundle;
 
 public abstract class AbstractNativeProcess extends NativeProcess {
 
@@ -60,47 +60,82 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private final static Integer PID_TIMEOUT =
             Integer.valueOf(System.getProperty(
             "dlight.nativeexecutor.pidtimeout", "70")); // NOI18N
+    protected final NativeProcessInfo info;
+    protected final HostInfo hostInfo;
     private final String id;
     // Immutable listeners list.
     private final Collection<ChangeListener> listeners;
     private final Object stateLock;
     private volatile State state;
-    private volatile Integer pid = null;
+    private volatile int pid = 0;
     private volatile Integer exitValue = null;
     private volatile boolean isInterrupted;
+    private boolean cancelled = false;
 
     public AbstractNativeProcess(NativeProcessInfo info) {
+        this.info = info;
         isInterrupted = false;
         state = State.INITIAL;
         id = info.getCommandLine();
         stateLock = new String("StateLock: " + id); // NOI18N
+        hostInfo = HostInfoUtils.getHostInfo(info.getExecutionEnvironment());
 
         Collection<ChangeListener> ll = info.getListeners();
         listeners = (ll == null || ll.isEmpty()) ? null
                 : Collections.unmodifiableList(
                 new ArrayList<ChangeListener>(ll));
-
-        setState(State.STARTING);
     }
 
+    public NativeProcess createAndStart() {
+        try {
+            if (hostInfo == null) {
+                throw new IllegalStateException("Unable to create process - no HostInfo available"); // NOI18N
+            }
+
+            setState(State.STARTING);
+            create();
+            setState(State.RUNNING);
+        } catch (Throwable ex) {
+            String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+            log.info(loc("NativeProcess.exceptionOccured.text", msg)); // NOI18N
+            setState(State.ERROR);
+            interrupt();
+        }
+
+        return this;
+    }
+
+    abstract protected void create() throws Throwable;
+
     protected boolean isInterrupted() {
+        try {
+            Thread.sleep(0);
+        } catch (InterruptedException ex) {
+            isInterrupted = true;
+            Thread.currentThread().interrupt();
+        }
+
         isInterrupted |= Thread.currentThread().isInterrupted();
         return isInterrupted;
     }
 
     protected void interrupt() {
         isInterrupted = true;
-        Thread.currentThread().interrupt();
         destroy();
     }
 
-    public final int getPID() {
+    public final int getPID() throws IOException {
         synchronized (this) {
-            if (pid == null) {
-                throw new IllegalThreadStateException("Process was not started"); // NOI18N
+            if (pid == 0) {
+                if (isInterrupted()) {
+                    destroy();
+                    throw new InterruptedIOException();
+                } else {
+                    throw new IOException("PID of process '" + id + "' is not received!"); // NOI18N
+                }
             }
 
-            return pid.intValue();
+            return pid;
         }
     }
 
@@ -144,6 +179,14 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      */
     @Override
     public final void destroy() {
+        synchronized (this) {
+            if (cancelled) {
+                return;
+            }
+
+            cancelled = true;
+        }
+
         synchronized (stateLock) {
             cancel();
             setState(State.CANCELLED);
@@ -242,71 +285,54 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 return;
             }
 
-            log.fine(this.toString() + " State change: " + // NOI18N
-                    this.state + " -> " + state); // NOI18N
+            try {
+                if (isInterrupted()) {
+                    // clear flag.
+                    // will restore in finally block.
+                    Thread.interrupted();
+                }
 
-            this.state = state;
+                if (!isInterrupted()) {
+                    log.fine(this.toString() + " State change: " + // NOI18N
+                            this.state + " -> " + state); // NOI18N
+                }
 
-            if (listeners == null) {
-                return;
-            }
+                this.state = state;
 
-            final ChangeEvent event = new ChangeEvent(this);
+                if (listeners == null) {
+                    return;
+                }
 
-            for (ChangeListener l : listeners) {
-                l.stateChanged(event);
+                final ChangeEvent event = new NativeProcessChangeEvent(this, state, pid);
+
+                for (ChangeListener l : listeners) {
+                    l.stateChanged(event);
+                }
+            } finally {
+                if (isInterrupted()) {
+                    Thread.currentThread().interrupt();
+                }
             }
         }
     }
 
     // To be called from successors' constructor only...
-    protected final void readPID(final InputStream is) throws InterruptedException {
-        Callable<Integer> pidReaderTask = new Callable<Integer>() {
+    protected final void readPID(final InputStream is) throws IOException {
+        int c = -1;
+        pid = 0;
 
-            public Integer call() throws Exception {
-                int i;
-                StringBuilder sb = new StringBuilder();
+        while (true) {
+            c = is.read();
 
-                while (true) {
-                    i = is.read();
-                    if (i < 0 || i == '\n') {
-                        break;
-                    }
-                    sb.append((char) i);
-                }
-
-                Integer result = null;
-
-                try {
-                    result = Integer.parseInt(sb.toString());
-                } catch (NumberFormatException e) {
-                }
-
-                return result;
+            if (c >= '0' && c <= '9') {
+                pid = pid * 10 + (c - '0');
+            } else {
+                break;
             }
-        };
-
-
-        Future<Integer> futurePID =
-                NativeTaskExecutorService.submit(pidReaderTask, "Read PID of " + id); // NOI18N
-
-        try {
-            pid = futurePID.get(PID_TIMEOUT, TimeUnit.SECONDS);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            isInterrupted = true;
-            throw ex;
-        } catch (ExecutionException ex) {
-        } catch (TimeoutException ex) {
-            futurePID.cancel(true);
         }
+    }
 
-        if (pid == null) {
-            // was unable to get real pid
-            setState(State.ERROR);
-        } else {
-//            log.info("PID is " + pid + "; Thread is " + Thread.currentThread().toString());
-            setState(State.RUNNING);
-        }
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(AbstractNativeProcess.class, key, params);
     }
 }

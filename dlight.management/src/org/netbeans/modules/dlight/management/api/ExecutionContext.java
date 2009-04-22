@@ -297,15 +297,36 @@ final class ExecutionContext {
 
     List<Indicator> getIndicators() {
         ArrayList<Indicator> result = new ArrayList<Indicator>();
+        Collection activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
         for (DLightTool tool : tools) {
-            result.addAll(DLightToolAccessor.getDefault().getIndicators(tool));
+            if (activeToolNames == null || activeToolNames.contains(tool.getName())){
+                result.addAll(DLightToolAccessor.getDefault().getIndicators(tool));
+            }
         }
 
         return result;
     }
 
+    DLightTool getToolByName(String toolName){
+        Collection activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
+        for (DLightTool tool : tools) {
+            if (activeToolNames == null || activeToolNames.contains(tool.getName()) &&  tool.getName().equals(toolName)){
+                return tool;
+            }
+        }
+       return null;
+    }
+
     List<DLightTool> getTools() {
-        return tools;
+        List<DLightTool> result = new ArrayList<DLightTool>();
+        Collection activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
+        for (DLightTool tool : tools) {
+            if (activeToolNames == null || activeToolNames.contains(tool.getName())){
+                result.add(tool);
+            }
+        }
+
+        return result;
     }
 
     final class DLightTargetExecutionEnvProviderCollection implements ExecutionEnvVariablesProvider {

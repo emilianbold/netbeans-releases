@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.api.tool;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -171,7 +172,7 @@ public final class DLightConfiguration {
 
             InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
             if (ic == null) {
-                String message = "D-Light options configuration " + child.getName() + " not found";
+                String message = "D-Light options configuration " + child.getName() + " not found"; //NOI18N
                 Logger.getLogger(ToolsConfiguration.class.getName()).log(Level.SEVERE, message, new Exception(message));
                 continue;
             }
@@ -233,6 +234,14 @@ public final class DLightConfiguration {
 
         public boolean validateToolsRequiredUserInteraction() {
             return false;
+        }
+
+        public boolean profileOnRun() {
+            return false;
+        }
+
+        public Collection<String> getActiveToolNames() {
+            return null;
         }
     }
 

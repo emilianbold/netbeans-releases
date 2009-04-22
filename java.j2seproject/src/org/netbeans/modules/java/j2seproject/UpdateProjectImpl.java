@@ -163,17 +163,20 @@ public class UpdateProjectImpl implements UpdateImplementation {
                 root.setAttribute ("id","test.src.dir");   //NOI18N
                 testRoots.appendChild (root);
                 newRoot.appendChild (testRoots);
-                cachedElement = updateMinAntVersion (newRoot, doc);
+                cachedElement = newRoot;
             } else {
                 oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true);    //NOI18N
                 if (oldRoot != null) {
                     Document doc = oldRoot.getOwnerDocument();
                     Element newRoot = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
                     copyDocument (doc, oldRoot, newRoot);
-                    cachedElement = updateMinAntVersion (newRoot, doc);
-                    }
+                    cachedElement = newRoot;
                 }
             }
+        }
+        if (cachedElement != null) {
+            deleteMinAntVersion(cachedElement);
+        }
         return cachedElement;
     }
 
@@ -225,18 +228,12 @@ public class UpdateProjectImpl implements UpdateImplementation {
         }
     }
 
-    private static Element updateMinAntVersion (final Element root, final Document doc) {
+    private static void deleteMinAntVersion(final Element root) {
         NodeList list = root.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,MINIMUM_ANT_VERSION_ELEMENT);
         if (list.getLength() == 1) {
-            Element me = (Element) list.item(0);
-            list = me.getChildNodes();
-            if (list.getLength() == 1) {
-                me.replaceChild (doc.createTextNode(J2SEProjectGenerator.MINIMUM_ANT_VERSION), list.item(0));
-                return root;
-            }
+            Node me = list.item(0);
+            me.getParentNode().removeChild(me);
         }
-        assert false : "Invalid project file"; //NOI18N
-        return root;
     }
 
     private boolean showUpdateDialog() {

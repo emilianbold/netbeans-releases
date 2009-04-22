@@ -263,6 +263,10 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
     
     public Problem fastCheckParameters() {
         Problem fastCheckProblem = null;
+        if(treePathHandle == null) {
+            return null; //no refactoring, not params check
+        }
+
         ElementKind kind = treePathHandle.getKind();
         String newName = refactoring.getNewName();
         String oldName = treePathHandle.getSimpleName();

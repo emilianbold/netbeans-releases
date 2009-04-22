@@ -160,7 +160,7 @@ public class AttachWindowAction extends Action {
      */
     /* Currently not enabled on top components tab. 
     public void performPopup(TopComponentOperator tco) {
-        // TODO
+        // TODO no idea what this empty todo means
         // Attach "SourceTC" to|taargetTC|Top"
         String popupPath = Bundle.getString("org.netbeans.core.windows.actions.Bundle",
         "CTL_AttachWindowAction", new String[] {tco.getName()});

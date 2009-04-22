@@ -45,11 +45,9 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -57,13 +55,11 @@ import org.openide.util.Lookup;
  */
 public final class ToolsCacheManager {
 
-    private final ServerList serverList;
     private ServerUpdateCache serverUpdateCache;
     private HashMap<ExecutionEnvironment, CompilerSetManager> copiedManagers =
             new HashMap<ExecutionEnvironment, CompilerSetManager>();
 
     public ToolsCacheManager() {
-        serverList = Lookup.getDefault().lookup(ServerList.class);
     }
 
     public ServerUpdateCache getServerUpdateCache() {
@@ -74,7 +70,7 @@ public final class ToolsCacheManager {
         if (serverUpdateCache != null) {
             return serverUpdateCache.getHosts();
         } else if (isRemoteAvailable()) {
-            return serverList.getEnvironments();
+            return ServerList.getEnvironments();
         } else {
             return null;
         }
@@ -84,7 +80,7 @@ public final class ToolsCacheManager {
         if (serverUpdateCache != null) {
             return serverUpdateCache.getDefaultIndex();
         } else if (isRemoteAvailable()) {
-            return serverList.getDefaultIndex();
+            return ServerList.getDefaultIndex();
         } else {
             return 0;
         }
@@ -125,15 +121,15 @@ public final class ToolsCacheManager {
         if (isRemoteAvailable()) {
             if (serverUpdateCache != null) {
                 liveServers = new ArrayList<ExecutionEnvironment>();
-                serverList.clear();
+                ServerList.clear();
                 for (ExecutionEnvironment env : serverUpdateCache.getHosts()) {
-                    serverList.addServer(env, false, false);
+                    ServerList.addServer(env, false, false);
                     liveServers.add(env);
                 }
-                serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
+                ServerList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
                 serverUpdateCache = null;
             } else {
-                serverList.setDefaultIndex(selectedIndex);
+                ServerList.setDefaultIndex(selectedIndex);
             }
         }
 
@@ -145,24 +141,16 @@ public final class ToolsCacheManager {
         copiedManagers.clear();
     }
 
-    public boolean show() {
-        assert isRemoteAvailable();
-        // Show the Dev Host Manager dialog
-        ServerListDisplayer d = Lookup.getDefault().lookup(ServerListDisplayer.class);
-        assert d != null;
-        return d.showServerListDialog(this);
-    }
-
     //TODO: we should be ensured already....check
     public void ensureHostSetup(ExecutionEnvironment env) {
         if (env != null) {
-            serverList.get(env); // this will ensure the remote host is setup
+            ServerList.get(env); // this will ensure the remote host is setup
         }
     }
 
     public boolean isDevHostValid(ExecutionEnvironment env) {
         if (isRemoteAvailable()) {
-            ServerRecord record = serverList.get(env);
+            ServerRecord record = ServerList.get(env);
             return record != null && record.isOnline();
         } else {
             return false;
@@ -170,11 +158,11 @@ public final class ToolsCacheManager {
     }
 
     public boolean isRemoteAvailable() {
-        return serverList != null;
+        return true;
     }
 
     public ExecutionEnvironment getDefaultHostEnvironment() {
-        return serverList.getDefaultRecord().getExecutionEnvironment();
+        return ServerList.getDefaultRecord().getExecutionEnvironment();
     }
 
     public synchronized CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env) {

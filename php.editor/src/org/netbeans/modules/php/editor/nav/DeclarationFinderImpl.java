@@ -235,19 +235,24 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         Occurence underCaret = occurencesSupport.getOccurence();
         if (underCaret != null) {
             ModelElement declaration = underCaret.gotoDeclaratin();
-            retval = new DeclarationLocation(declaration.getFileObject(), declaration.getOffset(),declaration.getPHPElement());
+            FileObject declarationFo = declaration.getFileObject();
+            if (declarationFo == null) {
+                return DeclarationLocation.NONE;
+            }
+            retval = new DeclarationLocation(declarationFo, declaration.getOffset(),declaration.getPHPElement());
             //TODO: if there was 2 classes with the same method or field it jumps directly into one of them
             if (info.getSnapshot().getSource().getFileObject() == declaration.getFileObject()) {
                 return retval;
             }
             Collection<? extends ModelElement> alternativeDeclarations = underCaret.getAllDeclarations();
             if (alternativeDeclarations.size() > 1) {
-                if (alternativeDeclarations.size() > 0) {
-                    retval = DeclarationLocation.NONE;
-                }
+                retval = DeclarationLocation.NONE;
                 for (ModelElement elem : alternativeDeclarations) {
-
-                    DeclarationLocation declLocation = new DeclarationLocation(elem.getFileObject(), elem.getOffset(), elem.getPHPElement());
+                    FileObject elemFo = elem.getFileObject();
+                    if (elemFo == null) {
+                        continue;
+                    }
+                    DeclarationLocation declLocation = new DeclarationLocation(elemFo, elem.getOffset(), elem.getPHPElement());
                     AlternativeLocation al = new AlternativeLocationImpl(elem, declLocation);
                     if (retval == DeclarationLocation.NONE) {
                         retval = al.getLocation();

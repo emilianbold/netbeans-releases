@@ -77,6 +77,8 @@ import javax.swing.KeyStroke;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
@@ -691,9 +693,17 @@ public class BaseKit extends DefaultEditorKit {
     */
     public static Map<String, Action> actionsToMap(Action[] actions) {
         Map<String, Action> map = new HashMap<String, Action>();
-        for (Action a : actions) {
+        for (int i = 0; i < actions.length; i++) {
+            Action a = actions[i];
+            if (a == null) {
+                throw new IllegalStateException("actions[] contains null at index " + i +
+                        ((i > 0) ? ". Preceding action is " + actions[i - 1] : ""));
+            }
             String name = (String) a.getValue(Action.NAME);
-            map.put(((name != null) ? name : ""), a); // NOI18N
+            if (name == null) {
+                throw new IllegalStateException("Null Action.NAME property of action " + a);
+            }
+            map.put(name, a); // NOI18N
         }
         return map;
     }
@@ -824,107 +834,27 @@ public class BaseKit extends DefaultEditorKit {
     */
     protected Action[] createActions() {
         return new Action[] {
-                   new DefaultKeyTypedAction(),
-                   new InsertContentAction(),
+                   // new DefaultKeyTypedAction() - overriden in ExtKit
                    insertBreakActionDef,
-		   new SplitLineAction(),
                    insertTabActionDef,
                    deletePrevCharActionDef,
                    deleteNextCharActionDef,
-                   new ReadOnlyAction(),
-                   new WritableAction(),
                    cutActionDef,
                    copyActionDef,
                    pasteActionDef,
                    new PasteAction(true),
-                   new BeepAction(),
-                   new UpAction(upAction, false),
-                   new UpAction(selectionUpAction, true),
-                   new PageUpAction(pageUpAction, false),
-                   new PageUpAction(selectionPageUpAction, true),
-                   new DownAction(downAction, false),
-                   new DownAction(selectionDownAction, true),
-                   new PageDownAction(selectionPageDownAction, true),
-                   new PageDownAction(pageDownAction, false),
-                   new ForwardAction(forwardAction, false),
-                   new ForwardAction(selectionForwardAction, true),
-                   new BackwardAction(backwardAction, false),
-                   new BackwardAction(selectionBackwardAction, true),
-                   new BeginLineAction(lineFirstColumnAction, false, true),
-                   new BeginLineAction(selectionLineFirstColumnAction, true, true),
-                   new BeginLineAction(beginLineAction, false),
-                   new BeginLineAction(selectionBeginLineAction, true),
-                   new EndLineAction(endLineAction, false),
-                   new EndLineAction(selectionEndLineAction, true),
-                   new BeginAction(beginAction, false),
-                   new BeginAction(selectionBeginAction, true),
-                   new EndAction(endAction, false),
-                   new EndAction(selectionEndAction, true),
-                   new NextWordAction(nextWordAction, false),
-                   new NextWordAction(selectionNextWordAction, true),
-                   new PreviousWordAction(previousWordAction, false),
-                   new PreviousWordAction(selectionPreviousWordAction, true),
-                   new BeginWordAction(beginWordAction, false),
-                   new BeginWordAction(selectionBeginWordAction, true),
-                   new EndWordAction(endWordAction, false),
-                   new EndWordAction(selectionEndWordAction, true),
-                   new SelectWordAction(),
-                   new SelectLineAction(),
-                   new SelectAllAction(),
-                   new RemoveTrailingSpacesAction(),
                    removeTabActionDef,
                    //new ActionFactory.RemoveWordAction(), #47709
-                   new ActionFactory.RemoveWordPreviousAction(),
-                   new ActionFactory.RemoveWordNextAction(),
-                   new ActionFactory.RemoveLineBeginAction(),
-                   new ActionFactory.RemoveLineAction(),
-                   new ActionFactory.MoveSelectionElseLineUpAction(),
-                   new ActionFactory.MoveSelectionElseLineDownAction(),
-                   new ActionFactory.CopySelectionElseLineUpAction(),
-                   new ActionFactory.CopySelectionElseLineDownAction(),
                    removeSelectionActionDef,
-                   new ActionFactory.ToggleTypingModeAction(),
-                   new ActionFactory.ChangeCaseAction(toUpperCaseAction, Utilities.CASE_UPPER),
-                   new ActionFactory.ChangeCaseAction(toLowerCaseAction, Utilities.CASE_LOWER),
-                   new ActionFactory.ChangeCaseAction(switchCaseAction, Utilities.CASE_SWITCH),
-                   new ActionFactory.FindNextAction(),
-                   new ActionFactory.FindPreviousAction(),
-                   new ActionFactory.FindSelectionAction(),
-                   new ActionFactory.ToggleHighlightSearchAction(),
                    undoActionDef,
                    redoActionDef,
-                   new ActionFactory.WordMatchAction(wordMatchNextAction, true),
-                   new ActionFactory.WordMatchAction(wordMatchPrevAction, false),
-                   new ActionFactory.ReindentLineAction(),
-                   new ActionFactory.ShiftLineAction(shiftLineLeftAction, false),
-                   new ActionFactory.ShiftLineAction(shiftLineRightAction, true),
-                   new ActionFactory.AdjustWindowAction(adjustWindowTopAction, 0),
-                   new ActionFactory.AdjustWindowAction(adjustWindowCenterAction, 50),
-                   new ActionFactory.AdjustWindowAction(adjustWindowBottomAction, 100),
-                   new ActionFactory.AdjustCaretAction(adjustCaretTopAction, 0),
-                   new ActionFactory.AdjustCaretAction(adjustCaretCenterAction, 50),
-                   new ActionFactory.AdjustCaretAction(adjustCaretBottomAction, 100),
-                   new ActionFactory.FormatAction(),
-                   new ActionFactory.FirstNonWhiteAction(firstNonWhiteAction, false),
-                   new ActionFactory.FirstNonWhiteAction(selectionFirstNonWhiteAction, true),
-                   new ActionFactory.LastNonWhiteAction(lastNonWhiteAction, false),
-                   new ActionFactory.LastNonWhiteAction(selectionLastNonWhiteAction, true),
-                   new ActionFactory.SelectIdentifierAction(),
-                   new ActionFactory.SelectNextParameterAction(),
-                   new ActionFactory.ScrollUpAction(),
-                   new ActionFactory.ScrollDownAction(),
-                   new ActionFactory.InsertDateTimeAction(),
-                   new ActionFactory.GenerateGutterPopupAction(),
                    new ActionFactory.ToggleLineNumbersAction(),
-                   new ActionFactory.AnnotationsCyclingAction(),
-                   new ActionFactory.CollapseFold(),
-                   new ActionFactory.ExpandFold(),
-                   new ActionFactory.CollapseAllFolds(),
-                   new ActionFactory.ExpandAllFolds(),
-                   new ActionFactory.DumpViewHierarchyAction(),
-                   new ActionFactory.StartNewLine(),
-                   new ActionFactory.CutToLineBeginOrEndAction(false),
-                   new ActionFactory.CutToLineBeginOrEndAction(true),
+                   new NextWordAction(nextWordAction),
+                   new NextWordAction(selectionNextWordAction),
+                   new PreviousWordAction(previousWordAction),
+                   new PreviousWordAction(selectionPreviousWordAction),
+                   new ActionFactory.RemoveWordNextAction(),
+                   new ActionFactory.RemoveWordPreviousAction(),
 
                    // Self test actions
                    //      new EditorDebug.SelfTestAction(),
@@ -1033,11 +963,13 @@ public class BaseKit extends DefaultEditorKit {
 
 
     /** Default typed action */
+//    @EditorActionRegistration(name = defaultKeyTypedAction)
     public static class DefaultKeyTypedAction extends LocalBaseAction {
 
         static final long serialVersionUID =3069164318144463899L;
 
         public DefaultKeyTypedAction() {
+            // Construct with defaultKeyTypedAction name to retain full compatibility for extending actions
             super(defaultKeyTypedAction, MAGIC_POSITION_RESET | CLEAR_STATUS_TEXT);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
             LOG.fine("DefaultKeyTypedAction with enhanced logging, see issue #145306"); //NOI18N
@@ -1246,12 +1178,13 @@ public class BaseKit extends DefaultEditorKit {
       }
     }
 
+    @EditorActionRegistration(name = splitLineAction)
     public static class SplitLineAction extends LocalBaseAction {
 
         static final long serialVersionUID =7966576342334158659L;
 
         public SplitLineAction() {
-	  super(splitLineAction, MAGIC_POSITION_RESET | ABBREV_RESET | WORD_MATCH_RESET);
+	  super(MAGIC_POSITION_RESET | ABBREV_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
@@ -1417,6 +1350,15 @@ public class BaseKit extends DefaultEditorKit {
 
         static final long serialVersionUID =8415246475764264835L;
 
+        public KitCompoundAction(String actionNames[]) {
+            this(0, actionNames);
+        }
+
+        public KitCompoundAction(int resetMask, String actionNames[]) {
+            super(resetMask);
+            this.actionNames = actionNames;
+        }
+
         public KitCompoundAction(String nm, String actionNames[]) {
             this(nm, 0, actionNames);
         }
@@ -1445,13 +1387,13 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
+    @EditorActionRegistration(name = insertContentAction)
     public static class InsertContentAction extends LocalBaseAction {
 
         static final long serialVersionUID =5647751370952797218L;
 
         public InsertContentAction() {
-            super(insertContentAction, MAGIC_POSITION_RESET | ABBREV_RESET
-                  | WORD_MATCH_RESET);
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | WORD_MATCH_RESET);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
@@ -1559,12 +1501,12 @@ public class BaseKit extends DefaultEditorKit {
       }
     }
 
+    @EditorActionRegistration(name = readOnlyAction)
     public static class ReadOnlyAction extends LocalBaseAction {
 
         static final long serialVersionUID =9204335480208463193L;
 
         public ReadOnlyAction() {
-            super(readOnlyAction);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
@@ -1575,12 +1517,12 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
+    @EditorActionRegistration(name = writableAction)
     public static class WritableAction extends LocalBaseAction {
 
         static final long serialVersionUID =-5982547952800937954L;
 
         public WritableAction() {
-            super(writableAction);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
@@ -1668,12 +1610,10 @@ public class BaseKit extends DefaultEditorKit {
     public static class PasteAction extends LocalBaseAction {
 
         static final long serialVersionUID =5839791453996432149L;
-        private boolean formatted;
 
-        public PasteAction(boolean formated) {
-            super(formated ? pasteFormatedAction : pasteAction, ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
-            //#54893 putValue ("helpID", PasteAction.class.getName ()); // NOI18N
-            this.formatted = formated;
+        public PasteAction(boolean formatted) {
+            super(formatted ? pasteFormatedAction : pasteAction,
+                ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
         public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
@@ -1694,6 +1634,7 @@ public class BaseKit extends DefaultEditorKit {
                 }
 
                 final Formatter formatter = doc.getFormatter();
+                final boolean formatted = pasteFormatedAction.equals(getValue(Action.NAME));
                 if (formatted) {
                     formatter.reformatLock();
                 }
@@ -1792,13 +1733,12 @@ public class BaseKit extends DefaultEditorKit {
     }
 
 
-
+    @EditorActionRegistration(name = beepAction)
     public static class BeepAction extends LocalBaseAction {
 
         static final long serialVersionUID =-4474054576633223968L;
 
         public BeepAction() {
-            super(beepAction);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
@@ -1810,16 +1750,16 @@ public class BaseKit extends DefaultEditorKit {
     }
 
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = upAction),
+        @EditorActionRegistration(name = selectionUpAction)
+    })
     public static class UpAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =4621760742646981563L;
 
-        public UpAction(String nm, boolean select) {
-            super(nm, ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET
-            | CLEAR_STATUS_TEXT);
-            this.select = select;
+        public UpAction() {
+            super(ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1839,6 +1779,7 @@ public class BaseKit extends DefaultEditorKit {
                     }
                     try {
                         dot = Utilities.getPositionAbove(target, dot, p.x);
+                        boolean select = selectionUpAction.equals(getValue(Action.NAME));
                         if (select) {
                             caret.moveDot(dot);
                         } else {
@@ -1854,16 +1795,16 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = downAction),
+        @EditorActionRegistration(name = selectionDownAction)
+    })
     public static class DownAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =-5635702355125266822L;
 
-        public DownAction(String nm, boolean select) {
-            super(nm, ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET
-            | CLEAR_STATUS_TEXT);
-            this.select = select;
+        public DownAction() {
+            super(ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1883,6 +1824,7 @@ public class BaseKit extends DefaultEditorKit {
                     }
                     try {
                         dot = Utilities.getPositionBelow(target, dot, p.x);
+                        boolean select = selectionDownAction.equals(getValue(Action.NAME));
                         if (select) {
                             caret.moveDot(dot);
                         } else {
@@ -1899,16 +1841,16 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     /** Go one page up */
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = pageUpAction),
+        @EditorActionRegistration(name = selectionPageUpAction)
+    })
     public static class PageUpAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =-3107382148581661079L;
 
-        public PageUpAction(String nm, boolean select) {
-            super(nm, ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET
-            | CLEAR_STATUS_TEXT);
-            this.select = select;
+        public PageUpAction() {
+            super(ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -1985,7 +1927,8 @@ public class BaseKit extends DefaultEditorKit {
                         newCaretOffset = target.viewToModel(newCaretPoint);
                         newCaretBounds = target.modelToView(newCaretOffset);
                     }
-                    
+
+                    boolean select = selectionPageUpAction.equals(getValue(Action.NAME));
                     if (select) {
                         caret.moveDot(newCaretOffset);
                     } else {
@@ -2003,16 +1946,17 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = forwardAction),
+        @EditorActionRegistration(name = selectionForwardAction)
+    })
     public static class ForwardAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =8007293230193334414L;
 
-        public ForwardAction(String nm, boolean select) {
-            super(nm, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
-            | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
-            this.select = select;
+        public ForwardAction() {
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
+                | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -2020,6 +1964,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int pos;
+                    boolean select = selectionForwardAction.equals(getValue(Action.NAME));
                     if (!select && Utilities.isSelectionShowing(caret))
                     {
                         pos = target.getSelectionEnd(); 
@@ -2048,23 +1993,23 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     /** Go one page down */
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = pageDownAction),
+        @EditorActionRegistration(name = selectionPageDownAction)
+    })
     public static class PageDownAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =8942534850985048862L;
 
-        public PageDownAction(String nm, boolean select) {
-            super(nm, ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET
-            | CLEAR_STATUS_TEXT);
-            this.select = select;
+        public PageDownAction() {
+            super(ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET
+                | CLEAR_STATUS_TEXT);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 try {
                     Caret caret = target.getCaret();
-                    BaseDocument doc = (BaseDocument)target.getDocument();
                     int caretOffset = caret.getDot();
                     Rectangle caretBounds = ((BaseTextUI)target.getUI()).modelToView(target, caretOffset);
                     if (caretBounds == null) {
@@ -2129,7 +2074,8 @@ public class BaseKit extends DefaultEditorKit {
                         newCaretOffset = target.viewToModel(newCaretPoint);
                         newCaretBounds = target.modelToView(newCaretOffset);
                     }
-                    
+
+                    boolean select = selectionPageDownAction.equals(getValue(Action.NAME));
                     if (select) {
                         caret.moveDot(newCaretOffset);
                     } else {
@@ -2147,16 +2093,17 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = backwardAction),
+        @EditorActionRegistration(name = selectionBackwardAction)
+    })
     public static class BackwardAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =-3048379822817847356L;
 
-        public BackwardAction(String nm, boolean select) {
-            super(nm, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
+        public BackwardAction() {
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
-            this.select = select;
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -2164,6 +2111,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int pos;
+                    boolean select = selectionBackwardAction.equals(getValue(Action.NAME));
                     if (!select && Utilities.isSelectionShowing(caret))
                     {
                         pos = target.getSelectionStart(); 
@@ -2193,7 +2141,21 @@ public class BaseKit extends DefaultEditorKit {
 
     public static class BeginLineAction extends LocalBaseAction {
 
-        protected boolean select;
+        @EditorActionRegistrations({
+            @EditorActionRegistration(name = beginLineAction),
+            @EditorActionRegistration(name = selectionBeginLineAction)
+        })
+        public static BeginLineAction create() {
+            return new BeginLineAction(false);
+        }
+
+        @EditorActionRegistrations({
+            @EditorActionRegistration(name = lineFirstColumnAction),
+            @EditorActionRegistration(name = selectionLineFirstColumnAction)
+        })
+        public static BeginLineAction createColumnOne() {
+            return new BeginLineAction(true);
+        }
 
         /** Whether the action should go to the begining of
          * the text on the line or to the first column on the line*/
@@ -2201,15 +2163,9 @@ public class BaseKit extends DefaultEditorKit {
 
         static final long serialVersionUID =3269462923524077779L;
 
-        public BeginLineAction(String nm, boolean select) {
-            super(nm, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
+        public BeginLineAction(boolean columnOne) {
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
-            this.select = select;
-            homeKeyColumnOne = false;
-        }
-
-        public BeginLineAction(String nm, boolean select, boolean columnOne) {
-            this(nm, select);
             homeKeyColumnOne = columnOne;
         }
 
@@ -2235,6 +2191,9 @@ public class BaseKit extends DefaultEditorKit {
                             dot = textStartPos;
                         }
                     }
+                    String actionName = (String) getValue(Action.NAME);
+                    boolean select = selectionBeginLineAction.equals(actionName)
+                            || selectionLineFirstColumnAction.equals(actionName);
                     if (select) {
                         caret.moveDot(dot);
                     } else {
@@ -2247,16 +2206,17 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = endLineAction),
+        @EditorActionRegistration(name = selectionEndLineAction)
+    })
     public static class EndLineAction extends LocalBaseAction {
-
-        protected boolean select;
 
         static final long serialVersionUID =5216077634055190170L;
 
-        public EndLineAction(String nm, boolean select) {
-            super(nm, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
+        public EndLineAction() {
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
-            this.select = select;
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -2264,6 +2224,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int dot = Utilities.getRowEnd(target, caret.getDot());
+                    boolean select = selectionEndLineAction.equals(getValue(Action.NAME));
                     if (select) {
                         caret.moveDot(dot);
                     } else {
@@ -2283,22 +2244,24 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = beginAction),
+        @EditorActionRegistration(name = selectionBeginAction)
+    })
     public static class BeginAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =3463563396210234361L;
 
-        public BeginAction(String nm, boolean select) {
-            super(nm, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
+        public BeginAction() {
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | SAVE_POSITION | CLEAR_STATUS_TEXT);
-            this.select = select;
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
                 int dot = 0; // begin of document
+                boolean select = selectionBeginAction.equals(getValue(Action.NAME));
                 if (select) {
                     caret.moveDot(dot);
                 } else {
@@ -2308,22 +2271,24 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = endAction),
+        @EditorActionRegistration(name = selectionEndAction)
+    })
     public static class EndAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =8547506353130203657L;
 
-        public EndAction(String nm, boolean select) {
-            super(nm, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
+        public EndAction() {
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | SAVE_POSITION | CLEAR_STATUS_TEXT);
-            this.select = select;
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
                 int dot = target.getDocument().getLength(); // end of document
+                boolean select = selectionEndAction.equals(getValue(Action.NAME));
                 if (select) {
                     caret.moveDot(dot);
                 } else {
@@ -2333,16 +2298,22 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
+    // Disabled annotations due to overriding by camel-case actions in GSF (no concrete mimetype)
+//    @EditorActionRegistrations({
+//        @EditorActionRegistration(name = nextWordAction),
+//        @EditorActionRegistration(name = selectionNextWordAction)
+//    })
     public static class NextWordAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =-5909906947175434032L;
 
-        public NextWordAction(String nm, boolean select) {
-            super(nm, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
+//        public NextWordAction() {
+//            this(null);
+//        }
+
+        NextWordAction(String name) {
+            super(name, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
-            this.select = select;
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -2351,6 +2322,7 @@ public class BaseKit extends DefaultEditorKit {
                 try {
                     int dotPos = caret.getDot();
                     dotPos = Utilities.getNextWord(target, dotPos);
+                    boolean select = selectionNextWordAction.equals(getValue(Action.NAME));
                     if (caret instanceof BaseCaret){
                         BaseCaret bCaret = (BaseCaret) caret;
                         if (select) {
@@ -2372,16 +2344,22 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
+    // Disabled annotations due to overriding by camel-case actions in GSF (no concrete mimetype)
+//    @EditorActionRegistrations({
+//        @EditorActionRegistration(name = previousWordAction),
+//        @EditorActionRegistration(name = selectionPreviousWordAction)
+//    })
     public static class PreviousWordAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =-5465143382669785799L;
 
-        public PreviousWordAction(String nm, boolean select) {
-            super(nm, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
+//        public PreviousWordAction() {
+//            this(null);
+//        }
+
+        PreviousWordAction(String name) {
+            super(name, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
-            this.select = select;
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -2389,6 +2367,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int dot = Utilities.getPreviousWord(target, caret.getDot());
+                    boolean select = selectionPreviousWordAction.equals(getValue(Action.NAME));
                     if (caret instanceof BaseCaret){
                         BaseCaret bCaret = (BaseCaret) caret;
                         if (select) {
@@ -2410,16 +2389,17 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = beginWordAction),
+        @EditorActionRegistration(name = selectionBeginWordAction)
+    })
     public static class BeginWordAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =3991338381212491110L;
 
-        public BeginWordAction(String nm, boolean select) {
-            super(nm, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
+        public BeginWordAction() {
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
-            this.select = select;
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -2427,6 +2407,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int dot = Utilities.getWordStart(target, caret.getDot());
+                    boolean select = selectionBeginWordAction.equals(getValue(Action.NAME));
                     if (select) {
                         caret.moveDot(dot);
                     } else {
@@ -2439,16 +2420,17 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = endWordAction),
+        @EditorActionRegistration(name = selectionEndWordAction)
+    })
     public static class EndWordAction extends LocalBaseAction {
-
-        boolean select;
 
         static final long serialVersionUID =3812523676620144633L;
 
-        public EndWordAction(String nm, boolean select) {
-            super(nm, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
+        public EndWordAction() {
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
-            this.select = select;
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -2456,6 +2438,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int dot = Utilities.getWordEnd(target, caret.getDot());
+                    boolean select = selectionEndWordAction.equals(getValue(Action.NAME));
                     if (select) {
                         caret.moveDot(dot);
                     } else {
@@ -2469,13 +2452,13 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     /** Select word around caret */
+    @EditorActionRegistration(name = selectWordAction)
     public static class SelectWordAction extends KitCompoundAction {
 
         static final long serialVersionUID =7678848538073016357L;
 
         public SelectWordAction() {
-            super(selectWordAction,
-                  new String[] {
+            super(new String[] {
                       beginWordAction,
                       selectionEndWordAction
                   }
@@ -2485,12 +2468,12 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     /** Select line around caret */
+    @EditorActionRegistration(name = selectLineAction)
     public static class SelectLineAction extends LocalBaseAction {
 
         static final long serialVersionUID =-7407681863035740281L;
 
         public SelectLineAction() {
-            super(selectLineAction);
         }
 
         public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
@@ -2519,13 +2502,13 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     /** Select text of whole document */
+    @EditorActionRegistration(name = selectAllAction)
     public static class SelectAllAction extends KitCompoundAction {
 
         static final long serialVersionUID =-3502499718130556524L;
 
         public SelectAllAction() {
-            super(selectAllAction,
-                  new String[] {
+            super(new String[] {
                       beginAction,
                       selectionEndAction
                   }
@@ -2533,11 +2516,11 @@ public class BaseKit extends DefaultEditorKit {
         }
 
     }
-    
+
+    @EditorActionRegistration(name = removeTrailingSpacesAction)
     public static class RemoveTrailingSpacesAction extends LocalBaseAction {
         
         public RemoveTrailingSpacesAction() {
-            super(removeTrailingSpacesAction);
         }
 
         protected boolean asynchonous() {

@@ -207,7 +207,11 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     private IncludeImpl createInclude(final APTInclude apt, final FileImpl included) {
         SimpleOffsetableImpl inclPos = getOffsetable(apt.getToken());
-        setEndPosition(inclPos, getLastToken(apt.getInclude()));
+        APTToken lastToken = getLastToken(apt.getInclude());
+        if(lastToken == null || APTUtils.isEOF(lastToken)) {
+            lastToken = apt.getToken();
+        }
+        setEndPosition(inclPos, lastToken);
         IncludeImpl incImpl = new IncludeImpl(apt.getFileName(getMacroMap()), apt.isSystem(getMacroMap()), included, getFile(), inclPos);
         return incImpl;
     }

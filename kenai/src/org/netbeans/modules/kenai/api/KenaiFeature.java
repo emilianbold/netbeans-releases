@@ -85,26 +85,51 @@ public final class KenaiFeature {
         }
     }
 
+    /**
+     * Getter for feature name
+     * @return name of feature
+     */
     public String getName() {
         return featureData.name;
     }
 
+    /**
+     * getter for feature type
+     * @return type of feature
+     */
     public Type getType() {
         return Type.forId(featureData.type);
     }
 
+    /**
+     * getter for service name
+     * @return name of service
+     * @see KenaiService.Names
+     */
     public String getService() {
         return featureData.service;
     }
 
+    /**
+     * getter for location of this feature
+     * @return location of feature
+     */
     public URI getLocation() {
         return loc;
     }
 
+    /**
+     * getter for web location of this feature
+     * @return web location of feature
+     */
     public URL getWebLocation() {
         return webL;
     }
 
+    /**
+     * Getter for diplay name of this feature
+     * @return display name
+     */
     public String getDisplayName() {
         return featureData.display_name;
     }

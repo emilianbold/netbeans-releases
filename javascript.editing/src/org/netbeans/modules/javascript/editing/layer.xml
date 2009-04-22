@@ -39,6 +39,16 @@
                         </folder>
                     </folder>
                 </folder>
+
+                <folder name="Popup">
+                    <file name="SeparatorFolding.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4900"/>
+                    </file>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="5000"/>
+                    </file>
+                </folder>
             </folder>
 
             <folder name="x-javascript-string">
@@ -99,6 +109,16 @@
                             <file name="org-netbeans-modules-javascript-editing-keybindings.xml" url="DefaultKeyBindings.xml"/>
                         </folder>
                     </folder>
+                </folder>
+
+                <folder name="Popup">
+                    <file name="SeparatorFolding.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4900"/>
+                    </file>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="5000"/>
+                    </file>
                 </folder>
             </folder>
 

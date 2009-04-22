@@ -37,6 +37,7 @@
 package org.netbeans.installer.utils.applications;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -189,7 +190,73 @@ public class NetBeansUtils {
                 productid,
                 StringUtils.asString(ids, PACK_ID_SEPARATOR));
     }
-    
+
+    public static void updateTrackingFilesInfo(File nbLocation, String clusterName) throws IOException {
+
+        File clusterDir = new File(nbLocation, clusterName);
+        if (!FileUtils.exists(clusterDir)) {
+            return;
+        }
+        LogManager.log("Update update_tracking files for cluster directory " + clusterDir);
+        File[] files = new File(clusterDir,UPDATE_TRACKING_DIR).listFiles(new FileFilter() {
+            public boolean accept(File pathname) {
+                return pathname.getName().endsWith(".xml");
+            }
+        });
+        
+        if (files != null) {
+            for (File f : files) {
+                updateTrackingFilesCRC(f, clusterDir);
+            }
+        }
+    }
+
+    private static void updateTrackingFilesCRC(File f, File clusterDir) throws IOException {
+        try {
+            LogManager.log("... check if correct CRC sums are used in update_tracking file " + f);
+            Element root = XMLUtils.getDocumentElement(f);
+            boolean needSave = false;
+            for (Element el : XMLUtils.getChildren(root, "module_version")) {
+                if ("true".equals(el.getAttribute("last"))) {
+                    for (Element fileEl : XMLUtils.getChildren(el)) {
+                        String crc = fileEl.getAttribute("crc");
+                        String name = fileEl.getAttribute("name");
+                        if (name != null && crc != null) {
+                            File utFile = new File(clusterDir, name);
+                            if (FileUtils.exists(utFile)) {
+                                long crcValue = Long.parseLong(crc);
+                                long realCRC = FileUtils.getCrc32(utFile);
+                                if (realCRC != crcValue) {
+                                    fileEl.setAttribute("crc", new Long(realCRC).toString());
+                                    needSave = true;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            if (needSave) {
+                XMLUtils.saveXMLDocument(root.getOwnerDocument(), f);
+            }
+        } catch (XMLException e) {
+            LogManager.log(e);
+            IOException ex = new IOException("Can`t update CRC in update_tracking files");
+            ex.initCause(e);
+            throw ex;
+        } catch (NumberFormatException e) {
+            LogManager.log(e);
+            IOException ex = new IOException("Can`t update CRC in update_tracking files");
+            ex.initCause(e);
+            throw ex;
+        } catch (IOException e) {
+            LogManager.log(e);
+            IOException ex = new IOException("Can`t update CRC in update_tracking files");
+            ex.initCause(e);
+            throw ex;
+        }
+    }
+
     public static void removePackId(File nbLocation, String packId) throws IOException {
         File nbCluster = getNbCluster(nbLocation);
         
@@ -799,7 +866,8 @@ public class NetBeansUtils {
 
     public static final String LAST_MODIFIED_MARKER =
            ".lastModified";
-    
+    public static final String UPDATE_TRACKING_DIR =
+            "update_tracking";
     public static final String NB_IDE_ID =
             "NB"; // NOI18N
     public static final String PACK_ID_SEPARATOR =

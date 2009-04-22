@@ -174,6 +174,10 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
                     String serverType = platformValidator.getServerTypeName(serverVersion);
                     errMsg = NbBundle.getMessage(AddDomainPlatformPanel.class,
                         "Msg_InValidInstallForServerType", serverType);  //NOI18N
+                    if (location.isDirectory() && (new File(location, "setup.xml")).exists()) {
+                        errMsg = NbBundle.getMessage(AddDomainPlatformPanel.class,
+                            "Msg_RunSetupBeforeRegistration");  //NOI18N
+                    }
                 }
                 wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errMsg); 
             }

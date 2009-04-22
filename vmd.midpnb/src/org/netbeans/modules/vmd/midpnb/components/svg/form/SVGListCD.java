@@ -121,7 +121,7 @@ public class SVGListCD extends ComponentDescriptor{
     @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, ActionsPresenter.class);
-        MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, true, false, true);
+        MidpActionsSupport.addCommonClassActionsPresenters(presenters, false, true, true, false, true);
         super.gatherPresenters(presenters);
     }
 

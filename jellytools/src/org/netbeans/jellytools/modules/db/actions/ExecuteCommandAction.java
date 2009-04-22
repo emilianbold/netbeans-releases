@@ -52,7 +52,7 @@ public class ExecuteCommandAction extends ActionNoBlock {
     /** creates new "Execute Command ..." action */
     public ExecuteCommandAction() {
         super(null, Bundle.getStringTrimmed(
-                "org.netbeans.modules.db.resources.Bundle",
+                "org.netbeans.modules.db.explorer.action.Bundle",
                 "ExecuteCommand"));
     }
 }

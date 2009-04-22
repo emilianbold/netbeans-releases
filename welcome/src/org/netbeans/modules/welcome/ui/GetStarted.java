@@ -50,17 +50,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ActionButton;
-import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.Utils;
 import org.openide.cookies.InstanceCookie;
@@ -70,19 +68,19 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author S. Aubrecht
  */
-class GetStarted extends BackgroundPanel implements Constants {
+class GetStarted extends JPanel implements Constants {
 
     private int row;
 
     /** Creates a new instance of RecentProjects */
     public GetStarted() {
         super( new GridBagLayout() );
+        setOpaque(false);
         buildContent();
     }
     
@@ -117,40 +115,35 @@ class GetStarted extends BackgroundPanel implements Constants {
                 GridBagConstraints.NORTHWEST, GridBagConstraints.VERTICAL, new Insets(0,0,0,0), 0, 0 ) );
     }
 
+    private boolean foregroundColorFlag = true;
     private int addLink( int row, DataObject dob ) {
         FileObject file = dob.getPrimaryFile();
         String fileName = file.getName();
-        if( !fileName.endsWith("_default") ) {
+        if( !fileName.endsWith("_default") ) { //NOI18N
             String prefCluster = getPreferredCluster();
             if( !fileName.endsWith(prefCluster) ) {
                 return row;
             } 
         }
-        OpenCookie oc = (OpenCookie)dob.getCookie( InstanceCookie.class );
-        if( null != oc ) {
-            JPanel panel = new BackgroundPanel( new GridBagLayout() );
-            
-            LinkAction la = new LinkAction( dob );
-            ActionButton lb = new ActionButton( la, false, Utils.getUrlString( dob ) );
+        Action action = extractAction( dob );
+        if( null != action ) {
+            JPanel panel = new JPanel( new GridBagLayout() );
+            panel.setOpaque(false);
+            ActionButton lb = new ActionButton( action, false, Utils.getUrlString( dob ),
+                    Utils.getColor(foregroundColorFlag ? COLOR_HEADER1 : COLOR_HEADER2) );
+            foregroundColorFlag = !foregroundColorFlag;
             panel.add( lb, new GridBagConstraints(1,0,1,3,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
             lb.setFont( GET_STARTED_FONT );
             
             panel.add( new JLabel(), 
                     new GridBagConstraints(2,0,1,3,1.0,0.0,GridBagConstraints.WEST,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
             
-            String bundleName = (String)dob.getPrimaryFile().getAttribute("SystemFileSystem.localizingBundle");//NOI18N
-            if( null != bundleName ) {
-                ResourceBundle bundle = NbBundle.getBundle(bundleName);
-                Object imgKey = dob.getPrimaryFile().getAttribute("imageKey"); //NOI18N
-                if( null != imgKey ) {
-                    String imgLocation = bundle.getString(imgKey.toString());
-                    Image img = ImageUtilities.loadImage(imgLocation, true);
-                    JLabel lbl = new JLabel( new ImageIcon(img) );
-                    lbl.setVerticalAlignment( SwingConstants.TOP );
-                    panel.add( lbl, 
-                            new GridBagConstraints(0,0,1,3,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.BOTH,new Insets(0,0,0,18),0,0) );
-                }
-            }
+            int iconDistance = new JLabel().getIconTextGap();
+            Image img = ImageUtilities.loadImage(Constants.BULLET_IMAGE, true);
+            JLabel lbl = new JLabel( new ImageIcon(img) );
+            lbl.setVerticalAlignment(JLabel.CENTER);
+            panel.add( lbl,
+                    new GridBagConstraints(0,0,1,3,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.BOTH,new Insets(0,0,0,iconDistance),0,0) );
                 
             lb.getAccessibleContext().setAccessibleName( lb.getText() );
             lb.getAccessibleContext().setAccessibleDescription( 
@@ -160,6 +153,26 @@ class GetStarted extends BackgroundPanel implements Constants {
                 new Insets(0,0,7,0), 0, 0 ) );
         }
         return row;
+    }
+
+    private Action extractAction( DataObject dob ) {
+        OpenCookie oc = dob.getCookie( OpenCookie.class );
+        if( null != oc )
+            return new LinkAction( dob );
+
+        InstanceCookie.Of ic = dob.getCookie(InstanceCookie.Of.class);
+        if( null != ic && ic.instanceOf( Action.class ) ) {
+            try {
+                Action res = (Action) ic.instanceCreate();
+                if( null != res ) {
+                    res.putValue(Action.NAME, dob.getNodeDelegate().getDisplayName() );
+                }
+                return res;
+            } catch( Exception e ) {
+                Logger.getLogger(SampleProjectAction.class.getName()).log( Level.INFO, null, e );
+            }
+        }
+        return null;
     }
 
     private static class LinkAction extends AbstractAction {
@@ -178,7 +191,7 @@ class GetStarted extends BackgroundPanel implements Constants {
     
     private String getPreferredCluster() {
         
-        String preferredCluster = "java";
+        String preferredCluster = "java"; //NOI18N
         try {
             FileObject fo = FileUtil.getConfigFile("/productid"); // NOI18N
             if (fo != null) {
@@ -186,14 +199,14 @@ class GetStarted extends BackgroundPanel implements Constants {
                 try {
                     BufferedReader r = new BufferedReader(new InputStreamReader (is));
                     String clusterList = r.readLine().trim().toLowerCase();
-                    if( clusterList.contains("java") ) {
-                        preferredCluster = "java";
-                    } else if( clusterList.contains("ruby") ) {
-                        preferredCluster = "ruby";
-                    } else if( clusterList.contains("cnd") ) {
-                        preferredCluster = "cnd";
-                    } else if( clusterList.contains("php") ) {
-                        preferredCluster = "php";
+                    if( clusterList.contains("java") ) { //NOI18N
+                        preferredCluster = "java"; //NOI18N
+                    } else if( clusterList.contains("ruby") ) { //NOI18N
+                        preferredCluster = "ruby"; //NOI18N
+                    } else if( clusterList.contains("cnd") ) { //NOI18N
+                        preferredCluster = "cnd"; //NOI18N
+                    } else if( clusterList.contains("php") ) { //NOI18N
+                        preferredCluster = "php"; //NOI18N
                     }
                 } finally {
                     is.close();

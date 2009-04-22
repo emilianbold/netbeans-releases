@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
@@ -387,6 +388,10 @@ public class AstRenderer {
             return false;
         }
 
+        return isVariableOrFunctionName(name, findVariableOrFunction);
+    }
+
+    private boolean isVariableOrFunctionName(AST name, boolean findVariableOrFunction) {
         CsmAST csmAST = AstUtil.getFirstCsmAST(name);
 
         StringBuilder varName = new StringBuilder(name.getText());
@@ -830,7 +835,7 @@ public class AstRenderer {
 
                     CsmClassForwardDeclaration cfdi = null;
 
-                    for (AST curr = ast.getFirstChild(); curr != null; curr = curr.getNextSibling()) {
+                    for (AST curr = firstChild; curr != null; curr = curr.getNextSibling()) {
                         switch (curr.getType()) {
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
@@ -839,8 +844,11 @@ public class AstRenderer {
                             case CPPTokenTypes.LITERAL_enum:
                                 if (AstUtil.findSiblingOfType(curr, CPPTokenTypes.RCURLY) != null) {
                                     results.enclosing = EnumImpl.create(curr, scope, file, !isRenderingLocalContext());
-                                    if (scope instanceof MutableDeclarationsContainer) {
-                                        ((MutableDeclarationsContainer) scope).addDeclaration(results.enclosing);
+                                    if (results.getEnclosingClassifier() != null && scope instanceof MutableDeclarationsContainer) {
+                                        ((MutableDeclarationsContainer) scope).addDeclaration(results.getEnclosingClassifier());
+                                    }
+                                    if (container != null && results.getEnclosingClassifier() != null && !ForwardClass.isForwardClass(results.getEnclosingClassifier())) {
+                                        container.addDeclaration(results.getEnclosingClassifier());
                                     }
                                     break;
                                 }
@@ -876,13 +884,13 @@ public class AstRenderer {
                                     typeImpl = TypeFactory.createType(cfdi, ptrOperator, arrayDepth, ast, file);
                                 } else if (classifier != null) {
                                     typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, scope);
-                                } else if (results.enclosing != null) {
-                                    typeImpl = TypeFactory.createType(results.enclosing, ptrOperator, arrayDepth, ast, file);
+                                } else if (results.getEnclosingClassifier() != null) {
+                                    typeImpl = TypeFactory.createType(results.getEnclosingClassifier(), ptrOperator, arrayDepth, ast, file);
                                 }
                                 if (typeImpl != null) {
                                     CsmTypedef typedef = createTypedef(ast/*nameToken*/, file, scope, typeImpl, name);
                                     if (typedef != null) {
-                                        if (results.enclosing != null && results.enclosing.getName().length() == 0) {
+                                        if (results.getEnclosingClassifier() != null && results.getEnclosingClassifier().getName().length() == 0) {
                                             ((TypedefImpl) typedef).setTypeUnnamed();
                                         }
                                         results.typedefs.add(typedef);
@@ -1579,6 +1587,8 @@ public class AstRenderer {
                     return new CompoundStatementImpl(token, file, owner);
                 case CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY:
                     return new LazyCompoundStatementImpl(token, file, owner);
+                case CPPTokenTypes.CSM_TRY_CATCH_STATEMENT_LAZY:
+                    return new LazyTryCatchStatementImpl(token, file, owner);
             }
         }
         // prevent null bodies
@@ -1599,7 +1609,11 @@ public class AstRenderer {
             case CPPTokenTypes.CSM_ENUM_DECLARATION:
             case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
             case CPPTokenTypes.CSM_GENERIC_DECLARATION:
-                return new DeclarationStatementImpl(ast, file, scope);
+                if(new AstRenderer((FileImpl) file).isExpressionLikeDeclaration(ast, scope)) {
+                    return new ExpressionStatementImpl(ast, file, scope);
+                } else {
+                    return new DeclarationStatementImpl(ast, file, scope);
+                }
             case CPPTokenTypes.CSM_COMPOUND_STATEMENT:
                 return new CompoundStatementImpl(ast, file, scope);
             case CPPTokenTypes.CSM_IF_STATEMENT:
@@ -1642,6 +1656,49 @@ public class AstRenderer {
         return null;
     }
 
+    /**
+     * Parser don't use a symbol table, so constructs like
+     * a & b;
+     * are parsed as if they were declarations.
+     * At the moment of rendering, we check whether this is a expression or a declaration
+     * @return true if it's a expression, otherwise false (it's a declaration)
+     */
+    private boolean isExpressionLikeDeclaration(AST ast, CsmScope scope) {
+        AST type = ast.getFirstChild();
+        if (type != null && type.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
+            AST name = type.getFirstChild();
+            if (name != null) {
+                if (isVariableOrFunctionName(name, false)) {
+                    if (isVariableOrFunctionName(name, true)) {
+                        return true;
+                    }
+                    if (isLocalVariableOrFunction(name.getText(), scope)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks local statements for function or variable declaration with name
+     */
+    private boolean isLocalVariableOrFunction(CharSequence name, CsmScope scope) {
+        while(CsmKindUtilities.isStatement(scope)) {
+            scope = ((CsmStatement) scope).getScope();
+        }
+        if(CsmKindUtilities.isFunction(scope)) {
+            CsmFunction fun = (CsmFunction) scope;
+            for (CsmParameter param : fun.getParameters()) {
+                if (param.getQualifiedName().toString().equals(name)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public ExpressionBase renderExpression(AST ast, CsmScope scope) {
         return isExpression(ast) ? new ExpressionBase(ast, file, null, scope) : null;
     }

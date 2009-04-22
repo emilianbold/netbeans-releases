@@ -38,28 +38,20 @@
  */
 package org.netbeans.modules.ide.ergonomics.fod;
 
-import java.awt.EventQueue;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Level;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.ide.ergonomics.Utilities;
+import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public class FeatureAction implements ActionListener, Runnable {
-
-    private boolean success;
+public class FeatureAction implements ActionListener {
     private FileObject fo;
     private ProgressHandle handle;
     private JDialog dialog;
@@ -73,32 +65,11 @@ public class FeatureAction implements ActionListener, Runnable {
     }
 
     public void actionPerformed(ActionEvent e) {
-        success = false;
-        if (EventQueue.isDispatchThread()) {
-            handle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(FeatureAction.class, "MSG_Action", fo.getAttribute("displayName"))
-            ); // NOI18N
-            Frame[] arr = JFrame.getFrames();
-            final Frame mainWindow = arr.length > 0 ? arr[0] : null;
-            dialog = new JDialog(
-                mainWindow,
-                NbBundle.getMessage(FodDataObjectFactory.class, "CAP_Action"),
-                true
-            );
-            dialog.getContentPane().add(new FodDataObjectFactoryPanel(handle, null, (String)fo.getAttribute("displayName")));
-            dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-            dialog.pack();
-            dialog.setBounds(Utilities.findCenterBounds(dialog.getPreferredSize()));
-            FoDFileSystem.LOG.log(Level.FINE, "Bounds {0}", dialog.getBounds());
-        }
-        RequestProcessor.Task t = RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
-        if (dialog != null) {
-            dialog.setVisible(true);
-        }
-        t.waitFinished ();
-        
-        if (! success) {
-            return ;
+        FeatureInfo info = FoDFileSystem.getInstance().whichProvides(fo);
+        String n = Actions.cutAmpersand((String)fo.getAttribute("displayName")); // NOI18N
+        boolean success = Utilities.featureDialog(info, n, n);
+        if (!success) {
+            return;
         }
         
         FileObject newFile = FileUtil.getConfigFile(fo.getPath());
@@ -110,22 +81,5 @@ public class FeatureAction implements ActionListener, Runnable {
         if (obj instanceof ActionListener) {
             ((ActionListener)obj).actionPerformed(e);
         }
-    }
-
-    public void run() {
-        assert ! EventQueue.isDispatchThread () : "Cannot run in EQ!";
-        FeatureInfo info = FoDFileSystem.getInstance().whichProvides(fo);
-        if (handle != null) {
-            handle.start();
-        }
-        success = ModulesInstaller.installModules(info);
-        if (dialog != null) {
-            dialog.setVisible(false);
-        }
-        if (handle != null) {
-            handle.finish();
-        }
-        handle = null;
-        dialog = null;
     }
 }

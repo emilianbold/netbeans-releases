@@ -21,10 +21,10 @@ import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -43,7 +43,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }
 
     public static boolean showMe(ExecutionEnvironment host, String pathToValidate) {
-        List<ExecutionEnvironment> envs = RemoteServerList.getInstance().getEnvironments();
+        List<ExecutionEnvironment> envs = ServerList.getEnvironments();
         return showMe(host, pathToValidate, envs);
     }
 
@@ -386,7 +386,7 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
             if (local != null) {
                 local = local.trim();
                 if (local.length() > 0) {
-                    if (!HostInfoProvider.getDefault().fileExists(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), local)) {
+                    if (!HostInfoProvider.fileExists(ExecutionEnvironmentFactory.getLocal(), local)) {
                         sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_BadLocalPath", local));
                     }
                     if (pathToValidate != null && !pathIsValidated) {
@@ -400,7 +400,7 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
             if (remote != null) {
                 remote = remote.trim();
                 if (remote.length() > 0) {
-                    if (!HostInfoProvider.getDefault().fileExists(currentHost, remote)) {
+                    if (!HostInfoProvider.fileExists(currentHost, remote)) {
                         sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_BadRemotePath", remote));
                     }
                 }

@@ -917,6 +917,14 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 return false;
             }
 
+            // any view among selected tables?
+            for (Table table : getComponent().getTableClosure().getSelectedTables()) {
+                if (!table.isTable()) {
+                    setWarningMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_ViewSelected"));
+                    return true;
+                }
+            }
+
             setErrorMessage(" "); // NOI18N
             return true;
         }
@@ -942,7 +950,11 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         }
 
         private void setErrorMessage(String errorMessage) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
+        }
+
+        private void setWarningMessage(String warningMessage) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warningMessage);
         }
     }
 }

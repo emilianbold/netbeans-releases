@@ -15,7 +15,7 @@ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
 specific language governing permissions and limitations under the
 License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates impthis
 particular file as subject to the "Classpath" exception as provided
 by Sun in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif"/>
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/emptyProject.html"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/ear-emptyProject.html"/>
                 </file>
                 <file name="importBlueprintEar.xml">
                    <attr name="position" intvalue="200"/>
@@ -63,7 +63,7 @@ made subject to such option by the copyright holder.
                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.ImportBlueprintEarWizardIterator"/>
                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle"/> 
                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif"/>
-                   <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/importProject.html"/> 
+                   <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/earproject/ui/resources/ear-importProject.html"/>
                 </file>
             </folder>
         </folder>

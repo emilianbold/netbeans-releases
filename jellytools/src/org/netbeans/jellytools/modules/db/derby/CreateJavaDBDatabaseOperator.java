@@ -164,13 +164,13 @@ public class CreateJavaDBDatabaseOperator extends JDialogOperator {
         return _txtDatabaseLocation;
     }
 
-    /** Tries to find "Settings..." JButton in this dialog.
+    /** Tries to find "Properties..." JButton in this dialog.
      * @return JButtonOperator
      */
     public JButtonOperator btSettings() {
         if (_btSettings==null) {
             _btSettings = new JButtonOperator(this,
-                Bundle.getStringTrimmed("org.netbeans.modules.derby.ui.Bundle", "LBL_Settings"));
+                Bundle.getStringTrimmed("org.netbeans.modules.derby.ui.Bundle", "LBL_Properties"));
         }
         return _btSettings;
     }

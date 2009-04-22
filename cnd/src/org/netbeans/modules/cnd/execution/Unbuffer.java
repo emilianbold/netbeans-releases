@@ -126,7 +126,7 @@ public class Unbuffer {
     }
 
     private static String getRemotePath(ExecutionEnvironment execEnv, boolean is64bits) {
-        String path = HostInfoProvider.getDefault().getLibDir(execEnv);
+        String path = HostInfoProvider.getLibDir(execEnv);
         if (path == null) {
             return null;
         }
@@ -134,7 +134,7 @@ public class Unbuffer {
         if (unbufferName != null) {
             path += unbufferName;
             // check file existence
-            if (HostInfoProvider.getDefault().fileExists(execEnv, path)) {
+            if (HostInfoProvider.fileExists(execEnv, path)) {
                 return path;
             } else {
                 log.warning("unbuffer: " + path + " does not exist");

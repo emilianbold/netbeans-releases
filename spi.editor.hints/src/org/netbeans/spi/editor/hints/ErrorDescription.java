@@ -45,6 +45,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 
 /**
+ * Represents one error with a description text, span in the document, list
+ * of fixes and a severity. Please see the static methods in the class
+ * {@link ErrorDescriptionFactory} if you want to create instances of this class.
  *
  * @author Jan Lahoda
  */
@@ -55,7 +58,11 @@ public final class ErrorDescription {
     private LazyFixList   fixes;
     private PositionBounds span;
     private FileObject     file;
-    
+
+    /**
+     * The constructor is intentionally not public. Use 
+     * {@link ErrorDescriptionFactory} when you need an instance of this class.
+     */
     ErrorDescription(FileObject file, String description, Severity severity, LazyFixList fixes, PositionBounds span) {
         this.description = description;
         this.severity    = severity;
@@ -63,27 +70,45 @@ public final class ErrorDescription {
         this.span        = span;
         this.file        = file;
     }
-    
+
+    /**
+     * @return description of the error that is displayed to the user.
+     */
     public String getDescription() {
         return description;
     }
-    
+
+    /**
+     * The severity determines how the hint will be rendered.
+     * @return {@link Severity} of the error
+     */
     public Severity getSeverity() {
         return severity;
     }
-    
+
+    /**
+     * The list of fixes that will be associated with the error.
+     * @return {@link LazyFixList} containing the fixes
+     */
     public LazyFixList getFixes() {
         return fixes;
     }
-    
+
+    /**
+     * @return where the error will be marked in the document.
+     */
     public PositionBounds getRange() {
         return span;
     }
-    
+
+    /**
+     * @return associated file or <code>null</code> if there is none
+     */
     public FileObject getFile() {
         return file;
     }
     
+    @Override
     public String toString() {
         try {
             return span.getBegin().getLine() + ":" + span.getBegin().getColumn() + "-" + span.getEnd().getLine() + ":" + span.getEnd().getColumn() + ":" + severity.getDisplayName() + ":" + description;
@@ -91,5 +116,4 @@ public final class ErrorDescription {
             throw (IllegalStateException) new IllegalStateException().initCause(ex);
         }
     }
-    
 }

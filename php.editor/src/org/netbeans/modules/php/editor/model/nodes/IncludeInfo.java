@@ -44,6 +44,7 @@ import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  * @author Radek Matous
@@ -74,7 +75,8 @@ public class IncludeInfo extends ASTNodeInfo<Include> {
         return new OffsetRange(incl.getStartOffset(), incl.getEndOffset());
     }
 
-    public FileObject getIncludeFile(FileObject currentFile) {
-        return VariousUtils.resolveInclude(currentFile, getOriginalNode());
+    public FileObject getIncludeFile(FileObject sourceFile) {
+        Parameters.notNull("sourceFile", sourceFile);
+        return VariousUtils.resolveInclude(sourceFile, getOriginalNode());
     }
 }

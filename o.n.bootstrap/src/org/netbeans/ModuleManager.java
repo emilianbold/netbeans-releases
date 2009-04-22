@@ -830,7 +830,8 @@ public final class ModuleManager {
                         }
                         if (! Util.checkPackageDependency(dep, m.getClassLoader())) {
                             failedPackageDep = dep;
-                            throw new InvalidException(m, "Dependency failed on " + dep); // NOI18N
+                            String polite = (String)m.getLocalizedAttribute("OpenIDE-Module-Package-Dependency-Message"); // NOI18N
+                            throw new InvalidException(m, "Dependency failed on " + dep, polite); // NOI18N
                         }
                         Util.err.fine("Successful check for: " + dep);
                     }

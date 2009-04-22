@@ -47,31 +47,33 @@ import org.netbeans.modules.editor.hints.HintsControllerImpl;
 import org.netbeans.modules.editor.hints.StaticFixList;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.text.Line;
 
 /**
- *
+ * Factory class with static methods that allow creation of ErrorDescription.
  * @author Jan Lahoda
  */
 public class ErrorDescriptionFactory {
 
-    /** Creates a new instance of ErrorDescriptionFactory */
+    /** No instances of this class are needed - all the API methods are static. */
     private ErrorDescriptionFactory() {
     }
 
-    /**Should be called inside document read lock to assure consistency
+    /**
+     * Should be called inside document read lock to assure consistency
      */
     public static ErrorDescription createErrorDescription(Severity severity, String description, Document doc, int lineNumber) {
         return createErrorDescription(severity, description, new StaticFixList(), doc, lineNumber);
     }
     
-    /**Should be called inside document read lock to assure consistency
+    /**
+     * Should be called inside document read lock to assure consistency
      */
     public static ErrorDescription createErrorDescription(Severity severity, String description, List<Fix> fixes, Document doc, int lineNumber) {
         return createErrorDescription(severity, description, new StaticFixList(fixes), doc, lineNumber);
     }
     
-    /**Should be called inside document read lock to assure consistency
+    /**
+     * Should be called inside document read lock to assure consistency
      */
     public static ErrorDescription createErrorDescription(Severity severity, String description, LazyFixList fixes, Document doc, int lineNumber) {
         DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
@@ -80,19 +82,22 @@ public class ErrorDescriptionFactory {
         return new ErrorDescription(file, description, severity, fixes, HintsControllerImpl.fullLine(doc, lineNumber));
     }
     
-    /**Acquires read lock on the provided document to assure consistency
+    /**
+     * Acquires read lock on the provided document to assure consistency
      */
     public static ErrorDescription createErrorDescription(Severity severity, String description, Document doc, Position start, Position end) {
         return createErrorDescription(severity, description, new StaticFixList(), doc, start, end);
     }
 
-    /**Acquires read lock on the provided document to assure consistency
+    /**
+     * Acquires read lock on the provided document to assure consistency
      */
     public static ErrorDescription createErrorDescription(Severity severity, String description, List<Fix> fixes, Document doc, Position start, Position end) {
         return createErrorDescription(severity, description, new StaticFixList(fixes), doc, start, end);
     }
     
-    /**Acquires read lock on the provided document to assure consistency
+    /**
+     * Acquires read lock on the provided document to assure consistency
      */
     public static ErrorDescription createErrorDescription(Severity severity, String description, LazyFixList fixes, Document doc, Position start, Position end) {
         DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
@@ -101,28 +106,41 @@ public class ErrorDescriptionFactory {
         return new ErrorDescription(file, description, severity, fixes, HintsControllerImpl.linePart(doc, start, end));
     }
 
-    /**Should be called inside document read lock to assure consistency
+    /**
+     * Should be called inside document read lock to assure consistency
      */
     public static ErrorDescription createErrorDescription(Severity severity, String description, FileObject file, int start, int end) {
         return createErrorDescription(severity, description, new StaticFixList(), file, start, end);
     }
 
-    /**Should be called inside document read lock to assure consistency
+    /**
+     * Should be called inside document read lock to assure consistency
      */
     public static ErrorDescription createErrorDescription(Severity severity, String description, List<Fix> fixes, FileObject file, int start, int end) {
         return createErrorDescription(severity, description, new StaticFixList(fixes), file, start, end);
     }
     
-    /**Should be called inside document read lock to assure consistency
+    /**
+     * Should be called inside document read lock to assure consistency
      */
     public static ErrorDescription createErrorDescription(Severity severity, String description, LazyFixList fixes, FileObject file, int start, int end) {
         return new ErrorDescription(file, description, severity, fixes, HintsControllerImpl.linePart(file, start, end));
     }
 
+    /**
+     * Converts "normal" list of {@link Fix}es into {@link LazyFixList}
+     * @param fixes
+     * @return lazy
+     */
     public static LazyFixList lazyListForFixes(List<Fix> fixes) {
         return new StaticFixList(fixes);
     }
-    
+
+    /**
+     * Concatenates several {@link LazyFixList}s into one.
+     * @param delegates the lists to be delegated to
+     * @return one list to contain them all
+     */
     public static LazyFixList lazyListForDelegates(List<LazyFixList> delegates) {
         return new HintsControllerImpl.CompoundLazyFixList(delegates);
     }

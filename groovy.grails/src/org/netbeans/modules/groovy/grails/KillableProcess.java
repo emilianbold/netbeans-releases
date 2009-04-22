@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -73,6 +74,8 @@ public class KillableProcess extends Process {
 
     private static final long TIMEOUT = 5000;
 
+    private static final long CLEANUP_TIMEOUT = 3000;
+
     private final Process nativeProcess;
 
     private final String remark;
@@ -100,7 +103,8 @@ public class KillableProcess extends Process {
                 .addArgument("where").addArgument("name=\"cmd.exe\"") // NOI18N
                 .addArgument("get").addArgument("processid,commandline"); // NOI18N
 
-        PidLineProcessor pidProcessor = new PidLineProcessor(command, remark);
+        CountDownLatch latch = new CountDownLatch(1);
+        PidLineProcessor pidProcessor = new PidLineProcessor(latch, command, remark);
 
         LOGGER.log(Level.FINEST, "About to run wmic.exe");
 
@@ -108,6 +112,7 @@ public class KillableProcess extends Process {
         try {
             Integer retValue = task.get(TIMEOUT, TimeUnit.MILLISECONDS);
             if (retValue != null && retValue.intValue() == 0) {
+                latch.await(CLEANUP_TIMEOUT, TimeUnit.MILLISECONDS);
                 pid = pidProcessor.getPid();
             }
         } catch (InterruptedException ex) {
@@ -162,13 +167,17 @@ public class KillableProcess extends Process {
     // package for tests
     static class PidLineProcessor implements LineProcessor {
 
+        private final CountDownLatch latch;
+
         private final Pattern pattern;
 
         private AtomicInteger pid = new AtomicInteger(-1);
 
-        public PidLineProcessor(String command, String remark) {
-            pattern = Pattern.compile("^.*grails.bat\"?(\\s+-D\\S*=(\"(\\s|\\S)*\")|(\\S*))*\\s+" // NOI18N
-                    + Pattern.quote(command) + "\\s+REM NB:" + Pattern.quote(remark)
+        public PidLineProcessor(CountDownLatch latch, String command, String remark) {
+            this.latch = latch;
+            // grails.bat["] parameters command mark
+            pattern = Pattern.compile("^.*grails.bat\"?(\\s+.*)*\\s+" // NOI18N
+                    + Pattern.quote(command) + "\\s+REM NB:" + Pattern.quote(remark) // NOI18n
                     + ".*\\s+(\\d+)(\\s+.*)?$"); // NOI18N
         }
 
@@ -178,7 +187,8 @@ public class KillableProcess extends Process {
             Matcher matcher = pattern.matcher(line);
             try {
                 if (matcher.matches()) {
-                    pid.set(Integer.parseInt(matcher.group(5)));
+                    pid.set(Integer.parseInt(matcher.group(2)));
+                    latch.countDown();
                 }
             } catch (NumberFormatException ex) {
                 LOGGER.log(Level.INFO, null, ex);
@@ -186,7 +196,8 @@ public class KillableProcess extends Process {
         }
 
         public void close() {
-            // noop
+            LOGGER.log(Level.FINEST, "WMIC processor closed");
+            latch.countDown();
         }
 
         public void reset() {
@@ -247,6 +258,9 @@ public class KillableProcess extends Process {
                         }
                     }
                 } finally {
+                    if (task != null) {
+                        task.cancel();
+                    }
                     if (interrupted) {
                         Thread.currentThread().interrupt();
                     }

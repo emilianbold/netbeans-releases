@@ -484,7 +484,7 @@ public abstract class Properties {
                         }
                 );
             }
-            task.schedule(4000);
+            task.schedule(1000);
         }
 
         private synchronized void saveIn () {

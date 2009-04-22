@@ -199,7 +199,10 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         setProperty(antProps, "platform.java", javaTool);
         setProperty(antProps, "work.dir", workDir);
         setProperty(antProps, "run.jvmargs", toOneLine(runJVMArgs));
-        setProperty(antProps, "application.args", toOneLine(args));
+        if (toRun == null) {
+            // #152881 - pass arguments only if not run single
+            setProperty(antProps, "application.args", toOneLine(args));
+        }
         {
             FileObject source = toRun;
             if (source == null) {

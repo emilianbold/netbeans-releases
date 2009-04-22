@@ -70,8 +70,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private String makefileName = null;
     
     private static String DEF_WORKING_DIR = ""; // NOI18N
-    private static String DEF_BUILD_COMMAND = "make"; // NOI18N
-    private static String DEF_CLEAN_COMMAND = "make clean"; // NOI18N
+    private static String DEF_BUILD_COMMAND = "${MAKE}"; // NOI18N
+    private static String DEF_CLEAN_COMMAND = "${MAKE} clean"; // NOI18N
     private static String DEF_BUILD_COMMAND_FMT = "{0} -f {1}"; // NOI18N
     private static String DEF_CLEAN_COMMAND_FMT = "{0} -f {1} clean"; // NOI18N
     

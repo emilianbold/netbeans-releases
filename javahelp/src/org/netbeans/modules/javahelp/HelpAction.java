@@ -122,7 +122,7 @@ public class HelpAction extends SystemAction
         Component focused = (w != null) ? SwingUtilities.findFocusOwner(w) : null;
         HelpCtx help = (focused == null) ? HelpCtx.DEFAULT_HELP : HelpCtx.findHelp(focused);
 
-        Installer.log.fine(help.toString() + " from " + focused);
+        Installer.log.fine("HelpCtx " + help.toString() + " from " + focused);
         return help;
     }
     

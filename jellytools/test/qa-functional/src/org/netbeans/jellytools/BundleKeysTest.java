@@ -40,61 +40,18 @@
  */
 package org.netbeans.jellytools;
 
-import java.util.Enumeration;
-import java.util.MissingResourceException;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.StringTokenizer;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import junit.framework.Test;
+
 
 /**
  * Test of all resurce bundle keys used in Jelly2
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class BundleKeysTest extends NbTestCase {
+public class BundleKeysTest extends TestBundleKeys {
 
-    String keys;
+    
+    public static String propertiesName = "org/netbeans/jellytools/BundleKeysTest.properties";
 
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    private static Properties props;
-    /** Method used for explicit testsuite definition
-     * @return  created suite
-     */
-    public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(BundleKeysTest.class);
-        try {
-            props=new Properties();
-            props.load(BundleKeysTest.class.getClassLoader().getResourceAsStream("org/netbeans/jellytools/BundleKeysTest.properties"));
-            Set bundles=props.keySet();
-            for(Object bundle : bundles) {
-                conf = conf.addTest((String) bundle);
-            }
-        } catch (Exception e) {}
-        return NbModuleSuite.create(conf.clusters(".*").enableModules(".*"));
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        try {
-            props=new Properties();
-            props.load(BundleKeysTest.class.getClassLoader().getResourceAsStream("org/netbeans/jellytools/BundleKeysTest.properties"));
-            Enumeration bundles=props.keys();
-            String bundle;
-            while (bundles.hasMoreElements()) {
-                bundle=(String)bundles.nextElement();
-                suite.addTest(new BundleKeysTest(bundle, props.getProperty(bundle)));
-            }
-        } catch (Exception e) {}
-        return suite;
-         */
-    }
-    
     public BundleKeysTest(String bundleName) {
         this(bundleName, null);
     }
@@ -105,29 +62,28 @@ public class BundleKeysTest extends NbTestCase {
         super(bundleName);
         this.keys=keys;
     }
-    
-    protected void runTest() throws Throwable {
-        if(keys == null) {
-            if(props == null) {
-                props=new Properties();
-                props.load(BundleKeysTest.class.getClassLoader().getResourceAsStream("org/netbeans/jellytools/BundleKeysTest.properties"));
-            }
-            keys = props.getProperty(getName());
-        }
-        ResourceBundle bundle=ResourceBundle.getBundle(getName());
-        StringTokenizer tok=new StringTokenizer(keys, ",");
-        String key="";
-        String missing="";
-        int mis=0;
-        while (tok.hasMoreTokens()) try {
-            key=tok.nextToken();
-            bundle.getObject(key);
-        } catch (MissingResourceException mre) {
-            missing+=key+" ";
-            mis++;
-        }
-        if (mis>0)
-            throw new AssertionFailedError("Missing "+String.valueOf(mis)+" key(s): "+missing);
+
+    protected ClassLoader getDescendantClassLoader()
+    {
+        return BundleKeysTest.class.getClassLoader();
     }
-   
+
+    protected String getPropertiesName()
+    {
+        return propertiesName;
+    }
+
+    /** Use for internal test execution inside IDE
+     * @param args command line arguments
+     */
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+    
+    public static Test suite() {
+        return prepareSuite(BundleKeysTest.class, propertiesName);
+    }
+    
+    
+      
 }

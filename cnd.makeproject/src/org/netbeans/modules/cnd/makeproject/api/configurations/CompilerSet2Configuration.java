@@ -48,12 +48,11 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -77,7 +76,8 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     // Constructors
     public CompilerSet2Configuration(DevelopmentHostConfiguration dhconf) {
         this.dhconf = dhconf;
-        String csName = getCompilerSetManager().getDefaultCompilerSet().getName();
+        CompilerSet cs = getCompilerSetManager().getDefaultCompilerSet();
+        String csName = (cs == null) ? null : cs.getName();
         if (csName == null || csName.length() == 0) {
             if (getCompilerSetManager().getCompilerSetNames().size() > 0) {
                 csName = getCompilerSetManager().getCompilerSet(0).getName();
@@ -292,7 +292,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     public void propertyChange(final PropertyChangeEvent evt) {
         CompilerSet ocs = null;
         String hkey = ((DevelopmentHostConfiguration) evt.getNewValue()).getName();
-        final ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(hkey);
+        final ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(hkey);
         final String oldName = oldNameMap.get(hkey);
         if (oldName != null) {
             ocs = CompilerSetManager.getDefault(env).getCompilerSet(oldName);
@@ -312,15 +312,12 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             final CompilerSet focs = ocs;
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    ServerList server = Lookup.getDefault().lookup(ServerList.class);
-                    if (server != null) {
-                        ServerRecord record = server.get(env);
-                        if (record != null) {
-                            // Not sure why we do this in an RP, but don't want to remove it this late in the release
-                            setValue(focs.getName());
-                            if (compilerSetNodeProp != null) {
-                                compilerSetNodeProp.repaint();
-                            }
+                    ServerRecord record = ServerList.get(env);
+                    if (record != null) {
+                        // Not sure why we do this in an RP, but don't want to remove it this late in the release
+                        setValue(focs.getName());
+                        if (compilerSetNodeProp != null) {
+                            compilerSetNodeProp.repaint();
                         }
                     }
                 }

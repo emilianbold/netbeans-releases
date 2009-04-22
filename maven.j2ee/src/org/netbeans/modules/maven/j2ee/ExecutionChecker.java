@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
 import org.netbeans.api.project.Project;
@@ -215,6 +216,13 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                                 //provider instance not relevant from here
                                 provider = null;
                             }
+
+                            // USG logging
+                            LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_MAVEN_SERVER");  //NOI18N
+                            record.setLoggerName(POHImpl.USG_LOGGER_NAME);
+                            record.setParameters(new Object[] { POHImpl.obtainServerName(project) });
+                            POHImpl.USG_LOGGER.log(record);
+
                             return true;
                         }
                     }

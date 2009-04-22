@@ -122,8 +122,66 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
         String cancel = NbBundle.getMessage(AddPropertyCodeGenerator.class, "LBL_ButtonCancel");
         DialogDescriptor dd = new DialogDescriptor(addPropertyPanel,caption, true, new Object[] {ok,cancel}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
         if (DialogDisplayer.getDefault().notify(dd) == ok) {
-            insertCode(file, pane, addPropertyPanel.getAddPropertyConfig());
+            insertCode2(file, pane, addPropertyPanel.getAddPropertyConfig());
         }
+    }
+
+    /**
+     * work around for {@link #insertCode}.
+     * @see <a href=http://www.netbeans.org/issues/show_bug.cgi?id=162853>162853</a>
+     * @see <a href=http://www.netbeans.org/issues/show_bug.cgi?id=162630>162630</a>
+     */
+    static void insertCode2(final FileObject file, final JTextComponent pane, final AddPropertyConfig config) {
+            final Document doc = pane.getDocument();
+            final Reformat r = Reformat.get(pane.getDocument());
+            final String code = new AddPropertyGenerator().generate(config);
+            final Position[] bounds = new Position[2];
+
+            r.lock();
+            try {
+                NbDocument.runAtomicAsUser((StyledDocument) doc, new Runnable() {
+                    public void run() {
+                        try {
+                            int startOffset = pane.getCaretPosition();
+                            doc.insertString(startOffset, code, null);
+                            Position start = doc.createPosition(startOffset);
+                            Position end = doc.createPosition(startOffset + code.length());
+                            r.reformat(Utilities.getRowStart(pane, start.getOffset()), Utilities.getRowEnd(pane, end.getOffset()));
+                            bounds[0] = start;
+                            bounds[1] = end;
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                r.unlock();
+            }
+
+            if (bounds[0] != null) {
+                // code insertion to document passed
+                try {
+                    JavaSource.forFileObject(file).runModificationTask(new Task<WorkingCopy>() {
+                        public void run(WorkingCopy parameter) throws Exception {
+                            parameter.toPhase(Phase.RESOLVED);
+
+                            Position start = bounds[0];
+                            Position end = bounds[1];
+                            
+                            new ImportFQNsHack(parameter, start.getOffset(), end.getOffset()).scan(parameter.getCompilationUnit(), null);
+
+                            CompilationUnitTree cut = parameter.getCompilationUnit();
+
+                            parameter.rewrite(cut, parameter.getTreeMaker().CompilationUnit(cut.getPackageName(), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
+                        }
+                    }).commit();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
     }
 
     static void insertCode(final FileObject file, final JTextComponent pane, final AddPropertyConfig config) {

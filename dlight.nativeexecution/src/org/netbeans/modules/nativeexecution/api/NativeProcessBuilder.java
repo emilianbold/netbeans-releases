@@ -46,10 +46,12 @@ import java.util.concurrent.Callable;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.modules.nativeexecution.AbstractNativeProcess;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.support.Logger;
 
 /**
  * Utility class for the {@link NativeProcess external native process} creation.
@@ -69,9 +71,10 @@ import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
  */
 public final class NativeProcessBuilder implements Callable<Process> {
 
+    private final static java.util.logging.Logger log = Logger.getInstance();
     private final NativeProcessInfo info;
     private ExternalTerminal externalTerminal = null;
-    private NativeProcess process = null;
+    private AbstractNativeProcess process = null;
 
     /**
      * Creates a new instance of the builder that will create a {@link NativeProcess}
@@ -92,7 +95,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @param executable executable to run.
      */
     public NativeProcessBuilder(final String executable) {
-        this(new ExecutionEnvironment(), executable);
+        this(ExecutionEnvironmentFactory.getLocal(), executable);
     }
 
     private NativeProcessBuilder(NativeProcessBuilder b) {
@@ -131,9 +134,9 @@ public final class NativeProcessBuilder implements Callable<Process> {
             if (externalTerminal != null) {
                 boolean available = externalTerminal.isAvailable(info.getExecutionEnvironment());
                 if (available) {
-                    process = new TerminalLocalNativeProcess(externalTerminal, info);
+                    process = new TerminalLocalNativeProcess(info, externalTerminal);
                 } else {
-                    System.err.println("Unable to find external terminal"); // NOI18N
+                    log.info("Unable to find external terminal. Will start in OutputWindow"); // NOI18N
                     process = new LocalNativeProcess(info);
                 }
             } else {
@@ -141,7 +144,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
             }
         }
 
-        return process;
+        return process.createAndStart();
     }
 
     /**

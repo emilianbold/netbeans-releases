@@ -41,14 +41,14 @@ package org.netbeans.modules.ruby.hints.introduce;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.jruby.nb.ast.BignumNode;
-import org.jruby.nb.ast.FixnumNode;
-import org.jruby.nb.ast.FloatNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.StrNode;
-import org.jruby.nb.ast.SymbolNode;
-import org.jruby.nb.ast.XStrNode;
+import org.jrubyparser.ast.BignumNode;
+import org.jrubyparser.ast.FixnumNode;
+import org.jrubyparser.ast.FloatNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.StrNode;
+import org.jrubyparser.ast.SymbolNode;
+import org.jrubyparser.ast.XStrNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -89,7 +89,7 @@ public class DuplicateDetector {
             return Collections.emptyList();
         }
 
-        if (startNode.nodeId == NodeType.ARRAYNODE) {
+        if (startNode.getNodeType() == NodeType.ARRAYNODE) {
             if (startNode.childNodes().size() == 1) {
                 startNode = startNode.childNodes().get(0);
             } else {
@@ -103,7 +103,7 @@ public class DuplicateDetector {
     }
 
     private void visit(Node node, Node target) {
-        if (node.nodeId == target.nodeId) {
+        if (node.getNodeType() == target.getNodeType()) {
             //OffsetRange range = getEquivalentTree(child);
             //if (range != OffsetRange.NONE) {
             //    duplicates.add(range);
@@ -113,7 +113,7 @@ public class DuplicateDetector {
             //    duplicates.add(AstUtilities.getRange(node));
             //} else {
             boolean equal = false;
-            switch (node.nodeId) {
+            switch (node.getNodeType()) {
             // TODO - compare HashNodes
             case FLOATNODE: {
                 equal = (((FloatNode) node).getValue() == ((FloatNode) target).getValue());

@@ -50,11 +50,11 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
-import org.jruby.nb.ast.AliasNode;
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.IScopingNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.AliasNode;
+import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.IScopingNode;
+import org.jrubyparser.ast.Node;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -270,11 +270,8 @@ public class RetoucheUtils {
     public static boolean isFileInOpenProject(FileObject file) {
         assert file != null;
         Project p = FileOwnerQuery.getOwner(file);
-        Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i<opened.length; i++) {
-            if (p.equals(opened[i]) || opened[i].equals(p)) {
-                return true;
-            }
+        if (OpenProjects.getDefault().isProjectOpen(p)) {
+            return true;
         }
         return false;
     }

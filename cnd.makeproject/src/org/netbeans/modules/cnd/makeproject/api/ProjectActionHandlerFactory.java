@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+
 /**
  * @author Alexey Vladykin
  */
@@ -51,7 +53,7 @@ public interface ProjectActionHandlerFactory {
      * @return <code>true</code> if created handler will be able to handle
      *          given action <code>type</code>, <code>false</code> otherwise
      */
-    boolean canHandle(ProjectActionEvent.Type type);
+    boolean canHandle(ProjectActionEvent.Type type, Configuration configuration);
 
     /**
      * Creates handler instances. New handler is created for each action.

@@ -45,13 +45,11 @@
 
 package org.netbeans.modules.debugger.jpda.ui.options;
 
-import java.awt.Component;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.JCheckBox;
-import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CellEditorListener;
@@ -59,10 +57,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
-import javax.swing.text.TableView.TableCell;
 import org.netbeans.api.debugger.Properties;
 
 /**
@@ -80,16 +76,7 @@ class CategoryPanelStepFilters extends StorablePanel {
         filterClassesTable.getColumnModel().getColumn(0).setMaxWidth(new JCheckBox().getPreferredSize().width);
         filterClassesTable.getColumnModel().getColumn(0).setResizable(false);
         filterClassesTable.getColumnModel().getColumn(1).setResizable(true);
-        TableCellRenderer columnRenderer = filterClassesTable.getColumnModel().getColumn(0).getCellRenderer();
-        if (columnRenderer == null) columnRenderer = filterClassesTable.getDefaultRenderer(filterClassesTable.getColumnClass(0));
-        filterClassesTable.getColumnModel().getColumn(0).setCellRenderer(
-                new DisablingCellRenderer(columnRenderer,
-                filterClassesTable));
-        columnRenderer = filterClassesTable.getColumnModel().getColumn(1).getCellRenderer();
-        if (columnRenderer == null) columnRenderer = filterClassesTable.getDefaultRenderer(filterClassesTable.getColumnClass(1));
-        filterClassesTable.getColumnModel().getColumn(1).setCellRenderer(
-                new DisablingCellRenderer(columnRenderer,
-                filterClassesTable));
+        DisablingCellRenderer.apply(filterClassesTable);
         useStepFiltersCheckBoxActionPerformed(null);
     }
 
@@ -360,6 +347,7 @@ class CategoryPanelStepFilters extends StorablePanel {
             filterClassesModel.addRow(new Object[] { enabledFilters.contains(filter), filter });
         }
         stepThroughFiltersCheckBox.setSelected(p.getBoolean("StepThroughFilters", false));
+        useStepFiltersCheckBoxActionPerformed(null);
     }
 
     @Override
@@ -412,22 +400,4 @@ class CategoryPanelStepFilters extends StorablePanel {
     private javax.swing.JCheckBox useStepFiltersCheckBox;
     // End of variables declaration//GEN-END:variables
 
-    /** We need to override the cell renderers in order to make setEnabled() to work. */
-    private static final class DisablingCellRenderer implements TableCellRenderer {
-        
-        private TableCellRenderer r;
-        private JTable t;
-
-        public DisablingCellRenderer(TableCellRenderer r, JTable t) {
-            this.r = r;
-            this.t = t;
-        }
-
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            Component c = r.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            c.setEnabled(t.isEnabled());
-            return c;
-        }
-        
-    }
 }

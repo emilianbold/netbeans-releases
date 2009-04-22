@@ -39,15 +39,13 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.CharArrayWriter;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.junit.After;
@@ -60,6 +58,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -67,46 +66,18 @@ import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
-import static org.junit.Assert.*;
 
 /**
  *
  * @author ak119685
  */
-public class NativeTaskTest {
+public class NativeTaskTest extends NativeExecutionTest {
 
     public NativeTaskTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
-//        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/nbbuild/netbeans/dlight1:" + dirs);
-//        System.setProperty("netbeans.dirs", "E:\\work\\netbeans-src\\main\\nbbuild\\netbeans\\dlight1" + dirs);
-//        Handler handler = new LogHandler();
-//        Logger l = Logger.getLogger(ExecutionService.class.getName());
-//        l.setLevel(Level.ALL);
-//        l.addHandler(handler);
-
-//        l = Logger.getLogger(ProcessInputStream.class.getName());
-//        l.setLevel(Level.ALL);
-//        l.addHandler(handler);
-    }
-
-    private static class LogHandler extends Handler {
-
-        @Override
-        public void publish(LogRecord record) {
-            System.err.println("!!!!!!!! > " + record.getMessage() + " " + Arrays.toString(record.getParameters())); // NOI18N
-        }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() throws SecurityException {
-        }
     }
 
     @AfterClass
@@ -128,8 +99,9 @@ public class NativeTaskTest {
 
     @Test
     public void simpleTest() {
-        ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal"); // NOI18N
-        NativeProcessBuilder npb = new NativeProcessBuilder(new ExecutionEnvironment(), "ls").useExternalTerminal(term); // NOI18N
+        ExternalTerminal term = ExternalTerminalProvider.getTerminal(ExecutionEnvironmentFactory.getLocal(), "gnome-terminal"); // NOI18N
+        NativeProcessBuilder npb = new NativeProcessBuilder(
+                ExecutionEnvironmentFactory.getLocal(), "ls").useExternalTerminal(term); // NOI18N
         StringWriter result = new StringWriter();
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(new InputRedirectorFactory(result));
         ExecutionService execService = ExecutionService.newService(
@@ -187,7 +159,7 @@ public class NativeTaskTest {
 
         private String demangle() {
             String nameToDemangle;
-            final ExecutionEnvironment env = new ExecutionEnvironment();
+            final ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
             final String dem_util_path = "/usr/sfw/bin/gc++filt"; // NOI18N
 
             if (str.indexOf("`") != -1 && str.indexOf("+") != -1) { // NOI18N
@@ -249,7 +221,7 @@ public class NativeTaskTest {
         System.out.println("run"); // NOI18N
 
         final ExecutionEnvironment ee =
-                new ExecutionEnvironment("ak119685", "localhost", 22); // NOI18N
+                ExecutionEnvironmentFactory.createNew("ak119685", "localhost", 22); // NOI18N
 
 //        MacroExpander macroExpander = MacroExpanderFactory.getExpander(ee);
 //        try {
@@ -275,12 +247,15 @@ public class NativeTaskTest {
                     System.out.println("Unable to start process!"); // NOI18N
                     return;
                 }
-
-                System.out.println("Process " + process.toString() + " [" + process.getPID() + "] -> " + newState); // NOI18N
+                try {
+                    System.out.println("Process " + process.toString() + " [" + process.getPID() + "] -> " + newState); // NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         };
 
-        ExternalTerminal term = ExternalTerminalProvider.getTerminal("gnome-terminal").setTitle("My favorite title"); // NOI18N
+        ExternalTerminal term = ExternalTerminalProvider.getTerminal(ExecutionEnvironmentFactory.getLocal(), "gnome-terminal").setTitle("My favorite title"); // NOI18N
         NativeProcessBuilder npb = new NativeProcessBuilder(ee, cmd).setArguments("1", "2").addEnvironmentVariable("MY_VAR", "/temp/xx/$platform").setWorkingDirectory("/tmp").addNativeProcessListener(l).useExternalTerminal(term); // NOI18N
         ExecutionDescriptor descr = new ExecutionDescriptor().outLineBased(true).outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
 

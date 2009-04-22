@@ -304,7 +304,7 @@ public class SvnUtils {
             for (int j = 0; j < sourceGroups.length; j++) {
                 SourceGroup sourceGroup = sourceGroups[j];
                 File f = FileUtil.toFile(sourceGroup.getRootFolder());
-                if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
+                if (f != null && (cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
             }
         }
         return false;
@@ -324,7 +324,7 @@ public class SvnUtils {
             SourceGroup sourceGroup = sourceGroups[j];
             FileObject srcRootFo = sourceGroup.getRootFolder();
             File rootFile = FileUtil.toFile(srcRootFo);
-            if ((cache.getStatus(rootFile).getStatus() & FileInformation.STATUS_MANAGED) == 0) continue;
+            if (rootFile == null || (cache.getStatus(rootFile).getStatus() & FileInformation.STATUS_MANAGED) == 0) continue;
             rootFiles.add(rootFile);
             boolean containsSubprojects = false;
             FileObject [] rootChildren = srcRootFo.getChildren();
@@ -333,6 +333,9 @@ public class SvnUtils {
                 FileObject rootChildFo = rootChildren[i];
                 if (isAdministrative(rootChildFo.getNameExt())) continue;
                 File child = FileUtil.toFile(rootChildFo);
+                if (child == null) {
+                    continue;
+                }
                 if (sourceGroup.contains(rootChildFo)) {
                     // TODO: #60516 deep scan is required here but not performed due to performace reasons
                     projectFiles.add(child);
@@ -371,7 +374,10 @@ public class SvnUtils {
     public static File [] toFileArray(Collection<FileObject> fileObjects) {
         Set<File> files = new HashSet<File>(fileObjects.size()*4/3+1);
         for (Iterator<FileObject> i = fileObjects.iterator(); i.hasNext();) {
-            files.add(FileUtil.toFile(i.next()));
+            File f = FileUtil.toFile(i.next());
+            if (f != null) {
+                files.add(f);
+            }
         }
         files.remove(null);
         return files.toArray(new File[files.size()]);

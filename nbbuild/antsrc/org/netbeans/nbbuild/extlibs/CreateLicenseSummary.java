@@ -109,7 +109,7 @@ public class CreateLicenseSummary extends Task {
             StringBuilder testBinariesAreUnique = new StringBuilder();
             List<String> ignoredPatterns = VerifyLibsAndLicenses.loadPatterns("ignored-binary-overlaps");
             findBinaries(build, binaries2LicenseHeaders, crc2License, new HashMap<Long,String>(), "", testBinariesAreUnique, ignoredPatterns);
-            pseudoTests.put("testBinariesAreUnique", testBinariesAreUnique.length() > 0 ? "Some binaries are duplicated" + testBinariesAreUnique : null);
+            pseudoTests.put("testBinariesAreUnique", testBinariesAreUnique.length() > 0 ? "Some binaries are duplicated (edit nbbuild/antsrc/org/netbeans/nbbuild/extlibs/ignored-binary-overlaps as needed)" + testBinariesAreUnique : null);
             OutputStream os = new FileOutputStream(summary);
             try {
                 PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
@@ -313,6 +313,10 @@ public class CreateLicenseSummary extends Task {
                                 String[] parts = pattern.split(" ");
                                 assert parts.length == 2 : pattern;
                                 if (SelectorUtils.matchPath(parts[0], otherPath) && SelectorUtils.matchPath(parts[1], path)) {
+                                    ignored = true;
+                                    break;
+                                }
+                                if (SelectorUtils.matchPath(parts[0], path) && SelectorUtils.matchPath(parts[1], otherPath)) {
                                     ignored = true;
                                     break;
                                 }

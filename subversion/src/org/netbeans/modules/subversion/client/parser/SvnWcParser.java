@@ -130,10 +130,24 @@ public class SvnWcParser {
                     } else if (value.equals("delete")) {  // NOI18N
                         finalTextStatus = SVNStatusKind.DELETED.toString();
                         finalPropStatus = SVNStatusKind.NONE.toString();
+                    } else if (value.equals("replace")) {  // NOI18N
+                        finalTextStatus = SVNStatusKind.REPLACED.toString();
+                        finalPropStatus = SVNStatusKind.NONE.toString();
                     }
-                    //status.c had a schedule="replace", but TSVN
-                    //simply did a copy
                 }
+                
+                // what if the file does not exist and is not deleted?
+                // now status can be NORMAL, MODIFIED, ADDED, REPLACED, DELETED
+                // it is missing then
+                assert finalTextStatus.equals(SVNStatusKind.NORMAL.toString())
+                        || finalTextStatus.equals(SVNStatusKind.MODIFIED.toString())
+                        || finalTextStatus.equals(SVNStatusKind.ADDED.toString())
+                        || finalTextStatus.equals(SVNStatusKind.REPLACED.toString())
+                        || finalTextStatus.equals(SVNStatusKind.DELETED.toString());
+                if (!SVNStatusKind.DELETED.toString().equals(finalTextStatus) && !file.exists()) {
+                    finalTextStatus = SVNStatusKind.MISSING.toString();
+                }
+
                 value = wcDetails.getValue("deleted");  // NOI18N
                 if (value != null) {
                     if (value.equals("true")) {  // NOI18N

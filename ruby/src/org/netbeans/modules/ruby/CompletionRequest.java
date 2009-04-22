@@ -39,7 +39,7 @@
 package org.netbeans.modules.ruby;
 
 import javax.swing.text.Document;
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.Node;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;

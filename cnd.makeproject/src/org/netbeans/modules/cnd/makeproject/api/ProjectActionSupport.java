@@ -118,13 +118,13 @@ public class ProjectActionSupport {
             DebuggerChooserConfiguration chooser = conf.getDebuggerChooserConfiguration();
             CustomizerNode node = chooser.getNode();
             if (node instanceof ProjectActionHandlerFactory) {
-                if (((ProjectActionHandlerFactory) node).canHandle(type)) {
+                if (((ProjectActionHandlerFactory) node).canHandle(type, conf)) {
                     return true;
                 }
             }
         }
         for (ProjectActionHandlerFactory factory : handlerFactories) {
-            if (factory.canHandle(type)) {
+            if (factory.canHandle(type, conf)) {
                 return true;
             }
         }
@@ -330,7 +330,7 @@ public class ProjectActionSupport {
                     return;
                 }
                 for (ProjectActionHandlerFactory factory : handlerFactories) {
-                    if (factory.canHandle(pae.getType())) {
+                    if (factory.canHandle(pae.getType(), pae.getConfiguration())) {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
                         initHandler(handler, pae);
                         handler.execute(ioTab);
@@ -353,7 +353,7 @@ public class ProjectActionSupport {
 //                        final String projectName = info.getDisplayName();
 //                        runDirectory = MakeActionProvider.REMOTE_BASE_PATH + "/" + projectName;
                 } else {
-                    PathMap mapper = HostInfoProvider.getDefault().getMapper(conf.getDevelopmentHost().getExecutionEnvironment());
+                    PathMap mapper = HostInfoProvider.getMapper(conf.getDevelopmentHost().getExecutionEnvironment());
                     if (!mapper.isRemote(basedir, true)) {
 //                        mapper.showUI();
 //                        if (!mapper.isRemote(basedir)) {
@@ -473,7 +473,13 @@ public class ProjectActionSupport {
             // Check existence of executable
             if (!IpeUtils.isPathAbsolute(executable) && (executable.startsWith(".") || executable.indexOf(File.separatorChar) > 0)) { // NOI18N
                 //executable is relative to project root - convert to absolute and check. Should be safe (?).
-                executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
+                String runDir = pae.getProfile().getRunDir();
+                if (runDir == null || runDir.length() == 0 || IpeUtils.isPathAbsolute(runDir)) {
+                    executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
+                }
+                else {
+                    executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir() + "/" + runDir, executable); // NOI18N
+                }
                 executable = FilePathAdaptor.normalize(executable);
             }
             if (IpeUtils.isPathAbsolute(executable)) {
@@ -494,7 +500,7 @@ public class ProjectActionSupport {
                     }
                 }
                 if (!ok) {
-                    String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", pae.getExecutable()); // NOI18N
+                    String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", executable); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                     return false;
                 }
@@ -512,7 +518,7 @@ public class ProjectActionSupport {
      * @return true if executable exists and is an executable, otherwise false
      */
     private static boolean verifyRemoteExecutable(ExecutionEnvironment execEnv, String executable) {
-        PathMap mapper = HostInfoProvider.getDefault().getMapper(execEnv);
+        PathMap mapper = HostInfoProvider.getMapper(execEnv);
         String remoteExecutable = mapper.getRemotePath(executable);
         CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
         if (cmd != null) {

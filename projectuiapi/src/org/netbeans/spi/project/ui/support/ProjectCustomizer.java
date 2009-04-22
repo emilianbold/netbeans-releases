@@ -558,11 +558,13 @@ public final class ProjectCustomizer {
                     InstanceCookie cook = dob.getCookie(InstanceCookie.class);
                     if (cook != null && CompositeCategoryProvider.class.isAssignableFrom(cook.instanceClass())) {
                         CompositeCategoryProvider provider = (CompositeCategoryProvider)cook.instanceCreate();
-                        ProjectCustomizer.Category cat = provider.createCategory(context);
-                        if (cat != null) {
-                            toRet.add(cat);
-                            category2provider.put(cat, provider);
-                            includeSubcats(cat.getSubcategories(), provider);
+                        if (provider != null) {
+                            ProjectCustomizer.Category cat = provider.createCategory(context);
+                            if (cat != null) {
+                                toRet.add(cat);
+                                category2provider.put(cat, provider);
+                                includeSubcats(cat.getSubcategories(), provider);
+                            }
                         }
                     }
                 }

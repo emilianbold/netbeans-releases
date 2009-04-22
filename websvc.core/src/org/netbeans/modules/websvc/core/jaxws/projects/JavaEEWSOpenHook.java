@@ -155,7 +155,7 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
 
         public void propertyChange(PropertyChangeEvent evt) {
             //requestModelUpdate();
-            updateJaxWsTask.schedule(100);
+            updateJaxWsTask.schedule(1000);
         }
 
         private void updateJaxWs() {

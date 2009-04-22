@@ -49,7 +49,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentSection;
 import org.netbeans.modules.welcome.content.RecentProjectsPanel;
@@ -63,20 +62,20 @@ class MyNetBeansTab extends AbstractTab {
     private ContentSection recentProjectsSection;
     private ContentSection blogsSection;
     private JComponent bottomBar;
-    private JPanel bottomStripe;
+
+    public MyNetBeansTab() {
+        super( false );
+    }
 
     protected void buildContent() {
-        JPanel main = new BackgroundPanel( new GridBagLayout() );
+        JPanel main = new JPanel( new GridBagLayout() );
+        main.setOpaque(false);
         main.setBorder(BorderFactory.createEmptyBorder());
         add( main, BorderLayout.CENTER );
-        setBorder(BorderFactory.createEmptyBorder());
-        
-        main.add( new Stripe(true),
-                new GridBagConstraints(0,0,2,1,1.0,1.0,GridBagConstraints.CENTER,
-                GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
-        
+
         JComponent c = new RecentProjectsPanel();
         recentProjectsSection = new ContentSection( BundleSupport.getLabel( "SectionRecentProjects" ), //NOI18N
+                "org/netbeans/modules/welcome/resources/lbl_recent_projects.png", //NOI18N
                 SwingConstants.NORTH_WEST, c, false );
         main.add( recentProjectsSection,
                 new GridBagConstraints(0,1,1,1,0.0,0.0,GridBagConstraints.SOUTHEAST,
@@ -84,41 +83,29 @@ class MyNetBeansTab extends AbstractTab {
         
         c = new ArticlesAndNews();
         main.add( new ContentSection( BundleSupport.getLabel( "SectionNewsAndTutorials" ), //NOI18N
+                "org/netbeans/modules/welcome/resources/lbl_news.png", //NOI18N
                 SwingConstants.NORTH_EAST, c, true ),
                 new GridBagConstraints(1,1,1,1,1.0,0.0,GridBagConstraints.SOUTHWEST,
                 GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
         
         c = new DemoPanel();
         main.add( new ContentSection( BundleSupport.getLabel( "SectionDemo" ), //NOI18N
+                "org/netbeans/modules/welcome/resources/lbl_demo.png", //NOI18N
                 SwingConstants.SOUTH_WEST, c, true ),
                 new GridBagConstraints(0,2,1,1,0.0,0.0,GridBagConstraints.NORTHEAST,
                 GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
         
         c = new Blogs();
         blogsSection = new ContentSection( BundleSupport.getLabel( "SectionBlogs" ), //NOI18N
+                "org/netbeans/modules/welcome/resources/lbl_blogs.png", //NOI18N
                 SwingConstants.SOUTH_EAST, c, true );
         main.add( blogsSection,
                 new GridBagConstraints(1,2,1,1,1.0,0.0,GridBagConstraints.NORTHWEST,
                 GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
-        
+
         bottomBar = new BottomBar();
         main.add( bottomBar,
-                new GridBagConstraints(0,3,2,1,1.0,0.0,GridBagConstraints.CENTER,
+                new GridBagConstraints(0,4,2,1,1.0,0.0,GridBagConstraints.SOUTH,
                 GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
-        
-        bottomStripe = new Stripe( false );
-        main.add( bottomStripe,
-                new GridBagConstraints(0,4,2,1,1.0,1.0,GridBagConstraints.CENTER,
-                GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
     }
-
-    protected int getBottomStripeOrigin() {
-        int res = 0;
-        if( null != bottomStripe ) {
-            res = bottomStripe.getLocation().y;
-            if( res == 0 )
-                res = getHeight();
-        }
-        return res;
-    }    
 }

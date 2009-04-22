@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.tools.*;
 import java.io.File;
 import java.net.ConnectException;
@@ -57,7 +58,6 @@ import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.ExecutionEnvVariablesProvider;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -134,12 +134,12 @@ public class LLDataCollector
                 if (agentLibraryLocal != null) {
                     CommonTasksSupport.uploadFile(
                             agentLibraryLocal.getAbsolutePath(), env,
-                            getRemotePath(env, agentLibraryLocal), 644, null).get();
+                            getRemotePath(env, agentLibraryLocal), 0644, null).get();
                 }
                 File monitorExecutableLocal = locateMonitorExecutable(env);
                 CommonTasksSupport.uploadFile(
                         monitorExecutableLocal.getAbsolutePath(), env,
-                        getRemotePath(env, agentLibraryLocal), 755, null).get();
+                        getRemotePath(env, monitorExecutableLocal), 0755, null).get();
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
@@ -164,7 +164,7 @@ public class LLDataCollector
 
     public Map<String, String> getExecutionEnv(DLightTarget target) throws ConnectException {
         ExecutionEnvironment env = target.getExecEnv();
-        String ldPreloadName = NativeToolsUtil.getLdPreloadName(HostInfoUtils.getOS(env));
+        String ldPreloadName = NativeToolsUtil.getLdPreloadName(env);
         File agentLibraryLocal = locateAgentLibrary(env);
         if (agentLibraryLocal != null) {
             return Collections.singletonMap(ldPreloadName, getRemotePath(env, agentLibraryLocal));
@@ -177,7 +177,7 @@ public class LLDataCollector
         if (env.isLocal()) {
             return localPath.getAbsolutePath();
         } else {
-            return "/tmp/" + localPath.getName(); // NOI18N
+            return HostInfoUtils.getHostInfo(env).getTempDir() + localPath.getName();
         }
     }
 
@@ -189,8 +189,8 @@ public class LLDataCollector
         return NativeToolsUtil.locateFile(env, NativeToolsUtil.getExecutable("prof_monitor")); // NOI18N
     }
 
-    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case RUNNING:
                 startMonitor();
                 break;

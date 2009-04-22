@@ -50,6 +50,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -65,13 +69,14 @@ import org.openide.filesystems.FileUtil;
  * 
  */
 public abstract class StoreEntry {
-            
+
     private final File file;
     private final File storeFile;
     private final long ts;
     private final String label;
     private final Date date;    
     private String mimeType = null;
+    private List<StoreEntry> siblingEntries;
       
     public static StoreEntry createStoreEntry(File file, File storeFile, long ts, String label) {
         return new DefaultStoreEntry(file, storeFile, ts, label);
@@ -91,6 +96,7 @@ public abstract class StoreEntry {
         this.ts = ts;
         this.label = label;
         this.date = new Date(ts);
+        setSiblings(Collections.EMPTY_LIST);
     }    
     
     public File getStoreFile() {
@@ -116,7 +122,30 @@ public abstract class StoreEntry {
     public boolean representsFile() {
         return storeFile.isFile();
     }
-        
+
+    /**
+     * Returns all sibling entries for multi-file DO which this file is part of.
+     * @return
+     */
+    public List<StoreEntry> getSiblingEntries() {
+        return siblingEntries;
+    }
+
+    /**
+     * Sets sibling entries for files comming from the same multi-file DO.
+     * @param entries sibling entries
+     */
+    public void setSiblings (Collection<StoreEntry> entries) {
+        siblingEntries = new ArrayList<StoreEntry>(entries.size());
+        for (StoreEntry entry : entries) {
+            // add only real siblings, not itself
+            if (entry.representsFile() && !getFile().equals(entry.getFile())) {
+                siblingEntries.add(entry);
+            }
+        }
+        siblingEntries = Collections.unmodifiableList(siblingEntries);
+    }
+
     public String getMIMEType() {
         if(mimeType == null) {
             FileObject fo = FileUtil.toFileObject(getFile());
@@ -127,8 +156,8 @@ public abstract class StoreEntry {
             }                
         }        
         return mimeType;
-    }    
-    
+    }
+
     static OutputStream createStoreFileOutputStream(File storeFile) throws FileNotFoundException, IOException {
         ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(storeFile)));
         ZipEntry entry = new ZipEntry(storeFile.getName());
@@ -137,9 +166,9 @@ public abstract class StoreEntry {
     }
         
     abstract OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException;
-    public abstract InputStream getStoreFileInputStream() throws FileNotFoundException, IOException;    
-    
-    private static class DefaultStoreEntry extends StoreEntry { 
+    public abstract InputStream getStoreFileInputStream() throws FileNotFoundException, IOException;
+
+    private static class DefaultStoreEntry extends StoreEntry {
         
         private DefaultStoreEntry(File file, File storeFile, long ts, String label) {
             super(file, storeFile, ts, label);

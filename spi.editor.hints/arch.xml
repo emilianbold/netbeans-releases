@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-overall">
   <p>
-      <api name="EditorHintsSPI" category="devel" group="java" type="export" url="@TOP@index.html">
+      <api name="EditorHintsSPI" category="devel" group="java" type="export" url="@TOP@/org/netbeans/spi/editor/hints/package-summary.html">
           allows to show errors in the editor, with possible fixes.
       </api>
   </p>
@@ -137,7 +137,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-usecases">
   <p>
-      <usecase name="redunderline">
+      <usecase name="redunderline" id="1">
           Assume that you have a module using e.g. Parsing API to parse the source
           files and wants to mark the errors in the editor to be shown as red
           underlined in the editor. Here is the pseudo code that achieves this:
@@ -146,7 +146,7 @@ Document doc = ...;
 ArrayList&lt;ErrorDescription&gt; errors = new ArrayList&lt;ErrorDescription&gt;();
 for (&lt;all errors from the parser that have parsed the doc&gt;) {
     errors.add(
-        <b>ErrorDescriptionFactory.createErrorDescription<b>(
+        <b>ErrorDescriptionFactory.createErrorDescription</b>(
             Severity.ERROR,
             d.getMessage(Locale.getDefault()),
             doc,
@@ -155,10 +155,10 @@ for (&lt;all errors from the parser that have parsed the doc&gt;) {
         )
     );
 }
-<b>HintsController.setErrors<b>(doc, "myerrors", errors);
+<b>HintsController.setErrors</b>(doc, "myerrors", errors);
 </pre>
       </usecase>
-      <usecase name="warningwithfix">
+      <usecase name="warningwithfix" id="2">
           Adding a warning with fixes:
 <pre>
 static final class FixImpl implements Fix {
@@ -166,7 +166,7 @@ static final class FixImpl implements Fix {
 }
 ...
 Document doc = ...;
-List&lt;Fix&gt; <b>fixes<b> = Arrays.&lt;Fix&gt;asList(new FixImpl(...));
+List&lt;Fix&gt; <b>fixes</b> = Arrays.&lt;Fix&gt;asList(new FixImpl(...));
 ArrayList&lt;ErrorDescription&gt; warnings = new ArrayList&lt;ErrorDescription&gt;();
 for (&lt;all places where the warning should be displayed&gt;) {
     warnings.add(
@@ -1136,6 +1136,32 @@ HintsController.setErrors(doc, "mywarnings", warnings);
  <answer id="security-policy">
   <p>
    No.
+  </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="resources-preferences" when="final">
+            Does your module uses preferences via Preferences API? Does your module use NbPreferences or
+            or regular JDK Preferences ? Does it read, write or both ? 
+            Does it share preferences with other modules ? If so, then why ?
+            <hint>
+                You may use
+                    &lt;api type="export" group="preferences"
+                    name="preference node name" category="private"&gt;
+                    description of individual keys, where it is used, what it
+                    influences, whether the module reads/write it, etc.
+                    &lt;/api&gt;
+                Due to XML ID restrictions, rather than /org/netbeans/modules/foo give the "name" as org.netbeans.modules.foo.
+                Note that if you use NbPreferences this name will then be the same as the code name base of the module.
+            </hint>
+        </question>
+-->
+ <answer id="resources-preferences">
+  <p>
+   XXX no answer for resources-preferences
   </p>
  </answer>
 

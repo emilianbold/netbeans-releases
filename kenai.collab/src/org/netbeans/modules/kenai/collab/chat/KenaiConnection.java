@@ -43,6 +43,8 @@ package org.netbeans.modules.kenai.collab.chat;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -61,6 +63,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator.PresenceListener;
@@ -113,7 +116,7 @@ public class KenaiConnection implements PropertyChangeListener {
         listeners.remove(name);
     }
 
-    private MultiUserChat createChat(KenaiProject prj) {
+    private MultiUserChat createChat(KenaiFeature prj) {
         MultiUserChat multiUserChat = new MultiUserChat(connection, getChatroomName(prj));
         chats.put(prj.getName(), multiUserChat);
         messageQueue.put(prj.getName(), new LinkedList<Message>());
@@ -223,7 +226,7 @@ public class KenaiConnection implements PropertyChangeListener {
         if (!connection.isConnected()) {
             return;
         }
-        for (KenaiProject prj : KenaiConnection.getDefault().getMyProjects()) {
+        for (KenaiFeature prj : KenaiConnection.getDefault().getMyChats()) {
             createChat(prj);
         }
     }
@@ -237,7 +240,7 @@ public class KenaiConnection implements PropertyChangeListener {
      * @param prj
      * @return
      */
-    public MultiUserChat getChat(KenaiProject prj) {
+    public MultiUserChat getChat(KenaiFeature prj) {
         MultiUserChat multiUserChat = chats.get(prj.getName());
         if (multiUserChat==null) {
             multiUserChat=createChat(prj);
@@ -271,7 +274,7 @@ public class KenaiConnection implements PropertyChangeListener {
                     final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
                     if (pa != null) {
                         USER = pa.getUserName();
-                        PASSWORD = new String(pa.getPassword());
+                        PASSWORD = System.getProperty("kenai.xmpp.password",new String(pa.getPassword())); ;
                         tryConnect();
                     } else {
                         for (MultiUserChat muc : getChats()) {
@@ -300,7 +303,8 @@ public class KenaiConnection implements PropertyChangeListener {
     private String PASSWORD;
     
     //TODO this should be removed when xmpp server starts working on kenai.com
-    private static final String XMPP_SERVER = System.getProperty("kenai.xmpp.url","127.0.0.1");
+    private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
+    private static final String CHAT_ROOM = "@muc." + XMPP_SERVER;
 
     /**
      * TODO: should return kenai account name
@@ -311,18 +315,18 @@ public class KenaiConnection implements PropertyChangeListener {
     }
 
 
-    private String getChatroomName(KenaiProject prj) {
-        try {
-            return prj.getFeatures(KenaiService.Type.CHAT)[0].getName();
-        } catch (KenaiException ex) {
-            throw new RuntimeException(ex);
-        }
+    private String getChatroomName(KenaiFeature prj) {
+        return prj.getName() + CHAT_ROOM;
     }
 
     //TODO: my projects does not work so far
-    public Collection<KenaiProject> getMyProjects() {
+    public Collection<KenaiFeature> getMyChats() {
+        ArrayList myChats = new ArrayList();
         try {
-            return Kenai.getDefault().getMyProjects();
+            for (KenaiProject prj: Kenai.getDefault().getMyProjects()) {
+                myChats.addAll(Arrays.asList(prj.getFeatures(KenaiService.Type.CHAT)));
+            }
+            return myChats;
         } catch (KenaiException ex) {
             throw new RuntimeException(ex);
         }

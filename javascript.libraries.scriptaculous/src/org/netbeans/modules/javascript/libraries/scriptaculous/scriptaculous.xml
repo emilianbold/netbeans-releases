@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/javascript/libraries/scriptaculous/Bundle</localizing-bundle>
     <volume>
         <type>scriptpath</type>
-	<resource>jar:nbinst:///modules/ext/javascript/scriptaculous-js-1.8.1.zip!/</resource>
+	<resource>jar:nbinst:///modules/ext/javascript/scriptaculous-js-1.8.2.zip!/</resource>
     </volume>
     <!-- volume>
         <type>javadoc</type>

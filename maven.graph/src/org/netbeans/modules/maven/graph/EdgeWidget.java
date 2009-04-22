@@ -44,6 +44,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Stroke;
 import javax.swing.UIManager;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -72,6 +73,7 @@ public class EdgeWidget extends ConnectionWidget {
     private int edgeConflictType;
 
     private LabelWidget conflictVersion;
+    private Widget versionW;
     private Stroke origStroke;
 
     public EdgeWidget(DependencyGraphScene scene, ArtifactGraphEdge edge) {
@@ -81,25 +83,49 @@ public class EdgeWidget extends ConnectionWidget {
         setTargetAnchorShape(AnchorShape.TRIANGLE_FILLED);
         isConflict = edge.getTarget().getState() == DependencyNode.OMITTED_FOR_CONFLICT;
         edgeConflictType = getConflictType();
+
+        updateVersionW(isConflict);
+    }
+
+    private void updateVersionW (boolean isConflict) {
+        DependencyGraphScene scene = (DependencyGraphScene)getScene();
         int includedConflictType = scene.getGraphNodeRepresentant(edge.getTarget()).getConflictType();
 
-        if (isConflict || includedConflictType != ArtifactGraphNode.NO_CONFLICT) {
-            Widget versionW = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
-            conflictVersion = new LabelWidget(scene, edge.getTarget().getArtifact().getVersion());
-            if (isConflict) {
-                Color c = getConflictColor(edgeConflictType);
-                if (c != null) {
-                    conflictVersion.setForeground(c);
+        if (versionW == null) {
+            if (isConflict || includedConflictType != ArtifactGraphNode.NO_CONFLICT) {
+                versionW = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
+                conflictVersion = new LabelWidget(scene, edge.getTarget().getArtifact().getVersion());
+                if (isConflict) {
+                    Color c = getConflictColor(edgeConflictType);
+                    if (c != null) {
+                        conflictVersion.setForeground(c);
+                    }
                 }
+                versionW.addChild(conflictVersion);
+                addChild(versionW);
+                setConstraint(versionW, LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_RIGHT, 0.5f);
             }
-            versionW.addChild(conflictVersion);
-            addChild(versionW);
-            setConstraint(versionW, LayoutFactory.ConnectionWidgetLayoutAlignment.CENTER_RIGHT, 0.5f);
+        } else {
+            if (!isConflict && includedConflictType == ArtifactGraphNode.NO_CONFLICT) {
+                removeChild(versionW);
+            }
         }
     }
 
     public void setState (int state) {
         this.state = state;
+        updateAppearance();
+    }
+
+    void modelChanged () {
+        edgeConflictType = getConflictType();
+        isConflict = edge.getTarget().getState() == DependencyNode.OMITTED_FOR_CONFLICT;
+        // correction if some graph editing(fixing) was done
+        if (isConflict && edgeConflictType == ArtifactGraphNode.NO_CONFLICT) {
+            isConflict = false;
+        }
+        
+        updateVersionW(isConflict);
         updateAppearance();
     }
 
@@ -181,9 +207,9 @@ public class EdgeWidget extends ConnectionWidget {
 
     private int getConflictType () {
         ArtifactGraphNode included = ((DependencyGraphScene)getScene()).getGraphNodeRepresentant(edge.getTarget());
-        int ret = ArtifactGraphNode.compareVersions(
-                edge.getTarget().getArtifact().getVersion(),
-                included.getArtifact().getArtifact().getVersion());
+        DefaultArtifactVersion edgeV = new DefaultArtifactVersion(edge.getTarget().getArtifact().getVersion());
+        DefaultArtifactVersion includedV = new DefaultArtifactVersion(included.getArtifact().getArtifact().getVersion());
+        int ret = edgeV.compareTo(includedV);
         return ret > 0 ? ArtifactGraphNode.CONFLICT : ret < 0 ?
             ArtifactGraphNode.POTENTIAL_CONFLICT : ArtifactGraphNode.NO_CONFLICT;
     }

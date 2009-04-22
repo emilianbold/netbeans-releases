@@ -52,6 +52,8 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
@@ -67,7 +69,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
-class ArtifactWidget extends Widget implements ActionListener {
+class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
 
     static final Color ROOT = new Color(178, 228, 255);
     static final Color DIRECTS = new Color(178, 228, 255);
@@ -92,6 +94,8 @@ class ArtifactWidget extends Widget implements ActionListener {
 
     private static final Image lockImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/lock.png");
     private static final Image brokenLockImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/lock-broken.png");
+    private static final Image bulbImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/bulb.gif");
+    private static final Image bulbHighlightImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/bulb-highlight.gif");
 
     private ArtifactGraphNode node;
     private String currentSearchTerm;
@@ -103,8 +107,8 @@ class ArtifactWidget extends Widget implements ActionListener {
     private Color hoverBorderC;
 
     private LabelWidget artifactW, versionW;
-    private Widget detailsW, contentW;
-    private ImageWidget lockW, hintBulbW;
+    private Widget contentW;
+    private ImageWidget lockW, fixHintW;
 
     private int paintState = EdgeWidget.REGULAR;
 
@@ -282,7 +286,37 @@ class ArtifactWidget extends Widget implements ActionListener {
         if (lockW != null) {
             versionDetW.addChild(lockW);
         }
-        addChild(contentW);
+
+        // fix hint
+        if (DependencyGraphScene.isFixCandidate(node)) {
+            Widget rootW = new Widget(scene);
+            rootW.setLayout(LayoutFactory.createOverlayLayout());
+            fixHintW = new ImageWidget(scene, bulbImg);
+            fixHintW.setVisible(false);
+            fixHintW.setToolTipText(NbBundle.getMessage(ArtifactWidget.class, "ACT_FixVersionConflict"));
+            fixHintW.getActions().addAction(scene.hoverAction);
+            fixHintW.getActions().addAction(ActionFactory.createSelectAction(this));
+            Widget panelW = new Widget(scene);
+            panelW.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.LEFT_TOP, 0));
+            panelW.setBorder(BorderFactory.createEmptyBorder(0, 3));
+            panelW.addChild(fixHintW);
+            rootW.addChild(panelW);
+            rootW.addChild(contentW);
+            addChild(rootW);
+        } else {
+            addChild(contentW);
+        }
+
+    }
+
+    void modelChanged () {
+        versionW.setLabel(node.getArtifact().getArtifact().getVersion());
+        if (!DependencyGraphScene.isFixCandidate(node) && fixHintW != null) {
+            fixHintW.setVisible(false);
+            fixHintW = null;
+        }
+        
+        repaint();
     }
 
     @Override
@@ -476,6 +510,10 @@ class ArtifactWidget extends Widget implements ActionListener {
         if (isAnimated) {
             getScene().getSceneAnimator().animatePreferredBounds(artifactW, null);
         }
+
+        if (fixHintW != null) {
+            fixHintW.setVisible(makeReadable);
+        }
     }
 
     private Font getOrigFont () {
@@ -495,6 +533,30 @@ class ArtifactWidget extends Widget implements ActionListener {
             return original.deriveFont(original.getSize() * ratio);
         }
         return original;
+    }
+
+    public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
+        return false;
+    }
+
+    public boolean isSelectionAllowed(Widget widget, Point localLocation, boolean invertSelection) {
+        return true;
+    }
+
+    public void select(Widget widget, Point localLocation, boolean invertSelection) {
+        ((DependencyGraphScene)getScene()).invokeFixConflict(node);
+    }
+
+    void bulbHovered () {
+        if (fixHintW != null) {
+            fixHintW.setImage(bulbHighlightImg);
+        }
+    }
+
+    void bulbUnhovered () {
+        if (fixHintW != null) {
+            fixHintW.setImage(bulbImg);
+        }
     }
 
 }

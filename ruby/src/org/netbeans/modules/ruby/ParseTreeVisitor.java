@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.ruby;
 
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.Node;
 
 /**
  * A visitor interface for visitors that want to iterate over a JRuby AST.

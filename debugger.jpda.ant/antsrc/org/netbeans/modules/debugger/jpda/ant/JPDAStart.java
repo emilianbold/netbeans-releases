@@ -91,6 +91,7 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -481,16 +482,18 @@ public class JPDAStart extends Task implements Runnable {
                 try {
                     if (event.getVariable() instanceof ObjectVariable) {
                         ObjectVariable ov = (ObjectVariable) event.getVariable();
-
-                        suspend = "java.lang.RuntimeException".equals(ov.getClassType().getName());
-                        if (suspend) {
-                            java.lang.reflect.Method invokeMethodMethod = ov.getClass().getMethod("invokeMethod", JPDAThread.class, String.class, String.class, Variable[].class);
-                            invokeMethodMethod.setAccessible(true);
-                            Variable message = (Variable) invokeMethodMethod.invoke(ov, event.getThread(), "getMessage", "()Ljava/lang/String;", new Variable[0]);
-                            if (message != null) {
-                                suspend = message.getValue().startsWith("\"Uncompilable source code");
+                        JPDAClassType ct = ov.getClassType();
+                        if (ct != null) {
+                            suspend = "java.lang.RuntimeException".equals(ct.getName());
+                            if (suspend) {
+                                java.lang.reflect.Method invokeMethodMethod = ov.getClass().getMethod("invokeMethod", JPDAThread.class, String.class, String.class, Variable[].class);
+                                invokeMethodMethod.setAccessible(true);
+                                Variable message = (Variable) invokeMethodMethod.invoke(ov, event.getThread(), "getMessage", "()Ljava/lang/String;", new Variable[0]);
+                                if (message != null) {
+                                    suspend = message.getValue().startsWith("\"Uncompilable source code");
+                                }
+                                //suspend = suspend && ov.invokeMethod("getMessage", "()Ljava/lang/String;", new Variable[0]).getValue().startsWith("\"Uncompilable source code");
                             }
-                            //suspend = suspend && ov.invokeMethod("getMessage", "()Ljava/lang/String;", new Variable[0]).getValue().startsWith("\"Uncompilable source code");
                         }
                     }
                 } catch (IllegalAccessException iaex) {

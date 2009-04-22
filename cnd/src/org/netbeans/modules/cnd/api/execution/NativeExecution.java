@@ -38,12 +38,12 @@
  */
 package org.netbeans.modules.cnd.api.execution;
 
+import org.netbeans.modules.cnd.spi.compilers.NativeExecutionProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.execution.LocalNativeExecution;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
@@ -53,44 +53,24 @@ import org.openide.util.Lookup;
  * 
  * @author gordonp
  */
-public abstract class NativeExecution /*extends ExecutionSupport*/ implements NativeExecutionProvider {
+public abstract class NativeExecution {
 
     protected static final Logger log = Logger.getLogger("cnd.execution.logger"); // NOI18N
-    private static NativeExecution instance;
-    protected ExecutionEnvironment execEnv;
 
-    /**
-     * Since NativeExecution is abstract, we can't instantiate it. So we instantiate
-     * a SimpleNativeExecution instead, who's whole purpose is to provide the implementation
-     * of NativeExecutionProvider.getNativeExecution().
-     */
-    public static NativeExecution getDefault(ExecutionEnvironment host) {
-        if (instance == null) {
-            instance = new SimpleNativeExecution();
-        }
-        instance.setHost(host);
-        return instance.getNativeExecution();
-    }
-
-    public NativeExecution getNativeExecution() {
-        if (execEnv != null && execEnv.isRemote()) {
-            NativeExecutionProvider provider = Lookup.getDefault().lookup(NativeExecutionProvider.class);
-
-            if (provider != null) {
-                provider.setHost(execEnv);
-                return provider.getNativeExecution();
+    /** Gets a NativeExecution instance for the given host */
+    public static NativeExecution getDefault(ExecutionEnvironment execEnv) {
+        if (execEnv != null) {
+            for(NativeExecutionProvider provider : Lookup.getDefault().lookupAll(NativeExecutionProvider.class)) {
+                if (provider.isApplicable(execEnv)) {
+                    final NativeExecution nativeExecution = provider.getNativeExecution(execEnv);
+                    assert nativeExecution != null;
+                    return nativeExecution;
+                }
             }
         }
-        return new LocalNativeExecution();
+        throw new IllegalStateException("No NativeExecution found for " + execEnv); //NOI18N
     }
 
-//    protected NativeExecution() {
-//        super(null);
-//    }
-
-    public void setHost(ExecutionEnvironment host) {
-        this.execEnv = host;
-    }
 
     /**
      * Execute an executable, a makefile, or a script
@@ -113,21 +93,4 @@ public abstract class NativeExecution /*extends ExecutionSupport*/ implements Na
             boolean unbuffer) throws IOException, InterruptedException;
 
     public abstract void stop();
-
-    /**
-     * Simple class whose sole purpose is to let us instantiate a NativeExecution so we can
-     * call the getNativeExecution() method.
-     */
-    private static class SimpleNativeExecution extends NativeExecution {
-
-        @Override
-        public int executeCommand(File runDirFile, String executable, String arguments, String[] envp, PrintWriter out, Reader in, boolean unbuffer) throws IOException, InterruptedException {
-            throw new UnsupportedOperationException("Not supported."); // NOI18N
-        }
-
-        @Override
-        public void stop() {
-            throw new UnsupportedOperationException("Not supported."); // NOI18N
-        }
-    }
 }

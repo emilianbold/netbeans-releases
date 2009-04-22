@@ -94,7 +94,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     }
     
     public void doAction (Object action) {
-        runAction(action);
+        runAction(action, true);
     }
     
     @Override
@@ -102,7 +102,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         doLazyAction(new Runnable() {
             public void run() {
                 try {
-                    runAction(action);
+                    runAction(action, true);
                 } finally {
                     actionPerformedNotifier.run();
                 }
@@ -110,11 +110,11 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         });
     }
     
-    public void runAction(Object action) {
+    public void runAction(Object action, boolean doResume) {
         if (ActionsManager.ACTION_STEP_INTO.equals(action) && doMethodSelection()) {
             return; // action performed
         }
-        stepInto.runAction();
+        stepInto.runAction(action, doResume);
     }
     
     protected void checkEnabled (int debuggerState) {

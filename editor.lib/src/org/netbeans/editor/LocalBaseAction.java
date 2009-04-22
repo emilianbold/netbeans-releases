@@ -51,6 +51,14 @@ package org.netbeans.editor;
 
 abstract class LocalBaseAction extends BaseAction {
 
+    public LocalBaseAction() {
+        super();
+    }
+
+    public LocalBaseAction(int updateMask) {
+        super(updateMask);
+    }
+
     public LocalBaseAction(String name) {
         super(name);
     }

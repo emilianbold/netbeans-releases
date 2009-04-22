@@ -58,6 +58,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -74,6 +75,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.maven.jaxws.ServerType;
 import org.netbeans.modules.maven.jaxws.WSStackUtils;
@@ -348,7 +350,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         // need to compute from annotations
         String wsURI = null;
 
-//        WSStackUtils stackUtils = new WSStackUtils(project);
+        WSStackUtils stackUtils = new WSStackUtils(project);
 //        boolean isJsr109Supported = stackUtils.isJsr109Supported();
 //        if (J2eeModule.WAR.equals(moduleType) && ServerType.JBOSS == stackUtils.getServerType()) {
 //            // JBoss type
@@ -384,6 +386,21 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
             if (contextRoot != null && contextRoot.startsWith("/")) {
                 //NOI18N
                 contextRoot = contextRoot.substring(1);
+            }
+            if ( (contextRoot == null || contextRoot.length() == 0) &&
+                    ServerType.GLASSFISH == stackUtils.getServerType()) {
+                NbMavenProject nbMaven = project.getLookup().lookup(NbMavenProject.class);
+                if (nbMaven != null) {
+                    StringBuffer buf = new StringBuffer();
+                    MavenProject mavenProject = nbMaven.getMavenProject();
+                    String groupId = mavenProject.getGroupId();
+                    String artifactId = mavenProject.getArtifactId();
+                    String packaging = mavenProject.getPackaging();
+                    String version = mavenProject.getVersion();
+                    if (groupId != null && artifactId !=null && packaging != null && version != null) {
+                        contextRoot = groupId+"_"+artifactId+"_"+packaging+"_"+version; // NOI18N
+                    }
+                }
             }
         }
 //            else if (J2eeModule.EJB.equals(moduleType) && ServerType.JBOSS == stackUtils.getServerType()) {

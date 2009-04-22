@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.editor.ext.html.parser;
 
 import java.io.BufferedReader;
@@ -47,6 +46,8 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.html.HtmlSyntaxSupport;
+import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.test.TestBase;
 import org.netbeans.junit.MockServices;
 
@@ -55,9 +56,10 @@ import org.netbeans.junit.MockServices;
  * @author tomslot
  */
 public class SyntaxTreeTest extends TestBase {
+
     private static final LanguagePath languagePath = LanguagePath.get(HTMLTokenId.language());
-    
-    public SyntaxTreeTest(){
+
+    public SyntaxTreeTest() {
         super("SyntaxTreeTest");
     }
 
@@ -67,28 +69,27 @@ public class SyntaxTreeTest extends TestBase {
         MockServices.setServices(MockMimeLookup.class);
     }
 
-
     public void testTrivialCase() throws Exception {
         testSyntaxTree("trivial.html");
     }
 
-    public void testEmptyTags() throws Exception{
+    public void testEmptyTags() throws Exception {
         testSyntaxTree("emptyTags.html");
     }
 
-    public void testList() throws Exception{
+    public void testList() throws Exception {
         testSyntaxTree("list.html");
     }
 
-    public void testTable() throws Exception{
+    public void testTable() throws Exception {
         testSyntaxTree("table.html");
     }
 
-    public void testTagCrossing() throws Exception{
+    public void testTagCrossing() throws Exception {
         testSyntaxTree("tagCrossing.html");
     }
 
-    public void testMissingEndTag() throws Exception{
+    public void testMissingEndTag() throws Exception {
         testSyntaxTree("missingEndTag.html");
     }
 
@@ -97,54 +98,95 @@ public class SyntaxTreeTest extends TestBase {
 //    public void testIssue145821() throws Exception{
 //        testSyntaxTree("issue145821.html");
 //    }
-
     public void testIssue127786() throws Exception {
         testSyntaxTree("issue127786.html");
     }
-    
+
     public void testIssue129347() throws Exception {
         testSyntaxTree("issue129347.html");
     }
-    
+
     public void testIssue129654() throws Exception {
         testSyntaxTree("issue129654.html");
     }
-    
+
+    public void testDTDBasedAST() throws Exception {
+        assertAST("<p>one\n<p>two</p>");
+        assertAST("<p></p><div>");
+        assertAST("<p><div></div></p>");
+        assertAST("<p><p><p>");
+        assertAST("<html><head></head><body></body></html>");
+        assertAST("<html><body></body></html>");
+        assertAST("<html><head><title></title><script></script></head><body></body></html>");
+        assertAST("<table><tr><tr></table>");
+    }
+
+    public void testIssue162576() throws Exception {
+        String code = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"" +
+                "\"http://www.w3.org/TR/html4/strict.dtd\">" +
+                "<form>" +
+                "<fieldset title=\"requestMethod\">" +
+                "<legend>requestMethod</legend>" +
+                "<input>" +
+                "</fieldset>" +
+                "</form>";
+
+//        SyntaxTree.DEBUG = true;
+
+        assertAST(code);
+
+    }
+
     private void testSyntaxTree(String testCaseName) throws Exception {
-        System.out.println("testSyntaxTree(" + testCaseName + ")");
-        
         String documentContent = readStringFromFile(new File(
                 getTestFilesDir(), testCaseName));
-        
+
         BaseDocument doc = createDocument();
         doc.insertString(0, documentContent, null);
+        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
+        assertNotNull(sup);
+        DTD dtd = sup.getDTD();
+        assertNotNull(dtd);
         SyntaxParser parser = SyntaxParser.get(doc, languagePath);
         parser.forceParse();
-        AstNode root = SyntaxTree.makeTree(parser.elements());
+        AstNode root = SyntaxTree.makeTree(parser.elements(), dtd);
         getRef().print(root.toString());
         compareReferenceFiles();
     }
-    
-    
+
+    private void assertAST(String code) throws Exception {
+        BaseDocument doc = createDocument();
+        doc.insertString(0, code, null);
+        HtmlSyntaxSupport sup = HtmlSyntaxSupport.get(doc);
+        assertNotNull(sup);
+        DTD dtd = sup.getDTD();
+        assertNotNull(dtd);
+        SyntaxParser parser = SyntaxParser.get(doc, languagePath);
+        parser.forceParse();
+        AstNode root = SyntaxTree.makeTree(parser.elements(), dtd);
+
+//        System.out.println(root);
+    }
+
     private String readStringFromFile(File file) throws IOException {
         StringBuffer buff = new StringBuffer();
-        
+
         BufferedReader rdr = new BufferedReader(new FileReader(file));
-        
+
         String line;
-        
-        try{
-            while ((line = rdr.readLine()) != null){
+
+        try {
+            while ((line = rdr.readLine()) != null) {
                 buff.append(line + "\n");
             }
-        } finally{
+        } finally {
             rdr.close();
         }
-        
+
         return buff.toString();
     }
-    
-    private File getTestFilesDir(){
+
+    private File getTestFilesDir() {
         return new File(new File(getDataDir(), "input"), "SyntaxTreeTest");
     }
 }

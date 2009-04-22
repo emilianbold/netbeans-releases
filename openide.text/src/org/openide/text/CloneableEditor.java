@@ -270,6 +270,11 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     phase = Integer.MAX_VALUE;
                     break;
                 }
+                if ((support.getDocument() == null) || (support.cesKit() == null)) {
+                    //#138686, #161902, #149771: Cancel initialization when document was closed in the meantime
+                    phase = Integer.MAX_VALUE;
+                    break;
+                }
                 initVisual();
                 if (newInitialize()) {
                     task.schedule(1000);
@@ -567,6 +572,14 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             //is added above.
             if (CloneableEditor.this.equals(getRegistry().getActivated())) {
                 requestFocusInWindow();
+            }
+            //#162961: Force repaint of editor on Mac. Undocked editor stays empty otherwise sometimes.
+            if (org.openide.util.Utilities.isMac()) {
+                SwingUtilities.invokeLater(new Runnable () {
+                    public void run () {
+                        revalidate();
+                    }
+                });
             }
             isInInitVisual = false;
         }

@@ -44,12 +44,13 @@ package org.netbeans.modules.cnd.debugger.gdb.actions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=ProjectActionHandlerFactory.class, position=5000)
 public class GdbActionHandlerFactory implements ProjectActionHandlerFactory {
 
-    public boolean canHandle(ProjectActionEvent.Type type) {
+    public boolean canHandle(ProjectActionEvent.Type type, Configuration conf) {
         switch (type) {
             case DEBUG:
             case DEBUG_LOAD_ONLY:

@@ -139,7 +139,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
         result.add(new MultipleDTDCConfiguration(
             dataCollectorConfiguration, "sync:")); // NOI18N
-        result.add(new SunStudioDCConfiguration(CollectedInfo.SYNCHRONIZARION));
+        result.add(new SunStudioDCConfiguration(CollectedInfo.SYNCHRONIZATION));
         result.add(new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.SYNC));
         return result;
     }

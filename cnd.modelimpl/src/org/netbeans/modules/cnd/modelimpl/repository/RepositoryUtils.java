@@ -73,7 +73,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 68;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 69;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -85,7 +85,7 @@ public final class RepositoryUtils {
     public static <T> T get(CsmUID<T> uid) {
         Key key = UIDtoKey(uid);
         Persistent obj = get(key);
-        assert obj == null || (obj instanceof CsmIdentifiable);
+        assert obj == null || (obj instanceof CsmIdentifiable) : "unexpected object with class " + obj.getClass() + obj; // NOI18N
         // we are sure in type, because of uid type
         @SuppressWarnings("unchecked")
         T out = (T)obj;

@@ -16,13 +16,14 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mt154047
  */
-@ServiceProvider(service=org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory.class)
+@ServiceProvider(service = org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory.class)
 public final class TreeTableVisualizerFactory implements VisualizerFactory<TreeTableVisualizerConfiguration> {
 
     public String getID() {
         return VisualizerConfigurationIDsProvider.TREE_TABLE_VISUALIZER;
     }
 
+    @SuppressWarnings("unchecked")
     public Visualizer<TreeTableVisualizerConfiguration> create(TreeTableVisualizerConfiguration visualizer, VisualizerDataProvider provider) {
         if (!(provider instanceof TreeTableDataProvider)) {
             return null;

@@ -81,6 +81,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -193,16 +195,12 @@ public class VariousUtils {
                 if (VariousUtils.METHOD_TYPE_PREFIX.startsWith(frag)) {
                     operation = VariousUtils.METHOD_TYPE_PREFIX;
                 } else if (VariousUtils.FUNCTION_TYPE_PREFIX.startsWith(frag)) {
-                    assert operation == null;
                     operation = VariousUtils.FUNCTION_TYPE_PREFIX;
                 } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.startsWith(frag)) {
-                    assert operation == null;
                     operation = VariousUtils.STATIC_METHOD_TYPE_PREFIX;
                 } else if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
-                    assert operation == null;
                     operation = VariousUtils.VAR_TYPE_PREFIX;
                 } else if (VariousUtils.FIELD_TYPE_PREFIX.startsWith(frag)) {
-                    assert operation == null;
                     operation = VariousUtils.FIELD_TYPE_PREFIX;
                 } else {
                     if (operation == null) {
@@ -570,35 +568,21 @@ public class VariousUtils {
         return null;
     }
 
-    public static FileObject resolveInclude(FileObject currentFile, Include include) {
-        String fileName = resolveFileName(include);
-        return (fileName != null) ? resolveRelativeFile(currentFile, fileName) : null;
-    }
-
-    private static FileObject resolveRelativeFile(FileObject currentFile, String name) {
-        while (true) {
-            FileObject result;
-
-//            if (psp != null) {
-                result = PhpSourcePath.resolveFile(currentFile.getParent(), name);
-//            } else {
-//                result = info.getFileObject().getParent().getFileObject(name);
-//            }
-
-            if (result != null) {
-                return result;
-            }
-
-            //try to strip a directory from the "name":
-            int slash = name.indexOf('/');
-
-            if (slash != (-1)) {
-                name = name.substring(slash + 1);
-            } else {
-                return null;
-            }
+    /**
+     * @param sourceFile needs to be data file (not folder)
+     */
+    public static FileObject resolveInclude(FileObject sourceFile, Include include) {
+        Parameters.notNull("sourceFile", sourceFile);
+        FileObject retval = null;
+        if (sourceFile.isFolder()) {
+            throw new IllegalArgumentException(FileUtil.getFileDisplayName(sourceFile));
         }
+        String fileName = resolveFileName(include);        
+        if (fileName != null) {
+            FileObject parent = sourceFile.getParent();
+            assert parent != null : FileUtil.getFileDisplayName(sourceFile);
+            retval = PhpSourcePath.resolveFile(parent, fileName);
+        }
+        return  retval;
     }
-
-
 }

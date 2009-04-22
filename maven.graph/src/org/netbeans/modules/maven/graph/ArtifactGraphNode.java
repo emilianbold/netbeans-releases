@@ -40,6 +40,7 @@
 package org.netbeans.modules.maven.graph;
 import java.util.HashSet;
 import java.util.Set;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 
 /**
@@ -56,7 +57,7 @@ public class ArtifactGraphNode {
     public static final int POTENTIAL_CONFLICT = 1;
     public static final int CONFLICT = 2;
 
-    private DependencyNode artifact;
+    private DependencyNode artifact, parentAfterFix;
     //for the layout
     double locX;
     double locY;
@@ -79,6 +80,14 @@ public class ArtifactGraphNode {
     
     DependencyNode getArtifact() {
         return artifact;
+    }
+
+    DependencyNode getParentAfterFix() {
+        return parentAfterFix;
+    }
+
+    void setParentAfterFix(DependencyNode newParent) {
+        parentAfterFix = newParent;
     }
     
     void setArtifact(DependencyNode ar) {
@@ -107,14 +116,18 @@ public class ArtifactGraphNode {
 
     int getConflictType () {
         int ret = NO_CONFLICT;
-        String includedVersion = getArtifact().getArtifact().getVersion();
+        DefaultArtifactVersion includedV = new DefaultArtifactVersion(
+                getArtifact().getArtifact().getVersion());
+        int result;
         for (DependencyNode curDepN : getDuplicatesOrConflicts()) {
             if (curDepN.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                //if (compareVersions(includedVersion, curDepN.getArtifact().getVersion()) < 0) {
-                if (includedVersion.compareTo(curDepN.getArtifact().getVersion()) < 0) {
+                result = includedV.compareTo(new DefaultArtifactVersion(curDepN.getArtifact().getVersion()));
+                if (result < 0) {
                     return CONFLICT;
                 }
-                ret = POTENTIAL_CONFLICT;
+                if (result > 0) {
+                    ret = POTENTIAL_CONFLICT;
+                }
             }
         }
         return ret;

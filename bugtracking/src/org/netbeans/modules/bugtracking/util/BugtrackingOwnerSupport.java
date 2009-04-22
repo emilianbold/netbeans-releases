@@ -106,8 +106,11 @@ public class BugtrackingOwnerSupport {
             case ALL_PROJECTS:
                 return getRepository(projects.getOpenProjects());
             case SELECTED_FILE_AND_ALL_PROJECTS:
-                return getRepositoryForContext(BugtrackingUtil.getLargerContext(),
-                                               false);
+                File contextFile = BugtrackingUtil.getLargerContext();
+                if (contextFile != null) {
+                    return getRepositoryForContext(contextFile, false);
+                }
+                break;
             default:
                 assert false;
                 break;
@@ -365,6 +368,7 @@ public class BugtrackingOwnerSupport {
         BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
 
         final RepositorySelectorBuilder selectorBuilder = new RepositorySelectorBuilder();
+        selectorBuilder.setDisplayFormForExistingRepositories(true);
         selectorBuilder.setExistingRepositories(repos);
         selectorBuilder.setBugtrackingConnectors(connectors);
         selectorBuilder.setPreselectedRepository(suggestedRepo);

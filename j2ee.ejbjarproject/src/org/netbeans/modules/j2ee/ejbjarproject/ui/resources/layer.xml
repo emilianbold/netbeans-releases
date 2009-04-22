@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.NewEjbJarProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif"/>
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/emptyProject.html"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejb-emptyProject.html"/>
                 </file>
                 <file name="importEjbJar.xml">
                    <attr name="position" intvalue="400"/>
@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.ImportEjbJarProjectWizardIterator"/>
                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/>
                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif"/>
-                   <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/importProject.html"/>
+                   <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejb-importProject.html"/>
                 </file>
             </folder>
         </folder>

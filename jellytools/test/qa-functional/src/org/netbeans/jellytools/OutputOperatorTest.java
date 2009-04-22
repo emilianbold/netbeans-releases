@@ -92,10 +92,8 @@ public class OutputOperatorTest extends JellyTestCase {
         suite.addTest(new OutputOperatorTest("testSelectAll"));
         suite.addTest(new OutputOperatorTest("testCopy"));
         suite.addTest(new OutputOperatorTest("testFind"));
-        suite.addTest(new OutputOperatorTest("testFindNext"));
-        // TODO
-        //suite.addTest(new OutputOperatorTest("testNextError"));
-        // TODO
+        suite.addTest(new OutputOperatorTest("testFindNext"));        
+        //suite.addTest(new OutputOperatorTest("testNextError"));        
         //suite.addTest(new OutputOperatorTest("testPreviousError"));
         suite.addTest(new OutputOperatorTest("testWrapText"));
         suite.addTest(new OutputOperatorTest("testSaveAs"));

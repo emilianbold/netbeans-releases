@@ -42,15 +42,20 @@
 package org.netbeans.modules.server.ui.wizard;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JRadioButton;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.server.ServerRegistry;
@@ -58,7 +63,11 @@ import org.netbeans.spi.server.ServerWizardProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -114,21 +123,52 @@ public class AddServerInstanceWizard extends WizardDescriptor {
                 ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class);
         // this will almost never happen if this module will be autoload
         if (providers.isEmpty()) {
-            // display the warning dialog - no server plugins
-            String close = NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Close");
-            DialogDescriptor descriptor = new DialogDescriptor(
-                    NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Text"),
-                    NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Title"),
-                    true,
-                    new Object[] {close},
-                    close,
-                    DialogDescriptor.DEFAULT_ALIGN,
-                    null,
-                    null);
+            // except we run in ergonomics mode and providers are not yet on
+            // inspite there some are ready
+            JRadioButton[] ready = listAvailableProviders();
+            if (ready.length == 0) {
+                // display the warning dialog - no server plugins
+                String close = NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Close");
+                DialogDescriptor descriptor = new DialogDescriptor(
+                        NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Text"),
+                        NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Title"),
+                        true,
+                        new Object[] {close},
+                        close,
+                        DialogDescriptor.DEFAULT_ALIGN,
+                        null,
+                        null);
 
-            // TODO invoke plugin manager once API to do that will be available
-            DialogDisplayer.getDefault().notify(descriptor);
-            return null;
+                // TODO invoke plugin manager once API to do that will be available
+                DialogDisplayer.getDefault().notify(descriptor);
+                return null;
+            } else {
+                Action a = null;
+                if (ready.length == 1) {
+                    a = (Action)ready[0].getClientProperty("action"); // NOI18N
+                } else {
+                    AvailableProvidersPanel available = new AvailableProvidersPanel(ready);
+                    DialogDescriptor descriptor = new DialogDescriptor(
+                            available,
+                            NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Title"),
+                            true,
+                            new Object[] {DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION },
+                            null,
+                            DialogDescriptor.DEFAULT_ALIGN,
+                            null,
+                            null);
+
+                    DialogDisplayer.getDefault().notify(descriptor);
+                    if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                        a = (Action)available.getSelected().getClientProperty("action"); // NOI18N
+                    }
+                }
+                if (a != null) {
+                    a.actionPerformed(new ActionEvent(a, 0, "noui")); // NOI18N
+                } else {
+                    return null;
+                }
+            }
         }
 
         AddServerInstanceWizard wizard = new AddServerInstanceWizard();
@@ -172,6 +212,25 @@ public class AddServerInstanceWizard extends WizardDescriptor {
             putProperty(PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(getContentSelectedIndex()));
         }
     }
+
+    static JRadioButton[] listAvailableProviders() {
+        List<JRadioButton> res = new ArrayList<JRadioButton>();
+
+        for (Action a : Utilities.actionsForPath("Servers/Actions")) { // NOI18N
+            if (a == null) {
+                continue;
+            }
+            Object msg = a.getValue("wizardMessage"); // NOI18N
+            if (msg instanceof String) {
+                JRadioButton button = new JRadioButton((String)msg);
+                button.putClientProperty("action", a); // NOI18N
+                res.add(button);
+            }
+        }
+
+        return res.toArray(new JRadioButton[0]);
+    }
+
 
     private ServerWizardPanel getChooser() {
         if (chooser == null) {

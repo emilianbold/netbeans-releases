@@ -131,6 +131,10 @@ class AST2Bytecode {
                 int opcode;
                 do {
                     do {
+                        if (from < 0 || from >= bytecodes.length) {
+                            // Check for bad bytecode or bad parsing...
+                            return null;
+                        }
                         opcode = bytecodes[from] & 0xFF;
                         if (isMethodCall(opcode)) {
                             break;

@@ -47,6 +47,8 @@ import java.util.Properties;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -92,13 +94,23 @@ public class CheckoutUI extends javax.swing.JPanel {
         //checkoutButton.setEnabled(false);//TODO validate 
 
         load();
+        txtFolder.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                validateFolder();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                validateFolder();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                validateFolder();
+            }
+        });
         txtFolder.setText(ProjectChooser.getProjectsFolder().getAbsolutePath() + File.separator + project.getArtifactId());
-        validateFolder();
     }
 
     private void validateFolder() {
 
-        File file = new File(txtFolder.getText());
+        File file = new File(txtFolder.getText().trim());
         if (file.exists() && file.list() != null && file.list().length > 0) {
             checkoutButton.setEnabled(false);
             lblFolderError.setForeground(Color.red);
@@ -185,12 +197,6 @@ public class CheckoutUI extends javax.swing.JPanel {
         lblLocalFolderDescription.setForeground(new java.awt.Color(0, 0, 102));
         org.openide.awt.Mnemonics.setLocalizedText(lblLocalFolderDescription, org.openide.util.NbBundle.getMessage(CheckoutUI.class, "LBL_LocalFolderDescription")); // NOI18N
 
-        txtFolder.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                txtFolderKeyReleased(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(btnFile, org.openide.util.NbBundle.getMessage(CheckoutUI.class, "BTN_Browse")); // NOI18N
         btnFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -224,9 +230,9 @@ public class CheckoutUI extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblLocalFolderDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
+                    .add(lblLocalFolderDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE)
                     .add(chkPrintDebugInfo)
-                    .add(lblDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
+                    .add(lblDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE)
                     .add(lblAuthenticationDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 297, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(layout.createSequentialGroup()
                         .add(10, 10, 10)
@@ -235,12 +241,12 @@ public class CheckoutUI extends javax.swing.JPanel {
                             .add(lblPassword))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(txtPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
-                            .add(txtUser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE))
+                            .add(txtPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
+                            .add(txtUser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lblActhenticationHint)
                         .add(166, 166, 166))
-                    .add(lblConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
+                    .add(lblConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(10, 10, 10)
                         .add(lblLocalFolder)
@@ -248,10 +254,10 @@ public class CheckoutUI extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(10, 10, 10)
-                                .add(lblFolderError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE))
+                                .add(lblFolderError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(txtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+                                .add(txtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(btnFile))))
                     .add(layout.createSequentialGroup()
@@ -326,7 +332,6 @@ public class CheckoutUI extends javax.swing.JPanel {
         if (ret == JFileChooser.APPROVE_OPTION) {
             txtFolder.setText(chooser.getSelectedFile().getAbsolutePath());
             txtFolder.requestFocusInWindow();
-            validateFolder();
         }
     }//GEN-LAST:event_btnFileActionPerformed
 
@@ -342,22 +347,22 @@ public class CheckoutUI extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_developerConnectionActionPerformed
 
-private void txtFolderKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtFolderKeyReleased
-   validateFolder();
-}//GEN-LAST:event_txtFolderKeyReleased
+    public File getCheckoutDirectory() {
+        return FileUtil.normalizeFile(new File(txtFolder.getText().trim()));
+    }
+
 
     public RunConfig getRunConfig() {
         BeanRunConfig brc = new BeanRunConfig();
-        brc.setExecutionDirectory(FileUtil.normalizeFile(new File(txtFolder.getText().trim())));
+        brc.setExecutionDirectory(getCheckoutDirectory().getParentFile());
         List<String> goals = new ArrayList<String>();
         goals.add(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_SCM_CHECKOUT));//NOI18N
         brc.setGoals(goals);
         brc.setTaskDisplayName(NbBundle.getMessage(CheckoutUI.class, "LBL_Checkout", project.getArtifactId() + " : " + project.getVersion()));
         brc.setExecutionName(brc.getTaskDisplayName());
         Properties properties = new Properties();
-        String path = txtFolder.getText();
 
-        properties.put("checkoutDirectory", path);//NOI18N
+        properties.put("checkoutDirectory", getCheckoutDirectory().getAbsolutePath());//NOI18N
 
         properties.put("connectionUrl", txtUrl.getText());//NOI18N
 

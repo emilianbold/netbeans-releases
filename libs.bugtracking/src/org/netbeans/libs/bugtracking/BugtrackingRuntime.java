@@ -41,12 +41,14 @@ package org.netbeans.libs.bugtracking;
 
 import java.io.File;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.commons.net.WebUtil;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryExternalizationParticipant;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.eclipse.mylyn.internal.tasks.core.externalization.ExternalizationManager;
 import org.eclipse.mylyn.internal.tasks.core.externalization.IExternalizationParticipant;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -72,7 +74,18 @@ public class BugtrackingRuntime {
     }
 
     public void init() {
+        if(SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    initIntern();
+                }
+            });
+        } else {
+            initIntern();
+        }
+    }
 
+    private void initIntern() {
         WebUtil.init();
 
         initCacheStore();

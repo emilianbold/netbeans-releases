@@ -134,19 +134,19 @@ public class NbEditorUI extends EditorUI {
                     }
                 }
 
-                // Check if editor is docked and if so then use global status bar.
-                JTextComponent component = getComponent();
-                // Check if component is inside main window
-                boolean underMainWindow = (SwingUtilities.isDescendingFrom(component,
-                WindowManager.getDefault().getMainWindow()));
-                getStatusBar().setVisible(!underMainWindow); // Note: no longer checking the preferences settting
+//                // Check if editor is docked and if so then use global status bar.
+//                JTextComponent component = getComponent();
+//                // Check if component is inside main window
+//                boolean underMainWindow = (SwingUtilities.isDescendingFrom(component,
+//                WindowManager.getDefault().getMainWindow()));
+//                getStatusBar().setVisible(!underMainWindow); // Note: no longer checking the preferences settting
             }
 
-            @Override
-            public void focusLost(FocusEvent e) {
-                // Clear global panel
-                StatusLineFactories.clearStatusLine();
-            }
+//            @Override
+//            public void focusLost(FocusEvent e) {
+//                // Clear global panel
+//                StatusLineFactories.clearStatusLine();
+//            }
 
 
         };
@@ -174,7 +174,7 @@ public class NbEditorUI extends EditorUI {
         super.installUI(c);
 
         if (!attached){
-            attachSystemActionPerformer(SearchBar.IncrementalSearchForwardAction.ACTION_NAME);
+            attachSystemActionPerformer(SearchBar.INCREMENTAL_SEARCH_FORWARD);
             attachSystemActionPerformer(ExtKit.replaceAction);
             attachSystemActionPerformer(ExtKit.gotoAction);
             attachSystemActionPerformer(ExtKit.showPopupMenuAction);

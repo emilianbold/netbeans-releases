@@ -2677,8 +2677,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if (file == null){
                     return;
                 }
-                FileImpl impl = (FileImpl) file.getObject();
-                CndUtils.assertTrue(impl != null, "");
+                FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(file);
+                CndUtils.assertTrue(impl != null, "no deref file for " + file, Level.INFO); // NOI18N
+                // situation is possible for standalone files which were already replaced
+                // by real files
                 if (impl == null) {
                     return;
                 }

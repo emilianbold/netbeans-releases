@@ -53,8 +53,8 @@ public class CreateDatabaseAction extends ActionNoBlock {
 
     /** creates new "Create Database..." action */
     public CreateDatabaseAction() {
-        super(Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools")+"|"
-                +Bundle.getStringTrimmed("org.netbeans.modules.derby.Bundle", "LBL_DerbyDatabase")+"|"
-                +Bundle.getStringTrimmed("org.netbeans.modules.derby.Bundle", "LBL_CreateDBAction"), null);
+        super(null, Bundle.getStringTrimmed(
+                "org.netbeans.modules.derby.Bundle",
+                "LBL_CreateDBAction"));
     }
 }

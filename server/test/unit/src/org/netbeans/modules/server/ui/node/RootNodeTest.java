@@ -72,7 +72,8 @@ public class RootNodeTest extends NbTestCase {
         RootNode rn = RootNode.getInstance();
         FileObject fo = FileUtil.getConfigFile("Servers/Actions");
         assertNotNull("Folder for actions precreated", fo);
-        fo.createData(MyAction.class.getName().replace('.', '-') + ".instance");
+        FileObject x = fo.createData(MyAction.class.getName().replace('.', '-') + ".instance");
+        x.setAttribute("position", 37);
         Action[] arr = rn.getActions(true);
         assertEquals("Two actions and one separator found: " + Arrays.asList(arr), 3, arr.length);
         assertEquals("Last one is separator", null, arr[2]);
@@ -106,6 +107,7 @@ public class RootNodeTest extends NbTestCase {
                     FileObject afo = fo.createData("A2.instance");
                     afo.setAttribute("instanceCreate", a);
                     afo.setAttribute("property-myprop", "true");
+                    afo.setAttribute("position", 98);
                 } catch (IOException ex) {
                     this.t = ex;
                 }
@@ -113,12 +115,12 @@ public class RootNodeTest extends NbTestCase {
 
             private void check1() {
                 try {
-                    RootNode.enableActionsDueToProperties();
+                    RootNode.enableActionsOnExpand();
                     assertEquals("No action called", 0, a.cnt);
                     assertEquals("No action called2", 0, MyAction.cnt);
 
                     System.setProperty("myprop", "ahoj");
-                    RootNode.enableActionsDueToProperties();
+                    RootNode.enableActionsOnExpand();
                     assertEquals("CntAction called", 1, a.cnt);
                     assertEquals("No Myaction", 0, MyAction.cnt);
                 } catch (Throwable ex) {

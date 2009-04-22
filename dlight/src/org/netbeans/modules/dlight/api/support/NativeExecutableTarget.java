@@ -47,18 +47,21 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.openide.windows.InputOutput;
 
@@ -81,6 +84,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private String cmd;
     private volatile Future<Integer> targetFutureResult;
     private volatile int pid = -1;
+    private volatile Integer status = null;
     private final Object stateLock = new String(NativeExecutableTarget.class.getName() + " - state lock"); // NOI18N
     private volatile State state;
 
@@ -88,12 +92,25 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         super(new NativeExecutableTargetExecutionService());
         this.execEnv = configuration.getExecutionEvnitoment();
         this.cmd = configuration.getCmd();
+        this.args = configuration.getArgs();
         this.workingDirectory = configuration.getWorkingDirectory();
         this.envs = new HashMap<String, String>();
         this.envs.putAll(configuration.getEnv());
-        this.externalTerminal = configuration.getExternalTerminal();
+
+        ExternalTerminal term = configuration.getExternalTerminal();
+
+        if (term != null) {
+            StringBuilder title = new StringBuilder(cmd);
+
+            for (String arg : args) {
+                title.append(" \"" + arg + '"'); // NOI18N
+            }
+
+            term = term.setTitle(title.toString());
+        }
+
+        this.externalTerminal = term;
         this.templateCMD = this.cmd;
-        this.args = configuration.getArgs();
         Map<String, String> info = configuration.getInfo();
 
         for (String name : info.keySet()) {
@@ -128,22 +145,17 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     }
 
     public void stateChanged(ChangeEvent e) {
-        DLightTarget.State targetPrevState;
-        DLightTarget.State targetNewState;
+        if (!(e instanceof NativeProcessChangeEvent)) {
+            return;
+        }
+
+        NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
+        NativeProcess process = (NativeProcess) event.getSource();
+
+        State newState = null;
 
         synchronized (stateLock) {
-            final Object src = e.getSource();
-
-            if (!(src instanceof NativeProcess)) {
-                return;
-            }
-
-            final NativeProcess process = (NativeProcess) src;
-
-            final NativeProcess.State newState = process.getState();
-            targetPrevState = state;
-
-            switch (newState) {
+            switch (event.state) {
                 case INITIAL:
                     state = State.INIT;
                     break;
@@ -152,26 +164,40 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                     break;
                 case RUNNING:
                     state = State.RUNNING;
-                    this.pid = process.getPID();
+                    pid = event.pid;
                     break;
                 case CANCELLED:
                     state = State.TERMINATED;
-                    log.info("NativeTask " + process.toString() + " cancelled!"); // NOI18N
+                    log.fine("NativeTask " + process.toString() + " cancelled!"); // NOI18N
                     break;
                 case ERROR:
                     state = State.FAILED;
-                    log.info("NativeTask " + process.toString() + // NOI18N
+                    log.fine("NativeTask " + process.toString() + // NOI18N
                             " finished with error! "); // NOI18N
                     break;
                 case FINISHED:
                     state = State.DONE;
+                    status = process.exitValue();
                     break;
             }
 
-            targetNewState = state;
+            newState = state;
         }
 
-        notifyListeners(targetPrevState, targetNewState);
+        notifyListeners(new DLightTargetChangeEvent(this, newState, status));
+    }
+
+    public int getExitCode() throws InterruptedException {
+        if (targetFutureResult != null) {
+            try {
+                return targetFutureResult.get();
+            } catch (ExecutionException ex) {
+                DLightLogger.instance.warning(ex.getMessage());
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
+        return -1;
     }
 
     public boolean canBeSubstituted() {
@@ -212,7 +238,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             pb = pb.addEnvironmentVariables(envs);
 
             // Setup external terminal ...
-            if (externalTerminal != null) {
+            if (execEnv.isLocal() && externalTerminal != null) {
                 pb = pb.useExternalTerminal(externalTerminal);
                 descr = descr.inputVisible(false);
                 if (io != null) {

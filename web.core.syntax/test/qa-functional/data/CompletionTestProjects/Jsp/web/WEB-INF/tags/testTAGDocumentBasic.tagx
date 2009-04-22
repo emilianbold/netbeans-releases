@@ -21,5 +21,16 @@ language
 <jsp:body><html></jsp:body>
 --%>
 
-</jsp:root>
+<%--CC
+<jsp:directive.attribute fragment="|"/>
+true
+<jsp:directive.attribute fragment="true"/>
+--%>
 
+<%--CC
+<jsp:directive.tag isELIgnored="|"/>
+false
+<jsp:directive.tag isELIgnored="false"/>
+--%>
+
+</jsp:root>

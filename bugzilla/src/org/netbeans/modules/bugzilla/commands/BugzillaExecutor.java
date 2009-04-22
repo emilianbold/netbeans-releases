@@ -90,19 +90,20 @@ public class BugzillaExecutor {
             cmd.setErrorMessage(null);
 
         } catch (CoreException ce) {
+            Bugzilla.LOG.log(Level.FINE, null, ce);
+
             ExceptionHandler handler = ExceptionHandler.createHandler(ce, this, repository);
-            if(handler != null) {
+            assert handler != null;
 
-                String msg = handler.getMessage();
+            String msg = handler.getMessage();
 
-                cmd.setFailed(true);
-                cmd.setErrorMessage(msg);
+            cmd.setFailed(true);
+            cmd.setErrorMessage(msg);
 
-                if(handleExceptions) {
-                    if(handler.handle()) {
-                        // execute again
-                        execute(cmd);
-                    }
+            if(handleExceptions) {
+                if(handler.handle()) {
+                    // execute again
+                    execute(cmd);
                 }
             }
             return;
@@ -114,13 +115,14 @@ public class BugzillaExecutor {
             cmd.setErrorMessage(ioe.getMessage());
 
             if(!handleExceptions) {
+                Bugzilla.LOG.log(Level.FINE, null, ioe);
                 return;
             }
 
             handleIOException(ioe);
         } catch(RuntimeException re) {
             Throwable t = re.getCause();
-            if(t instanceof InterruptedException) {
+            if(t instanceof InterruptedException || !handleExceptions) {
                 Bugzilla.LOG.log(Level.FINE, null, t);
             } else {
                 Bugzilla.LOG.log(Level.SEVERE, null, re);
@@ -173,11 +175,11 @@ public class BugzillaExecutor {
                 if(INVALID_USERNAME_OR_PASSWORD.equals(msg) ||
                    msg.contains(INVALID_USERNAME_OR_PASSWORD))
                 {
-                    return "Invalid Username or Password"; // XXX bundle me
+                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD"); 
                 } else if(msg.startsWith(REPOSITORY_LOGIN_FAILURE) ||
                          (msg.startsWith(REPOSITORY) && msg.endsWith(COULD_NOT_BE_FOUND)))
                 {
-                    return "Unable login to repository."; // XXX replace with own bundle value
+                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_UNABLE_LOGIN_TO_REPOSITORY"); 
                 }
             }
             return null;
@@ -188,7 +190,7 @@ public class BugzillaExecutor {
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
                 if(msg.startsWith(MIDAIR_COLLISION)) {
-                    return "Mid-air collision occurred while submitting to ''{0}''.\nRefresh the issue and re-submit changes."; // XXX bundle me
+                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_MID-AIR_COLLISION"); 
                 }
             }
             return null;
@@ -198,13 +200,13 @@ public class BugzillaExecutor {
             IStatus status = ce.getStatus();
             Throwable t = status.getException();
             if(t instanceof UnknownHostException) {
-                return "Host not found";
+                return NbBundle.getMessage(BugzillaExecutor.class, "MSG_HOST_NOT_FOUND");
             }
             String msg = getMessage(ce);
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
                 if(HTTP_ERROR_NOT_FOUND.equals(msg)) {
-                    return "Host not found";
+                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_HOST_NOT_FOUND");
                 }
             }
             return null;

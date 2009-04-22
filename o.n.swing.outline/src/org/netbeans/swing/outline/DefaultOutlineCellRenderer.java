@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
 import javax.swing.BorderFactory;
+import javax.swing.CellRendererPane;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -69,6 +70,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     private boolean showHandle = true;
     private int nestingDepth = 0;
     private final JCheckBox theCheckBox;
+    private final CellRendererPane fakeCellRendererPane;
     private JCheckBox checkBox;
     private static final Border expansionBorder = new ExpansionHandleBorder();
     
@@ -78,6 +80,11 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
         theCheckBox.setSize(theCheckBox.getPreferredSize());
         theCheckBox.setBorderPainted(false);
         theCheckBox.setOpaque(false);
+        // In order to paint the check-box correctly, following condition must be true:
+        // SwingUtilities.getAncestorOfClass(CellRendererPane.class, theCheckBox) != null
+        // (See e.g.: paintSkin() method in com/sun/java/swing/plaf/windows/XPStyle.java)
+        fakeCellRendererPane = new CellRendererPane();
+        fakeCellRendererPane.add(theCheckBox);
     }
     
     /** Overridden to combine the expansion border (whose insets determine how

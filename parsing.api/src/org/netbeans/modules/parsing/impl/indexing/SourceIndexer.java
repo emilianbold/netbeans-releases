@@ -73,14 +73,16 @@ public class SourceIndexer {
     private final URL rootURL;
     private final FileObject cache;
     private final boolean followUpJob;
+    private final boolean checkForEditorModifications;
     private final Map<String,EmbeddingIndexerFactory> embeddedIndexers = new HashMap<String, EmbeddingIndexerFactory>();
 
-    public SourceIndexer (final URL rootURL, final FileObject cache, final boolean followUpJob) {
+    public SourceIndexer(URL rootURL, FileObject cache, boolean followUpJob, boolean checkForEditorModifications) {
         assert rootURL != null;
         assert cache != null;
         this.rootURL = rootURL;
         this.cache = cache;
         this.followUpJob = followUpJob;
+        this.checkForEditorModifications = checkForEditorModifications;
     }
 
     protected void index(Iterable<? extends Indexable> files, final List<Context> transactionContexts) throws IOException {
@@ -104,14 +106,14 @@ public class SourceIndexer {
                         private void visit (final ResultIterator resultIterator,
                                 final EmbeddingIndexerFactory currentIndexerFactory) throws ParseException,IOException {
                             if (currentIndexerFactory != null) {
-                                final String indexerName = currentIndexerFactory.getIndexerName();
-                                final int indexerVersion = currentIndexerFactory.getIndexVersion();
-                                final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob);
-                                transactionContexts.add(context);
-
                                 final Parser.Result pr = resultIterator.getParserResult();
                                 if (pr != null) {
-                                    final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty,resultIterator.getSnapshot());
+                                    final String indexerName = currentIndexerFactory.getIndexerName();
+                                    final int indexerVersion = currentIndexerFactory.getIndexVersion();
+                                    final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkForEditorModifications);
+                                    transactionContexts.add(context);
+
+                                    final EmbeddingIndexer indexer = currentIndexerFactory.createIndexer(dirty, pr.getSnapshot());
                                     if (indexer != null) {
                                         try {
                                             SPIAccessor.getInstance().index(indexer, dirty, pr, context);

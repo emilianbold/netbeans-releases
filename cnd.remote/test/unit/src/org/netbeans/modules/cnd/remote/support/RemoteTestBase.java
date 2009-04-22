@@ -47,9 +47,11 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.test.BaseTestCase;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
 /**
  * A common base class for remote "unit" tests
@@ -60,7 +62,17 @@ public abstract class RemoteTestBase extends BaseTestCase {
     protected RemoteTestBase(String testName) {
         super(testName);
     }
-    
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        final ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
+        if (execEnv != null) {
+            ConnectionManager.getInstance().connectTo(execEnv,getRemotePassword(), false);
+        }
+    }
+
+
     public static class FakeCompilerSet extends CompilerSet {
 
         private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());
@@ -79,7 +91,7 @@ public abstract class RemoteTestBase extends BaseTestCase {
             private List<String> fakeIncludes = new ArrayList<String>();
 
             private FakeTool() {
-                super(ExecutionEnvironmentFactory.getExecutionEnvironment("fake"), CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
+                super(ExecutionEnvironmentFactory.fromString("fake"), CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
                 fakeIncludes.add("/usr/include"); //NOI18N
                 fakeIncludes.add("/usr/local/include"); //NOI18N
                 fakeIncludes.add("/usr/sfw/include"); //NOI18N

@@ -45,10 +45,15 @@
 
 package org.netbeans.modules.debugger.jpda.ui.options;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -66,10 +71,14 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.debugger.jpda.ui.VariablesFormatter;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,11 +87,16 @@ import org.openide.util.NbBundle;
  */
 class CategoryPanelFormatters extends StorablePanel {
 
+    private static final String COPY1 = " (copy"; // NOI18N
+    private static final String COPY2 = ")";      // NOI18N
+
     /** Creates new form CategoryPanelFormatters */
     public CategoryPanelFormatters() {
         initComponents();
         initFormattersList();
         loadSelectedFormatter(null);
+        formatValueEditorPane.setBackground(testChildrenTextField.getBackground());
+        formatChildrenCodeEditorPane.setBackground(testChildrenTextField.getBackground());
     }
 
     /** This method is called from within the constructor to
@@ -94,71 +108,36 @@ class CategoryPanelFormatters extends StorablePanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        buttonGroup1 = new javax.swing.ButtonGroup();
+        childrenVarsLabel = new javax.swing.JLabel();
+        formatChildrenListScrollPane = new javax.swing.JScrollPane();
+        formatChildrenListTable = new javax.swing.JTable();
         formattersScrollPane = new javax.swing.JScrollPane();
         formattersList = new javax.swing.JList();
         formatterNameLabel = new javax.swing.JLabel();
-        formatterNameTextField = new javax.swing.JTextField();
         formatterClassTypesLabel = new javax.swing.JLabel();
         formatterClassTypesTextField = new javax.swing.JTextField();
-        formatterClassTypesSubtypesCheckBox = new javax.swing.JCheckBox();
         formatValueLabel = new javax.swing.JLabel();
         formatValueScrollPane = new javax.swing.JScrollPane();
         formatValueEditorPane = new javax.swing.JEditorPane();
         formatChildrenLabel = new javax.swing.JLabel();
-        formatChildrenAsCodeRadioButton = new javax.swing.JRadioButton();
         formatChildrenCodeScrollPane = new javax.swing.JScrollPane();
         formatChildrenCodeEditorPane = new javax.swing.JEditorPane();
-        formatChildrenAsListRadioButton = new javax.swing.JRadioButton();
-        formatChildrenListScrollPane = new javax.swing.JScrollPane();
-        formatChildrenListTable = new javax.swing.JTable();
-        childrenExpandExpressionLabel = new javax.swing.JLabel();
-        childrenExpandExpressionTextField = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         formattersAddButton = new javax.swing.JButton();
         formattersRemoveButton = new javax.swing.JButton();
         formattersMoveUpButton = new javax.swing.JButton();
         formattersMoveDownButton = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
-        variableAddButton = new javax.swing.JButton();
-        variableRemoveButton = new javax.swing.JButton();
-        variableMoveUpButton = new javax.swing.JButton();
-        variableMoveDownButton = new javax.swing.JButton();
+        editButton = new javax.swing.JButton();
+        copyButton = new javax.swing.JButton();
+        subtypesLabel = new javax.swing.JLabel();
+        testChildrenTextField = new javax.swing.JTextField();
+        formatChildrenLabelIf = new javax.swing.JLabel();
+        childrenCodeLabel = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
 
-        formattersScrollPane.setViewportView(formattersList);
+        org.openide.awt.Mnemonics.setLocalizedText(childrenVarsLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.childrenVarsLabel.text")); // NOI18N
 
-        formatterNameLabel.setLabelFor(formatterNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(formatterNameLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterNameLabel.text")); // NOI18N
-
-        formatterClassTypesLabel.setLabelFor(formatterClassTypesTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(formatterClassTypesLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterClassTypesLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(formatterClassTypesSubtypesCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterClassTypesSubtypesCheckBox.text")); // NOI18N
-
-        formatValueLabel.setLabelFor(formatValueEditorPane);
-        org.openide.awt.Mnemonics.setLocalizedText(formatValueLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatValueLabel.text")); // NOI18N
-
-        formatValueScrollPane.setViewportView(formatValueEditorPane);
-
-        org.openide.awt.Mnemonics.setLocalizedText(formatChildrenLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenLabel.text")); // NOI18N
-
-        buttonGroup1.add(formatChildrenAsCodeRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(formatChildrenAsCodeRadioButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenAsCodeRadioButton.text")); // NOI18N
-        formatChildrenAsCodeRadioButton.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                formatChildrenAsCodeRadioButtonStateChanged(evt);
-            }
-        });
-
-        formatChildrenCodeScrollPane.setViewportView(formatChildrenCodeEditorPane);
-
-        buttonGroup1.add(formatChildrenAsListRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(formatChildrenAsListRadioButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenAsListRadioButton.text")); // NOI18N
-        formatChildrenAsListRadioButton.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                formatChildrenAsListRadioButtonStateChanged(evt);
-            }
-        });
+        formatChildrenListScrollPane.setEnabled(false);
 
         formatChildrenListTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -171,15 +150,39 @@ class CategoryPanelFormatters extends StorablePanel {
             Class[] types = new Class [] {
                 java.lang.String.class, java.lang.String.class
             };
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
             }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
         });
         formatChildrenListScrollPane.setViewportView(formatChildrenListTable);
 
-        childrenExpandExpressionLabel.setLabelFor(childrenExpandExpressionTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(childrenExpandExpressionLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.childrenExpandExpressionLabel.text")); // NOI18N
+        formattersScrollPane.setViewportView(formattersList);
+
+        org.openide.awt.Mnemonics.setLocalizedText(formatterNameLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterNameLabel.text")); // NOI18N
+
+        formatterClassTypesLabel.setLabelFor(formatterClassTypesTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(formatterClassTypesLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterClassTypesLabel.text")); // NOI18N
+
+        formatterClassTypesTextField.setEditable(false);
+
+        formatValueLabel.setLabelFor(formatValueEditorPane);
+        org.openide.awt.Mnemonics.setLocalizedText(formatValueLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatValueLabel.text")); // NOI18N
+
+        formatValueEditorPane.setEditable(false);
+        formatValueScrollPane.setViewportView(formatValueEditorPane);
+
+        org.openide.awt.Mnemonics.setLocalizedText(formatChildrenLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenLabel.text")); // NOI18N
+
+        formatChildrenCodeEditorPane.setEditable(false);
+        formatChildrenCodeScrollPane.setViewportView(formatChildrenCodeEditorPane);
 
         org.openide.awt.Mnemonics.setLocalizedText(formattersAddButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersAddButton.text")); // NOI18N
         formattersAddButton.addActionListener(new java.awt.event.ActionListener() {
@@ -196,6 +199,7 @@ class CategoryPanelFormatters extends StorablePanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(formattersMoveUpButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersMoveUpButton.text")); // NOI18N
+        formattersMoveUpButton.setToolTipText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersMoveButtons.tooltip")); // NOI18N
         formattersMoveUpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 formattersMoveUpButtonActionPerformed(evt);
@@ -203,9 +207,24 @@ class CategoryPanelFormatters extends StorablePanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(formattersMoveDownButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersMoveDownButton.text")); // NOI18N
+        formattersMoveDownButton.setToolTipText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersMoveButtons.tooltip")); // NOI18N
         formattersMoveDownButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 formattersMoveDownButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.editButton.text")); // NOI18N
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(copyButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.copyButton.text")); // NOI18N
+        copyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                copyButtonActionPerformed(evt);
             }
         });
 
@@ -213,167 +232,154 @@ class CategoryPanelFormatters extends StorablePanel {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(formattersMoveDownButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
-            .add(formattersMoveUpButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
-            .add(formattersRemoveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
-            .add(formattersAddButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+            .add(formattersMoveDownButton)
+            .add(formattersMoveUpButton)
+            .add(formattersRemoveButton)
+            .add(formattersAddButton)
+            .add(editButton)
+            .add(copyButton)
         );
+
+        jPanel1Layout.linkSize(new java.awt.Component[] {copyButton, editButton, formattersAddButton, formattersMoveDownButton, formattersMoveUpButton, formattersRemoveButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(formattersAddButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(formattersRemoveButton)
+                .add(copyButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(editButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(formattersRemoveButton)
+                .add(18, 18, 18)
                 .add(formattersMoveUpButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(formattersMoveDownButton))
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(variableAddButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableAddButton.text")); // NOI18N
-        variableAddButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                variableAddButtonActionPerformed(evt);
-            }
-        });
+        org.openide.awt.Mnemonics.setLocalizedText(subtypesLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.subtypesLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(variableRemoveButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableRemoveButton.text")); // NOI18N
-        variableRemoveButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                variableRemoveButtonActionPerformed(evt);
-            }
-        });
+        testChildrenTextField.setEditable(false);
+        testChildrenTextField.setText(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.testChildrenTextField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(variableMoveUpButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableMoveUpButton.text")); // NOI18N
-        variableMoveUpButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                variableMoveUpButtonActionPerformed(evt);
-            }
-        });
+        org.openide.awt.Mnemonics.setLocalizedText(formatChildrenLabelIf, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenLabelIf.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(variableMoveDownButton, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.variableMoveDownButton.text")); // NOI18N
-        variableMoveDownButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                variableMoveDownButtonActionPerformed(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(variableAddButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
-            .add(variableMoveUpButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
-            .add(variableMoveDownButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(variableRemoveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(variableAddButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(variableRemoveButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(variableMoveUpButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(variableMoveDownButton))
-        );
+        org.openide.awt.Mnemonics.setLocalizedText(childrenCodeLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.childrenCodeLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(formatterClassTypesLabel)
-                    .add(formatterNameLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(formatterNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(formatterClassTypesTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(formatterClassTypesSubtypesCheckBox)
-                        .add(12, 12, 12))))
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
-                        .add(formatValueScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE))
-                    .add(formatValueLabel))
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(childrenExpandExpressionLabel)
-                .addContainerGap(72, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(formatChildrenListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
+                        .add(formatterNameLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(formattersScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(formatChildrenAsListRadioButton)
+                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(formatChildrenCodeScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE))
-                    .add(formatChildrenAsCodeRadioButton)
-                    .add(formatChildrenLabel))
-                .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(24, 24, 24)
-                .add(childrenExpandExpressionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
-                .addContainerGap())
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                        .add(formatterClassTypesLabel)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(formatterClassTypesTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, formatValueLabel)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, childrenCodeLabel))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(subtypesLabel)
+                                .add(6, 6, 6))
+                            .add(layout.createSequentialGroup()
+                                .add(formattersScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                    .add(layout.createSequentialGroup()
+                        .add(12, 12, 12)
+                        .add(formatChildrenLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(testChildrenTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(formatChildrenLabelIf))
+                    .add(layout.createSequentialGroup()
+                        .add(24, 24, 24)
+                        .add(formatValueScrollPane))
+                    .add(layout.createSequentialGroup()
+                        .add(24, 24, 24)
+                        .add(formatChildrenCodeScrollPane)))
+                .add(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(formattersScrollPane, 0, 0, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .add(13, 13, 13)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(formattersScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 192, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(formatterNameLabel)
-                    .add(formatterNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 9, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(formatterClassTypesLabel)
                     .add(formatterClassTypesTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(formatterClassTypesSubtypesCheckBox))
+                    .add(subtypesLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(formatValueLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(formatValueScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
+                .add(formatValueScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(formatChildrenLabel)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(formatChildrenLabel)
+                    .add(testChildrenTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(formatChildrenLabelIf))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(formatChildrenAsCodeRadioButton)
+                .add(childrenCodeLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(formatChildrenCodeScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(formatChildrenAsListRadioButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(formatChildrenListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(childrenExpandExpressionLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(childrenExpandExpressionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .add(formatChildrenCodeScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void formattersAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formattersAddButtonActionPerformed
+        VariablesFormatter f = new VariablesFormatter("");
+        final VariableFormatterEditPanel fPanel = new VariableFormatterEditPanel();
+        fPanel.load(f);
+
+        fPanel.setFormatterNames(getFormatterNames());
+        final Dialog[] dlgPtr = new Dialog[] { null };
+        DialogDescriptor formatterEditDescriptor = new DialogDescriptor(
+                fPanel,
+                NbBundle.getMessage(CategoryPanelFormatters.class, "TTL_AddFormatter"),
+                true,
+                NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION,
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        if (e.getSource() == NotifyDescriptor.OK_OPTION) {
+                            boolean valid = fPanel.checkValidInput();
+                            if (valid) {
+                                dlgPtr[0].setVisible(false);
+                            }
+                        } else {
+                            dlgPtr[0].setVisible(false);
+                        }
+                    }
+                });
+        formatterEditDescriptor.setClosingOptions(new Object[] {});
+        NotificationLineSupport notificationSupport = formatterEditDescriptor.createNotificationLineSupport();
+        fPanel.setValidityObjects(formatterEditDescriptor, notificationSupport, false);
+        //formatterEditDescriptor.setValid(false);
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(formatterEditDescriptor);
+        dlgPtr[0] = dlg;
+        dlg.setVisible(true);
+        if (NotifyDescriptor.OK_OPTION.equals(formatterEditDescriptor.getValue())) {
+            fPanel.store(f);
+            ((DefaultListModel) formattersList.getModel()).addElement(f);
+            formattersList.setSelectedValue(f, true);
+        }
+
+        /*
         NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine(
                 NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.addDLG.nameLabel"),
                 NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.addDLG.title"));
@@ -385,7 +391,7 @@ class CategoryPanelFormatters extends StorablePanel {
         //cb.setSelected(true);
         //filterClassesList.add(cb);
         //filterClassesList.repaint();
-
+        */
     }//GEN-LAST:event_formattersAddButtonActionPerformed
 
     private void formattersRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formattersRemoveButtonActionPerformed
@@ -415,94 +421,89 @@ class CategoryPanelFormatters extends StorablePanel {
         formattersList.setSelectedIndex(index + 1);
     }//GEN-LAST:event_formattersMoveDownButtonActionPerformed
 
-    private void variableAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableAddButtonActionPerformed
-        final DefaultTableModel model = (DefaultTableModel) formatChildrenListTable.getModel();
-        model.addRow(new Object[] { "", "" });
-        final int index = model.getRowCount() - 1;
-        formatChildrenListTable.getSelectionModel().setSelectionInterval(index, index);
-        formatChildrenListTable.editCellAt(index, 0);
-        formatChildrenListTable.requestFocus();
-         //DefaultCellEditor ed = (DefaultCellEditor)
-        formatChildrenListTable.getCellEditor(index, 0).shouldSelectCell(
-                new ListSelectionEvent(formatChildrenListTable,
-                                       index, index, true));
-        variableAddButton.setEnabled(false);
-        variableRemoveButton.setEnabled(false);
-        formatChildrenListTable.getCellEditor(index, 0).addCellEditorListener(new CellEditorListener() {
-            public void editingStopped(ChangeEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        String value = (String) model.getValueAt(index, 0);
-                        if (value.trim().length() == 0) {
-                            model.removeRow(index);
-                        }
+    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+        int index = formattersList.getSelectedIndex();
+        if (index < 0) return ;
+        DefaultListModel model = (DefaultListModel) formattersList.getModel();
+        VariablesFormatter f = (VariablesFormatter) model.getElementAt(index);
+
+        VariableFormatterEditPanel fPanel = new VariableFormatterEditPanel();
+        fPanel.load(f);
+
+        Set<String> formatterNames = getFormatterNames();
+        formatterNames.remove(f.getName());
+        fPanel.setFormatterNames(formatterNames);
+
+        DialogDescriptor formatterEditDescriptor = new DialogDescriptor(
+                fPanel,
+                NbBundle.getMessage(CategoryPanelFormatters.class, "TTL_EditFormatter"),
+                true,
+                NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION,
+                null);
+        NotificationLineSupport notificationSupport = formatterEditDescriptor.createNotificationLineSupport();
+        fPanel.setValidityObjects(formatterEditDescriptor, notificationSupport, true);
+        //formatterEditDescriptor.setValid(false);
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(formatterEditDescriptor);
+        dlg.setVisible(true);
+        if (NotifyDescriptor.OK_OPTION.equals(formatterEditDescriptor.getValue())) {
+            fPanel.store(f);
+            checkBoxComponents.put(f, new JCheckBox(f.getName(), f.isEnabled()));
+            ((DefaultListModel) formattersList.getModel()).setElementAt(f, index);
+            //formattersList.repaint();
+            formattersList.setSelectedValue(f, true);
+            loadSelectedFormatter(f);
+        }
+    }//GEN-LAST:event_editButtonActionPerformed
+
+    private void copyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyButtonActionPerformed
+        int index = formattersList.getSelectedIndex();
+        if (index < 0) return ;
+        DefaultListModel model = (DefaultListModel) formattersList.getModel();
+        VariablesFormatter f = (VariablesFormatter) model.getElementAt(index);
+        VariablesFormatter f2 = f.clone();
+
+        Set<String> formatterNames = getFormatterNames();
+        String name = f2.getName();
+        while (formatterNames.contains(name)) {
+            boolean isCopied = name.contains(COPY1) && name.endsWith(COPY2);
+            int nc = 0;
+            if (isCopied) {
+                int i1 = name.lastIndexOf(COPY1) + COPY1.length();
+                int i2 = name.length() - COPY2.length();
+                if (i1 == i2) {
+                   nc = 1;
+                } else {
+                    String ncs = name.substring(i1, i2);
+                    try {
+                        nc = Integer.parseInt(ncs);
+                    } catch (NumberFormatException nfex) {
+                        isCopied = false;
                     }
-                });
-                formatChildrenListTable.getCellEditor(index, 0).removeCellEditorListener(this);
-                variableAddButton.setEnabled(true);
-                variableRemoveButton.setEnabled(true);
+                }
             }
-
-            public void editingCanceled(ChangeEvent e) {
-                model.removeRow(index);
-                formatChildrenListTable.getCellEditor(index, 0).removeCellEditorListener(this);
-                variableAddButton.setEnabled(true);
-                variableRemoveButton.setEnabled(true);
+            if (isCopied) {
+                nc++;
+                name = name.substring(0, name.lastIndexOf(COPY1)) + COPY1 + nc + COPY2;
+            } else {
+                name = name + COPY1 + COPY2;
             }
-        });
-    }//GEN-LAST:event_variableAddButtonActionPerformed
-
-    private void variableRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableRemoveButtonActionPerformed
-        int index = formatChildrenListTable.getSelectedRow();
-        if (index < 0) return ;
-        DefaultTableModel model = (DefaultTableModel) formatChildrenListTable.getModel();
-        model.removeRow(index);
-        if (index < formatChildrenListTable.getRowCount() || --index >= 0) {
-            formatChildrenListTable.setRowSelectionInterval(index, index);
         }
-    }//GEN-LAST:event_variableRemoveButtonActionPerformed
+        f2.setName(name);
+        ((DefaultListModel) formattersList.getModel()).insertElementAt(f2, index);
+        formattersList.setSelectedValue(f2, true);
+        
+}//GEN-LAST:event_copyButtonActionPerformed
 
-    private void variableMoveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableMoveUpButtonActionPerformed
-        int index = formatChildrenListTable.getSelectedRow();
-        if (index <= 0) return ;
-        DefaultTableModel model = (DefaultTableModel) formatChildrenListTable.getModel();
-        Object[] row = new Object[] { model.getValueAt(index, 0), model.getValueAt(index, 1) };
-        model.removeRow(index);
-        model.insertRow(index - 1, row);
-        formatChildrenListTable.getSelectionModel().setSelectionInterval(index - 1, index - 1);
-    }//GEN-LAST:event_variableMoveUpButtonActionPerformed
-
-    private void variableMoveDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variableMoveDownButtonActionPerformed
-        int index = formatChildrenListTable.getSelectedRow();
-        if (index < 0) return ;
-        DefaultTableModel model = (DefaultTableModel) formatChildrenListTable.getModel();
-        if (index >= (model.getRowCount() - 1)) return ;
-        Object[] row = new Object[] { model.getValueAt(index, 0), model.getValueAt(index, 1) };
-        model.removeRow(index);
-        model.insertRow(index + 1, row);
-        formatChildrenListTable.getSelectionModel().setSelectionInterval(index + 1, index + 1);
-    }//GEN-LAST:event_variableMoveDownButtonActionPerformed
-
-    private void formatChildrenAsCodeRadioButtonStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_formatChildrenAsCodeRadioButtonStateChanged
-        boolean selected = formatChildrenAsCodeRadioButton.isSelected();
-        formatChildrenCodeEditorPane.setEditable(selected);
-        formatChildrenCodeEditorPane.setEnabled(selected);
-        if (selected) {
-            formatChildrenCodeEditorPane.requestFocusInWindow();
+    private Set<String> getFormatterNames() {
+        Set<String> formatterNames = new HashSet<String>();
+        ListModel formattersModel = formattersList.getModel();
+        int n = formattersModel.getSize();
+        for (int i = 0; i < n; i++) {
+            VariablesFormatter vf = (VariablesFormatter) formattersModel.getElementAt(i);
+            formatterNames.add(vf.getName());
         }
-    }//GEN-LAST:event_formatChildrenAsCodeRadioButtonStateChanged
-
-    private void formatChildrenAsListRadioButtonStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_formatChildrenAsListRadioButtonStateChanged
-        boolean selected = formatChildrenAsListRadioButton.isSelected();
-        formatChildrenListTable.setEnabled(selected);
-        variableAddButton.setEnabled(selected);
-        variableRemoveButton.setEnabled(selected);
-        variableMoveUpButton.setEnabled(selected);
-        variableMoveDownButton.setEnabled(selected);
-        if (selected) {
-            formatChildrenListTable.requestFocusInWindow();
-        }
-    }//GEN-LAST:event_formatChildrenAsListRadioButtonStateChanged
+        return formatterNames;
+    }
 
     private void initFormattersList() {
         formattersList.setCellRenderer(new ListCellRenderer() {
@@ -545,87 +546,114 @@ class CategoryPanelFormatters extends StorablePanel {
             public void valueChanged(ListSelectionEvent e) {
                 //Remember the last selection, store values to the last selected format and load values for the new one.
                 int index = formattersList.getSelectedIndex();
-                formattersRemoveButton.setEnabled(index >= 0);
-                formattersMoveDownButton.setEnabled(index >= 0 && index < (formattersList.getModel().getSize() - 1));
-                formattersMoveUpButton.setEnabled(index >= 1);
-                if (selectedVariablesFormatter != null) {
-                    storeSelectedFormatter(selectedVariablesFormatter);
-                }
                 if (index >= 0) {
                     selectedVariablesFormatter = (VariablesFormatter) formattersList.getModel().getElementAt(index);
                 } else {
                     selectedVariablesFormatter = null;
                 }
+                boolean isDefaultFormatter = selectedVariablesFormatter != null && selectedVariablesFormatter.isDefault();
+                formattersRemoveButton.setEnabled(index >= 0 && !isDefaultFormatter);
+                editButton.setEnabled(index >= 0 && !isDefaultFormatter);
+                copyButton.setEnabled(index >= 0);
+                if (index >= 0 && isDefaultFormatter) {
+                    formattersRemoveButton.setToolTipText(NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersRemoveButton.tooltip"));
+                    editButton.setToolTipText(NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.editButton.tooltip"));
+                } else {
+                    formattersRemoveButton.setToolTipText(null);
+                    editButton.setToolTipText(null);
+                }
+                formattersMoveDownButton.setEnabled(index >= 0 && index < (formattersList.getModel().getSize() - 1));
+                formattersMoveUpButton.setEnabled(index >= 1);
+                /*if (selectedVariablesFormatter != null) {
+                    storeSelectedFormatter(selectedVariablesFormatter);
+                }*/
                 loadSelectedFormatter(selectedVariablesFormatter);
             }
         });
         formattersList.setModel(new DefaultListModel());
         formattersList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        formatChildrenListTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                int index = formatChildrenListTable.getSelectedRow();
-                variableRemoveButton.setEnabled(index >= 0);
-                variableMoveDownButton.setEnabled(index >= 0 && index < (formatChildrenListTable.getRowCount() - 1));
-                variableMoveUpButton.setEnabled(index >= 1);
-            }
-        });
     }
 
     private void loadSelectedFormatter(VariablesFormatter f) {
         if (f == null) {
-            formatterNameTextField.setText("");
             formatterClassTypesTextField.setText("");
-            formatterClassTypesSubtypesCheckBox.setSelected(false);
+            subtypesLabel.setVisible(false);
+            //formatterClassTypesSubtypesCheckBox.setSelected(false);
             formatValueEditorPane.setText("");
             formatChildrenCodeEditorPane.setText("");
             formatChildrenListTable.setModel(new DefaultTableModel(new String[0][2], tableColumnNames));
-            formatChildrenAsCodeRadioButton.setSelected(true);
-            formatChildrenAsListRadioButton.setSelected(false);
-            childrenExpandExpressionTextField.setText("");
-            setEntryComponentsEnabled(false);
+            testChildrenTextField.setText("");
+            //childrenExpandExpressionTextField.setText("");
         } else {
-            setEntryComponentsEnabled(true);
-            formatterNameTextField.setText(f.getName());
             formatterClassTypesTextField.setText(f.getClassTypesCommaSeparated());
-            formatterClassTypesSubtypesCheckBox.setSelected(f.isIncludeSubTypes());
+            subtypesLabel.setVisible(f.isIncludeSubTypes());
+            //formatterClassTypesSubtypesCheckBox.setSelected(f.isIncludeSubTypes());
             formatValueEditorPane.setText(f.getValueFormatCode());
-            formatChildrenCodeEditorPane.setText(f.getChildrenFormatCode());
-            Map<String, String> childrenVariables = f.getChildrenVariables();
-            int n = childrenVariables.size();
-            Iterator<Map.Entry<String, String>> childrenVariablesEntries = childrenVariables.entrySet().iterator();
-            String[][] tableData = new String[n][2];
-            for (int i = 0; i < n; i++) {
-                Map.Entry<String, String> e = childrenVariablesEntries.next();
-                tableData[i][0] = e.getKey();
-                tableData[i][1] = e.getValue();
-            }
-            DefaultTableModel childrenVarsModel = new DefaultTableModel(tableData, tableColumnNames) {
-                @Override
-                public Class<?> getColumnClass(int columnIndex) {
-                    return String.class;
+            if (f.isUseChildrenVariables()) {
+                if (isChildrenCodeDisplayed) {
+                    //System.err.println("Replacing "+childrenCodeLabel+" with "+childrenVarsLabel);
+                    ((GroupLayout) getLayout()).replace(childrenCodeLabel, childrenVarsLabel);
+                    //System.err.println("Replacing "+formatChildrenCodeScrollPane+" with "+formatChildrenListScrollPane);
+                    ((GroupLayout) getLayout()).replace(formatChildrenCodeScrollPane, formatChildrenListScrollPane);
+                    isChildrenCodeDisplayed = false;
                 }
-            };
-            formatChildrenListTable.setModel(childrenVarsModel);
-            formatChildrenAsCodeRadioButton.setSelected(!f.isUseChildrenVariables());
-            formatChildrenAsListRadioButton.setSelected(f.isUseChildrenVariables());
-            childrenExpandExpressionTextField.setText(f.getChildrenExpandTestCode());
+                Map<String, String> childrenVariables = f.getChildrenVariables();
+                int n = childrenVariables.size();
+                Iterator<Map.Entry<String, String>> childrenVariablesEntries = childrenVariables.entrySet().iterator();
+                String[][] tableData = new String[n][2];
+                for (int i = 0; i < n; i++) {
+                    Map.Entry<String, String> e = childrenVariablesEntries.next();
+                    tableData[i][0] = e.getKey();
+                    tableData[i][1] = e.getValue();
+                }
+                DefaultTableModel childrenVarsModel = new DefaultTableModel(tableData, tableColumnNames) {
+                    @Override
+                    public Class<?> getColumnClass(int columnIndex) {
+                        return String.class;
+                    }
+                    @Override
+                    public boolean isCellEditable(int rowIndex, int columnIndex) {
+                        return false;
+                    }
+                };
+                formatChildrenListTable.setModel(childrenVarsModel);
+                //DisablingCellRenderer.apply(formatChildrenListTable, VariableFormatterEditPanel.getDisabledFieldBackground());
+            } else {
+                if (!isChildrenCodeDisplayed) {
+                    //System.err.println("Replacing "+childrenVarsLabel+" with "+childrenCodeLabel);
+                    ((GroupLayout) getLayout()).replace(childrenVarsLabel, childrenCodeLabel);
+                    //System.err.println("Replacing "+formatChildrenListScrollPane+" with "+formatChildrenCodeScrollPane);
+                    ((GroupLayout) getLayout()).replace(formatChildrenListScrollPane, formatChildrenCodeScrollPane);
+                    isChildrenCodeDisplayed = true;
+                }
+                formatChildrenCodeEditorPane.setText(f.getChildrenFormatCode());
+            }
+            String childrenExpandTest = f.getChildrenExpandTestCode();
+            if (childrenExpandTest != null && childrenExpandTest.trim().length() > 0) {
+                testChildrenTextField.setVisible(true);
+                formatChildrenLabelIf.setVisible(true);
+                testChildrenTextField.setText(childrenExpandTest);
+                org.openide.awt.Mnemonics.setLocalizedText(formatChildrenLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenLabel.text")); // NOI18N
+                if (isChildrenCodeDisplayed) {
+                    childrenCodeLabel.setVisible(true);
+                } else {
+                    childrenVarsLabel.setVisible(true);
+                }
+            } else {
+                testChildrenTextField.setVisible(false);
+                formatChildrenLabelIf.setVisible(false);
+                if (isChildrenCodeDisplayed) {
+                    org.openide.awt.Mnemonics.setLocalizedText(formatChildrenLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenLabelNoTestCode.text")); // NOI18N
+                    childrenCodeLabel.setVisible(false);
+                } else {
+                    org.openide.awt.Mnemonics.setLocalizedText(formatChildrenLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenLabelNoTestVars.text")); // NOI18N
+                    childrenVarsLabel.setVisible(false);
+                }
+            }
         }
     }
 
-    private void setEntryComponentsEnabled(boolean enabled) {
-        formatterNameTextField.setEnabled(enabled);
-        formatterClassTypesTextField.setEnabled(enabled);
-        formatterClassTypesSubtypesCheckBox.setEnabled(enabled);
-        formatValueEditorPane.setEnabled(enabled);
-        formatChildrenCodeEditorPane.setEnabled(enabled);
-        formatChildrenListTable.setEnabled(enabled);
-        formatChildrenAsCodeRadioButton.setEnabled(enabled);
-        formatChildrenAsListRadioButton.setEnabled(enabled);
-        childrenExpandExpressionTextField.setEnabled(enabled);
-    }
-
-    private void storeSelectedFormatter(VariablesFormatter f) {
+    /*private void storeSelectedFormatter(VariablesFormatter f) {
         f.setName(formatterNameTextField.getText());
         f.setClassTypes(formatterClassTypesTextField.getText());
         f.setIncludeSubTypes(formatterClassTypesSubtypesCheckBox.isSelected());
@@ -638,7 +666,7 @@ class CategoryPanelFormatters extends StorablePanel {
         }
         f.setUseChildrenVariables(formatChildrenAsListRadioButton.isSelected());
         f.setChildrenExpandTestCode(childrenExpandExpressionTextField.getText());
-    }
+    }*/
     
     @Override
     void load() {
@@ -657,9 +685,9 @@ class CategoryPanelFormatters extends StorablePanel {
 
     @Override
     void store() {
-        if (selectedVariablesFormatter != null) {
+        /*if (selectedVariablesFormatter != null) {
             storeSelectedFormatter(selectedVariablesFormatter);
-        }
+        }*/
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         ListModel formattersModel = formattersList.getModel();
         VariablesFormatter[] formatters = new VariablesFormatter[formattersModel.getSize()];
@@ -672,24 +700,22 @@ class CategoryPanelFormatters extends StorablePanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JLabel childrenExpandExpressionLabel;
-    private javax.swing.JTextField childrenExpandExpressionTextField;
-    private javax.swing.JRadioButton formatChildrenAsCodeRadioButton;
-    private javax.swing.JRadioButton formatChildrenAsListRadioButton;
+    private javax.swing.JLabel childrenCodeLabel;
+    private javax.swing.JLabel childrenVarsLabel;
+    private javax.swing.JButton copyButton;
+    private javax.swing.JButton editButton;
     private javax.swing.JEditorPane formatChildrenCodeEditorPane;
     private javax.swing.JScrollPane formatChildrenCodeScrollPane;
     private javax.swing.JLabel formatChildrenLabel;
+    private javax.swing.JLabel formatChildrenLabelIf;
     private javax.swing.JScrollPane formatChildrenListScrollPane;
     private javax.swing.JTable formatChildrenListTable;
     private javax.swing.JEditorPane formatValueEditorPane;
     private javax.swing.JLabel formatValueLabel;
     private javax.swing.JScrollPane formatValueScrollPane;
     private javax.swing.JLabel formatterClassTypesLabel;
-    private javax.swing.JCheckBox formatterClassTypesSubtypesCheckBox;
     private javax.swing.JTextField formatterClassTypesTextField;
     private javax.swing.JLabel formatterNameLabel;
-    private javax.swing.JTextField formatterNameTextField;
     private javax.swing.JButton formattersAddButton;
     private javax.swing.JList formattersList;
     private javax.swing.JButton formattersMoveDownButton;
@@ -697,11 +723,9 @@ class CategoryPanelFormatters extends StorablePanel {
     private javax.swing.JButton formattersRemoveButton;
     private javax.swing.JScrollPane formattersScrollPane;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JButton variableAddButton;
-    private javax.swing.JButton variableMoveDownButton;
-    private javax.swing.JButton variableMoveUpButton;
-    private javax.swing.JButton variableRemoveButton;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel subtypesLabel;
+    private javax.swing.JTextField testChildrenTextField;
     // End of variables declaration//GEN-END:variables
     private final Map<VariablesFormatter, JCheckBox> checkBoxComponents = new WeakHashMap<VariablesFormatter, JCheckBox>();
     private VariablesFormatter selectedVariablesFormatter;
@@ -709,5 +733,6 @@ class CategoryPanelFormatters extends StorablePanel {
         NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenListTable.Name"),
         NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatChildrenListTable.Value")
     };
+    private boolean isChildrenCodeDisplayed = true;
 
 }

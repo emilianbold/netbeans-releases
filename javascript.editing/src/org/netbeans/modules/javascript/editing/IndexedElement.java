@@ -224,11 +224,17 @@ public abstract class IndexedElement extends JsElement {
 
     protected final String getFilenameUrl() {
         try {
-            return indexResult.getFile().getURL().toExternalForm();
+            FileObject entryFO = indexResult.getFile();
+            if(entryFO != null) {
+                //test if the entry fo is non null since the file may be already
+                //deleted (completion invoked after the file deletion but before
+                //index update
+                return entryFO.getURL().toExternalForm();
+            }
         } catch (FileStateInvalidException ex) {
             LOG.log(Level.WARNING, null, ex);
-            return null;
         }
+        return null;
     }
 
     public Document getDocument() {

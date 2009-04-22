@@ -42,15 +42,20 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.project.Project;
@@ -59,6 +64,7 @@ import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.SelectProvider;
+import org.netbeans.api.visual.action.TwoStateHoverProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphScene;
@@ -68,8 +74,19 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
+import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.graph.FixVersionConflictPanel.FixDescription;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.Exclusion;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Profile;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -88,6 +105,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private WidgetAction zoomAction = ActionFactory.createMouseCenteredZoomAction(1.1);
     private WidgetAction panAction = ActionFactory.createPanAction();
     private WidgetAction editAction = ActionFactory.createEditAction(allActionsP);
+    WidgetAction hoverAction = ActionFactory.createHoverAction(new HoverController());
 
     Action sceneZoomToFitAction = new SceneZoomToFitAction();
     Action highlitedZoomToFitAction = new HighlitedZoomToFitAction();
@@ -100,17 +118,21 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private FitToViewLayout fitViewL;
 
     private static Set<ArtifactGraphNode> EMPTY_SELECTION = new HashSet<ArtifactGraphNode>();
+    private POMModel model;
     
     /** Creates a new instance ofla DependencyGraphScene */
-    DependencyGraphScene(MavenProject prj, Project nbProj, DependencyGraphTopComponent tc) {
+    DependencyGraphScene(MavenProject prj, Project nbProj, DependencyGraphTopComponent tc,
+            POMModel model) {
         project = prj;
         nbProject = nbProj;
         this.tc = tc;
+        this.model = model;
         mainLayer = new LayerWidget(this);
         addChild(mainLayer);
         connectionLayer = new LayerWidget(this);
         addChild(connectionLayer);
-        getActions().addAction(this.createObjectHoverAction());
+        //getActions().addAction(this.createObjectHoverAction());
+        getActions().addAction(hoverAction);
         getActions().addAction(ActionFactory.createSelectAction(allActionsP));
         getActions().addAction(zoomAction);
         getActions().addAction(panAction);
@@ -214,12 +236,12 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         childrenEdges.addAll(findNodeEdges(node, true, false));
 
         // primary path
-        addPathToRoot(node.getArtifact(), primaryPathEdges, importantNodes);
+        addPathToRoot(node, primaryPathEdges, importantNodes);
 
         // other important paths
         List<DependencyNode> representants = new ArrayList<DependencyNode>(node.getDuplicatesOrConflicts());
         for (DependencyNode curRep : representants) {
-            addPathToRoot(curRep, otherPathsEdges, importantNodes);
+            addPathToRoot(curRep, curRep.getParent(), otherPathsEdges, importantNodes);
         }
 
         EdgeWidget ew;
@@ -253,16 +275,27 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
 
     }
 
-    private void addPathToRoot(DependencyNode depN, List<ArtifactGraphEdge> edges, List<ArtifactGraphNode> nodes) {
-        DependencyNode parentDepN;
+    private void addPathToRoot(ArtifactGraphNode node, List<ArtifactGraphEdge> edges, List<ArtifactGraphNode> nodes) {
+        DependencyNode parentDepN = node.getParentAfterFix();
+        if (parentDepN == null) {
+            parentDepN = node.getArtifact().getParent();
+        }
+        addPathToRoot(node.getArtifact(), parentDepN, edges, nodes);
+    }
+
+
+    private void addPathToRoot(DependencyNode depN, DependencyNode parentDepN, List<ArtifactGraphEdge> edges, List<ArtifactGraphNode> nodes) {
         ArtifactGraphNode grNode;
-        while ((parentDepN = depN.getParent()) != null) {
+        while (parentDepN != null) {
             grNode = getGraphNodeRepresentant(parentDepN);
             edges.addAll(findEdgesBetween(grNode, getGraphNodeRepresentant(depN)));
             nodes.add(grNode);
             depN = parentDepN;
+            parentDepN = parentDepN.getParent();
         }
     }
+
+
 
     private class AllActionsProvider implements PopupMenuProvider, 
             MoveProvider, EditProvider, SelectProvider {
@@ -293,11 +326,17 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             if (widget == DependencyGraphScene.this) {
                 popupMenu.add(sceneZoomToFitAction);
             } else {
-                popupMenu.add(highlitedZoomToFitAction);
                 ArtifactGraphNode node = (ArtifactGraphNode)findObject(widget);
-                Action a = CommonArtifactActions.createViewArtifactDetails(node.getArtifact().getArtifact(), project.getRemoteArtifactRepositories());
-                a.putValue("PANEL_HINT", ArtifactViewer.HINT_GRAPH); //NOI18N
-                popupMenu.add(a);
+                if (model != null && isFixCandidate(node)) {
+                    popupMenu.add(new FixVersionConflictAction(node));
+                }
+                popupMenu.add(highlitedZoomToFitAction);
+                if (!node.isRoot()) {
+                    Action a = CommonArtifactActions.createViewArtifactDetails(node.getArtifact().getArtifact(), project.getRemoteArtifactRepositories());
+                    a.putValue("PANEL_HINT", ArtifactViewer.HINT_GRAPH); //NOI18N
+                    a.putValue(Action.NAME, NbBundle.getMessage(DependencyGraphScene.class, "ACT_Show_Graph"));
+                    popupMenu.add(a);
+                }
             }
             return popupMenu;
         }
@@ -454,5 +493,245 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             ftvl.invokeLayout();
         }
     };
+
+    static boolean isFixCandidate (ArtifactGraphNode node) {
+        Set<DependencyNode> conf = node.getDuplicatesOrConflicts();
+        ArtifactVersion nodeV = new DefaultArtifactVersion(node.getArtifact().getArtifact().getVersion());
+        for (DependencyNode dn : conf) {
+            if (dn.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+                if (nodeV.compareTo(new DefaultArtifactVersion(dn.getArtifact().getVersion())) < 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    static ArtifactVersion findNewest (ArtifactGraphNode node) {
+        Set<DependencyNode> conf = node.getDuplicatesOrConflicts();
+        ArtifactVersion result = new DefaultArtifactVersion(node.getArtifact().getArtifact().getVersion());
+        ArtifactVersion curV = null;
+        for (DependencyNode dn : conf) {
+            if (dn.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+                curV = new DefaultArtifactVersion(dn.getArtifact().getVersion());
+                if (result.compareTo(curV) < 0) {
+                    result = curV;
+                }
+            }
+        }
+        return result;
+    }
+
+    void invokeFixConflict (ArtifactGraphNode node) {
+        new FixVersionConflictAction(node).actionPerformed(null);
+    }
+
+    private class FixVersionConflictAction extends AbstractAction implements Runnable {
+        private ArtifactGraphNode node;
+        private Artifact nodeArtif;
+
+        public FixVersionConflictAction(ArtifactGraphNode node) {
+            this.node = node;
+            this.nodeArtif = node.getArtifact().getArtifact();
+            putValue(NAME, NbBundle.getMessage(DependencyGraphScene.class, "ACT_FixVersionConflict"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FixVersionConflictPanel fixPanel = new FixVersionConflictPanel(DependencyGraphScene.this, node);
+            DialogDescriptor dd = new DialogDescriptor(fixPanel,
+                    NbBundle.getMessage(DependencyGraphScene.class,"TIT_FixConflict"));
+            //pnl.setStatusDisplayer(dd.createNotificationLineSupport());
+            Object ret = DialogDisplayer.getDefault().notify(dd);
+            if (ret == DialogDescriptor.OK_OPTION) {
+                FixVersionConflictPanel.FixDescription res = fixPanel.getResult();
+                fixDependency(res);
+                updateGraph(res);
+                // save changes
+                RequestProcessor.getDefault().post(this);
+            }
+        }
+
+        /** Saves fix changes to the pom file, posted to RequestProcessor */
+        public void run() {
+            try {
+                Utilities.saveChanges(model);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                //TODO error reporting on wrong model save
+            }
+        }
+
+        private void fixDependency (FixVersionConflictPanel.FixDescription fixContent) {
+            try {
+                model.startTransaction();
+
+                if (fixContent.isSet && fixContent.version2Set != null) {
+                    org.netbeans.modules.maven.model.pom.Dependency dep =
+                            ModelUtils.checkModelDependency(model,
+                            nodeArtif.getGroupId(), nodeArtif.getArtifactId(), true);
+                    dep.setVersion(fixContent.version2Set.toString());
+                }
+
+                if (fixContent.isExclude) {
+                    for (Artifact eTarget : fixContent.exclusionTargets) {
+                        org.netbeans.modules.maven.model.pom.Dependency dep =
+                                model.getProject().findDependencyById(
+                                eTarget.getGroupId(), eTarget.getArtifactId(), null);
+                        if (dep == null) {
+                            // now check the active profiles for the dependency..
+                            List<String> profileNames = new ArrayList<String>();
+                            NbMavenProject project = nbProject.getLookup().lookup(NbMavenProject.class);
+                            Iterator it = project.getMavenProject().getActiveProfiles().iterator();
+                            while (it.hasNext()) {
+                                org.apache.maven.model.Profile prof = (org.apache.maven.model.Profile) it.next();
+                                profileNames.add(prof.getId());
+                            }
+                            for (String profileId : profileNames) {
+                                Profile modProf = model.getProject().findProfileById(profileId);
+                                if (modProf != null) {
+                                    dep = modProf.findDependencyById(eTarget.getGroupId(), eTarget.getArtifactId(), null);
+                                    if (dep != null) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (dep == null) {
+                            // must create dependency if not found locally, so that
+                            // there is a place where to add dep exclusion
+                            dep = model.getFactory().createDependency();
+                            dep.setArtifactId(eTarget.getArtifactId());
+                            dep.setGroupId(eTarget.getGroupId());
+                            dep.setType(eTarget.getType());
+                            dep.setVersion(eTarget.getVersion());
+                            model.getProject().addDependency(dep);
+                        }
+                        Exclusion ex = dep.findExclusionById(
+                                nodeArtif.getGroupId(), nodeArtif.getArtifactId());
+                        if (ex == null) {
+                            ex = model.getFactory().createExclusion();
+                            ex.setArtifactId(nodeArtif.getArtifactId());
+                            ex.setGroupId(nodeArtif.getGroupId());
+                            dep.addExclusion(ex);
+                        }
+                    }
+                }
+            } finally {
+                model.endTransaction();
+            }
+        }
+
+        private void updateGraph(FixDescription fixContent) {
+            boolean shouldValidate = false;
+
+            if (fixContent.isSet) {
+                node.getArtifact().getArtifact().setVersion(fixContent.version2Set.toString());
+                Collection<ArtifactGraphEdge> incoming = findNodeEdges(node, false, true);
+                for (ArtifactGraphEdge age : incoming) {
+                    EdgeWidget curEw = (EdgeWidget) findWidget(age);
+                    if (curEw != null) {
+                        curEw.modelChanged();
+                    }
+                }
+                node.getWidget().modelChanged();
+
+                // add edge representing direct dependency if not exist yet
+                if (findEdgesBetween(rootNode, node).isEmpty()) {
+                    ArtifactGraphEdge ed = new ArtifactGraphEdge(rootNode.getArtifact(), node.getArtifact());
+                    ed.setLevel(1);
+                    ed.setPrimaryPath(true);
+                    addEdge(ed);
+                    setEdgeTarget(ed, node);
+                    setEdgeSource(ed, rootNode);
+
+                    node.setPrimaryLevel(1);
+                    node.setParentAfterFix(rootNode.getArtifact());
+                    rootNode.getArtifact().addChild(node.getArtifact());
+
+                    shouldValidate = true;
+                }
+            }
+
+            if (fixContent.isExclude) {
+                Set<DependencyNode> toExclude = new HashSet<DependencyNode>();
+                DependencyNode curDn;
+                for (DependencyNode dn : node.getDuplicatesOrConflicts()) {
+                    if (dn.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+                        curDn = dn.getParent();
+                        while (curDn != null) {
+                            if (fixContent.exclusionTargets.contains(curDn.getArtifact())) {
+                                toExclude.add(dn);
+                                break;
+                            }
+                            curDn = curDn.getParent();
+                        }
+                    }
+                }
+
+                List<ArtifactGraphEdge> edges2Exclude = new ArrayList<ArtifactGraphEdge>();
+                Collection<ArtifactGraphEdge> incoming = findNodeEdges(node, false, true);
+                ArtifactGraphNode sourceNode = null;
+                for (ArtifactGraphEdge age : incoming) {
+                    sourceNode = getEdgeSource(age);
+                    if (sourceNode != null) {
+                        for (DependencyNode dn : fixContent.conflictParents) {
+                            if (sourceNode.represents(dn)) {
+                                edges2Exclude.add(age);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // note, must be called before node removing edges to work correctly
+                node.getDuplicatesOrConflicts().removeAll(toExclude);
+
+                for (ArtifactGraphEdge age : edges2Exclude) {
+                    removeEdge(age);
+                    age.getSource().removeChild(age.getTarget());
+                    shouldValidate = true;
+                }
+
+                incoming = findNodeEdges(node, false, true);
+
+                if (incoming.isEmpty()) {
+                    removeNodeWithEdges(node);
+                    shouldValidate = true;
+                } else {
+                    node.getWidget().modelChanged();
+                }
+            }
+
+            if (shouldValidate) {
+                validate();
+            }
+        }
+
+    } // FixVersionConflictAction
+
+    private class HoverController implements TwoStateHoverProvider {
+
+        public void unsetHovering(Widget widget) {
+            ArtifactWidget aw = findArtifactW(widget);
+            if (widget != null) {
+                aw.bulbUnhovered();
+            }
+        }
+
+        public void setHovering(Widget widget) {
+            ArtifactWidget aw = findArtifactW(widget);
+            if (aw != null) {
+                aw.bulbHovered();
+            }
+        }
+
+        private ArtifactWidget findArtifactW (Widget w) {
+            while (w != null && !(w instanceof ArtifactWidget)) {
+                w = w.getParentWidget();
+            }
+            return (ArtifactWidget)w;
+        }
+
+    }
 
 }

@@ -192,8 +192,6 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
         repoPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
-        repositoryComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
         org.openide.awt.Mnemonics.setLocalizedText(findIssuesLabel, org.openide.util.NbBundle.getMessage(IssueTopComponent.class, "IssueTopComponent.findIssuesLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(repoLabel, org.openide.util.NbBundle.getMessage(IssueTopComponent.class, "IssueTopComponent.repoLabel.text")); // NOI18N
@@ -230,7 +228,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     .add(findIssuesLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(90, Short.MAX_VALUE))
+                .addContainerGap(152, Short.MAX_VALUE))
         );
         repoPanelLayout.setVerticalGroup(
             repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -313,6 +311,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                             issue.addPropertyChangeListener(IssueTopComponent.this);
                             revalidate();
                             repaint();
+
+                            focusFirstEnabledComponent();
                         }
                     });
                 } finally {
@@ -321,6 +321,16 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 }
             }
         });
+    }
+
+    private void focusFirstEnabledComponent() {
+        repositoryComboBox.requestFocusInWindow();
+        if(!repositoryComboBox.isEnabled()) {
+            newButton.requestFocusInWindow();
+            if(!newButton.isEnabled()) {
+                newButton.transferFocus();
+            }
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -344,11 +354,6 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(issue != null) {
             issue.getController().opened();
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                repositoryComboBox.requestFocus();
-            }
-        });
     }
 
     @Override

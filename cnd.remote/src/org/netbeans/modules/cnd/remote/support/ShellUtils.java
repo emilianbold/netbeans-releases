@@ -39,7 +39,7 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import java.util.Map;
-import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
+import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -82,7 +82,7 @@ public class ShellUtils {
     private static final String shBinz = "PATH=/bin:/usr/bin:$PATH "; //NOI18N
 
     static String getPrefix(ExecutionEnvironment env) {
-        return RemoteHostInfoProvider.getHostInfo(env).isCshShell() ? cshBinz : shBinz;
+        return RemoteHostInfoProviderFactory.getHostInfo(env).isCshShell() ? cshBinz : shBinz;
     }
 
     static String prepareExportString(boolean isCshShell, String[] envp) {

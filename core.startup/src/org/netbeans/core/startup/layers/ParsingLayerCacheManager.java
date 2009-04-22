@@ -60,6 +60,7 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -171,7 +172,7 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
                 } catch (Exception e) {
                     curr.clear();
                     curr.push(root);
-                    LayerCacheManager.err.fine("Caught " + e + " while parsing: " + base);
+                    Exceptions.attachMessage(e, "While parsing " + base);
                     if (carrier == null) {
                         carrier = e;
                     } else {
@@ -189,7 +190,7 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
         } catch (IOException ioe) {
             throw ioe;
         } catch (Exception e) {
-            throw (IOException) new IOException("While parsing " + base + ": " + e).initCause(e);
+            throw (IOException) new IOException(e.toString()).initCause(e);
         } finally {
             fileCount = folderCount = attrCount = 0;
             base = null;

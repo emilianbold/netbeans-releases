@@ -14,9 +14,13 @@ import org.openide.util.NbBundle;
 
 /*package*/ class SyncIndicatorPanel {
 
-    private static final Color GRAPH_COLOR = GraphConfig.COLOR_4;
-    private static final GraphDescriptor DESCRIPTOR = new GraphDescriptor(GRAPH_COLOR, NbBundle.getMessage(SyncIndicatorPanel.class, "graph.description.locks")); // NOI18N
-    private static final String THREADS_DETAIL_ID = "thread-count";//NOI18N
+    private static final Color THREADS_COLOR = GraphConfig.COLOR_4;
+    private static final Color LOCKS_COLOR = GraphConfig.COLOR_1;
+
+    private static final GraphDescriptor THREADS_DESCRIPTOR = new GraphDescriptor(
+            THREADS_COLOR, NbBundle.getMessage(SyncIndicatorPanel.class, "graph.description.threads"), GraphDescriptor.Kind.ABS_SURFACE); // NOI18N
+    private static final GraphDescriptor LOCKS_DESCRIPTOR = new GraphDescriptor(
+            LOCKS_COLOR, NbBundle.getMessage(SyncIndicatorPanel.class, "graph.description.locks"), GraphDescriptor.Kind.ABS_SURFACE); // NOI18N
 
     private final Graph graph;
     private final Legend legend;
@@ -37,7 +41,7 @@ import org.openide.util.NbBundle;
     }
 
     private static Graph createGraph() {
-        Graph graph = new Graph(100, null, DESCRIPTOR);
+        Graph graph = new Graph(2, null, THREADS_DESCRIPTOR, LOCKS_DESCRIPTOR);
         graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
         Dimension graphSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.GRAPH_HEIGHT);
         graph.setMinimumSize(graphSize);
@@ -49,13 +53,14 @@ import org.openide.util.NbBundle;
     }
 
     private static Legend createLegend() {
-        Legend legend = new Legend(Arrays.asList(DESCRIPTOR), Collections.<String, String>singletonMap(THREADS_DETAIL_ID, NbBundle.getMessage(SyncIndicatorPanel.class, "SyncTool.Legend.Threads")));//NOI18N
-        legend.updateDetail(THREADS_DETAIL_ID, Integer.toString(0));
+        Legend legend = new Legend(Arrays.asList(THREADS_DESCRIPTOR, LOCKS_DESCRIPTOR), Collections.<String, String>emptyMap());
         return legend;
     }
 
     public void addData(int locks, int threads) {
-        graph.addData(locks);
-        legend.updateDetail(THREADS_DETAIL_ID, Integer.toString(threads));
+        while (graph.getUpperLimit() < threads) {
+            graph.setUpperLimit(2 * graph.getUpperLimit());
+        }
+        graph.addData(threads, locks);
     }
 }

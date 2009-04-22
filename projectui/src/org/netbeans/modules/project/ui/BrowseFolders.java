@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -271,13 +272,14 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
 
     private static final class SourceGroupsChildren extends Children.Keys<SourceGroup> {
 
-        private final SourceGroup[] groups;
+        private final List<SourceGroup> groups;
         private final Project project;
 
         public SourceGroupsChildren(SourceGroup[] groups, Project project) {
             assert groups != null;
             assert project != null;
-            this.groups = groups;
+            this.groups = Arrays.asList(groups);
+            assert !this.groups.contains(null) : this.groups;
             this.project = project;
         }
 

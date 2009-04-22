@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -75,7 +76,9 @@ final class OffsetableDeclarationKey extends OffsetableKey {
         // ensure that members and non-members has different keys
         // also make sure that function and fake function has different keys
         int result = obj.getEndOffset();
-        if( obj instanceof CsmMember) {
+        if (obj instanceof ForwardClass) {
+            result |= 0x80000000;
+        } else if( obj instanceof CsmMember) {
             // do nothing
         } else if ((obj instanceof FunctionImplEx<?>) && (FunctionImplEx.class.equals(obj.getClass()))) {
             result |= 0x80000000;

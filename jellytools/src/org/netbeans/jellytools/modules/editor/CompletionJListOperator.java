@@ -80,7 +80,7 @@ import org.netbeans.jemmy.util.EmptyVisualizer;
  *      CompletionJlist comp = CompletionJlist.showCompletion();
  *      List list = comp.getCompletionItems();
  *      ...
- *      com.hideAll();
+ *      comp.hideAll();
  * </pre>
  * @author Martin.Schovanek@sun.com
  */
@@ -390,13 +390,19 @@ public class CompletionJListOperator extends JListOperator {
     }
 
     @Override
+    public Object clickOnItem(final String item, final Operator.StringComparator comp)
+    {
+        return clickOnItem(item, comp, 1);
+    }
+
+    @Override
     /*
      * Most of this code copied from JList.java because there are
      * some problems with scrolling on big completion lists, ex. full
      * PHP completion list contains about 6000 elements. Scrolling
      * just removed from code.
     */
-    public Object clickOnItem(final String item, final Operator.StringComparator comp)
+    public Object clickOnItem(final String item, final Operator.StringComparator comp, final int clickCount)
     {
         return runMapping( new MapAction("clickOnItem( String, Comparator )")
         {
@@ -411,7 +417,7 @@ public class CompletionJListOperator extends JListOperator {
               return( getQueueTool().invokeSmoothly( new QueueTool.QueueAction("Path selecting")
                   {
                     public Object launch()
-                    {
+                    {                       
 	              if(((JList)getSource()).getAutoscrolls())
 	                ((JList)getSource()).ensureIndexIsVisible(itemIndex);
                       Rectangle rect = getCellBounds(itemIndex, itemIndex);
@@ -421,8 +427,8 @@ public class CompletionJListOperator extends JListOperator {
                           (int)(rect.getX() + rect.getWidth() / 2),
                           (int)(rect.getY() + rect.getHeight() / 2)
                         );
-                      Object result = getModel().getElementAt(itemIndex);
-                      clickMouse(point.x, point.y, 1);
+                      Object result = getModel().getElementAt(itemIndex);                        
+                      clickMouse(point.x, point.y, clickCount);
                       return(result);
                     }
                  }));

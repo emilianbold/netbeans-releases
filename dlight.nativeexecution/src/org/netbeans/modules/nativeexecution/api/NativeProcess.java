@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
+import java.io.IOException;
+
 /**
  * A {@link NativeProcessBuilder} starts a system process and returns an
  * instance of the {@link NativeProcess} which is a subclass of the
@@ -54,7 +56,7 @@ public abstract class NativeProcess extends Process {
      * @throws IllegalStateException if no PID was obtained prior to method
      *         invocation.
      */
-    public abstract int getPID() throws IllegalStateException;
+    public abstract int getPID() throws IOException;
 
     /**
      * Returns the current {@link NativeProcess.State state} of the process.

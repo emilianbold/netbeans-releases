@@ -432,6 +432,9 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             // Show the browse dialog             
             
             SourceGroup group = (SourceGroup)locationComboBox.getSelectedItem();
+            if (group == null) { // #161478
+                return;
+            }
             
             fo = BrowseFolders.showDialog( new SourceGroup[] { group }, 
                                            project, 

@@ -62,10 +62,6 @@ public class TransportSecurity extends ProfileBaseForm {
         super(comp, secProfile);
         initComponents();
 
-        inSync = true;
-        fillLayoutCombo(layoutCombo);
-        fillAlgoSuiteCombo(algoSuiteCombo);
-        inSync = false;
         sync();
     }
     
@@ -78,10 +74,6 @@ public class TransportSecurity extends ProfileBaseForm {
         if (token instanceof HttpsToken) {
             setChBox(requireCertificateChBox, SecurityTokensModelHelper.isRequireClientCertificate(token));
         }
-
-        setCombo(algoSuiteCombo, AlgoSuiteModelHelper.getAlgorithmSuite(secBinding));
-      
-        setCombo(layoutCombo, SecurityPolicyModelHelper.getMessageLayout(comp));
         
         inSync = false;
     }
@@ -97,12 +89,6 @@ public class TransportSecurity extends ProfileBaseForm {
             HttpsToken token = (HttpsToken) SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
             SecurityTokensModelHelper.setRequireClientCertificate(token, requireCertificateChBox.isSelected());
         }
-        if (source.equals(layoutCombo)) {
-            SecurityPolicyModelHelper.getInstance(cfgVersion).setLayout(secBinding, (String) layoutCombo.getSelectedItem());
-        }
-        if (source.equals(algoSuiteCombo)) {
-            AlgoSuiteModelHelper.getInstance(cfgVersion).setAlgorithmSuite(secBinding, (String) algoSuiteCombo.getSelectedItem());
-        }
     }
 
     /** This method is called from within the constructor to
@@ -114,35 +100,12 @@ public class TransportSecurity extends ProfileBaseForm {
     private void initComponents() {
 
         requireCertificateChBox = new javax.swing.JCheckBox();
-        algoSuiteLabel = new javax.swing.JLabel();
-        algoSuiteCombo = new javax.swing.JComboBox();
-        layoutLabel = new javax.swing.JLabel();
-        layoutCombo = new javax.swing.JComboBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(requireCertificateChBox, org.openide.util.NbBundle.getMessage(TransportSecurity.class, "LBL_RequireClientCertificate")); // NOI18N
-        requireCertificateChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         requireCertificateChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         requireCertificateChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 requireCertificateChBoxActionPerformed(evt);
-            }
-        });
-
-        algoSuiteLabel.setLabelFor(algoSuiteCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(algoSuiteLabel, org.openide.util.NbBundle.getMessage(TransportSecurity.class, "LBL_AlgoSuiteLabel")); // NOI18N
-
-        algoSuiteCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                algoSuiteComboActionPerformed(evt);
-            }
-        });
-
-        layoutLabel.setLabelFor(layoutCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(layoutLabel, org.openide.util.NbBundle.getMessage(TransportSecurity.class, "LBL_LayoutLabel")); // NOI18N
-
-        layoutCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                layoutComboActionPerformed(evt);
             }
         });
 
@@ -152,58 +115,23 @@ public class TransportSecurity extends ProfileBaseForm {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layoutLabel)
-                            .add(algoSuiteLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(algoSuiteCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(requireCertificateChBox))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(requireCertificateChBox)
+                .addContainerGap(40, Short.MAX_VALUE))
         );
-
-        layout.linkSize(new java.awt.Component[] {algoSuiteCombo, layoutCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(algoSuiteLabel)
-                    .add(algoSuiteCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(layoutLabel)
-                    .add(layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(requireCertificateChBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        layout.linkSize(new java.awt.Component[] {algoSuiteCombo, layoutCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
-
     }// </editor-fold>//GEN-END:initComponents
-
-    private void layoutComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_layoutComboActionPerformed
-        setValue(layoutCombo);
-    }//GEN-LAST:event_layoutComboActionPerformed
-
-    private void algoSuiteComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_algoSuiteComboActionPerformed
-        setValue(algoSuiteCombo);
-    }//GEN-LAST:event_algoSuiteComboActionPerformed
 
     private void requireCertificateChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_requireCertificateChBoxActionPerformed
         setValue(requireCertificateChBox);
     }//GEN-LAST:event_requireCertificateChBoxActionPerformed
             
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox algoSuiteCombo;
-    private javax.swing.JLabel algoSuiteLabel;
-    private javax.swing.JComboBox layoutCombo;
-    private javax.swing.JLabel layoutLabel;
     private javax.swing.JCheckBox requireCertificateChBox;
     // End of variables declaration//GEN-END:variables
 

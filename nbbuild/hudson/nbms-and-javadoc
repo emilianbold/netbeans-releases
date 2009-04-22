@@ -18,9 +18,13 @@ storepass=`cat $mydir/../../../../storepass`
 # XXX could use <subant-junit> to prevent compilation error in one module from stopping others
 # (though neither <repeat> in build-clusters nor <nbmerge> in build-one-cluster use <subant>)
 ant -emacs -Dbuildnum=$BUILD_TAG -Dcluster.config=experimental -Dmoduleconfig=daily-alpha-nbms \
-    -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false build-nozip build-nbms || exit
+    -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false \
+    verify-libs-and-licenses build-nozip build-nbms || exit
+
 ant -Dcluster.config=minimal -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
 ant -Dcluster.config=full -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
+(cd nbbuild/netbeans; for cluster in *; do if [ -d $cluster/update_tracking ]; then zip -rq ../dist/$BUILD_TAG-$cluster.zip $cluster; fi; done)
+
 ant -Dtest.config=commit -Dcontinue.after.failing.tests=true -f o.n.core/build.xml test
 ant -v -f $mydir/build-update-descriptor.xml || exit
 ant -Djnlp.codebase=${HUDSON_URL}job/${JOB_NAME}/${BUILD_NUMBER}/artifact/nbbuild/build/jnlp/ \
@@ -29,18 +33,6 @@ ant -Djnlp.codebase=${HUDSON_URL}job/${JOB_NAME}/${BUILD_NUMBER}/artifact/nbbuil
     -Djnlp.signjar.password=$storepass \
     -Djnlp.fail.on.error=false \
     build-jnlp || exit
-
-ant generate-golden-files generate-files-layout index-layer-paths || exit
-generated=nbbuild/build/generated
-cp -v nbbuild/netbeans/THIRDPARTYLICENSE-generated.txt $generated/external-libraries.txt || exit
-prev_generated=../lastSuccessful/archive/$generated
-if [ -d $prev_generated ]; then
-    # kits.txt is too verbose and changes too frequently to include in diff
-    diff -r -U 25 -x kits.txt $prev_generated $generated > $generated.diff
-    if [ -s $generated.diff ]; then
-        (echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$generated/"; echo; cat $generated.diff) | mail -s "Golden file changes in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
-    fi
-fi
 
 ant clean-untracked-files
 
@@ -56,3 +48,15 @@ do
         exit 1
     fi
 done
+
+ant generate-golden-files generate-files-layout index-layer-paths || exit
+generated=nbbuild/build/generated
+cp -v nbbuild/netbeans/THIRDPARTYLICENSE-generated.txt $generated/external-libraries.txt || exit
+prev_generated=../lastSuccessful/archive/$generated
+if [ -d $prev_generated ]; then
+    # kits.txt is too verbose and changes too frequently to include in diff
+    diff -r -U 25 -x kits.txt $prev_generated $generated > $generated.diff
+    if [ -s $generated.diff ]; then
+        (echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$generated/"; echo; cat $generated.diff) | mail -s "Golden file changes in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
+    fi
+fi

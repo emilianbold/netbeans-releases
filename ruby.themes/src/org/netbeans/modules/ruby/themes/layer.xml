@@ -143,7 +143,7 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="FontsColors">
                     <folder name="DarkPastels">
                         <folder name="Defaults">
-                            <file name="org-netbeans-modules-editor-yaml-token-colorings.xml" url="DarkPastels/YAML.xml">
+                            <file name="org-netbeans-modules-editor-yaml-token-colorings.xml" url="DarkPastels/YAML-theme.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
                             </file>
                         </folder>

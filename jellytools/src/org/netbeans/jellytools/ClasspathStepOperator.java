@@ -75,7 +75,7 @@ public class ClasspathStepOperator extends NewProjectWizardOperator {
     private JButtonOperator     _btMoveDown;
     private JLabelOperator      _lblOnlineError;
 
-
+    //TODO add a test, also, this Operator probably covers two panels which used to be one
     
 
     /** Tries to find "Source Package Folder:" JLabel in this dialog.
@@ -83,7 +83,8 @@ public class ClasspathStepOperator extends NewProjectWizardOperator {
      */
     public JLabelOperator lblSourcePackageFolder() {
         if (_lblSourcePackageFolder==null) {
-            _lblSourcePackageFolder = new JLabelOperator(this, "Source Package Folder:");//TODO I18N
+            String sourcePackageFolder = Bundle.getString("org.netbeans.modules.java.freeform.ui.Bundle", "LBL_ClasspathPanel_jLabel2");
+            _lblSourcePackageFolder = new JLabelOperator(this, sourcePackageFolder);// I18N
         }
         return _lblSourcePackageFolder;
     }
@@ -93,7 +94,8 @@ public class ClasspathStepOperator extends NewProjectWizardOperator {
      */
     public JLabelOperator lblClasspath() {
         if (_lblClasspath==null) {
-            _lblClasspath = new JLabelOperator(this, "Classpath:");//TODO I18N
+            String classpath = Bundle.getString("org.netbeans.modules.java.freeform.ui.Bundle", "LBL_ClasspathPanel_jLabel3");
+            _lblClasspath = new JLabelOperator(this, classpath);// I18N
         }
         return _lblClasspath;
     }
@@ -103,7 +105,8 @@ public class ClasspathStepOperator extends NewProjectWizardOperator {
      */
     public JButtonOperator btAddJARFolder() {
         if (_btAddJARFolder==null) {
-            _btAddJARFolder = new JButtonOperator(this, "Add JAR/Folder...");//TODO I18N
+            String addJARFolder = Bundle.getString("org.netbeans.modules.java.freeform.ui.Bundle", "BTN_ClasspathPanel_addClasspath");
+            _btAddJARFolder = new JButtonOperator(this, addJARFolder);// I18N
         }
         return _btAddJARFolder;
     }
@@ -113,7 +116,8 @@ public class ClasspathStepOperator extends NewProjectWizardOperator {
      */
     public JButtonOperator btRemove() {
         if (_btRemove==null) {
-            _btRemove = new JButtonOperator(this, "Remove");//TODO I18N
+            String remove = Bundle.getString("org.netbeans.modules.java.freeform.ui.Bundle", "BTN_ClasspathPanel_removeClasspath");
+            _btRemove = new JButtonOperator(this, remove);// I18N
         }
         return _btRemove;
     }
@@ -123,7 +127,7 @@ public class ClasspathStepOperator extends NewProjectWizardOperator {
      */
     public JLabelOperator lblOutputFolderOrJAR() {
         if (_lblOutputFolderOrJAR==null) {
-            _lblOutputFolderOrJAR = new JLabelOperator(this, "Output Folder or JAR:");//TODO I18N
+            _lblOutputFolderOrJAR = new JLabelOperator(this, "Output Folder or JAR:");//TODO I18N + another panel
         }
         return _lblOutputFolderOrJAR;
     }
@@ -143,7 +147,7 @@ public class ClasspathStepOperator extends NewProjectWizardOperator {
      */
     public JButtonOperator btBrowse() {
         if (_btBrowse==null) {
-            _btBrowse = new JButtonOperator(this, "Browse...");//TODO I18N
+            _btBrowse = new JButtonOperator(this, "Browse...");//TODO I18N + another panel?
         }
         return _btBrowse;
     }
@@ -173,7 +177,8 @@ public class ClasspathStepOperator extends NewProjectWizardOperator {
      */
     public JButtonOperator btMoveUp() {
         if (_btMoveUp==null) {
-            _btMoveUp = new JButtonOperator(this, "Move Up");//TODO I18N
+            String moveUp = Bundle.getString("org.netbeans.modules.java.freeform.ui.Bundle", "LBL_ClasspathPanel_Move_Up");
+            _btMoveUp = new JButtonOperator(this, moveUp);// I18N
         }
         return _btMoveUp;
     }
@@ -183,7 +188,8 @@ public class ClasspathStepOperator extends NewProjectWizardOperator {
      */
     public JButtonOperator btMoveDown() {
         if (_btMoveDown==null) {
-            _btMoveDown = new JButtonOperator(this, "Move Down");//TODO I18N
+            String moveDown = Bundle.getString("org.netbeans.modules.java.freeform.ui.Bundle", "LBL_ClasspathPanel_Move_Down");
+            _btMoveDown = new JButtonOperator(this, moveDown);// I18N
         }
         return _btMoveDown;
     }

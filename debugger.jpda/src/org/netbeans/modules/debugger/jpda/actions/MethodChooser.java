@@ -180,6 +180,9 @@ public class MethodChooser implements KeyListener, MouseListener,
         } catch (InvocationTargetException ex) {
             Exceptions.printStackTrace(ex);
         }
+        if (editorPane == null) {
+            return false;  // Can not do anything without editor
+        }
         doc = editorPane.getDocument();
         
         if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {

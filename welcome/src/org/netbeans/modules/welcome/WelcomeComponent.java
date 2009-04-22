@@ -85,7 +85,6 @@ public class WelcomeComponent extends TopComponent {
         if( null == content ) {
             WelcomeOptions.getDefault().incrementStartCounter();
             content = new StartPageContent();
-
             add( content, BorderLayout.CENTER );
             setFocusable( false );
         }
@@ -181,6 +180,14 @@ public class WelcomeComponent extends TopComponent {
                 close();
             }
         }
+    }
+
+    @Override
+    protected void componentClosed() {
+        super.componentClosed();
+        TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("InitialLayout"); //NOI18N
+        if( null != group )
+            group.open();
     }
     
     @Override protected void componentHidden() {

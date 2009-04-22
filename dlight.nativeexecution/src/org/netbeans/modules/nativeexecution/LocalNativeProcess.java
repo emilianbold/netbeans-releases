@@ -43,65 +43,30 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.net.ConnectException;
-import java.text.ParseException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
-import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
+import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
 import org.netbeans.modules.nativeexecution.support.WindowsSupport;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
+    private Process process = null;
+    private InputStream processOutput = null;
+    private OutputStream processInput = null;
+    private InputStream processError = null;
 
-    private final static java.util.logging.Logger log = Logger.getInstance();
-    private final static String shell;
-    private final static boolean isWindows;
-    private final static boolean isMacOS;
-    private final InputStream processOutput;
-    private final InputStream processError;
-    private final OutputStream processInput;
-    private final Process process;
-
-
-    static {
-        String sh = null;
-
-        try {
-            sh = HostInfoUtils.getShell(new ExecutionEnvironment());
-        } catch (ConnectException ex) {
-        }
-
-        shell = sh;
-
-        isWindows = Utilities.isWindows();
-        isMacOS = Utilities.isMac();
+    public LocalNativeProcess(NativeProcessInfo info) {
+        super(info);
     }
 
-    /*
-     * Huge try-catch block is required to catch any exception that could
-     * prevent constructor from completion. Listeners were notified of process
-     * being started in super constructor. In case of any problem we
-     * must notify listeners with call to destroy().
-     */
-    public LocalNativeProcess(NativeProcessInfo info) throws IOException {
-        super(info);
-
-        Process proc = null;
-        InputStream is = null;
-        InputStream es = null;
-        OutputStream os = null;
-        boolean interrupted = isInterrupted();
-
+    protected void create() throws Throwable {
         try {
-
-            if (Utilities.isWindows() && shell == null) {
-                throw new IOException("CYGWIN/MSYS are currently required on Windows."); // NOI18N
+            boolean isWindows = hostInfo.getOSFamily() == OSFamily.WINDOWS;
+            
+            if (isWindows && hostInfo.getShell() == null) {
+                throw new IOException(loc("NativeProcess.shellNotFound.text")); // NOI18N
             }
 
             // Get working directory ....
@@ -116,151 +81,48 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
             final MacroMap env = info.getEnvVariables();
 
-            // Setup LD_PRELOAD to load unbuffer library...
-            if (info.isUnbuffer()) {
-                String unbufferPath = null; // NOI18N
-                String unbufferLib = null; // NOI18N
+            UnbufferSupport.initUnbuffer(info, env);
 
-                try {
-                    unbufferPath = info.macroExpander.expandPredefinedMacros(
-                            "bin/nativeexecution/$osname-$platform"); // NOI18N
-                    unbufferLib = info.macroExpander.expandPredefinedMacros(
-                            "unbuffer.$soext"); // NOI18N
-                } catch (ParseException ex) {
-                }
+            // Always prepend /bin and /usr/bin to PATH
+            env.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
 
-                if (unbufferLib != null && unbufferPath != null) {
-                    InstalledFileLocator fl = InstalledFileLocator.getDefault();
-                    File file = fl.locate(unbufferPath + "/" + unbufferLib, null, false); // NOI18N
+            final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
 
-
-                    if (file != null && file.exists()) {
-                        unbufferPath = file.getParentFile().getAbsolutePath();
-
-                        String ldPreloadEnv;
-                        String ldLibraryPathEnv;
-
-                        if (isWindows) {
-                            ldLibraryPathEnv = "PATH"; // NOI18N
-                            ldPreloadEnv = "LD_PRELOAD"; // NOI18N
-                        } else if (isMacOS) {
-                            ldLibraryPathEnv = "DYLD_LIBRARY_PATH"; // NOI18N
-                            ldPreloadEnv = "DYLD_INSERT_LIBRARIES"; // NOI18N
-                        } else {
-                            ldLibraryPathEnv = "LD_LIBRARY_PATH"; // NOI18N
-                            ldPreloadEnv = "LD_PRELOAD"; // NOI18N
-                        }
-
-                        String ldPreload = env.get(ldPreloadEnv);
-
-                        if (isMacOS || isWindows) {
-                            // TODO: FIXME (?) For Mac and Windows just put unbuffer
-                            // with path to it to LD_PRELOAD/DYLD_INSERT_LIBRARIES
-                            // Reason: no luck to make it work using PATH ;(
-                            ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
-                                    unbufferPath + "/" + unbufferLib; // NOI18N
-
-                            if (isWindows) {
-                                ldPreload = WindowsSupport.getInstance().normalizePath(ldPreload);
-                            }
-                        } else {
-                            ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
-                                    unbufferLib;
-                        }
-
-                        env.put(ldPreloadEnv, ldPreload);
-
-                        if (isMacOS) {
-                            env.put("DYLD_FORCE_FLAT_NAMESPACE", "yes"); // NOI18N
-                        } else {
-                            String ldLibPath = env.get(ldLibraryPathEnv);
-                            if (isWindows) {
-                                ldLibPath = WindowsSupport.getInstance().normalizeAllPaths(ldLibPath);
-                            }
-                            ldLibPath = ((ldLibPath == null) ? "" : (ldLibPath + ":")) + // NOI18N
-                                    unbufferPath + ":" + unbufferPath + "_64"; // NOI18N
-                            env.put(ldLibraryPathEnv, ldLibPath); // NOI18N
-                        }
-                    }
-                }
+            if (isInterrupted()) {
+                throw new InterruptedException();
             }
 
-            // On windows add /bin to PATH in case cygwin is not in
-            // the Path environment variable ...
+            process = pb.start();
+
+            processInput = process.getOutputStream();
+            processError = process.getErrorStream();
+            processOutput = process.getInputStream();
+
+            processInput.write("echo $$\n".getBytes()); // NOI18N
+            processInput.flush();
+
+            EnvWriter ew = new EnvWriter(processInput);
+            ew.write(env);
+
+            if (workingDirectory != null) {
+                processInput.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
+            }
+
+            String cmd = "exec " + info.getCommandLine() + "\n"; // NOI18N
+
             if (isWindows) {
-                env.put("PATH", "/bin:$PATH"); // NOI18N
+                cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
             }
 
-            try {
-                final ProcessBuilder pb = new ProcessBuilder(shell, "-s"); // NOI18N
+            processInput.write(cmd.getBytes());
+            processInput.flush();
 
-                if (isInterrupted()) {
-                    throw new InterruptedException();
-                }
-
-                try {
-                    proc = pb.start();
-                } catch (InterruptedIOException ex) {
-                    throw new InterruptedException();
-                } catch (IOException ex) {
-                }
-
-                is = proc.getInputStream();
-                es = proc.getErrorStream();
-                os = proc.getOutputStream();
-
-                os.write("/bin/echo $$\n".getBytes()); // NOI18N
-                os.flush();
-
-                EnvWriter ew = new EnvWriter(os);
-                ew.write(env);
-
-                if (workingDirectory != null) {
-                    os.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
-                }
-
-                String cmd = "exec " + info.getCommandLine() + "\n"; // NOI18N
-
-                if (isWindows) {
-                    cmd = cmd.replaceAll("\\\\", "/"); // NOI18N
-                }
-
-                os.write(cmd.getBytes());
-                os.flush();
-            } catch (InterruptedException ex) {
-                interrupted = true;
-            } catch (InterruptedIOException ex) {
-                interrupted = true;
-            }
-
-            if (proc == null || interrupted || isInterrupted()) {
-                if (proc != null) {
-                    proc.destroy();
-                }
-
-                process = null;
-                processError = new ByteArrayInputStream(new byte[0]);
-                processOutput = new ByteArrayInputStream(new byte[0]);
-                processInput = new ByteArrayOutputStream();
-                return;
-            }
-
-            process = proc;
-            processError = es;
-            processInput = os;
-            processOutput = is;
-
-            try {
-                readPID(processOutput);
-            } catch (InterruptedException ex) {
-                interrupt();
-            }
-
-        } catch (IOException ex) {
-            destroy();
-            throw ex;
-        } catch (RuntimeException ex) {
-            destroy();
+            readPID(processOutput);
+        } catch (Throwable ex) {
+            String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+            processOutput = new ByteArrayInputStream(new byte[0]);
+            processError = new ByteArrayInputStream(msg.getBytes());
+            processInput = new ByteArrayOutputStream();
             throw ex;
         }
     }
@@ -309,7 +171,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             try {
                 Thread.sleep(200);
             // 200 - to make this check not so often...
-            // actually, to avoid the problem 1 is OK.
+            // actually, to avoid the problem, 1 is OK.
             } catch (InterruptedException ex) {
                 throw ex;
             }
@@ -328,9 +190,13 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     }
 
     @Override
-    protected final void cancel() {
+    protected final synchronized void cancel() {
         if (process != null) {
             process.destroy();
         }
+    }
+
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(LocalNativeProcess.class, key, params);
     }
 }

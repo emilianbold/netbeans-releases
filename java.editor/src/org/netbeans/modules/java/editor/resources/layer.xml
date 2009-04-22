@@ -182,7 +182,7 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="Actions">
-                    <file name="default-typed.instance">
+<!--                    <file name="default-typed.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
                     </file>
                     <file name="make-getter.instance">
@@ -284,6 +284,7 @@ made subject to such option by the copyright holder.
                     <file name="java-next-marked-occurrence.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.create" />
                     </file>
+-->
                 </folder>
                 
                 <folder name="Popup">

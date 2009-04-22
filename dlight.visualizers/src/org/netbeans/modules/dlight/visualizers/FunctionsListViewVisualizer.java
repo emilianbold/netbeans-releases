@@ -50,7 +50,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -72,6 +71,7 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.FunctionsListViewVisualizerConfigurationAccessor;
 import org.openide.explorer.ExplorerManager;
@@ -90,13 +90,11 @@ import org.openide.util.NbBundle;
  * @author mt154047
  */
 public class FunctionsListViewVisualizer extends JPanel implements
-    Visualizer<FunctionsListViewVisualizerConfiguration>, OnTimerTask, ComponentListener, ExplorerManager.Provider {
+        Visualizer<FunctionsListViewVisualizerConfiguration>, OnTimerTask, ComponentListener, ExplorerManager.Provider {
 
-    private Future task;
-    private Future<List<FunctionCall>> queryDataTask;
-    private final Object dpQueryLock = new Object();
-    private final Object queryLock = new Object();
-    private final Object uiLock = new Object();
+    private Future<Boolean> task;
+    private final Object queryLock = new String(FunctionsListViewVisualizer.class + " query lock"); // NOI18N
+    private final Object uiLock = new String(FunctionsListViewVisualizer.class + " UI lock"); // NOI18N
     private JToolBar buttonsToolbar;
     private JButton refresh;
     private boolean isEmptyContent;
@@ -107,6 +105,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private final FunctionDatatableDescription functionDatatableDescription;
     private final FunctionsListDataProvider dataProvider;
     private final DataTableMetadata metadata;
+    private final ColumnsUIMapping  columnsUIMapping;
     private final List<Column> metrics;
     private final FunctionsListViewVisualizerConfiguration configuration;
 
@@ -115,17 +114,23 @@ public class FunctionsListViewVisualizer extends JPanel implements
         this.configuration = configuration;
         this.functionDatatableDescription = FunctionsListViewVisualizerConfigurationAccessor.getDefault().getFunctionDatatableDescription(configuration);
         this.metrics = FunctionsListViewVisualizerConfigurationAccessor.getDefault().getMetricsList(configuration);
+        columnsUIMapping = FunctionsListViewVisualizerConfigurationAccessor.getDefault().getColumnsUIMapping(configuration);
         this.dataProvider = dataProvider;
         this.metadata = configuration.getMetadata();
         setLoadingContent();
         addComponentListener(this);
-        outlineView = new OutlineView(metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnUName());
+        String nodeLabel = columnsUIMapping == null || columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn()) == null?
+            metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnUName() :
+             columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn());
+        outlineView = new OutlineView(nodeLabel);
         outlineView.getOutline().setRootVisible(false);
         outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
         List<Property> result = new ArrayList<Property>();
         for (Column c : metrics) {
+            String displayedName = columnsUIMapping == null || columnsUIMapping.getDisplayedName(c.getColumnName()) == null ? c.getColumnUName() : columnsUIMapping.getDisplayedName(c.getColumnName());
+            String displayedTooltip = columnsUIMapping == null || columnsUIMapping.getTooltip(c.getColumnName()) == null ? c.getColumnLongUName() : columnsUIMapping.getTooltip(c.getColumnName());
             result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
-                c.getColumnUName(), c.getColumnUName(), true, false) {
+                    displayedName, displayedTooltip, true, false) {
 
                 @Override
                 public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -154,83 +159,61 @@ public class FunctionsListViewVisualizer extends JPanel implements
     }
 
     public VisualizerContainer getDefaultContainer() {
-        return VisualizerTopComponentTopComponent.getDefault();
+        return VisualizerTopComponentTopComponent.findInstance();
     }
 
     public void refresh() {
-        asyncFillModel();
+        asyncFillModel(false);
     }
 
-
-
-    private void asyncFillModel() {
+    private void asyncFillModel(boolean cancelIfNotDone) {
         synchronized (queryLock) {
-            //should I cancel here?
-            //Maybe I should not ask if I am already in process??
-            if (task != null && !task.isDone() && !task.isCancelled()){
-                return;//
-            }
             if (task != null && !task.isDone()) {
-                task.cancel(true);
+                if (cancelIfNotDone) {
+                    task.cancel(true);
+                } else {
+                    return;
+                }
             }
+
             task = DLightExecutorService.submit(new Callable<Boolean>() {
 
                 public Boolean call() {
-                    synchronized (dpQueryLock) {
-                        if (queryDataTask != null) {
-                            return Boolean.TRUE;
-                            //queryDataTask.cancel(true);
-                        }
-                        queryDataTask = DLightExecutorService.submit(new Callable<List<FunctionCall>>() {
-
-                            public List<FunctionCall> call() throws Exception {
-                                return dataProvider.getFunctionsList(metadata, functionDatatableDescription, metrics);
-                            }
-                        }, "FunctionsListViewVisualizer Async dataProvider.gteFuncsiontsList from provider  load for " + configuration.getID() + " from main table " + configuration.getMetadata().getName()); // NOI18N
-                    }
-                    try {
-                        final List<FunctionCall> list = queryDataTask.get();
-                        synchronized (dpQueryLock) {
-                            queryDataTask = null;
-                        }
-                        final boolean isEmptyConent = list == null || list.isEmpty();
-                        UIThread.invoke(new Runnable() {
-
-                            public void run() {
-                                setContent(isEmptyConent);
-                                if (isEmptyConent) {
-                                    return;
-                                }
-
-                                updateList(list);
-                            }
-                        });
-                        return Boolean.TRUE;
-                    } catch (ExecutionException ex) {
-                        Thread.currentThread().interrupt();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        synchronized (dpQueryLock) {
-                            if (queryDataTask!= null){
-                                //queryDataTask.cancel(true);TODO: uncomment when ErPrint is ready
-                                queryDataTask = null;
-                            }
-                        }
-                    }
-                    return Boolean.valueOf(false);
+                    syncFillModel();
+                    return Boolean.TRUE;
                 }
-            }, "FunctionsListViewVisualizert Async data load for " + configuration.getID() + " from main table " + configuration.getMetadata().getName()); // NOI18N
+            }, "FunctionsListViewVisualizer Async data load for " + // NOI18N
+                    configuration.getID() + " from main table " + // NOI18N
+                    configuration.getMetadata().getName());
         }
     }
 
     private void syncFillModel() {
+        List<FunctionCall> callsList =
+                dataProvider.getFunctionsList(metadata, functionDatatableDescription, metrics);
+
+        updateList(callsList);
     }
 
-    private void updateList(List<FunctionCall> list) {
-        synchronized (uiLock) {
-            this.explorerManager.setRootContext(new AbstractNode(new FunctionCallChildren(list)));
-            setNonEmptyContent();
+    private void updateList(final List<FunctionCall> list) {
+        if (Thread.currentThread().isInterrupted()) {
+            return;
         }
+
+        UIThread.invoke(new Runnable() {
+
+            public void run() {
+                synchronized (uiLock) {
+                    final boolean isEmptyConent =
+                            list == null || list.isEmpty();
+                    setContent(isEmptyConent);
+                    if (!isEmptyConent) {
+                        explorerManager.setRootContext(new AbstractNode(new FunctionCallChildren(list)));
+                        setNonEmptyContent();
+                    }
+                }
+            }
+        });
     }
 
     private void setEmptyContent() {
@@ -301,7 +284,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         refresh.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                asyncFillModel();
+                asyncFillModel(false);
             }
         });
 
@@ -332,7 +315,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
     @Override
     public void addNotify() {
         super.addNotify();
-        asyncFillModel();
     }
 
     @Override
@@ -342,12 +324,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
             if (task != null) {
                 task.cancel(true);
                 task = null;
-            }
-        }
-        synchronized (dpQueryLock) {
-            if (queryDataTask != null) {
-                //queryDataTask.cancel(true);TODO: uncomment when ErPrint is ready
-                queryDataTask = null;
             }
         }
 
@@ -374,7 +350,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
         isShown = isShowing();
         if (isShown) {
-            asyncFillModel();
+            asyncFillModel(true);
         }
     }
 
@@ -424,7 +400,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
                     //create for metrics
                     for (final Column metric : metrics) {
                         result.add(new PropertySupport(metric.getColumnName(), metric.getColumnClass(),
-                            metric.getColumnUName(), metric.getColumnUName(), true, false) {
+                                metric.getColumnUName(), metric.getColumnLongUName(), true, false) {
 
                             @Override
                             public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -433,8 +409,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
                             @Override
                             public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                                //throw new UnsupportedOperationException("Not supported yet.");
-                                }
+                              }
                         });
                     }
                     return result.toArray(new Property[0]);
@@ -487,18 +462,23 @@ public class FunctionsListViewVisualizer extends JPanel implements
         public GoToSourceAction(FunctionCallNode functionCallNode) {
             super(NbBundle.getMessage(FunctionsListViewVisualizer.class, "GoToSourceActionName"));//NOI18N
             this.functionCallNode = functionCallNode;
-
         }
 
         public void actionPerformed(ActionEvent e) {
-            FunctionCall functionCall = functionCallNode.getFunctionCall();
-            SourceFileInfo sourceFileInfo = dataProvider.getSourceFileInfo(functionCall);
-            if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
-                return;
-            }
-            SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
-            sourceSupportProvider.showSource(sourceFileInfo);
-        //System.out.println(sourceFileInfo == null ? " NO SOURCE FILE INFO FOUND" : sourceFileInfo.getFileName() + ":" + sourceFileInfo.getOffset() + ":" + sourceFileInfo.getLine());//NOI18N
+            DLightExecutorService.submit(new Runnable() {
+
+                public void run() {
+                    FunctionCall functionCall = functionCallNode.getFunctionCall();
+                    SourceFileInfo sourceFileInfo = dataProvider.getSourceFileInfo(functionCall);
+
+                    if (sourceFileInfo == null) {// TODO: what should I do here if there is no source file info
+                        return;
+                    }
+
+                    SourceSupportProvider sourceSupportProvider = Lookup.getDefault().lookup(SourceSupportProvider.class);
+                    sourceSupportProvider.showSource(sourceFileInfo);
+                }
+            }, "GoToSource from Functions List View"); // NOI18N
         }
     }
 
@@ -519,5 +499,4 @@ public class FunctionsListViewVisualizer extends JPanel implements
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
-
 }

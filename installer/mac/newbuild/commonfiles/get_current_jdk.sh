@@ -30,7 +30,7 @@ if [ -f "$java_bin" ] ; then
     java_version=`"$java_bin" -fullversion 2>&1`
     if [ $? -eq 0 ] && [ -n "`echo \"$java_version\" | grep 1.6.0`" ] ; then 
         # don`t use Developer Preview versions
-        if [ -z "`echo \"$java_version\" | grep \"-dp\|1.6.0_b\|1.6.0-b\|1.6.0_01\|1.6.0_04\"`" ] ; then
+        if [ -z "`echo \"$java_version\" | grep \"1.6.0_b\|1.6.0-b\|1.6.0_01\|1.6.0_04\|-dp\"`" ] ; then
             if [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home/bin/java" ] ; then
 		default_jdk="/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home"
             elif [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/bin/java" ] ; then

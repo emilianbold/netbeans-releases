@@ -87,7 +87,7 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -286,9 +286,7 @@ public class MakeActionProvider implements ActionProvider {
         if (exeEnv.isLocal()) {
             actionWorker.run();
         } else {
-            ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-            assert registry != null;
-            ServerRecord record = registry.get(exeEnv);
+            ServerRecord record = ServerList.get(exeEnv);
             assert record != null;
             invokeRemoteHostAction(record, actionWorker);
         }
@@ -319,9 +317,7 @@ public class MakeActionProvider implements ActionProvider {
                 message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getName());
                 res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
                 if (res == JOptionPane.YES_OPTION) {
-                    ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-                    assert registry != null;
-                    registry.addServer(record.getExecutionEnvironment(), false, true);
+                    ServerList.addServer(record.getExecutionEnvironment(), false, true);
                 }
             } else if (!record.isOnline()) {
                 message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
@@ -516,7 +512,7 @@ public class MakeActionProvider implements ActionProvider {
                         runSyncProfile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
 
                         MakeConfiguration syncConf = (MakeConfiguration) conf.clone();
-                        syncConf.setDevelopmentHost(new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.getLocalExecutionEnvironment())); // rsync should be ran only locally
+                        syncConf.setDevelopmentHost(new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.getLocal())); // rsync should be ran only locally
                         ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                                 project,
                                 actionEvent,
@@ -545,10 +541,8 @@ public class MakeActionProvider implements ActionProvider {
                         }
                     } else {
                         // Always absolute
-                        // FIXME - GRP: This call fails for a Makefile project where the sources aren't in the
-                        // project baseDir and the buildOutput isn't absolute.
-                        path = getExePath(pd, conf);
-//                        path = conf.getMakefileConfiguration().getAbsOutput().replace("\\", "/"); // NOI18N
+                        path = conf.getMakefileConfiguration().getAbsOutput(); // NOI18N
+                        path = FilePathAdaptor.normalize(path);
                     }
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                             project,
@@ -590,7 +584,7 @@ public class MakeActionProvider implements ActionProvider {
                                 if (cancelled.get()) {
                                     return; // getEnv() might be costly for remote host
                                 }
-                            userPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
+                            userPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
                         }
                         path = path + ";" + userPath; // NOI18N
                         runProfile.getEnvironment().putenv(pi.getPathName(), path);
@@ -624,7 +618,7 @@ public class MakeActionProvider implements ActionProvider {
                                 if (cancelled.get()) {
                                     return; // getEnv() might be costly for remote host
                                 }
-                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
+                                extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
                             }
                             if (extPath != null) {
                                 path.append(":" + extPath); // NOI18N
@@ -652,7 +646,7 @@ public class MakeActionProvider implements ActionProvider {
                                 if (cancelled.get()) {
                                     return; // getEnv() might be costly for remote host
                                 }
-                                extPath = HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
+                                extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
                             }
                             if (extPath != null) {
                                 path.append(":" + extPath); // NOI18N
@@ -669,7 +663,7 @@ public class MakeActionProvider implements ActionProvider {
                         if (cancelled.get()) {
                             return; // getEnv() might be costly for remote host
                         }
-                        if (HostInfoProvider.getDefault().getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
+                        if (HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null) {
                                 runProfile = conf.getProfile().clone();
@@ -1082,12 +1076,11 @@ public class MakeActionProvider implements ActionProvider {
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
             boolean validated, AtomicBoolean cancelled) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(conf.getDevelopmentHost().getName());
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(conf.getDevelopmentHost().getName());
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
         String csname;
         File file;
-        ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
         boolean cRequired = conf.hasCFiles(pd);
         boolean cppRequired = conf.hasCPPFiles(pd);
         boolean fRequired = conf.hasFortranFiles(pd);
@@ -1099,8 +1092,7 @@ public class MakeActionProvider implements ActionProvider {
         }
 
         if (!conf.getDevelopmentHost().isLocalhost()) {
-            assert serverList != null;
-            ServerRecord record = serverList.get(env);
+            ServerRecord record = ServerList.get(env);
             assert record != null;
             record.validate(false);
             if (cancelled.get()) {
@@ -1158,10 +1150,8 @@ public class MakeActionProvider implements ActionProvider {
                 runBTA = true;
             }
         } else {
-            if (serverList != null && !unknownCompilerSet) {
-                if (!serverList.isValidExecutable(env, makeTool.getPath())) {
-                    runBTA = true;
-                }
+            if (!ServerList.isValidExecutable(env, makeTool.getPath())) {
+                runBTA = true;
             }
         }
 
@@ -1300,30 +1290,30 @@ public class MakeActionProvider implements ActionProvider {
         return pi.fileExists(path) || pi.isWindows() && pi.fileExists(path+".lnk") || pi.findCommand(path) != null; // NOI18N
     }
 
-    private static String getExePath(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
-        String buildResult = conf.getMakefileConfiguration().getOutput().getValue();
-
-        if (buildResult == null || buildResult.length() == 0) {
-            return buildResult;
-        }
-
-        List<String> paths = new ArrayList<String>();
-        if (isAbsolutePath(conf, buildResult)) {
-            paths.add(buildResult);
-        }
-        paths.add(conf.getBaseDir());
-        paths.addAll(mcd.getSourceRoots());
-
-        for (String dir : paths) {
-            dir = dir.replace("\\", "/");  // NOI18N
-            String path = dir + '/' + buildResult; // gdb *requires* forward slashes!
-            File file = new File(path);
-            if (file.exists()) {
-                return path;
-            }
-        }
-        return "";
-    }
+//    private static String getExePath(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
+//        String buildResult = conf.getMakefileConfiguration().getOutput().getValue();
+//
+//        if (buildResult == null || buildResult.length() == 0) {
+//            return buildResult;
+//        }
+//
+//        List<String> paths = new ArrayList<String>();
+//        if (isAbsolutePath(conf, buildResult)) {
+//            paths.add(buildResult);
+//        }
+//        paths.add(conf.getBaseDir());
+//        paths.addAll(mcd.getSourceRoots());
+//
+//        for (String dir : paths) {
+//            dir = dir.replace("\\", "/");  // NOI18N
+//            String path = dir + '/' + buildResult; // gdb *requires* forward slashes!
+//            File file = new File(path);
+//            if (file.exists()) {
+//                return path;
+//            }
+//        }
+//        return "";
+//    }
 
     private static boolean isAbsolutePath(MakeConfiguration conf, String path) {
         if (conf.getPlatform().getValue() == PlatformTypes.PLATFORM_WINDOWS) {

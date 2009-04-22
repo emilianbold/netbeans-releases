@@ -351,9 +351,8 @@ public abstract class QueryParameter {
         public String toString() {
             if(toString == null) {
                 StringBuffer sb = new StringBuffer();
-                sb.append("["); // NOI18N
                 sb.append(displayName);
-                sb.append(","); // NOI18N
+                sb.append("["); // NOI18N
                 sb.append(value);
                 sb.append("]"); // NOI18N
                 toString = sb.toString();

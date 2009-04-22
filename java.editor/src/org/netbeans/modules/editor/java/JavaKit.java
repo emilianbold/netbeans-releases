@@ -51,6 +51,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.text.*;
+import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -212,54 +213,47 @@ public class JavaKit extends NbEditorKit {
 
     /* package */ static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
 
-    public static Action create(FileObject file) {
-        initialize();
+//    public static Action create(FileObject file) {
+//        initialize();
+//
+//        return name2Action.get(file.getName());
+//    }
+//
+//    private static Map<String, Action> name2Action;
+//
+//    private static synchronized void initialize() {
+//        if (name2Action != null) {
+//            return ;
+//        }
+//
+//        name2Action = new HashMap<String, Action>();
+//
+//        for (BaseAction a : createActionsForLayer()) {
+//            name2Action.put((String) a.getValue(Action.NAME), a);
+//
+////            System.err.println("<file name=\"" + (String) a.getValue(Action.NAME) + ".instance\">");
+////            System.err.println("    <attr name=\"instanceCreate\" methodvalue=\"org.netbeans.modules.editor.java.JavaKit.create\" />");
+////            System.err.println("</file>");
+//        }
+//    }
 
-        return name2Action.get(file.getName());
-    }
 
-    private static Map<String, Action> name2Action;
+    @Override
+    protected Action[] createActions() {
+        Action[] superActions = super.createActions();
 
-    private static synchronized void initialize() {
-        if (name2Action != null) {
-            return ;
-        }
-
-        name2Action = new HashMap<String, Action>();
-
-        for (BaseAction a : createActionsForLayer()) {
-            name2Action.put((String) a.getValue(Action.NAME), a);
-
-//            System.err.println("<file name=\"" + (String) a.getValue(Action.NAME) + ".instance\">");
-//            System.err.println("    <attr name=\"instanceCreate\" methodvalue=\"org.netbeans.modules.editor.java.JavaKit.create\" />");
-//            System.err.println("</file>");
-        }
-    }
-
-    private static BaseAction[] createActionsForLayer() {
-        Action[] superActions = new NbEditorKit().getActions();
-
-        return new BaseAction[] {
+        Action[] actions = new BaseAction[] {
             new JavaDefaultKeyTypedAction(),
             new PrefixMakerAction(makeGetterAction, "get", getSetIsPrefixes), // NOI18N
             new PrefixMakerAction(makeSetterAction, "set", getSetIsPrefixes), // NOI18N
             new PrefixMakerAction(makeIsAction, "is", getSetIsPrefixes), // NOI18N
-            new AbbrevDebugLineAction(),
             new ToggleCommentAction("//"), // NOI18N
-            new JavaGenerateGoToPopupAction(),
             new JavaInsertBreakAction(),
             new JavaDeleteCharAction(deletePrevCharAction, false),
             new JavaDeleteCharAction(deleteNextCharAction, true),
-            new ExpandAllJavadocFolds(),
-            new CollapseAllJavadocFolds(),
-            new ExpandAllCodeBlockFolds(),
-            new CollapseAllCodeBlockFolds(),
-            new JavaGenerateFoldPopupAction(),
+            new JavaGenerateFoldPopupAction(), // NO_KEYBINDING in super
             new JavaGoToDeclarationAction(),
-            new JavaGoToSourceAction(),
-            new JavaGotoHelpAction(),
             new InstantRenameAction(),
-            new JavaFixImports(),
             new InsertSemicolonAction(true),
             new InsertSemicolonAction(false),
             new SelectCodeElementAction(selectNextElementAction, true),
@@ -278,6 +272,8 @@ public class JavaKit extends NbEditorKit {
             new GoToMarkOccurrencesAction(false),
             new GoToMarkOccurrencesAction(true),
         };
+
+        return TextAction.augmentList(superActions, actions);
     }
 
     private static Action findAction(Action [] actions, String name) {
@@ -354,7 +350,7 @@ public class JavaKit extends NbEditorKit {
         }
     }
 
-
+    @EditorActionRegistration(name = generateGoToPopupAction, mimeType = JAVA_MIME_TYPE)
     public static class JavaGenerateGoToPopupAction extends NbGenerateGoToPopupAction {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -449,11 +445,14 @@ public class JavaKit extends NbEditorKit {
 
     }
 
-
+    @EditorActionRegistration(
+            name = abbrevDebugLineAction,
+            mimeType = JAVA_MIME_TYPE,
+            shortDescription = ""
+    )
     public static class AbbrevDebugLineAction extends BaseAction {
 
         public AbbrevDebugLineAction() {
-            super(abbrevDebugLineAction);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -670,11 +669,14 @@ public class JavaKit extends NbEditorKit {
         }
     }
 
-    public static class ExpandAllJavadocFolds extends BaseAction{
+    @EditorActionRegistration(
+            name = expandAllJavadocFolds,
+            mimeType = JAVA_MIME_TYPE,
+            popupText = "#popup-expand-all-javadoc-folds"
+    )
+    public static class ExpandAllJavadocFolds extends BaseAction {
+
         public ExpandAllJavadocFolds(){
-            super(expandAllJavadocFolds);
-            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(JavaKit.class).getString("expand-all-javadoc-folds"));
-            putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(JavaKit.class).getString("popup-expand-all-javadoc-folds"));
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -684,11 +686,14 @@ public class JavaKit extends NbEditorKit {
         }
     }
 
+    @EditorActionRegistration(
+            name = collapseAllJavadocFolds,
+            mimeType = JAVA_MIME_TYPE,
+            shortDescription = "#popup-collapse-all-javadoc-folds"
+    )
     public static class CollapseAllJavadocFolds extends BaseAction{
+
         public CollapseAllJavadocFolds(){
-            super(collapseAllJavadocFolds);
-            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(JavaKit.class).getString("collapse-all-javadoc-folds"));
-            putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(JavaKit.class).getString("popup-collapse-all-javadoc-folds"));
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -698,11 +703,15 @@ public class JavaKit extends NbEditorKit {
         }
     }
 
+    @EditorActionRegistration(
+            name = expandAllCodeBlockFolds,
+            mimeType = JAVA_MIME_TYPE,
+            popupText = "#popup-expand-all-code-block-folds"
+
+    )
     public static class ExpandAllCodeBlockFolds extends BaseAction{
+
         public ExpandAllCodeBlockFolds(){
-            super(expandAllCodeBlockFolds);
-            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(JavaKit.class).getString("expand-all-code-block-folds"));
-            putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(JavaKit.class).getString("popup-expand-all-code-block-folds"));
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -715,11 +724,14 @@ public class JavaKit extends NbEditorKit {
         }
     }
 
-    public static class CollapseAllCodeBlockFolds extends BaseAction{
+    @EditorActionRegistration(
+            name = collapseAllCodeBlockFolds,
+            mimeType = JAVA_MIME_TYPE,
+            shortDescription = "#popup-collapse-all-code-block-folds"
+    )
+    public static class CollapseAllCodeBlockFolds extends BaseAction {
+
         public CollapseAllCodeBlockFolds(){
-            super(collapseAllCodeBlockFolds);
-            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(JavaKit.class).getString("collapse-all-code-block-folds"));
-            putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(JavaKit.class).getString("popup-collapse-all-code-block-folds"));
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -732,7 +744,9 @@ public class JavaKit extends NbEditorKit {
         }
     }
 
-    public static class JavaGenerateFoldPopupAction extends GenerateFoldPopupAction{
+// extends from NbEditorKit
+//    @EditorActionRegistration(name = generateFoldPopupAction, mimeType = JAVA_MIME_TYPE)
+    public static class JavaGenerateFoldPopupAction extends GenerateFoldPopupAction {
 
         protected void addAdditionalItems(JTextComponent target, JMenu menu){
             addAction(target, menu, collapseAllJavadocFolds);
@@ -744,7 +758,13 @@ public class JavaKit extends NbEditorKit {
 
     }
 
-    private static class JavaGoToDeclarationAction extends GotoDeclarationAction {
+// extends from NbEditorKit
+//    @EditorActionRegistration(name = gotoDeclarationAction, mimeType = JAVA_MIME_TYPE)
+    public static class JavaGoToDeclarationAction extends GotoDeclarationAction {
+
+        public JavaGoToDeclarationAction() {
+        }
+
         public @Override boolean gotoDeclaration(JTextComponent target) {
             if (!(target.getDocument() instanceof BaseDocument)) // Fixed #113062
                 return false;
@@ -753,16 +773,17 @@ public class JavaKit extends NbEditorKit {
         }
     }
 
-    private static class JavaGoToSourceAction extends BaseAction {
+    @EditorActionRegistration(
+            name = gotoSourceAction,
+            mimeType = JAVA_MIME_TYPE,
+            popupText = "#goto_source_open_source_not_formatted"
+    )
+    public static class JavaGoToSourceAction extends BaseAction {
 
         static final long serialVersionUID =-6440495023918097760L;
 
         public JavaGoToSourceAction() {
-            super(gotoSourceAction,
-                  ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET
-                  | SAVE_POSITION
-                 );
-            putValue(TRIMMED_TEXT, LocaleSupport.getString("goto-source-trimmed"));  //NOI18N
+            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | SAVE_POSITION);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -780,12 +801,16 @@ public class JavaKit extends NbEditorKit {
         }
     }
 
-    private static class JavaFixImports extends BaseAction {
+    @EditorActionRegistration(
+            name = fixImportsAction,
+            mimeType = JAVA_MIME_TYPE,
+            shortDescription = "#desc-fix-imports",
+            popupText = "#popup-fix-imports"
+    )
+    public static class JavaFixImports extends BaseAction {
 
         public JavaFixImports() {
-            super(fixImportsAction,
-                  ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET
-                 );
+            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
             putValue(TRIMMED_TEXT, NbBundle.getBundle(JavaKit.class).getString("fix-imports-trimmed"));
             putValue(SHORT_DESCRIPTION, NbBundle.getBundle(JavaKit.class).getString("desc-fix-imports")); // NOI18N
             putValue(POPUP_MENU_TEXT, NbBundle.getBundle(JavaKit.class).getString("popup-fix-imports")); // NOI18N
@@ -827,14 +852,17 @@ public class JavaKit extends NbEditorKit {
         }
     } // End of JavaFixImports action
 
-    private static class JavaGotoHelpAction extends BaseAction {
+    @EditorActionRegistration(
+            name = gotoHelpAction,
+            mimeType = JAVA_MIME_TYPE,
+            shortDescription = "#java-desc-goto-help",
+            popupText = "#show_javadoc"
+    )
+    public static class JavaGotoHelpAction extends BaseAction {
 
         public JavaGotoHelpAction() {
-            super(gotoHelpAction, ABBREV_RESET | MAGIC_POSITION_RESET
-                    | UNDO_MERGE_RESET |SAVE_POSITION);
+            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET |SAVE_POSITION);
             putValue ("helpID", JavaGotoHelpAction.class.getName ()); // NOI18N
-            // fix of #25090; [PENDING] there should be more systematic solution for this problem
-            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(JavaKit.class).getString("java-desc-goto-help"));
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {

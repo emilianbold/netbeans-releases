@@ -103,11 +103,20 @@ public final class RootNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return Utilities.actionsForPath("Servers/Actions").toArray(new Action[0]); // NOI18N
+        Action[] arr = Utilities.actionsForPath("Servers/Actions").toArray(new Action[0]); // NOI18N
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] == null) {
+                continue;
+            }
+            if (Boolean.TRUE.equals(arr[i].getValue("serverNodeHidden"))) { // NOI18N
+                arr[i] = null;
+            }
+        }
+        return arr;
     }
 
 
-    static void enableActionsDueToProperties() {
+    static void enableActionsOnExpand() {
         FileObject fo = FileUtil.getConfigFile("Servers/Actions"); // NOI18N
         Enumeration<String> en;
         if (fo != null) {
@@ -115,16 +124,29 @@ public final class RootNode extends AbstractNode {
                 en = o.getAttributes();
                 while (en.hasMoreElements()) {
                     String attr = en.nextElement();
+                    boolean enable = false;
                     final String prefix = "property-"; // NOI18N
                     if (attr.startsWith(prefix)) {
                         attr = attr.substring(prefix.length());
                         if (System.getProperty(attr) != null) {
-                            Lookup l = Lookups.forPath("Servers/Actions"); // NOI18N
-                            for (Lookup.Item<Action> item : l.lookupResult(Action.class).allItems()) {
-                                if (item.getId().contains(o.getName())) {
-                                    Action a = item.getInstance();
-                                    a.actionPerformed(new ActionEvent(getInstance(), 0, "noui")); // NOI18N
-                                }
+                            enable = true;
+                        }
+                    } else {
+                        final String config = "config-"; // NOI18N
+                        if (attr.startsWith(config)) {
+                            attr = attr.substring(config.length());
+                            if (FileUtil.getConfigFile(attr) != null) {
+                                enable = true;
+                            }
+                        }
+                    }
+
+                    if (enable) {
+                        Lookup l = Lookups.forPath("Servers/Actions"); // NOI18N
+                        for (Lookup.Item<Action> item : l.lookupResult(Action.class).allItems()) {
+                            if (item.getId().contains(o.getName())) {
+                                Action a = item.getInstance();
+                                a.actionPerformed(new ActionEvent(getInstance(), 0, "noui")); // NOI18N
                             }
                         }
                     }
@@ -208,7 +230,7 @@ public final class RootNode extends AbstractNode {
             }
             assert EventQueue.isDispatchThread();
             actionsPropertiesDone = true;
-            enableActionsDueToProperties();
+            enableActionsOnExpand();
             ServerRegistry.getInstance().getProviders();
         }
     } // end of ChildFactory

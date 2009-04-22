@@ -65,12 +65,10 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 import org.netbeans.modules.cnd.remote.ui.wizard.CreateHostWizardIterator;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -118,11 +116,10 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         model = new DefaultListModel();
 
         if (cache == null) {
-            ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-            for (ExecutionEnvironment env : registry.getEnvironments()) {
+            for (ExecutionEnvironment env : ServerList.getEnvironments()) {
                 model.addElement(env);
             }
-            defaultIndex = registry.getDefaultIndex();
+            defaultIndex = ServerList.getDefaultIndex();
         } else {
             for (ExecutionEnvironment env : cache.getHosts()) {
                 model.addElement(env);
@@ -144,13 +141,11 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
 
     private void revalidateRecord(final ExecutionEnvironment env, String password, boolean rememberPassword) {
-        final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(env);
+        final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
         if (!record.isOnline()) {
             record.resetOfflineState(); // this is a do-over
             setButtons(false);
             hideReason();
-            RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(env, true);
-            userInfo.setPassword(password, rememberPassword);
             phandle = ProgressHandleFactory.createHandle("");
             pbarStatusPanel.removeAll();
             pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
@@ -245,7 +240,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         int idx = lstDevHosts.getSelectedIndex();
         if (idx >= 0) {
             ExecutionEnvironment env = getSelectedEnvironment();
-            RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(env);
+            RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
             tfStatus.setText(record.getStateAsText());
             btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
             btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(env));
@@ -283,7 +278,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 ExecutionEnvironment execEnv = CreateHostWizardIterator.invokeMe(cacheManager);
                 if (execEnv != null) {
                     if (!model.contains(execEnv)) {
-                        Lookup.getDefault().lookup(ServerList.class).addServer(execEnv, false, false);
+                        ServerList.addServer(execEnv, false, false);
                         model.addElement(execEnv);
                         lstDevHosts.setSelectedValue(execEnv, true);
                     }

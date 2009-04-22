@@ -47,8 +47,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JCheckBox;
+import javax.swing.JPanel;
 import org.netbeans.modules.welcome.WelcomeOptions;
-import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
 
@@ -56,7 +56,7 @@ import org.netbeans.modules.welcome.content.Constants;
  *
  * @author S. Aubrecht
  */
-class ShowNextTime extends BackgroundPanel 
+class ShowNextTime extends JPanel
         implements ActionListener, Constants, PropertyChangeListener {
 
     private JCheckBox button;
@@ -64,6 +64,7 @@ class ShowNextTime extends BackgroundPanel
     /** Creates a new instance of RecentProjects */
     public ShowNextTime() {
         super( new BorderLayout() );
+        setOpaque(false);
 
         button = new JCheckBox( BundleSupport.getLabel( "ShowOnStartup" ) ); // NOI18N
         button.setSelected( WelcomeOptions.getDefault().isShowOnStartup() );

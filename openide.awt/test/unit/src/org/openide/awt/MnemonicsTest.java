@@ -79,8 +79,10 @@ public class MnemonicsTest extends NbTestCase {
         assertEquals("<html><b>R&amp;D</b> department", b.getText());
         assertEquals(0, b.getMnemonic());
         assertEquals(-1, b.getDisplayedMnemonicIndex());
+        String underStart = Utilities.isMac() ? "" : "<u>";
+        String underEnd = Utilities.isMac() ? "" : "</u>";
         Mnemonics.setLocalizedText(b, "<html><b>R&amp;D</b> departmen&t");
-        assertEquals("<html><b>R&amp;D</b> departmen<u>t</u>", b.getText());
+        assertEquals("<html><b>R&amp;D</b> departmen" + underStart + "t" + underEnd, b.getText());
         if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             assertEquals(0, b.getMnemonic());
             assertEquals(-1, b.getDisplayedMnemonicIndex());
@@ -89,7 +91,7 @@ public class MnemonicsTest extends NbTestCase {
         }
         
         Mnemonics.setLocalizedText(b, "<html>Smith &amp; &Wesson");
-        assertEquals("<html>Smith &amp; <u>W</u>esson", b.getText());
+        assertEquals("<html>Smith &amp; " + underStart + "W" + underEnd + "esson", b.getText());
         if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             assertEquals(0, b.getMnemonic());
             assertEquals(-1, b.getDisplayedMnemonicIndex());
@@ -97,7 +99,7 @@ public class MnemonicsTest extends NbTestCase {
             assertEquals(KeyEvent.VK_W, b.getMnemonic());
         }
         Mnemonics.setLocalizedText(b, "<html>&Advanced Mode <em>(experimental)</em></html>");
-        assertEquals("<html><u>A</u>dvanced Mode <em>(experimental)</em></html>", b.getText());
+        assertEquals("<html>" + underStart + "A" + underEnd + "dvanced Mode <em>(experimental)</em></html>", b.getText());
         if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             assertEquals(0, b.getMnemonic());
             assertEquals(-1, b.getDisplayedMnemonicIndex());

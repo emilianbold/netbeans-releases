@@ -213,9 +213,6 @@ public class JaxWsServiceCreator implements ServiceCreator {
             //add the JAXWS 2.0 library, if not already added
             if (addJaxWsLib) {
                 boolean libraryAdded = MavenModelUtils.addJaxws21Library(project);
-                if (libraryAdded) {
-                    MavenModelUtils.reactOnServerChanges(project);
-                }
             }
             generateJaxWSImplFromTemplate(pkg, WSUtils.isEJB(project));
             handle.finish();
@@ -296,9 +293,6 @@ public class JaxWsServiceCreator implements ServiceCreator {
                             MavenModelUtils.addWarPlugin(model);
                         } else { // J2SE Project
                             MavenModelUtils.addWsdlResources(model);
-                        }
-                        if (libraryAdded) {
-                            MavenModelUtils.updateLibraryScope(project, model);
                         }
                     }
                 };

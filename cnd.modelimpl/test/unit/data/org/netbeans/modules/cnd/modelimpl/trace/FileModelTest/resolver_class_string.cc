@@ -1,9 +1,9 @@
 #include "resolver_class_string.h"
 
-std_1::wstring wrt_1(string str)
+std_1::wstring1 wrt_1(string str)
 {
-    using std_1::wstring;
-    wstring out;
+    using std_1::wstring1;
+    wstring1 out;
     return out;
 }
 
@@ -15,10 +15,10 @@ namespace resolver_class_string {
 
 }
 
-using std_1::wstring;
+using std_1::wstring1;
 
-wstring ClassA::read() const {    
-    wstring str;
+wstring1 ClassA::read() const {
+    wstring1 str;
     return str;
 }
 

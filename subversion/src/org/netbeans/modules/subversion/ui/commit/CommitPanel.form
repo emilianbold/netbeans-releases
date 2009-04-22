@@ -36,14 +36,14 @@
               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="hooksSectionPanel" pref="600" max="32767" attributes="0"/>
+                  <Component id="hooksSectionPanel" pref="614" max="32767" attributes="0"/>
                   <Component id="hooksSectionButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="filesSectionPanel" alignment="0" max="32767" attributes="0"/>
-                  <Component id="jScrollPane1" alignment="0" pref="600" max="32767" attributes="2"/>
+                  <Component id="jScrollPane1" alignment="0" pref="614" max="32767" attributes="2"/>
                   <Component id="filesSectionButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="465" max="32767" attributes="0"/>
+                      <EmptySpace pref="480" max="32767" attributes="0"/>
                       <Component id="recentLink" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -66,7 +66,7 @@
                           <Component id="recentLink" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" pref="106" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" pref="113" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="filesSectionButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -74,7 +74,7 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="hooksSectionButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="hooksSectionPanel" pref="26" max="32767" attributes="0"/>
+                      <Component id="hooksSectionPanel" pref="35" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -136,7 +136,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="filesSectionButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&amp;Files to Commit:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/subversion/ui/commit/Bundle.properties" key="LBL_CommitDialog_FilesToCommit" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="hooksSectionButton">
@@ -167,7 +169,7 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Component id="filesLabel" alignment="0" min="-2" max="-2" attributes="1"/>
-              <Component id="filesPanel" alignment="0" pref="600" max="32767" attributes="0"/>
+              <Component id="filesPanel" alignment="0" pref="614" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -175,7 +177,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="filesLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="filesPanel" pref="116" max="32767" attributes="0"/>
+                  <Component id="filesPanel" pref="123" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -191,12 +193,12 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="600" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="614" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="116" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="123" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>

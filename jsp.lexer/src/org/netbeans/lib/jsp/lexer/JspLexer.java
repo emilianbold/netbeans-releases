@@ -48,6 +48,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -151,8 +152,8 @@ public class JspLexer implements Lexer<JspTokenId> {
     //EL in content language
     private static final int ISA_EL_DELIM        = 38; //after $ or # in content language
     private static final int ISI_EL              = 39; //expression language in content (after ${ or #{ )
-    
-    private static final int ISA_BS             = 40; //after backslash in text - needed to disable EL by scaping # or $
+    private static final int ISA_BS              = 40; //after backslash in text - needed to disable EL by scaping # or $
+    private static final int ISP_GT_SCRIPTLET    = 41; //before closing < symbol in jsp:expression/s/d tag
     
     //scriptlet substate states
     //in standart syntax jsp
@@ -380,11 +381,11 @@ public class JspLexer implements Lexer<JspTokenId> {
                             }
                             //possibly switch to scriptlet when <jsp:scriptlet> found
                             
-                            if("jsp:scriptlet".equals(tagName)) { //NOI18N
+                            if(CharSequenceUtilities.equals("jsp:scriptlet",tagName)) { //NOI18N
                                 lexerStateJspScriptlet = JAVA_SCRITPLET_DOCUMENT;
-                            } else if("jsp:declaration".equals(tagName)) { //NOI18N
+                            } else if(CharSequenceUtilities.equals("jsp:declaration", tagName)) { //NOI18N
                                 lexerStateJspScriptlet = JAVA_DECLARATION_DOCUMENT;
-                            } else if("jsp:expression".equals(tagName)) { //NOI18N
+                            } else if(CharSequenceUtilities.equals("jsp:expression", tagName)) { //NOI18N
                                 lexerStateJspScriptlet = JAVA_EXPRESSION_DOCUMENT;
                             }
                             
@@ -462,11 +463,11 @@ public class JspLexer implements Lexer<JspTokenId> {
                                 lexerState = ((lexerState == ISI_TAGNAME) ? ISP_TAG : ISP_DIR);
                                 break;
                             case '>':
+                                input.backup(1); //backup the '<' char
                                 if(lexerStateJspScriptlet != INIT) {
                                     //switch to java scriptlet
-                                    lexerState = ISI_SCRIPTLET;
+                                    lexerState = ISP_GT_SCRIPTLET;
                                 } else {
-                                    input.backup(1); //backup the '<' char
                                     lexerState = ((lexerState == ISI_TAGNAME) ? ISP_TAG : ISP_DIR);
                                 }
                                 break;
@@ -484,7 +485,13 @@ public class JspLexer implements Lexer<JspTokenId> {
                         return token(JspTokenId.TAG);
                     }
                     break;
-                    
+
+                //internal state for > symbol after jsp:expression/scriptlet/declaration tag
+                case ISP_GT_SCRIPTLET:
+                    assert actChar == '>';
+                    lexerState = ISI_SCRIPTLET;
+                    return token(JspTokenId.SYMBOL);
+
                 case ISP_TAG:
                 case ISP_DIR:
                     if (Character.isLetter(actChar) ||
@@ -808,9 +815,9 @@ public class JspLexer implements Lexer<JspTokenId> {
                         case '<':
                             //may be end of scriptlet section in JSP document
                             CharSequence tagName = getPossibleTagName();
-                            if("/jsp:scriptlet".equals(tagName) || //NOI18N
-                                    "/jsp:declaration".equals(tagName) || //NOI18N
-                                    "/jsp:expression".equals(tagName)) { //NOI18N
+                            if(CharSequenceUtilities.equals("/jsp:scriptlet", tagName) || //NOI18N
+                                    CharSequenceUtilities.equals("/jsp:declaration", tagName) || //NOI18N
+                                    CharSequenceUtilities.equals("/jsp:expression", tagName)) { //NOI18N
                                 if(input.readLength() == 1) {
                                     //just the '<' symbol read
                                     input.backup(1);

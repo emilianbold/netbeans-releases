@@ -42,6 +42,7 @@ package org.netbeans.modules.debugger.jpda.actions;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.StackFrame;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
@@ -55,6 +56,8 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -68,6 +71,7 @@ import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
@@ -95,12 +99,13 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
     private static final Logger smartLogger = Logger.getLogger("org.netbeans.modules.debugger.jpda.smartstepping"); // NOI18N
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
 
-    private StepRequest stepRequest;
+    private volatile StepRequest stepIntoRequest;
     private String position;
     private int depth;
     private JPDADebuggerImpl debugger;
     private ContextProvider contextProvider;
     private boolean smartSteppingStepOut;
+    private Properties p;
 
     public StepIntoNextMethod(ContextProvider contextProvider) {
         this.debugger = (JPDADebuggerImpl) contextProvider.lookupFirst(null, JPDADebugger.class);
@@ -111,6 +116,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         Map properties = contextProvider.lookupFirst(null, Map.class);
         if (properties != null)
             smartSteppingStepOut = properties.containsKey (StepIntoActionProvider.SS_STEP_OUT);
+        p = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N
     }
 
     private final JPDADebuggerImpl getDebuggerImpl() {
@@ -118,6 +124,14 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
     }
 
     public void runAction() {
+        runAction(true);
+    }
+
+    public void runAction(boolean doResume) {
+        runAction(null, doResume);
+    }
+
+    public void runAction(Object action, boolean doResume) {
         smartLogger.finer("STEP INTO NEXT METHOD.");
         JPDAThread t = getDebuggerImpl ().getCurrentThread ();
         if (t == null) {
@@ -140,22 +154,35 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 }
                 return ;
             }
-            JPDAThread resumeThread = setStepRequest (StepRequest.STEP_INTO);
+            JPDAThreadImpl[] resumeThreadPtr = new JPDAThreadImpl[] { null };
+            int stepDepth;
+            if (ActionsManager.ACTION_STEP_OUT.equals(action)) {
+                stepDepth = StepRequest.STEP_OUT;
+            } else {
+                stepDepth = StepRequest.STEP_INTO;
+            }
+
+            StepRequest stepRequest = setStepRequest (stepDepth, resumeThreadPtr);
             position = t.getClassName () + '.' +
                        t.getMethodName () + ':' +
                        t.getLineNumber (null);
+            if (stepDepth == StepRequest.STEP_INTO) {
+                stepIntoRequest = stepRequest;
+            }
             depth = t.getStackDepth();
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("JDI Request (action step into next method): " + stepRequest);
             }
             if (stepRequest == null) return ;
             ((JPDAThreadImpl) t).setInStep(true, stepRequest);
-            if (resumeThread == null) {
-                getDebuggerImpl ().resume ();
-            } else {
-                //resumeThread.resume();
-                //stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
-                getDebuggerImpl().resumeCurrentThread();
+            if (doResume) {
+                if (resumeThreadPtr[0] == null) {
+                    getDebuggerImpl ().resume ();
+                } else {
+                    //resumeThread.resume();
+                    //stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
+                    getDebuggerImpl().resumeCurrentThread();
+                }
             }
         } finally {
             lock.unlock();
@@ -174,7 +201,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 }
             } else {
                 if (smartLogger.isLoggable(Level.FINER)) {
-                    if (stepRequest == null)
+                    if (stepIntoRequest == null)
                         smartLogger.finer("Exclusion patterns has been added");
                     else
                         smartLogger.finer("Add exclusion patterns: "+ev.getNewValue());
@@ -182,7 +209,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 try {
                     addPatternsToRequest((String[]) ((Set<String>) ev.getNewValue ()).toArray (
                         new String [((Set) ev.getNewValue ()).size()]
-                    ));
+                    ), stepIntoRequest);
                 } catch (InternalExceptionWrapper ex) {
                     return ;
                 } catch (VMDisconnectedExceptionWrapper ex) {
@@ -212,8 +239,9 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
     public boolean exec (Event event) {
         ThreadReference tr;
         JPDAThreadImpl st;
+        StepRequest sr;
         try {
-            StepRequest sr = (StepRequest) EventWrapper.request(event);
+            sr = (StepRequest) EventWrapper.request(event);
             tr = StepRequestWrapper.thread(sr);
             st = getDebuggerImpl().getThread(tr);
             st.setInStep(false, null);
@@ -228,23 +256,44 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         }*/
         st.accessLock.readLock().lock();
         try {
-            if (stepRequest != null) {
+            //if (stepRequest != null) {
                 try {
-                    EventRequestWrapper.disable (stepRequest);
+                    EventRequestWrapper.disable (sr);
                 } catch (InternalExceptionWrapper ex) {
                     return false;
                 } catch (VMDisconnectedExceptionWrapper ex) {
                     return false;
                 }
-            }
+            //}
 
+            boolean useStepFilters = p.getBoolean("UseStepFilters", true);
+            boolean stepThrough = useStepFilters && p.getBoolean("StepThroughFilters", false)
+                                  && !smartSteppingStepOut;
+            if (!stepThrough && isFilteredClassOnStack(tr, depth)) {
+                // There's a class that was skipped by step on the stack.
+                // If step through is false, we should step out from here.
+                smartLogger.finer(" stoped with a filtered class on stack and step through is false.");
+                StepRequest newSR = setStepRequest (StepRequest.STEP_OUT);
+                return newSR != null;
+            }
             try {
-                if (TypeComponentWrapper.isSynthetic(
-                        LocationWrapper.method(StackFrameWrapper.location(
-                        ThreadReferenceWrapper.frame(tr, 0))))) {
+                boolean filterSyntheticMethods = useStepFilters && p.getBoolean("FilterSyntheticMethods", true);
+                boolean filterStaticInitializers = useStepFilters && p.getBoolean("FilterStaticInitializers", false);
+                boolean filterConstructors = useStepFilters && p.getBoolean("FilterConstructors", false);
+                com.sun.jdi.Method m = LocationWrapper.method(StackFrameWrapper.location(
+                        ThreadReferenceWrapper.frame(tr, 0)));
+                if (filterSyntheticMethods && TypeComponentWrapper.isSynthetic(m)) {
                     //S ystem.out.println("In synthetic method -> STEP INTO again");
-                    setStepRequest (StepRequest.STEP_INTO);
-                    return true;
+                    smartLogger.finer(" stoped in a synthetic method.");
+                    StepRequest newSR = setStepRequest (StepRequest.STEP_INTO);
+                    return newSR != null;
+                }
+                if (filterStaticInitializers && MethodWrapper.isStaticInitializer(m) ||
+                    filterConstructors && MethodWrapper.isConstructor(m)) {
+
+                    smartLogger.finer(" stoped in a static initializer or constructor.");
+                    StepRequest newSR = setStepRequest (StepRequest.STEP_OUT);
+                    return newSR != null;
                 }
             } catch (IncompatibleThreadStateException e) {
                 //ErrorManager.getDefault().notify(e);
@@ -265,40 +314,28 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                                       t.getMethodName () + ':' +
                                       t.getLineNumber (null);
                 int stopDepth = t.getStackDepth();
+                if (smartLogger.isLoggable(Level.FINER)) {
+                    smartLogger.finer(" stop position = "+stopPosition+", original position = "+position+", stop depth = "+stopDepth+", original depth = "+depth+" => will stop: "+(!(position.equals(stopPosition) && depth == stopDepth)));
+                }
                 if (position.equals(stopPosition) && depth == stopDepth) {
                     // We are where we started!
                     stop = false;
-                    setStepRequest (StepRequest.STEP_INTO);
-                    return true;//resumeThread == null;
+                    StepRequest newSR = setStepRequest (StepRequest.STEP_INTO);
+                    return newSR != null;
                 }
             }
             if (stop) {
                 removeStepRequests (tr);
             } else {
                 smartLogger.finer(" => do next step.");
-                if (smartSteppingStepOut) {
-                    setStepRequest (StepRequest.STEP_OUT);
-                } else if (stepRequest != null) {
-                    try {
-                        EventRequestWrapper.enable (stepRequest);
-                    } catch (IllegalThreadStateException itsex) {
-                        try {
-                            // the thread named in the request has died.
-                            getDebuggerImpl().getOperator().unregister(stepRequest);
-                        } catch (InternalExceptionWrapper ex) {
-                            return true;
-                        } catch (VMDisconnectedExceptionWrapper ex) {
-                            return true;
-                        }
-                        stepRequest = null;
-                        return true;
-                    } catch (VMDisconnectedExceptionWrapper e) {
-                        return true;
-                    } catch (InternalExceptionWrapper e) {
-                        return true;
-                    }
+                StepRequest newSR;
+                if (!stepThrough) {
+                    newSR = setStepRequest (StepRequest.STEP_OUT);
                 } else {
-                    setStepRequest (StepRequest.STEP_INTO);
+                    newSR = setStepRequest (StepRequest.STEP_INTO);
+                }
+                if (newSR == null) {
+                    return false; // Do not resume if something went wrong!
                 }
             }
 
@@ -350,18 +387,57 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
     // other methods ...........................................................
 
     private void removeStepRequests (ThreadReference tr) {
+        synchronized (this) {
+            stepIntoRequest = null;
+        }
         JPDADebuggerActionProvider.removeStepRequests (getDebuggerImpl(), tr);
-        stepRequest = null;
         smartLogger.finer("removing all patterns, all step requests.");
     }
 
-    private JPDAThreadImpl setStepRequest (int step) {
+    private StepRequest setStepRequest (int step) {
+        StepRequest enabledStepRequest = null;
+        if (step == StepRequest.STEP_INTO) {
+            synchronized (this) {
+                if (stepIntoRequest != null) {
+                    try {
+                        EventRequestWrapper.enable (stepIntoRequest);
+                        enabledStepRequest = stepIntoRequest;
+                    } catch (IllegalThreadStateException itsex) {
+                        try {
+                            // the thread named in the request has died.
+                            getDebuggerImpl().getOperator().unregister(stepIntoRequest);
+                        } catch (InternalExceptionWrapper ex) {
+                            return null;
+                        } catch (VMDisconnectedExceptionWrapper ex) {
+                            return null;
+                        }
+                        stepIntoRequest = null;
+                        return null;
+                    } catch (VMDisconnectedExceptionWrapper e) {
+                        stepIntoRequest = null;
+                        return null;
+                    } catch (InternalExceptionWrapper e) {
+                        stepIntoRequest = null;
+                        return null;
+                    }
+                }
+            }
+        }
+        if (enabledStepRequest != null) {
+            return enabledStepRequest;
+        } else {
+            return setStepRequest(step, null);
+        }
+    }
+
+    private StepRequest setStepRequest (int step, JPDAThreadImpl[] resumeThreadPtr) {
         JPDAThreadImpl thread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
         ThreadReference tr = thread.getThreadReference ();
         removeStepRequests (tr);
         VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
         if (vm == null) return null;
         int suspendPolicy;
+        StepRequest stepRequest;
         try {
             stepRequest = EventRequestManagerWrapper.createStepRequest(
                     VirtualMachineWrapper.eventRequestManager(vm),
@@ -382,7 +458,8 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         }
         try {
             addPatternsToRequest (
-                getSmartSteppingFilterImpl ().getExclusionPatterns ()
+                getSmartSteppingFilterImpl ().getExclusionPatterns (),
+                stepRequest
             );
             EventRequestWrapper.enable (stepRequest);
         } catch (IllegalThreadStateException itsex) {
@@ -401,11 +478,14 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         } catch (VMDisconnectedExceptionWrapper ex) {
             return null;
         }
-        if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
-            return thread;
-        } else {
-            return null;
+        if (resumeThreadPtr != null) {
+            if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
+                resumeThreadPtr[0] = thread;
+            } else {
+                resumeThreadPtr[0] = null;
+            }
         }
+        return stepRequest;
     }
 
     private SmartSteppingFilter smartSteppingFilter;
@@ -424,13 +504,44 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         return compoundSmartSteppingListener;
     }
 
-    private void addPatternsToRequest (String[] patterns) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+    private void addPatternsToRequest (String[] patterns, StepRequest stepRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         if (stepRequest == null) return;
         int i, k = patterns.length;
         for (i = 0; i < k; i++) {
             StepRequestWrapper.addClassExclusionFilter(stepRequest, patterns [i]);
             smartLogger.finer("   add pattern: "+patterns[i]);
         }
+    }
+
+    private boolean isFilteredClassOnStack(ThreadReference tr, int depth) {
+        String[] patterns = getSmartSteppingFilterImpl ().getExclusionPatterns();
+        if (patterns.length == 0) return false;
+        try {
+            int n = ThreadReferenceWrapper.frameCount(tr);
+            if (n <= depth) return false;
+            List<StackFrame> frames = ThreadReferenceWrapper.frames(tr, 0, n - depth);
+            for (StackFrame f : frames) {
+                /* TODO: use
+                boolean canStop = getCompoundSmartSteppingListener ().stopHere
+                                (contextProvider, f, getSmartSteppingFilterImpl ());
+                 */
+                String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(
+                    StackFrameWrapper.location(f)));
+                for (String pattern : patterns) {
+                    if (className.contentEquals(pattern)) {
+                        smartLogger.finer(" class '"+className+"' on stack.");
+                        return true;
+                    }
+                }
+            }
+        } catch (IncompatibleThreadStateException ex) {
+        } catch (InternalExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (IllegalThreadStateExceptionWrapper ex) {
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+        }
+        return false;
     }
 
 }

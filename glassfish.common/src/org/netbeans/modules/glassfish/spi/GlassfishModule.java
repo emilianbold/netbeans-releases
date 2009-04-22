@@ -1,4 +1,3 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -37,7 +36,6 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-// </editor-fold>
 
 package org.netbeans.modules.glassfish.spi;
 
@@ -108,9 +106,11 @@ public interface GlassfishModule {
         STARTING,
         RUNNING,
         RUNNING_JVM_DEBUG,
+        RUNNING_JVM_PROFILER,
         STOPPING,
         STOPPED,
-        STOPPED_JVM_BP
+        STOPPED_JVM_BP,
+        STOPPED_JVM_PROFILER
     }
     
     /**

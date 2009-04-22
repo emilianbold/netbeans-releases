@@ -103,7 +103,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-public class RSSFeed extends BackgroundPanel implements Constants, PropertyChangeListener {
+public class RSSFeed extends JPanel implements Constants, PropertyChangeListener {
     
     private String url;
     
@@ -123,6 +123,7 @@ public class RSSFeed extends BackgroundPanel implements Constants, PropertyChang
     private final Logger LOGGER = Logger.getLogger( RSSFeed.class.getName() );
     
     private int maxDescriptionChars = -1;
+    private boolean foregroundColorFlag;
 
 
     /** Returns file for caching of content. 
@@ -145,6 +146,7 @@ public class RSSFeed extends BackgroundPanel implements Constants, PropertyChang
     
     public RSSFeed( String url, boolean showProxyButton ) {
         super( new BorderLayout() );
+        setOpaque(false);
         this.url = url;
         this.showProxyButton = showProxyButton;
         setBorder(null);
@@ -177,7 +179,7 @@ public class RSSFeed extends BackgroundPanel implements Constants, PropertyChang
     }
     
     protected int getMaxItemCount() {
-        return 5;
+        return 3;
     }
 
     protected List<FeedItem> buildItemList() throws SAXException, ParserConfigurationException, IOException {
@@ -297,6 +299,7 @@ public class RSSFeed extends BackgroundPanel implements Constants, PropertyChang
                                 new Insets(0,0,0,0),0,0 ) );
                 }
 
+                foregroundColorFlag = true;
                 for( int i=0; i<Math.min(itemList.size(), getMaxItemCount()); i++ ) {
                     FeedItem item = itemList.get(i);
 
@@ -364,7 +367,7 @@ public class RSSFeed extends BackgroundPanel implements Constants, PropertyChang
             //ignore
         }
     }
-    
+
     protected Component createFeedItemComponent( FeedItem item ) {
         JPanel panel = new JPanel( new GridBagLayout() );
         panel.setOpaque( false );
@@ -372,13 +375,16 @@ public class RSSFeed extends BackgroundPanel implements Constants, PropertyChang
         if( item.dateTime != null) {
             JLabel label = new JLabel();
             label.setFont( RSS_DESCRIPTION_FONT );
+            label.setForeground( Utils.getColor(COLOR_RSS_DATE) );
             label.setText( formatDateTime( item.dateTime ) );
             panel.add( label, new GridBagConstraints(2,row,1,1,0.0,0.0,
                     GridBagConstraints.EAST,GridBagConstraints.NONE,
                     new Insets(0,TEXT_INSETS_LEFT+5,2,TEXT_INSETS_RIGHT),0,0 ) );
         }
 
-        WebLink linkButton = new WebLink( stripHtml(item.title), item.link, true );
+        WebLink linkButton = new WebLink( stripHtml(item.title), item.link, true, 
+                Utils.getColor( foregroundColorFlag ? COLOR_HEADER1 : COLOR_HEADER2 ) );
+        foregroundColorFlag = !foregroundColorFlag;
         linkButton.getAccessibleContext().setAccessibleName( 
                 BundleSupport.getAccessibilityName( "WebLink", item.title ) ); //NOI18N
         linkButton.getAccessibleContext().setAccessibleDescription( 
@@ -392,9 +398,10 @@ public class RSSFeed extends BackgroundPanel implements Constants, PropertyChang
         if (item.description != null) {
             JLabel label = new JLabel("<html>" + trimHtml(item.description) );
             label.setFont( RSS_DESCRIPTION_FONT );
+            label.setForeground(Utils.getColor(COLOR_RSS_DETAILS));
             panel.add( label, new GridBagConstraints(0,row++,4,1,0.0,0.0,
                     GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,
-                    new Insets(0,TEXT_INSETS_LEFT+5,0,TEXT_INSETS_RIGHT),0,0 ) );
+                    new Insets(0,TEXT_INSETS_LEFT+20,0,TEXT_INSETS_RIGHT),0,0 ) );
         }
         return panel;
     }
@@ -446,10 +453,8 @@ public class RSSFeed extends BackgroundPanel implements Constants, PropertyChang
         });
     }
 
-    private boolean firstReload = true;
     protected void startReloading() {
-        if( /*(isShowing() || firstReload) &&*/ null == reloadTimer && !Boolean.getBoolean("netbeans.full.hack")) {
-            firstReload = false;
+        if( null == reloadTimer && !Boolean.getBoolean("netbeans.full.hack")) {
             if( System.currentTimeMillis() - lastReload >= RSS_FEED_TIMER_RELOAD_MILLIS ) {
                 reload();
             } else {
