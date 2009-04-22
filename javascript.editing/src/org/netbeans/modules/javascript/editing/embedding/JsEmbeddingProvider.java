@@ -60,7 +60,10 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  *
- * @author vita
+ * @see "org.netbeans.modules.parsing.impl.SourceCache.resortTaskFactories() which
+ * depends on fully qualified name of this class Factory. See issue #162990 for more information."
+ *
+ * @author vita, mfukala@netbeans.org
  */
 public final class JsEmbeddingProvider extends EmbeddingProvider {
 
@@ -104,6 +107,11 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         public
         @Override
         Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            //filter out transitive embedding creations like JSP -> HTML -> JavaScript
+            //we have a direct translator for them JSP -> JavaScript
+            if(snapshot.getMimeType().equals("text/html") && snapshot.getMimePath().size() > 1) { //NOI18N
+                return null;
+            }
             Translator t = translators.get(snapshot.getMimeType());
             if (t != null) {
                 return Collections.singleton(new JsEmbeddingProvider(snapshot.getMimeType(), t));
