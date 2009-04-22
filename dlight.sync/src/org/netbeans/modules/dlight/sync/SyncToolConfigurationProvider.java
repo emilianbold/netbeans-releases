@@ -278,7 +278,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         uiMapping.setColumnUI("func_name", loc("SyncTool.ColumnName.func_name"), loc("SyncTool.ColumnTooltip.func_name"));
         uiMapping.setColumnUI("time", loc("SyncTool.ColumnName.e_sync"), loc("SyncTool.ColumnTooltip.e_sync"));
         uiMapping.setColumnUI("count", loc("SyncTool.ColumnName.syncn"), loc("SyncTool.ColumnTooltip.syncn"));
-
+        tableVisualizerConfiguration.setColumnsUIMapping(uiMapping);
 
         return tableVisualizerConfiguration;
     }
