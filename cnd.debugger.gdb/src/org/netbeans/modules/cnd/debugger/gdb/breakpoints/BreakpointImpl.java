@@ -119,7 +119,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 if (!debugger.comparePaths(path, fullname)) {
                     debugger.getGdbProxy().getLogger().logMessage(
                             "IDE: incorrect breakpoint file: requested " + path + " found " + fullname); // NOI18N
-                    debugger.getGdbProxy().break_deleteCMD(number);
+                    debugger.getGdbProxy().break_deleteCMD(number).send();
                     breakpoint.setInvalid(err);
                     setState(BPSTATE_VALIDATION_FAILED);
                     return;
