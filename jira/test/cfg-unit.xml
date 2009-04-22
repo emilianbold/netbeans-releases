@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -26,7 +27,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,38 +41,27 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project xmlns="http://www.netbeans.org/ns/project/1">
-    <type>org.netbeans.modules.apisupport.project</type>
-    <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.libs.bugzilla</code-name-base>
-            <module-dependencies>
-                <dependency>
-                    <code-name-base>org.netbeans.libs.bugtracking</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-            </module-dependencies>
-            <test-dependencies>
-                <test-type>
-                    <name>unit</name>
-                    <test-dependency>
-                        <code-name-base>org.openide.awt</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                </test-type>
-            </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.bugzilla</friend>
-                <package>org.eclipse.mylyn.internal.bugzilla.core</package>
-            </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.mylyn.bugzilla.core_3.1.1.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.bugzilla.core_3.1.1.jar</binary-origin>
-            </class-path-extension>
-        </data>
-    </configuration>
-</project>
+
+<!--
+  These classes are excluded by default (defined in build.xml):
+    "**/*Suite.class"
+    "**/*$$*.class"
+    "**/data/**"
+    "**/hidden/**"
+    "**/*Hidden.*"
+    "**/*Hid.*"
+-->
+<mconfig name="Versioning SPI Test config">
+
+    <testbag testattribs="validation" executor="code" name="All Versioning SPI unit tests">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/modules/versioning/**/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
+    <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    
+</mconfig>

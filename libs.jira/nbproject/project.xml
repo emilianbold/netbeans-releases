@@ -44,14 +44,22 @@ made subject to such option by the copyright holder.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.libs.bugtracking</code-name-base>
+            <code-name-base>org.netbeans.libs.jira</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.commons_codec</code-name-base>
+                    <code-name-base>org.jdesktop.layout</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
+                        <specification-version>1.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.bugtracking</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
@@ -65,11 +73,19 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.21</specification-version>
+                        <specification-version>7.3</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -81,63 +97,81 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.7</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.22</specification-version>
+                        <specification-version>7.18</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.windows</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.24</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.bugtracking</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.libs.bugzilla</friend>
-                <friend>org.netbeans.libs.jira</friend>
-                <friend>org.netbeans.modules.bugtracking</friend>
-                <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.jira</friend>
-                <package>org.apache.commons.httpclient</package>
-                <package>org.apache.commons.httpclient.methods</package>
-                <package>org.apache.commons.httpclient.methods.multipart</package>
-                <package>org.apache.commons.httpclient.params</package>
-                <package>org.apache.commons.httpclient.util</package>
-                <package>org.apache.commons.lang</package>
-                <package>org.eclipse.core.internal.runtime</package>
-                <package>org.eclipse.core.net.proxy</package>
-                <package>org.eclipse.core.runtime</package>
-                <package>org.eclipse.core.runtime.jobs</package>
-                <package>org.eclipse.mylyn.commons.core</package>
-                <package>org.eclipse.mylyn.commons.net</package>
-                <package>org.eclipse.mylyn.internal.commons.core</package>
-                <package>org.eclipse.mylyn.internal.tasks.core</package>
-                <package>org.eclipse.mylyn.internal.tasks.core.data</package>
-                <package>org.eclipse.mylyn.internal.tasks.core.externalization</package>
-                <package>org.eclipse.mylyn.tasks.core</package>
-                <package>org.eclipse.mylyn.tasks.core.data</package>
-                <package>org.eclipse.mylyn.tasks.core.sync</package>
-                <package>org.eclipse.osgi.util</package>
-                <package>org.netbeans.libs.bugtracking</package>
-                <package>org.osgi.framework</package>
-                <package>org.osgi.util.tracker</package>
+                <package>org.eclipse.mylyn.internal.jira.core</package>
+                <package>org.eclipse.mylyn.internal.jira.core.model</package>
+                <package>org.eclipse.mylyn.internal.jira.core.model.filter</package>
+                <package>org.eclipse.mylyn.internal.jira.core.service</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.mylyn.commons.core_3.1.1.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.commons.core_3.1.1.jar</binary-origin>
+                <runtime-relative-path>ext/org.eclipse.mylyn.jira.core-3.1.1.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.mylyn.jira.core-3.1.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.mylyn.commons.net_3.1.1.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.commons.net_3.1.1.jar</binary-origin>
+                <runtime-relative-path>ext/org.eclipse.mylyn.commons.soap-3.1.1.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.mylyn.commons.soap-3.1.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.mylyn.tasks.core_3.1.1.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.tasks.core_3.1.1.jar</binary-origin>
+                <runtime-relative-path>ext/saaj-1.2.0.jar</runtime-relative-path>
+                <binary-origin>external/saaj-1.2.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/commons-httpclient-3.1.jar</runtime-relative-path>
-                <binary-origin>external/commons-httpclient-3.1.jar</binary-origin>
+                <runtime-relative-path>ext/org.apache.axis-1.4.0.jar</runtime-relative-path>
+                <binary-origin>external/org.apache.axis-1.4.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/commons-lang-2.3.jar</runtime-relative-path>
-                <binary-origin>external/commons-lang-2.3.jar</binary-origin>
+                <runtime-relative-path>ext/commons-discovery-0.2.jar</runtime-relative-path>
+                <binary-origin>external/commons-discovery-0.2.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/javax.activation-1.1.0.jar</runtime-relative-path>
+                <binary-origin>external/javax.activation-1.1.0.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxrpc-1.1.0.jar</runtime-relative-path>
+                <binary-origin>external/jaxrpc-1.1.0.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/javax.mail-1.4.0.jar</runtime-relative-path>
+                <binary-origin>external/javax.mail-1.4.0.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/javax.wsdl-1.6.2.jar</runtime-relative-path>
+                <binary-origin>external/javax.wsdl-1.6.2.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

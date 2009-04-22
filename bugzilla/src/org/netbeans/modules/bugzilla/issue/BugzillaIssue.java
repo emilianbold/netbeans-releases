@@ -41,6 +41,7 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.text.ParseException;
@@ -55,15 +56,16 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaTaskAttachmentHandler;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.AbstractTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
@@ -389,16 +391,11 @@ public class BugzillaIssue extends Issue {
      * @param taskData
      * @return id or null
      */
-    public static String getID(TaskData taskData) {
-        try {
-            if(taskData.isNew()) {
-                return null;
-                }
-            return Integer.toString(BugzillaRepositoryConnector.getBugId(taskData.getTaskId()));
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+    public static String getID(TaskData taskData) {        
+        if(taskData.isNew()) {
+            return null;
         }
-        return "";                                                              // NOI18N
+        return taskData.getTaskId();
     }
 
     TaskRepository getTaskRepository() {
@@ -611,21 +608,28 @@ public class BugzillaIssue extends Issue {
                 contentType = FileTaskAttachmentSource.getContentTypeFromFilename(file.getName());
             }
         }
-        attachmentSource.setContentType(contentType);
-        final BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
+        attachmentSource.setContentType(contentType);        
+
+        final TaskAttribute attAttribute = new TaskAttribute(data.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
+        TaskAttributeMapper mapper = attAttribute.getTaskData().getAttributeMapper();
+        TaskAttribute a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION);
+        a.setValue(desc);
+        a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_IS_PATCH);
+        mapper.setBooleanValue(a, patch);
+        a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_CONTENT_TYPE);
+        a.setValue(contentType);
 
         BugzillaCommand cmd = new BugzillaCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
                 refresh();
-                Bugzilla.getInstance().getClient(repository).postAttachment(
-                                getID(),
-                                comment,
-                                desc,
-                                attachmentSource.getContentType(),
-                                patch,
-                                source,
-                                new NullProgressMonitor());
+                Bugzilla.getInstance().getClient(repository)
+                        .postAttachment(
+                            getID(),
+                            comment,
+                            attachmentSource,
+                            attAttribute,
+                            new NullProgressMonitor());
                 refresh(); // XXX to much refresh - is there no other way?
             }
         };

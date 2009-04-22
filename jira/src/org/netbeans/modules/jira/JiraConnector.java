@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,25 +31,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.eclipse.core.runtime;
+
+package org.netbeans.modules.jira;
+
+import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 
 /**
- * @author Maros Sandor
+ *
+ * @author Tomas Stupka
  */
-public final class Assert {
-    
-    public static void isNotNull(Object object) {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
+public class JiraConnector extends BugtrackingConnector {
+
+    public String getDisplayName() {
+        return "Jira";
     }
 
-    public static void isNotNull(Object object, String string) {
+    public String getTooltip() {
+        return "Jira Issue Tracking System";
     }
 
-    public static boolean isTrue(boolean b) {
-        return b;
+    @Override
+    public Repository createRepository() {
+        return new JiraRepository();
     }
 
-    public static boolean isLegal(boolean b) {
-        return b;
+    @Override
+    public Repository[] getRepositories() {
+        return Jira.getInstance().getRepositories();
     }
+
 }
