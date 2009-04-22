@@ -880,5 +880,9 @@ public final class RubyParser extends Parser {
         public String getDescription() {
             return null;
         }
+
+        public boolean isLineError() {
+            return true;
+        }
     }    
 }
