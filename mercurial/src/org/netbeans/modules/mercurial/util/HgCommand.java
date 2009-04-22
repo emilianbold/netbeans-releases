@@ -3142,6 +3142,124 @@ public class HgCommand {
     }
 
     /**
+     * Tries to determine if the given url represents real mercurial repository
+     * @param hgUrl
+     * @return true if the given url represents real mercurial repository
+     */
+    public static boolean checkRemoteRepository(String repository) {
+        boolean retval = false;
+        if (repository == null || "".equals(repository)) {
+            return retval;
+        }
+        File tmpFolder = Utils.getTempFolder(false);
+        File tmpTarget = new File(tmpFolder, "rep");                    //NOI18N
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_CLONE_CMD);
+        command.add(repository);
+        command.add(tmpTarget.getAbsolutePath());
+
+        retval = execCheckClone(command);
+        Utils.deleteRecursively(tmpFolder);
+        return retval;
+    }
+
+    /**
+     * This is a repulsive piece of code.
+     * Have no other idea how to determine if the target is a real mercurial repository.
+     * So this tries to clone into a temporary folder. If the command does not finish any time soon (e.g. huge repos as the netbeans repository)
+     * or returns some recognizable messages in its output, then the target is assumed to be a real repository.
+     * @param command
+     * @return
+     */
+    private static boolean execCheckClone(List<String> command) {
+        final boolean[] isRepository = new boolean[] {false};
+        if(!Mercurial.getInstance().isGoodVersion()){
+            Mercurial.LOG.info("Unsupported hg version");
+            return isRepository[0];
+        }
+        
+        Process proc = null;
+        try{
+            Mercurial.LOG.log(Level.FINE, "execCheckClone(): " + command); // NOI18N
+            ProcessBuilder b = new ProcessBuilder(command);
+            b.redirectErrorStream(true);
+            // start the clone
+            proc = b.start();
+            final Process procf = proc;
+            final Thread t1 = new Thread(new Runnable() {
+                public void run() {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(procf.getInputStream()));
+                    String line;
+                    try {
+                        // if the clone command returns any recognized messages, consider the target a real repository
+                        while ((line = in.readLine()) != null) {
+                            line = line.toLowerCase();
+                            if (line.contains("requesting all changes") //NOI18N
+                                    || line.contains("adding changesets") //NOI18N
+                                    || line.contains("no changes found") //NOI18N
+                                    || line.contains("updating working directory")) { //NOI18N
+                                isRepository[0] = true;
+                                break;
+                            }
+                        }
+                    } catch (IOException ex) {
+                        Mercurial.LOG.log(Level.FINE, null, ex); // NOI18N
+                    } finally {
+                        try {
+                            in.close();
+                        } catch (IOException ex) {
+                            Mercurial.LOG.log(Level.FINE, null, ex); // NOI18N
+                        }
+                    }
+                }
+            });
+            t1.start();
+            // wait for the clone to finish
+            int rounds = 50;
+            while (t1.isAlive()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    // ignore
+                }
+                if (--rounds == 0) {
+                    // assume hg is cloning, we've been waiting for a long time, it has not thrown any error
+                    proc.destroy();
+                    isRepository[0] = true;
+                }
+            }
+        } catch(InterruptedIOException e){
+            // We get here is we try to cancel so kill the process
+            Mercurial.LOG.log(Level.FINE, "execCheckClone():  InterruptedIOException " + e); // NOI18N
+            if (proc != null)  {
+                try {
+                    proc.getInputStream().close();
+                    proc.getOutputStream().close();
+                    proc.getErrorStream().close();
+                } catch (IOException ioex) {
+                //Just ignore. Closing streams.
+                }
+                proc.destroy();
+            }
+        } catch(IOException e){
+            Mercurial.LOG.log(Level.INFO, null, e);
+        } finally {
+            if (proc != null) {
+                try {
+                    proc.getInputStream().close();
+                    proc.getErrorStream().close();
+                    proc.getOutputStream().close();
+                } catch (IOException ex) {
+                    Mercurial.LOG.log(Level.INFO, null, ex);
+                }
+            }
+        }
+        return isRepository[0];
+    }
+
+    /**
      * This utility class should not be instantiated anywhere.
      */
     private HgCommand() {

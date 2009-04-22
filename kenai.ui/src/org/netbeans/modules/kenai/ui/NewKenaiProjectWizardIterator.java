@@ -203,7 +203,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         if (repoCreated) {
             try {
                 KenaiFeature features[] = Kenai.getDefault().getProject(newPrjName).getFeatures(KenaiService.Type.SOURCE);
-                URI scmLoc = null;
+                String scmLoc = null;
                 String featureService = null;
                 for (KenaiFeature feature : features) {
                     if (newPrjScmName.equals(feature.getName())) {
@@ -215,7 +215,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                 if (scmLoc != null) {
                     handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
                             "NewKenaiProject.progress.repositoryCheckout"),4);
-                    logger.log(Level.FINE, "Checking out repository - Location: " + scmLoc.toASCIIString() +
+                    logger.log(Level.FINE, "Checking out repository - Location: " + scmLoc +
                             ", Local Folder: " + newPrjScmLocal + ", Service: " + featureService); // NOI18N
                     PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
                     if (passwdAuth != null) {
@@ -224,7 +224,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                             if (isShareExistingFolder) {
                                 String initialRevision = NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "NewKenaiProject.initialRevision", newPrjTitle);
                                 String dirName = activeNode.getLookup().lookup(Project.class).getProjectDirectory().getName();
-                                    final String remoteDir = scmLoc.toASCIIString().concat("/" + dirName);
+                                    final String remoteDir = scmLoc.concat("/" + dirName);
                                 try {
                                     Subversion.mkdir(remoteDir,passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
                                 } catch (IOException io) {
@@ -238,13 +238,13 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                                     Subversion.commit(new File[]{localFile}, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
                                 }
                             } else {
-                                Subversion.checkoutRepositoryFolder(scmLoc.toASCIIString(), new String[]{"."},localFile,
+                                Subversion.checkoutRepositoryFolder(scmLoc, new String[]{"."},localFile,
                                         passwdAuth.getUserName(), new String(passwdAuth.getPassword()), false);
                             }
 
                         } else if (KenaiService.Names.MERCURIAL.equals(featureService)) {
 
-                            Mercurial.cloneRepository(scmLoc.toASCIIString(),localFile, "", "", "",
+                            Mercurial.cloneRepository(scmLoc,localFile, "", "", "",
                                 passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
 
                         }
@@ -346,11 +346,17 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
             if (prepend != null) {
                 sb.append(prepend + " "); // NOI18N
             }
+            boolean sepAdded = false;
             for (Iterator<String> it = errMap.keySet().iterator(); it.hasNext(); ) {
                 String fld = it.next();
-                sb.append(errMap.get(fld));
+                sb.append(errMap.get(fld) + ". ");
+                sepAdded = true;
             }
-            errMsg = sb.toString();
+            if (sepAdded) {
+                errMsg = sb.substring(0, sb.length() - 2);
+            } else {
+                errMsg = sb.toString();
+            }
         } else {
             errMsg = kex.getLocalizedMessage();
         }

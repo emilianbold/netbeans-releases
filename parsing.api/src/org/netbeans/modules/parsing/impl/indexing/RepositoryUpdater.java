@@ -257,7 +257,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void refreshAll() {
-        scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries), false);
+        scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries, true), false);
     }
 
     public synchronized IndexingController getController() {
@@ -960,6 +960,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
             return msg == null ? tmp.toString() : msg;
         }
+
+        public @Override String toString() {
+            return getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) //NOI18N
+                + "[followUpJob=" + followUpJob + ", checkEditor=" + checkEditor; //NOI18N
+        }
     } // End of Work class
 
     private static final class FileListWork extends Work {
@@ -1144,17 +1149,32 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
         }
+
+        public @Override String toString() {
+            return super.toString() + ", indexer=" + indexerFactory.getIndexerName() + "/" + indexerFactory.getIndexVersion() //NOI18N
+                    + ", mimeTypes=" + indexerMimeTypes; //NOI18N
+        }
     } // End of RefreshIndices class
 
     private static class RootsWork extends Work {
 
         private final Map<URL, List<URL>> scannedRoots2Dependencies;
         private final Set<URL> scannedBinaries;
+        private final boolean refreshAll;
 
         public RootsWork (Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> scannedBinaries) {
+            this(scannedRoots2Depencencies, scannedBinaries, false);
+        }
+
+        public RootsWork (Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> scannedBinaries, boolean refreshAll) {
             super(false, false);
             this.scannedRoots2Dependencies = scannedRoots2Depencencies;
             this.scannedBinaries = scannedBinaries;
+            this.refreshAll = refreshAll;
+        }
+
+        public @Override String toString() {
+            return super.toString() + ", refreshAll=" + refreshAll; //NOI18N
         }
 
         public @Override void getDone() {
@@ -1192,13 +1212,30 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 scannedBinaries.addAll(ctx.scannedBinaries);
                 scannedBinaries.removeAll(ctx.oldBinaries);
             } catch (final TopologicalSortException tse) {
-                final IllegalStateException ise = new IllegalStateException ();
-                throw (IllegalStateException) ise.initCause(tse);
+                LOGGER.log(Level.SEVERE, "Cycles detected in classpath roots dependencies", tse); //NOI18N
+                return;
+            }
+
+            if (refreshAll) {
+                final DependenciesContext ctx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries, true);
+                final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>>(scannedRoots2Dependencies);
+
+                ctx.newBinariesToScan.addAll(ctx.scannedBinaries);
+                scanBinaries(ctx);
+
+                try {
+                    ctx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(depGraph.keySet(), depGraph));
+                    Collections.reverse(ctx.newRootsToScan);
+                    scanSources(ctx);
+                } catch (final TopologicalSortException tse) {
+                    LOGGER.log(Level.SEVERE, "Cycles detected in classpath roots dependencies", tse); //NOI18N
+                    return;
+                }
             }
         }
 
         protected @Override boolean isCancelledBy(Work newWork) {
-            boolean b = newWork instanceof RootsWork;
+            boolean b = (newWork instanceof RootsWork) && ((RootsWork) newWork).refreshAll == refreshAll;
             if (b && LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Cancelling " + this + ", because of " + newWork); //NOI18N
             }
@@ -1296,10 +1333,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 
                 final long tmStart = System.currentTimeMillis();
                 try {
-                    if (!noRootsScan) {
-                        updateProgress(binary);
-                        scanBinary (binary);
-                    }
+                    updateProgress(binary);
+                    scanBinary (binary);
                     ctx.scannedBinaries.add(binary);
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
@@ -1365,10 +1400,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                 final long tmStart = System.currentTimeMillis();
                 try {
-                    if (!noRootsScan) {
-                        updateProgress(source);
-                        scanSource (source);
-                    }
+                    updateProgress(source);
+                    scanSource (source);
                     ctx.scannedRoots.add(source);
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
@@ -1389,11 +1422,54 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             //todo: optimize for java.io.Files
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
-                final Crawler crawler = new FileObjectCrawler(rootFo, true, null);
-                final Map<String,Collection<Indexable>> resources = crawler.getResources();
-                final Collection<Indexable> deleted = crawler.getDeletedResources();
-                delete(deleted, root);
-                index(resources, root);
+                if (noRootsScan && !refreshAll && TimeStamps.existForRoot(root)) {
+                    // We've already seen the root at least once and roots scanning is forcibly turned off
+                    // so just call indexers with no files to let them know about the root, but perform
+                    // no indexing.
+//                    final Map<String, Collection<Indexable>> resources = new HashMap<String, Collection<Indexable>>();
+//                    for(String mimeType : Util.getAllMimeTypes()) {
+//                        resources.put(mimeType, Collections.<Indexable>emptySet());
+//                    }
+//                    index(resources, root);
+                    LinkedList<Context> transactionContexts = new LinkedList<Context>();
+                    try {
+                        final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+                        Set<CustomIndexerFactory> customIndexerFactories = new HashSet<CustomIndexerFactory>();
+                        for (String mimeType : Util.getAllMimeTypes()) {
+                            Collection<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(CustomIndexerFactory.class);
+                            customIndexerFactories.addAll(factories);
+                        }
+
+                        for (CustomIndexerFactory factory : customIndexerFactories) {
+                            final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, isFollowUpJob(), hasToCheckEditor());
+                            CustomIndexer indexer = factory.createIndexer();
+                            
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine("Fake indexing: indexer=" + indexer); //NOI18N
+                            }
+                            try {
+                                SPIAccessor.getInstance().index(indexer, Collections.<Indexable>emptySet(), ctx);
+                            } catch (ThreadDeath td) {
+                                throw td;
+                            } catch (Throwable t) {
+                                LOGGER.log(Level.WARNING, null, t);
+                            }
+                        }
+                    } finally {
+                        for(Context ctx : transactionContexts) {
+                            IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx);
+                            if (support != null) {
+                                SupportAccessor.getInstance().store(support);
+                            }
+                        }
+                    }
+                } else {
+                    final Crawler crawler = new FileObjectCrawler(rootFo, true, null);
+                    final Map<String,Collection<Indexable>> resources = crawler.getResources();
+                    final Collection<Indexable> deleted = crawler.getDeletedResources();
+                    delete(deleted, root);
+                    index(resources, root);
+                }
             }
         }
 

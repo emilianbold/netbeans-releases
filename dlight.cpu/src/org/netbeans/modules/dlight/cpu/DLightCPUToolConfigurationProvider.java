@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.cpu;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.MissingResourceException;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -58,6 +59,7 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,6 +103,10 @@ public final class DLightCPUToolConfigurationProvider
             detailedViewTableMetadataSS,
             "name", // NOI18N
             true);
+        ColumnsUIMapping columnsUIMapping = new ColumnsUIMapping();
+        columnsUIMapping.setDisplayedName(SunStudioDCConfiguration.c_name.getColumnName(), loc("CPUMonitorTool.ColumnName.func_name")); // NOI18N
+        columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_iUser.getColumnName(), loc("CPUMonitorTool.ColumnName.time_incl"), loc("CPUMonitorTool.ColumnTooltip.time_incl")); // NOI18N
+        columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_eUser.getColumnName(), loc("CPUMonitorTool.ColumnName.time_excl"), loc("CPUMonitorTool.ColumnTooltip.time_excl")); // NOI18N
         // Use D-Trace as a provider of data for detailed view
         String scriptFile = Util.copyResource(getClass(),
             Util.getBasePath(getClass()) + "/resources/calls.d"); // NOI18N
@@ -120,12 +126,16 @@ public final class DLightCPUToolConfigurationProvider
         DataTableMetadata detailedViewTableMetadataDtrace =
             createFunctionsListMetadata(profilerTableMetadata);
         // Register configured detailed view to be opened on indicator click...
-        VisualizerConfiguration detailsVisualizerConfigDtrace =
+        CallersCalleesVisualizerConfiguration detailsVisualizerConfigDtrace =
             new CallersCalleesVisualizerConfiguration(
             detailedViewTableMetadataDtrace,
             "name", // NOI18N
             true);
 
+        ColumnsUIMapping uiMapping = fillInColumnsUIMapping();
+        if (!uiMapping.isEmpty()){
+            detailsVisualizerConfigDtrace.setColumnsUIMapping(uiMapping);
+        }
 
         ProcDataProviderConfiguration indicatorProviderConfiguration = new ProcDataProviderConfiguration();
         toolConfiguration.addIndicatorDataProviderConfiguration(indicatorProviderConfiguration);
@@ -175,6 +185,41 @@ public final class DLightCPUToolConfigurationProvider
 
 
         return result;
+    }
+
+    private ColumnsUIMapping fillInColumnsUIMapping(){
+        ColumnsUIMapping columnsUIMapping = new ColumnsUIMapping();
+        List<FunctionMetric> metricsList = SQLStackStorage.METRICS;
+        for (FunctionMetric metric : metricsList) {
+            String metricID = metric.getMetricID();
+            String displayedName = locMetricDisplayedName(metricID);
+            String metricTooltip = locMetricTooltip(metricID);
+            if (displayedName != null){
+                columnsUIMapping.setDisplayedName(metricID, displayedName);
+            }
+            if (metricTooltip != null){
+                columnsUIMapping.setTooltip(metricID, metricTooltip);
+            }
+        }
+        return columnsUIMapping;
+
+    }
+
+    private static String locMetricDisplayedName(String metricID) {
+        try{
+            return NbBundle.getMessage(DLightCPUToolConfigurationProvider.class, "FunctionMetric." + metricID);//NOI18N
+        }catch(MissingResourceException e){
+            return null;
+        }
+    }
+
+    private static String locMetricTooltip(String metricID){
+        try{
+            return NbBundle.getMessage(DLightCPUToolConfigurationProvider.class, "FunctionMetric.tooltip." + metricID);//NOI18N
+        }catch(MissingResourceException e){
+            return null;
+        }
+
     }
 
     private static String loc(String key, String... params) {

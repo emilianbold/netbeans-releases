@@ -93,9 +93,13 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
         this.watch = watch;
     }
 
-    private void init () {
+    /** Called when there may be a need for initialization.
+     *
+     * @return true if subclasses shall initialize themselves
+     */
+    protected boolean init () {
         if (initialized) {
-            return ;
+            return false;
         }
         assert EventQueue.isDispatchThread () : "Cannot be called outside EQ!";
         this.results = new Lookup.Result[watch.length];
@@ -107,6 +111,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
             results[i].addLookupListener( resultListener );
         }
         initialized = true;
+        return true;
     }
 
     /** Needs to override getValue in order to force refresh

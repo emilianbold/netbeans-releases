@@ -117,8 +117,8 @@ abstract public class CsmCompletion {
     // the bit for deprecated flag. it is saved to copde completion  DB
     public static final int DEPRECATED_BIT = (1 << 20);
     private static final Map<CharSequence, CsmClassifier> str2PrimitiveClass = new HashMap<CharSequence, CsmClassifier>();
-    private static final Map<CharSequence, CsmType> str2PrimitiveType = new HashMap<CharSequence, CsmType>();
-    private static final Map<CharSequence, CsmType> str2PredefinedType = new HashMap<CharSequence, CsmType>();
+    private static final Map<CharSequence, BaseType> str2PrimitiveType = new HashMap<CharSequence, BaseType>();
+    private static final Map<CharSequence, BaseType> str2PredefinedType = new HashMap<CharSequence, BaseType>();
 
 
     static {
@@ -188,21 +188,26 @@ abstract public class CsmCompletion {
 //               && isPrimitiveClassName(c.getName());
         return isPrimitiveClassName(c.getName().toString());
     }
+//
+//    public static CsmClassifier getPrimitiveClass(String s) {
+//        return str2PrimitiveClass.get(s);
+//    }
 
-    public static CsmClassifier getPrimitiveClass(String s) {
-        return str2PrimitiveClass.get(s);
-    }
-
-    public static CsmType getPrimitiveType(String s) {
+    private static BaseType getPrimitiveType(String s) {
         return str2PrimitiveType.get(s);
     }
 
-    public static CsmType getPredefinedType(String s) {
-        CsmType ret = getPrimitiveType(s);
-        if (ret == null) {
-            ret = str2PredefinedType.get(s);
+    public static CsmType getPredefinedType(CsmFile containingFile, int start, int end, String s) {
+        BaseType baseType = getPrimitiveType(s);
+        if (baseType == null) {
+            baseType = str2PredefinedType.get(s);
         }
-        return ret;
+        if (baseType != null) {
+            // wrap with correct offsetable information
+            return new OffsetableType(baseType, containingFile, start, end);
+        } else {
+            return null;
+        }
     }
 
     public static Iterator getPrimitiveClassIterator() {
@@ -508,7 +513,7 @@ abstract public class CsmCompletion {
             }
             if (o instanceof CsmType) {
                 CsmType t = (CsmType) o;
-                return clazz.equals(t.getClassifier()) && arrayDepth == t.getArrayDepth();
+                return clazz.equals(t.getClassifier()) && arrayDepth == t.getArrayDepth() && pointerDepth == t.getPointerDepth();
             }
             return false;
         }
@@ -592,6 +597,117 @@ abstract public class CsmCompletion {
 
         public boolean isBuiltInBased(boolean resolveTypeChain) {
             return CsmKindUtilities.isBuiltIn(clazz);
+        }
+    }
+
+    public static class OffsetableType implements CsmType {
+
+        private final BaseType delegate;
+        private final CsmFile container;
+        private final int start;
+        private final int end;
+
+        public OffsetableType(BaseType delegate, CsmFile container, int start, int end) {
+            assert delegate != null;
+            assert container != null;
+            this.delegate = delegate;
+            this.container = container;
+            this.start = start;
+            this.end = end;
+        }
+
+        public int getArrayDepth() {
+            return delegate.getArrayDepth();
+        }
+
+        @Override
+        public int hashCode() {
+            return delegate.hashCode() + container.hashCode() + start + end;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o instanceof CsmType) {
+                CsmType t = (CsmType) o;
+                return delegate.equals(t) && container.equals(t.getContainingFile()) && start == t.getStartOffset() && end == t.getEndOffset();
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return delegate.toString();
+        }
+
+        public CsmClassifier getClassifier() {
+            return delegate.getClassifier();
+        }
+
+        public List<CsmSpecializationParameter> getInstantiationParams() {
+            return delegate.getInstantiationParams();
+        }
+
+        public boolean isInstantiation() {
+            return delegate.isInstantiation();
+        }
+
+        public boolean isTemplateBased() {
+            return delegate.isTemplateBased();
+        }
+
+        public CharSequence getClassifierText() {
+            return delegate.getClassifierText();
+        }
+
+        public boolean isPointer() {
+            return delegate.isPointer();
+        }
+
+        public int getPointerDepth() {
+            return delegate.getPointerDepth();
+        }
+
+        public boolean isReference() {
+            return delegate.isReference();
+        }
+
+        public boolean isConst() {
+            return delegate.isConst();
+        }
+
+        public CharSequence getText() {
+            return delegate.getText();
+        }
+
+        public CharSequence getCanonicalText() {
+            return delegate.getCanonicalText();
+        }
+
+        public CsmFile getContainingFile() {
+            return container;
+        }
+
+        public int getStartOffset() {
+            return start;
+        }
+
+        public int getEndOffset() {
+            return end;
+        }
+
+        public CsmOffsetable.Position getStartPosition() {
+            return null;
+        }
+
+        public CsmOffsetable.Position getEndPosition() {
+            return null;
+        }
+
+        public boolean isBuiltInBased(boolean resolveTypeChain) {
+            return delegate.isBuiltInBased(resolveTypeChain);
         }
     }
 

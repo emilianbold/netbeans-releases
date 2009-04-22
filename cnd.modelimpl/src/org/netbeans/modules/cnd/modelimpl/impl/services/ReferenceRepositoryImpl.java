@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
@@ -331,7 +332,8 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                     token = (APTToken) ts.nextToken();
                 }
             } catch (TokenStreamException ex) {
-                DiagnosticExceptoins.register(ex);
+                // IZ#163088 : unexpected char
+                APTUtils.LOG.log(Level.SEVERE, ex.getMessage());
             }
         }
         return tokens;

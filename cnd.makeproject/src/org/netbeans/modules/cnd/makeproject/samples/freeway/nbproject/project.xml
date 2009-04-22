@@ -5,6 +5,9 @@
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
             <name>GtkFreeway</name>
             <make-project-type>0</make-project-type>
+            <c-extensions/>
+            <cpp-extensions>cc</cpp-extensions>
+            <header-extensions>bitmap,h</header-extensions>
             <make-dep-projects/>
         </data>
     </configuration>

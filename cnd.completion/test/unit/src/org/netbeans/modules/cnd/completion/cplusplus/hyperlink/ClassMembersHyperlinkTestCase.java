@@ -829,6 +829,16 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz160677.cc", 6, 14, "iz160677.cc", 2, 5);
     }
 
+    public void testIZ104943() throws Exception {
+        // IZ#104943 : Hyperlink works wrong on overloaded methods with pointer
+        performTest("iz104943.cc", 3, 12, "iz104943.cc", 8, 1);
+        performTest("iz104943.cc", 4, 12, "iz104943.cc", 12, 1);
+        performTest("iz104943.cc", 5, 12, "iz104943.cc", 16, 1);
+        performTest("iz104943.cc", 8, 20, "iz104943.cc", 3, 5);
+        performTest("iz104943.cc", 12, 20, "iz104943.cc", 4, 5);
+        performTest("iz104943.cc", 16, 20, "iz104943.cc", 5, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
