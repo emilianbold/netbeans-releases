@@ -175,9 +175,6 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     public List<DataCollector<?>> getCollectors(DLightTool tool) {
-        if (!areCollectorsTurnedOn) {
-            return Collections.emptyList();
-        }
         List<DataCollector<?>> collectors = tool.getCollectors();
         List<DataCollector<?>> result = new ArrayList<DataCollector<?>>();
         for (DataCollector collector : collectors) {

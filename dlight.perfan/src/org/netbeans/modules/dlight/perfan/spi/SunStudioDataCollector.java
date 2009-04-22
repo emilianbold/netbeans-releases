@@ -141,8 +141,8 @@ public class SunStudioDataCollector
         syncInfoTable = new DataTableMetadata(
                 "SunStudioSyncDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,
-                SunStudioDCConfiguration.c_iSync,
-                SunStudioDCConfiguration.c_iSyncn));
+                SunStudioDCConfiguration.c_eSync,
+                SunStudioDCConfiguration.c_eSyncn));
 
         memInfoTable = new DataTableMetadata("SunStudioMemDetailedData", // NOI18N
                 Arrays.asList(SunStudioDCConfiguration.c_name,

@@ -226,12 +226,13 @@ public class RemoteServerList implements ServerListImplementation {
             StringBuilder sb = new StringBuilder(preferencesKey);
             for (String server : slist.split(SERVER_LIST_SEPARATOR)) { // NOI18N
                 int sepPos = server.indexOf(SERVER_RECORD_SEPARATOR);
-                String serverKey = (sepPos > 0) ? server.substring(sepPos) : server;
+                String serverKey = (sepPos > 0) ? server.substring(sepPos+1) : server;
                 if (!serverKey.equals(hostKey)) {
                     sb.append(SERVER_LIST_SEPARATOR);
                     sb.append(server);
                 }
             }
+            getPreferences().put(REMOTE_SERVERS, sb.toString());
         }
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
         return record;
