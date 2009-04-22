@@ -57,27 +57,11 @@ public final class KenaiFeature {
 
     private FeatureData featureData;
     private URL webL;
-    private URI loc;
+    private String loc;
     
     KenaiFeature(FeatureData data) {
         this.featureData = data;
-        try {
-            this.loc = featureData.url == null ? null : new URI(featureData.url);
-            assert loc != null ? loc.isAbsolute() : true;
-        } catch (URISyntaxException uRISyntaxException) {
-            //workaround for #161838
-            for (String part: featureData.url.split(" ")) {
-                try {
-                    this.loc = new URI(part);
-                    if (this.loc.isAbsolute())
-                        break;
-                } catch (URISyntaxException uRISyntaxException1) {
-                    //ignore
-                }
-            }
-            if (this.loc==null || !this.loc.isAbsolute())
-                Logger.getLogger(KenaiFeature.class.getName()).log(Level.SEVERE, null, uRISyntaxException);
-        }
+        this.loc = featureData.url;
         try {
             this.webL = featureData.web_url==null?null:new URL(featureData.web_url);
         } catch (MalformedURLException malformedURLException) {
@@ -114,7 +98,7 @@ public final class KenaiFeature {
      * getter for location of this feature
      * @return location of feature
      */
-    public URI getLocation() {
+    public String getLocation() {
         return loc;
     }
 

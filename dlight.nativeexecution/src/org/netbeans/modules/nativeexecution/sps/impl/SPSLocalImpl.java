@@ -103,7 +103,7 @@ public final class SPSLocalImpl extends SPSCommonImpl {
         }
 
         // Set execution privileges ...
-        Future<Integer> chmod = CommonTasksSupport.chmod(execEnv, privpCmd, 0755);
+        Future<Integer> chmod = CommonTasksSupport.chmod(execEnv, privpCmd, 0755, null);
         try {
             chmod.get();
         } catch (ExecutionException ex) {
