@@ -508,7 +508,7 @@ abstract public class CsmCompletion {
             }
             if (o instanceof CsmType) {
                 CsmType t = (CsmType) o;
-                return clazz.equals(t.getClassifier()) && arrayDepth == t.getArrayDepth();
+                return clazz.equals(t.getClassifier()) && arrayDepth == t.getArrayDepth() && pointerDepth == t.getPointerDepth();
             }
             return false;
         }

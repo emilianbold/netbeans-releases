@@ -81,13 +81,13 @@ public class ProjectAccessorImpl extends ProjectAccessor {
                 for (KenaiFeature feature : prj.getFeatures(KenaiService.Type.SOURCE)) {
                     if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
                         try {
-                            Subversion.addRecentUrl(feature.getLocation().toURL().toExternalForm());
+                            Subversion.addRecentUrl(feature.getLocation());
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }
                     } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
                         try {
-                            Mercurial.addRecentUrl(feature.getLocation().toURL().toExternalForm());
+                            Mercurial.addRecentUrl(feature.getLocation());
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }

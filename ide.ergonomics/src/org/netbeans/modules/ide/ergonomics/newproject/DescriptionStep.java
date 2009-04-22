@@ -222,13 +222,10 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         WizardDescriptor.InstantiatingIterator<?> iterator = null;
         int i = 0;
         while (fo == null || iterator == null) {
-            RequestProcessor.getDefault ().post (new Runnable () {
-               public void run () {
-                   fo = FileUtil.getConfigFile(templateResource);
-               }
-            }, 100).waitFinished ();
+            FoDFileSystem.getInstance().refresh();
+            FoDFileSystem.getInstance().waitFinished();
+            fo = FileUtil.getConfigFile(templateResource);
             iterator = readWizard(fo);
-            // reset and warn, seems like 100 millis isn't enough!
             if (iterator instanceof FeatureOnDemanWizardIterator) {
                 Logger LOG = Logger.getLogger(DescriptionStep.class.getName());
                 LOG.warning(
@@ -252,10 +249,10 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                 FoDFileSystem.getInstance().refresh();
                 LOG.info("Done with refresh"); // NOI18N
 
-                FileObject fake = FileUtil.getConfigFile(fo.getPath());
+                FileObject fake = FileUtil.getConfigFile(templateResource);
                 if (fake == null) {
-                    LOG.warning("no "+ fo.getPath() + " on FoD: " + fake); // NOI18N
-                    FileObject p = fake;
+                    LOG.warning("no "+ templateResource + " on FoD: " + fake); // NOI18N
+                    FileObject p = fo;
                     while (p != null) {
                         LOG.info("  parent: " + p + " children: " + Arrays.asList(p.getChildren())); // NOI18N
                         p = p.getParent();
@@ -272,6 +269,10 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     }
     
     public static WizardDescriptor.InstantiatingIterator<?> readWizard(FileObject fo) {
+        if (fo == null || !fo.isValid()) {
+            return null;
+        }
+
         Object o = fo.getAttribute ("instantiatingIterator");
         if (o == null) {
             o = fo.getAttribute ("templateWizardIterator");
@@ -289,7 +290,11 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                 public void initialize(WizardDescriptor wizard) {
                     tw = (TemplateWizard)wizard;
                     try {
-                        tw.setTemplate(DataObject.find(tw.getTemplate().getPrimaryFile()));
+                        FileObject real = tw.getTemplate().getPrimaryFile();
+                        if (!real.isValid()) {
+                            real = FileUtil.getConfigFile(real.getPath());
+                        }
+                        tw.setTemplate(DataObject.find(real));
                         it.initialize(tw);
                     } catch (DataObjectNotFoundException ex) {
                         Logger.getLogger(DescriptionStep.class.getName()).severe(ex.toString());
