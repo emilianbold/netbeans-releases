@@ -1114,6 +1114,13 @@ abstract public class CsmCompletionQuery {
             return ok;
         }
 
+        private CsmType getPredefinedType(CsmCompletionExpression item) {
+            CsmFile containingFile = getFinder().getCsmFile();
+            int startOffset = item.getTokenOffset(0);
+            int lastInd = item.getTokenCount() - 1;
+            int endtOffset = item.getTokenOffset(lastInd) + item.getTokenLength(lastInd);
+            return CsmCompletion.getPredefinedType(containingFile, startOffset, endtOffset, item.getType());
+        }
         /** Resolve one item from the expression connected by dots.
          * @param item expression item to resolve
          * @param first whether this expression is the first one in a dot expression
@@ -1127,7 +1134,7 @@ abstract public class CsmCompletionQuery {
             switch (item.getExpID()) {
                 case CsmCompletionExpression.CONSTANT: // Constant item
                     if (first) {
-                        lastType = CsmCompletion.getPredefinedType(item.getType()); // Get the constant type
+                        lastType = getPredefinedType(item); // Get the constant type
                         staticOnly = false;
                     } else { // Not the first item in a dot exp
                         cont = false; // impossible to have constant inside the expression
@@ -1594,7 +1601,7 @@ abstract public class CsmCompletionQuery {
 
                 case CsmCompletionExpression.TYPE:
                     if (findType) {
-                        lastType = CsmCompletion.getPredefinedType(item.getType());
+                        lastType = getPredefinedType(item);
                     }
                     if (!findType || lastType == null) {
                         // this is the case of code completion on parameter or unresolved predefined type
@@ -1936,9 +1943,6 @@ abstract public class CsmCompletionQuery {
                             default:
                                 CsmType type = resolveType(paramInst);
                                 if (type != null) {
-                                    if (type.getContainingFile() == null) {
-                                        System.err.printf("no file in %s of %s\n", type, type.getClass());
-                                    }
                                     params.add(ip.createTypeBasedSpecializationParameter(type));
                                 } else {
                                     params.add(ip.createExpressionBasedSpecializationParameter(paramInst.getTokenText(0),

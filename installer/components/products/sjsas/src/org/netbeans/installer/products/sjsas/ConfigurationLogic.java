@@ -568,7 +568,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     @Override
     public String[] getProhibitedInstallationPathParts() {
         // http://www.netbeans.org/issues/show_bug.cgi?id=163233
-        final String [] parts = new String[] {"!", File.separator}; //NOI18N
+        final String [] parts = super.getProhibitedInstallationPathParts(); //NOI18N
         ArrayList <String> list = new ArrayList(Arrays.asList(parts));
         for(String s : new String [] {"(", ")"}) {//NOI18N
             if(!list.contains(s)) {

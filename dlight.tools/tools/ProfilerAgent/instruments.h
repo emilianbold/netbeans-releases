@@ -8,6 +8,10 @@
 #ifndef _INSTRUMENTS_H
 #define	_INSTRUMENTS_H
 
+// Define this to a signed 32-bit integer type.
+// In GCC int is 32 bits wide with both -m32 and -m64.
+#define I32 int
+
 enum {
     MEMMSG  = 1,
     SYNCMSG = 2,
@@ -20,30 +24,30 @@ enum {
 
 typedef struct memmsg {
     long    type;
-    long    heapused;
+    I32     heapused;
 } memmsg;
 
 typedef struct syncmsg {
     long    type;
-    long    lock_ticks;
-    int     thr_count;
+    I32     lock_ticks;
+    I32     thr_count;
 } syncmsg;
 
 typedef struct cpumsg {
     long    type;
-    float   user;
-    float   sys;
+    I32     user;
+    I32     sys;
 } cpumsg;
 
 typedef struct ctrlmsg {
     long    type;
-    int     control;
-    int     action;
+    I32     control;
+    I32     action;
 } ctrlmsg;
 
 typedef struct failmsg {
     long    type;
-    int     control;
+    I32     control;
 } failmsg;
 
 

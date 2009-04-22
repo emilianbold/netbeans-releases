@@ -126,7 +126,15 @@ final public class ExecutionEnvironment {
      * @return a string representation of the environment for showing in UI
      */
     public String getDisplayName() {
-        return isLocal() ? "localhost" : toString(); // NOI18N
+        if (isLocal()) {
+            return "localhost"; // NOI18N
+        } else {
+            String result = this.user + "@" + this.host; // NOI18N;
+            if (this.sshPort != 22) {
+                result += ":" + this.sshPort; // NOI18N
+            }
+            return result;
+        }
     }
 
     /**
