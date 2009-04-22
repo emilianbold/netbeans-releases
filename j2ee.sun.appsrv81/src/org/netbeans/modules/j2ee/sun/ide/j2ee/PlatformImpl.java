@@ -210,13 +210,10 @@ public class PlatformImpl extends J2eePlatformImpl {
                 J2eeLibraryTypeProvider lp = new J2eeLibraryTypeProvider();
                 LibraryImplementation lib = lp.createLibrary();
 
-                // WSIT - just add additional libraries to the above
+                // WSIT - API - when present, needs to override the content of j2ee.jar
                 List l = new ArrayList();
-                lib.setName(NbBundle.getMessage(PlatformImpl.class, "wsit")); // NOI18N
+                lib.setName(NbBundle.getMessage(PlatformImpl.class, "wsit-api")); // NOI18N
                 l.add(fileToUrl(new File(root, WEBSERVICES_API_JAR)));
-                l.add(fileToUrl(new File(root, WEBSERVICES_TOOLS_JAR)));
-                l.add(fileToUrl(new File(root, WEBSERVICES_RT_JAR)));
-
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, sources);
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, javadoc);
@@ -261,6 +258,17 @@ public class PlatformImpl extends J2eePlatformImpl {
                 l.add(fileToUrl(new File(root, JAXWSA_RI_JAR)));
                 
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
+                libs.add(lib);
+
+                // WSIT - Implementation
+                l = new ArrayList();
+                lib.setName(NbBundle.getMessage(PlatformImpl.class, "wsit")); // NOI18N
+                l.add(fileToUrl(new File(root, WEBSERVICES_TOOLS_JAR)));
+                l.add(fileToUrl(new File(root, WEBSERVICES_RT_JAR)));
+
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, sources);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, javadoc);
                 libs.add(lib);
                 
                 lib = lp.createLibrary();
