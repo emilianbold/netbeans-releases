@@ -655,6 +655,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             searchTask = new QueryTask() {
                 public void executeQuery() {
                     try {
+                        // XXX isn't persistent and should be merged with refresh
                         String lastChageFrom = panel.changedFromTextField.getText().trim();
                         if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
                             BugzillaConfig.getInstance().setLastChangeFrom(lastChageFrom);
@@ -692,7 +693,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             };
         }
         post(refreshTask);
-    }
+        }
 
     private void refreshIntern(boolean autoRefresh) {
         if (panel.urlPanel.isVisible()) {
