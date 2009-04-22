@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,72 +31,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser;
 
-import org.netbeans.modules.csl.api.Severity;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.ruby.hints;
+
+import org.jrubyparser.ast.Node;
 
 /**
+ * Utility methods for hints.
  *
- * @author Petr Pisl
+ * @author Erno Mononen
  */
-public class GSFPHPError implements org.netbeans.modules.csl.api.Error {
+public abstract class RubyHints {
 
-    private final String displayName;
-    private final FileObject file;
-    private final int startPosition;
-    private final int endPosition;
-    private final Severity severity;
-    private final Object[] parameters;
-
-    public GSFPHPError(String displayName, FileObject file, int startPosition, int endPosition, Severity severity, Object[] parameters) {
-        this.displayName = displayName;
-        this.file = file;
-        this.startPosition = startPosition;
-        this.endPosition = endPosition;
-        this.severity = severity;
-        this.parameters = parameters;
+    private RubyHints() {
     }
 
-    
-    public String getDisplayName() {
-        return this.displayName;
+    /**
+     * Checks whether the given <code>node</code> is <code>null</code> or
+     * represents an <code>InvisibleNode</code>.
+     *
+     * @param node
+     * @return true if the node was null or invisible.
+     */
+    static boolean isNullOrInvisible(Node node) {
+        return node == null || node.isInvisible();
     }
 
-    public String getDescription() {
-        return null;
-    }
-
-    public String getKey() {
-        return "[" + startPosition + "," + endPosition + "]-" + displayName ;
-    }
-
-    public FileObject getFile() {
-        return this.file;
-    }
-
-    public int getStartPosition() {
-        return this.startPosition;
-    }
-
-    public int getEndPosition() {
-        return this.endPosition;
-    }
-
-    public Severity getSeverity() {
-        return this.severity;
-    }
-
-    public Object[] getParameters() {
-        return this.parameters;
-    }
-
-    public boolean isLineError() {
-        return true;
-    }
 }
