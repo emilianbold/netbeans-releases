@@ -55,6 +55,10 @@ public final class ColumnsUIMapping {
         columnTooltips = new HashMap<String, String>();
     }
 
+    public boolean isEmpty(){
+        return columnDisplayedNames.isEmpty() && columnTooltips.isEmpty();
+    }
+
     public String  setDisplayedName(String columnName, String displayedName){
         return columnDisplayedNames.put(columnName, displayedName);
     }

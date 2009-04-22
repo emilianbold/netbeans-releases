@@ -225,9 +225,13 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
         DataTableMetadata viewTableMetadata = new DataTableMetadata(
                 "mem", viewColumns, sql, Arrays.asList(rawTableMetadata)); // NOI18N
+        ColumnsUIMapping columnsUIMapping = new ColumnsUIMapping();
+        columnsUIMapping.setColumnUI("func_name", loc("MemoryTool.ColumnName.func_name"), loc("MemoryTool.ColumnTooltip.func_name")); // NOI18N
+        columnsUIMapping.setColumnUI(metricColumn.getColumnName(), loc("MemoryTool.ColumnName.leak"), loc("MemoryTool.ColumnTooltip.leak")); // NOI18N
 
         FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
                 new FunctionsListViewVisualizerConfiguration(viewTableMetadata, functionDesc, Arrays.asList(metricColumn));
+        tableVisualizerConfiguration.setColumnsUIMapping(columnsUIMapping);
 
         return tableVisualizerConfiguration;
     }
