@@ -471,11 +471,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     return true;
                 }
             }
-        } else if (value != null && value.length() > 0 &&
-                (value.charAt(0) == '{' || value.charAt(value.length() - 1) == '}')) {
-            return true;
         }
-        return false;
+        // check if value like {...}
+        return value != null && value.length() > 0 &&
+            (value.charAt(0) == '{' || value.charAt(value.length() - 1) == '}');
     }
 
     /**
