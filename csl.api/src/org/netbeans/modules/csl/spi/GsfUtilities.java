@@ -206,7 +206,7 @@ public final class GsfUtilities {
         }
 
         try {
-            EditorCookie ec = DataLoadersBridge.getDefault().getCookie(fileObject, EditorCookie.class);
+            EditorCookie ec = fileObject.isValid() ? DataLoadersBridge.getDefault().getCookie(fileObject, EditorCookie.class) : null;
             if (ec != null) {
                 if (openIfNecessary) {
                     try {
