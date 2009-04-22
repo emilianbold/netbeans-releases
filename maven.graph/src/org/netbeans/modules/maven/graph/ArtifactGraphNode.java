@@ -82,11 +82,17 @@ public class ArtifactGraphNode {
         return artifact;
     }
 
-    DependencyNode getParentAfterFix() {
-        return parentAfterFix;
+    /** After changes in graph parent may change, so it's always better to
+     * call this method instead of getArtifact().getParent()
+     */
+    DependencyNode getArtifactParent() {
+        if (parentAfterFix != null) {
+            return parentAfterFix;
+        }
+        return getArtifact().getParent();
     }
 
-    void setParentAfterFix(DependencyNode newParent) {
+    void setArtifactParent(DependencyNode newParent) {
         parentAfterFix = newParent;
     }
     
