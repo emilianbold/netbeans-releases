@@ -70,6 +70,7 @@ public class RemoteServerRecord implements ServerRecord {
     private State state;
     private final Object stateLock;
     private String reason;
+    private String displayName;
     
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
@@ -83,10 +84,15 @@ public class RemoteServerRecord implements ServerRecord {
     }
 
     protected RemoteServerRecord(final ExecutionEnvironment env, boolean connect) {
+        this(env, env.getDisplayName(), connect);
+    }
+
+    protected RemoteServerRecord(final ExecutionEnvironment env, String displayName, boolean connect) {
         this.executionEnvironment = env;
         stateLock = new String("RemoteServerRecord state lock for " + toString()); // NOI18N
         reason = null;
         deleted = false;
+        this.displayName = (displayName == null) ? env.getDisplayName() : displayName;
         
         if (env.isLocal()) {
             editable = false;
@@ -113,16 +119,16 @@ public class RemoteServerRecord implements ServerRecord {
         }
         log.fine("RSR.validate2: Validating " + toString());
         if (force) {
-            ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", getName())); // NOI18N
+            ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", getDisplayName())); // NOI18N
             ph.start();
             init(null);
             ph.finish();
         }
         String msg;
         if (isOnline()) {
-            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_OK", getName());// NOI18N
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_OK", getDisplayName());// NOI18N
         } else {
-            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_ERR", getName(), getStateAsText(), getReason());// NOI18N
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_ERR", getDisplayName(), getStateAsText(), getReason());// NOI18N
         }
         StatusDisplayer.getDefault().setStatusText(msg);        
     }
@@ -195,9 +201,12 @@ public class RemoteServerRecord implements ServerRecord {
         return executionEnvironment.isRemote();
     }
 
-    /** TODO: deprcate and remove */
-    public String getName() {
-        return ExecutionEnvironmentFactory.toString(executionEnvironment);
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public String getServerName() {

@@ -146,7 +146,7 @@ public class DevelopmentHostConfiguration {
     }
 
     private boolean addDevelopmentHost(String host) {
-        final ServerRecord record = ServerList.addServer(ExecutionEnvironmentFactory.fromString(host), false, false);
+        final ServerRecord record = ServerList.addServer(ExecutionEnvironmentFactory.fromString(host), null, false, false);
         return record != null;
     }
 
