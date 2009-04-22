@@ -70,10 +70,10 @@ public class PlatformManagerTest extends JellyTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        if (isMacOsX()) {
-            System.err.println(">>> set dispatch model to ROBOT_MODEL_MASK for Mac OS X");
+//        if (isMacOsX()) {
+//            System.err.println(">>> set dispatch model to ROBOT_MODEL_MASK for Mac OS X");
             JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
-        }
+//        }
         System.out.println("##### "+getName()+" #####");
         rpm = getPlatformManager();
         platforms = new JListOperator(rpm);
