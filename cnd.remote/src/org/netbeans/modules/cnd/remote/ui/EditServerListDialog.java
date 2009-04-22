@@ -63,7 +63,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.ui.wizard.CreateHostWizardIterator;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
@@ -82,7 +81,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private DefaultListModel model;
     private DialogDescriptor desc;
     private int defaultIndex;
-    private JButton ok;
     private ProgressHandle phandle;
     private PropertyChangeSupport pcs;
     private boolean buttonsEnabled;
@@ -275,12 +273,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         if (o instanceof JButton) {
             JButton b = (JButton) o;
             if (b.getActionCommand().equals("Add")) { // NOI18N
-                ExecutionEnvironment execEnv = CreateHostWizardIterator.invokeMe(cacheManager);
-                if (execEnv != null) {
-                    if (!model.contains(execEnv)) {
-                        ServerList.addServer(execEnv, false, false);
-                        model.addElement(execEnv);
-                        lstDevHosts.setSelectedValue(execEnv, true);
+                CreateHostWizardIterator.Result result = CreateHostWizardIterator.invokeMe(cacheManager);
+                if (result.executionEnvironment != null) {
+                    if (!model.contains(result.executionEnvironment)) {
+                        ServerList.addServer(result.executionEnvironment, result.displayName, false, false);
+                        model.addElement(result.executionEnvironment);
+                        lstDevHosts.setSelectedValue(result.executionEnvironment, true);
                     }
                 }
             } else if (b.getActionCommand().equals("Remove")) { // NOI18N

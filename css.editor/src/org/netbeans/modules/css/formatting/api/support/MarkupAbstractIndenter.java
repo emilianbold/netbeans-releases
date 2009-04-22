@@ -501,8 +501,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                                     context.getLineStartOffset()));
                                 item.processed = true;
                             } else {
-                                if (closingTag) {
-                                    assert item.tagName.equalsIgnoreCase(tokenName) : "was expecting tag "+tokenName+" but was "+item+ ": "+fileStack+" index="+index;
+                                if (closingTag && item.tagName.equalsIgnoreCase(tokenName)) {
                                     iis.add(new IndentCommand(IndentCommand.Type.RETURN,
                                         context.getLineStartOffset()));
                                     item.processed = true;

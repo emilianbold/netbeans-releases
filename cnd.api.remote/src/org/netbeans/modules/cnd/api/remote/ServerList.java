@@ -98,8 +98,8 @@ public class ServerList {
         getDefault().clear();
     }
 
-    public static ServerRecord addServer(ExecutionEnvironment env, boolean asDefault, boolean connect) {
-        return getDefault().addServer(env, asDefault, connect);
+    public static ServerRecord addServer(ExecutionEnvironment env, String displayName, boolean asDefault, boolean connect) {
+        return getDefault().addServer(env, displayName, asDefault, connect);
     }
 
     public static boolean isValidExecutable(ExecutionEnvironment env, String path) {

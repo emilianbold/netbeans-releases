@@ -62,7 +62,7 @@ public class ServerListTestCase extends RemoteTestBase {
     public void testRun() throws Exception {        
         if (canTestRemote()) {
             ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
-            ServerRecord rec = ServerList.addServer(execEnv, false, true);
+            ServerRecord rec = ServerList.addServer(execEnv, execEnv.getDisplayName(), false, true);
             assertNotNull("Null server record", rec);
             assertEquals(rec.getExecutionEnvironment(), execEnv);
         } else {

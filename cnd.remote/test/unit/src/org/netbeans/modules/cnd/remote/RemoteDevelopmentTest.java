@@ -53,6 +53,12 @@ import org.netbeans.modules.cnd.test.BaseTestSuite;
  */
 public class RemoteDevelopmentTest extends BaseTestSuite {
 
+//    static {
+//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
+//        System.setProperty("cnd.remote.logger.level", "0");
+//        System.setProperty("nativeexecution.support.logger.level", "0");
+//    }
+
     public RemoteDevelopmentTest() {
         super("Remote Development"); // NOI18N
         addTestSuite(MappingsTestCase.class);

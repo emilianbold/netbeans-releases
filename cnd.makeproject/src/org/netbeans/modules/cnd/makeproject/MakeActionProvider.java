@@ -314,13 +314,13 @@ public class MakeActionProvider implements ActionProvider {
             String message;
             int res = JOptionPane.NO_OPTION;
             if (record.isDeleted()) {
-                message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getName());
+                message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getDisplayName());
                 res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
                 if (res == JOptionPane.YES_OPTION) {
-                    ServerList.addServer(record.getExecutionEnvironment(), false, true);
+                    ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), false, true);
                 }
             } else if (!record.isOnline()) {
-                message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
+                message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getDisplayName());
                 res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
             }
             if (res != JOptionPane.YES_OPTION) {
@@ -345,7 +345,7 @@ public class MakeActionProvider implements ActionProvider {
                         cancel();
                     } catch (Exception e) {
                         e.printStackTrace();
-                        final String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getName()); //NOI18N
+                        final String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getDisplayName()); //NOI18N
                         final String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
@@ -361,7 +361,7 @@ public class MakeActionProvider implements ActionProvider {
             };
         }
         Frame mainWindow = WindowManager.getDefault().getMainWindow();
-        String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getName());
+        String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getDisplayName());
         String title = NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Validate_Host");
         ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
     }
