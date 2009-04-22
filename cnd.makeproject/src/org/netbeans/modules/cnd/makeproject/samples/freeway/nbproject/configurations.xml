@@ -37,88 +37,18 @@
   <sourceEncoding>UTF-8</sourceEncoding>
   <projectmakefile>GtkFreeway-Makefile.mk</projectmakefile>
   <confs>
-    <conf name="Default" type="0">
-      <makefileType>
-        <makeTool>
-          <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>$(MAKE) -f Makefile</buildCommand>
-          <cleanCommand>$(MAKE) -f Makefile clean</cleanCommand>
-          <executablePath>./Freeway</executablePath>
-        </makeTool>
-      </makefileType>
-      <item path="FreewayWindow.cc">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="FreewayWindow.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="about.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="arrow_left.bitmap">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="arrow_over.bitmap">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="arrow_right.bitmap">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="arrow_up.bitmap">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="callbacks.cc">
-        <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
-      </item>
-      <item path="main.cc">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="maniac.cc">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="maniac.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="police.cc">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="police.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="sports.cc">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="sports.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="traffic.cc">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="traffic.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="truck.cc">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="truck.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="vehicle.cc">
-        <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
-      </item>
-      <item path="vehicle.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="vehicle_list.cc">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="vehicle_list.h">
-        <itemTool>3</itemTool>
-      </item>
+      <conf name="Default" type="1">
+      <compileType>
+        <ccTool>
+          <developmentMode>0</developmentMode>
+          <commandLine>-g3 -gdwarf-2 `pkg-config --cflags gtk+-2.0`</commandLine>
+        </ccTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+          <commandLine>`pkg-config --libs gtk+-2.0`</commandLine>
+        </linkerTool>
+      </compileType>
     </conf>
   </confs>
 </configurationDescriptor>
