@@ -79,8 +79,16 @@ public class HostInfoImpl implements HostInfo {
 
     public static HostInfoImpl getHostInfo(ExecutionEnvironment execEnv) {
         HostInfoImpl hi = new HostInfoImpl();
-        Properties props = execEnv.isLocal()
-                ? getLocalHostInfo() : getRemoteHostInfo(execEnv);
+        Properties props;
+
+        if (hostinfoScript == null) {
+            log.severe("Unable to find hostinfo.sh script!"); // NOI18N
+            props = new Properties();
+        } else {
+            props = execEnv.isLocal()
+                    ? getLocalHostInfo() : getRemoteHostInfo(execEnv);
+        }
+
         hi.init(props);
 //        props.list(System.err);
         return hi;
