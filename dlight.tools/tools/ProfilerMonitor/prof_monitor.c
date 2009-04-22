@@ -30,11 +30,12 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    long pid = 0;
     int monitor_cpu = 0;
     int monitor_mem = 0;
     int monitor_sync = 0;
 	int i, j;
-    for (i = 1; i + 1 < argc; ++i) {
+    for (i = 1; i < argc; ++i) {
         if (argv[i][0] == '-') {
             for (j = 1; argv[i][j]; ++j) {
                 switch (argv[i][j]) {
@@ -52,9 +53,10 @@ int main(int argc, char** argv) {
                         return 1;
                 }
             }
+        } else if (!pid) {
+            pid = strtol(argv[i], NULL, 10);
         } else {
-            fprintf(stderr, "Unknown flag %s\n", argv[i]);
-            return 1;
+            fprintf(stderr, "Ignoring extra pid %s\n", argv[i]);
         }
     }
 
@@ -63,7 +65,11 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    long pid = strtol(argv[argc - 1], 0, 10);
+    if (pid == 0) {
+        fprintf(stderr, "No pid specified, exiting\n");
+        return 1;
+    }
+
     int msqid = -1;
 
     if (pid) {
@@ -71,7 +77,7 @@ int main(int argc, char** argv) {
         msqid = msgget((int) pid, IPC_CREAT | 0666);
     }
     if (msqid < 0) {
-        fprintf(stderr, "Can not create IPC channel to process %s\n", argv[1]);
+        fprintf(stderr, "Can not create IPC channel to process %ld\n", pid);
         return -2;
     }
 
@@ -89,7 +95,7 @@ int main(int argc, char** argv) {
     struct cpumsg cpubuf = {CPUMSG, 0, 0};
     struct ctrlmsg ctrl = {CTRLMSG, 0xf, 0xf};
     if (msgsnd(msqid, &ctrl, sizeof (ctrl) - sizeof(ctrl.type), IPC_NOWAIT) < 0) {
-        fprintf(stderr, "Handshake with process %s failed\n", argv[1]);
+        fprintf(stderr, "Handshake with process %ld failed\n", pid);
         return -4;
     }
 
@@ -156,7 +162,7 @@ int main(int argc, char** argv) {
             if (silence > 3) {
                 struct msqid_ds msbuf;
                 msgctl(msqid, IPC_RMID, &msbuf); // looks like agent has been killed and queue remains alive
-                fprintf(stderr, "Communication with process %s has been lost\n", argv[1]);
+                fprintf(stderr, "Communication with process %ld has been lost\n", pid);
                 return -4;
             }
             silence++;
