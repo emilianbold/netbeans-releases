@@ -40,38 +40,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project xmlns="http://www.netbeans.org/ns/project/1">
-    <type>org.netbeans.modules.apisupport.project</type>
-    <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.libs.bugzilla</code-name-base>
-            <module-dependencies>
-                <dependency>
-                    <code-name-base>org.netbeans.libs.bugtracking</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-            </module-dependencies>
-            <test-dependencies>
-                <test-type>
-                    <name>unit</name>
-                    <test-dependency>
-                        <code-name-base>org.openide.awt</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                </test-type>
-            </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.bugzilla</friend>
-                <package>org.eclipse.mylyn.internal.bugzilla.core</package>
-            </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.mylyn.bugzilla.core_3.1.1.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.bugzilla.core_3.1.1.jar</binary-origin>
-            </class-path-extension>
-        </data>
-    </configuration>
+<project name="libs.jira" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>
