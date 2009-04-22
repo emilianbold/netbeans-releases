@@ -74,11 +74,14 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author Vladimir Kvashin
  */
 public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierProvider, SafeTemplateBasedProvider {
+    private static final byte FLAGS_TYPE_OF_TYPEDEF = 1 << 0;
+    private static final byte FLAGS_REFERENCE = 1 << 1;
+    private static final byte FLAGS_CONST = 1 << 2;
+    protected static final int LAST_USED_FLAG_INDEX = 3;
 
     private final byte pointerDepth;
-    private final boolean reference;
     private final byte arrayDepth;
-    private final boolean _const;
+    private byte flags;
     CharSequence classifierText;
     private int parseCount;
 
@@ -93,9 +96,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         super(file, offset == null ? getStartOffset(ast) : offset.getStartOffset(), offset == null ? getEndOffset(ast) : offset.getEndOffset());
         this._setClassifier(classifier);
         this.pointerDepth = (byte) pointerDepth;
-        this.reference = reference;
+        setFlags(FLAGS_REFERENCE, reference);
         this.arrayDepth = (byte) arrayDepth;
-        _const = isTypeDefAST(ast) ? initIsConst(ast.getFirstChild()) : initIsConst(ast);
+        boolean _const = isTypeDefAST(ast) ? initIsConst(ast.getFirstChild()) : initIsConst(ast);
+        setFlags(FLAGS_CONST, _const);
         if (classifier == null) {
             CndUtils.assertTrue(false, "why null classifier?", Level.INFO);
             this._setClassifier(initClassifier(ast));
@@ -115,9 +119,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
     TypeImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.pointerDepth = (byte) pointerDepth;
-        this.reference = reference;
+        setFlags(FLAGS_REFERENCE, reference);
         this.arrayDepth = (byte) arrayDepth;
-        this._const = _const;
+        setFlags(FLAGS_CONST, _const);
     }
 
     // package-local - for factory only
@@ -125,10 +129,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         super(type.getContainingFile(), type.getStartOffset(), type.getEndOffset());
 
         this.pointerDepth = (byte) pointerDepth;
-        this.reference = reference;
+        setFlags(FLAGS_REFERENCE, reference);
         this.arrayDepth = (byte) arrayDepth;
-        this._const = _const;
-
+        setFlags(FLAGS_CONST, _const);
+        setFlags(FLAGS_TYPE_OF_TYPEDEF, type.isTypeOfTypedef());
+        
         this.classifierUID = type.classifierUID;
         this.qname = type.qname;
         this.classifierText = type.classifierText;
@@ -136,6 +141,22 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
             this.instantiationParams.addAll(type.instantiationParams);
         }
         instantiationParams.trimToSize();
+    }
+
+    public void setTypeOfTypedef() {
+        setFlags(FLAGS_TYPE_OF_TYPEDEF, true);
+    }
+
+    protected boolean hasFlags(byte mask) {
+        return (flags & mask) == mask;
+    }
+
+    protected void setFlags(byte mask, boolean value) {
+        if (value) {
+            flags |= mask;
+        } else {
+            flags &= ~mask;
+        }
     }
 
     private static boolean isTypeDefAST(AST ast){
@@ -153,10 +174,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         super(type.getContainingFile(), type.getStartOffset(), type.getEndOffset());
 
         this.pointerDepth = (byte) type.getPointerDepth();
-        this.reference = type.isReference();
+        setFlags(FLAGS_REFERENCE, type.isReference());
         this.arrayDepth = (byte) type.getArrayDepth();
-        this._const = type.isConst();
-
+        setFlags(FLAGS_CONST, type.isConst());
+        setFlags(FLAGS_TYPE_OF_TYPEDEF, type.isTypeOfTypedef());
+        
         this.classifierUID = type.classifierUID;
         this.qname = type.qname;
         this.classifierText = type.classifierText;
@@ -172,12 +194,13 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         super(type.getContainingFile(), type.getStartOffset(), type.getEndOffset());
 
         this.pointerDepth = (byte) type.getPointerDepth();
-        this.reference = type.isReference();
+        setFlags(FLAGS_REFERENCE, type.isReference());
         this.arrayDepth = (byte) type.getArrayDepth();
-        this._const = type.isConst();
+        setFlags(FLAGS_CONST, type.isConst());
 
         if (type instanceof TypeImpl) {
             TypeImpl ti = (TypeImpl) type;
+            setFlags(FLAGS_TYPE_OF_TYPEDEF, ti.isTypeOfTypedef());
             this.classifierUID = ti.classifierUID;
             this.qname = ti.qname;
             this.classifierText = ti.classifierText;
@@ -224,11 +247,15 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
     }
 
     public boolean isReference() {
-        return reference;
+        return hasFlags(FLAGS_REFERENCE);
     }
 
     public boolean isPointer() {
         return pointerDepth > 0;
+    }
+
+    public boolean isTypeOfTypedef() {
+        return hasFlags(FLAGS_TYPE_OF_TYPEDEF);
     }
 
     public List<CsmSpecializationParameter> getInstantiationParams() {
@@ -282,7 +309,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
     }
 
     public boolean isConst() {
-        return _const;
+        return hasFlags(FLAGS_CONST);
     }
 
     public CharSequence getCanonicalText() {
@@ -633,8 +660,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         super.write(output);
         output.writeByte(pointerDepth);
         output.writeByte(arrayDepth);
-        byte pack = (byte) ((this.reference ? 1 : 0) | (this._const ? 2 : 0));
-        output.writeByte(pack);
+        output.writeByte(flags);
         assert this.classifierText != null;
         PersistentUtils.writeUTF(classifierText, output);
 
@@ -647,9 +673,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         super(input);
         this.pointerDepth = input.readByte();
         this.arrayDepth= input.readByte();
-        byte pack = input.readByte();
-        this.reference = (pack & 1) == 1;
-        this._const = (pack & 2) == 2;
+        this.flags = input.readByte();
         this.classifierText = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.classifierText != null;
 
@@ -658,5 +682,4 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         instantiationParams.trimToSize();
         this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
-
 }

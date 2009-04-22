@@ -668,6 +668,34 @@ public class IndentSupport {
         }
     }
 
+    protected boolean isFieldComma(TokenItem token) {
+        while (token != null && token.getTokenID() == CppTokenId.COMMA) {
+            TokenItem itm = findStatementStart(token);
+            if (itm == token) {
+                break;
+            }
+            token = itm;
+        }
+        if (token != null) {
+            TokenItem itm = findImportantToken(token, null, true);
+            if (itm != null && itm.getTokenID() == CppTokenId.LBRACE) {
+                TokenItem startItem = findStatementStart(itm);
+                if (startItem != null) {
+                    if (startItem.getTokenID() == CppTokenId.CLASS ||
+                        startItem.getTokenID() == CppTokenId.STRUCT ||
+                        startItem.getTokenID() == CppTokenId.UNION) {
+                        return true;
+                    }
+                }
+            } else if (itm != null && itm.getTokenID() == CppTokenId.SEMICOLON) {
+                return findClassifier(itm) != null;
+            } else if (itm != null && itm.getTokenID() == CppTokenId.RBRACE) {
+                return findClassifier(itm) != null;
+            }
+        }
+        return false;
+    }
+
     protected boolean isEnumComma(TokenItem token) {
         while (token != null && token.getTokenID() == CppTokenId.COMMA) {
             TokenItem itm = findStatementStart(token);
@@ -682,7 +710,8 @@ public class IndentSupport {
             if (itm != null && itm.getTokenID() == CppTokenId.LBRACE) {
                 TokenItem startItem = findStatementStart(itm);
                 if (startItem != null) {
-                    if (findToken(startItem, itm, CppTokenId.ENUM, false) != null ||
+                    if (startItem.getTokenID() == CppTokenId.ENUM ||
+                        findToken(startItem, itm, CppTokenId.ENUM, false) != null ||
                         findToken(startItem, itm, CppTokenId.EQ, false) != null) {
                         return true;
                     }

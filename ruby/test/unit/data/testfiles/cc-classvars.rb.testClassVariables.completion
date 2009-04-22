@@ -1,0 +1,6 @@
+Code completion result for source line:
+puts @@my_cl|ass_var
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+FIELD      my_class_var                    [STATIC]   Foo
+FIELD      my_class_var2                   [STATIC]   Foo
+CALL       puts(obj)                                  Kernel

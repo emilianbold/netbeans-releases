@@ -339,8 +339,8 @@ int reporter(void* arg) {
             if (trace_sync) {
                 struct syncmsg syncbuf = {
                     SYNCMSG,
-                    sync_wait,
-                    thr_count
+                    (I32) sync_wait,
+                    (I32) thr_count
                 };
                 msgsnd(msqid, &syncbuf, sizeof (syncbuf) - sizeof (syncbuf.type), IPC_NOWAIT);
             }
@@ -350,8 +350,8 @@ int reporter(void* arg) {
                 long delta = (long) (cur_clock - prev_clock);
                 struct cpumsg cpubuf = {
                     CPUMSG,
-                    100.0 * (cur_times.tms_utime - prev_times.tms_utime) / delta,
-                    100.0 * (cur_times.tms_stime - prev_times.tms_stime) / delta
+                    (I32) (100.0 * (cur_times.tms_utime - prev_times.tms_utime) / delta),
+                    (I32) (100.0 * (cur_times.tms_stime - prev_times.tms_stime) / delta)
                 };
                 msgsnd(msqid, &cpubuf, sizeof (cpubuf) - sizeof (cpubuf.type), IPC_NOWAIT);
                 prev_clock = cur_clock;
