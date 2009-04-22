@@ -194,6 +194,7 @@ public class HostInfoImpl implements HostInfo {
         try {
             cpuFamily = CpuFamily.valueOf(props.getProperty("CPUFAMILY", UNKNOWN).toUpperCase()); // NOI18N
         } catch (IllegalArgumentException ex) {
+            cpuFamily = CpuFamily.UNKNOWN;
         }
 
         shell = props.getProperty("SH", UNKNOWN); // NOI18N
