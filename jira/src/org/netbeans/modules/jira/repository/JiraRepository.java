@@ -53,11 +53,12 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraIssue;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.util.IssueCache;
-import org.netbeans.modules.jira.JiraQuery;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.query.JiraQuery;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -71,6 +72,7 @@ public class JiraRepository extends Repository {
     private TaskRepository taskRepository;
     private RepositoryController controller;
     private Set<Query> queries = null;
+    private IssueCache cache;
 
     private final Set<String> issuesToRefresh = new HashSet<String>(5);
     private final Set<JiraQuery> queriesToRefresh = new HashSet<JiraQuery>(3);
@@ -99,7 +101,7 @@ public class JiraRepository extends Repository {
     }
 
     public Query createQuery() {
-        return new JiraQuery(Jira.getInstance().getRepositoryConnector(), this);
+        return new JiraQuery(this);
     }
 
     public Issue createIssue() {
@@ -160,11 +162,22 @@ public class JiraRepository extends Repository {
         Jira.getInstance().removeRepository(this);
     }
 
+    @Override
+    public void fireQueryListChanged() {
+        super.fireQueryListChanged();
+    }
+
     public void removeQuery(JiraQuery query) {
         JiraConfig.getInstance().removeQuery(this, query);
         getIssueCache().removeQuery(name);
         getQueriesIntern().remove(query);
         stopRefreshing(query);
+    }
+
+    public void saveQuery(JiraQuery query) {
+        assert name != null;
+        JiraConfig.getInstance().putQuery(this, query); // XXX display name ????
+        getQueriesIntern().add(query);
     }
 
     private Set<Query> getQueriesIntern() {
@@ -195,8 +208,11 @@ public class JiraRepository extends Repository {
     }
 
     @Override
-    protected IssueCache getIssueCache() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public IssueCache getIssueCache() {
+        if(cache == null) {
+            cache = new Cache();
+        }
+        return cache;
     }
 
     void setName(String newName) {
@@ -367,4 +383,17 @@ public class JiraRepository extends Repository {
         return refreshProcessor;
     }
 
+    private class Cache extends IssueCache {
+        Cache() {
+            super(JiraRepository.this.getUrl());
+        }
+        protected Issue createIssue(TaskData taskData) {
+            // XXX
+            return null; //new NbJiraIssue(taskData, JiraRepository.this);
+        }
+        protected void setTaskData(Issue issue, TaskData taskData) {
+            // XXX
+            //((NbJiraIssue)issue).setTaskData(taskData);
+        }
+    }
 }
