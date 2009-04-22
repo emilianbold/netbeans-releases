@@ -39,12 +39,8 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.awt.EventQueue;
-import java.beans.PropertyChangeEvent;
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.EventObject;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -57,25 +53,24 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeEvent;
-import org.openide.nodes.NodeListener;
-import org.openide.nodes.NodeMemberEvent;
-import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
-public class ProjectsRootNodeWithBadOpenHookTest extends NbTestCase {
+public class ProjectsRootNodeInitializedSoonerTest extends NbTestCase {
     
-    public ProjectsRootNodeWithBadOpenHookTest(String testName) {
+    public ProjectsRootNodeInitializedSoonerTest(String testName) {
         super(testName);
     }
 
@@ -84,10 +79,8 @@ public class ProjectsRootNodeWithBadOpenHookTest extends NbTestCase {
         return Level.OFF;
     }
 
-    @RandomlyFails // NB-Core-Build #2288
-    public void testIsBrokenInitializationReportedAsWarning() throws Exception {
+    public void testWrongOrderOfInitialization() throws Exception {
         MockLookup.setInstances(new TestSupport.TestProjectFactory());
-        CountDownLatch down = new CountDownLatch(1);
         List<URL> list = new ArrayList<URL>();
         List<ExtIcon> icons = new ArrayList<ExtIcon>();
         List<String> names = new ArrayList<String>();
@@ -102,7 +95,9 @@ public class ProjectsRootNodeWithBadOpenHookTest extends NbTestCase {
             icons.add(new ExtIcon());
             TestSupport.TestProject tmp = (TestSupport.TestProject) ProjectManager.getDefault().findProject(prj);
             assertNotNull("Project found", tmp);
-            tmp.setLookup(Lookups.singleton(new TestProjectOpenedHookImpl(down)));
+            final TestProjectOpenedHookImpl hook = new TestProjectOpenedHookImpl();
+            tmp.setLookup(Lookups.fixed(tmp, hook));
+            hook.lkp = tmp.getLookup();
         }
 
         OpenProjectListSettings.getInstance().setOpenProjectsURLs(list);
@@ -110,31 +105,31 @@ public class ProjectsRootNodeWithBadOpenHookTest extends NbTestCase {
         OpenProjectListSettings.getInstance().setOpenProjectsIcons(icons);
 
         Node logicalView = new ProjectsRootNode(ProjectsRootNode.LOGICAL_VIEW);
-        L listener = new L();
-        logicalView.addNodeListener(listener);
         
-        assertEquals("30 children", 30, logicalView.getChildren().getNodesCount());
-        listener.assertEvents("None", 0);
-        assertEquals("No project opened yet", 0, TestProjectOpenedHookImpl.opened);
-        
-        for (Node n : logicalView.getChildren().getNodes()) {
-            TestSupport.TestProject p = n.getLookup().lookup(TestSupport.TestProject.class);
-            assertNull("No project of this type, yet", p);
-        }
 
         class H extends Handler {
-            List<LogRecord> recs = new ArrayList<LogRecord>();
+            boolean ok;
 
             @Override
             public void publish(LogRecord record) {
+                if (ok) {
+                    return;
+                }
+
                 if (record.getLevel().intValue() < getLevel().intValue()) {
                     return;
                 }
-                if (record.getThrown() != null) {
-                    return;
+                if (record.getMessage().contains("BadgingNode init")) {
+                    ok = true;
+                    // now simulate that the projects are open before
+                    // the BadgingNode is really constructed and can
+                    // attach its listener to OpenProjectList
+                    try {
+                        TestProjectOpenedHookImpl.toOpen.await();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
-                // we are interested only in textual warning
-                recs.add(record);
             }
 
             @Override
@@ -146,72 +141,33 @@ public class ProjectsRootNodeWithBadOpenHookTest extends NbTestCase {
             }
         }
         H h = new H();
-        h.setLevel(Level.WARNING);
+        h.setLevel(Level.ALL);
         OpenProjectList.LOGGER.addHandler(h);
         OpenProjectList.LOGGER.setUseParentHandlers(false);
-        OpenProjectList.LOGGER.setLevel(Level.WARNING);
+        OpenProjectList.LOGGER.setLevel(Level.ALL);
 
-        // let project open code run
-        down.countDown();
-        TestProjectOpenedHookImpl.toOpen.await();
-        
-        assertEquals("All projects opened", 30, TestProjectOpenedHookImpl.opened);
-        
+        assertEquals("30 children", 30, logicalView.getChildren().getNodesCount());
+
         OpenProjectList.waitProjectsFullyOpen();
+        assertTrue("Handler was called", h.ok);
+        assertEquals("All projects opened", 30, TestProjectOpenedHookImpl.opened);
+
+        int i = 0;
+        for (Node n : logicalView.getChildren().getNodes()) {
+            i++;
+            TestSupport.TestProject p = n.getLookup().lookup(TestSupport.TestProject.class);
+            assertNotNull("Project type is correct " + i, p);
+        }
+        
+        
 
         List<Node> arrNodes = logicalView.getChildren().snapshot();
         assertEquals("30 nodes:\n" + arrNodes, 30, arrNodes.size());
 
-        assertEquals("One message: " + h.recs, 1, h.recs.size());
-        assertEquals("It is a warning ", Level.WARNING, h.recs.get(0).getLevel());
-        Object os = h.recs.get(0).getParameters()[0];
-        assertNotNull("Some message reported", os);
-        WeakReference<Object> ref = new WeakReference<Object>(os);
-        OpenProjectList.LOGGER.removeHandler(h);
-        h = null;
-        os = null;
-        assertGC("The message can GC at the end", ref);
-
-        listener.assertEvents("Goal is to receive no events at all", 0);
         assertTrue("Finished", OpenProjects.getDefault().openProjects().isDone());
         assertFalse("Not cancelled, Finished", OpenProjects.getDefault().openProjects().isCancelled());
         Project[] arr = OpenProjects.getDefault().openProjects().get();
         assertEquals("30", 30, arr.length);
-    }
-    
-    private static class L implements NodeListener {
-        public List<EventObject> events = new ArrayList<EventObject>();
-        
-        public void childrenAdded(NodeMemberEvent ev) {
-            assertFalse("No event in AWT thread", EventQueue.isDispatchThread());
-            events.add(ev);
-        }
-
-        public void childrenRemoved(NodeMemberEvent ev) {
-            assertFalse("No event in AWT thread", EventQueue.isDispatchThread());
-            events.add(ev);
-        }
-
-        public void childrenReordered(NodeReorderEvent ev) {
-            assertFalse("No event in AWT thread", EventQueue.isDispatchThread());
-            events.add(ev);
-        }
-
-        public void nodeDestroyed(NodeEvent ev) {
-            assertFalse("No event in AWT thread", EventQueue.isDispatchThread());
-            events.add(ev);
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            assertFalse("No event in AWT thread", EventQueue.isDispatchThread());
-            events.add(evt);
-        }
-
-        final void assertEvents(String string, int i) {
-            assertEquals(string + events, i, events.size());
-            events.clear();
-        }
-        
     }
     
     private static class TestProjectOpenedHookImpl extends ProjectOpenedHook 
@@ -220,12 +176,10 @@ public class ProjectsRootNodeWithBadOpenHookTest extends NbTestCase {
         public static CountDownLatch toOpen = new CountDownLatch(30);
         public static int opened = 0;
         public static int closed = 0;
+        private Lookup lkp;
         
         
-        private CountDownLatch toWaitOn;
-        
-        public TestProjectOpenedHookImpl(CountDownLatch toWaitOn) {
-            this.toWaitOn = toWaitOn;
+        public TestProjectOpenedHookImpl() {
         }
         
         protected void projectClosed() {
@@ -250,23 +204,12 @@ public class ProjectsRootNodeWithBadOpenHookTest extends NbTestCase {
             // now verify that other threads do not see results from the Future
             RequestProcessor.getDefault().post(this).waitFinished();
             assertNull("TimeoutException thrown", arr);
-            if (toWaitOn != null) {
-                try {
-                    toWaitOn.await();
-                } catch (InterruptedException ex) {
-                    throw new IllegalStateException(ex);
-                }
-            }
             opened++;
             toOpen.countDown();
         }
 
         public Node createLogicalView() {
-            if (toOpen != null && toOpen.getCount() == 0) {
-                toOpen = null;
-                throw new IllegalStateException("Mock error");
-            }
-            return Node.EMPTY.cloneNode();
+            return new AbstractNode(Children.LEAF, lkp);
         }
 
         public Node findPath(Node root, Object target) {

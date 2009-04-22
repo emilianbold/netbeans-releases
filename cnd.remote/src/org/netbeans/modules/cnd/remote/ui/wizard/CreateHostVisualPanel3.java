@@ -64,7 +64,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     void init(ExecutionEnvironment execEnv, ToolsCacheManager cacheManager) {
         this.execEnv = execEnv;
         this.cacheManager = cacheManager;
-        textHostDisplayName.setText(execEnv.getHost());
+        textHostDisplayName.setText(execEnv.getDisplayName());
         CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(execEnv);
         labelPlatformValue.setText(PlatformTypes.toString(csm.getPlatform()));
         labelUsernameValue.setText(execEnv.getUser());
@@ -84,6 +84,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
     String getDefaultCompilerSetDisplayName() {
         return (String)cbDefaultToolchain.getSelectedItem();
+    }
+
+    String getHostDisplayName() {
+        return textHostDisplayName.getText();
     }
     /** This method is called from within the constructor to
      * initialize the form.

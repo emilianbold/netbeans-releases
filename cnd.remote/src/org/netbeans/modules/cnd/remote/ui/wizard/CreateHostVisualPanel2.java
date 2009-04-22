@@ -53,8 +53,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetReporter;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -248,7 +248,7 @@ import org.openide.util.RequestProcessor;
 
     private void revalidateRecord(final String password, final boolean rememberPassword) {
         final ExecutionEnvironment env = getExecutionEnvironment();
-        final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(env);
+        final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
         final boolean alreadyOnline = record.isOnline();
         enableButtons(false);
         if (alreadyOnline) {
