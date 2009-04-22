@@ -1304,6 +1304,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private void addArgsToLocalVariables(String info) {
         List<String> frames = GdbUtils.createListFromString(info);
+        CallStackFrame curFrame = getCurrentCallStackFrame();
         for (String frame : frames) {
             Map<String, String> frameMap = GdbUtils.createMapFromString(frame);
             int level = Integer.parseInt(frameMap.get("level")); // NOI18N
@@ -1316,7 +1317,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     log.info("GD.addArgsToLocalVariables: args for unknown level " + level); // NOI18N
                 }
             }
-            if (level == 0 && !vars.isEmpty()) {
+            if (curFrame != null && level == curFrame.getFrameNumber() && !vars.isEmpty()) {
                 log.finest("GD.addArgsToLocalVariables: Starting to add Args to localVariables"); // NOI18N
                 synchronized (localVariables) {
                     localVariables.addAll(vars);
