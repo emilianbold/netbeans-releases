@@ -102,13 +102,21 @@ public class ExternalTerminal implements PropertyChangeListener {
             }
         }
         
-        pb.start();
+        Process process = pb.start();
         
         int count = 0;
         String tty_line = null;
         String pid_line = null;
         try {
             while (count++ < RETRY_LIMIT) {
+                // first check for process termination
+                try {
+                    process.exitValue();
+                    // process already terminated - exit
+                    break;
+                } catch (IllegalThreadStateException e) {
+                    // do nothing
+                }
                 // TODO: it is not good to wait for the file to be filled with info this way
                 // need to find a better way to get pid later
                 BufferedReader fromTerm = new BufferedReader(new FileReader(gdbHelperLog));

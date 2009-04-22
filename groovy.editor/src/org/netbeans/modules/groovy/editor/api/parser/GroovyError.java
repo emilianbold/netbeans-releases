@@ -130,4 +130,8 @@ public class GroovyError implements org.netbeans.modules.csl.api.Error {
     public GroovyCompilerErrorID getId() {
         return id;
     }
+
+    public boolean isLineError() {
+        return true;
+    }
 }

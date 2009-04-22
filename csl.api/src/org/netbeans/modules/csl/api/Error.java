@@ -107,6 +107,14 @@ public interface Error  {
     int getEndPosition();
     
     /**
+     * Defines the way how an error annotation for this error behaves in the editor.
+     * 
+     * @return true if the error annotation should span over the whole line, false if 
+     * the annotation is restricted exactly by the range defined by getStart/EndPostion() 
+     */
+    boolean isLineError();
+
+    /**
      *  Get the severity of this error
      */
     @NonNull
