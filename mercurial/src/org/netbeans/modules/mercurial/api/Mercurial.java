@@ -235,7 +235,6 @@ public class Mercurial {
         }
 
         if (hgUrl != null) {
-            // temporary folder will be deleted manually
             retval = HgCommand.checkRemoteRepository(hgUrl.toHgCommandUrlString());
         }
 
