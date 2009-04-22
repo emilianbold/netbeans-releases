@@ -68,6 +68,8 @@ public class RemoteServerList implements ServerListImplementation {
     
     private static final String CND_REMOTE = "cnd.remote"; // NOI18N
     private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
+    private static final char SERVER_RECORD_SEPARATOR = '|'; //NOI18N
+    private static final String SERVER_LIST_SEPARATOR = ","; //NOI18N
     private static final String DEFAULT_INDEX = CND_REMOTE + ".default"; // NOI18N
     
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
@@ -86,12 +88,22 @@ public class RemoteServerList implements ServerListImplementation {
         unlisted = new ArrayList<RemoteServerRecord>();
         
         // Creates the "localhost" record and any remote records cached in remote.preferences
-        addServer(ExecutionEnvironmentFactory.getLocal(), false, RemoteServerRecord.State.ONLINE);
+        addServer(ExecutionEnvironmentFactory.getLocal(), null, false, RemoteServerRecord.State.ONLINE);
         if (slist != null) {
-            for (String hostKey : slist.split(",")) { // NOI18N
+            for (String hostKey : slist.split(SERVER_LIST_SEPARATOR)) { // NOI18N
+                // there moght be to forms:
+                // 1) user@host:port
+                // 2) user@host:port|DisplayName
+                String displayName = null;
+                int sepPos = hostKey.indexOf(SERVER_RECORD_SEPARATOR);
+                if (sepPos >= 0) {
+                    assert sepPos > 0;
+                    hostKey = hostKey.substring(0, sepPos);
+                    displayName = hostKey.substring(sepPos);
+                }
                 ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(hostKey);
                 if (env.isRemote()) {
-                    addServer(env, false, RemoteServerRecord.State.OFFLINE);
+                    addServer(env, displayName, false, RemoteServerRecord.State.OFFLINE);
                 }
             }
         }
@@ -153,14 +165,21 @@ public class RemoteServerList implements ServerListImplementation {
         return result;
     }
     
-    private void addServer(ExecutionEnvironment execEnv, boolean asDefault, RemoteServerRecord.State state) {
-        RemoteServerRecord addServer = (RemoteServerRecord) addServer(execEnv, asDefault, false);
+    private void addServer(ExecutionEnvironment execEnv, String displayName, boolean asDefault, RemoteServerRecord.State state) {
+        if (displayName == null) {
+            displayName = execEnv.getDisplayName();
+        }
+        RemoteServerRecord addServer = (RemoteServerRecord) addServer(execEnv, null, asDefault, false);
         addServer.setState(state);
     }
 
 
     @Override
-    public synchronized ServerRecord addServer(final ExecutionEnvironment execEnv, boolean asDefault, boolean connect) {
+    public synchronized ServerRecord addServer(final ExecutionEnvironment execEnv, String displayName, boolean asDefault, boolean connect) {
+
+        if (displayName == null) {
+            displayName = execEnv.getDisplayName();
+        }
         RemoteServerRecord record = null;
         
         // First off, check if we already have this record
@@ -183,9 +202,10 @@ public class RemoteServerList implements ServerListImplementation {
         }
         
         if (record == null) {
-            record = new RemoteServerRecord(execEnv, connect);
+            record = new RemoteServerRecord(execEnv, displayName, connect);
         } else {
             record.setDeleted(false);
+            record.setDisplayName(displayName);
             unlisted.remove(record);
         }
         items.add(record);
@@ -198,19 +218,19 @@ public class RemoteServerList implements ServerListImplementation {
         // TODO: Save the state as well as name. On restart, only try connecting to
         // ONLINE hosts.
         String slist = getPreferences().get(REMOTE_SERVERS, null);
-        String preferencesKey = ExecutionEnvironmentFactory.toString(execEnv);
+        String hostKey = ExecutionEnvironmentFactory.toString(execEnv);
+        String preferencesKey = hostKey + SERVER_RECORD_SEPARATOR + displayName;
         if (slist == null) {
             getPreferences().put(REMOTE_SERVERS, preferencesKey);
         } else {
-            boolean do_add = true;
-            for (String server : slist.split(",")) { // NOI18N
-                if (server.equals(preferencesKey)) {
-                    do_add = false;
-                    break;
+            StringBuilder sb = new StringBuilder(preferencesKey);
+            for (String server : slist.split(SERVER_LIST_SEPARATOR)) { // NOI18N
+                int sepPos = server.indexOf(SERVER_RECORD_SEPARATOR);
+                String serverKey = (sepPos > 0) ? server.substring(sepPos) : server;
+                if (!serverKey.equals(hostKey)) {
+                    sb.append(SERVER_LIST_SEPARATOR);
+                    sb.append(server);
                 }
-            }
-            if (do_add) {
-                getPreferences().put(REMOTE_SERVERS, slist + ',' + preferencesKey);
             }
         }
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
@@ -238,7 +258,7 @@ public class RemoteServerList implements ServerListImplementation {
         StringBuilder sb = new StringBuilder();        
         for (RemoteServerRecord record : items) {
             if (!recordToRemove.equals(record)) {
-                sb.append(record.getName());
+                sb.append(record.getDisplayName());
                 sb.append(',');
             }
         }

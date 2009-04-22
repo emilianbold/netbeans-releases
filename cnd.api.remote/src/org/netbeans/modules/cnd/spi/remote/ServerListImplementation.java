@@ -67,7 +67,7 @@ public interface ServerListImplementation {
     
     public abstract void clear();
 
-    public abstract ServerRecord addServer(ExecutionEnvironment env, boolean asDefault, boolean connect);
+    public ServerRecord addServer(ExecutionEnvironment env, String displayName, boolean asDefault, boolean connect);
 
     public abstract boolean isValidExecutable(ExecutionEnvironment env, String path);
 }
