@@ -193,8 +193,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 SunStudioDCConfiguration.c_leakCount);
 
         ColumnsUIMapping columnsUIMapping = new ColumnsUIMapping();
-        columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_name.getColumnName(), loc("MemoryTool.ColumnName.func_name"), loc("MemoryTool.ColumnTooltip.func_name"));
-        columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_leakSize.getColumnName(), loc("MemoryTool.ColumnName.leak"), loc("MemoryTool.ColumnTooltip.leak"));
+        columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_name.getColumnName(), loc("MemoryTool.ColumnName.func_name"), loc("MemoryTool.ColumnTooltip.func_name")); // NOI18N
+        columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_leakSize.getColumnName(), loc("MemoryTool.ColumnName.leak"), loc("MemoryTool.ColumnTooltip.leak")); // NOI18N
         FunctionDatatableDescription functionDesc = new FunctionDatatableDescription(SunStudioDCConfiguration.c_name.getColumnName(), null, SunStudioDCConfiguration.c_name.getColumnName());
         FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
                 new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadata, functionDesc, Arrays.asList(SunStudioDCConfiguration.c_leakSize, SunStudioDCConfiguration.c_leakCount));
