@@ -408,7 +408,7 @@ public class FolderLookup extends FolderInstance {
             ) {
                 if (!DataObjectPool.isConstructorAllowed()) {
                     fl.waitFinished();
-//                    DISPATCH.waitFinished();
+                    DISPATCH.waitFinished();
                 } else {
                     try {
                         // try a bit but prevent deadlock from CanYouQueryFolderLookupFromHandleFindTest
