@@ -273,7 +273,8 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
                     }
                 }, 500);
             } else if ((e.getPropertyName().equals(GdbDebugger.PROP_STATE)) &&
-                    !(debugger.getState() == GdbDebugger.State.STOPPED) && task != null) {
+                    (debugger.getState() != GdbDebugger.State.STOPPED) &&
+                    task != null) {
                 // debugger has been resumed
                 // =>> cancel task
                 task.cancel();
