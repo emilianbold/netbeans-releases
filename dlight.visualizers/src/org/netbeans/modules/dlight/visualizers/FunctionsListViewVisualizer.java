@@ -322,7 +322,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         super.removeNotify();
         synchronized (queryLock) {
             if (task != null) {
-                task.cancel(true);
+                task.cancel(false);
                 task = null;
             }
         }
