@@ -221,7 +221,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         super.removeNotify();
         synchronized (queryLock) {
             if (task != null) {
-                task.cancel(true);
+                task.cancel(false);
                 task = null;
             }
         }
