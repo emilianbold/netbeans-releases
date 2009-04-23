@@ -90,7 +90,7 @@ public class DevelopmentHostConfiguration {
 
     public String getDisplayName(boolean displayIfNotFound) {
         String out = getName();
-        if (displayIfNotFound && !isOnline()) {
+        if (displayIfNotFound && !isConfigured()) {
             out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
         }
         return out;
@@ -98,13 +98,13 @@ public class DevelopmentHostConfiguration {
 
     public String getHostDisplayName(boolean displayIfNotFound) {
         String out = getExecutionEnvironment().getHost();
-        if (displayIfNotFound && !isOnline()) {
+        if (displayIfNotFound && !isConfigured()) {
             out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
         }
         return out;
     }
 
-    public boolean isOnline() {
+    public boolean isConfigured() {
         // localhost is always STATE_COMPLETE so isLocalhost() is assumed
         // keeping track of online status takes more efforts and can miss sometimes
         return !CompilerSetManager.getDefault(getExecutionEnvironment()).isUninitialized();
