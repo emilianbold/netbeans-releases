@@ -60,6 +60,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -94,10 +96,8 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.AbstractLookup.Pair;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -236,17 +236,31 @@ final class UnitTestLibrariesNode extends AbstractNode {
             assert node != null;
             return new Node[] { node };
         }
-        
+
+        private boolean refreshScheduled = false;
         public void configurationXmlChanged(AntProjectEvent ev) {
             // XXX this is a little strange but happens during project move. Bad ordering.
             // Probably bug in moving implementation (our or in general Project API).
-            if (! project.isRunInAtomicAction() && project.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH) != null) {
-                refreshKeys();
+            if (project.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH) != null) {
+                Runnable r = new Runnable() {
+                    public void run() {
+                        refreshKeys();
+                        refreshScheduled = false;
+                    }
+                };
+                refreshScheduled = true;
+                if (project.isRunInAtomicAction()) {
+                    EventQueue.invokeLater(r);
+                } else {
+                    r.run();
+                }
             }
         }
         
         public void propertiesChanged(AntProjectEvent ev) {
             // do not need
+            Logger LOG = Logger.getLogger(UnitTestLibrariesNode.class.getName());
+            LOG.log(Level.FINE, "propertiesChanged: " + ev.getPath() + ", expected: " + ev.isExpected());
         }
         
         
