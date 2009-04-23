@@ -44,6 +44,7 @@ var BOUNCER_PRODUCT_PREFIX      = "{nb.bundle.files.prefix}";
 
 var COMMUNITY_BUILD             = "{community.mlbuild}";
 var ADD_MORE_REDIRECT_VALUE     = "{enable.languages.redirect}";
+var SHOW_COMMUNITY_LANGUAGES    = 0;
 var MORE_LANGUAGES_REDIRECT_URL = "{alternative.languages.page.url}";
 
 var BUILD_LOCATION = "";

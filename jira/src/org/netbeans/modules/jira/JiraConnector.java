@@ -42,6 +42,7 @@ package org.netbeans.modules.jira;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -51,7 +52,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 public class JiraConnector extends BugtrackingConnector {
 
     public String getDisplayName() {
-        return "Jira";
+        return getConnectorName();
     }
 
     public String getTooltip() {
@@ -66,6 +67,10 @@ public class JiraConnector extends BugtrackingConnector {
     @Override
     public Repository[] getRepositories() {
         return Jira.getInstance().getRepositories();
+    }
+
+    public static String getConnectorName() {
+        return NbBundle.getMessage(JiraConnector.class, "LBL_ConnectorName");           // NOI18N
     }
 
 }

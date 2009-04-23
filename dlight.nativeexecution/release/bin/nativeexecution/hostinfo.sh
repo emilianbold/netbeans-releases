@@ -46,7 +46,7 @@ OSFAMILY=${OSFAMILY:-`test "$OS" = "Darwin" && echo MACOSX`}
 OSFAMILY=${OSFAMILY:-`test "$OS" = "Linux" && echo LINUX`}
 OSFAMILY=${OSFAMILY:-${OS}}
 
-CPUFAMILY=`(echo ${CPUTYPE} | egrep "^i|x86_64|athlon|Intel" >/dev/null && echo x86)` || echo ${CPUTYPE}
+CPUFAMILY=`(echo ${CPUTYPE} | egrep "^i|x86_64|athlon|Intel" >/dev/null && echo x86) || echo ${CPUTYPE}`
 
 if [ "${OSFAMILY}" = "LINUX" ]; then
    CPUNUM=`cat /proc/cpuinfo | grep processor | wc -l | sed 's/^ *//'`

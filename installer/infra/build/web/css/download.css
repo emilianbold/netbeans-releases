@@ -264,6 +264,11 @@ div.files_list {
 	margin-left:	8px;
 }
 
+
+.community_separator {
+        color:          #888888;
+}
+
 .pop_up {
     color:		#333333;
     width:              250px;
