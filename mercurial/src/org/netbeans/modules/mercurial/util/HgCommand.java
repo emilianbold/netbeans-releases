@@ -3151,6 +3151,7 @@ public class HgCommand {
         if (repository == null || "".equals(repository)) {
             return retval;
         }
+        // temporary folder will be deleted manually
         File tmpFolder = Utils.getTempFolder(false);
         File tmpTarget = new File(tmpFolder, "rep");                    //NOI18N
         List<String> command = new ArrayList<String>();
