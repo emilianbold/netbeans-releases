@@ -37,36 +37,54 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.bridge.kenai;
+package org.netbeans.modules.mercurial;
 
 import java.net.PasswordAuthentication;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Ondra Vrabec
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.VCSKenaiSupport.class)
-public class VCSKenaiSupportImpl extends VCSKenaiSupport {
+public class HgKenaiSupport {
 
-    @Override
+    private static HgKenaiSupport instance;
+    private VCSKenaiSupport kenaiSupport = null;
+    private Set<String> queriedUrls = new HashSet<String>(5);
+
+    private HgKenaiSupport() {
+        kenaiSupport = Lookup.getDefault().lookup(VCSKenaiSupport.class);
+    }
+
+    public static HgKenaiSupport getInstance() {
+        if(instance == null) {
+            instance = new HgKenaiSupport();
+        }
+        return instance;
+    }
+
     public boolean isKenai(String url) {
-        return KenaiUtil.isKenai(url);
-    }
-    
-    @Override
-    public PasswordAuthentication getPasswordAuthentication() {
-        return KenaiUtil.getPasswordAuthentication(true);
+        return kenaiSupport != null && kenaiSupport.isKenai(url);
     }
 
-    @Override
-    public boolean showLogin() {
-        return KenaiUtil.showLogin();
+    public boolean isLoggedIntoKenai () {
+        return kenaiSupport != null && kenaiSupport.isLogged();
     }
 
-    @Override
-    public boolean isLogged () {
-        return KenaiUtil.isLoggedIn();
+    public PasswordAuthentication getPasswordAuthentication(String url, boolean forceRelogin) {
+        if(forceRelogin && queriedUrls.contains(url)) {
+            // we already queried the authentication for this url, but it didn't
+            // seem to be accepted -> force a new login, the current user
+            // might not be authorized for the given kenai project (url).
+            if(!kenaiSupport.showLogin()) {
+                return null;
+            }
+        }
+        queriedUrls.add(url);
+        return kenaiSupport.getPasswordAuthentication();
     }
+
 }
