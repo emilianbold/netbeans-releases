@@ -843,6 +843,7 @@ public final class NbMavenProjectImpl implements Project {
                     CosChecker.createResultChecker(),
                     new ReactorChecker(),
                     new PrereqCheckerMerger(),
+                    new TestSkippingChecker(),
                     new RecommendedTemplates() {
                         public String[] getRecommendedTypes() {
                             return new String[] { "scala-classes" }; //NOI18N
