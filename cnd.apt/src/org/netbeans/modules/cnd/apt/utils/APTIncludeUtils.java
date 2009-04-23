@@ -94,12 +94,29 @@ public class APTIncludeUtils {
         mapFoldersRef.clear();
     }
     
-    public static ResolvedPath resolveFilePath(Iterator<CharSequence> it, String file, int dirOffset) {
-        while( it.hasNext() ) {
-            CharSequence sysPrefix = it.next();
-            File fileFromPath = new File(new File(sysPrefix.toString()), file);
+    public static ResolvedPath resolveFilePath(Iterator<CharSequence> searchPaths, String includedFile, int dirOffset) {
+        while( searchPaths.hasNext() ) {
+            CharSequence sysPrefix = searchPaths.next();
+            String sysPrefixString = sysPrefix.toString();
+            File fileFromPath = new File(new File(sysPrefixString), includedFile);
             if (!isDirectory(fileFromPath) && exists(fileFromPath)) {
                 return new ResolvedPath(sysPrefix, fileFromPath.getAbsolutePath(), false, dirOffset);
+            } else {
+                if (sysPrefixString.endsWith("/Frameworks")){ // NOI18N
+                    int i = includedFile.indexOf('/'); // NOI18N
+                    if (i > 0) {
+                        // possible it is framework include (see IZ#160043)
+                        // #include <GLUT/glut.h>
+                        // header is located in the /System/Library/Frameworks/GLUT.framework/Headers
+                        // system path is /System/Library/Frameworks
+                        // So convert framework path
+                        String fileName = sysPrefixString+"/"+includedFile.substring(0,i)+".framework/Headers"+includedFile.substring(i); // NOI18N
+                        fileFromPath = new File(fileName);
+                        if (!isDirectory(fileFromPath) && exists(fileFromPath)) {
+                            return new ResolvedPath(sysPrefix, fileFromPath.getAbsolutePath(), false, dirOffset);
+                        }
+                    }
+                }
             }
             dirOffset++;
         }

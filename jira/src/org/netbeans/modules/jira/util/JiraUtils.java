@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,37 +31,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.apt.support;
+package org.netbeans.modules.jira.util;
 
-import org.netbeans.modules.cnd.apt.impl.support.lang.APTLanguageSupportImpl;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
- * support for languages:
- *  - filters collection
- * @author Vladimir Voskresensky
+ *
+ * @author Tomas Stupka
  */
-public class APTLanguageSupport {
-    private static APTLanguageSupport singleton = new APTLanguageSupport();
+public class JiraUtils {
 
-    public static final String STD_C    = "Std C Language"; // NOI18N
-    public static final String GNU_C    = "Gnu C Language"; // NOI18N
-    public static final String GNU_CPP  = "Gnu C++ Language"; // NOI18N
-    public static final String STD_CPP  = "Std C++ Language"; // NOI18N
-    
-    private APTLanguageSupport() {
+    public static boolean show(JPanel panel, String title, String okName, HelpCtx helpCtx) {
+        JButton ok = new JButton(okName);
+        JButton cancel = new JButton(NbBundle.getMessage(JiraUtils.class, "LBL_Cancel")); // NOI18N
+        DialogDescriptor descriptor = new DialogDescriptor (
+                panel,
+                title,
+                true,
+                new Object[] {ok, cancel},
+                ok,
+                DialogDescriptor.DEFAULT_ALIGN,
+                helpCtx,
+                null);
+        return DialogDisplayer.getDefault().notify(descriptor) == ok;
     }
-    
-    public static APTLanguageSupport getInstance() {
-        return singleton;
-    }
-    
-    public APTLanguageFilter getFilter(String lang) {
-        return APTLanguageSupportImpl.getFilter(lang);
-    }
-    
-    public void addFilter(String lang, final APTLanguageFilter filter) {
-        APTLanguageSupportImpl.addFilter(lang, filter);
-    }
+
 }

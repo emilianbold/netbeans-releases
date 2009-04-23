@@ -53,7 +53,7 @@ import javax.swing.JFileChooser;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.jira.util.TasksUtil;
+import org.netbeans.modules.jira.util.JiraUtils;
 
 /**
  *

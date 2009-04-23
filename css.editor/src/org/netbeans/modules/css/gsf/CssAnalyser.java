@@ -83,10 +83,11 @@ public class CssAnalyser {
                         if (!CssGSFParser.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
                             Error error =
-                                    new DefaultError(UNKNOWN_PROPERTY,
+                                    DefaultError.createDefaultError(UNKNOWN_PROPERTY,
                                     NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY, propertyName),
                                     null, snapshot.getSource().getFileObject(),
-                                    propertyNode.startOffset(), propertyNode.endOffset(), Severity.WARNING);
+                                    propertyNode.startOffset(), propertyNode.endOffset(),
+                                    false /* not line error */, Severity.WARNING);
                             errors.add(error);
                         }
 
@@ -112,10 +113,11 @@ public class CssAnalyser {
                                     }
 
                                     Error error =
-                                            new DefaultError(INVALID_PROPERTY_VALUE,
+                                            DefaultError.createDefaultError(INVALID_PROPERTY_VALUE,
                                             errorMsg,
                                             null, snapshot.getSource().getFileObject(),
-                                            valueNode.startOffset(), valueNode.endOffset(), Severity.WARNING);
+                                            valueNode.startOffset(), valueNode.endOffset(),
+                                            false /* not line error */, Severity.WARNING);
                                     errors.add(error);
                                 }
                             }
