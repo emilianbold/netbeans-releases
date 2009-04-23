@@ -37,21 +37,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.storage;
+package org.netbeans.modules.dlight.management.spi;
 
-import java.util.Map;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * This interface is intended to keep service information about DLightSession
- * This SPI will be used to
+ * Path mapper provider information about path mapping if exists for the Execution enviroment
  */
-public interface ServiceInfoDataStorage {
-    static final String EXECUTION_ENV_KEY = "service.storage.execution.env.key";
-    static final String HOST_NAME = "service.storage.hostname";
-    static final String USER_NAME = "service.storage.username";
-    static final String PORT = "service.storage.port";
-    
-    Map<String, String> getInfo();
-    String getValue(String name);
-    String put(String name, String value);
+public interface PathMapperProvider {
+
+    /**
+     * Returns PathMapper if exists
+     * @param env execution enviroment to get path mapper for
+     * @return path mapper info if exists, <code>null</code> otherwise
+     */
+    public PathMapper getPathMapper(ExecutionEnvironment env);
+
 }
