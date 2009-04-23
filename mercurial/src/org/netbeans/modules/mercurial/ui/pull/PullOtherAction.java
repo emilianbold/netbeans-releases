@@ -101,7 +101,8 @@ public class PullOtherAction extends ContextAction implements ChangeListener {
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PullOtherAction.class, "ACSD_Pull_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PullOtherAction.class, "ACSN_Pull_Action_Cancel")); // NOI18N
 
-        pullButton.setEnabled(false);
+        boolean dataValid = repository.isValid();
+        pullButton.setEnabled(dataValid);
 
         Object option = repository.show(org.openide.util.NbBundle.getMessage(PullOtherAction.class, "CTL_PullDialog_Title"), 
                                         new HelpCtx(PullOtherAction.class),
