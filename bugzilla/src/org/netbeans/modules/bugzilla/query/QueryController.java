@@ -213,8 +213,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(autoRefresh) {
             scheduleForRefresh();
         }
-        if(query.isSaved() && !query.wasRun()) {
-            onRefresh();
+        if(query.isSaved()) {
+            setIssueCount(query.getSize()); // XXX this probably won't work
+                                            // if the query is alredy open and
+                                            // a refresh is invoked on kenai
+            if(!query.wasRun()) {
+                onRefresh();
+            }
         }
     }
 
@@ -847,6 +852,20 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    private void setIssueCount(final int count) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                panel.tableSummaryLabel.setText(
+                        NbBundle.getMessage(
+                            QueryController.class,
+                            NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
+                            new Object[] { count }
+                        )
+                );
+            }
+        });
+    }
+
     private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private int counter;
@@ -916,19 +935,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         public void finished() { }
 
-        private void setIssueCount(final int count) {
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    panel.tableSummaryLabel.setText(
-                            NbBundle.getMessage(
-                                QueryController.class,
-                                NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
-                                new Object[] { count }
-                            )
-                    );
-                }
-            });
-        }
     }
 
 }
