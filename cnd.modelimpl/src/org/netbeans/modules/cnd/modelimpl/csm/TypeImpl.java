@@ -52,6 +52,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
@@ -448,9 +449,19 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
 
     public CsmClassifier getClassifier(Resolver parent) {
         CsmClassifier classifier = _getClassifier();
+        boolean needToRender = true;
         if (CsmBaseUtilities.isValid(classifier)) {
             // skip
-        } else {
+            needToRender = false;
+            if (isTypeOfTypedef() && (parent != null) && !CsmKindUtilities.isBuiltIn(classifier)) {
+                // check visibility of classifier
+                if (!CsmIncludeResolver.getDefault().isObjectVisible(parent.getStartFile(), classifier)) {
+                    needToRender = true;
+                    classifier = null;
+                }
+            }
+        }
+        if (needToRender) {
             if (classifier != null) {
                 int newCount = FileImpl.getParseCount();
                 if (newCount == parseCount) {

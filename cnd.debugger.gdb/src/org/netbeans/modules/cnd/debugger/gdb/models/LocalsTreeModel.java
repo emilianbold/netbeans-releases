@@ -46,7 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -57,22 +56,18 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
-import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakSet;
 
 /*
  * LocalsTreeModel.java
  *
  * @author Nik Molchanov (copied from Jan Jancura's JPDA implementation)
  */
-public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyChangeListener {
+public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         
     private GdbDebugger debugger;
     private Listener listener;
     private final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
-    private Set<Object> expandedNodes = new WeakSet<Object>();
-    private Set<Object> collapsedNodes = new WeakSet<Object>();
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
         
     public LocalsTreeModel(ContextProvider lookupProvider) {
@@ -292,48 +287,6 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
 //                    }
 //                });
             }
-        }
-    }
-  
-    /**
-     * Defines default state (collapsed, expanded) of given node.
-     *
-     * @param node a node
-     * @return default state (collapsed, expanded) of given node
-     */
-    public boolean isExpanded(Object node) throws UnknownTypeException {
-        synchronized (this) {
-            if (expandedNodes.contains(node)) {
-                return true;
-            }
-            if (collapsedNodes.contains(node)) {
-                return false;
-            }
-        }
-        return false;
-    }
-    
-    /**
-     * Called when given node is expanded.
-     *
-     * @param node a expanded node
-     */
-    public void nodeExpanded(Object node) {
-        synchronized (this) {
-            expandedNodes.add(node);
-            collapsedNodes.remove(node);
-        }
-    }
-    
-    /**
-     * Called when given node is collapsed.
-     *
-     * @param node a collapsed node
-     */
-    public void nodeCollapsed(Object node) {
-        synchronized (this) {
-            collapsedNodes.add(node);
-            expandedNodes.remove(node);
         }
     }
 }

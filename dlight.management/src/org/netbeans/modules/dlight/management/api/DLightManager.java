@@ -144,7 +144,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     public void closeSessionOnExit(DLightSession session) {
         SessionState currentSessionState = session.getState();
         if (currentSessionState != SessionState.ANALYZE) {
-            session.closeOnRun();
+            session.closeOnExit();
         } else {
             session.close();
         }
