@@ -58,6 +58,7 @@ public class ProgressTransferListener implements TransferListener {
     private static ThreadLocal<Integer> countRef = new ThreadLocal<Integer>();
     private static ThreadLocal<ProgressContributor> contribRef = new ThreadLocal<ProgressContributor>();
     private static ThreadLocal<ProgressContributor> pomcontribRef = new ThreadLocal<ProgressContributor>();
+    private static ThreadLocal<Integer> pomCountRef = new ThreadLocal<Integer>();
     private static ThreadLocal<Stack<ProgressContributor>> contribStackRef = new ThreadLocal<Stack<ProgressContributor>>();
     private static ThreadLocal<AggregateProgressHandle> handleRef = new ThreadLocal<AggregateProgressHandle>();
     private static final int POM_MAX = 20;
@@ -71,6 +72,7 @@ public class ProgressTransferListener implements TransferListener {
         ProgressContributor pc = AggregateProgressFactory.createProgressContributor("Pom files");
         hndl.addContributor(pc);
         pc.start(POM_MAX);
+        pomCountRef.set(new Integer(0));
         pomcontribRef.set(pc);
     }
     
@@ -79,6 +81,7 @@ public class ProgressTransferListener implements TransferListener {
         contribRef.remove();
         contribStackRef.remove();
         pomcontribRef.remove();
+        pomCountRef.remove();
     }
 
     private String getResourceName(Resource res) {
@@ -107,8 +110,11 @@ public class ProgressTransferListener implements TransferListener {
             ProgressContributor pc = AggregateProgressFactory.createProgressContributor(name);
             contribStackRef.get().add(pc);
             handleRef.get().addContributor(pc);
-            if (contribStackRef.get().size() < POM_MAX) {
-                pomcontribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", resName), contribStackRef.get().size());
+            int count = pomCountRef.get();
+            if (count < POM_MAX - 1) {
+                count = count + 1;
+                pomcontribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", resName), count);
+                pomCountRef.set(new Integer(count));
             } else {
                 pomcontribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", resName));
             }

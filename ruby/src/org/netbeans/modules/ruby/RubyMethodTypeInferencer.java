@@ -129,7 +129,8 @@ final class RubyMethodTypeInferencer {
             Set<IndexedMethod> methods = getIndex().getInheritedMethods(receiverType, name, QuerySupport.Kind.EXACT);
             for (IndexedMethod indexedMethod : methods) {
                 RubyType type = indexedMethod.getType();
-                if (!type.isKnown()) {
+                // no point in searching rdoc for dynamic methods
+                if (!type.isKnown() && indexedMethod.getMethodType() != IndexedMethod.MethodType.DYNAMIC_FINDER) {
                     // fallback to the RDoc comment
                     IndexedElement match = RubyCodeCompleter.findDocumentationEntry(null, indexedMethod);
                     if (match != null) {
