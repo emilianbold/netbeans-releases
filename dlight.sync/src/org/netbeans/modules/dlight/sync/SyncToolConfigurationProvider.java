@@ -175,9 +175,9 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
             new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadata, functionDesc, Arrays.asList(SunStudioDCConfiguration.c_eSync, SunStudioDCConfiguration.c_eSyncn));
         ColumnsUIMapping uiMapping = new ColumnsUIMapping();
-        uiMapping.setColumnUI(SunStudioDCConfiguration.c_name.getColumnName(), loc("SyncTool.ColumnName.func_name"), loc("SyncTool.ColumnTooltip.func_name"));
-        uiMapping.setColumnUI(SunStudioDCConfiguration.c_eSync.getColumnName(), loc("SyncTool.ColumnName.e_sync"), loc("SyncTool.ColumnTooltip.e_sync"));
-        uiMapping.setColumnUI(SunStudioDCConfiguration.c_eSyncn.getColumnName(), loc("SyncTool.ColumnName.syncn"), loc("SyncTool.ColumnTooltip.syncn"));
+        uiMapping.setColumnUI(SunStudioDCConfiguration.c_name.getColumnName(), loc("SyncTool.ColumnName.func_name"), loc("SyncTool.ColumnTooltip.func_name")); // NOI18N
+        uiMapping.setColumnUI(SunStudioDCConfiguration.c_eSync.getColumnName(), loc("SyncTool.ColumnName.e_sync"), loc("SyncTool.ColumnTooltip.e_sync")); // NOI18N
+        uiMapping.setColumnUI(SunStudioDCConfiguration.c_eSyncn.getColumnName(), loc("SyncTool.ColumnName.syncn"), loc("SyncTool.ColumnTooltip.syncn")); // NOI18N
         tableVisualizerConfiguration.setColumnsUIMapping(uiMapping);
         indicatorConfiguration.addVisualizerConfiguration(tableVisualizerConfiguration);
 
@@ -275,9 +275,9 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
             new FunctionsListViewVisualizerConfiguration(viewTableMetadata, functionDesc, Arrays.asList(syncTimeColumn, syncCountColumn));
         ColumnsUIMapping uiMapping = new ColumnsUIMapping();
-        uiMapping.setColumnUI("func_name", loc("SyncTool.ColumnName.func_name"), loc("SyncTool.ColumnTooltip.func_name"));
-        uiMapping.setColumnUI("time", loc("SyncTool.ColumnName.e_sync"), loc("SyncTool.ColumnTooltip.e_sync"));
-        uiMapping.setColumnUI("count", loc("SyncTool.ColumnName.syncn"), loc("SyncTool.ColumnTooltip.syncn"));
+        uiMapping.setColumnUI("func_name", loc("SyncTool.ColumnName.func_name"), loc("SyncTool.ColumnTooltip.func_name")); // NOI18N
+        uiMapping.setColumnUI("time", loc("SyncTool.ColumnName.e_sync"), loc("SyncTool.ColumnTooltip.e_sync")); // NOI18N
+        uiMapping.setColumnUI("count", loc("SyncTool.ColumnName.syncn"), loc("SyncTool.ColumnTooltip.syncn")); // NOI18N
         tableVisualizerConfiguration.setColumnsUIMapping(uiMapping);
 
         return tableVisualizerConfiguration;

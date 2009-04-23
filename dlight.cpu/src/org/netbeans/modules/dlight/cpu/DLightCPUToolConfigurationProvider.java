@@ -104,9 +104,9 @@ public final class DLightCPUToolConfigurationProvider
             "name", // NOI18N
             true);
         ColumnsUIMapping columnsUIMapping = new ColumnsUIMapping();
-        columnsUIMapping.setDisplayedName(SunStudioDCConfiguration.c_name.getColumnName(), loc("CPUMonitorTool.ColumnName.func_name"));
-        columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_iUser.getColumnName(), loc("CPUMonitorTool.ColumnName.time_incl"), loc("CPUMonitorTool.ColumnTooltip.time_incl"));
-        columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_eUser.getColumnName(), loc("CPUMonitorTool.ColumnName.time_excl"), loc("CPUMonitorTool.ColumnTooltip.time_excl"));
+        columnsUIMapping.setDisplayedName(SunStudioDCConfiguration.c_name.getColumnName(), loc("CPUMonitorTool.ColumnName.func_name")); // NOI18N
+        columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_iUser.getColumnName(), loc("CPUMonitorTool.ColumnName.time_incl"), loc("CPUMonitorTool.ColumnTooltip.time_incl")); // NOI18N
+        columnsUIMapping.setColumnUI(SunStudioDCConfiguration.c_eUser.getColumnName(), loc("CPUMonitorTool.ColumnName.time_excl"), loc("CPUMonitorTool.ColumnTooltip.time_excl")); // NOI18N
         // Use D-Trace as a provider of data for detailed view
         String scriptFile = Util.copyResource(getClass(),
             Util.getBasePath(getClass()) + "/resources/calls.d"); // NOI18N
