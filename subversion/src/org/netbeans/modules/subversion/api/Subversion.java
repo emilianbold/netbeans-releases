@@ -68,9 +68,10 @@ import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -503,6 +504,75 @@ public class Subversion {
             }
         });
         return true;
+    }
+
+    /**
+     * Tries to resolve the given URL and determine if the URL represents a subversion repository
+     * Should not be called inside AWT, this might access network.
+     * @param url repository URL
+     * @return true if:
+     * <ul>
+     * <li>protocol is svn</li>
+     * <li>protocol is svn+</li>
+     * <li>invoked 'svn info' returns valid data</li>
+     * </ul>
+     * Note that this may not be 100% successful for private projects requiring authentication.
+     */
+    public static boolean isRepository (final String url) {
+        boolean retval = false;
+        if(!getSubversion().checkClientAvailable()) {
+            return retval;
+        }
+        RepositoryConnection conn = new RepositoryConnection(url);
+        SVNUrl svnUrl = null;
+        try {
+            svnUrl = new SVNUrl(conn.getSvnUrl().toString()); // this is double check filters file://
+        } catch (MalformedURLException ex) {
+            org.netbeans.modules.subversion.Subversion.LOG.log(Level.FINE, "Invalid svn url " + url, ex);
+        }
+        if (svnUrl != null) {
+            String protocol = svnUrl.getProtocol();
+            if ("svn".equals(protocol) || protocol.startsWith("svn+")) {
+                // svn protocol belongs to subversion module
+                retval = true;
+            } else {
+                SvnClient client = null;
+                try {
+                    // DO NOT HANDLE ANY EXCEPTIONS
+                    client = getSubversion().getClient(svnUrl, conn.getUsername(), conn.getPassword(), 0);
+                } catch (SVNClientException ex) {
+                    org.netbeans.modules.subversion.Subversion.LOG.log(Level.INFO, "Cannot create client for url: " + url, ex);
+                }
+                if (client != null) {
+                    try {
+                        ISVNInfo info = client.getInfo(svnUrl);
+                        if (info != null) {
+                            // repository url is valid
+                            retval = true;
+                        }
+                    } catch (SVNClientException ex) {
+                        String msg = ex.getMessage().toLowerCase();
+                        if(SvnClientExceptionHandler.isAuthentication(msg)
+                                || SvnClientExceptionHandler.isNoCertificate(msg)) {
+                            retval = true;
+                        } else {
+                            org.netbeans.modules.subversion.Subversion.LOG.log(Level.FINE, "Invalid url: " + url, ex);
+                        }
+                    }
+                }
+            }
+        }
+        return retval;
+    }
+
+    /**
+     * Opens standard checkout wizard
+     * @param url repository url to checkout
+     * @throws java.net.MalformedURLException in case the url is invalid
+     */
+    public static void openCheckoutWizard (final String url) throws MalformedURLException {
+        addRecentUrl(url);
+        SystemAction.get(CheckoutAction.class).performAction();
     }
 
     private static String polishRelativePath(String path) {

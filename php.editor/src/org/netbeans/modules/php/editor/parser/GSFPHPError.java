@@ -95,4 +95,8 @@ public class GSFPHPError implements org.netbeans.modules.csl.api.Error {
     public Object[] getParameters() {
         return this.parameters;
     }
+
+    public boolean isLineError() {
+        return true;
+    }
 }

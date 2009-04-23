@@ -1377,8 +1377,9 @@ public final class RubyIndex {
                         // See if we need instancevars or classvars
                         boolean isInstance = true;
                         int signatureIndex = field.indexOf(';');
-                        if (signatureIndex != -1 && field.indexOf('s', signatureIndex+1) != -1) {
-                            isInstance = false;
+                        if (signatureIndex != -1) {
+                            int flags = IndexedElement.stringToFlag(field, signatureIndex + 1);
+                            isInstance = (flags & IndexedElement.STATIC) == 0;
                         }
                         if (isInstance != instanceVars) {
                             continue;

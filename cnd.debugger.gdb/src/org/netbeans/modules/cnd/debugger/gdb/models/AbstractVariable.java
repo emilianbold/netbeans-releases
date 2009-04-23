@@ -463,21 +463,18 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         if (rt != null && rt.length() > 0) {
             if (GdbUtils.isArray(rt) && !isCharString(rt)) {
                 return true;
-            } else if (rt != null && rt.length() > 0) {
-                if (isValidPointerAddress()) {
-                    if (GdbUtils.isFunctionPointer(rt) || rt.equals("void *") || // NOI18N
-                            (isCharString(rt) && !GdbUtils.isMultiPointer(rt))) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                } else if (value != null && value.length() > 0 &&
-                        (value.charAt(0) == '{' || value.charAt(value.length() - 1) == '}')) {
+            } else if (isValidPointerAddress()) {
+                if (GdbUtils.isFunctionPointer(rt) || rt.equals("void *") || // NOI18N
+                        (isCharString(rt) && !GdbUtils.isMultiPointer(rt))) {
+                    return false;
+                } else {
                     return true;
                 }
             }
         }
-        return false;
+        // check if value like {...}
+        return value != null && value.length() > 0 &&
+            (value.charAt(0) == '{' || value.charAt(value.length() - 1) == '}');
     }
 
     /**
@@ -623,7 +620,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             } else {
                 Map<String, Object> map = getTypeInfo().getMap();
                 if (map != null) { // a null map means we never got type information
-                    if (map.isEmpty() || v.indexOf('{') == -1) {
+                    // see issues 162747 and 163290
+                    if (v.indexOf('{') == -1) {
                         // an empty map means its a pointer to a non-struct/class/union
                         addField(new AbstractField(this, '*' + getName(), t, v));
                     } else if (v.equals("<incomplete type>")) { // NOI18N

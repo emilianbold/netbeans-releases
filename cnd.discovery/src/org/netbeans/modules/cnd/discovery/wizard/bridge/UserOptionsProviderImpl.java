@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.discovery.wizard.bridge;
 import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
@@ -96,17 +97,34 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     private List<PackageConfiguration> getPackages(String s){
         List<PackageConfiguration> res = new ArrayList<PackageConfiguration>();
         while(true){
-            int i = s.indexOf("`pkg-config --cflags"); // NOI18N
+            int i = s.indexOf("`pkg-config "); // NOI18N
             if (i >= 0) {
-                String pkg = s.substring(i+20);
+                String pkg = s.substring(i+12);
                 int j = pkg.indexOf("`"); // NOI18N
                 if (j > 0) {
                     pkg = pkg.substring(0,j).trim();
-                    s = s.substring(i+20+j+1);
-                    PkgConfig configs = PkgConfigManager.getDefault().getPkgConfig(null);
-                    PackageConfiguration config = configs.getPkgConfig(pkg);
-                    if (config != null){
-                        res.add(config);
+                    s = s.substring(i+12+j+1);
+                    StringTokenizer st = new StringTokenizer(pkg);
+                    boolean readFlags = false;
+                    String findPkg = null;
+                    while(st.hasMoreTokens()) {
+                        String aPkg = st.nextToken();
+                        if (aPkg.equals("--cflags")) { //NOI18N
+                            readFlags = true;
+                            continue;
+                        }
+                        if (aPkg.startsWith("-")) { //NOI18N
+                            readFlags = false;
+                            continue;
+                        }
+                        findPkg = aPkg;
+                    }
+                    if (readFlags && findPkg != null) {
+                        PkgConfig configs = PkgConfigManager.getDefault().getPkgConfig(null);
+                        PackageConfiguration config = configs.getPkgConfig(findPkg);
+                        if (config != null){
+                            res.add(config);
+                        }
                     }
                     continue;
                 }

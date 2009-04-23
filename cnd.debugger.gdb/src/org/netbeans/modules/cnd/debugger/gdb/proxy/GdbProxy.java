@@ -56,8 +56,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
@@ -658,10 +656,6 @@ public class GdbProxy {
 
     public void handle(String signal, HandleAction action) {
         engine.sendCommand("handle " + signal + " " + action); // NOI18N
-    }
-
-    public void sugnal(String signal) {
-        engine.sendCommand("signal " + signal); // NOI18N
     }
 
     /**

@@ -97,18 +97,12 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 String path = getBreakpoint().getPath();
                 // fix for IZ 157752, we need to resolve sym links
                 // TODO: what about remote?
-                try {
-                    File srcFile = new File(path);
-                    path = srcFile.getCanonicalPath();
-                } catch (IOException ex) {
-                    // do nothing
+                if (debugger.getHostExecutionEnvironment().isLocal()) {
+                    path = canonicalPath(path);
+                    fullname = canonicalPath(fullname);
                 }
-                if (debugger.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                    // See IZ 151577 - do some magic to ensure equivalent paths really do match
-                    // No need to do this since we compare paths with debugger.comparePaths
-                    //path = path.replace("\\", "/").toLowerCase(); // NOI18N
-                    //fullname = fullname.replace("\\", "/").toLowerCase(); // NOI18N
-                } else if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+                
+                if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                     // See IZ 151577 - do some magic to ensure equivalent paths really do match
                     path = path.toLowerCase();
                     fullname = fullname.toLowerCase();
@@ -119,7 +113,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 if (!debugger.comparePaths(path, fullname)) {
                     debugger.getGdbProxy().getLogger().logMessage(
                             "IDE: incorrect breakpoint file: requested " + path + " found " + fullname); // NOI18N
-                    debugger.getGdbProxy().break_deleteCMD(number);
+                    debugger.getGdbProxy().break_deleteCMD(number).send();
                     breakpoint.setInvalid(err);
                     setState(BPSTATE_VALIDATION_FAILED);
                     return;
@@ -167,6 +161,15 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 		setState(BPSTATE_VALIDATION_FAILED);
 	    }
         }
+    }
+
+    private static String canonicalPath(String path) {
+        try {
+            return new File(path).getCanonicalPath();
+        } catch (IOException ex) {
+            // do nothing
+        }
+        return path;
     }
 
     protected boolean alternateSourceRootAvailable() {

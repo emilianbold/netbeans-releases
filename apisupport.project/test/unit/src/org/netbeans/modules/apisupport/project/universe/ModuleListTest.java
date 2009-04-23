@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.EditableManifest;
@@ -107,7 +108,7 @@ public class ModuleListTest extends TestBase {
         fail("Expected to throw ConcurrentModificationException, but caught none");
     }
 
-    // #150856: ... but not when cloned first (at least not on some JVMs)
+    // #150856: ... but not when cloned first ...
     public void testConcurrentModificationOfSystemProperties2() throws InterruptedException {
         Thread t = new Thread(new Runnable() {
 
@@ -120,6 +121,26 @@ public class ModuleListTest extends TestBase {
         t.start();
         for (int i = 0; i < 2000; i++) {
             Map<String, String> props = NbCollections.checkedMapByCopy((Map) System.getProperties().clone(), String.class, String.class, false);
+        }
+        t.join();
+    }
+
+    // #150856: ... or just synchronized
+    public void testConcurrentModificationOfSystemProperties3() throws InterruptedException {
+        Thread t = new Thread(new Runnable() {
+
+            public void run() {
+                for (int i = 0; i < 20000; i++) {
+                    System.setProperty("whatever", "anything" + i);
+                }
+            }
+        });
+        t.start();
+        Properties p = System.getProperties();
+        for (int i = 0; i < 2000; i++) {
+            synchronized (p) {
+                Map<String, String> props = NbCollections.checkedMapByCopy(p, String.class, String.class, false);
+            }
         }
         t.join();
     }
