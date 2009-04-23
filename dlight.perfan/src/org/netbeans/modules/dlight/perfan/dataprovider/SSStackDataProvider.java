@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
-import java.io.InterruptedIOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import org.netbeans.modules.dlight.perfan.util.TasksCachedProcessor;
@@ -60,6 +59,8 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.management.spi.PathMapper;
+import org.netbeans.modules.dlight.management.spi.PathMapperProvider;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
 import org.netbeans.modules.dlight.perfan.storage.impl.FunctionStatistic;
@@ -70,6 +71,7 @@ import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 
 /**
@@ -235,6 +237,13 @@ class SSStackDataProvider implements StackDataProvider {
                     }
                 }
                 if (functionCallImpl.hasSourceFileDefined()) {
+                    PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
+                    if (provider != null){
+                        PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromUniqueID(storage.getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY)));
+                        if (pathMapper != null){
+                            return new SourceFileInfo(pathMapper.getLocalPath(functionCallImpl.getSourceFile()), (int) functionCallImpl.getOffset(), 0);
+                        }
+                    }
                     return new SourceFileInfo(functionCallImpl.getSourceFile(), (int) functionCallImpl.getOffset(), 0);
                 }
             }

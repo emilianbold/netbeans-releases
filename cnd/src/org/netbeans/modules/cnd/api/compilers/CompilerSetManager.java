@@ -683,7 +683,7 @@ public class CompilerSetManager {
                             CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
                             CompilerSetReporter.report("CSM_LFTC"); //NOI18N
                             log.fine("CSM.initRemoteCompileSets: platform = " + platform);
-                            getPreferences().putInt(CSM + ExecutionEnvironmentFactory.toString(executionEnvironment) +
+                            getPreferences().putInt(CSM + ExecutionEnvironmentFactory.toUniqueID(executionEnvironment) +
                                     SET_PLATFORM, platform);
                             while (provider.hasMoreCompilerSets()) {
                                 String data = provider.getNextCompilerSetData();
@@ -1185,7 +1185,7 @@ public class CompilerSetManager {
 
     /** TODO: deprecate and remove */
     public static String getDefaultDevelopmentHost() {
-        return ExecutionEnvironmentFactory.toString(getDefaultExecutionEnvironment());
+        return ExecutionEnvironmentFactory.toUniqueID(getDefaultExecutionEnvironment());
     }
 
     public static ExecutionEnvironment getDefaultExecutionEnvironment() {
@@ -1224,7 +1224,7 @@ public class CompilerSetManager {
     public void saveToDisk() {
         if (!sets.isEmpty() && getPlatform() != PlatformTypes.PLATFORM_GENERIC) {
             getPreferences().putDouble(CSM + VERSION, csm_version);
-            String executionEnvironmentKey = ExecutionEnvironmentFactory.toString(executionEnvironment);
+            String executionEnvironmentKey = ExecutionEnvironmentFactory.toUniqueID(executionEnvironment);
             getPreferences().putInt(CSM + executionEnvironmentKey + NO_SETS, sets.size());
             getPreferences().putInt(CSM + executionEnvironmentKey + SET_PLATFORM, getPlatform());
             int setCount = 0;
@@ -1255,7 +1255,7 @@ public class CompilerSetManager {
         if (version == 1.0 && env.isLocal()) {
             return restoreFromDisk10();
         }
-        String executionEnvironmentKey = ExecutionEnvironmentFactory.toString(env);
+        String executionEnvironmentKey = ExecutionEnvironmentFactory.toUniqueID(env);
         int noSets = getPreferences().getInt(CSM + executionEnvironmentKey + NO_SETS, -1);
         if (noSets < 0) {
             return null;

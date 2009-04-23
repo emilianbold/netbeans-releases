@@ -106,7 +106,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             if (info != null) {
                 String dh = info.getDevelopmentHost();
                 if (dh != null) {
-                    developmentHost = ExecutionEnvironmentFactory.fromString(dh);
+                    developmentHost = ExecutionEnvironmentFactory.fromUniqueID(dh);
                 }
             }
         }

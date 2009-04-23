@@ -69,6 +69,7 @@ public class MavenSettings  {
     public static final String PROP_BINARY_DOWNLOAD = "binaryDownload"; //NOI18N
     public static final String PROP_LAST_ARCHETYPE_GROUPID = "lastArchetypeGroupId"; //NOI18N
     public static final String PROP_CUSTOM_LOCAL_REPOSITORY = "localRepository"; //NOI18N
+    public static final String PROP_SKIP_TESTS = "skipTests"; //NOI18N
 
     
     private static final MavenSettings INSTANCE = new MavenSettings();
@@ -201,6 +202,14 @@ public class MavenSettings  {
     }
     public void setShowRunDialog(boolean  b){
       getPreferences().putBoolean(PROP_SHOW_RUN_DIALOG, b);
+    }
+
+    public boolean isSkipTests() {
+        return getPreferences().getBoolean(PROP_SKIP_TESTS, false);
+    }
+
+    public void setSkipTests(boolean skipped) {
+        getPreferences().putBoolean(PROP_SKIP_TESTS, skipped);
     }
 
     public static enum DownloadStrategy {
