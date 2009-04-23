@@ -120,7 +120,7 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
             xes.element(PROFILE_ON_RUN_ELEMENT, "" + gizmoOptions.getProfileOnRun().getValue()); // NOI18N
         }
         for (String toolName : gizmoOptions.getNames()) {
-            BooleanConfiguration conf = gizmoOptions.getByName(toolName);
+            BooleanConfiguration conf = gizmoOptions.getConfigurationByName(toolName);
             if (conf.getModified()) {
                 AttrValuePair[] attributes = new AttrValuePair[2];
                 attributes[0] = new AttrValuePair(TOOL_NAME_ATTRIBUTE, toolName);
