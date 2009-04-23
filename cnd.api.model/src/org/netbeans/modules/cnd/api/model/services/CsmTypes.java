@@ -155,7 +155,7 @@ public final class CsmTypes {
     // impl details
     private static TypesProvider getProvider() {
         if (ProviderInstanceHolder.provider == null) {
-            throw new IllegalStateException("no any avaiable org.netbeans.modules.cnd.spi.model.TypesProvider instances");
+            throw new IllegalStateException("no any avaiable org.netbeans.modules.cnd.spi.model.TypesProvider instances"); // NOI18N
         }
         return ProviderInstanceHolder.provider;
     }
