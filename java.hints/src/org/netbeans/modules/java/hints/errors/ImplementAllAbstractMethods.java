@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.util.ElementFilter;
@@ -131,7 +132,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
     private static void analyze(JavaSource js, int offset, CompilationInfo info, Performer performer) {
         final TreePath path = info.getTreeUtilities().pathFor(offset + 1);
         Element e = info.getTrees().getElement(path);
-        boolean isUsableElement = e != null && (e.getKind().isClass() || e.getKind().isInterface());
+        boolean isUsableElement = e != null && (e.getKind().isClass() || e.getKind().isInterface()) && e.getKind() != ElementKind.ENUM;
         
         if (isUsableElement) {
             //#85806: do not propose implement all abstract methods when the current class contains abstract methods:

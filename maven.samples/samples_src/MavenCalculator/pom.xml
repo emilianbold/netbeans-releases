@@ -32,10 +32,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.mycompany</groupId>
-  <artifactId>Calculator</artifactId>
+  <artifactId>MavenCalculator</artifactId>
   <packaging>war</packaging>
   <version>1.0-SNAPSHOT</version>
-  <name>Calculator Maven JEE5 Webapp</name>
+  <name>Maven Calculator Service</name>
   <url>http://maven.apache.org</url>
   <dependencies>
 

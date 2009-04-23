@@ -504,7 +504,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             
             // sizesLabel ///////////////////////////////////////////////////////////
             sizesLabel = new NbiLabel();
-            sizesLabel.setFocusable(true);
+            //sizesLabel.setFocusable(true);
             
             // this /////////////////////////////////////////////////////////////////
             add(componentsScrollPane, new GridBagConstraints(

@@ -81,6 +81,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     private BooleanConfiguration profileOnRun;
     public static String PROFILE_ON_RUN_PROP = "profileOnRun"; // NOI18N
     private final Map<String, BooleanConfiguration> toolConfigurations;
+    private final Map<String, String> toolDescriptions;
     // Data Provider
 //    public static final int SUN_STUDIO = 0;
 //    public static final int DTRACE = 1;
@@ -107,9 +108,11 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         this.pcs = pcs;
         DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
         toolConfigurations = new HashMap<String, BooleanConfiguration>();
+        toolDescriptions = new HashMap<String, String>();
         List<DLightTool> tools = gizmoConfiguration.getToolsSet();
         for (DLightTool tool : tools) {
             toolConfigurations.put(tool.getName(), new BooleanConfiguration(null, true, tool.getName(), tool.getName()));
+            toolDescriptions.put(tool.getName(), tool.getDetailedName());
         }
         profileOnRun = new BooleanConfiguration(null, true, null, null);
         dataProvider = new IntConfiguration(null, 0, DATA_PROVIDER_NAMES, null);
@@ -224,8 +227,12 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         checkPropertyChange(PROFILE_ON_RUN_PROP, oldValue, getProfileOnRunValue());
     }
 
-    public BooleanConfiguration getByName(String toolName) {
+    public BooleanConfiguration getConfigurationByName(String toolName) {
         return toolConfigurations.get(toolName);
+    }
+
+    public String getDescriptionByName(String toolName) {
+        return toolDescriptions.get(toolName);
     }
 
     public boolean getValueByName(String toolName) {
@@ -339,7 +346,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         for (String key : keys) {
             BooleanConfiguration conf = toolConfigurations.get(key);
             oldBoolValue = conf.getValue();
-            conf.assign(gizmoOptions.getByName(key));
+            conf.assign(gizmoOptions.getConfigurationByName(key));
             checkPropertyChange(key, oldBoolValue, getValueByName(key));
         }
         oldDValue = getDataProviderValue();

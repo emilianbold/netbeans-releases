@@ -127,7 +127,7 @@ public class MakeConfiguration extends Configuration {
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String host) {
         super(baseDir, name);
         configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES, null);
-        developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromString(host));
+        developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(host));
         compilerSet = new CompilerSet2Configuration(developmentHost);
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
