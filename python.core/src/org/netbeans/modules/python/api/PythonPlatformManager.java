@@ -372,7 +372,9 @@ public class PythonPlatformManager implements Serializable{
                 platform.setInterpreterConsoleComand(command);
                 // @@@Jean-Yves end of fix
                 platform.setName(name);
-                platform.setPythonPath(prop.getProperty("python.path").split(File.pathSeparator));
+                String pathString = prop.getProperty("python.path");
+                if(pathString != null)
+                    platform.setPythonPath(pathString.split(File.pathSeparator));
                 if (new File(cmd).getName().toLowerCase().contains("python")){ // NOI18N
                     platform.setInterpreterArgs("-u"); // NOI18N
                 }else{
