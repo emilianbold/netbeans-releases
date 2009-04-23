@@ -87,7 +87,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private boolean isActive;
     private final DLightSessionContext sessionContext;
     private final String name;
-    private boolean closeOnRun = false;
+    private boolean closeOnExit = false;
 
     public static enum SessionState {
 
@@ -266,8 +266,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     }
 
 
-    void closeOnRun(){
-        closeOnRun = true;
+    void closeOnExit(){
+        closeOnExit = true;
     }
 
     synchronized void stop() {
@@ -509,7 +509,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private void targetFinished(DLightTarget target) {
         setState(SessionState.ANALYZE);
         target.removeTargetListener(this);
-        if (closeOnRun){
+        if (closeOnExit){
             close();
         }
     }
