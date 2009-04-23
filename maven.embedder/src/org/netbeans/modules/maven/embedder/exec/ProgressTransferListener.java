@@ -90,6 +90,13 @@ public class ProgressTransferListener implements TransferListener {
     }
     
     public void transferInitiated(TransferEvent transferEvent) {
+        if (handleRef.get() == null || contribStackRef.get() == null) {
+            //maybe log?
+            return;
+        }
+        assert handleRef.get() != null;
+        assert contribStackRef.get() != null;
+        
         Resource res = transferEvent.getResource();
         String resName = getResourceName(res);
         if (!resName.endsWith(".pom")) { //NOI18N

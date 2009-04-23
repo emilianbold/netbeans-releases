@@ -774,7 +774,7 @@ public class GlassFishPanel extends DestinationPanel {
             });
             
             // statusLabel //////////////////////////////////////////////////////////
-            statusLabel = new NbiTextPane();
+            statusLabel = new NbiTextPane();            
             
             // fileChooser //////////////////////////////////////////////////////////
             fileChooser = new NbiDirectoryChooser();

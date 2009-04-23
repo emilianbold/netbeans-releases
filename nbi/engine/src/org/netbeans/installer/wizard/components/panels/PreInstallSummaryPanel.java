@@ -375,11 +375,11 @@ public class PreInstallSummaryPanel extends ErrorMessagePanel {
             
             // downloadSizeLabel ////////////////////////////////////////////////////
             downloadSizeLabel = new NbiLabel();
-            downloadSizeLabel.setFocusable(true);
+            //downloadSizeLabel.setFocusable(true);
             
             // requiredDiskSpaceLabel ///////////////////////////////////////////////
             requiredDiskSpaceLabel = new NbiLabel();
-            requiredDiskSpaceLabel.setFocusable(true);
+            //requiredDiskSpaceLabel.setFocusable(true);
             
             // spacer ///////////////////////////////////////////////////////////////
             spacer = new NbiPanel();
