@@ -37,21 +37,42 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.storage;
+package org.netbeans.modules.cnd.gizmo;
 
-import java.util.Map;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.dlight.management.spi.PathMapper;
+import org.netbeans.modules.dlight.management.spi.PathMapperProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * This interface is intended to keep service information about DLightSession
- * This SPI will be used to
+ *
+ * @author mt154047
  */
-public interface ServiceInfoDataStorage {
-    static final String EXECUTION_ENV_KEY = "service.storage.execution.env.key";//NOI18N
-    static final String HOST_NAME = "service.storage.hostname";//NOI18N
-    static final String USER_NAME = "service.storage.username";//NOI18N
-    static final String PORT = "service.storage.port";//NOI18N
-    
-    Map<String, String> getInfo();
-    String getValue(String name);
-    String put(String name, String value);
+@ServiceProvider(service = org.netbeans.modules.dlight.management.spi.PathMapperProvider.class)
+public class CndPathMapperProvider implements PathMapperProvider{
+
+    public PathMapper getPathMapper(ExecutionEnvironment env) {
+         PathMap mapper = HostInfoProvider.getMapper(env);
+         return new PathMapperImpl(mapper);
+    }
+
+    private class PathMapperImpl implements PathMapper{
+        private final PathMap pathMap;
+
+        public PathMapperImpl(PathMap pathMap) {
+            this.pathMap = pathMap;
+        }
+
+        public String getRemotePath(String localPath) {
+            return pathMap.getRemotePath(localPath);
+        }
+
+        public String getLocalPath(String remotePath) {
+            return pathMap.getLocalPath(remotePath);
+        }
+
+    }
+
 }

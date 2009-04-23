@@ -303,13 +303,13 @@ public abstract class BaseTestCase extends NbTestCase {
                 int n = ui.indexOf('@');
                 String passwd = ui.substring(m+1, n);
                 String remoteHKey = ui.substring(0,m) + ui.substring(n);
-                execEnv = ExecutionEnvironmentFactory.fromString(remoteHKey);
+                execEnv = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
                 remotePassword = passwd.toCharArray();
                 //System.err.println("mode 0. hkey: " + remoteHKey + ", pkey: " + passwd);
             } else {
                 String remoteHKey = ui;
                 //System.err.println("mode 1. hkey: " + remoteHKey );
-                execEnv = ExecutionEnvironmentFactory.fromString(remoteHKey);
+                execEnv = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
             }
             return true;
         }

@@ -37,21 +37,17 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.storage;
+package org.netbeans.modules.cnd.spi.model;
 
-import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.services.CsmTypes;
 
 /**
- * This interface is intended to keep service information about DLightSession
- * This SPI will be used to
+ * SPI for types provider
+ * @author Vladimir Voskresensky
  */
-public interface ServiceInfoDataStorage {
-    static final String EXECUTION_ENV_KEY = "service.storage.execution.env.key";//NOI18N
-    static final String HOST_NAME = "service.storage.hostname";//NOI18N
-    static final String USER_NAME = "service.storage.username";//NOI18N
-    static final String PORT = "service.storage.port";//NOI18N
-    
-    Map<String, String> getInfo();
-    String getValue(String name);
-    String put(String name, String value);
+public interface TypesProvider {
+    CsmType createType(CsmClassifier cls, CsmTypes.TypeDescriptor td, CsmTypes.OffsetDescriptor offs);
+    CsmType createType(CsmType orig, CsmTypes.TypeDescriptor newDescriptor);
 }

@@ -101,7 +101,7 @@ public class RemoteServerList implements ServerListImplementation {
                     hostKey = hostKey.substring(0, sepPos);
                     displayName = hostKey.substring(sepPos);
                 }
-                ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(hostKey);
+                ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostKey);
                 if (env.isRemote()) {
                     addServer(env, displayName, false, RemoteServerRecord.State.OFFLINE);
                 }
@@ -218,7 +218,7 @@ public class RemoteServerList implements ServerListImplementation {
         // TODO: Save the state as well as name. On restart, only try connecting to
         // ONLINE hosts.
         String slist = getPreferences().get(REMOTE_SERVERS, null);
-        String hostKey = ExecutionEnvironmentFactory.toString(execEnv);
+        String hostKey = ExecutionEnvironmentFactory.toUniqueID(execEnv);
         String preferencesKey = hostKey + SERVER_RECORD_SEPARATOR + displayName;
         if (slist == null) {
             getPreferences().put(REMOTE_SERVERS, preferencesKey);

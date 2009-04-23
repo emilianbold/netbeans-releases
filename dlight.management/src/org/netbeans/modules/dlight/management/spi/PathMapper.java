@@ -37,21 +37,24 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.storage;
-
-import java.util.Map;
+package org.netbeans.modules.dlight.management.spi;
 
 /**
- * This interface is intended to keep service information about DLightSession
- * This SPI will be used to
+ * Represents Path Mapper
  */
-public interface ServiceInfoDataStorage {
-    static final String EXECUTION_ENV_KEY = "service.storage.execution.env.key";//NOI18N
-    static final String HOST_NAME = "service.storage.hostname";//NOI18N
-    static final String USER_NAME = "service.storage.username";//NOI18N
-    static final String PORT = "service.storage.port";//NOI18N
-    
-    Map<String, String> getInfo();
-    String getValue(String name);
-    String put(String name, String value);
+public interface PathMapper {
+
+    /**
+     * Returns remote path for the <code>localPath</code>
+     * @param localPath
+     * @return remote path if exists, otherwise localPath itself
+     */
+    String getRemotePath(String localPath);
+
+    /**
+     * Returns local path mapped on the remote path
+     * @param remotePath
+     * @return local path if map exists, otherwise remotePath itself
+     */
+    String getLocalPath(String remotePath);
 }
