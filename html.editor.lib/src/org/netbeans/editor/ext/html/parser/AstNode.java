@@ -50,13 +50,12 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Content;
-import org.netbeans.editor.ext.html.dtd.DTD.ContentLeaf;
 import org.netbeans.editor.ext.html.dtd.DTD.ContentModel;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Tomasz.Slota@Sun.COM, mfukala@netbeans.org
  */
 public class AstNode {
 
@@ -72,7 +71,7 @@ public class AstNode {
     private Map<String, Object> attributes = null;
     private Content content = null;
     private ContentModel contentModel = null;
-    private Collection<String> errorMessages = null;
+    private Collection<Description> descriptions = null;
 
     AstNode(String name, NodeType nodeType, int startOffset, int endOffset, ContentModel contentModel) {
         this(name, nodeType, startOffset, endOffset);
@@ -168,22 +167,32 @@ public class AstNode {
         return col;
     }
 
-    public synchronized void addErrorMessage(String message) {
-        if(errorMessages == null) {
-            errorMessages = new ArrayList<String>(2);
-        }
-        errorMessages.add(message);
+    public synchronized void addDescriptionToNode(String message, int type) {
+        addDescription(Description.create(message, type, startOffset(), endOffset()));
     }
 
-    public synchronized void addErrorMessages(Collection<String> messages) {
-        if(errorMessages == null) {
-            errorMessages = new HashSet<String>(2);
+    public synchronized void addDescriptionsToNode(Collection<String> messages, int type) {
+        for(String msg : messages) {
+            addDescriptionToNode(msg, type);
         }
-        errorMessages.addAll(messages);
     }
 
-    public Collection<String> getErrorMessages() {
-        return errorMessages == null ? Collections.<String>emptyList() : errorMessages;
+    public synchronized void addDescription(Description message) {
+        if(descriptions == null) {
+            descriptions = new ArrayList<Description>(2);
+        }
+        descriptions.add(message);
+    }
+
+    public synchronized void addDescriptions(Collection<Description> messages) {
+        if(descriptions == null) {
+            descriptions = new HashSet<Description>(2);
+        }
+        descriptions.addAll(messages);
+    }
+
+    public Collection<Description> getDescriptions() {
+        return descriptions == null ? Collections.<Description>emptyList() : descriptions;
     }
 
     public String name() {
@@ -279,4 +288,44 @@ public class AstNode {
     void setEndOffset(int endOffset){
         this.endOffset = endOffset;
     }
+
+    public static final class Description {
+
+        public static final int INFORMATION = 0;
+        public static final int WARNING = 1;
+        public static final int ERROR = 2;
+
+        private String text;
+        private int from, to;
+        private int type;
+
+        public static Description create(String text, int type, int from, int to) {
+            return new Description(text, type, from, to);
+        }
+
+        private Description(String text, int type, int from, int to) {
+            this.text = text;
+            this.type = type;
+            this.from = from;
+            this.to = to;
+        }
+
+        public int getType() {
+            return type;
+        }
+
+        public int getFrom() {
+            return from;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public int getTo() {
+            return to;
+        }
+        
+    }
+
 }

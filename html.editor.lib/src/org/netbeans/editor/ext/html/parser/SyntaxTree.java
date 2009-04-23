@@ -46,6 +46,7 @@ import java.util.Locale;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.ContentModel;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
+import org.netbeans.editor.ext.html.parser.AstNode.Description;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
 import org.openide.util.NbBundle;
 
@@ -102,6 +103,7 @@ public class SyntaxTree {
                 Element currentNodeDtdElement = dtd.getElement(tagName.toUpperCase(Locale.ENGLISH));
                 ContentModel contentModel = null;
                 Collection<String> errorMessages = new ArrayList<String>(2);
+                Collection<Description> unknownAttributeMessages = new ArrayList<Description>(2);
 
                 //some error checks >>>
                 if (!XHTML) {
@@ -165,7 +167,7 @@ public class SyntaxTree {
                         }
 
                         //check tag attributes
-                        errorMessages.addAll(checkTagAttributes((SyntaxElement.Tag) element, currentNodeDtdElement));
+                        unknownAttributeMessages.addAll(checkTagAttributes((SyntaxElement.Tag) element, currentNodeDtdElement));
 
                         //create DTD content for this node
                         contentModel = currentNodeDtdElement.getContentModel();
@@ -187,9 +189,9 @@ public class SyntaxTree {
                 AstNode openingTagNode = new AstNode(tagName, AstNode.NodeType.OPEN_TAG,
                         element.offset(), openingTagEndOffset);
 
-                if (errorMessages != null) {
-                    openingTagNode.addErrorMessages(errorMessages);
-                }
+                openingTagNode.addDescriptionsToNode(errorMessages, Description.ERROR);
+                openingTagNode.addDescriptions(unknownAttributeMessages);
+
                 newTagNode.addChild(openingTagNode);
             } else if (element.type() == SyntaxElement.TYPE_ENDTAG) {
                 // CLOSING TAG
@@ -232,12 +234,12 @@ public class SyntaxTree {
                                     String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNRESOLVED_TAG",
                                             new Object[]{elementsToString(lastNode.getAllPossibleElements())});
 
-                                    openTag.addErrorMessage(errorMessage);
+                                    openTag.addDescriptionToNode(errorMessage, Description.ERROR);
                                 }
 
                                 //test if the tag is empty - if so the and tag is forbidden
                                 if (dtdElement.isEmpty()) {
-                                    closingTag.addErrorMessage(NbBundle.getMessage(SyntaxTree.class, "MSG_FORBIDDEN_ENDTAG"));
+                                    closingTag.addDescriptionToNode(NbBundle.getMessage(SyntaxTree.class, "MSG_FORBIDDEN_ENDTAG"), Description.ERROR);
                                 }
 
                             } else {
@@ -246,7 +248,7 @@ public class SyntaxTree {
                                 if (!openTag.name().contains(":")) {
                                     String errorMessage = NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_TAG",
                                             new Object[]{openTag.name()});
-                                    openTag.addErrorMessage(errorMessage);
+                                    openTag.addDescriptionToNode(errorMessage, Description.ERROR);
                                 }
                             }
                         }
@@ -280,16 +282,18 @@ public class SyntaxTree {
         return root;
     }
 
-    private static Collection<String> checkTagAttributes(SyntaxElement.Tag element, Element dtdElement) {
-        Collection<String> errmsgs = new ArrayList<String>(3);
+    private static Collection<Description> checkTagAttributes(SyntaxElement.Tag element, Element dtdElement) {
+        Collection<Description> errmsgs = new ArrayList<Description>(3);
         //check attributes
         List<TagAttribute> existingAttrs = element.getAttributes();
 
         for (TagAttribute ta : existingAttrs) {
             if (dtdElement.getAttribute(ta.getName().toLowerCase(Locale.ENGLISH)) == null) {
                 //unknown attribute
-                errmsgs.add(NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE",
-                        new Object[]{ta.getName(), element.getName()}));
+                Description desc = Description.create(NbBundle.getMessage(SyntaxTree.class, "MSG_UNKNOWN_ATTRIBUTE",
+                        new Object[]{ta.getName(), element.getName()}), Description.WARNING, ta.getNameOffset(), ta.getNameOffset() + ta.getName().length());
+
+                errmsgs.add(desc);
             }
         }
         return errmsgs;
