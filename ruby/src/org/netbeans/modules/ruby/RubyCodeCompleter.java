@@ -1043,7 +1043,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
 
     private void completeModels(List<CompletionProposal> proposals, IndexedMethod target, CompletionRequest request, boolean isLastArg) {
-        Set<IndexedClass> clz = request.index.getSubClasses(request.prefix, "ActiveRecord::Base", request.kind);
+        Set<IndexedClass> clz = request.index.getSubClasses(request.prefix, RubyIndex.ACTIVE_RECORD_BASE, request.kind);
         
         String prefix = request.prefix;
         // I originally stripped ":" to make direct (INameNode)getName()
