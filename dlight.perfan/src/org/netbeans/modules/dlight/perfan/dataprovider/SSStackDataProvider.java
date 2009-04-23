@@ -239,7 +239,7 @@ class SSStackDataProvider implements StackDataProvider {
                 if (functionCallImpl.hasSourceFileDefined()) {
                     PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
                     if (provider != null){
-                        PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromString(storage.getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY)));
+                        PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromUniqueID(storage.getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY)));
                         if (pathMapper != null){
                             return new SourceFileInfo(pathMapper.getLocalPath(functionCallImpl.getSourceFile()), (int) functionCallImpl.getOffset(), 0);
                         }

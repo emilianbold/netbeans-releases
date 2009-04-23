@@ -1076,7 +1076,7 @@ public class MakeActionProvider implements ActionProvider {
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
             boolean validated, AtomicBoolean cancelled) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(conf.getDevelopmentHost().getName());
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getName());
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
         String csname;
@@ -1301,7 +1301,7 @@ public class MakeActionProvider implements ActionProvider {
 
     private static boolean existsImpl(String path, PlatformInfo pi, boolean checkExecutable) {
         ExecutionEnvironment execEnv = pi.getExecutionEnvironment();
-        String key = path + ExecutionEnvironmentFactory.toString(execEnv);
+        String key = path + ExecutionEnvironmentFactory.toUniqueID(execEnv);
         Map<String, Boolean> map = checkExecutable ? validExecutablesCache : fileExistenceCache;
 
         synchronized (map) {
