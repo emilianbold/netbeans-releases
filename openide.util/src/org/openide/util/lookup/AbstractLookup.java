@@ -79,7 +79,7 @@ public class AbstractLookup extends Lookup implements Serializable {
     static final long serialVersionUID = 5L;
 
     /** lock for initialization of the maps of lookups */
-    private static Object treeLock = new Object();
+    private static final Object treeLock = new Object();
 
     /** the tree that registers all items (or Integer as a treshold size) */
     private Object tree;
@@ -298,17 +298,14 @@ public class AbstractLookup extends Lookup implements Serializable {
     }
     
     private final void notifyIn(Executor notifyIn, final HashSet<R> listeners) {
-        if (notifyIn == null) {
-            notifyListeners(listeners);
-            return;
-        }
-        
-        class Notify implements Runnable {
-            public void run() {
-                notifyListeners(listeners);
+        NotifyListeners notify = new NotifyListeners(listeners);
+        if (notify.shallRun()) {
+            if (notifyIn == null) {
+                notify.run();
+            } else {
+                notifyIn.execute(notify);
             }
         }
-        notifyIn.execute(new Notify());
     }
     
     /** Getter for set of pairs. Package private contract with MetaInfServicesLookup.
@@ -498,19 +495,28 @@ public class AbstractLookup extends Lookup implements Serializable {
     /** Notifies listeners.
      * @param allAffectedResults set of R
      */
-    static void notifyListeners(Set<R> allAffectedResults) {
-        if (allAffectedResults.isEmpty()) {
-            return;
-        }
+    static final class NotifyListeners implements Runnable {
+        private final ArrayList<Object> evAndListeners;
+        
+        public NotifyListeners(Set<R> allAffectedResults) {
+            if (allAffectedResults.isEmpty()) {
+                evAndListeners = null;
+                return;
+            }
 
-        ArrayList<Object> evAndListeners = new ArrayList<Object>();
-        {
-            for (R<?> result : allAffectedResults) {
-                result.collectFires(evAndListeners);
+            evAndListeners = new ArrayList<Object>();
+            {
+                for (R<?> result : allAffectedResults) {
+                    result.collectFires(evAndListeners);
+                }
             }
         }
 
-        {
+        public boolean shallRun() {
+            return evAndListeners != null && !evAndListeners.isEmpty();
+        }
+
+        public void run() {
             Iterator it = evAndListeners.iterator();
             while (it.hasNext()) {
                 LookupEvent ev = (LookupEvent)it.next();
