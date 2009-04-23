@@ -159,6 +159,7 @@ public class CompletionUtilities {
                             }
                         }
                     }
+                    break;
                 }
             }
         } catch (BadLocationException e) {
