@@ -748,6 +748,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final Object tokStreamLock = new Object();
     private Reference<OffsetTokenStream> tsRef = new SoftReference<OffsetTokenStream>(null);
 
+    /**
+     *
+     * @param startOffset
+     * @param endOffset
+     * @param firstTokenIDIfExpandMacros pass 0 if not interested in particular token type
+     * @param filtered
+     * @return
+     */
     public final TokenStream getTokenStream(int startOffset, int endOffset, int/*CPPTokenTypes*/ firstTokenIDIfExpandMacros, boolean filtered) {
         try {
             OffsetTokenStream stream;
@@ -824,7 +832,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 assert (next instanceof APTToken) : "we have only APTTokens in token stream";
                 int currOffset = ((APTToken) next).getOffset();
                 if (currOffset >= startOffset) {
-                    if (!APTUtils.isMacro(next) || (next.getType() == startTokenIDIfExpandMacros)) {
+                    if ((startTokenIDIfExpandMacros == 0) || (next.getType() == startTokenIDIfExpandMacros) || !APTUtils.isMacro(next)) {
                         break;
                     }
                 }
