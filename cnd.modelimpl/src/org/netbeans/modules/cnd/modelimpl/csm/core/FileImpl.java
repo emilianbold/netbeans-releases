@@ -556,7 +556,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * sometimes called externally
      * by some (cached) project implementations, etc
      */
-    public void render(AST tree) {
+    private void render(AST tree) {
         new AstRenderer(this).render(tree);
     }
 
@@ -717,7 +717,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    private TokenStream createFullTokenStream(boolean filtered, int contextOffsets[]) {
+    private TokenStream createFullTokenStream(boolean filtered) {
         APTFile apt = null;
         try {
             apt = APTDriver.getInstance().findAPT(fileBuffer);
@@ -748,7 +748,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final Object tokStreamLock = new Object();
     private Reference<OffsetTokenStream> tsRef = new SoftReference<OffsetTokenStream>(null);
 
-    public TokenStream getTokenStream(int startOffset, int endOffset, boolean filtered) {
+    /**
+     *
+     * @param startOffset
+     * @param endOffset
+     * @param firstTokenIDIfExpandMacros pass 0 if not interested in particular token type
+     * @param filtered
+     * @return
+     */
+    public final TokenStream getTokenStream(int startOffset, int endOffset, int/*CPPTokenTypes*/ firstTokenIDIfExpandMacros, boolean filtered) {
         try {
             OffsetTokenStream stream;
             synchronized (tokStreamLock) {
@@ -761,7 +769,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 } else {
 //                    System.err.println("new stream created, because prev stream was finished on " + stream.getStartOffset() + " now asked for " + startOffset);
                 }
-                TokenStream fullTS = createFullTokenStream(filtered, new int[] {startOffset, endOffset});
+                TokenStream fullTS = createFullTokenStream(filtered);
                 if(fullTS != null) {
                     stream = new OffsetTokenStream(fullTS);
                 } else {
@@ -770,7 +778,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             } else {
 //                System.err.println("use cached stream finished previously on " + stream.getStartOffset() + " now asked for " + startOffset);
             }
-            stream.moveTo(startOffset, endOffset);
+            stream.moveTo(startOffset, endOffset, firstTokenIDIfExpandMacros);
             return stream;
         } catch (TokenStreamException ex) {
             Utils.LOG.severe("Can't create compound statement: " + ex.getMessage());
@@ -797,7 +805,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         private Token next;
         private int endOffset;
 
-        public OffsetTokenStream(TokenStream stream) {
+        private OffsetTokenStream(TokenStream stream) {
             this.stream = stream;
         }
 
@@ -813,30 +821,32 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return out;
         }
 
-        public int getStartOffset() {
+        private int getStartOffset() {
             return next == null || (next.getType() == CPPTokenTypes.EOF) ? Integer.MAX_VALUE : ((APTToken) next).getOffset();
         }
 
-        public void moveTo(int startOffset, int endOffset) throws TokenStreamException {
+        private void moveTo(int startOffset, int endOffset, int/*CPPTokenTypes*/ startTokenIDIfExpandMacros) throws TokenStreamException {
             this.endOffset = endOffset;
             assert this.endOffset >= startOffset;
             for (next = stream.nextToken(); next != null && next.getType() != CPPTokenTypes.EOF; next = stream.nextToken()) {
                 assert (next instanceof APTToken) : "we have only APTTokens in token stream";
                 int currOffset = ((APTToken) next).getOffset();
                 if (currOffset >= startOffset) {
-                    break;
+                    if ((startTokenIDIfExpandMacros == 0) || (next.getType() == startTokenIDIfExpandMacros) || !APTUtils.isMacro(next)) {
+                        break;
+                    }
                 }
             }
         }
     };
 
-    /** For text purposes only */
+    /** For test purposes only */
     public interface ErrorListener {
 
         void error(String text, int line, int column);
     }
 
-    /** For text purposes only */
+    /** For test purposes only */
     public void getErrors(ErrorListener errorListener) {
         Collection<RecognitionException> parserErrors = new ArrayList<RecognitionException>();
         getErrors(parserErrors);
@@ -1529,17 +1539,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public Collection<CsmScopeElement> getScopeElements() {
         List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
-        //TODO: add static functions
-        for (Iterator iter = getDeclarations().iterator(); iter.hasNext();) {
-            CsmDeclaration decl = (CsmDeclaration) iter.next();
-            // TODO: remove this dirty hack!
-            if (decl instanceof VariableImpl) {
-                VariableImpl v = (VariableImpl) decl;
-                if (!NamespaceImpl.isNamespaceScope(v, true)) {
-                    l.add(v);
-                }
-            }
-        }
+        l.addAll(getStaticVariableDeclarations());
+        l.addAll(getStaticFunctionDeclarations());
         return l;
     }
 
@@ -1567,11 +1568,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public void scheduleParsing(boolean wait) throws InterruptedException {
-        boolean fixFakes = false;
         synchronized (stateLock) {
-            if (isParsed()) {
-                fixFakes = wait;
-            } else {
+            if (!isParsed()) {
                 while (!isParsed()) {
                     ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE),
                             ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);

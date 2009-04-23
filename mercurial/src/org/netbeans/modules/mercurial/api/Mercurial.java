@@ -116,6 +116,14 @@ public class Mercurial {
             throw new IllegalArgumentException("repository URL is null"); //NOI18N
         }
 
+        // use repository url as default
+        if (pullUrl == null || pullUrl.length() == 0) {
+            pullUrl = repositoryUrl;
+        }
+        if (pushUrl == null || pushUrl.length() == 0) {
+            pushUrl = pullUrl;
+        }
+
         HgURL hgUrl, pullPath, pushPath;
         try {
             hgUrl = new HgURL(repositoryUrl, username, password);
@@ -235,7 +243,6 @@ public class Mercurial {
         }
 
         if (hgUrl != null) {
-            // temporary folder will be deleted manually
             retval = HgCommand.checkRemoteRepository(hgUrl.toHgCommandUrlString());
         }
 

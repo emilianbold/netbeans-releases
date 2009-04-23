@@ -71,9 +71,11 @@ var NOTE_OTHER   = "Note: The UML Pack is available on the Update Center.";
 
 var MORE_LANGUAGES    = "More Languages...";
 var COMMUNITY_MESSAGE = "The NetBeans Community has fully contributed to the language(s) that can be downloaded from this page. To get more insight about localization volume downloaded check the <a href=\"http://wiki.netbeans.org/TFL10nCommunityStatus\">community status page</a>. To download latest community contribution, visit the <a href=\"http://wiki.netbeans.org/TFLocalizationDevelopmentUC\">localization plugin page</a>.";
+var COMMUNITY_CONTRIBUTED_SEP    = " -- Community Contributed -- " ;
 
 var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans IDE Download";
 var NETBEANS_DOWNLOAD_PAGE_DESCRIPTION = "NetBeans IDE Download";
+
 
 
 var NETBEANS_DOWNLOAD_HEADER = "NetBeans IDE {0} Download";

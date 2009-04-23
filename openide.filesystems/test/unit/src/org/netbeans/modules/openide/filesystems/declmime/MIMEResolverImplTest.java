@@ -56,6 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.Exceptions;
 
 public class MIMEResolverImplTest extends NbTestCase {
     List<MIMEResolver> resolvers;
@@ -309,5 +310,46 @@ public class MIMEResolverImplTest extends NbTestCase {
     public void testExitResolver() {
         MIMEResolver resolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("exit-resolver.xml"));
         assertMimeType(resolver, null, "php.txt");
+    }
+
+    /** Tests concurrent threads accessing MIMEResolverImpl. */
+    public void testDeadlock163378() {
+        final MIMEResolver declarativeResolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("pattern-resolver-valid.xml"));
+        Handler handler = new Handler() {
+
+            private boolean threadStarted = false;
+
+            @Override
+            public void publish(LogRecord record) {
+                if (!threadStarted && "findMIMEType - smell.resolve.".equals(record.getMessage())) {
+                    Thread lockingThread = new Thread(new Runnable() {
+
+                        public void run() {
+                            declarativeResolver.findMIMEType(root.getFileObject("empty.dtd"));
+                        }
+                    }, "Locking");
+                    threadStarted = true;
+                    lockingThread.start();
+                    try {
+                        lockingThread.join();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        Logger logger = Logger.getLogger(MIMEResolverImpl.class.getName());
+        logger.addHandler(handler);
+        logger.setLevel(Level.FINEST);
+        declarativeResolver.findMIMEType(root.getFileObject("empty.dtd"));
+        logger.removeHandler(handler);
     }
 }

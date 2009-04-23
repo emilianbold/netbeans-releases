@@ -78,6 +78,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.treelist.TreeListUI;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -185,16 +186,20 @@ public class KenaiSearchPanel extends JPanel {
         kenaiProjectsList.setCellRenderer(new KenaiProjectsListRenderer());
         scrollPane.setViewportView(kenaiProjectsList);
 
+        kenaiProjectsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleName")); // NOI18N
+        kenaiProjectsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleDescription")); // NOI18N
         add(scrollPane, BorderLayout.CENTER);
 
         searchButtonPanel.setLayout(new GridBagLayout());
 
-        searchLabel.setText(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchLabel.text")); // NOI18N
+        searchLabel.setLabelFor(searchTextField);
+        Mnemonics.setLocalizedText(searchLabel, NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         searchButtonPanel.add(searchLabel, gridBagConstraints);
 
-        searchButton.setText(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchButton.text")); // NOI18N
+        searchLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchButton.text"));
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 searchButtonActionPerformed(evt);
@@ -207,6 +212,7 @@ public class KenaiSearchPanel extends JPanel {
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         searchButtonPanel.add(searchButton, gridBagConstraints);
 
+        searchButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchButton.AccessibleContext.accessibleDescription")); // NOI18N
         searchInfoLabel.setText(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchInfoLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -215,6 +221,7 @@ public class KenaiSearchPanel extends JPanel {
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         searchButtonPanel.add(searchInfoLabel, gridBagConstraints);
 
+        searchInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
         projectsLabel.setText(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.projectsLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -224,6 +231,7 @@ public class KenaiSearchPanel extends JPanel {
         gridBagConstraints.insets = new Insets(6, 0, 4, 0);
         searchButtonPanel.add(projectsLabel, gridBagConstraints);
 
+        projectsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.projectsLabel.AccessibleContext.accessibleDescription")); // NOI18N
         searchTextField.setText(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchTextField.text")); // NOI18N
         searchTextField.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -238,11 +246,12 @@ public class KenaiSearchPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         searchButtonPanel.add(searchTextField, gridBagConstraints);
 
+        searchTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchTextField.AccessibleContext.accessibleName")); // NOI18N
+        searchTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchTextField.AccessibleContext.accessibleDescription")); // NOI18N
         add(searchButtonPanel, BorderLayout.NORTH);
 
         createButtonPanel.setLayout(new GridBagLayout());
-
-        createNewProjectButton.setText(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.createNewProjectButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(createNewProjectButton, NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.createNewProjectButton.text"));
         createNewProjectButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 createNewProjectButtonActionPerformed(evt);
@@ -254,7 +263,11 @@ public class KenaiSearchPanel extends JPanel {
         gridBagConstraints.insets = new Insets(4, 0, 0, 0);
         createButtonPanel.add(createNewProjectButton, gridBagConstraints);
 
+        createNewProjectButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.createNewProjectButton.AccessibleContext.accessibleDescription")); // NOI18N
         add(createButtonPanel, BorderLayout.SOUTH);
+
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void searchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
@@ -417,7 +430,7 @@ public class KenaiSearchPanel extends JPanel {
                         try {
                             KenaiFeature[] repos = project.getFeatures(Type.SOURCE);
                             for (KenaiFeature repo : repos) {
-                                if (KenaiService.Names.SUBVERSION.equals(repo.getName()) || KenaiService.Names.MERCURIAL.equals(repo.getName())) {
+                                if (KenaiService.Names.SUBVERSION.equals(repo.getService()) || KenaiService.Names.MERCURIAL.equals(repo.getService())) {
                                     addElementLater(new KenaiProjectSearchInfo(project, repo, pattern));
                                 }
                             }

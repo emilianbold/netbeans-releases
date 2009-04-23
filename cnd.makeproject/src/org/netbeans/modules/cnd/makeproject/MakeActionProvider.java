@@ -320,7 +320,7 @@ public class MakeActionProvider implements ActionProvider {
                     ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), false, true);
                 }
             } else if (!record.isOnline()) {
-                message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getDisplayName());
+                message = MessageFormat.format(getString("ERR_NeedToConnectToRemoteHost"), record.getDisplayName());
                 res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
             }
             if (res != JOptionPane.YES_OPTION) {
@@ -1076,7 +1076,7 @@ public class MakeActionProvider implements ActionProvider {
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
             boolean validated, AtomicBoolean cancelled) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(conf.getDevelopmentHost().getName());
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getName());
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
         String csname;
@@ -1150,7 +1150,7 @@ public class MakeActionProvider implements ActionProvider {
                 runBTA = true;
             }
         } else {
-            if (!ServerList.isValidExecutable(env, makeTool.getPath())) {
+            if (!isValidExecutable(makeTool.getPath(), pi)) {
                 runBTA = true;
             }
         }
@@ -1286,8 +1286,44 @@ public class MakeActionProvider implements ActionProvider {
         return true;
     }
 
+    /** cache for file existence status. */
+    private static Map<String, Boolean> fileExistenceCache = new HashMap<String, Boolean>();
+
+    /** cache for valid executables */
+    private static Map<String, Boolean> validExecutablesCache = new HashMap<String, Boolean>();
+
+    private static final boolean isValidExecutable(String path, PlatformInfo pi) {
+        return existsImpl(path, pi, true);
+    }
     private static boolean exists(String path, PlatformInfo pi) {
-        return pi.fileExists(path) || pi.isWindows() && pi.fileExists(path+".lnk") || pi.findCommand(path) != null; // NOI18N
+        return existsImpl(path, pi, false);
+    }
+
+    private static boolean existsImpl(String path, PlatformInfo pi, boolean checkExecutable) {
+        ExecutionEnvironment execEnv = pi.getExecutionEnvironment();
+        String key = path + ExecutionEnvironmentFactory.toUniqueID(execEnv);
+        Map<String, Boolean> map = checkExecutable ? validExecutablesCache : fileExistenceCache;
+
+        synchronized (map) {
+            Boolean cached = map.get(key);
+            if (cached != null && cached.booleanValue()) {
+                return true;
+            }
+        }
+        
+        boolean result;
+        if (checkExecutable) {
+            result = ServerList.isValidExecutable(execEnv, path);
+        } else {
+            result = pi.fileExists(path) || pi.isWindows() && pi.fileExists(path+".lnk") || pi.findCommand(path) != null; // NOI18N
+        }
+        
+        if (result) {
+            synchronized (map) {
+                map.put(key, Boolean.TRUE);
+            }
+        }
+        return result;
     }
 
 //    private static String getExePath(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {

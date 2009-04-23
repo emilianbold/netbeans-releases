@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.NbPreferences;
 

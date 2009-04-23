@@ -62,6 +62,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.ui.wizard.CreateHostWizardIterator;
@@ -114,13 +115,13 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         model = new DefaultListModel();
 
         if (cache == null) {
-            for (ExecutionEnvironment env : ServerList.getEnvironments()) {
-                model.addElement(env);
+            for (ServerRecord rec : ServerList.getRecords()) {
+                model.addElement(rec);
             }
             defaultIndex = ServerList.getDefaultIndex();
         } else {
-            for (ExecutionEnvironment env : cache.getHosts()) {
-                model.addElement(env);
+            for (ServerRecord rec : cache.getHosts()) {
+                model.addElement(rec);
             }
             defaultIndex = cache.getDefaultIndex();
         }
@@ -138,8 +139,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         }
     }
 
-    private void revalidateRecord(final ExecutionEnvironment env, String password, boolean rememberPassword) {
-        final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
+    private void revalidateRecord(final RemoteServerRecord record, String password, boolean rememberPassword) {
         if (!record.isOnline()) {
             record.resetOfflineState(); // this is a do-over
             setButtons(false);
@@ -158,7 +158,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 public void run() {
                     record.init(pcs);
                     if (record.isOnline()) {
-                        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env);
+                        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment());
                         csm.initialize(false, true);
                     }
                     phandle.finish();
@@ -181,9 +181,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel out = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            ExecutionEnvironment execEnv = (ExecutionEnvironment) value;
-            out.setText(execEnv.isLocal() ? "localhost" : //NOI18N
-                String.format("%s@%s:%d", execEnv.getUser(), execEnv.getHost(), execEnv.getSSHPort())); //NOI18N
+            ServerRecord rec = (ServerRecord) value;
+            out.setText(rec.getDisplayName());
             if (index == getDefaultIndex()) {
                 out.setFont(out.getFont().deriveFont(Font.BOLD));
             }
@@ -195,10 +194,10 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         this.desc = desc;
     }
 
-    public List<ExecutionEnvironment> getHosts() {
-        List<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(model.getSize());
+    public List<ServerRecord> getHosts() {
+        List<ServerRecord> result = new ArrayList<ServerRecord>(model.getSize());
         for (int i = 0; i < model.getSize(); i++) {
-            result.add((ExecutionEnvironment) model.get(i));
+            result.add((ServerRecord) model.get(i));
         }
         return result;
     }
@@ -208,7 +207,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
 
     private void showPathMapper() {
-        EditPathMapDialog.showMe((ExecutionEnvironment) lstDevHosts.getSelectedValue(), getHosts());
+        EditPathMapDialog.showMe((ServerRecord) lstDevHosts.getSelectedValue(), getHosts());
     }
 
     private void setButtons(boolean enable) {
@@ -237,13 +236,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     public void valueChanged(ListSelectionEvent evt) {
         int idx = lstDevHosts.getSelectedIndex();
         if (idx >= 0) {
-            ExecutionEnvironment env = getSelectedEnvironment();
-            RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
+            RemoteServerRecord record = getSelectedRecord();
             tfStatus.setText(record.getStateAsText());
             btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
-            btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(env));
+            btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(record.getExecutionEnvironment()));
 
-            btPathMapper.setEnabled(buttonsEnabled && env.isRemote() && record.isOnline());
+            btPathMapper.setEnabled(buttonsEnabled && record.isRemote() && record.isOnline());
             if (!record.isOnline()) {
                 showReason(record.getReason());
                 btRetry.setEnabled(true);
@@ -273,12 +271,11 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         if (o instanceof JButton) {
             JButton b = (JButton) o;
             if (b.getActionCommand().equals("Add")) { // NOI18N
-                CreateHostWizardIterator.Result result = CreateHostWizardIterator.invokeMe(cacheManager);
-                if (result.executionEnvironment != null) {
-                    if (!model.contains(result.executionEnvironment)) {
-                        ServerList.addServer(result.executionEnvironment, result.displayName, false, false);
-                        model.addElement(result.executionEnvironment);
-                        lstDevHosts.setSelectedValue(result.executionEnvironment, true);
+                ServerRecord result = CreateHostWizardIterator.invokeMe(cacheManager);
+                if (result != null) {
+                    if (!model.contains(result)) {
+                        model.addElement(result);
+                        lstDevHosts.setSelectedValue(result, true);
                     }
                 }
             } else if (b.getActionCommand().equals("Remove")) { // NOI18N
@@ -301,9 +298,9 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         }
     }
 
-    private ExecutionEnvironment getSelectedEnvironment() {
-        ExecutionEnvironment env = (ExecutionEnvironment) lstDevHosts.getSelectedValue();
-        return env;
+    private RemoteServerRecord getSelectedRecord() {
+        // we know for sure it's a RemoteServerRecord, not just a ServerRecord
+        return (RemoteServerRecord) lstDevHosts.getSelectedValue();
     }
 
     /** This method is called from within the constructor to
@@ -476,7 +473,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRetryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRetryActionPerformed
-        this.revalidateRecord(getSelectedEnvironment(), null, false);
+        this.revalidateRecord(getSelectedRecord(), null, false);
     }//GEN-LAST:event_btRetryActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

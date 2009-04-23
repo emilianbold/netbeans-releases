@@ -105,11 +105,13 @@ function initialize() {
 }
 
 function write_languages() {
-   for(var i=0; i < LANGUAGE_IDS.length; i++ ) {
-   	document.write('<option value="' + LANGUAGE_IDS[i] + '">' + LANGUAGE_NAMES[i] + '</option>');
+   for(var i=0; i < LANGUAGES.length; i++ ) {
+   	document.write('<option value="' + LANGUAGES[i].id + '">' + LANGUAGES[i].name + '</option>');
    }
    if(ADD_MORE_REDIRECT_VALUE == 1) {
        document.write('<option value="' + MORE_LANG_ID + '">' + MORE_LANGUAGES + '</option>');
+   } else if(SHOW_COMMUNITY_LANGUAGES == 1) {
+       document.write('<option class="community_separator" value="' + MORE_LANG_ID + '">' + COMMUNITY_CONTRIBUTED_SEP + '</option>');
    }
 }
 
@@ -345,7 +347,7 @@ function detect_platform() {
 }
 
 function select_language() {
-    var language = get_language(LANGUAGE_IDS);
+    var language = get_language_id(LANGUAGES);
     var select = document.getElementById("language_select");
     var languageOptions = select.options;
     for(var i=0;i<languageOptions.length;i++) {

@@ -46,7 +46,6 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
@@ -60,9 +59,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakSet;
 
 /*
  * WatchesTreeModel.java
@@ -71,14 +68,12 @@ import org.openide.util.WeakSet;
  *
  */
 
-public class WatchesTreeModel implements TreeModel, TreeExpansionModel, PropertyChangeListener {
+public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
 
     private final GdbDebugger debugger;
     private Listener listener;
     private final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
     private final Map<Watch, AbstractVariable> watchToVariable = new WeakHashMap<Watch, AbstractVariable>(); 
-    private final Set<Object> expandedNodes = new WeakSet<Object>();
-    private final Set<Object> collapsedNodes = new WeakSet<Object>();
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public WatchesTreeModel(ContextProvider lookupProvider) {
@@ -234,58 +229,6 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
             l.modelChanged(new ModelEvent.TableValueChanged(this, node, propertyName));
         }
     }
-  
-    /**
-     * Defines default state (collapsed, expanded) of given node.
-     *
-     * @param node a node
-     * @return default state (collapsed, expanded) of given node
-     */
-    public boolean isExpanded(Object node) throws UnknownTypeException {
-        synchronized (this) {
-            if (expandedNodes.contains(node)) {
-                return true;
-            }
-            if (collapsedNodes.contains(node)) {
-                return false;
-            }
-        }
-        // Default behavior follows:
-        if (node instanceof AbstractVariable) {
-            return false;
-        }
-        throw new UnknownTypeException(node);
-    }
-    
-    /**
-     * Called when given node is expanded.
-     *
-     * @param node a expanded node
-     */
-    public void nodeExpanded(Object node) {
-        if (node instanceof AbstractVariable) {
-            AbstractVariable var = (AbstractVariable) node;
-            if (var.expandChildren()) {
-                fireTreeChanged();
-            }
-        }
-        synchronized (this) {
-            expandedNodes.add(node);
-            collapsedNodes.remove(node);
-        }
-    }
-    
-    /**
-     * Called when given node is collapsed.
-     *
-     * @param node a collapsed node
-     */
-    public void nodeCollapsed(Object node) {
-        synchronized (this) {
-            collapsedNodes.add(node);
-            expandedNodes.remove(node);
-        }
-    }
     
     private static class Listener extends DebuggerManagerAdapter implements PropertyChangeListener {
         
@@ -363,7 +306,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
             if (evt.getSource() instanceof Watch) {
                 Object node;
                 synchronized (m.watchToVariable) {
-                    node = m.watchToVariable.get(evt.getSource());
+                    node = m.watchToVariable.get((Watch)evt.getSource());
                 }
                 if (node != null) {
                     if (node instanceof AbstractVariable && ((AbstractVariable) node).getFieldsCount() > 0) {

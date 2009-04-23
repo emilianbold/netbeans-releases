@@ -81,7 +81,7 @@ public class DevelopmentHostConfiguration {
 
     /** TODO: deprecate and remove, see #158983 */
     public String getName() {
-        return ExecutionEnvironmentFactory.toString(servers.get(value));
+        return ExecutionEnvironmentFactory.toUniqueID(servers.get(value));
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {
@@ -90,7 +90,7 @@ public class DevelopmentHostConfiguration {
 
     public String getDisplayName(boolean displayIfNotFound) {
         String out = getName();
-        if (displayIfNotFound && !isOnline()) {
+        if (displayIfNotFound && !isConfigured()) {
             out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
         }
         return out;
@@ -98,13 +98,13 @@ public class DevelopmentHostConfiguration {
 
     public String getHostDisplayName(boolean displayIfNotFound) {
         String out = getExecutionEnvironment().getHost();
-        if (displayIfNotFound && !isOnline()) {
+        if (displayIfNotFound && !isConfigured()) {
             out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
         }
         return out;
     }
 
-    public boolean isOnline() {
+    public boolean isConfigured() {
         // localhost is always STATE_COMPLETE so isLocalhost() is assumed
         // keeping track of online status takes more efforts and can miss sometimes
         return !CompilerSetManager.getDefault(getExecutionEnvironment()).isUninitialized();
@@ -132,7 +132,7 @@ public class DevelopmentHostConfiguration {
     }
 
     private boolean setValueImpl(final String v, boolean firePC) {
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(v);
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(v);
         for (int i = 0; i < servers.size(); i++) {
             if (servers.get(i).equals(env)) {
                 value = i;
@@ -146,7 +146,7 @@ public class DevelopmentHostConfiguration {
     }
 
     private boolean addDevelopmentHost(String host) {
-        final ServerRecord record = ServerList.addServer(ExecutionEnvironmentFactory.fromString(host), null, false, false);
+        final ServerRecord record = ServerList.addServer(ExecutionEnvironmentFactory.fromUniqueID(host), null, false, false);
         return record != null;
     }
 
@@ -203,12 +203,12 @@ public class DevelopmentHostConfiguration {
         List<String> l = new ArrayList<String>();
         int pos = 0;
         for (ExecutionEnvironment env : getServerEnvironments()) {
-            l.add(ExecutionEnvironmentFactory.toString(env));
+            l.add(ExecutionEnvironmentFactory.toUniqueID(env));
         }
         return l.toArray(new String[l.size()]);
     }
 
-    public List<ExecutionEnvironment> getServerEnvironments() {
+    private List<ExecutionEnvironment> getServerEnvironments() {
         return ServerList.getEnvironments();
 //        return Arrays.asList(ExecutionEnvironmentFactory.getLocal());
     }

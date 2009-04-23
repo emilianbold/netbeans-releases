@@ -137,7 +137,7 @@ public class FileUtilTest extends NbTestCase {
         FileUtil.addFileChangeListener(fcl2, fileF);
 
         // creation
-        FileObject rootFO = FileUtil.toFileObject(rootF);
+        final FileObject rootFO = FileUtil.toFileObject(rootF);
         FileObject dirFO = rootFO.createFolder("dir");
         assertEquals("Event fired when just parent dir created.", 0, fcl.checkAll());
         FileObject fileFO = dirFO.createData("file");
@@ -169,10 +169,29 @@ public class FileUtilTest extends NbTestCase {
         assertEquals("Event not fired when parent dir deleted.", 1, fcl.check(EventType.DELETED));
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
 
+        // atomic action
+        FileUtil.runAtomicAction(new Runnable() {
+
+            public void run() {
+                FileObject dirFO;
+                try {
+                    dirFO = rootFO.createFolder("dir");
+                    rootFO.createFolder("fakedir");
+                    rootFO.setAttribute("fake", "fake");
+                    rootFO.createData("fakefile");
+                    dirFO.createData("file");
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+
+            }
+        });
+        assertEquals("Wrong number of events fired when file was created in atomic action.", 1, fcl.check(EventType.DATA_CREATED));
+        assertEquals("No other events should be fired.", 0, fcl.checkAll());
+
         // rename
-        dirFO = rootFO.createFolder("dir");
-        fileFO = dirFO.createData("file");
-        assertEquals("Event not fired when file was created.", 1, fcl.check(EventType.DATA_CREATED));
+        dirFO = FileUtil.toFileObject(dirF);
+        fileFO = FileUtil.toFileObject(fileF);
         FileLock lock = dirFO.lock();
         dirFO.rename(lock, "dirRenamed", null);
         lock.releaseLock();

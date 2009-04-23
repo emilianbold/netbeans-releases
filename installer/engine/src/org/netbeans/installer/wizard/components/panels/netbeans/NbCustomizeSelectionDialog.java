@@ -242,16 +242,14 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         // componentsScrollPane /////////////////////////////////////////////////////
         componentsScrollPane = new NbiScrollPane(componentsList);
         componentsScrollPane.setVerticalScrollBarPolicy(
-                NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        componentsScrollPane.setFocusable(false);
+                NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);       
 
         messageLabel.setLabelFor(componentsScrollPane);
         
         // descriptionPane //////////////////////////////////////////////////////////
         descriptionPane = new NbiTextPane();
         descriptionPane.setBorder(
-                new EmptyBorder(5, 5, 5, 5));
-        descriptionPane.setFocusable(false);
+                new EmptyBorder(5, 5, 5, 5));        
         
         // descriptionScrollPane ////////////////////////////////////////////////////
         descriptionScrollPane = new NbiScrollPane(descriptionPane);
@@ -259,8 +257,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         descriptionScrollPane.setBorder(
                 new TitledBorder(FEATURE_DESCRIPTION_TITLE));
-        descriptionScrollPane.setPreferredSize(new Dimension(200, 10));
-        descriptionScrollPane.setFocusable(false);
+        descriptionScrollPane.setPreferredSize(new Dimension(200, 10));     
         
         // componentPanel ///////////////////////////////////////////////////////////
         componentPanel = new NbiPanel();

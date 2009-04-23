@@ -309,6 +309,7 @@ public final class MIMEResolverImpl {
             FileElement[] smell2 = smell;  //#163378, #157838 - copy to prevent concurrent modification and not synchronize to prevent deadlock
             // smell is filled in reverse order
             for (int i = smell2.length - 1; i >= 0; i--) {
+                ERR.fine("findMIMEType - smell.resolve.");
                 String s = smell2[i].resolve(fo);
                 if (s != null) {
                     if (s.equals(FileElement.EXIT_MIME_TYPE)) {

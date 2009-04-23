@@ -80,6 +80,11 @@ public final class LazyCompoundStatementImpl extends LazyStatementImpl implement
     }
 
     @Override
+    protected int/*CPPTokenTypes*/ getFirstTokenID() {
+        return CPPTokenTypes.LCURLY;
+    }
+
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
     }

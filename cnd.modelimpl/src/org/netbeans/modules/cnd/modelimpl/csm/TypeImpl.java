@@ -52,6 +52,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
@@ -77,7 +78,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
     private static final byte FLAGS_TYPE_OF_TYPEDEF = 1 << 0;
     private static final byte FLAGS_REFERENCE = 1 << 1;
     private static final byte FLAGS_CONST = 1 << 2;
-    protected static final int LAST_USED_FLAG_INDEX = 3;
+    private static final byte FLAGS_TYPE_WITH_CLASSIFIER = 1 << 3;
+    protected static final int LAST_USED_FLAG_INDEX = 4;
 
     private final byte pointerDepth;
     private final byte arrayDepth;
@@ -105,6 +107,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
             this._setClassifier(initClassifier(ast));
             this.classifierText = initClassifierText(ast);
         } else {
+            setFlags(FLAGS_TYPE_WITH_CLASSIFIER, true);
             CharSequence typeName = classifier.getName();
             if (typeName == null || typeName.length()==0){
                 this.classifierText = initClassifierText(ast);
@@ -178,7 +181,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         this.arrayDepth = (byte) type.getArrayDepth();
         setFlags(FLAGS_CONST, type.isConst());
         setFlags(FLAGS_TYPE_OF_TYPEDEF, type.isTypeOfTypedef());
-        
+        setFlags(FLAGS_TYPE_WITH_CLASSIFIER, type.isTypeWithClassifier());
+
         this.classifierUID = type.classifierUID;
         this.qname = type.qname;
         this.classifierText = type.classifierText;
@@ -201,6 +205,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         if (type instanceof TypeImpl) {
             TypeImpl ti = (TypeImpl) type;
             setFlags(FLAGS_TYPE_OF_TYPEDEF, ti.isTypeOfTypedef());
+            setFlags(FLAGS_TYPE_WITH_CLASSIFIER, ti.isTypeWithClassifier());
             this.classifierUID = ti.classifierUID;
             this.qname = ti.qname;
             this.classifierText = ti.classifierText;
@@ -254,8 +259,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         return pointerDepth > 0;
     }
 
-    public boolean isTypeOfTypedef() {
+    private boolean isTypeOfTypedef() {
         return hasFlags(FLAGS_TYPE_OF_TYPEDEF);
+    }
+
+    private boolean isTypeWithClassifier() {
+        return hasFlags(FLAGS_TYPE_WITH_CLASSIFIER);
     }
 
     public List<CsmSpecializationParameter> getInstantiationParams() {
@@ -448,9 +457,19 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
 
     public CsmClassifier getClassifier(Resolver parent) {
         CsmClassifier classifier = _getClassifier();
+        boolean needToRender = true;
         if (CsmBaseUtilities.isValid(classifier)) {
             // skip
-        } else {
+            needToRender = false;
+            if (!isTypeWithClassifier() && (qname != null) && (parent != null) && !CsmKindUtilities.isBuiltIn(classifier)) {
+                // check visibility of classifier
+                if (!CsmIncludeResolver.getDefault().isObjectVisible(parent.getStartFile(), classifier)) {
+                    needToRender = true;
+                    classifier = null;
+                }
+            }
+        }
+        if (needToRender) {
             if (classifier != null) {
                 int newCount = FileImpl.getParseCount();
                 if (newCount == parseCount) {

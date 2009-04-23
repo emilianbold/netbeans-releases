@@ -49,7 +49,6 @@ import java.awt.event.ItemListener;
 import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -87,8 +86,9 @@ final class StatisticsPanel extends JPanel implements ItemListener {
     private String tooltipShowFailures;
     
     private final ResultDisplayHandler displayHandler;
-            
 
+    //default pressed value for the Show Failures Only button
+    private static boolean showFailuresOnly = false;
     /**
      */
     public StatisticsPanel(final ResultDisplayHandler displayHandler) {
@@ -155,8 +155,8 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         btnFilter = new JToggleButton(ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/filter.png", true));
         btnFilter.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(getClass(), "ACSN_FilterButton"));  //NOI18N
+        btnFilter.setSelected(showFailuresOnly);
         btnFilter.addItemListener(this);
-        
         updateFilterButtonLabel();
     }
 
@@ -208,6 +208,7 @@ final class StatisticsPanel extends JPanel implements ItemListener {
      */
     public void itemStateChanged(ItemEvent e) {
         /* called when the Filter button is toggled. */
+        showFailuresOnly = btnFilter.isSelected();
         treePanel.setFiltered(btnFilter.isSelected());
         updateFilterButtonLabel();
     }

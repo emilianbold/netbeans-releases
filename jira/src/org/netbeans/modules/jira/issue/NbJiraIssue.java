@@ -48,15 +48,13 @@ import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.event.MouseInputListener;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Element;
 import javax.swing.text.StyleConstants;
@@ -71,14 +69,16 @@ import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.jira.util.TasksUtil;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -89,16 +89,42 @@ public class NbJiraIssue extends Issue {
     private JiraRepository repository;
     private Controller controller;
 
+    static final String LABEL_NAME_ID           = "jira.issue.id";          // NOI18N
+    static final String LABEL_NAME_SEVERITY     = "jira.issue.severity";    // NOI18N
+    static final String LABEL_NAME_PRIORITY     = "jira.issue.priority";    // NOI18N
+    static final String LABEL_NAME_STATUS       = "jira.issue.status";      // NOI18N
+    static final String LABEL_NAME_RESOLUTION   = "jira.issue.resolution";  // NOI18N
+    static final String LABEL_NAME_SUMMARY      = "jira.issue.summary";     // NOI18N
+
+    /**
+     * Issue wasn't seen yet
+     */
+    static final int FIELD_STATUS_IRELEVANT = -1;
+
+    /**
+     * Field wasn't changed since the issue was seen the last time
+     */
+    static final int FIELD_STATUS_UPTODATE = 1;
+
+    /**
+     * Field has a value in oposite to the last time when it was seen
+     */
+    static final int FIELD_STATUS_NEW = 2;
+
+    /**
+     * Field was changed since the issue was seen the last time
+     */
+    static final int FIELD_STATUS_MODIFIED = 4;
+
+    /**
+     * Defines columns for a view table.
+     */
+    public static ColumnDescriptor[] DESCRIPTORS;
+    
     public NbJiraIssue(JiraIssue issue, JiraRepository repo) {
         super(null);
         this.issue = issue;
         this.repository = repo;
-    }
-
-    @Override
-    public String toString() {
-        String str = getKey() + " : "  + getType() + " : " + getStatus() + " : " + getPriority() + " : " + getDescription() + " : " + issue.getCreated();
-        return str;
     }
 
     public String getID() {
@@ -250,6 +276,45 @@ public class NbJiraIssue extends Issue {
         throw new UnsupportedOperationException("Not supported yet.");
     }   
 
+    public static ColumnDescriptor[] getColumnDescriptors() {
+        if(DESCRIPTORS == null) {
+            ResourceBundle loc = NbBundle.getBundle(NbJiraIssue.class);
+            DESCRIPTORS = new ColumnDescriptor[] {
+                new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
+                                                  loc.getString("CTL_Issue_ID_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_ID_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
+                                                  loc.getString("CTL_Issue_Severity_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Severity_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
+                                                  loc.getString("CTL_Issue_Priority_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Priority_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
+                                                  loc.getString("CTL_Issue_Status_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Status_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
+                                                  loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Resolution_Desc")), // NOI18N
+                new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
+                                                  loc.getString("CTL_Issue_Summary_Title"), // NOI18N
+                                                  loc.getString("CTL_Issue_Summary_Desc")) // NOI18N
+            };
+        }
+        return DESCRIPTORS;
+    }
+
+    /**
+     * Returns the id from the given taskData or null if taskData.isNew()
+     * @param taskData
+     * @return id or null
+     */
+    public static String getID(TaskData taskData) {
+        if(taskData.isNew()) {
+            return null;
+        }
+        return taskData.getTaskId();
+    }
+
     private class Controller extends BugtrackingController implements ActionListener, MouseMotionListener, MouseInputListener {
         private IssuePanel panel = new IssuePanel();
         private CommentPanel addCommentPanel = new CommentPanel();
@@ -354,43 +419,15 @@ public class NbJiraIssue extends Issue {
         }
 
         private void onAddComment() {
-            if (!TasksUtil.show(addCommentPanel, "Got comment?", "Submit")) {
-                return;
-            }
-            addComment(addCommentPanel.commentTextArea.getText());
-            refresh();
-            refresh();
+            throw new UnsupportedOperationException();
         }
 
         private void onAttach() {
-            JFileChooser fileChooser = new JFileChooser("", null);// NOI18N
-            fileChooser.setDialogTitle("Got file?");// NOI18N
-            fileChooser.setMultiSelectionEnabled(false);
-            FileFilter[] old = fileChooser.getChoosableFileFilters();
-            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            fileChooser.showDialog(panel, "");// NOI18N
-            File f = fileChooser.getSelectedFile();
-            if (f == null) return;
-            try {
-                addAttachment(f);
-                refresh();
-            } catch (JiraException e) {
-                Jira.LOG.log(Level.SEVERE, null, e);
-            }
-            refresh();
+            throw new UnsupportedOperationException();
         }
 
         private void onResolve() {
-            try {
-                Resolution[] res = Jira.getInstance().getResolutions(getTaskRepository());
-                resolvePanel.resolutionCBO.setModel(new DefaultComboBoxModel(res));
-                if(!TasksUtil.show(resolvePanel, "Got resolution?", "submit")) return;
-                resolve((Resolution) resolvePanel.resolutionCBO.getSelectedItem(), resolvePanel.resCommentTextArea.getText());
-                refresh();
-            } catch (JiraException e) {
-                Jira.LOG.log(Level.SEVERE, null, e);
-            }
-            refresh();
+            throw new UnsupportedOperationException();
         }
 
         private void refreshViewData() {

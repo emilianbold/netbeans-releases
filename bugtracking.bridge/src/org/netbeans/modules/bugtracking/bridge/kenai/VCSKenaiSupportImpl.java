@@ -64,4 +64,9 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
     public boolean showLogin() {
         return KenaiUtil.showLogin();
     }
+
+    @Override
+    public boolean isLogged () {
+        return KenaiUtil.isLoggedIn();
+    }
 }

@@ -53,10 +53,14 @@ import org.openide.util.RequestProcessor;
 import java.io.File;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -100,10 +104,24 @@ public class FetchAction extends ContextAction {
             
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, 
                     "MSG_FETCH_LAUNCH_INFO", root.getAbsolutePath())); // NOI18N
-            
+
+            final String pullSourceString = new HgConfigFiles(root).getDefaultPull(true);
+            // If the repository has no default pull path then inform user
+            if (pullSourceString == null) {
+                return;
+            }
+
+            HgURL pullSource;
+            try {
+                pullSource = new HgURL(pullSourceString);
+            } catch (URISyntaxException ex) {
+                Mercurial.LOG.log(Level.INFO, null, ex);
+                return;
+            }
+
             List<String> list;
-            list = HgCommand.doFetch(root, logger);
-            
+            list = HgCommand.doFetch(root, pullSource, logger);
+
             if (list != null && !list.isEmpty()) {
                 logger.output(HgUtils.replaceHttpPassword(list));
                 MergeAction.handleMergeOutput(root, list, false, logger);

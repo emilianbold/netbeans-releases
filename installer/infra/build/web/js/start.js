@@ -155,7 +155,7 @@ function initialize() {
 				if(testFileName==filename) {
 				    platform_id = PLATFORM_IDS[i];
 				    option_id   = BUNDLE_IDS[j];
-				    lang_id     = get_language(LANGUAGE_IDS);
+				    lang_id     = get_language_id(LANGUAGES);
 				    if(lang_id=="") lang_id = "en";
 				    i = PLATFORM_IDS.length;
 				    j = BUNDLE_IDS.length;	
@@ -213,9 +213,9 @@ function write_download_header() {
 
 function getMD5(name) {
 	var md5 = "";
-        for (var i = 0; i < file_names.length; i++) {		
-		if(file_names[i] == filename) {		
-			md5 = file_md5s[i];
+        for (var i = 0; i < FILES.length; i++) {		
+		if(FILES[i].name == name) {		
+			md5 = FILES[i].md5;
 			break;
 		}
         }

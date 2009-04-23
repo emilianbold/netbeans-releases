@@ -75,11 +75,12 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
      */
     public DevelopmentHostCustomizer(DevelopmentHostConfiguration dhconf, PropertyEnv propertyEnv) {
         super(NbBundle.getMessage(DevelopmentHostCustomizer.class, 
-                dhconf.isOnline() ? "ERR_NothingToDo" : "ERR_NeedToInitializeRemoteHost", dhconf.getName()), // NOI18N
-                QUESTION_MESSAGE, DEFAULT_OPTION, null, new Object[] { });
+                dhconf.isConfigured() ? "ERR_NothingToDo" : "ERR_NeedToInitializeRemoteHost", dhconf.getName()), // NOI18N
+                dhconf.isConfigured() ? INFORMATION_MESSAGE : QUESTION_MESSAGE,
+                DEFAULT_OPTION, null, new Object[] { });
         this.dhconf = dhconf;
         this.propertyEnv = propertyEnv;
-        if (!dhconf.isOnline()) {
+        if (!dhconf.isConfigured()) {
             propertyEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
             propertyEnv.addVetoableChangeListener(this);
         }
@@ -94,7 +95,7 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
      * @throws java.beans.PropertyVetoException
      */
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-        if (!dhconf.isOnline()) {
+        if (!dhconf.isConfigured()) {
             ExecutionEnvironment execEnv = dhconf.getExecutionEnvironment();
             final ServerRecord record = ServerList.get(execEnv);
             assert record != null;
