@@ -1616,7 +1616,7 @@ public class HgCommand {
         // acquire credentials for kenai
         PasswordAuthentication credentials = null;
         HgKenaiSupport supp = HgKenaiSupport.getInstance();
-        String rawUrl = repository.toUrlString(false, true, true);
+        String rawUrl = repository.toUrlString(true, true);
         if (supp.isKenai(rawUrl) && supp.isLoggedIntoKenai()) {
             credentials = supp.getPasswordAuthentication(rawUrl, false);
         }
@@ -3328,7 +3328,7 @@ public class HgCommand {
             boolean showLoginWindow = true;
             PasswordAuthentication credentials = null;
             HgKenaiSupport supp = HgKenaiSupport.getInstance();
-            String rawUrl = remoteUrl.toUrlString(false, true, true);
+            String rawUrl = remoteUrl.toUrlString(true, true);
             acquireCredentialsFirst |= supp.isLoggedIntoKenai();
             if (supp.isKenai(rawUrl) && acquireCredentialsFirst) {
                 // will force user to login into kenai, if he isn't yet
