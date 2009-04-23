@@ -44,6 +44,8 @@ import java.text.MessageFormat;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -52,15 +54,6 @@ import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 public final class CreateHostWizardIterator implements WizardDescriptor.Iterator<WizardDescriptor> {
-
-    public static class Result {
-        public final ExecutionEnvironment executionEnvironment;
-        public final String displayName;
-        public Result(ExecutionEnvironment executionEnvironment, String displayName) {
-            this.executionEnvironment = executionEnvironment;
-            this.displayName = displayName;
-        }
-    }
 
     private int index;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
@@ -138,7 +131,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     public void removeChangeListener(ChangeListener l) {
     }
 
-    public static Result invokeMe(ToolsCacheManager cacheManager) {
+    public static ServerRecord invokeMe(ToolsCacheManager cacheManager) {
         WizardDescriptor.Iterator<WizardDescriptor> iterator = new CreateHostWizardIterator();
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); //NOI18N
@@ -159,7 +152,8 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
             if (displayName == null) {
                 displayName = execEnv.getDisplayName();
             }
-            return new Result(execEnv, displayName);
+            return ServerList.addServer(execEnv, displayName, false, false);
+
         } else {
             return null;
         }
