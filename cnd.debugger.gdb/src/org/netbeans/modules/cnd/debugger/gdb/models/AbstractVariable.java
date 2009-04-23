@@ -286,11 +286,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 if (this instanceof GdbWatchVariable) {
                     fullname = ((GdbWatchVariable) this).getWatch().getExpression();
                 } else {
-                    if (this instanceof AbstractField) {
-                        fullname = ((AbstractField) this).getFullName(false);
-                    } else {
-                        fullname = name;
-                    }
+                    fullname = getFullName();
                 }
                 ovalue = this.value;
                 if (!debugger.isCplusPlus() && rt.equals("_Bool") && !isNumber(value)) { // NOI18N
@@ -561,15 +557,15 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return fields;
     }
 
-    /**
-     * In the JPDA implementation a value isn't always a String. We're (currently)
-     * storing the value as a String so no conversion is done. However, keeping
-     * this method makes it possible for us to change at a later date...
-     *
-     * @return The value of this instance
-     */
-    public String getToStringValue () throws InvalidExpressionException {
-        return getValue();
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof AbstractVariable &&
+                    getFullName(true).equals(((AbstractVariable) o).getFullName(true));
+    }
+
+    @Override
+    public int hashCode() {
+        return getFullName(true).hashCode();
     }
 
     public String getName() {
@@ -1045,20 +1041,15 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
     }
 
-    public String getFullName() {
+    public final String getFullName() {
         return getFullName(false);
     }
 
-    public String getFullName(boolean showBase) {
-        if (this instanceof AbstractField) {
-            return ((AbstractField) this).getFullName(showBase);
-        } else {
-            return getName();
-        }
+    protected String getFullName(boolean showBase) {
+        return name;
     }
 
     private static class AbstractField extends AbstractVariable implements Field {
-
         private AbstractVariable parent;
 
         public AbstractField(AbstractVariable parent, String name, String type, String value) {
@@ -1104,7 +1095,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
 
         @Override
-        public String getFullName(boolean showBaseClass) {
+        protected String getFullName(boolean showBaseClass) {
             String pname; // parent part of name
             String fullname;
             int pos;
