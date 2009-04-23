@@ -104,6 +104,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="EditorUI.textLimitWidth">
+            <summary>Making method EditorUI.textLimitWidth protected</summary>
+            <version major="1" minor="38"/>
+            <date day="23" month="4" year="2009"/>
+            <author login="dstrupl"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                Making the method <code>EditorUI.textLimitWidth</code> protected
+                so we are able to override it in NbEditorUI.
+                </p>
+            </description>
+            <issue number="137416"/>
+        </change>
 
         <change id="HyperlinkType.ALT_HYPERLINK">
             <summary>Adding HyperlinkType.ALT_HYPERLINK</summary>
