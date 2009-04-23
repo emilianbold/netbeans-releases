@@ -204,9 +204,9 @@ public class MavenSettings  {
     }
 
     public static enum DownloadStrategy {
-        EVERY_OPEN,
+        NEVER,
         FIRST_OPEN,
-        NEVER
+        EVERY_OPEN
     }
 
     public DownloadStrategy getSourceDownloadStrategy() {
@@ -215,6 +215,14 @@ public class MavenSettings  {
             return DownloadStrategy.valueOf(val);
         } catch (IllegalArgumentException ex) {
             return DownloadStrategy.NEVER;
+        }
+    }
+
+    public void setSourceDownloadStrategy(DownloadStrategy ds) {
+        if (ds != null) {
+            getPreferences().put(PROP_SOURCE_DOWNLOAD, ds.name());
+        } else {
+            getPreferences().remove(PROP_SOURCE_DOWNLOAD);
         }
     }
 
@@ -227,6 +235,14 @@ public class MavenSettings  {
         }
     }
 
+    public void setJavadocDownloadStrategy(DownloadStrategy ds) {
+        if (ds != null) {
+            getPreferences().put(PROP_JAVADOC_DOWNLOAD, ds.name());
+        } else {
+            getPreferences().remove(PROP_JAVADOC_DOWNLOAD);
+        }
+    }
+
     public DownloadStrategy getBinaryDownloadStrategy() {
         String val = getPreferences().get(PROP_BINARY_DOWNLOAD, DownloadStrategy.NEVER.name());
         try {
@@ -236,6 +252,14 @@ public class MavenSettings  {
         }
     }
     
+    public void setBinaryDownloadStrategy(DownloadStrategy ds) {
+        if (ds != null) {
+            getPreferences().put(PROP_BINARY_DOWNLOAD, ds.name());
+        } else {
+            getPreferences().remove(PROP_BINARY_DOWNLOAD);
+        }
+    }
+
     private static Boolean cachedMaven = null;
     
     public static boolean canFindExternalMaven() {

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.dlight.api.execution.DLightSessionContext;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
@@ -86,7 +87,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private boolean isActive;
     private final DLightSessionContext sessionContext;
     private final String name;
-    private boolean closeOnRun = false;
+    private boolean closeOnExit = false;
 
     public static enum SessionState {
 
@@ -265,8 +266,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     }
 
 
-    void closeOnRun(){
-        closeOnRun = true;
+    void closeOnExit(){
+        closeOnExit = true;
     }
 
     synchronized void stop() {
@@ -487,8 +488,18 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             sessionStateListeners.clear();
             sessionStateListeners = null;
         }
-        DataStorageManager.getInstance().closeSession(this);
-        cleanVisualizers();
+        if (!EventQueue.isDispatchThread()){
+            DataStorageManager.getInstance().closeSession(this);
+            cleanVisualizers();
+        }else{
+            DLightExecutorService.submit(new Runnable() {
+
+                public void run() {
+                    DataStorageManager.getInstance().closeSession(DLightSession.this);
+                    cleanVisualizers();
+                }
+            }, "DLight Session " + this.getDisplayName() + " is closing..");//NOI18N
+        }
     }
 
     private void targetStarted(DLightTarget target) {
@@ -498,7 +509,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private void targetFinished(DLightTarget target) {
         setState(SessionState.ANALYZE);
         target.removeTargetListener(this);
-        if (closeOnRun){
+        if (closeOnExit){
             close();
         }
     }

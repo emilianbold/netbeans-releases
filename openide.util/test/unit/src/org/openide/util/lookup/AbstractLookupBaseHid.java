@@ -1617,6 +1617,40 @@ public class AbstractLookupBaseHid extends NbTestCase {
         assertTrue("It is empty: " + c, c.isEmpty());
     }
 
+    public void testCanProxyLookupHaveWrongResults() {
+        class L implements LookupListener {
+            ProxyLookup pl;
+            Lookup.Result<String> original;
+            Lookup.Result<String> wrapped;
+            boolean ok;
+
+            public void test() {
+                pl = new ProxyLookup(lookup);
+                original = lookup.lookupResult(String.class);
+
+                original.addLookupListener(this);
+
+                wrapped = pl.lookupResult(String.class);
+
+                assertEquals("Original empty", 0, original.allInstances().size());
+                assertEquals("Wrapped empty", 0, wrapped.allInstances().size());
+
+                ic.add("Hello!");
+            }
+
+            public void resultChanged(LookupEvent ev) {
+                ok = true;
+
+                assertEquals("Original has hello", 1, original.allInstances().size());
+                assertEquals("Wrapped has hello", 1, wrapped.allInstances().size());
+            }
+
+        }
+        L listener = new L();
+        listener.test();
+        assertTrue("Listener called", listener.ok);
+    }
+
     public void testCanGCResults() throws Exception {
         class L implements LookupListener {
             int cnt;

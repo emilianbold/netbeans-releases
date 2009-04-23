@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,35 +34,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.util;
+package org.netbeans.modules.cnd.debugger.gdb.models;
 
-import java.util.logging.Logger;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import java.util.Set;
+import org.netbeans.spi.viewmodel.TreeExpansionModel;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.WeakSet;
 
 /**
- *
- * @author Tomas Stupka
+ * Copied from Java Debugger
+ * @author Egor Ushakov
  */
-public class TasksUtil {
+public class VariablesTreeExpansionModel implements TreeExpansionModel {
 
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.issues");
+    private Set expandedNodes = new WeakSet();
+    private Set collapsedNodes = new WeakSet();
 
-    public static boolean show(JPanel panel, String title, String okName) {
-        JButton ok = new JButton(okName);
-        JButton cancel = new JButton("Cancel");
-        NotifyDescriptor descriptor = new NotifyDescriptor (
-                panel,
-                title,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                new Object [] { ok, cancel },
-                ok);
-        return DialogDisplayer.getDefault().notify(descriptor) == ok;
+    /**
+     * Defines default state (collapsed, expanded) of given node.
+     *
+     * @param node a node
+     * @return default state (collapsed, expanded) of given node
+     */
+    public boolean isExpanded (Object node)
+    throws UnknownTypeException {
+        synchronized (this) {
+            if (expandedNodes.contains(node)) {
+                return true;
+            }
+            if (collapsedNodes.contains(node)) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Called when given node is expanded.
+     *
+     * @param node a expanded node
+     */
+    public void nodeExpanded (Object node) {
+        synchronized (this) {
+            expandedNodes.add(node);
+            collapsedNodes.remove(node);
+        }
+    }
+
+    /**
+     * Called when given node is collapsed.
+     *
+     * @param node a collapsed node
+     */
+    public void nodeCollapsed (Object node) {
+        synchronized (this) {
+            collapsedNodes.add(node);
+            expandedNodes.remove(node);
+        }
     }
 }

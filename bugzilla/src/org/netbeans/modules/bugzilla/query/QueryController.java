@@ -213,8 +213,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(autoRefresh) {
             scheduleForRefresh();
         }
-        if(query.isSaved() && !query.wasRun()) {
-            onRefresh();
+        if(query.isSaved()) {
+            setIssueCount(query.getSize()); // XXX this probably won't work
+                                            // if the query is alredy open and
+                                            // a refresh is invoked on kenai
+            if(!query.wasRun()) {
+                onRefresh();
+            }
         }
     }
 
@@ -491,7 +496,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 boolean firstTime = false;
                 if(!query.isSaved()) {
                     firstTime = true;
-                    name = getName();
+                    name = getSaveName();
                     if(name == null) {
                         return;
                     }
@@ -503,13 +508,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
        });
     }
 
-    private String getName() {
+    private String getSaveName() {
         String name = null;
         if(BugzillaUtil.show(
                 panel.savePanel,
                 NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),    // NOI18N
                 NbBundle.getMessage(QueryController.class, "LBL_Save"),         // NOI18N
-                new HelpCtx("org.netbeans.modules.bugzilla.query.savePanel"))) { // NOI18N
+                new HelpCtx("org.netbeans.modules.bugzilla.query.savePanel")))  // NOI18N
+        {
             name = panel.queryNameTextField.getText();
             if(name == null || name.trim().equals("")) { // NOI18N
                 return null;
@@ -518,7 +524,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             for (Query q : queries) {
                 if(q.getDisplayName().equals(name)) {
                     panel.saveErrorLabel.setVisible(true);
-                    name = getName();                    
+                    name = getSaveName();
                     panel.saveErrorLabel.setVisible(false);
                     break;
                 }
@@ -654,6 +660,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             searchTask = new QueryTask() {
                 public void executeQuery() {
                     try {
+                        // XXX isn't persistent and should be merged with refresh
                         String lastChageFrom = panel.changedFromTextField.getText().trim();
                         if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
                             BugzillaConfig.getInstance().setLastChangeFrom(lastChageFrom);
@@ -691,7 +698,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             };
         }
         post(refreshTask);
-    }
+        }
 
     private void refreshIntern(boolean autoRefresh) {
         if (panel.urlPanel.isVisible()) {
@@ -845,6 +852,20 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    private void setIssueCount(final int count) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                panel.tableSummaryLabel.setText(
+                        NbBundle.getMessage(
+                            QueryController.class,
+                            NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
+                            new Object[] { count }
+                        )
+                );
+            }
+        });
+    }
+
     private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private int counter;
@@ -914,19 +935,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         public void finished() { }
 
-        private void setIssueCount(final int count) {
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    panel.tableSummaryLabel.setText(
-                            NbBundle.getMessage(
-                                QueryController.class,
-                                NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
-                                new Object[] { count }
-                            )
-                    );
-                }
-            });
-        }
     }
 
 }

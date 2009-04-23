@@ -634,24 +634,34 @@ public class GdbDebugger implements PropertyChangeListener {
                 String results = gdb.info_threads().getResponse();
                 if (results.length() > 0) {
                     List<String> list = new ArrayList<String>();
-                    StringBuilder sb = new StringBuilder();
-                    for (String line : results.split("\\\\n")) { // NOI18N
-                        if (line.startsWith("    ")) { // NOI18N
-                            sb.append(" " + line.replace("\\n", "").trim()); // NOI18N
-                        } else {
-                            if (sb.length() > 0) {
-                                list.add(sb.toString());
-                                sb.delete(0, sb.length());
-                            }
-                            line = line.trim();
-                            char ch = line.charAt(0);
-                            if (ch == '*' || Character.isDigit(ch)) {
-                                sb.append(line);
+                    // See IZ 147931 (On Mac sometimes response is in wrong format)
+                    if (results.startsWith("threadno")) { // NOI18N
+                        for (String line : results.split("threadn")) { //NOI18N
+                            Map<String, String> map = GdbUtils.createMapFromString(line);
+                            if (!map.isEmpty()) {
+                                list.add(map.get("o") + " " + map.get("target_tid")); // NOI18N
                             }
                         }
-                    }
-                    if (sb.length() > 0) {
-                        list.add(sb.toString());
+                    } else {
+                        StringBuilder sb = new StringBuilder();
+                        for (String line : results.split("\\\\n")) { // NOI18N
+                            if (line.startsWith("    ")) { // NOI18N
+                                sb.append(" " + line.replace("\\n", "").trim()); // NOI18N
+                            } else {
+                                if (sb.length() > 0) {
+                                    list.add(sb.toString());
+                                    sb.delete(0, sb.length());
+                                }
+                                line = line.trim();
+                                char ch = line.charAt(0);
+                                if (ch == '*' || Character.isDigit(ch)) {
+                                    sb.append(line);
+                                }
+                            }
+                        }
+                        if (sb.length() > 0) {
+                            list.add(sb.toString());
+                        }
                     }
                     threadsList = list.toArray(new String[list.size()]);
                     return threadsList;
