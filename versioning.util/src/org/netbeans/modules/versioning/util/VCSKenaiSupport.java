@@ -68,5 +68,11 @@ public abstract class VCSKenaiSupport {
      * @return true if login successfull, otherwise false
      */
     public abstract boolean showLogin();
+
+    /**
+     * Returns true if user is logged into kenai
+     * @return true if user is logged into kenai
+     */
+    public abstract boolean isLogged ();
     
 }

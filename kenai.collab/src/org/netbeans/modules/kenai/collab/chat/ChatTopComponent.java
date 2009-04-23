@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,9 +66,12 @@ import javax.swing.event.ChangeListener;
 import org.jdesktop.swingx.JXBusyLabel;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -255,7 +259,7 @@ public class ChatTopComponent extends TopComponent {
     }
 
 
-    void addChat(ChatPanel chatPanel) {
+    public void addChat(ChatPanel chatPanel) {
         ChatNotifications.getDefault().removeGroup(chatPanel.getName());
         chats.add(chatPanel);
         open.add(chatPanel.getName());
@@ -281,13 +285,25 @@ public class ChatTopComponent extends TopComponent {
 
     void showPopup() {
         JPopupMenu menu = new JPopupMenu();
+        HashSet<String> projectNames = new HashSet<String>();
+        try {
+            for (KenaiProject prj : Kenai.getDefault().getMyProjects()) {
+                projectNames.add(prj.getName());
+            }
+        } catch (KenaiException kenaiException) {
+            Exceptions.printStackTrace(kenaiException);
+        }
         for (KenaiFeature prj : kec.getMyChats()) {
+            projectNames.remove(prj.getName());
             if (!open.contains(prj.getName())) {
                 menu.add(new OpenChatAction(prj));
             }
         }
+        for (String name:projectNames) {
+            menu.add(new CreateChatAction(name));
+        }
         if (menu.getComponentCount()==0) {
-            final JMenuItem jMenuItem = new JMenuItem("<empty>"); // NOI18N
+            final JMenuItem jMenuItem = new JMenuItem(org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "CTL_NoMoreChats")); // NOI18N
             jMenuItem.setEnabled(false);
             menu.add(jMenuItem);
         }
