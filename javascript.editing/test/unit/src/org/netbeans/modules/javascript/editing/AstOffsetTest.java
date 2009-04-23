@@ -175,10 +175,9 @@ public class AstOffsetTest extends JsTestBase {
         checkOffsets("testfiles/tryblocks.js");
     }
 
-    //disabled since from some strange reason the </SCRIPT> node is missing at the very end of the output
-//    public void testOffsetsPrototype() throws Exception {
-//        checkOffsets("testfiles/prototype.js");
-//    }
+    public void testOffsetsPrototype() throws Exception {
+        checkOffsets("testfiles/prototype.js");
+    }
 
     public void testOffsetsPrototypeNew() throws Exception {
         checkOffsets("testfiles/prototype-new.js");
