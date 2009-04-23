@@ -976,6 +976,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private List<NBVersionInfo> convertToNBVersionInfo(Collection<ArtifactInfo> artifactInfos) {
         List<NBVersionInfo> bVersionInfos = new ArrayList<NBVersionInfo>();
         for (ArtifactInfo ai : artifactInfos) {
+            if ("javadoc".equals(ai.classifier) || "sources".equals(ai.classifier)) { //NOI18N
+                // we don't want javadoc and sources shown anywhere, we use the getJavadocExists(), getSourceExists() methods.
+                continue;
+            }
             NBVersionInfo nbvi = new NBVersionInfo(ai.repository, ai.groupId, ai.artifactId,
                     ai.version, ai.packaging, ai.packaging, ai.name, ai.description, ai.classifier);
             /*Javadoc & Sources*/
