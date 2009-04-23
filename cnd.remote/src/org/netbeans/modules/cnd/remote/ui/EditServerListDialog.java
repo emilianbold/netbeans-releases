@@ -274,7 +274,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             JButton b = (JButton) o;
             if (b.getActionCommand().equals("Add")) { // NOI18N
                 CreateHostWizardIterator.Result result = CreateHostWizardIterator.invokeMe(cacheManager);
-                if (result.executionEnvironment != null) {
+                if (result != null) {
                     if (!model.contains(result.executionEnvironment)) {
                         ServerList.addServer(result.executionEnvironment, result.displayName, false, false);
                         model.addElement(result.executionEnvironment);

@@ -362,7 +362,7 @@ public class Subversion {
             Logger.getLogger(Subversion.class.getName()).log(Level.FINE, "Cannot store subversion workdir preferences", e);
         }
 
-        if(!notVersionedYet) {
+        if(notVersionedYet) {
             getSubversion().versionedFilesChanged();
             SvnUtils.refreshParents(localFolder);
             getSubversion().getStatusCache().refreshRecursively(localFolder);

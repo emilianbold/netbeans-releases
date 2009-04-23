@@ -417,7 +417,7 @@ public class KenaiSearchPanel extends JPanel {
                         try {
                             KenaiFeature[] repos = project.getFeatures(Type.SOURCE);
                             for (KenaiFeature repo : repos) {
-                                if (KenaiService.Names.SUBVERSION.equals(repo.getName()) || KenaiService.Names.MERCURIAL.equals(repo.getName())) {
+                                if (KenaiService.Names.SUBVERSION.equals(repo.getService()) || KenaiService.Names.MERCURIAL.equals(repo.getService())) {
                                     addElementLater(new KenaiProjectSearchInfo(project, repo, pattern));
                                 }
                             }

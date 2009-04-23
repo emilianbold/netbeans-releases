@@ -487,7 +487,14 @@ public class ProjectActionSupport {
                 boolean ok = true;
 
                 if (conf instanceof MakeConfiguration && !((MakeConfiguration) conf).getDevelopmentHost().isLocalhost()) {
-                    ok = verifyRemoteExecutable(((MakeConfiguration) conf).getDevelopmentHost().getExecutionEnvironment(), executable);
+                    final ExecutionEnvironment execEnv = ((MakeConfiguration) conf).getDevelopmentHost().getExecutionEnvironment();
+                    PathMap mapper = HostInfoProvider.getMapper(execEnv);
+                    executable = mapper.getRemotePath(executable);
+                    CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
+                    if (cmd != null) {
+                        ok = cmd.run(execEnv, "test -x " + executable + " -a -f " + executable, null) == 0; // NOI18N
+                    }
+                    ok = false;
                 } else {
                     // FIXUP: getExecutable should really return fully qualified name to executable including .exe
                     // but it is too late to change now. For now try both with and without.
@@ -510,22 +517,24 @@ public class ProjectActionSupport {
 
     }
 
-    /**
-     * Verify a remote executable exists, is executable, and is not a directory.
-     *
-     * @param execEnv The remote host
-     * @param executable The file to remotely check
-     * @return true if executable exists and is an executable, otherwise false
-     */
-    private static boolean verifyRemoteExecutable(ExecutionEnvironment execEnv, String executable) {
-        PathMap mapper = HostInfoProvider.getMapper(execEnv);
-        String remoteExecutable = mapper.getRemotePath(executable);
-        CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
-        if (cmd != null) {
-            return cmd.run(execEnv, "test -x " + remoteExecutable + " -a -f " + remoteExecutable, null) == 0; // NOI18N
-        }
-        return false;
-    }
+// VK: inlined since it's used once; and caller should know not only return status,
+// but mapped name as well => it's easier to inline
+//    /**
+//     * Verify a remote executable exists, is executable, and is not a directory.
+//     *
+//     * @param execEnv The remote host
+//     * @param executable The file to remotely check
+//     * @return true if executable exists and is an executable, otherwise false
+//     */
+//    private static boolean verifyRemoteExecutable(ExecutionEnvironment execEnv, String executable) {
+//        PathMap mapper = HostInfoProvider.getMapper(execEnv);
+//        String remoteExecutable = mapper.getRemotePath(executable);
+//        CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
+//        if (cmd != null) {
+//            return cmd.run(execEnv, "test -x " + remoteExecutable + " -a -f " + remoteExecutable, null) == 0; // NOI18N
+//        }
+//        return false;
+//    }
 
     private static final class StopAction extends AbstractAction {
 
