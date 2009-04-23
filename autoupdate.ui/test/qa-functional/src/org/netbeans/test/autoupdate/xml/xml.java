@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.xml.schema.general.autoupdate;
+package org.netbeans.test.autoupdate.xml;
 
 import org.netbeans.jellytools.JellyTestCase;
 import javax.swing.tree.TreePath;
@@ -71,17 +71,17 @@ import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
-import org.netbeans.test.xml.schema.general.GeneralXMLTest;
 import java.util.regex.*;
+import org.netbeans.test.autoupdate.Autoupdate;
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class autoupdate extends GeneralXMLTest {
+public class xml extends Autoupdate {
     
-    public autoupdate( String arg0 )
+    public xml( String arg0 )
     {
       super( arg0 );
     }
@@ -90,10 +90,12 @@ public class autoupdate extends GeneralXMLTest {
   {
     int iCount = 0;
     int iIndex = tabs.findPage( "Available" );
+    //System.out.println( "+++" + iIndex );
     Pattern p = Pattern.compile( "Available Plugins [(]([0-9]+)[)]" );
     while( true )
     {
       String s = tabs.getTitleAt( iIndex );
+      //System.out.println( "+++\"" + s + "\"" );
       Matcher m = p.matcher( s );
       if( m.find( ) )
       {
@@ -150,7 +152,7 @@ public class autoupdate extends GeneralXMLTest {
     jbReload.pushNoBlock( );
 
     // Wait till reload
-    WaitTab( jtTabs, "Available", 100 );
+    WaitTab( jtTabs, "Available", 25 );
 
     // Open available tab
     jtTabs.setSelectedIndex( jtTabs.findPage( "Available" ) );
@@ -159,7 +161,7 @@ public class autoupdate extends GeneralXMLTest {
 
     // Select SOA
     int iCellRow = jtTable.findCellRow( "SOA" );
-    jtTable.clickOnCell( iCellRow, 0 );
+    //jtTable.clickOnCell( iCellRow, 0 );
     iCellRow = jtTable.findCellRow( "XML Schema and WSDL" );
     jtTable.clickOnCell( iCellRow, 0 );
 
