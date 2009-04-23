@@ -1600,7 +1600,7 @@ public class HgCommand {
         // Ensure that parent directory of target exists, creating if necessary
         File parentTarget = target.getParentFile();
         try {
-            if (!parentTarget.mkdir()) {
+            if (!parentTarget.mkdirs()) {
                 if (!parentTarget.isDirectory()) {
                     Mercurial.LOG.log(Level.WARNING, "File.mkdir() failed for : " + parentTarget.getAbsolutePath()); // NOI18N
                     throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
