@@ -144,8 +144,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         }
         outlineView.setProperties(result.toArray(new Property[0]));
-
-
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
     }
@@ -221,7 +219,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         this.removeAll();
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 //        JLabel label = new JLabel(timerHandler != null && timerHandler.isSessionAnalyzed() ? AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) : AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration)); // NOI18N
-        JLabel label = new JLabel(NbBundle.getMessage(FunctionsListViewVisualizer.class, "NoDataAvailableYet"));
+        JLabel label = new JLabel(NbBundle.getMessage(FunctionsListViewVisualizer.class, "NoDataAvailableYet"));//NOI18N
         label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         this.add(label);
         repaint();
@@ -349,9 +347,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
             return;
         }
         isShown = isShowing();
-        if (isShown) {
-            asyncFillModel(true);
-        }
+//        if (isShown) {
+//            asyncFillModel(true);
+//        }
     }
 
     public void componentHidden(ComponentEvent e) {
