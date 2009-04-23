@@ -35,4 +35,12 @@ public abstract class MessagingAccessor {
      * @return Show messages for given project
      */
     public abstract ActionListener getOpenMessagesAction( ProjectHandle project );
+
+    /**
+     * Action, which creates chat room on server
+     * @param project
+     * @return
+     */
+    public abstract ActionListener getCreateChatAction(ProjectHandle project);
+
 }

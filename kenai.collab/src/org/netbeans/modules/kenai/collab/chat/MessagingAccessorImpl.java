@@ -41,9 +41,14 @@ package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
 import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -55,6 +60,21 @@ public class MessagingAccessorImpl extends MessagingAccessor {
 
     @Override
     public MessagingHandle getMessaging(ProjectHandle project) {
+        KenaiConnection kc = KenaiConnection.getDefault();
+        if (Kenai.getDefault().getPasswordAuthentication()!=null) {
+            if (kc.getChat(project.getId())==null) {
+                KenaiFeature[] f;
+                try {
+                    f = Kenai.getDefault().getProject(project.getId()).getFeatures(KenaiService.Type.CHAT);
+                    if (f.length == 1) {
+                        kc.getChat(f[0]);
+                    }
+                } catch (KenaiException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
         return ChatNotifications.getDefault().getMessagingHandle(project.getId());
     }
 
@@ -68,5 +88,10 @@ public class MessagingAccessorImpl extends MessagingAccessor {
                 chatTC.setActive(project.getId());
             }
         };
+    }
+
+    @Override
+    public ActionListener getCreateChatAction(final ProjectHandle project) {
+        return new CreateChatAction(project.getId());
     }
 }

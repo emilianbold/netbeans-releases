@@ -92,6 +92,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     public static final String PROP_ISSUES = "projectIssues";
     public static final String PROP_ISSUES_URL = "projectIssuesUrl";
     public static final String PROP_AUTO_COMMIT = "projectIssuesUrl";
+    public static final String PROP_CREATE_CHAT = "projectCreateChat";
 
     public static final String PROP_EXC_ERR_MSG = "exceptionErrorMessage";
 
@@ -112,7 +113,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
     public Set<CreatedProjectInfo> instantiate(ProgressHandle handle) throws IOException {
 
-        handle.start(5);
+        handle.start(6);
 
         String newPrjName = (String) wizard.getProperty(PROP_PRJ_NAME);
         String newPrjTitle = (String) wizard.getProperty(PROP_PRJ_TITLE);
@@ -127,7 +128,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         String newPrjIssues = (String) wizard.getProperty(PROP_ISSUES);
         String newPrjIssuesUrl = (String) wizard.getProperty(PROP_ISSUES_URL);
         boolean autoCommit = Boolean.valueOf((String) wizard.getProperty(PROP_AUTO_COMMIT));
-
+        Boolean createChat = (Boolean) wizard.getProperty(PROP_CREATE_CHAT);
         // Create project
         try {
             handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
@@ -255,6 +256,18 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
             } catch (KenaiException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+
+        if (createChat) {
+            handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "CTL_CreatingChatProgress"), 6);
+            final KenaiFeature f = Kenai.getDefault().getProject(newPrjName).createProjectFeature(
+                    newPrjName,
+                    NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "CTL_ChatRoomName", newPrjName),
+                    NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "CTL_ChatRoomDescription", newPrjName),
+                    KenaiService.Names.XMPP_CHAT,
+                    null,
+                    null,
+                    null);
         }
 
         // Open the project in Dashboard
