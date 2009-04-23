@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.mercurial.ui.repository;
 
+import java.lang.reflect.Method;
 import java.net.URI;
+import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -47,6 +49,13 @@ import static org.junit.Assert.*;
  * @author Marian Petras
  */
 public class HgURLTest {
+
+    private Method testIsWindowsAbsolutePathMethod;
+
+    @After
+    public void cleanup() {
+        testIsWindowsAbsolutePathMethod = null;
+    }
 
     @Test
     public void testAddAuthenticationData() throws Exception {
@@ -64,6 +73,59 @@ public class HgURLTest {
 
         verifyAddAuthenticationMethod("http://server/path", "username", "password",
                                       "http://username:password@server/path");
+    }
+
+    @Test
+    public void testIsWindowsAbsolutePath() throws Exception {
+        initTestIsWindowsAbsolutePathMethod();
+
+        testIsWindowsAbsolutePath("C",        false);
+        testIsWindowsAbsolutePath("/",        false);
+        testIsWindowsAbsolutePath("\\",       false);
+
+        testIsWindowsAbsolutePath(":",        false);
+        testIsWindowsAbsolutePath(":/",       false);
+        testIsWindowsAbsolutePath(":\\",      false);
+
+        testIsWindowsAbsolutePath("C",        false);
+        testIsWindowsAbsolutePath("C/",       false);
+        testIsWindowsAbsolutePath("C\\",      false);
+
+        testIsWindowsAbsolutePath("C:",       false);
+        testIsWindowsAbsolutePath("C:ahoj",   false);
+        testIsWindowsAbsolutePath("C:/",      true);
+        testIsWindowsAbsolutePath("C:/ahoj",  true);
+        testIsWindowsAbsolutePath("C:\\",     true);
+        testIsWindowsAbsolutePath("C:\\ahoj", true);
+
+        testIsWindowsAbsolutePath("/C:",       false);
+        testIsWindowsAbsolutePath("/C:ahoj",   false);
+        testIsWindowsAbsolutePath("/C:/",      true);
+        testIsWindowsAbsolutePath("/C:/ahoj",  true);
+        testIsWindowsAbsolutePath("/C:\\",     true);
+        testIsWindowsAbsolutePath("/C:\\ahoj", true);
+
+        testIsWindowsAbsolutePath("\\C:",       false);
+        testIsWindowsAbsolutePath("\\C:ahoj",   false);
+        testIsWindowsAbsolutePath("\\C:/",      true);
+        testIsWindowsAbsolutePath("\\C:/ahoj",  true);
+        testIsWindowsAbsolutePath("\\C:\\",     true);
+        testIsWindowsAbsolutePath("\\C:\\ahoj", true);
+
+        testIsWindowsAbsolutePath("//C:",       false);
+        testIsWindowsAbsolutePath("//C:ahoj",   false);
+        testIsWindowsAbsolutePath("//C:/",      false);
+        testIsWindowsAbsolutePath("//C:/ahoj",  false);
+        testIsWindowsAbsolutePath("//C:\\",     false);
+        testIsWindowsAbsolutePath("//C:\\ahoj", false);
+
+        //small letters:
+        testIsWindowsAbsolutePath("/c:",       false);
+        testIsWindowsAbsolutePath("/c:ahoj",   false);
+        testIsWindowsAbsolutePath("/c:/",      true);
+        testIsWindowsAbsolutePath("/c:/ahoj",  true);
+        testIsWindowsAbsolutePath("/c:\\",     true);
+        testIsWindowsAbsolutePath("/c:\\ahoj", true);
     }
 
     private void verifyAddAuthenticationMethod(String original,
@@ -85,6 +147,19 @@ public class HgURLTest {
                                          String username,
                                          String password) throws Exception {
         return new HgURL(urlString, username, password).toHgCommandUrlString();
+    }
+
+    private void testIsWindowsAbsolutePath(String path, boolean expected) throws Exception {
+        assert testIsWindowsAbsolutePathMethod != null;
+
+        Object resultObj = testIsWindowsAbsolutePathMethod.invoke(null, path);
+        assert resultObj instanceof Boolean;
+        assertTrue(Boolean.TRUE.equals(resultObj) == expected);
+    }
+
+    private void initTestIsWindowsAbsolutePathMethod() throws Exception {
+        testIsWindowsAbsolutePathMethod = HgURL.class.getDeclaredMethod("isWindowsAbsolutePath", String.class);
+        testIsWindowsAbsolutePathMethod.setAccessible(true);
     }
 
 }

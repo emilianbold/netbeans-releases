@@ -69,7 +69,6 @@ public class ClonePathsWizardPanel implements WizardDescriptor.ValidatingPanel {
     private Listener listener;
     private Document pullPathDoc, pushPathDoc;
     private boolean pullUrlValidated, pushUrlValidated;
-    private boolean pullUrlValid, pushUrlValid;
     private HgURL pullUrl, pushUrl;
 
     // Get the visual component for the panel. In this template, the component
@@ -122,8 +121,10 @@ public class ClonePathsWizardPanel implements WizardDescriptor.ValidatingPanel {
 
             if (doc == pullPathDoc) {
                 pullUrlValidated = false;
+                pullUrl = null;
             } else if (doc == pushPathDoc) {
                 pushUrlValidated = false;
+                pushUrl = null;
             } else {
                 assert false;
             }
@@ -136,8 +137,8 @@ public class ClonePathsWizardPanel implements WizardDescriptor.ValidatingPanel {
     }
 
     private boolean isKnownToBeInvalid() {
-        return (pullUrlValidated && !pullUrlValid)
-               || (pushUrlValidated && !pushUrlValid);
+        return (pullUrlValidated && (pullUrl == null))
+               || (pushUrlValidated && (pushUrl == null));
 
     }
     
@@ -169,41 +170,21 @@ public class ClonePathsWizardPanel implements WizardDescriptor.ValidatingPanel {
     public void validate() throws WizardValidationException {
         if (!pullUrlValidated) {
             pullUrlValidated = true;
-            pullUrlValid = false;
             pullUrl = validateUrl(component.defaultPullPathField,
                                   "pull path invalid",                  //NOI18N
                                   "defaultPullPath.Invalid");           //NOI18N
-            pullUrlValid = true;
         }
         if (!pushUrlValidated) {
             pushUrlValidated = true;
-            pushUrlValid = false;
             pushUrl = validateUrl(component.defaultPushPathField,
                                   "push path invalid",                  //NOI18N
                                   "defaultPushPath.Invalid");           //NOI18N
-            pushUrlValid = true;
         }
     }
 
     private HgURL validateUrl(JTextField field, String systemErrMsg, String errMsgKey) throws WizardValidationException {
-        String text = field.getText().trim();
-
-        if (text.length() == 0) {
-            return null;
-        }
-
-        boolean valid = (HgURL.validateQuickly(text) == null);
-        if (!valid) {
-            text = "file:" + text;                                      //NOI18N
-            valid = (HgURL.validateQuickly(text) == null);
-        }
-        if (!valid) {
-            throw new WizardValidationException(component,
-                                                systemErrMsg,
-                                                getMessage(errMsgKey));
-        }
         try {
-            return new HgURL(text);
+            return new HgURL(field.getText().trim());
         } catch (URISyntaxException ex) {
             throw new WizardValidationException(component,
                                                 systemErrMsg,
