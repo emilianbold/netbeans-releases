@@ -46,22 +46,11 @@ import java.text.MessageFormat;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
-
-import java.util.List;
 import java.io.File;
-import org.netbeans.modules.mercurial.HgException;
-import org.netbeans.modules.mercurial.HgProgressSupport;
-import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.util.HgCommand;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 
@@ -135,6 +124,7 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         return "Start Sample Wizard"; // NOI18N
     }
     
+    @Override
     public String iconResource() {
         return null;
     }
@@ -143,6 +133,7 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         return new HelpCtx(CloneWizardAction.class);
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -158,6 +149,7 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         PanelsIterator() {
         }
 
+        @Override
         protected WizardDescriptor.Panel[] initializePanels() {
             cloneRepositoryWizardPanel = new CloneRepositoryWizardPanel();
             clonePathsWizardPanel = new ClonePathsWizardPanel();

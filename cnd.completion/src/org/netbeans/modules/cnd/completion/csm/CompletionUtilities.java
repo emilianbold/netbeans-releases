@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.completion.csm;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
@@ -57,9 +58,6 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.CsmCompletionResult;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -131,11 +129,8 @@ public class CompletionUtilities {
         return out;
     }
 
-    public static CsmObject findItemAtCaretPos(JTextComponent target, int dotPos) {
-        return findItemAtCaretPos(target, null, CsmCompletionProvider.getCompletionQuery(), dotPos);
-    }
-
-    public static CsmObject findItemAtCaretPos(JTextComponent target, Document doc, CsmCompletionQuery query, int dotPos) {
+    public static Collection<CsmObject> findItemsReferencedAtCaretPos(JTextComponent target, Document doc, CsmCompletionQuery query, int dotPos) {
+        Collection<CsmObject> out = new ArrayList<CsmObject>();
         try {
             BaseDocument baseDoc = null;
             if (doc instanceof BaseDocument) {
@@ -151,25 +146,25 @@ public class CompletionUtilities {
             boolean searchFuncsOnly = (idFunBlk.length == 3);
             for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
                 CsmCompletionResult result = query.query(target, baseDoc, idFunBlk[ind], true, false, false);
-                if (result != null && result.getItems().size() > 0) {
-                    List<CsmObject> filter = getAssociatedObjects(result.getItems(), searchFuncsOnly);
-                    CsmObject itm = filter.size() > 0 ? filter.get(0) : getAssociatedObject(result.getItems().get(0));
-                    if (filter.size() > 1 && searchFuncsOnly) {
+                if (result != null && !result.getItems().isEmpty()) {
+                    List<CsmObject> filtered = getAssociatedObjects(result.getItems(), searchFuncsOnly);
+                    out = !filtered.isEmpty() ? filtered : getAssociatedObjects(result.getItems(), false);
+                    if (filtered.size() > 1 && searchFuncsOnly) {
                         // It is overloaded method, lets check for the right one
                         int endOfMethod = findEndOfMethod(baseDoc, idFunBlk[ind] - 1);
                         if (endOfMethod > -1) {
                             CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, true, false, false);
-                            if (resultx != null && resultx.getItems().size() > 0) {
-                                return getAssociatedObject(resultx.getItems().get(0));
+                            if (resultx != null && !resultx.getItems().isEmpty()) {
+                                out = getAssociatedObjects(resultx.getItems(), false);
                             }
                         }
                     }
-                    return itm;
+                    break;
                 }
             }
         } catch (BadLocationException e) {
         }
-        return null;
+        return out;
     }
 
     private static List<CsmObject> getAssociatedObjects(List items, boolean wantFuncsOnly) {
@@ -182,14 +177,11 @@ public class CompletionUtilities {
                 boolean isFunc = CsmKindUtilities.isFunction(ret);
                 if (isFunc) {
                     funcs.add(ret);
-                } else {
-                    out.add(ret);
                 }
+                out.add(ret);
             }
         }
-        if (!wantFuncsOnly) {
-            out.addAll(funcs);
-        } else {
+        if (wantFuncsOnly) {
             out = funcs;
         }
         return out;

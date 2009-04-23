@@ -84,7 +84,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
     @Override
     public String getHtmlDisplayName() {
         if (configuration.getCompilerSetName().getModified()) {
-            return configuration.isDevHostOnline() ? "<b>" + getDisplayName() : getDisplayName(); // NOI18N
+            return configuration.isDevHostSetUp() ? "<b>" + getDisplayName() : getDisplayName(); // NOI18N
         } else {
             return null;
         }
@@ -156,7 +156,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
 //            if (configuration.getCompilerSetManager().getCompilerSet(getOldname()) == null) {
 //                list.add(getOldname());
 //            }
-            if (configuration.isDevHostOnline()) {
+            if (configuration.isDevHostSetUp()) {
                 list.addAll(configuration.getCompilerSetManager().getCompilerSetNames());
             }
             return list.toArray(new String[list.size()]);

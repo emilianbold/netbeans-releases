@@ -339,63 +339,75 @@ public final class FileUtil extends Object {
         }
 
         public void fileChanged(FileEvent fe) {
-            if (isOnTarget) {
-                FileChangeListener listener = get();
-                if (listener != null) {
-                    listener.fileChanged(fe);
+            if (fe.getSource() == current) {
+                if (isOnTarget) {
+                    FileChangeListener listener = get();
+                    if (listener != null) {
+                        listener.fileChanged(fe);
+                    }
+                } else {
+                    someChange();
                 }
-            } else {
-                someChange();
             }
         }
 
         public void fileDeleted(FileEvent fe) {
-            if (isOnTarget) {
-                FileChangeListener listener = get();
-                if (listener != null) {
-                    listener.fileDeleted(fe);
+            if (fe.getSource() == current) {
+                if (isOnTarget) {
+                    FileChangeListener listener = get();
+                    if (listener != null) {
+                        listener.fileDeleted(fe);
+                    }
                 }
+                someChange();
             }
-            someChange();
         }
 
         public void fileDataCreated(FileEvent fe) {
-            if (isOnTarget) {
-                FileChangeListener listener = get();
-                if (listener != null) {
-                    listener.fileDataCreated(fe);
+            if (fe.getSource() == current) {
+                if (isOnTarget) {
+                    FileChangeListener listener = get();
+                    if (listener != null) {
+                        listener.fileDataCreated(fe);
+                    }
+                } else {
+                    someChange();
                 }
-            } else {
-                someChange();
             }
         }
 
         public void fileFolderCreated(FileEvent fe) {
-            if (isOnTarget) {
-                FileChangeListener listener = get();
-                if (listener != null) {
-                    listener.fileFolderCreated(fe);
+            if (fe.getSource() == current) {
+                if (isOnTarget) {
+                    FileChangeListener listener = get();
+                    if (listener != null) {
+                        listener.fileFolderCreated(fe);
+                    }
+                } else {
+                    someChange();
                 }
-            } else {
-                someChange();
             }
         }
 
         public void fileRenamed(FileRenameEvent fe) {
-            if (isOnTarget) {
-                FileChangeListener listener = get();
-                if (listener != null) {
-                    listener.fileRenamed(fe);
+            if (fe.getSource() == current) {
+                if (isOnTarget) {
+                    FileChangeListener listener = get();
+                    if (listener != null) {
+                        listener.fileRenamed(fe);
+                    }
                 }
+                someChange();
             }
-            someChange();
         }
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            if (isOnTarget) {
-                FileChangeListener listener = get();
-                if (listener != null) {
-                    listener.fileAttributeChanged(fe);
+            if (fe.getSource() == current) {
+                if (isOnTarget) {
+                    FileChangeListener listener = get();
+                    if (listener != null) {
+                        listener.fileAttributeChanged(fe);
+                    }
                 }
             }
         }

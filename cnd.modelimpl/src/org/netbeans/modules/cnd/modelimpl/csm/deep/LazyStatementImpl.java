@@ -52,6 +52,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Lazy statements
@@ -99,7 +100,7 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
 
     private boolean renderStatements(List<CsmStatement> list) {
         FileImpl file = (FileImpl) getContainingFile();
-        TokenStream stream = file.getTokenStream(getStartOffset(), getEndOffset(), true);
+        TokenStream stream = file.getTokenStream(getStartOffset(), getEndOffset(), getFirstTokenID(), true);
         if (stream == null) {
             Utils.LOG.severe("Can't create compound statement: can't create token stream for file " + file.getAbsolutePath()); // NOI18N
             return false;
@@ -128,6 +129,7 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
     }
 
     abstract protected AST resolveLazyStatement(TokenStream tokenStream);
+    abstract protected int/*CPPTokenTypes*/ getFirstTokenID();
     
 //    {
 //        int flags = CPPParserEx.CPP_CPLUSPLUS;

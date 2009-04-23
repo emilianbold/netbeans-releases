@@ -196,7 +196,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         if (compilerSet != null) {
             displayName = compilerSet.getName();
         }
-        if (displayName != null && dhconf.isOnline()) {
+        if (displayName != null && dhconf.isConfigured()) {
             return displayName;
         } else {
             if (displayIfNotFound) {
@@ -208,15 +208,15 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
 
     public String createNotFoundName(String name) {
-        if (!dhconf.isOnline()) {
+        if (!dhconf.isConfigured()) {
             return "";
         } else {
             return name.equals(CompilerSet.None) ? name : NbBundle.getMessage(CompilerSet2Configuration.class,  "NOT_FOUND", name); // NOI18N
         }
     }
 
-    public boolean isDevHostOnline() {
-        return dhconf.isOnline();
+    public boolean isDevHostSetUp() {
+        return dhconf.isConfigured();
     }
 
     // Clone and assign
@@ -292,7 +292,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     public void propertyChange(final PropertyChangeEvent evt) {
         CompilerSet ocs = null;
         String hkey = ((DevelopmentHostConfiguration) evt.getNewValue()).getName();
-        final ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(hkey);
+        final ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hkey);
         final String oldName = oldNameMap.get(hkey);
         if (oldName != null) {
             ocs = CompilerSetManager.getDefault(env).getCompilerSet(oldName);

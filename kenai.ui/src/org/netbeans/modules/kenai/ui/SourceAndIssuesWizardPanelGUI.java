@@ -63,6 +63,7 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -177,6 +178,11 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         // XXX here will be some condition ???
         showRepoOnKenaiGUI();
         showIssuesOnKenaiGUI();
+        if (!System.getProperty("kenai.com.url", "https://kenai.com").endsWith("testkenai.com")) {
+            createChatRoom.setVisible(false);
+            createChatRoom.setSelected(false);
+            chatSeparator.setVisible(false);
+        }
 
     }
 
@@ -352,6 +358,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         localRepoFolderLabel = new JLabel();
         repoNamePreviewLabel = new JLabel();
         localFolderTextField = new JTextField();
+        chatSeparator = new JSeparator();
+        createChatRoom = new JCheckBox();
         localFolderBrowseButton = new JButton();
         spacerPanel = new JPanel();
         repoUrlLabel = new JLabel();
@@ -411,7 +419,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         otherFeaturesLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.otherFeaturesLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(otherFeaturesLabel, gridBagConstraints);
 
@@ -419,7 +427,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         downloadsLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.downloadsLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 8, 0, 0);
         add(downloadsLabel, gridBagConstraints);
@@ -428,7 +436,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         forumsLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.forumsLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 16;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 8, 0, 0);
         add(forumsLabel, gridBagConstraints);
@@ -437,7 +445,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         mListsLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.mListsLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridy = 17;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 8, 0, 0);
         add(mListsLabel, gridBagConstraints);
@@ -446,7 +454,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         wikiLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.wikiLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 16;
+        gridBagConstraints.gridy = 18;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 8, 0, 0);
         add(wikiLabel, gridBagConstraints);
@@ -454,7 +462,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         featuresDescLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.featuresDescLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 17;
+        gridBagConstraints.gridy = 19;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
@@ -472,8 +480,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         add(scSeparator, gridBagConstraints);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
-        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -530,6 +538,19 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(localFolderTextField, gridBagConstraints);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        add(chatSeparator, gridBagConstraints);
+
+        createChatRoom.setSelected(true);
+        createChatRoom.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.createChatRoom.text")); // NOI18N
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        add(createChatRoom, gridBagConstraints);
 
         localFolderBrowseButton.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderBrowseButton.text")); // NOI18N
         localFolderBrowseButton.addActionListener(new ActionListener() {
@@ -689,6 +710,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     }//GEN-LAST:event_localFolderTextFieldKeyTyped
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JSeparator chatSeparator;
+    private JCheckBox createChatRoom;
     private JLabel downloadsLabel;
     private JLabel featuresDescLabel;
     private JLabel forumsLabel;
@@ -837,6 +860,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
             setRepoUrl(issuesUrl);
         }
 
+        Boolean createChat = (Boolean) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_CREATE_CHAT);
+        if (createChat!=null) {
+            createChatRoom.setSelected(createChat);
+        }
     }
 
     public void store(WizardDescriptor settings) {
@@ -846,6 +873,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_LOCAL, getRepoLocal());
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES, getIssuesType());
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES_URL, getIssuesUrl());
+        settings.putProperty(NewKenaiProjectWizardIterator.PROP_CREATE_CHAT, createChatRoom.isSelected());
     }
 
     private void setRepoType(String repo) {

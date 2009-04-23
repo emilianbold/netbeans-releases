@@ -61,6 +61,7 @@ import java.net.MalformedURLException;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -476,8 +477,7 @@ public class CslJar extends JarWithModuleAttributes {
         Element file = createFile(doc, factoryFolder, "org-netbeans-modules-csl-core-GsfDataLoader.instance"); // NOI18N
         setFileAttribute(doc, file, "position", "intvalue", "89998"); // NOI18N
         if (displayName != null && displayName.length() > 0) {
-            String loaderDesc = displayName + " Files";
-            setFileAttribute(doc, file, "displayName", "stringvalue", loaderDesc); // NOI18N
+            setFileAttribute(doc, file, "displayName", "stringvalue", displayName); // NOI18N
         }
     }
 

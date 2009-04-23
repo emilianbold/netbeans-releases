@@ -621,7 +621,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         FileImpl fileImpl = null;
         if (file instanceof FileImpl) {
             fileImpl = (FileImpl) file;
-            TokenStream ts = fileImpl.getTokenStream(startOffset, endOffset, false);
+            TokenStream ts = fileImpl.getTokenStream(startOffset, endOffset, 0, false);
             if (ts != null) {
                 return new MyTokenSequence(ts, fileImpl);
             }

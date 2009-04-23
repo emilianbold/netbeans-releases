@@ -281,7 +281,6 @@
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
-                <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <package>org.netbeans.modules.cnd.makeproject.api</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.actions</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.compilers</package>
