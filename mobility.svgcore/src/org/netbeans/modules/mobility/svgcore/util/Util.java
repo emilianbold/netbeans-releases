@@ -321,7 +321,7 @@ public class Util {
             SVGElement elem = PerseusController.findElementById(svg, elementId);
             if (elem != null && elem instanceof SVGLocatableElement) {
                 SVGLocatableElement svgElement = (SVGLocatableElement) elem;
-                SVGRect bBox = PerseusController.getSafeBBox(svgElement);
+                SVGRect bBox = PerseusController.getFullBBox(svgElement);
 
                 // svg -> screen
                 SVGMatrix svgCTM = svg.getScreenCTM();
