@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.management.api;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.dlight.api.execution.DLightSessionContext;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
@@ -487,8 +488,18 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             sessionStateListeners.clear();
             sessionStateListeners = null;
         }
-        DataStorageManager.getInstance().closeSession(this);
-        cleanVisualizers();
+        if (!EventQueue.isDispatchThread()){
+            DataStorageManager.getInstance().closeSession(this);
+            cleanVisualizers();
+        }else{
+            DLightExecutorService.submit(new Runnable() {
+
+                public void run() {
+                    DataStorageManager.getInstance().closeSession(DLightSession.this);
+                    cleanVisualizers();
+                }
+            }, "DLight Session " + this.getDisplayName() + " is closing..");//NOI18N
+        }
     }
 
     private void targetStarted(DLightTarget target) {
