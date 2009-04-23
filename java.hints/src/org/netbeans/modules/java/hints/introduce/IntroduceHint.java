@@ -184,7 +184,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
             TypeMirror type = ci.getTrees().getTypeMirror(tp);
 
-            if (type.getKind() == TypeKind.ERROR) {
+            if (type != null && type.getKind() == TypeKind.ERROR) {
                 type = ci.getTrees().getOriginalType((ErrorType) type);
             }
 

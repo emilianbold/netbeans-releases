@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,46 +37,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira;
+package org.netbeans.test.autoupdate.xml;
 
-import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.openide.util.NbBundle;
+import javax.swing.tree.TreePath;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
 /**
  *
- * @author Tomas Stupka
+ * @author michaelnazarov@netbeans.org
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
-public class JiraConnector extends BugtrackingConnector {
 
-    public String getDisplayName() {
-        return getConnectorName();
+public class xml_0001 extends xml {
+    
+    public xml_0001(String arg0) {
+        super(arg0);
     }
 
-    public String getTooltip() {
-        return "Jira Issue Tracking System";
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( xml_0001.class ).addTest(
+              "InstallSOA"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
     }
 
-    @Override
-    public Repository createRepository() {
-        return new JiraRepository();
-    }
+    public void InstallSOA( )
+    {
+      startTest( );
 
-    @Override
-    public Repository[] getRepositories() {
-        return Jira.getInstance().getRepositories();
-    }
+      InstallSOAInternal( );
 
-    public static String getConnectorName() {
-        return NbBundle.getMessage(JiraConnector.class, "LBL_ConnectorName");           // NOI18N
+      endTest( );
     }
-
 }

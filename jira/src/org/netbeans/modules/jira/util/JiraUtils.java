@@ -37,40 +37,34 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira;
+package org.netbeans.modules.jira.util;
 
-import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
-public class JiraConnector extends BugtrackingConnector {
+public class JiraUtils {
 
-    public String getDisplayName() {
-        return getConnectorName();
-    }
-
-    public String getTooltip() {
-        return "Jira Issue Tracking System";
-    }
-
-    @Override
-    public Repository createRepository() {
-        return new JiraRepository();
-    }
-
-    @Override
-    public Repository[] getRepositories() {
-        return Jira.getInstance().getRepositories();
-    }
-
-    public static String getConnectorName() {
-        return NbBundle.getMessage(JiraConnector.class, "LBL_ConnectorName");           // NOI18N
+    public static boolean show(JPanel panel, String title, String okName, HelpCtx helpCtx) {
+        JButton ok = new JButton(okName);
+        JButton cancel = new JButton(NbBundle.getMessage(JiraUtils.class, "LBL_Cancel")); // NOI18N
+        DialogDescriptor descriptor = new DialogDescriptor (
+                panel,
+                title,
+                true,
+                new Object[] {ok, cancel},
+                ok,
+                DialogDescriptor.DEFAULT_ALIGN,
+                helpCtx,
+                null);
+        return DialogDisplayer.getDefault().notify(descriptor) == ok;
     }
 
 }
