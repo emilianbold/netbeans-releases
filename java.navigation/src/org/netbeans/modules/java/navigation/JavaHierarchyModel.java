@@ -453,13 +453,17 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
             TypeElement superClass = (TypeElement) types.asElement(typeElement.getSuperclass());
             if (superClass != null && !superClass.getQualifiedName().toString().equals(Object.class.getName())) {
-                if(!hasCycle(superClass))insert(new TypeTreeNode(getFileObject(), superClass, compilationInfo, this, true), index++);
+                if(!hasCycle(superClass)){
+                    insert(new TypeTreeNode(getFileObject(), superClass, compilationInfo, this, true), index++);
+                }
             }
             List<? extends TypeMirror> interfaces = typeElement.getInterfaces();
             for (TypeMirror interfaceMirror:interfaces) {
                 TypeElement interfaceElement = (TypeElement) types.asElement(interfaceMirror);
                 if (interfaceElement != null) {
-                    if(!hasCycle((TypeElement)interfaceElement))insert(new TypeTreeNode(getFileObject(), (TypeElement)interfaceElement, compilationInfo, this, true), index++);
+                    if(!hasCycle((TypeElement)interfaceElement)){
+                        insert(new TypeTreeNode(getFileObject(), (TypeElement)interfaceElement, compilationInfo, this, true), index++);
+                    }
                 }
             }
 
@@ -472,7 +476,9 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                             (childElement.getKind() == ElementKind.ENUM) ||
                             (childElement.getKind() == ElementKind.ANNOTATION_TYPE)) {
                             node = new TypeTreeNode(getFileObject(), (TypeElement)childElement, compilationInfo, this, true);
-                            if(!hasCycle((TypeElement) childElement))insert(node, index++);
+                            if(!hasCycle((TypeElement) childElement)){
+                                insert(node, index++);
+                            }
                         }
                     }
                 }
