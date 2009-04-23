@@ -39,25 +39,19 @@
 
 package org.netbeans.modules.web.jspparser;
 
-import java.io.File;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import junit.framework.Test;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.project.JavaAntLogger;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
 
 /**
  * Tests that need "full" IDE can be placed here.
@@ -69,32 +63,16 @@ public class IdeEnvironmentTest extends NbTestCase {
         super(testName);
     }
 
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.emptyConfiguration().addTest(IdeEnvironmentTest.class).gui(false));
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
 
         clearWorkDir();
-
-        File userdir = new File(getWorkDir(), "userdir");
-        FileUtil.createFolder(userdir);
-        System.setProperty("netbeans.user", userdir.getPath());
-
-        File platformCluster = new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                .getParentFile().getParentFile();
-        File ideCluster = new File(ProjectManager.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                .getParentFile().getParentFile();
-        File javaCluster = new File(JavaAntLogger.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                .getParentFile().getParentFile();
-        File enterCluster = new File(WebModule.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                .getParentFile().getParentFile();
-        System.setProperty("netbeans.home", platformCluster.getPath());
-        System.setProperty("netbeans.dirs", javaCluster.getPath() + File.pathSeparator + enterCluster.getPath()
-                + File.pathSeparator + ideCluster.getPath());
-
-        Logger.getLogger("org.netbeans.core.startup.ModuleList").setLevel(Level.OFF);
-
-        // module system
-        Lookup.getDefault().lookup(ModuleInfo.class);
     }
 
     // test for issue #70426

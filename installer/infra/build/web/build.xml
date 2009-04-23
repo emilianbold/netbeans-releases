@@ -170,17 +170,15 @@
     <target name="web-page-add-language" if="locale.present">
 	<if property="locale.file.present">
             <property file="${web.page.dir}/language${locale.suffix}.properties"/>
-	    <echo encoding="utf-8" file="${languages.js}.temp">LANGUAGE_NAMES.push("${language.name}");
-LANGUAGE_IDS.push("${language.id}");
-</echo>
+	    <echo encoding="utf-8" file="${languages.js}.temp">add_language("${language.id}", "${language.name}"</echo>
 	</if>
         <set property="suffix.to.use" value=""/>
 
         <if property="webpage.locale.present">
-	     <echo encoding="utf-8" file="${languages.js}.temp" append="true">LANGUAGE_SUFFIXES.push("${locale.name}");
-LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
-</echo>
+	     <echo encoding="utf-8" file="${languages.js}.temp" append="true">, "${locale.name}", "${language.webpage.name}"</echo>
         </if>
+        <echo encoding="utf-8" file="${languages.js}.temp" append="true">);
+</echo>
 
 	<loadfile encoding="utf-8" srcfile="${languages.js}.temp" property="jstmpfile">
 	  <filterchain>
