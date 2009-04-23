@@ -80,6 +80,11 @@ public final class LazyTryCatchStatementImpl extends LazyStatementImpl implement
     }
 
     @Override
+    protected int/*CPPTokenTypes*/ getFirstTokenID() {
+        return CPPTokenTypes.LITERAL_try;
+    }
+
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
     }

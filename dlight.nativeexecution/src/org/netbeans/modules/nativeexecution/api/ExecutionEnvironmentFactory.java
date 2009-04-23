@@ -104,10 +104,10 @@ public class ExecutionEnvironmentFactory {
     /**
      * Returns a string representation of the executionEnvironment,
      * so that client can store it (for example, in properties)
-     * and restore later via fromString()
+     * and restore later via fromUniqueID
      * either user@host or "localhost"
      */
-    public static String toString(ExecutionEnvironment executionEnvironment) {
+    public static String toUniqueID(ExecutionEnvironment executionEnvironment) {
         if (executionEnvironment.isLocal()) {
             // "localhost" is for compatibility with remote development 6.5
             return "localhost"; //NOI18N
@@ -123,10 +123,10 @@ public class ExecutionEnvironmentFactory {
 
     /**
      * Creates an instance of ExecutionEnvironment
-     * by string that was got via toString() method
-     * @param hostKey a string that was returned by toString() method.
+     * by string that was got via toUniqueID() method
+     * @param hostKey a string that was returned by toUniqueID() method.
      */
-    public static ExecutionEnvironment fromString(String hostKey) {
+    public static ExecutionEnvironment fromUniqueID(String hostKey) {
         // TODO: remove this check and refactor clients to use getLocal() instead
         if ("localhost".equals(hostKey) || "127.0.0.1".equals(hostKey)) { //NOI18N
             return LOCAL;

@@ -232,7 +232,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     private void addCompilerSet() {
         AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
         String title = isRemoteHostSelected() ? 
-            getString("NEW_TOOL_SET_TITLE_REMOTE", ExecutionEnvironmentFactory.toString(csm.getExecutionEnvironment())) :
+            getString("NEW_TOOL_SET_TITLE_REMOTE", ExecutionEnvironmentFactory.toUniqueID(csm.getExecutionEnvironment())) :
             getString("NEW_TOOL_SET_TITLE");
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
         panel.setDialogDescriptor(dialogDescriptor);

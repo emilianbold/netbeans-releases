@@ -799,6 +799,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                     getProjectName(), 
                     SourceAndIssuesWizardPanelGUI.SVN_DEFAULT_NAME));
             settings.putProperty(NewKenaiProjectWizardIterator.PROP_AUTO_COMMIT, Boolean.toString(isAutoCommit()));
+            settings.putProperty(NewKenaiProjectWizardIterator.PROP_CREATE_CHAT, true);
         }
     }
 

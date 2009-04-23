@@ -91,7 +91,7 @@ public abstract class RemoteTestBase extends BaseTestCase {
             private List<String> fakeIncludes = new ArrayList<String>();
 
             private FakeTool() {
-                super(ExecutionEnvironmentFactory.fromString("fake"), CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
+                super(ExecutionEnvironmentFactory.fromUniqueID("fake"), CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
                 fakeIncludes.add("/usr/include"); //NOI18N
                 fakeIncludes.add("/usr/local/include"); //NOI18N
                 fakeIncludes.add("/usr/sfw/include"); //NOI18N
