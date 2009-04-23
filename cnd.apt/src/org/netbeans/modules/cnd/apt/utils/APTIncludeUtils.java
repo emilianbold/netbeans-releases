@@ -52,7 +52,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -103,17 +102,19 @@ public class APTIncludeUtils {
             if (!isDirectory(fileFromPath) && exists(fileFromPath)) {
                 return new ResolvedPath(sysPrefix, fileFromPath.getAbsolutePath(), false, dirOffset);
             } else {
-                int i = includedFile.indexOf('/'); // NOI18N
-                if (i > 0 && sysPrefixString.endsWith("/Frameworks")){ // NOI18N
-                    // possible it is framework include (see IZ#160043)
-                    // #include <GLUT/glut.h>
-                    // header is located in the /System/Library/Frameworks/GLUT.framework/Headers
-                    // system path is /System/Library/Frameworks
-                    // So convert framework path
-                    String fileName = sysPrefixString+"/"+includedFile.substring(0,i)+".framework/Headers"+includedFile.substring(i); // NOI18N
-                    fileFromPath = new File(fileName);
-                    if (!isDirectory(fileFromPath) && exists(fileFromPath)) {
-                        return new ResolvedPath(sysPrefix, fileFromPath.getAbsolutePath(), false, dirOffset);
+                if (sysPrefixString.endsWith("/Frameworks")){ // NOI18N
+                    int i = includedFile.indexOf('/'); // NOI18N
+                    if (i > 0) {
+                        // possible it is framework include (see IZ#160043)
+                        // #include <GLUT/glut.h>
+                        // header is located in the /System/Library/Frameworks/GLUT.framework/Headers
+                        // system path is /System/Library/Frameworks
+                        // So convert framework path
+                        String fileName = sysPrefixString+"/"+includedFile.substring(0,i)+".framework/Headers"+includedFile.substring(i); // NOI18N
+                        fileFromPath = new File(fileName);
+                        if (!isDirectory(fileFromPath) && exists(fileFromPath)) {
+                            return new ResolvedPath(sysPrefix, fileFromPath.getAbsolutePath(), false, dirOffset);
+                        }
                     }
                 }
             }
