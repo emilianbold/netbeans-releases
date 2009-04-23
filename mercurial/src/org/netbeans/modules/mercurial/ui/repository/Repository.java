@@ -60,7 +60,6 @@ import java.util.Vector;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -258,24 +257,9 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         }
     }
 
-    private final class DocumentChangeHandler implements DocumentListener,
-                                                         Runnable {
+    private final class DocumentChangeHandler implements DocumentListener {
 
-        private final Document modifiedDocument;
-        private final boolean urlSelectedFromPopup;
-
-        private DocumentChangeHandler() { 
-            this(null);
-        }
-
-        private DocumentChangeHandler(Document modifiedDocument) {
-            this(modifiedDocument, false);
-        }
-
-        private DocumentChangeHandler(Document modifiedDocument, boolean urlSelectedFromPopup) {
-            this.modifiedDocument = modifiedDocument;
-            this.urlSelectedFromPopup = urlSelectedFromPopup;
-        }
+        DocumentChangeHandler() { }
 
         public void insertUpdate(DocumentEvent e) {
             textChanged(e);
@@ -288,21 +272,15 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         }
 
         private void textChanged(final DocumentEvent e) {
-            // repost later to AWT otherwise it can deadlock because
-            // the document is locked while firing event and we try
-            // synchronously access its content from selected repository
-            assert (e.getDocument() == urlDoc) || !urlBeingSelectedFromPopup;
-            SwingUtilities.invokeLater(
-                    new DocumentChangeHandler(e.getDocument(),
-                                              urlBeingSelectedFromPopup));
-        }
-
-        public void run() {
             assert EventQueue.isDispatchThread();
+
+            Document modifiedDocument = e.getDocument();
+
             assert modifiedDocument != null;
+            assert (modifiedDocument == urlDoc) || !urlBeingSelectedFromPopup;
 
             if (modifiedDocument == urlDoc) {
-                onUrlChange(urlSelectedFromPopup);
+                onUrlChange();
             } else if (modifiedDocument == usernameDoc) {
                 onUsernameChange();
             } else if (modifiedDocument == passwordDoc) {
@@ -329,8 +307,8 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
     /**    
      * Always updates UI fields visibility.
      */
-    private void onUrlChange(boolean urlSelectedFromPopup) {
-        if (!urlSelectedFromPopup) {
+    private void onUrlChange() {
+        if (!urlBeingSelectedFromPopup) {
             repositoryConnection = null;
             url = null;
         }
