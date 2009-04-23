@@ -601,6 +601,17 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
 
             printParams(methodNode, out);
 
+            ClassNode[] exceptions = methodNode.getExceptions();
+            if (exceptions != null && exceptions.length > 0) {
+                out.print(" throws ");
+                for (int i = 0; i < exceptions.length; i++) {
+                    if (i > 0) {
+                        out.print(", ");
+                    }
+                    printType(exceptions[i], out);
+                }
+            }
+
             if ((methodNode.getModifiers() & Opcodes.ACC_ABSTRACT) != 0) {
                 out.println(";");
             } else {

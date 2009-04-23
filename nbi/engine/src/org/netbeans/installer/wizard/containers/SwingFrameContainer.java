@@ -609,8 +609,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
          */
         private void initComponents() {
             // titleLabel ///////////////////////////////////////////////////////////
-            titleLabel = new NbiLabel();
-            titleLabel.setFocusable(true);
+            titleLabel = new NbiLabel();           
             titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
             
             // descriptionPane //////////////////////////////////////////////////////

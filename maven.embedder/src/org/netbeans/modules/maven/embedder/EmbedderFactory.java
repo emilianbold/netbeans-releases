@@ -293,6 +293,7 @@ public final class EmbedderFactory {
                 //MEVENIDE-634 make all instances non-interactive
                 WagonManager wagonManager = (WagonManager) embedder.getPlexusContainer().lookup(WagonManager.ROLE);
                 wagonManager.setInteractive( false );
+                wagonManager.setDownloadMonitor(new ProgressTransferListener());
             } catch (ComponentLookupException ex) {
                 ErrorManager.getDefault().notify(ex);
             }

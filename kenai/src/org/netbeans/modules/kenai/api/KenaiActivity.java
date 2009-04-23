@@ -70,11 +70,11 @@ public enum KenaiActivity {
     WIKI_READ       (Type.WIKI,     "read"),
     WIKI_WRITE      (Type.WIKI,     "write"),
 
-//    PROJECTS_READ   (Type.PROJECTS, "read"),
-//    PROJECTS_CREATE (Type.PROJECTS, "create"),
-//    PROJECTS_UPDATE (Type.PROJECTS, "update"),
-//    PROJECTS_DELETE (Type.PROJECTS, "delete"),
-//    PROJECTS_ADMIN  (Type.PROJECTS, "admin"),
+    PROJECTS_READ   (Type.PROJECTS, "read"),
+    PROJECTS_CREATE (Type.PROJECTS, "create"),
+    PROJECTS_UPDATE (Type.PROJECTS, "update"),
+    PROJECTS_DELETE (Type.PROJECTS, "delete"),
+    PROJECTS_ADMIN  (Type.PROJECTS, "admin"),
 
     SOURCE_READ     (Type.SOURCE,   "read"),
     SOURCE_WRITE    (Type.SOURCE,   "write"),

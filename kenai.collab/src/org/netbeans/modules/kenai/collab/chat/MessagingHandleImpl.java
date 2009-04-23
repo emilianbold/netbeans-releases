@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.collab.chat;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
 import org.openide.awt.Notification;
 
@@ -52,10 +53,15 @@ public class MessagingHandleImpl extends MessagingHandle {
 
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private Notification notification;
-    private int onlineCount = -1;
+    private int onlineCount;
     private int messageCount = -1;
 
     MessagingHandleImpl() {
+        if (System.getProperty("kenai.com.url", "https://kenai.com").endsWith("testkenai.com")) {
+            onlineCount = Kenai.getDefault().getPasswordAuthentication()==null?-1:-2;
+        } else {
+            onlineCount = -1;
+        }
     }
     /**
      * Get the value of messageCount

@@ -54,7 +54,7 @@ public class NbiTextPane extends JTextPane {
         setOpaque(false);
         setEditable(false);
         setBorder(new EmptyBorder(0, 0, 0, 0));
-        
+        setFocusable(false);
         putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, true);
         
         if (UIManager.getLookAndFeel().getID().equals("Nimbus")) {

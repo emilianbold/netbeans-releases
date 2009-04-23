@@ -259,6 +259,8 @@ public final class SuiteUtils {
     }
     
     private void addModule(final NbModuleProject project) throws IOException, IllegalArgumentException {
+        // TODO - in case of removing from s1 and adding to s2, custom code switching module owner
+        // directly is more appropriate. Between the calls, project metadata are in inconsistent state.
         SuiteUtils.removeModuleFromSuite(project);
         // attach it to the new suite
         attachSubModuleToSuite(project);
