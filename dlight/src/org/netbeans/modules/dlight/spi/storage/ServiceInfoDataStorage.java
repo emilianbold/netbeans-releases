@@ -46,10 +46,10 @@ import java.util.Map;
  * This SPI will be used to
  */
 public interface ServiceInfoDataStorage {
-    static final String EXECUTION_ENV_KEY = "service.storage.execution.env.key";
-    static final String HOST_NAME = "service.storage.hostname";
-    static final String USER_NAME = "service.storage.username";
-    static final String PORT = "service.storage.port";
+    static final String EXECUTION_ENV_KEY = "service.storage.execution.env.key";//NOI18N
+    static final String HOST_NAME = "service.storage.hostname";//NOI18N
+    static final String USER_NAME = "service.storage.username";//NOI18N
+    static final String PORT = "service.storage.port";//NOI18N
     
     Map<String, String> getInfo();
     String getValue(String name);
