@@ -159,50 +159,40 @@ public class ProjectsRootNode extends AbstractNode {
      * @return the node or null if the node was not found
      */
     Node findNode(FileObject target) {        
-        
+
         ProjectChildren ch = (ProjectChildren)getChildren();
-        
-        if ( ch.type == LOGICAL_VIEW ) {
-            // Speed up search in case we have an owner project - look in its node first.
-            Project ownerProject = FileOwnerQuery.getOwner(target);
-            for (int lookOnlyInOwnerProject = (ownerProject != null) ? 0 : 1; lookOnlyInOwnerProject < 2; lookOnlyInOwnerProject++) {
-                for (Node node : ch.getNodes(true)) {
-                    Project p = node.getLookup().lookup(Project.class);
-                    assert p != null : "Should have had a Project in lookup of " + node;
-                    if (lookOnlyInOwnerProject == 0 && p != ownerProject) {
-                        continue; // but try again (in next outer loop) as a fallback
-                    }
+
+        assert ((ch.type == LOGICAL_VIEW) || (ch.type == PHYSICAL_VIEW));
+        // Speed up search in case we have an owner project - look in its node first.
+        Project ownerProject = FileOwnerQuery.getOwner(target);
+        for (int lookOnlyInOwnerProject = (ownerProject != null) ? 0 : 1; lookOnlyInOwnerProject < 2; lookOnlyInOwnerProject++) {
+            for (Node node : ch.getNodes(true)) {
+                Project p = node.getLookup().lookup(Project.class);
+                assert p != null : "Should have had a Project in lookup of " + node;
+                if (lookOnlyInOwnerProject == 0 && p != ownerProject) {
+                    continue; // but try again (in next outer loop) as a fallback
+                }
+                Node n = null;
+                if (ch.type == LOGICAL_VIEW) {
                     LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
                     if (lvp != null) {
                         // XXX (cf. #63554): really should be calling this on DataObject usually, since
                         // DataNode does *not* currently have a FileObject in its lookup (should it?)
                         // ...but it is not clear who has implemented findPath to assume FileObject!
-                        Node selectedNode = lvp.findPath(node, target);
-                        if (selectedNode != null) {
-                            return selectedNode;
-                        }
+                        n = lvp.findPath(node, target);
+                    }
+                } else if (ch.type == PHYSICAL_VIEW){
+                    PhysicalView.PathFinder pf = node.getLookup().lookup(PhysicalView.PathFinder.class);
+                    if ( pf != null ) {
+                        n = pf.findPath(node, target);
                     }
                 }
-            }
-            return null;
-            
-        }
-        else if ( ch.type == PHYSICAL_VIEW ) {
-            for (Node node : ch.getNodes(true)) {
-                // XXX could do similar optimization as for LOGICAL_VIEW; every nodes[i] must have some Project in its lookup
-                PhysicalView.PathFinder pf = node.getLookup().lookup(PhysicalView.PathFinder.class);
-                if ( pf != null ) {
-                    Node n = pf.findPath(node, target);
-                    if ( n != null ) {
-                        return n;
-                    }
+                if ( n != null ) {
+                    return n;
                 }
             }
-            return null;
-        }       
-        else {
-            return null;
         }
+        return null;
     }
 
     static void checkNoLazyNode(Object msg) {
