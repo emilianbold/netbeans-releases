@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,35 +39,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.apt.support;
+package org.netbeans.modules.j2ee.dd.api.web;
 
-import org.netbeans.modules.cnd.apt.impl.support.lang.APTLanguageSupportImpl;
+public interface ServletMapping25 extends ServletMapping {
 
-/**
- * support for languages:
- *  - filters collection
- * @author Vladimir Voskresensky
- */
-public class APTLanguageSupport {
-    private static APTLanguageSupport singleton = new APTLanguageSupport();
-
-    public static final String STD_C    = "Std C Language"; // NOI18N
-    public static final String GNU_C    = "Gnu C Language"; // NOI18N
-    public static final String GNU_CPP  = "Gnu C++ Language"; // NOI18N
-    public static final String STD_CPP  = "Std C++ Language"; // NOI18N
-    
-    private APTLanguageSupport() {
-    }
-    
-    public static APTLanguageSupport getInstance() {
-        return singleton;
-    }
-    
-    public APTLanguageFilter getFilter(String lang) {
-        return APTLanguageSupportImpl.getFilter(lang);
-    }
-    
-    public void addFilter(String lang, final APTLanguageFilter filter) {
-        APTLanguageSupportImpl.addFilter(lang, filter);
-    }
+    void setUrlPattern(int index, String value);
+    String getUrlPattern(int index);
+    void setUrlPatterns(String[] value);
+    String[] getUrlPatterns();
+    int sizeUrlPattern();
+    int addUrlPattern(String value);
+    int removeUrlPattern(String value);
 }

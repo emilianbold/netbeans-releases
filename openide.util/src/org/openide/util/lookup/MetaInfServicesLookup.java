@@ -128,7 +128,10 @@ final class MetaInfServicesLookup extends AbstractLookup {
             }
         }
 
-        notifyListeners(listeners);
+        NotifyListeners notify = new NotifyListeners(listeners);
+        if (notify.shallRun()) {
+            notify.run();
+        }
     }
 
     /** Finds all pairs and adds them to the collection.

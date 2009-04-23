@@ -39,35 +39,49 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.apt.support;
+package org.netbeans.test.autoupdate.xml;
 
-import org.netbeans.modules.cnd.apt.impl.support.lang.APTLanguageSupportImpl;
+import javax.swing.tree.TreePath;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
+import junit.framework.Test;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
 /**
- * support for languages:
- *  - filters collection
- * @author Vladimir Voskresensky
+ *
+ * @author michaelnazarov@netbeans.org
  */
-public class APTLanguageSupport {
-    private static APTLanguageSupport singleton = new APTLanguageSupport();
 
-    public static final String STD_C    = "Std C Language"; // NOI18N
-    public static final String GNU_C    = "Gnu C Language"; // NOI18N
-    public static final String GNU_CPP  = "Gnu C++ Language"; // NOI18N
-    public static final String STD_CPP  = "Std C++ Language"; // NOI18N
+public class xml_0002 extends xml {
     
-    private APTLanguageSupport() {
+    public xml_0002(String arg0) {
+        super(arg0);
     }
-    
-    public static APTLanguageSupport getInstance() {
-        return singleton;
+
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( xml_0002.class ).addTest(
+              "UninstallSOA"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
     }
-    
-    public APTLanguageFilter getFilter(String lang) {
-        return APTLanguageSupportImpl.getFilter(lang);
-    }
-    
-    public void addFilter(String lang, final APTLanguageFilter filter) {
-        APTLanguageSupportImpl.addFilter(lang, filter);
+
+    public void UninstallSOA( )
+    {
+      startTest( );
+
+      UninstallSOAInternal( );
+
+      endTest( );
     }
 }
