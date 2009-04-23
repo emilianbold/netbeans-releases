@@ -40,6 +40,7 @@
  */
 package org.openide.util.lookup;
 
+import java.io.PrintStream;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -552,12 +553,34 @@ public class AbstractLookup extends Lookup implements Serializable {
                 } else {
                     ll.resultChanged(ev);
                 }
+            } catch (StackOverflowError err) {
+                throw new CycleError(evAndListeners); // NOI18N
             } catch (RuntimeException e) {
                 // Such as e.g. occurred in #32040. Do not halt other things.
                 e.printStackTrace();
             }
         }
     }
+
+    private static class CycleError extends StackOverflowError {
+        private final Collection<Object> print;
+        public CycleError(Collection<Object> evAndListeners) {
+            this.print = evAndListeners;
+        }
+
+        @Override
+        public String getMessage() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("StackOverflowError, here are the listeners:\n"); // NOI18N
+            for (Object o : print) {
+                sb.append('\n').append(o);
+                if (sb.length() > 10000) {
+                    break;
+                }
+            }
+            return sb.toString();
+        }
+    } // end of CycleError
 
     /** A method that defines matching between Item and Template.
      * @param t template providing the criteria
