@@ -258,6 +258,7 @@ public class LicensesPanel extends WizardPanel {
             
             // licenseScrollPane ////////////////////////////////////////////////////
             licenseScrollPane = new NbiScrollPane(licensePane);
+            licenseScrollPane.setFocusable(true);
             
             // acceptCheckBox ///////////////////////////////////////////////////////
             acceptCheckBox = new NbiCheckBox();
