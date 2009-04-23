@@ -39,30 +39,32 @@
 
 package org.netbeans.modules.jira.util;
 
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class TasksUtil {
+public class JiraUtils {
 
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.issues");
-
-    public static boolean show(JPanel panel, String title, String okName) {
+    public static boolean show(JPanel panel, String title, String okName, HelpCtx helpCtx) {
         JButton ok = new JButton(okName);
-        JButton cancel = new JButton("Cancel");
-        NotifyDescriptor descriptor = new NotifyDescriptor (
+        JButton cancel = new JButton(NbBundle.getMessage(JiraUtils.class, "LBL_Cancel")); // NOI18N
+        DialogDescriptor descriptor = new DialogDescriptor (
                 panel,
                 title,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                new Object [] { ok, cancel },
-                ok);
+                true,
+                new Object[] {ok, cancel},
+                ok,
+                DialogDescriptor.DEFAULT_ALIGN,
+                helpCtx,
+                null);
         return DialogDisplayer.getDefault().notify(descriptor) == ok;
     }
+
 }
