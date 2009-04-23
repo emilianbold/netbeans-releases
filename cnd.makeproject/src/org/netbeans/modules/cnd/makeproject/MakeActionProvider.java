@@ -320,7 +320,7 @@ public class MakeActionProvider implements ActionProvider {
                     ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), false, true);
                 }
             } else if (!record.isOnline()) {
-                message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getDisplayName());
+                message = MessageFormat.format(getString("ERR_NeedToConnectToRemoteHost"), record.getDisplayName());
                 res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
             }
             if (res != JOptionPane.YES_OPTION) {
@@ -1305,7 +1305,7 @@ public class MakeActionProvider implements ActionProvider {
         Map<String, Boolean> map = checkExecutable ? validExecutablesCache : fileExistenceCache;
 
         synchronized (map) {
-            Boolean cached = fileExistenceCache.get(key);
+            Boolean cached = map.get(key);
             if (cached != null && cached.booleanValue()) {
                 return true;
             }
