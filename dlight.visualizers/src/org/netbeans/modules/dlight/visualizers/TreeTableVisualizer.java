@@ -481,10 +481,10 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
 
         isShown = isShowing();
         // Fill model only in case we are really became visible ...
-        if (isShown) {
-            // We are in the AWT thread. Need to update model out of it.
-            asyncFillModel(configuration.getMetadata().getColumns(), true);
-        }
+//        if (isShown) {
+//            // We are in the AWT thread. Need to update model out of it.
+//            asyncFillModel(configuration.getMetadata().getColumns(), true);
+//        }
 
     }
 
