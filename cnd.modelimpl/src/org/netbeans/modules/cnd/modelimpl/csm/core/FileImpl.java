@@ -748,7 +748,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final Object tokStreamLock = new Object();
     private Reference<OffsetTokenStream> tsRef = new SoftReference<OffsetTokenStream>(null);
 
-    public TokenStream getTokenStream(int startOffset, int endOffset, boolean filtered) {
+    public final TokenStream getTokenStream(int startOffset, int endOffset, int/*CPPTokenTypes*/ firstTokenIDIfExpandMacros, boolean filtered) {
         try {
             OffsetTokenStream stream;
             synchronized (tokStreamLock) {
@@ -770,7 +770,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             } else {
 //                System.err.println("use cached stream finished previously on " + stream.getStartOffset() + " now asked for " + startOffset);
             }
-            stream.moveTo(startOffset, endOffset);
+            stream.moveTo(startOffset, endOffset, firstTokenIDIfExpandMacros);
             return stream;
         } catch (TokenStreamException ex) {
             Utils.LOG.severe("Can't create compound statement: " + ex.getMessage());
@@ -797,7 +797,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         private Token next;
         private int endOffset;
 
-        public OffsetTokenStream(TokenStream stream) {
+        private OffsetTokenStream(TokenStream stream) {
             this.stream = stream;
         }
 
@@ -813,18 +813,20 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return out;
         }
 
-        public int getStartOffset() {
+        private int getStartOffset() {
             return next == null || (next.getType() == CPPTokenTypes.EOF) ? Integer.MAX_VALUE : ((APTToken) next).getOffset();
         }
 
-        public void moveTo(int startOffset, int endOffset) throws TokenStreamException {
+        private void moveTo(int startOffset, int endOffset, int/*CPPTokenTypes*/ startTokenIDIfExpandMacros) throws TokenStreamException {
             this.endOffset = endOffset;
             assert this.endOffset >= startOffset;
             for (next = stream.nextToken(); next != null && next.getType() != CPPTokenTypes.EOF; next = stream.nextToken()) {
                 assert (next instanceof APTToken) : "we have only APTTokens in token stream";
                 int currOffset = ((APTToken) next).getOffset();
                 if (currOffset >= startOffset) {
-                    break;
+                    if (!APTUtils.isMacro(next) || (next.getType() == startTokenIDIfExpandMacros)) {
+                        break;
+                    }
                 }
             }
         }
