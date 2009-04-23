@@ -537,7 +537,7 @@ public final class RubyIndexerHelper {
         case 'b':
             if ("base".equals(n)) { // NOI18N
                 String clz = clz(root,method);
-                if ("ActiveRecord::Base".equals(clz)) { // NOI18N
+                if (RubyIndex.ACTIVE_RECORD_BASE.equals(clz)) { // NOI18N
                      String sig = sig(method);
                      if (sig.startsWith("find(")) { // NOI18N
                          return "args(:first|:all),args(=>conditions|order|group|limit|offset|joins|readonly:bool|include|select|from|readonly:bool|lock:bool)"; // NOI18N
