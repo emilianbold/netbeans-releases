@@ -55,11 +55,12 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  * @author Alexander Simon
  */
 /*package-local*/ class FileStateCache {
+    private static final boolean TRACE = false;
     private static final boolean cacheStates = TraceFlags.CACHE_FILE_STATE;
     private static final int CACHE_SIZE = 10;
     private static final int MAX_KEY_SIZE = 100;
-    //private static int stateCacheAttempt = 0;
-    //private static int stateCacheSuccessAttempt = 0;
+    private static int stateCacheAttempt = 0;
+    private static int stateCacheSuccessAttempt = 0;
     private Map<String, Value> stateCache = new LinkedHashMap<String, Value>();
     private final ReadWriteLock stateCacheLock = new ReentrantReadWriteLock();
     private final FileImpl file;
@@ -100,7 +101,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
     /*package-local*/ APTPreprocHandler.State getCachedVisitedState(APTPreprocHandler.State inputState) {
         APTPreprocHandler.State res = null;
         if (cacheStates) {
-            //stateCacheAttempt++;
+            if (TRACE) {stateCacheAttempt++;}
             stateCacheLock.readLock().lock();
             try {
                 if (isCacheableState(inputState)) {
@@ -114,10 +115,10 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
             } finally {
                 stateCacheLock.readLock().unlock();
             }
-            //if (res != null) {
-            //    stateCacheSuccessAttempt++;
-            //    System.err.println("State Cache Attempt="+stateCacheAttempt+" successful="+stateCacheSuccessAttempt+" cache size="+stateCache.size()+" in file "+file.getName());
-            //}
+            if (TRACE && res != null) {
+                stateCacheSuccessAttempt++;
+                System.err.println("State Cache Attempt="+stateCacheAttempt+" successful="+stateCacheSuccessAttempt+" cache size="+stateCache.size()+" in file "+file.getName());
+            }
         }
         return res;
     }
