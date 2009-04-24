@@ -90,7 +90,7 @@ public abstract class QueryParameter {
     static final ParameterValue PV_FIELD_QA_CONTACT = new ParameterValue("qa_contact", "qa_contact"); // NOI18N
     static final ParameterValue PV_FIELD_REPORTER_ACCESSIBLE = new ParameterValue("reporter_accessible", "reporter_accessible"); // NOI18N
     static final ParameterValue PV_FIELD_RESOLUTION = new ParameterValue("resolution", "resolution"); // NOI18N
-    static final ParameterValue PV_FIELD_BUG_SEVERITY = new ParameterValue("bug_severity", "bug_severity"); // NOI18N
+    static final ParameterValue PV_FIELD_BUG_TYPE = new ParameterValue("bug_severity", "bug_severity"); // NOI18N
     static final ParameterValue PV_FIELD_BUG_STATUS = new ParameterValue("bug_status", "bug_status"); // NOI18N
     static final ParameterValue PV_FIELD_SHORT_DESC = new ParameterValue("short_desc", "short_desc"); // NOI18N
     static final ParameterValue PV_FIELD_TARGET_MILESTONE = new ParameterValue("target_milestone", "target_milestone"); // NOI18N
@@ -139,7 +139,7 @@ public abstract class QueryParameter {
         PV_FIELD_QA_CONTACT,
         PV_FIELD_REPORTER_ACCESSIBLE,
         PV_FIELD_RESOLUTION,
-        PV_FIELD_BUG_SEVERITY,
+        PV_FIELD_BUG_TYPE,
         PV_FIELD_BUG_STATUS,
         PV_FIELD_SHORT_DESC,
         PV_FIELD_TARGET_MILESTONE,

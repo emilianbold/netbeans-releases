@@ -57,6 +57,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.commands.JiraExecutor;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.openide.util.ImageUtilities;
@@ -83,6 +84,7 @@ public class JiraRepository extends Repository {
     private Task refreshIssuesTask;
     private Task refreshQueryTask;
     private RequestProcessor refreshProcessor;
+    private JiraExecutor executor;
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -98,10 +100,6 @@ public class JiraRepository extends Repository {
             password = "";                                                      // NOI18N
         }
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-    }
-
-    JiraRepository(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
     }
 
     public Query createQuery() {
@@ -132,15 +130,15 @@ public class JiraRepository extends Repository {
 
     @Override
     public Issue getIssue(String id) {
-        JiraIssue issue = null;
-        try {
-            issue = Jira.getInstance().getClient(taskRepository).getIssueByKey(id, new NullProgressMonitor());
-            if(issue != null) {
-                return new NbJiraIssue(issue, this);
-            }
-        } catch (JiraException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        }
+//        JiraIssue issue = null;
+//        try {
+//            issue = Jira.getInstance().getClient(taskRepository).getIssueByKey(id, new NullProgressMonitor());
+//            if(issue != null) {
+//                return new NbJiraIssue(issue, this);
+//            }
+//        } catch (JiraException ex) {
+//            Jira.LOG.log(Level.SEVERE, null, ex);
+//        }
         return null;
     }
 
@@ -393,12 +391,18 @@ public class JiraRepository extends Repository {
             super(JiraRepository.this.getUrl());
         }
         protected Issue createIssue(TaskData taskData) {
-            // XXX
-            return null; //new NbJiraIssue(taskData, JiraRepository.this);
+            return new NbJiraIssue(taskData, JiraRepository.this);
         }
         protected void setTaskData(Issue issue, TaskData taskData) {
-            // XXX
-            //((NbJiraIssue)issue).setTaskData(taskData);
+            ((NbJiraIssue)issue).setTaskData(taskData);
         }
     }
+
+    public JiraExecutor getExecutor() {
+        if(executor == null) {
+            executor = new JiraExecutor(this);
+        }
+        return executor;
+    }
+
 }
