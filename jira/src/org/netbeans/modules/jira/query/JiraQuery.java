@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -55,7 +55,6 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
-import org.netbeans.modules.jira.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -72,33 +71,33 @@ public class JiraQuery extends Query {
     private final Set<String> issues = new HashSet<String>();
     private Set<String> archivedIssues = new HashSet<String>();
 
-    protected FilterDefinition filterDefinition;
+    protected JiraFilter jiraFilter;
     private boolean firstRun = true;
 
     public JiraQuery(JiraRepository repository) {
         this(null, repository, null, false, -1);
     }
 
-    protected JiraQuery(String name, JiraRepository repository, FilterDefinition filterDefinition, boolean saved) {
+    protected JiraQuery(String name, JiraRepository repository, JiraFilter jiraFilter, boolean saved) {
         super();
         this.name = name;
         this.repository = repository;
-        this.filterDefinition = filterDefinition;
+        this.jiraFilter = jiraFilter;
         this.saved = saved;
         // let the subclass create the controller
     }
 
-    public JiraQuery(String name, JiraRepository repository, FilterDefinition filterDefinition, long lastRefresh) {
-        this(name, repository, filterDefinition, true, lastRefresh);
+    public JiraQuery(String name, JiraRepository repository, JiraFilter jiraFilter, long lastRefresh) {
+        this(name, repository, jiraFilter, true, lastRefresh);
     }
 
-    private JiraQuery(String name, JiraRepository repository, FilterDefinition filterDefinition, boolean saved, long lastRefresh) {
+    private JiraQuery(String name, JiraRepository repository, JiraFilter jiraFilter, boolean saved, long lastRefresh) {
         this.repository = repository;
         this.saved = saved;
         this.name = name;
-        this.filterDefinition = filterDefinition;
+        this.jiraFilter = jiraFilter;
         this.setLastRefresh(lastRefresh);
-        controller = createControler(repository, this, filterDefinition);
+        controller = createControler(repository, this, jiraFilter);
     }
 
     @Override
@@ -114,7 +113,7 @@ public class JiraQuery extends Query {
     @Override
     public synchronized QueryController getController() {
         if (controller == null) {
-            controller = createControler(repository, this, filterDefinition);
+            controller = createControler(repository, this, jiraFilter);
         }
         return controller;
     }
@@ -124,8 +123,8 @@ public class JiraQuery extends Query {
         return repository;
     }
 
-    protected QueryController createControler(JiraRepository r, JiraQuery q, FilterDefinition filterDefinition) {
-        return new QueryController(r, q, filterDefinition);
+    protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
+        return new QueryController(r, q, jiraFilter);
     }
 
     @Override
@@ -140,7 +139,7 @@ public class JiraQuery extends Query {
 
     boolean refreshIntern(final boolean autoRefresh) { // XXX what if already running! - cancel task
 
-        assert filterDefinition != null;
+        assert jiraFilter != null;
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
         final boolean ret[] = new boolean[1];
@@ -151,8 +150,7 @@ public class JiraQuery extends Query {
 
                     // keeps all issues we will retrieve from the server
                     // - those matching the query criteria
-                    // - and the obsolete ones
-
+                    // - and the archived
                     issues.clear();
                     archivedIssues.clear();
                     if(isSaved()) {
@@ -168,7 +166,7 @@ public class JiraQuery extends Query {
 
                     // run query to know what matches the criteria
                     // IssuesIdCollector will populate the issues set
-                    PerformQueryCommand queryCmd = new PerformQueryCommand(repository, filterDefinition, new IssuesCollector());
+                    PerformQueryCommand queryCmd = new PerformQueryCommand(repository, jiraFilter, new IssuesCollector());
                     repository.getExecutor().execute(queryCmd, !autoRefresh);
                     ret[0] = !queryCmd.hasFailed();
                     if(!ret[0]) {
@@ -178,7 +176,7 @@ public class JiraQuery extends Query {
                     // only issues not returned by the query are archived
                     archivedIssues.removeAll(issues);
                     if(isSaved()) {
-                        // ... and store all you got
+                        // ... and store teh actuall state
                         repository.getIssueCache().storeQueryIssues(JiraQuery.this.getDisplayName(), issues.toArray(new String[issues.size()]));
                         repository.getIssueCache().storeArchivedQueryIssues(JiraQuery.this.getDisplayName(), archivedIssues.toArray(new String[archivedIssues.size()]));
                     }
@@ -200,9 +198,9 @@ public class JiraQuery extends Query {
             autoRefresh);
     }
 
-    void refresh(FilterDefinition filterDefinition, boolean autoReresh) {
-        assert filterDefinition != null;
-        this.filterDefinition = filterDefinition;
+    void refresh(JiraFilter jiraFilter, boolean autoReresh) {
+        assert jiraFilter != null;
+        this.jiraFilter = jiraFilter;
         refreshIntern(autoReresh);
     }
 
@@ -229,11 +227,7 @@ public class JiraQuery extends Query {
     int getSize() {
         return issues.size();
     }
-//
-//    public FilterDefinition getFilterDefinition() {
-//        return getController().getFilterDefinition();
-//    }
-
+    
     public void setName(String name) {
         this.name = name;
     }

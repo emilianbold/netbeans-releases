@@ -74,7 +74,6 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.jira.Jira;
 
 /**
  *
@@ -101,7 +100,7 @@ public class JiraIssueTest extends NbTestCase {
         }
         // need this to initialize cache -> server defined status values & co
 //        getClient().getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
-        JiraTestUtil.cleanProject(getRepositoryConnector(), getRepository(), getClient(), JiraTestUtil.getProject(getClient()));
+        JiraTestUtil.cleanProject(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()));
     }
 
     @Override
@@ -112,9 +111,9 @@ public class JiraIssueTest extends NbTestCase {
         try {
 
             // create
-            RepositoryResponse rr = JiraTestUtil.createIssue(getRepositoryConnector(), getRepository(), getClient(), JiraTestUtil.getProject(getClient()), "Kaputt", "Alles Kaputt!", "Bug");
+            RepositoryResponse rr = JiraTestUtil.createIssue(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()), "Kaputt", "Alles Kaputt!", "Bug");
             assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
-            assertNotNull(JiraTestUtil.getTaskData(getRepositoryConnector(), getRepository(), rr.getTaskId()));
+            assertNotNull(JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()));
 
             String taskId = rr.getTaskId();
 
@@ -145,7 +144,7 @@ public class JiraIssueTest extends NbTestCase {
         try {
 
             // create
-            JiraIssue issue = JiraTestUtil.createJiraIssue(getRepositoryConnector(), getRepository(), getClient(),
+            JiraIssue issue = JiraTestUtil.createJiraIssue(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(),
                     JiraTestUtil.TEST_PROJECT, "Kaputt", "Alles Kaputt!", "Bug");
             assertNotNull(issue);
             assertNotNull(issue.getId());
@@ -176,13 +175,13 @@ public class JiraIssueTest extends NbTestCase {
 
     private void addAttachement(String taskId, String comment) throws CoreException, JiraException, Exception {
         String key = getClient().getKeyFromId(taskId, JiraTestUtil.nullProgressMonitor);
-        Task task = new Task(getRepository().getRepositoryUrl(), getRepository().getConnectorKind(), key, taskId, "");
+        Task task = new Task(JiraTestUtil.getTaskRepository().getRepositoryUrl(), JiraTestUtil.getTaskRepository().getConnectorKind(), key, taskId, "");
         File f = getAttachmentFile(comment);
 
         FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(f);
         attachmentSource.setContentType("text/plain");
 
-        getRepositoryConnector().getTaskAttachmentHandler().postContent(getRepository(), task, attachmentSource, "attaching " + comment, null, JiraTestUtil.nullProgressMonitor);
+        getRepositoryConnector().getTaskAttachmentHandler().postContent(JiraTestUtil.getTaskRepository(), task, attachmentSource, "attaching " + comment, null, JiraTestUtil.nullProgressMonitor);
     }
 
     private String addAttachement(JiraIssue issue, String comment) throws CoreException, JiraException, Exception {
@@ -192,22 +191,22 @@ public class JiraIssueTest extends NbTestCase {
     }
 
     private void createSubtask(String taskId) throws JiraException, CoreException {
-        TaskData parent = JiraTestUtil.getTaskData(getRepositoryConnector(), getRepository(), taskId);
-        RepositoryResponse rr = JiraTestUtil.createSubtask(parent, getRepositoryConnector(), getRepository(), getClient(), JiraTestUtil.getProject(getClient()), "Kaputt", "Alles Kaputt!");
+        TaskData parent = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), taskId);
+        RepositoryResponse rr = JiraTestUtil.createSubtask(parent, getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()), "Kaputt", "Alles Kaputt!");
         assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
-        assertNotNull(JiraTestUtil.getTaskData(getRepositoryConnector(), getRepository(), rr.getTaskId()));
-        TaskData subtask = JiraTestUtil.getTaskData(getRepositoryConnector(), getRepository(), rr.getTaskId());
+        assertNotNull(JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()));
+        TaskData subtask = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId());
         assertNotNull(subtask.getRoot().getMappedAttribute(JiraAttribute.PARENT_ID.id()));
     }
 
     private void readAttachement(String taskId, String content) throws CoreException, JiraException, IOException {
         String key = getClient().getKeyFromId(taskId, JiraTestUtil.nullProgressMonitor);
-        Task task = new Task(getRepository().getRepositoryUrl(), getRepository().getConnectorKind(), key, taskId, "");
+        Task task = new Task(JiraTestUtil.getTaskRepository().getRepositoryUrl(), JiraTestUtil.getTaskRepository().getConnectorKind(), key, taskId, "");
 
-        final TaskData taskData = JiraTestUtil.getTaskData(getRepositoryConnector(), getRepository(), taskId);
+        final TaskData taskData = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), taskId);
 		List<TaskAttribute> attributes = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_ATTACHMENT);
         TaskAttribute attribute = attributes.get(0);
-        InputStream attachement = getRepositoryConnector().getTaskAttachmentHandler().getContent(getRepository(), task, attribute, JiraTestUtil.nullProgressMonitor);
+        InputStream attachement = getRepositoryConnector().getTaskAttachmentHandler().getContent(JiraTestUtil.getTaskRepository(), task, attribute, JiraTestUtil.nullProgressMonitor);
         try {
 			byte[] data = new byte[4];
 			attachement.read(data);
@@ -251,7 +250,7 @@ public class JiraIssueTest extends NbTestCase {
     }
 
     private void updateTaskData(String taskId) throws Throwable {
-        TaskData data = JiraTestUtil.getTaskData(getRepositoryConnector(), getRepository(), taskId);
+        TaskData data = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), taskId);
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
 
@@ -260,10 +259,10 @@ public class JiraIssueTest extends NbTestCase {
 
         Set<TaskAttribute> attrs = new HashSet<TaskAttribute>();
         attrs.add(ta);
-        RepositoryResponse rr = getRepositoryConnector().getTaskDataHandler().postTaskData(getRepository(),data, attrs, JiraTestUtil.nullProgressMonitor);
+        RepositoryResponse rr = getRepositoryConnector().getTaskDataHandler().postTaskData(JiraTestUtil.getTaskRepository(),data, attrs, JiraTestUtil.nullProgressMonitor);
         assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_UPDATED);
 
-        rta = JiraTestUtil.getTaskData(getRepositoryConnector(), getRepository(), rr.getTaskId()).getRoot();
+        rta = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()).getRoot();
         ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
         assertEquals(val + " updated", ta.getValue());
     }
@@ -282,7 +281,7 @@ public class JiraIssueTest extends NbTestCase {
     }
 
     private void closeIssue(String taskId) throws CoreException, JiraException {
-        TaskData data = JiraTestUtil.getTaskData(getRepositoryConnector(), getRepository(), taskId);
+        TaskData data = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), taskId);
         TaskAttribute rta = data.getRoot();
 
         TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);        
@@ -303,10 +302,10 @@ public class JiraIssueTest extends NbTestCase {
 
         Set<TaskAttribute> attrs = new HashSet<TaskAttribute>();
         attrs.add(ta);
-        RepositoryResponse rr = getRepositoryConnector().getTaskDataHandler().postTaskData(getRepository(),data, attrs, JiraTestUtil.nullProgressMonitor);
+        RepositoryResponse rr = getRepositoryConnector().getTaskDataHandler().postTaskData(JiraTestUtil.getTaskRepository(),data, attrs, JiraTestUtil.nullProgressMonitor);
         assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_UPDATED);
 
-        rta = JiraTestUtil.getTaskData(getRepositoryConnector(), getRepository(), rr.getTaskId()).getRoot();
+        rta = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()).getRoot();
         ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
         assertEquals(resolution.getId(), ta.getValue());
     }
@@ -316,7 +315,7 @@ public class JiraIssueTest extends NbTestCase {
         
         issue.setResolution(resolution);
 //		issue.setFixVersions(new Version[0]); // XXX set version
-        String resolveOperationId = Jira.getInstance().getResolveOperation(getRepository(), issue.getKey());
+        String resolveOperationId = getResolveOperation(issue.getKey());
         assertNotNull(resolveOperationId);
 		getClient().advanceIssueWorkflow(issue, resolveOperationId, "shutup", JiraTestUtil.nullProgressMonitor);
 
@@ -325,13 +324,13 @@ public class JiraIssueTest extends NbTestCase {
     }
 
     public void list(String taskId) throws Throwable {
-        JiraClientFactory.getDefault().getJiraClient(getRepository()).getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
+        JiraClientFactory.getDefault().getJiraClient(JiraTestUtil.getTaskRepository()).getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
 
         FilterDefinition fd = new FilterDefinition();
         fd.setProjectFilter(new ProjectFilter(JiraTestUtil.getProject(getClient())));
         fd.setStatusFilter(new StatusFilter(new JiraStatus[] {getStatusByName(getClient(), "Open")}));
         fd.setIssueTypeFilter(new IssueTypeFilter(new IssueType[] {getIssueTypeByName("Bug")}));
-        JiraTestUtil.TestTaskDataCollector tdc = JiraTestUtil.list(getRepositoryConnector(), getRepository(), fd);
+        JiraTestUtil.TestTaskDataCollector tdc = JiraTestUtil.list(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), fd);
 
         assertTrue(tdc.data.size() > 0);
         TaskData data = null;
@@ -345,7 +344,7 @@ public class JiraIssueTest extends NbTestCase {
     }
 
     public void listJiraIssues(JiraIssue issue) throws Throwable {
-        JiraClientFactory.getDefault().getJiraClient(getRepository()).getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
+        JiraClientFactory.getDefault().getJiraClient(JiraTestUtil.getTaskRepository()).getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
 
         FilterDefinition fd = new FilterDefinition();
         fd.setProjectFilter(new ProjectFilter(JiraTestUtil.getProject(getClient())));
@@ -369,10 +368,6 @@ public class JiraIssueTest extends NbTestCase {
 
     private JiraRepositoryConnector getRepositoryConnector() {
         return JiraTestUtil.getRepositoryConnector();
-    }
-
-    private TaskRepository getRepository() {
-        return JiraTestUtil.getRepository();
     }
 
     private IssueType getIssueTypeByName(String name) {
@@ -401,7 +396,7 @@ public class JiraIssueTest extends NbTestCase {
 
     private void createJiraSubtask(JiraIssue parent) throws JiraException, CoreException {
         assertNull(parent.getParentId());
-        JiraIssue issue = JiraTestUtil.createJiraSubtask(getRepositoryConnector(), getRepository(), getClient(),
+        JiraIssue issue = JiraTestUtil.createJiraSubtask(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(),
                     JiraTestUtil.TEST_PROJECT, "Kaputt subtask", "Alles subKaputt!");
         issue.setParentId(parent.getId());
         JiraIssue subTask = getClient().createSubTask(issue, JiraTestUtil.nullProgressMonitor);
@@ -443,7 +438,7 @@ public class JiraIssueTest extends NbTestCase {
 
         @Override
         public String getConnectorKind() {
-            return getRepository().getRepositoryUrl();
+            return JiraTestUtil.getTaskRepository().getRepositoryUrl();
         }
 
         @Override
@@ -452,5 +447,13 @@ public class JiraIssueTest extends NbTestCase {
         }
     }
 
-
+    public String getResolveOperation(String issueKey) throws JiraException {
+        JiraAction[] operations = getClient().getAvailableActions(issueKey, null);
+        for (JiraAction action : operations) {
+                if (action.getName().toLowerCase().startsWith("resolve")) {
+                        return action.getId();
+                }
+        }
+        return null;
+    }
 }
