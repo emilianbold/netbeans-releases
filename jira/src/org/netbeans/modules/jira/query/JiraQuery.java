@@ -47,7 +47,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -151,8 +150,7 @@ public class JiraQuery extends Query {
 
                     // keeps all issues we will retrieve from the server
                     // - those matching the query criteria
-                    // - and the obsolete ones
-
+                    // - and the archived
                     issues.clear();
                     archivedIssues.clear();
                     if(isSaved()) {
@@ -178,7 +176,7 @@ public class JiraQuery extends Query {
                     // only issues not returned by the query are archived
                     archivedIssues.removeAll(issues);
                     if(isSaved()) {
-                        // ... and store all you got
+                        // ... and store teh actuall state
                         repository.getIssueCache().storeQueryIssues(JiraQuery.this.getDisplayName(), issues.toArray(new String[issues.size()]));
                         repository.getIssueCache().storeArchivedQueryIssues(JiraQuery.this.getDisplayName(), archivedIssues.toArray(new String[archivedIssues.size()]));
                     }
