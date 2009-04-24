@@ -297,7 +297,7 @@ public class PullAction extends ContextAction {
                         break;
                     }
                 }
-                listIncoming = HgCommand.doIncoming(root, pullSource, bundleFile, logger);
+                listIncoming = HgCommand.doIncoming(root, pullSource, bundleFile, logger, false);
             }
             if (listIncoming == null || listIncoming.isEmpty()) return;
             

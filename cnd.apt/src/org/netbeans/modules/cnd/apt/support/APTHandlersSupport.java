@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
 
 /**
@@ -74,7 +75,18 @@ public class APTHandlersSupport {
     public static APTMacroMap createMacroMap(APTMacroMap sysMap, List<String> userMacros) {
         return APTHandlersSupportImpl.createMacroMap(sysMap, userMacros);
     }
-    
+
+    public static Map<CharSequence, APTMacro> extractMacroMap(APTPreprocHandler.State state){
+        return APTHandlersSupportImpl.extractMacroMap(state);
+    }
+
+    public static int getMacroSize(APTPreprocHandler.State state) {
+        return APTHandlersSupportImpl.getMacroSize(state);
+    }
+
+    public static int getIncludeStackDepth(APTPreprocHandler.State state) {
+        return APTHandlersSupportImpl.getIncludeStackDepth(state);
+    }
     ////////////////////////////////////////////////////////////////////////////
     // help methods for preprocessor states
 //    public static APTPreprocHandler.State copyPreprocState(APTPreprocHandler.State orig) {

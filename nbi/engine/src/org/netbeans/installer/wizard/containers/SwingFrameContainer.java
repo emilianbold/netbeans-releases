@@ -240,6 +240,8 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         if(isResizable() && (neededMinimumHeight > currentHeight)) {         
             setPreferredSize(new Dimension(getSize().width, 
                                 neededMinimumHeight + EXTRA_SIZE));
+            setMinimumSize(new Dimension(getSize().width,
+                                neededMinimumHeight + EXTRA_SIZE));
             pack();             
         }                      
         contentPane.repaint();
@@ -366,7 +368,12 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     RESOURCE_ERROR_SET_CLOSE_OPERATION),
                     e);
         }
-        setSize(frameWidth, frameHeight);
+
+        Dimension size = new Dimension(frameWidth, frameHeight);
+        setSize(size);
+        setPreferredSize(size);
+        setMinimumSize(size);
+        
         try {
             setIconImage(new ImageIcon(frameIcon.toURI().toURL()).getImage());
         } catch (MalformedURLException e) {

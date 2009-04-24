@@ -154,12 +154,12 @@ public class GSFPHPParser extends Parser {
         ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags,  aspTags);
         ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
 
-        if (!sanitizedSource) {
+        //if (!sanitizedSource) {
             parser.setErrorHandler(errorHandler);
-        }
-        else {
-            parser.setErrorHandler(null);
-        }
+//        }
+//        else {
+//            parser.setErrorHandler(null);
+//        }
 
         java_cup.runtime.Symbol rootSymbol = parser.parse();
         if (scanner.getCurlyBalance() != 0 && !sanitizedSource) {
@@ -213,13 +213,13 @@ public class GSFPHPParser extends Parser {
                 result = sanitize(context, sanitizing, errorHandler);
             }
 
-            if (!sanitizedSource) {
+            //if (!sanitizedSource) {
                 result.setErrors(errorHandler.displaySyntaxErrors(program));
-            }
+            //}
         }
-        else {
-
+        else { // there was no rootElement
             result = sanitize(context, sanitizing, errorHandler);
+            result.setErrors(errorHandler.displayFatalError());
         }
         
         return result;

@@ -278,7 +278,9 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             CsmFile file = CsmUtilities.getCsmFile(doc, true);
             tt = updateMacroTableIfNeeded(doc, file);
         } else {
-            tt = getMacroTable(doc);
+            synchronized (doc) {
+                tt = getMacroTable(doc);
+            }
         }
         if (tt != null) {
             int startIndex = tt.findInIntervalIndex(offset);
@@ -761,6 +763,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         public boolean contains(int offset) {
             return (start <= offset && end >= offset);
         }
+
+        @Override
+        public String toString() {
+            return "["+start+"-"+end+"]"; // NOI18N
+        }
     }
 
     private static class IntervalCorrespondence {
@@ -787,6 +794,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         public CharSequence getMacroExpansion() {
             return macroExpansion;
         }
+
+        @Override
+        public String toString() {
+            return "IN:"+inInterval + " OUT:"+outInterval; // NOI18N
+        }
     }
 
     private static class TransformationTable {
@@ -805,6 +817,10 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
         public void cleanUp() {
             cache = null;
+        }
+
+        public boolean isInited() {
+            return cache == null;
         }
 
         public void setInStart(int start) {
@@ -941,19 +957,26 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return null;
         }
         TransformationTable tt = null;
-        boolean updateTable = false;
         synchronized (doc) {
             tt = getMacroTable(doc);
-            if (tt == null || tt.documentVersion != DocumentUtilities.getDocumentVersion(doc) || tt.fileVersion != CsmFileInfoQuery.getDefault().getFileVersion(file)) {
+            if (tt == null) {
                 tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
                 doc.putProperty(MACRO_EXPANSION_MACRO_TABLE, tt);
-                updateTable = true;
             }
         }
-        if (updateTable) {
-            synchronized (tt) {
+        synchronized (tt) {
+            synchronized (doc) {
+                tt = getMacroTable(doc);
+                if (tt.documentVersion != DocumentUtilities.getDocumentVersion(doc) || tt.fileVersion != CsmFileInfoQuery.getDefault().getFileVersion(file)) {
+                    tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+                }
+            }
+            if (!tt.isInited()) {
                 expand(doc, file, tt);
                 tt.cleanUp();
+                synchronized (doc) {
+                    doc.putProperty(MACRO_EXPANSION_MACRO_TABLE, tt);
+                }
             }
         }
         return tt;
