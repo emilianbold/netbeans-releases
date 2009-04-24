@@ -206,6 +206,7 @@ public class ExternalTerminal implements PropertyChangeListener {
             if (state == GdbDebugger.State.EXITED) {
                 gdbHelperScript.delete();
                 gdbHelperLog.delete();
+                debugger.removePropertyChangeListener(this);
             }
 	} else if (ev.getPropertyName().equals(GdbDebugger.PROP_KILLTERM)) {
             if (pid == 0) {

@@ -98,8 +98,7 @@ public final class UnitTestRunner {
         try {
             reader = new BufferedReader(new FileReader(PhpUnit.XML_LOG));
         } catch (FileNotFoundException ex) {
-            LOGGER.warning(String.format("In order to show test results UI, file %s must exist."
-                    + "Report this issue please in http://www.netbeans.org/issues/.", PhpUnit.XML_LOG));
+            processPhpUnitError();
             return;
         }
         TestSessionVO session = new TestSessionVO();
@@ -140,6 +139,13 @@ public final class UnitTestRunner {
         }
 
         MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_OutputInOutput"), false);
+        MANAGER.sessionFinished(testSession);
+    }
+
+    private void processPhpUnitError() {
+        LOGGER.info(String.format("File %s not found. If there are no errors in PHPUnit output (verify in Output window), "
+                + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.XML_LOG));
+        MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_PerhapsError"), true);
         MANAGER.sessionFinished(testSession);
     }
 

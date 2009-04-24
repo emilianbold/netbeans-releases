@@ -507,7 +507,7 @@ public class MakeConfiguration extends Configuration {
         ConfigurationAuxObject[] objects = getAuxObjects();
         List<ConfigurationAuxObject> clonedAuxObjects = new ArrayList<ConfigurationAuxObject>();
         for (int i = 0; i < objects.length; i++) {
-            clonedAuxObjects.add((ConfigurationAuxObject) objects[i].clone());
+            clonedAuxObjects.add(objects[i].clone(this));
         }
         clone.setAuxObjects(clonedAuxObjects);
         return clone;

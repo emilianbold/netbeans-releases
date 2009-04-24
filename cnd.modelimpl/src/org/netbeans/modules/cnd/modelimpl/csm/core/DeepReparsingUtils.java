@@ -129,6 +129,7 @@ public final class DeepReparsingUtils {
         if (file == null) {
             return;
         }
+        file.clearStateCache();
         Set<CsmFile> top = project.getGraph().getTopParentFiles(file);
         Set<CsmFile> coherence = project.getGraph().getIncludedFiles(file);
         Set<CsmFile> coherenceLibrary = new HashSet<CsmFile>();
@@ -181,6 +182,7 @@ public final class DeepReparsingUtils {
                 if (project.acceptNativeItem(item)) {
                     FileImpl file = project.getFile(item.getFile());
                     if (file != null) {
+                        file.clearStateCache();
                         pairs.put(file, item);
                         top.addAll(project.getGraph().getTopParentFiles(file));
                         coherence.addAll(project.getGraph().getIncludedFiles(file));

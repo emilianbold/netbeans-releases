@@ -626,6 +626,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         clearFakeRegistrations();
 
         if (clearNonDisposable) {
+            clearStateCache();
             _clearIncludes();
             _clearMacros();
             _clearErrors();
@@ -1813,6 +1814,19 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
         return lineCol;
+    }
+
+    private final FileStateCache stateCache = new FileStateCache(this);
+    /*package-local*/ void cacheVisitedState(APTPreprocHandler.State inputState, APTPreprocHandler outputHandler) {
+        stateCache.cacheVisitedState(inputState, outputHandler);
+    }
+
+    /*package-local*/ APTPreprocHandler.State getCachedVisitedState(APTPreprocHandler.State inputState) {
+        return stateCache.getCachedVisitedState(inputState);
+    }
+
+    /*package-local*/ void clearStateCache() {
+        stateCache.clearStateCache();
     }
 
     public static class NameKey implements Comparable<NameKey> {
