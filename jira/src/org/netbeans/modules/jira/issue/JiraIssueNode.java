@@ -62,7 +62,7 @@ public class JiraIssueNode extends IssueNode {
     @Override
     protected Property<?>[] getProperties() {
         return new Property<?>[] {
-            new IDProperty(),
+            new KeyProperty(),
             new TypeProperty(),
             new PriorityProperty(),
             new StatusProperty(),
@@ -118,8 +118,8 @@ public class JiraIssueNode extends IssueNode {
         return 1;
     }
 
-    private class IDProperty extends IssueNode.IssueProperty<String> {
-        public IDProperty() {
+    private class KeyProperty extends IssueNode.IssueProperty<String> {
+        public KeyProperty() {
             super(NbJiraIssue.LABEL_NAME_ID,
                   String.class,
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_ID_Title"), // NOI18N
