@@ -85,6 +85,7 @@ import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
 import org.netbeans.modules.editor.impl.SearchBar;
 import org.netbeans.modules.editor.impl.StatusLineFactories;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ContextAwareAction;
@@ -195,7 +196,20 @@ public class NbEditorUI extends EditorUI {
 
         c.removeFocusListener(focusL);
     }
-    
+
+    @Override
+    protected int textLimitWidth() {
+        Document doc = getDocument();
+        if (doc != null) {
+            int textLimit = CodeStylePreferences.get(doc).getPreferences().
+                    getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
+            if (textLimit > 0) {
+                return textLimit;
+            }
+        }
+        return super.textLimitWidth();
+    }
+
     @Override
     protected JComponent createExtComponent() {
 

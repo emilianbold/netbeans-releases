@@ -46,6 +46,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * We could have used URL with custom protocol handler for ssh 
@@ -218,8 +219,16 @@ public final class HgURL {
                || (c == '+') || (c == '-') || (c == '.');
     }
 
+    private static boolean isAsciiAlpha(char c) {
+        return isLowercaseAsciiAlpha(c | 0x20);
+    }
+
     private static boolean isLowercaseAsciiAlpha(int c) {
         return (c >= 'a') && (c <= 'z');
+    }
+
+    private static boolean isSlash(char c) {
+        return (c == '/') || (c == '\\');
     }
 
     private static void appendLowercase(String s, int from, int to, StringBuilder buf) {
@@ -235,7 +244,7 @@ public final class HgURL {
         password = null;
         host = null;
         port = -1;
-        path = file.getAbsolutePath();
+        path = file.toURI().getPath();
         rawPath = makeRawPathInfo(path);
         rawQuery = null;
         rawFragment = null;
@@ -246,15 +255,27 @@ public final class HgURL {
     }
 
     public HgURL(String urlString, String username, String password) throws URISyntaxException {
-        URI originalUri = new URI(urlString).parseServerAuthority();
-        String originalScheme = originalUri.getScheme();
+        URI originalUri;
 
-        if (originalScheme == null) {
-            originalUri = new URI("file:" + urlString).parseServerAuthority(); //NOI18N
-            originalScheme = originalUri.getScheme();
+        if (urlString == null) {
+            throw new IllegalArgumentException("<null> URL string");    //NOI18N
         }
 
-        scheme = determineScheme(originalScheme);
+        if (urlString.length() == 0) {
+            throw new IllegalArgumentException("empty URL string");     //NOI18N
+        }
+
+        if ((urlString.charAt(0) == '/')
+                || Utilities.isWindows() && isWindowsAbsolutePath(urlString)) {
+            originalUri = new File(urlString).toURI();
+            scheme = Scheme.FILE;
+        } else {
+            originalUri = new URI(urlString).parseServerAuthority();
+            String originalScheme = originalUri.getScheme();
+            scheme = (originalScheme != null) ? determineScheme(originalScheme)
+                                              : null;
+        }
+
         if (scheme == null) {
             throw new URISyntaxException(
                     urlString,
@@ -320,6 +341,34 @@ public final class HgURL {
         }
     }
 
+    private static boolean isWindowsAbsolutePath(String urlString) {
+        final int length = urlString.length();
+
+        if (length == 0) {
+            return false;
+        }
+
+        int index = 0;
+
+        if (isSlash(urlString.charAt(index))) {
+            index++;
+        }
+
+        if ((length <= index) || !isAsciiAlpha(urlString.charAt(index++))) {
+            return false;
+        }
+
+        if ((length <= index) || (urlString.charAt(index++) != ':')) {
+            return false;
+        }
+
+        if ((length <= index) || !isSlash(urlString.charAt(index++))) {
+            return false;
+        }
+
+        return true;
+    }
+
     public boolean isFile() {
         return scheme == Scheme.FILE;
     }
@@ -338,6 +387,22 @@ public final class HgURL {
 
     public String getPath() {
         return path;
+    }
+
+    public String getFilePath() {
+        if (Utilities.isWindows() && isWindowsAbsolutePath(path)) {
+            return getWindowsFilePath(path);
+        } else {
+            return path;
+        }
+    }
+
+    private static String getWindowsFilePath(String path) {
+        if (isSlash(path.charAt(0))) {
+            path = path.substring(1);
+        }
+
+        return path.replace('/', '\\');
     }
 
     String getUsername() {
@@ -402,14 +467,17 @@ public final class HgURL {
     @Override
     public String toString() {
         if (publicForm == null) {
-            publicForm = toUrlString(false, false, true);
+            publicForm = toUrlString(false, true);
         }
         return publicForm;
     }
 
     public String toHgCommandUrlString() {
         if (hgCommandForm == null) {
-            hgCommandForm = toUrlString(true, false, false);
+            // Workaround for http://www.selenic.com/mercurial/bts/issue776
+            // Do not use file:/ or file:/// in local file URIs
+            hgCommandForm = isFile() ? getFilePath()
+                                     : toUrlString(false, false);
         }
         return hgCommandForm;
     }
@@ -425,18 +493,14 @@ public final class HgURL {
     }
 
     public String toCompleteUrlString() {
-        return toUrlString(false, false, false);
+        return toUrlString(false, false);
     }
 
-    public String toUrlString(boolean stripFileScheme, boolean stripUserinfo, boolean maskPassword) {
+    public String toUrlString(boolean stripUserinfo, boolean maskPassword) {
         boolean authorityPartSeparationPending;
 
         StringBuilder buf = new StringBuilder(128);
-        if (!stripFileScheme || (scheme != Scheme.FILE)) {
-            // Workaround for http://www.selenic.com/mercurial/bts/issue776
-            // Do not use file:/ or file:/// in local file URIs
-            buf.append(scheme.name).append(':');
-        }
+        buf.append(scheme.name).append(':');
         if (scheme != Scheme.FILE) {
             authorityPartSeparationPending = addAuthoritySpec(stripUserinfo, maskPassword, buf);
         } else {
