@@ -132,7 +132,7 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             }
 
             long lastModified = file.lastModified().getTime();
-            if (timestamp != lastModified) {
+            if (timestamp != 0 && timestamp != lastModified) {
                 //modified since last check, ignore
                 LOG.log(Level.FINE, "File modified since last check: {0}, timestamp={1}, lastModified={2}, invocationCount={3}",
                         new Object [] { info.getFileObject(), timestamp, lastModified, invocationCount });
