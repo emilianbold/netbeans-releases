@@ -168,12 +168,8 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
                         }
                         url[0] = new URL(root, path);
                     } else {
-                         url = new URL[2];
-                        // maven2 puts the javadocs in apidocs/ folder in the jar,
-                        // however there are non-maven built javadocs that have the docs in the root.
-                        // don't examine here, just return 2 places..
+                         url = new URL[1];
                         url[0] = FileUtil.getArchiveRoot(file.toURI().toURL());
-                        url[1] = new URL(url[0] + "apidocs/"); //NOI18N
                     }
                     return url;
                 }
