@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="47">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>lex.yy.c</itemPath>
+      <itemPath>token.l</itemPath>
+      <itemPath>token.y</itemPath>
+      <itemPath>y.tab.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>y.tab.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+  </logicalFolder>
+  <defaultConf>0</defaultConf>
+  <confs>
+    <conf name="Debug" type="1">
+      <item path="token.l">
+        <itemTool>3</itemTool>
+        <customTool>
+          <customToolCommandline>lex token.l</customToolCommandline>
+          <customToolDescription>Running lex...</customToolDescription>
+          <customToolOutputs>lex.yy.c</customToolOutputs>
+          <customToolAdditionalDep>y.tab.h</customToolAdditionalDep>
+        </customTool>
+      </item>
+      <item path="token.y">
+        <itemTool>3</itemTool>
+        <customTool>
+          <customToolCommandline>yacc -d token.y</customToolCommandline>
+          <customToolDescription>Running yacc...</customToolDescription>
+          <customToolOutputs>y.tab.c y.tab.h</customToolOutputs>
+        </customTool>
+      </item>
+      <item path="lex.yy.c">
+        <itemTool>0</itemTool>
+        <cCompilerTool>
+        </cCompilerTool>
+      </item>
+      <item path="y.tab.c">
+        <itemTool>0</itemTool>
+        <cCompilerTool>
+        </cCompilerTool>
+      </item>
+      <item path="y.tab.h">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
