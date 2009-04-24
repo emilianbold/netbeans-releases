@@ -40,15 +40,19 @@
 package org.netbeans.modules.maven.queries;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -102,6 +106,8 @@ public class RepositorySourceForBinaryQueryImpl implements SourceForBinaryQueryI
     }
     
     private class SrcResult implements SourceForBinaryQuery.Result  {
+        private static final String ATTR_PATH = "lastRootCheckPath";
+        private static final String ATTR_STAMP = "lastRootCheckStamp";
         private File file;
         private final List<ChangeListener> listeners;
         
@@ -123,17 +129,46 @@ public class RepositorySourceForBinaryQueryImpl implements SourceForBinaryQueryI
         
         public FileObject[] getRoots() {
             if (file.exists()) {
-                FileObject fo = FileUtil.getArchiveRoot(FileUtil.toFileObject(file));
-                if (fo != null) { //#139894 it seems that sometimes it can return null.
+                FileObject fo = FileUtil.toFileObject(file);
+                FileObject jarRoot = FileUtil.getArchiveRoot(fo);
+                if (jarRoot != null) { //#139894 it seems that sometimes it can return null.
                                   // I suppose it's in the case when the jar/zip file in repository exists
                                   // but is corrupted (not zip, eg. when downloaded from a wrongly
                                   //setup repository that returns html documents on missing jar files.
+
+                    //try detecting the source path root, in case the source jar has the sources not in root.
+                    Date date = (Date) fo.getAttribute(ATTR_STAMP);
+                    String path = (String) fo.getAttribute(ATTR_PATH);
+                    if (date == null || fo.lastModified().after(date)) {
+                        path = checkPath(jarRoot, fo);
+                    }
+
                     FileObject[] fos = new FileObject[1];
-                    fos[0] = fo;
+                    if (path != null) {
+                        fos[0] = jarRoot.getFileObject(path);
+                    }
+                    if (fos[0] == null) {
+                        fos[0] = jarRoot;
+                    }
                     return fos;
                 }
             }
             return new FileObject[0];
+        }
+
+        private String checkPath(FileObject jarRoot, FileObject fo) {
+            String toRet = null;
+            FileObject root = JavadocAndSourceRootDetection.findSourceRoot(jarRoot);
+            try {
+                if (root != null && !root.equals(jarRoot)) {
+                    toRet = FileUtil.getRelativePath(jarRoot, root);
+                    fo.setAttribute(ATTR_PATH, toRet);
+                }
+                fo.setAttribute(ATTR_STAMP, new Date());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return toRet;
         }
         
     }    
