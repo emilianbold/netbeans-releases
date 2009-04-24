@@ -416,26 +416,36 @@ public class IconEditor extends PropertyEditorSupport
     private NbImageIcon iconFromURL(String urlString, boolean forceURL) {
         try { // try as URL
             URL url = new URL(urlString);
-            try { // is it a local file?
-                File f = new File(url.toURI());
-                if (f.exists() && !forceURL) { // prefer definition as file
-                    String fileName = f.getAbsolutePath();
-                    try {
-                        Icon icon = new ImageIcon(ImageIO.read(new File(fileName)));
-                        return new NbImageIcon(TYPE_FILE, fileName, icon);
-                    } catch (IOException ex) { // should not happen
-                        Logger.getLogger(IconEditor.class.getName()).log(Level.WARNING, null, ex);
+            if (!forceURL) { // prefer definition as file
+                try {
+                    File f = new File(url.toURI());
+                    if (f.exists()) { // it is a local file
+                        String fileName = f.getAbsolutePath();
+                        try {
+                            Image image = ImageIO.read(new File(fileName));
+                            if (image != null) {
+                                return new NbImageIcon(TYPE_FILE, fileName, new ImageIcon(image));
+                            } else {
+                                return null; // not a valid image file
+                            }
+                        } catch (IOException ex) { // should not happen
+                            Logger.getLogger(IconEditor.class.getName()).log(Level.WARNING, null, ex);
+                        }
                     }
                 }
+                catch (URISyntaxException ex) {}
+                catch (IllegalArgumentException ex) {}
             }
-            catch (URISyntaxException ex) {}
-            catch (IllegalArgumentException ex) {}
 
             if (url != null) { // treat as url
                 Icon icon = null;
                 try {
-                    icon = new ImageIcon(ImageIO.read(url));
+                    Image image = ImageIO.read(url);
+                    if (image != null) {
+                        icon = new ImageIcon(image);
+                    }
                 } catch (IOException ex) {}
+                // for URL-based icon create NbImageIcon even if no icon can be loaded from the URL
                 return new NbImageIcon(TYPE_URL, urlString, icon);
             }
         }
@@ -448,8 +458,10 @@ public class IconEditor extends PropertyEditorSupport
         File file = new File(fileName);
         if (file.exists()) {
             try {
-                Icon icon = new ImageIcon(ImageIO.read(file));
-                return new NbImageIcon(TYPE_FILE, fileName, icon);
+                Image image = ImageIO.read(file);
+                if (image != null) {
+                    return new NbImageIcon(TYPE_FILE, fileName, new ImageIcon(image));
+                }
             } catch (IOException ex) {
                 Logger.getLogger(IconEditor.class.getName()).log(Level.INFO, null, ex);
             }
