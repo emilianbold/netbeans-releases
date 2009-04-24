@@ -3252,7 +3252,8 @@ public class HgCommand {
             });
             t1.start();
             // wait for the clone to finish
-            int rounds = 50;
+            int rounds = HgUtils.getNumberOfRoundsForRepositoryValidityCheck();
+
             while (t1.isAlive()) {
                 try {
                     Thread.sleep(100);
