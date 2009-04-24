@@ -39,8 +39,17 @@
 
 package org.netbeans.modules.jira.util;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.commands.JiraCommand;
+import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -67,4 +76,35 @@ public class JiraUtils {
         return DialogDisplayer.getDefault().notify(descriptor) == ok;
     }
 
+    // XXX merge with bugzilla
+    /**
+     * Returns TaskData for the given issue id or null if an error occured
+     * @param repository
+     * @param id
+     * @return
+     */
+    public static TaskData getTaskData(final JiraRepository repository, final String id) {
+        return getTaskData(repository, id, true);
+    }
+
+    /**
+     * Returns TaskData for the given issue id or null if an error occured
+     * @param repository
+     * @param id
+     * @return
+     */
+    public static TaskData getTaskData(final JiraRepository repository, final String id, boolean handleExceptions) {
+        final TaskData[] taskData = new TaskData[1];
+        JiraCommand cmd = new JiraCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+                taskData[0] = Jira.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
+            }
+        };
+        repository.getExecutor().execute(cmd, handleExceptions);
+        if(cmd.hasFailed() && Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.log(Level.FINE, cmd.getErrorMessage());
+        }
+        return taskData[0];
+    }
 }

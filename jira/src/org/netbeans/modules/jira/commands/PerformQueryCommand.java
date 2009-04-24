@@ -42,7 +42,7 @@ package org.netbeans.modules.jira.commands;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
 import org.eclipse.mylyn.internal.jira.core.util.JiraUtil;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
@@ -57,12 +57,12 @@ import org.netbeans.modules.jira.repository.JiraRepository;
 public class PerformQueryCommand extends JiraCommand {
 
     private final JiraRepository repository;
-    private final FilterDefinition filterDefinition;
+    private final JiraFilter jiraFilter;
     private final TaskDataCollector collector;
 
-    public PerformQueryCommand(JiraRepository repository, FilterDefinition filterDefinition, TaskDataCollector collector) {
+    public PerformQueryCommand(JiraRepository repository, JiraFilter jiraFilter, TaskDataCollector collector) {
         this.repository = repository;
-        this.filterDefinition = filterDefinition;
+        this.jiraFilter = jiraFilter;
         this.collector = collector;
     }
 
@@ -70,7 +70,7 @@ public class PerformQueryCommand extends JiraCommand {
     public void execute() throws CoreException {
         JiraRepositoryConnector rc = Jira.getInstance().getRepositoryConnector();
         RepositoryQuery repositoryQuery = new RepositoryQuery(rc.getConnectorKind(), "query"); // NOI18N
-        JiraUtil.setQuery(repository.getTaskRepository(), repositoryQuery, filterDefinition);
+        JiraUtil.setQuery(repository.getTaskRepository(), repositoryQuery, jiraFilter);
         rc.performQuery(repository.getTaskRepository(), repositoryQuery, collector, null, new NullProgressMonitor());
     }
 
