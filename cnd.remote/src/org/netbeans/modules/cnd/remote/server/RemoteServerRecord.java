@@ -83,7 +83,7 @@ public class RemoteServerRecord implements ServerRecord {
     }
 
     protected RemoteServerRecord(final ExecutionEnvironment env, boolean connect) {
-        this(env, env.getDisplayName(), connect);
+        this(env, null, connect);
     }
 
     protected RemoteServerRecord(final ExecutionEnvironment env, String displayName, boolean connect) {
@@ -91,7 +91,7 @@ public class RemoteServerRecord implements ServerRecord {
         stateLock = new String("RemoteServerRecord state lock for " + toString()); // NOI18N
         reason = null;
         deleted = false;
-        this.displayName = (displayName == null) ? env.getDisplayName() : displayName;
+        this.displayName = displayName;
         
         if (env.isLocal()) {
             editable = false;
@@ -112,6 +112,7 @@ public class RemoteServerRecord implements ServerRecord {
         return executionEnvironment.toString();
     }
 
+    @Override
     public synchronized void validate(final boolean force) {
         if (isOnline()) {
             return;
@@ -175,11 +176,13 @@ public class RemoteServerRecord implements ServerRecord {
         // TODO: not good to use object's toString as resource key
         return NbBundle.getMessage(RemoteServerRecord.class, state.toString());
     }
-    
+
+    @Override
     public boolean isOnline() {
         return state == State.ONLINE;
     }
-    
+
+    @Override
     public boolean isOffline() {
         return state == State.OFFLINE;
     }
@@ -188,6 +191,7 @@ public class RemoteServerRecord implements ServerRecord {
         this.deleted = deleted;
     }
 
+    @Override
     public boolean isDeleted() {
         return deleted;
     }
@@ -196,22 +200,31 @@ public class RemoteServerRecord implements ServerRecord {
         return editable;
     }
 
+    @Override
     public boolean isRemote() {
         return executionEnvironment.isRemote();
     }
 
+    @Override
     public String getDisplayName() {
-        return displayName;
+        return (displayName != null && displayName.length() > 0) ? displayName : executionEnvironment.getDisplayName();
+    }
+
+    @Override
+    public String getServerDisplayName() {
+        return (displayName != null && displayName.length() > 0) ? displayName : executionEnvironment.getHost();
     }
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
 
+    @Override
     public String getServerName() {
         return executionEnvironment.getHost();
     }
 
+    @Override
     public String getUserName() {
         return executionEnvironment.getUser();
     }

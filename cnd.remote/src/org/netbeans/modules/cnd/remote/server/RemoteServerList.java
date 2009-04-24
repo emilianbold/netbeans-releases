@@ -99,6 +99,9 @@ public class RemoteServerList implements ServerListImplementation {
                 if (sepPos >= 0) {
                     assert sepPos > 0;
                     displayName = hostKey.substring(sepPos+1);
+                    if (displayName.length() == 0) {
+                        displayName = null;
+                    }
                     hostKey = hostKey.substring(0, sepPos);
                 }
                 ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostKey);
@@ -166,9 +169,6 @@ public class RemoteServerList implements ServerListImplementation {
     }
     
     private void addServer(ExecutionEnvironment execEnv, String displayName, boolean asDefault, RemoteServerRecord.State state) {
-        if (displayName == null) {
-            displayName = execEnv.getDisplayName();
-        }
         RemoteServerRecord addServer = (RemoteServerRecord) addServer(execEnv, displayName, asDefault, false);
         addServer.setState(state);
     }
@@ -177,9 +177,6 @@ public class RemoteServerList implements ServerListImplementation {
     @Override
     public synchronized ServerRecord addServer(final ExecutionEnvironment execEnv, String displayName, boolean asDefault, boolean connect) {
 
-        if (displayName == null) {
-            displayName = execEnv.getDisplayName();
-        }
         RemoteServerRecord record = null;
         
         // First off, check if we already have this record
@@ -219,14 +216,14 @@ public class RemoteServerList implements ServerListImplementation {
         // ONLINE hosts.
         String slist = getPreferences().get(REMOTE_SERVERS, null);
         String hostKey = ExecutionEnvironmentFactory.toUniqueID(execEnv);
-        String preferencesKey = hostKey + SERVER_RECORD_SEPARATOR + displayName;
+        String preferencesKey = hostKey + SERVER_RECORD_SEPARATOR + ((displayName == null) ? "" : displayName);
         if (slist == null) {
             getPreferences().put(REMOTE_SERVERS, preferencesKey);
         } else {
             StringBuilder sb = new StringBuilder(preferencesKey);
             for (String server : slist.split(SERVER_LIST_SEPARATOR)) { // NOI18N
                 int sepPos = server.indexOf(SERVER_RECORD_SEPARATOR);
-                String serverKey = (sepPos > 0) ? server.substring(sepPos+1) : server;
+                String serverKey = (sepPos > 0) ? server.substring(0, sepPos) : server;
                 if (!serverKey.equals(hostKey)) {
                     sb.append(SERVER_LIST_SEPARATOR);
                     sb.append(server);

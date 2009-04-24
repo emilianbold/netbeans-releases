@@ -51,7 +51,6 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
-import java.net.URI;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
@@ -60,8 +59,6 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.List;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -71,7 +68,6 @@ import javax.net.ssl.X509TrustManager;
 import javax.swing.JComponent;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -182,6 +178,17 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         return errorMessage;
     }
 
+    private void displayErrorMessage(String errorMessage) {
+        if (errorMessage == null) {
+            throw new IllegalArgumentException("<null> message");
+        }
+
+        if (!errorMessage.equals(this.errorMessage)) {
+            this.errorMessage = errorMessage;
+            fireChangeEvent();
+        }
+    }
+
     private void setValid(boolean valid, String errorMessage) {
         boolean fire = this.valid != valid;
         fire |= errorMessage != null && (errorMessage.equals(this.errorMessage) == false);
@@ -264,7 +271,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         try {
             return repository.getRepositoryConnection();
         } catch (Exception ex) {
-            invalid(ex.getLocalizedMessage());
+            displayErrorMessage(ex.getLocalizedMessage());
             return null;
         }
     }
@@ -289,8 +296,6 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
             String invalidMsg = null;
             HttpURLConnection con = null;
             try {
-                invalid(null);
-
                 HgURL hgUrl = getRepositoryRoot();
 
                 HgURL.Scheme uriSch = hgUrl.getScheme();
@@ -348,12 +353,11 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                     con.disconnect();
                 }
                 if(isCanceled()) {
-                    valid(org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Canceled")); // NOI18N
+                  displayErrorMessage(org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Canceled")); // NOI18N
                 } else if(invalidMsg == null) {
-                  valid();
                   storeHistory();
                 } else {
-                  invalid(invalidMsg);
+                  displayErrorMessage(invalidMsg);
                 }
             }
         }

@@ -139,6 +139,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
         StringBuilder buf = new StringBuilder();
         for(Map.Entry<CharSequence, APTMacro> entry : tree.entrySet()){
             buf.append((char)entry.getValue().getKind().ordinal());
+            buf.append(entry.getValue().getName().getOffset());
             buf.append(entry.getKey());
             buf.append('=');
             buf.append(entry.getValue().getBody());

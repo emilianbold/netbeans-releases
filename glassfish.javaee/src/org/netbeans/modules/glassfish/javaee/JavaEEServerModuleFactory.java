@@ -236,7 +236,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         }
 
         if (lib == null) {
-            Map<String, List<URL>> contents = null;
+            Map<String, List<URL>> contents;
             try {
                 contents = new HashMap<String, List<URL>>();
                 if (null != libraryList) {
