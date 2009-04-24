@@ -115,44 +115,70 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
             }
             // fallback if not found by PackageView.
             for (int i = 0; i < nodes.length; i++) {
-                FileObject xfo = nodes[i].getLookup().lookup(FileObject.class);
-                if (xfo == null) {
-                    DataObject dobj = nodes[i].getLookup().lookup(DataObject.class);
-                    if (dobj != null) {
-                        xfo = dobj.getPrimaryFile();
-                    }
-                }
-                if (xfo != null && FileUtil.isParentOf(xfo, fo)) {
-                    FileObject folder = fo.isFolder() ? fo : fo.getParent();
-                    String relPath = FileUtil.getRelativePath(xfo, folder);
-                    List<String> path = new ArrayList<String>();
-                    StringTokenizer strtok = new StringTokenizer(relPath, "/"); // NOI18N
-                    while (strtok.hasMoreTokens()) {
-                        String token = strtok.nextToken();
-                        path.add(token);
-                    }
-                    try {
-                        Node folderNode =  folder.equals(xfo) ? nodes[i] : NodeOp.findPath(nodes[i], Collections.enumeration(path));
-                        if (fo.isFolder()) {
-                            return folderNode;
-                        } else {
-                            Node[] childs = folderNode.getChildren().getNodes(true);
-                            for (int j = 0; j < childs.length; j++) {
-                                DataObject dobj = childs[j].getLookup().lookup(DataObject.class);
-                                if (dobj != null && dobj.getPrimaryFile().getNameExt().equals(fo.getNameExt())) {
-                                    return childs[j];
-                                }
-                            }
+                FindDelegate deleg = nodes[i].getLookup().lookup(FindDelegate.class);
+                if (deleg != null) {
+                    for (Node n : deleg.getDelegates(nodes[i])) {
+                        Node result = PackageView.findPath(n, fo);
+                        if (result != null) {
+                            return result;
                         }
-                    } catch (NodeNotFoundException e) {
-                        // OK, never mind
+                        Node found = findNodeByFileDataObject(n, fo);
+                        if (found != null) {
+                            return found;
+                        }
                     }
-                    
+                    continue;
                 }
+                findNodeByFileDataObject(nodes[i], fo);
             }
         }
         
         return null;
+    }
+
+    private Node findNodeByFileDataObject(Node node, FileObject fo) {
+        FileObject xfo = node.getLookup().lookup(FileObject.class);
+        if (xfo == null) {
+            DataObject dobj = node.getLookup().lookup(DataObject.class);
+            if (dobj != null) {
+                xfo = dobj.getPrimaryFile();
+            }
+        }
+        if (xfo != null) {
+            if ((xfo.equals(fo))) {
+                return node;
+            } else if (FileUtil.isParentOf(xfo, fo)) {
+                FileObject folder = fo.isFolder() ? fo : fo.getParent();
+                String relPath = FileUtil.getRelativePath(xfo, folder);
+                List<String> path = new ArrayList<String>();
+                StringTokenizer strtok = new StringTokenizer(relPath, "/"); // NOI18N
+                while (strtok.hasMoreTokens()) {
+                    String token = strtok.nextToken();
+                    path.add(token);
+                }
+                try {
+                    Node folderNode = folder.equals(xfo) ? node : NodeOp.findPath(node, Collections.enumeration(path));
+                    if (fo.isFolder()) {
+                        return folderNode;
+                    } else {
+                        Node[] childs = folderNode.getChildren().getNodes(true);
+                        for (int j = 0; j < childs.length; j++) {
+                            DataObject dobj = childs[j].getLookup().lookup(DataObject.class);
+                            if (dobj != null && dobj.getPrimaryFile().getNameExt().equals(fo.getNameExt())) {
+                                return childs[j];
+                            }
+                        }
+                    }
+                } catch (NodeNotFoundException e) {
+                    // OK, never mind
+                }
+            }
+        }
+        return null;
+    }
+
+    public static interface FindDelegate {
+         Node[] getDelegates(Node current);
     }
     
 }
