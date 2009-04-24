@@ -70,6 +70,7 @@ import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestCase;
@@ -314,7 +315,7 @@ public class JiraIssueTest extends NbTestCase {
         
         issue.setResolution(resolution);
 //		issue.setFixVersions(new Version[0]); // XXX set version
-        String resolveOperationId = Jira.getInstance().getResolveOperation(JiraTestUtil.getTaskRepository(), issue.getKey());
+        String resolveOperationId = getResolveOperation(issue.getKey());
         assertNotNull(resolveOperationId);
 		getClient().advanceIssueWorkflow(issue, resolveOperationId, "shutup", JiraTestUtil.nullProgressMonitor);
 
@@ -446,5 +447,13 @@ public class JiraIssueTest extends NbTestCase {
         }
     }
 
-
+    public String getResolveOperation(String issueKey) throws JiraException {
+        JiraAction[] operations = getClient().getAvailableActions(issueKey, null);
+        for (JiraAction action : operations) {
+                if (action.getName().toLowerCase().startsWith("resolve")) {
+                        return action.getId();
+                }
+        }
+        return null;
+    }
 }
