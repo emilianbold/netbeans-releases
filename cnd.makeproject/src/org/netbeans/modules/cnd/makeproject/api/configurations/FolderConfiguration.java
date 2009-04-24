@@ -156,7 +156,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     }
 
     @Override
-    public FolderConfiguration clone() {
+    public FolderConfiguration clone(Configuration conf) {
         FolderConfiguration i = new FolderConfiguration(getConfiguration(), (CCompilerConfiguration) getCCompilerConfiguration().getMaster(), (CCCompilerConfiguration) getCCCompilerConfiguration().getMaster(), getFolder());
         i.setCCompilerConfiguration(getCCompilerConfiguration().clone());
         i.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
