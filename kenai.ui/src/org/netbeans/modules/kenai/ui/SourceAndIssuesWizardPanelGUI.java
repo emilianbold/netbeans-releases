@@ -564,6 +564,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new Insets(4, 0, 4, 0);
         add(chatSeparator, gridBagConstraints);
 
         createChatRoom.setSelected(true);
