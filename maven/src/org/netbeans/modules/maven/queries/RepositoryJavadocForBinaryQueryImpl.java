@@ -40,13 +40,16 @@
 package org.netbeans.modules.maven.queries;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -119,6 +122,8 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
     }
     
     private class DocResult implements JavadocForBinaryQuery.Result  {
+        private static final String ATTR_PATH = "lastRootCheckPath"; //NOI18N
+        private static final String ATTR_STAMP = "lastRootCheckStamp"; //NOI18N
         private File file;
         private final List<ChangeListener> listeners;
 
@@ -141,21 +146,35 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
         public java.net.URL[] getRoots() {
             try {
                 if (file.exists()) {
-                    if (!FileUtil.isArchiveFile(FileUtil.toFileObject(file))) {
+                    FileObject fo = FileUtil.toFileObject(file);
+                    if (!FileUtil.isArchiveFile(fo)) {
                         //#124175  ignore any jar files that are not jar files (like when downloaded file is actually an error html page).
                         Logger.getLogger(RepositoryJavadocForBinaryQueryImpl.class.getName()).info("The following javadoc jar in repository is not really a jar file: " + file.getAbsolutePath()); //NOI18N
                         return new URL[0];
                     }
+                    //try detecting the source path root, in case the source jar has the sources not in root.
+                    Date date = (Date) fo.getAttribute(ATTR_STAMP);
+                    String path = (String) fo.getAttribute(ATTR_PATH);
+                    if (date == null || fo.lastModified().after(date)) {
+                        path = checkPath(FileUtil.getArchiveRoot(fo), fo);
+                    }
                     
-                    URL[] url = new URL[2];
-                    // maven2 puts the javadocs in apidocs/ folder in the jar, 
-                    // however there are non-maven built javadocs that have the docs in the root.
-                    // don't examine here, just return 2 places..
-                    url[0] = FileUtil.getArchiveRoot(file.toURI().toURL());
-                    url[1] = new URL(url[0] + "apidocs/"); //NOI18N
-
-                    //TODO there are also some other possible layout in the remote repository
-                    // eg. jung/jung jas javadoc i "doc" subfolder, not sure we can cater for everything..
+                    URL[] url;
+                    if (path != null) {
+                        url = new URL[1];
+                        URL root = FileUtil.getArchiveRoot(file.toURI().toURL());
+                        if (!path.endsWith("/")) { //NOI18N
+                            path = path + "/"; //NOI18N
+                        }
+                        url[0] = new URL(root, path);
+                    } else {
+                         url = new URL[2];
+                        // maven2 puts the javadocs in apidocs/ folder in the jar,
+                        // however there are non-maven built javadocs that have the docs in the root.
+                        // don't examine here, just return 2 places..
+                        url[0] = FileUtil.getArchiveRoot(file.toURI().toURL());
+                        url[1] = new URL(url[0] + "apidocs/"); //NOI18N
+                    }
                     return url;
                 }
             } catch (MalformedURLException exc) {
@@ -163,6 +182,22 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
             }
             return new URL[0];
         }
+
+        private String checkPath(FileObject jarRoot, FileObject fo) {
+            String toRet = null;
+            FileObject root = JavadocAndSourceRootDetection.findJavadocRoot(jarRoot);
+            try {
+                if (root != null && !root.equals(jarRoot)) {
+                    toRet = FileUtil.getRelativePath(jarRoot, root);
+                    fo.setAttribute(ATTR_PATH, toRet);
+                }
+                fo.setAttribute(ATTR_STAMP, new Date());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return toRet;
+        }
+
         
     }
 

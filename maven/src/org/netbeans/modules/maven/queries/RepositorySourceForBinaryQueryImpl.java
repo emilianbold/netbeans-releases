@@ -106,8 +106,8 @@ public class RepositorySourceForBinaryQueryImpl implements SourceForBinaryQueryI
     }
     
     private class SrcResult implements SourceForBinaryQuery.Result  {
-        private static final String ATTR_PATH = "lastRootCheckPath";
-        private static final String ATTR_STAMP = "lastRootCheckStamp";
+        private static final String ATTR_PATH = "lastRootCheckPath"; //NOI18N
+        private static final String ATTR_STAMP = "lastRootCheckStamp"; //NOI18N
         private File file;
         private final List<ChangeListener> listeners;
         
