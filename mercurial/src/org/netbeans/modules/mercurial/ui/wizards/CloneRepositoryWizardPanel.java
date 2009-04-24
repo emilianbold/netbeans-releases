@@ -178,6 +178,17 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         return errorMessage;
     }
 
+    private void displayErrorMessage(String errorMessage) {
+        if (errorMessage == null) {
+            throw new IllegalArgumentException("<null> message");
+        }
+
+        if (!errorMessage.equals(this.errorMessage)) {
+            this.errorMessage = errorMessage;
+            fireChangeEvent();
+        }
+    }
+
     private void setValid(boolean valid, String errorMessage) {
         boolean fire = this.valid != valid;
         fire |= errorMessage != null && (errorMessage.equals(this.errorMessage) == false);
@@ -260,7 +271,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         try {
             return repository.getRepositoryConnection();
         } catch (Exception ex) {
-            invalid(ex.getLocalizedMessage());
+            displayErrorMessage(ex.getLocalizedMessage());
             return null;
         }
     }
@@ -285,8 +296,6 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
             String invalidMsg = null;
             HttpURLConnection con = null;
             try {
-                invalid(null);
-
                 HgURL hgUrl = getRepositoryRoot();
 
                 HgURL.Scheme uriSch = hgUrl.getScheme();
@@ -344,12 +353,11 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                     con.disconnect();
                 }
                 if(isCanceled()) {
-                    valid(org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Canceled")); // NOI18N
+                  displayErrorMessage(org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Canceled")); // NOI18N
                 } else if(invalidMsg == null) {
-                  valid();
                   storeHistory();
                 } else {
-                  invalid(invalidMsg);
+                  displayErrorMessage(invalidMsg);
                 }
             }
         }
