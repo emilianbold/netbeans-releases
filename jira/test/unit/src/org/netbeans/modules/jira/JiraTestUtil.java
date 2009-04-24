@@ -71,6 +71,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
  *
@@ -83,10 +84,11 @@ public class JiraTestUtil {
     public static final String REPO_URL     = "http://kenai-test.czech.sun.com:8090";
     public static final String REPO_USER    = "unittest";
 
-    static NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
+    public static NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
     private static JiraClient client;
     private static JiraRepositoryConnector jrc;
-    private static TaskRepository repository;
+    private static TaskRepository taskRepository;
+    private static JiraRepository repository;
 
     public static RepositoryResponse createIssue(JiraRepositoryConnector rc, TaskRepository repository, JiraClient client, Project project, String summary, String desc, String typeName) throws CoreException, JiraException {
         // project
@@ -252,7 +254,7 @@ public class JiraTestUtil {
 
     public static JiraClient getClient() {
         if(client == null) {
-            client = JiraClientFactory.getDefault().getJiraClient(getRepository());
+            client = JiraClientFactory.getDefault().getJiraClient(getTaskRepository());
         }
         return client;
     }
@@ -264,12 +266,19 @@ public class JiraTestUtil {
         return jrc;
     }
 
-    public static TaskRepository getRepository() {
-        if(repository == null) {
-            repository = new TaskRepository("jira", JiraTestUtil.REPO_URL);
+    public static TaskRepository getTaskRepository() {
+        if(taskRepository == null) {
+            taskRepository = new TaskRepository("jira", JiraTestUtil.REPO_URL);
             AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD);
-            repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
-            repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
+            taskRepository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
+            taskRepository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
+        }
+        return taskRepository;
+    }
+
+    public static JiraRepository getRepository() {
+        if(repository == null) {
+            repository = new JiraRepository("jira", JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD, null, null);
         }
         return repository;
     }

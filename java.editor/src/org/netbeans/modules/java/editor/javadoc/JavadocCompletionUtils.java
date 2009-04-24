@@ -81,7 +81,13 @@ final class JavadocCompletionUtils {
     
     static final Pattern JAVADOC_LINE_BREAK = Pattern.compile("\\n[ \\t]*\\**[ \\t]*\\z"); // NOI18N
     static final Pattern JAVADOC_WHITE_SPACE = Pattern.compile("[^ \\t]"); // NOI18N
-    static final Pattern JAVADOC_EMPTY = Pattern.compile("^\\n?[ \\t]*$"); // NOI18N
+    /**
+     * javadoc parser considers whatever number of spaces or standalone newline
+     * or whatever number of trailing asterisks as empty javadoc.
+     * <p>See {@link JavadocCompletionUtilsTest#testIsInvalidDocInstance} for
+     * test cases
+     */
+    static final Pattern JAVADOC_EMPTY = Pattern.compile("^\\n?[ \\t]*\\**$"); // NOI18N
     static final Pattern JAVADOC_FIRST_WHITE_SPACE = Pattern.compile("[ \\t]*\\**[ \\t]*"); // NOI18N
     private static Set<JavaTokenId> IGNORE_TOKES = EnumSet.of(
             JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT);

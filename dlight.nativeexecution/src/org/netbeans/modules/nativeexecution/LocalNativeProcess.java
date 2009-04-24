@@ -48,7 +48,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
 import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
-import org.netbeans.modules.nativeexecution.support.WindowsSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.NbBundle;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {

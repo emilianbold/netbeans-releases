@@ -42,6 +42,7 @@
 package org.netbeans.modules.glassfish.common;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -63,7 +64,6 @@ import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
@@ -131,7 +131,7 @@ public class StartTask extends BasicTask<OperationState> {
         Logger.getLogger("glassfish").log(Level.FINEST, "StartTask.call() called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
         long start = System.currentTimeMillis();
 
-        String host = null;
+        String host;
         int port = 0;
         
         host = ip.get(GlassfishModule.HOSTNAME_ATTR);
@@ -140,19 +140,14 @@ public class StartTask extends BasicTask<OperationState> {
                     "MSG_START_SERVER_FAILED_NOHOST", instanceName); //NOI18N
         }
                
+        Process serverProcess;
         try {
             port = Integer.valueOf(ip.get(GlassfishModule.HTTPPORT_ATTR));
             if(port < 0 || port > 65535) {
                 return fireOperationStateChanged(OperationState.FAILED, 
                         "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
             }
-        } catch(NumberFormatException ex) {
-            return fireOperationStateChanged(OperationState.FAILED, 
-                    "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
-        }
-        
-        Process serverProcess = null;
-        try {
+
             jdkHome = getJavaPlatformRoot(support);
             // lookup the javadb start service and use it here.
             RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
@@ -160,13 +155,18 @@ public class StartTask extends BasicTask<OperationState> {
                 db.start();
             }
             serverProcess = createProcess();
-        } catch (IOException ex) {
-            fireOperationStateChanged(OperationState.FAILED, 
+        } catch (NumberFormatException nfe) {
+            Logger.getLogger("glassfish").log(Level.INFO, ip.get(GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
+            return fireOperationStateChanged(OperationState.FAILED,
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
-        }
-        if (serverProcess == null) {
-            // failed event already sent...
-            return OperationState.FAILED;
+        } catch (IOException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+            return fireOperationStateChanged(OperationState.FAILED, "MSG_PASS_THROUGH",
+                    ex.getLocalizedMessage());
+        } catch (ProcessCreationException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+            return fireOperationStateChanged(OperationState.FAILED, "MSG_PASS_THROUGH",
+                    ex.getLocalizedMessage());
         }
 
         fireOperationStateChanged(OperationState.RUNNING, 
@@ -236,9 +236,8 @@ public class StartTask extends BasicTask<OperationState> {
         // We consider the startup as failed and warn the user
         Logger.getLogger("glassfish").log(Level.FINE, "V3 Failed to start, killing process: " + serverProcess); // NOI18N
         serverProcess.destroy();
-        fireOperationStateChanged(OperationState.FAILED, 
+        return fireOperationStateChanged(OperationState.FAILED,
                 "MSG_START_SERVER_FAILED", instanceName); // NOI18N
-        return OperationState.FAILED;
     }
 
     private String[] createEnvironment() {
@@ -265,7 +264,7 @@ public class StartTask extends BasicTask<OperationState> {
     }
 
     private FileObject getJavaPlatformRoot(CommonServerSupport support) throws IOException {
-        FileObject retVal = null;
+        FileObject retVal;
         String javaInstall = support.getInstanceProperties().get(GlassfishModule.JAVA_PLATFORM_ATTR);
         if (null == javaInstall || javaInstall.trim().length() < 1) {
             File dir = new File(getJdkHome());
@@ -276,13 +275,15 @@ public class StartTask extends BasicTask<OperationState> {
                 //              bin             home
                 File dir = f.getParentFile().getParentFile();
                 retVal = FileUtil.createFolder(FileUtil.normalizeFile(dir));
+            } else {
+                throw new FileNotFoundException(NbBundle.getMessage(StartTask.class, "MSG_INVALID_JAVA", instanceName, javaInstall)); // NOI18N
             }
         }
         return retVal;
     }
     
     private String getJdkHome() {
-        String result = null;
+        String result;
         if (null != jdkHome) {
             result = FileUtil.toFile(jdkHome).getAbsolutePath();
         } else {
@@ -294,18 +295,23 @@ public class StartTask extends BasicTask<OperationState> {
         return result;
     }
     
-    private NbProcessDescriptor createProcessDescriptor() throws IOException {
+    private NbProcessDescriptor createProcessDescriptor() throws ProcessCreationException { 
         String startScript = FileUtil.toFile(jdkHome).getAbsolutePath() +
                 File.separatorChar + "bin" + File.separatorChar + "java"; // NOI18N
+        if (!File.separator.equals("/")) {
+            startScript += ".exe"; // NOI18N
+        }
         File ss = new File(startScript);
+        if (!ss.exists()) {
+            throw new ProcessCreationException(null,"MSG_INVALID_JAVA", instanceName, startScript);
+        }
         if (support.getInstanceProvider().requiresJdk6OrHigher() && !Util.appearsToBeJdk6OrBetter(ss)) {
-            return null;
+            throw new ProcessCreationException(null,"MSG_START_SERVER_FAILED_JDK_ERROR", instanceName);
         }
         String serverHome = ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
         File jar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_JAR_MATCHER);
         if(jar == null) {
-            fireOperationStateChanged(OperationState.FAILED, "MSG_START_SERVER_FAILED_FNF"); // NOI18N
-            return null;
+            throw new ProcessCreationException(null,"MSG_START_SERVER_FAILED_FNF");
         }
         String jarLocation = jar.getAbsolutePath();
         
@@ -337,41 +343,61 @@ public class StartTask extends BasicTask<OperationState> {
         return path.indexOf(' ') == -1 ? path : "\"" + path + "\""; // NOI18N
     }
     
-    private StringBuilder appendJavaOpts(List<String> optList, StringBuilder argumentBuf) throws IOException {
-        for(String option: optList) {
-            argumentBuf.append(' ');
-            argumentBuf.append(option);
-        }
+    private StringBuilder appendJavaOpts(List<String> optList, StringBuilder argumentBuf) throws ProcessCreationException {
+        String debugPortString = "";
+        try {
+            for (String option : optList) {
+                argumentBuf.append(' ');
+                argumentBuf.append(option);
+            }
 
-        if(GlassfishModule.DEBUG_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
+            if (GlassfishModule.DEBUG_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
 //            javaOpts.append(" -classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
-            try {
-                String debugPortString;
+                debugPortString = ip.get(GlassfishModule.DEBUG_PORT);
                 String debugTransport = "dt_socket"; // NOI18N
                 if ("true".equals(ip.get(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
                     debugTransport = "dt_shmem";  // NOI18N
-                    debugPortString = Integer.toString(Math.abs((ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)+
-                            ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR)+
-                            ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode()+1));
                 } else {
-                    int debugPort = 8787;
-                    // calculate the port and save it.
-                    ServerSocket t = new ServerSocket(0);
-                    debugPort = t.getLocalPort();
-                    debugPortString = Integer.toString(debugPort);
-                    t.close();
+                    int t = 0;
+                    if (null != debugPortString && debugPortString.trim().length() > 0) {
+                        t = Integer.parseInt(debugPortString);
+                        if(t < 0 || t > 65535) {
+                            throw new NumberFormatException();
+                        }
+                    }
                 }
+                //try {
+                if (null == debugPortString || "".equals(debugPortString)) {
+                    if ("true".equals(ip.get(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
+                        debugPortString = Integer.toString(Math.abs((ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) +
+                                ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) +
+                                ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() + 1));
+                    } else {
+                        int debugPort = 8787;
+                        // calculate the port and save it.
+                        ServerSocket t = null;
+                        try {
+                            t = new ServerSocket(0);
+                            debugPort = t.getLocalPort();
+                            debugPortString = Integer.toString(debugPort);
+                        } finally {
+                            if (null != t) {
+                                t.close();
+                            }
+                        }
+                    }
+                } 
                 support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, debugPortString, true);
                 argumentBuf.append(" -Xdebug -Xrunjdwp:transport="); // NOI18N
                 argumentBuf.append(debugTransport);
                 argumentBuf.append(",address="); // NOI18N
                 argumentBuf.append(debugPortString);
                 argumentBuf.append(",server=y,suspend=n"); // NOI18N
-            } catch (IOException ioe) {
-                Logger.getLogger("glassfish").log(Level.FINE, "Could not get a socket for debugging",ioe); // NOI18N
-                fireOperationStateChanged(OperationState.FAILED,
-                    "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
             }
+        } catch (NumberFormatException nfe) {
+            throw new ProcessCreationException(nfe, "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
+        } catch (IOException ioe) {
+            throw new ProcessCreationException(ioe, "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
         }
         return argumentBuf;
     }
@@ -425,7 +451,7 @@ public class StartTask extends BasicTask<OperationState> {
         return argumentBuf;
     }
     
-    private Process createProcess() throws IOException {
+    private Process createProcess() throws ProcessCreationException {
         Process process = null;
         NbProcessDescriptor pd = createProcessDescriptor();
         if(pd != null) {
@@ -433,13 +459,8 @@ public class StartTask extends BasicTask<OperationState> {
                 process = pd.exec(null, createEnvironment(), true, new File(
                         ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)));
             } catch (java.io.IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                fireOperationStateChanged(OperationState.FAILED, 
-                        "MSG_START_SERVER_FAILED_PD"); // NOI18N
+                throw new ProcessCreationException(ex, "MSG_START_SERVER_FAILED_PD", instanceName);
             }
-        } else {
-            fireOperationStateChanged(OperationState.FAILED,
-                    "MSG_START_SERVER_FAILED_JDK_ERROR",support.getDisplayName()); // NOI18N
         }
         return process;
     }
@@ -486,13 +507,31 @@ public class StartTask extends BasicTask<OperationState> {
     private static final String fixPath(String path) {
         return path.replace("\\", "\\\\").replace("$", "\\$"); // NOI18N
     }
+
+    private static class ProcessCreationException extends Exception {
+        private final String messageName;
+        private final String[] args;
+        ProcessCreationException(Exception cause, String messageName, String... args) {
+            super();
+            if (null != cause) {
+                initCause(cause);
+            }
+            this.messageName = messageName;
+            this.args = args;
+        }
+
+        @Override
+        public String getLocalizedMessage() {
+            return NbBundle.getMessage(StartTask.class, messageName, args);
+        }
+    }
     
     private static class JvmConfigReader extends TreeParser.NodeReader {
 
         private final Map<String, String> argMap;
         private final Map<String, String> varMap;
         private final List<String> optList;
-        private final String serverName = "server"; // NOI18N
+        static private final String SERVER_NAME = "server"; // NOI18N
         private String serverConfigName;
         private boolean readJvmConfig = false;
         
@@ -508,7 +547,7 @@ public class StartTask extends BasicTask<OperationState> {
                 public void readAttributes(String qname, Attributes attributes) throws SAXException {
 //                    <server lb-weight="100" name="server" config-ref="server-config">
                     if(serverConfigName == null || serverConfigName.length() == 0) {
-                        if(serverName.equals(attributes.getValue("name"))) {        // NOI18N
+                        if(SERVER_NAME.equals(attributes.getValue("name"))) {        // NOI18N
                             serverConfigName = attributes.getValue("config-ref");   // NOI18N
                             Logger.getLogger("glassfish").finer("DOMAIN.XML: Server profile defined by " + serverConfigName); // NOI18N
                         }

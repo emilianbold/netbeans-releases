@@ -147,7 +147,7 @@ public class GdbContext implements PropertyChangeListener {
         if (!cache.containsKey(propertyName)) {
             Request request = requests.get(propertyName);
             if (request != null) {
-                requests.get(propertyName).run(/*true*/);
+                request.run(/*true*/);
             }
         }
     }

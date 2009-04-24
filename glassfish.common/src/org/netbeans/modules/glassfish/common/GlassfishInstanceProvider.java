@@ -253,11 +253,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
 
     public String[] getRequiredFiles() {
-        return requiredFiles;
+        return requiredFiles.clone();
     }
 
     public String[] getExcludedFiles() {
-        return excludedFiles;
+        return excludedFiles.clone();
     }
     
     public String getNameOfBits() {
@@ -336,9 +336,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 //        return new ArrayList<ServerInstance>(instanceMap.values());
         List<ServerInstance> result = new  ArrayList<ServerInstance>();
         synchronized (instanceMap) {
-            if (instanceMap.isEmpty()) {
-                init();
-            }
             for (GlassfishInstance instance : instanceMap.values()) {
                 result.add(instance.getCommonInstance());
             }
