@@ -207,7 +207,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(query.isSaved()) {
             setAsSaved();
         }
-        postPopulate((FilterDefinition) jiraFilter);
+        if(jiraFilter != null && jiraFilter instanceof FilterDefinition) {
+            postPopulate((FilterDefinition) jiraFilter);
+        }
     }
 
     @Override
@@ -376,10 +378,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 //                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
 //                    panel.changedToTextField.setText(CHANGED_NOW);
 //
-                    // XXX
-                    if(filterDefinition != null && filterDefinition instanceof FilterDefinition) {
-                        setFilterDefinition(filterDefinition);
-                    }
+                      setFilterDefinition(filterDefinition);
 //
 //                    panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
 //
