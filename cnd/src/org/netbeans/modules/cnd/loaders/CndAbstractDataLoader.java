@@ -50,6 +50,9 @@ import org.openide.loaders.FileEntry;
 import org.openide.loaders.UniFileLoader;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.loaders.CreateFromTemplateAttributesProvider;
+import org.openide.loaders.DataFolder;
+import org.openide.util.Lookup;
 
 /**
  * DataLoader for recognising C/C++/Fortran (C-C-F) source files.
@@ -154,6 +157,20 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
             }
             map.put("NBDIR", nbHome); // NOI18N
             map.put("QUOTES", "\""); // NOI18N
+
+            for (CreateFromTemplateAttributesProvider provider :
+                    Lookup.getDefault().lookupAll(CreateFromTemplateAttributesProvider.class)) {
+                Map<String, ?> attrs = provider.attributesFor(getDataObject(),
+                        DataFolder.findFolder(target), name);
+                if (attrs != null) {
+                    Object username = attrs.get("user"); // NOI18N
+                    if (username instanceof String) {
+                        map.put("USER", (String) username); // NOI18N
+                        break;
+                    }
+                }
+            }
+
             org.openide.util.MapFormat format = new org.openide.util.MapFormat(map);
 
             // Use "%<%" and "%>%" instead of "__" (which most other templates
