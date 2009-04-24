@@ -61,7 +61,9 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 
 public final class H2DataStorage extends SQLDataStorage implements StackDataStorage {
 
@@ -71,8 +73,8 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     private static final AtomicInteger dbIndex = new AtomicInteger();
     private SQLStackStorage stackStorage;
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
-    private static final String tmpDir = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getTempDir();
-    private static final String url = "jdbc:h2:" + tmpDir  + "/dlight"; // NOI18N
+    private static final String tmpDir;
+    private static final String url;
     private String dbURL;
 
 
@@ -83,6 +85,13 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
         } catch (ClassNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
+
+        HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+        String tempDir = hi.getTempDir();
+        url = "jdbc:h2:" + tempDir + "/dlight"; // NOI18N
+        tmpDir = hi.getOSFamily() == HostInfo.OSFamily.WINDOWS
+                ? WindowsSupport.getInstance().convertoToWindowsPath(tempDir)
+                : tempDir;
     }
 
     private void initStorageTypes() {
@@ -107,8 +116,6 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
             logger.log(Level.SEVERE, null, ex);
         }
     }
-
-
     // FIXUP: deleting /tmp/dlight*
 
 
@@ -137,7 +144,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
 
     @Override
     public boolean shutdown() {
-        boolean result= stackStorage.shutdown() && super.shutdown();
+        boolean result = stackStorage.shutdown() && super.shutdown();
         final String filesToDelete = dbURL.substring(dbURL.lastIndexOf("/") + 1);//NOI18N
         File tmpDirFile = new File(tmpDir); // NOI18N
         if (tmpDirFile.exists()) {
@@ -148,13 +155,11 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
                 }
             });
             for (int i = 0; i < files.length; i++) {
-                result &=files[i].delete();
+                result &= files[i].delete();
             }
         }
         return result;
     }
-
-
 
     @Override
     public boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {

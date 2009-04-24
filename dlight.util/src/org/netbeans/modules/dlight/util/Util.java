@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -77,13 +78,20 @@ public class Util {
     public static String copyResource(Class clazz, String resourceFileName) {
         try {
             InputStream is = clazz.getClassLoader().getResourceAsStream(resourceFileName);
+
             if (is == null) {
                 return null;
             }
 
             HostInfo hostInfo = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
-            String prefix = "_dlight_" + getBriefName(resourceFileName);//NOI18N
-            File result_file = File.createTempFile(prefix, ".d", new File(hostInfo.getTempDir()));//NOI18N
+            String prefix = "_dlight_" + getBriefName(resourceFileName); // NOI18N
+            String tmpDirBase = hostInfo.getTempDir();
+
+            if (hostInfo.getOSFamily() == hostInfo.getOSFamily().WINDOWS) {
+                tmpDirBase = WindowsSupport.getInstance().convertoToWindowsPath(tmpDirBase);
+            }
+
+            File result_file = File.createTempFile(prefix, ".d", new File(tmpDirBase));//NOI18N
             result_file.deleteOnExit();
 
             OutputStream os = new FileOutputStream(result_file);
