@@ -61,6 +61,8 @@ public final class ClonePathsPanel extends javax.swing.JPanel {
                 defaultPushPathLabel = new javax.swing.JLabel();
                 defaultValuesButton = new javax.swing.JButton();
 
+                setName(org.openide.util.NbBundle.getMessage(ClonePathsPanel.class, "pathsPanel.Name")); // NOI18N
+
                 org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ClonePathsPanel.class, "defaultLabel.Name")); // NOI18N
 
                 defaultPullPathLabel.setLabelFor(defaultPullPathField);
