@@ -45,14 +45,12 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
-import java.io.IOException;
 import java.util.Set;
-import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
-import org.openide.cookies.InstanceCookie;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
@@ -60,7 +58,6 @@ import org.openide.filesystems.FileSystem.Status;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeEvent;
@@ -121,6 +118,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Jaroslav Tulach
  */
+@RandomlyFails // Temporary solution
 public class MenuBarDeadlock163201Test extends NbTestCase {
     private DataFolder df;
     private MenuBar mb;
