@@ -142,6 +142,7 @@ public class IssuePanel extends javax.swing.JPanel {
         GroupLayout layout = (GroupLayout)getLayout();
         layout.replace(dummyCommentsPanel, commentsPanel);
         layout.replace(dummyAttachmentsPanel, attachmentsPanel);
+        attachmentsLabel.setLabelFor(attachmentsPanel);
     }
 
     void reloadFormInAWT(final boolean force) {
@@ -223,6 +224,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 layout.replace(productCombo, productField);
             }
         }
+        productLabel.setLabelFor(isNew ? productCombo : productField);
         headerLabel.setVisible(!isNew);
         statusCombo.setEnabled(!isNew);
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
@@ -753,10 +755,13 @@ public class IssuePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(productLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.productLabel.text")); // NOI18N
 
+        componentLabel.setLabelFor(componentCombo);
         org.openide.awt.Mnemonics.setLocalizedText(componentLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.componentLabel.text")); // NOI18N
 
+        versionLabel.setLabelFor(versionCombo);
         org.openide.awt.Mnemonics.setLocalizedText(versionLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.versionLabel.text")); // NOI18N
 
+        platformLabel.setLabelFor(platformCombo);
         org.openide.awt.Mnemonics.setLocalizedText(platformLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.platformLabel.text")); // NOI18N
 
         productCombo.addActionListener(formListener);
@@ -767,6 +772,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
         platformCombo.addActionListener(formListener);
 
+        statusLabel.setLabelFor(statusCombo);
         org.openide.awt.Mnemonics.setLocalizedText(statusLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.statusLabel.text")); // NOI18N
 
         statusCombo.addActionListener(formListener);
@@ -775,56 +781,69 @@ public class IssuePanel extends javax.swing.JPanel {
 
         resolutionCombo.addActionListener(formListener);
 
+        priorityLabel.setLabelFor(priorityCombo);
         org.openide.awt.Mnemonics.setLocalizedText(priorityLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.priorityLabel.text")); // NOI18N
 
         priorityCombo.addActionListener(formListener);
 
+        severityLabel.setLabelFor(severityCombo);
         org.openide.awt.Mnemonics.setLocalizedText(severityLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.severityLabel.text")); // NOI18N
 
         severityCombo.addActionListener(formListener);
 
+        targetMilestoneLabel.setLabelFor(targetMilestoneCombo);
         org.openide.awt.Mnemonics.setLocalizedText(targetMilestoneLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.targetMilestoneLabel.text")); // NOI18N
 
         targetMilestoneCombo.addActionListener(formListener);
 
+        urlLabel.setLabelFor(urlField);
         org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.urlLabel.text")); // NOI18N
 
         urlField.setColumns(15);
 
+        keywordsLabel.setLabelFor(keywordsField);
         org.openide.awt.Mnemonics.setLocalizedText(keywordsLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsLabel.text")); // NOI18N
 
         keywordsField.setColumns(15);
 
+        reportedLabel.setLabelFor(reportedField);
         org.openide.awt.Mnemonics.setLocalizedText(reportedLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.text")); // NOI18N
 
         reportedField.setEditable(false);
         reportedField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
+        modifiedLabel.setLabelFor(modifiedField);
         org.openide.awt.Mnemonics.setLocalizedText(modifiedLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.modifiedLabel.text")); // NOI18N
 
         modifiedField.setEditable(false);
         modifiedField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
+        assignedLabel.setLabelFor(assignedField);
         org.openide.awt.Mnemonics.setLocalizedText(assignedLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.assignedLabel.text")); // NOI18N
 
         assignedField.setColumns(15);
 
+        qaContactLabel.setLabelFor(qaContactField);
         org.openide.awt.Mnemonics.setLocalizedText(qaContactLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.qaContactLabel.text")); // NOI18N
 
         qaContactField.setColumns(15);
 
+        ccLabel.setLabelFor(ccField);
         org.openide.awt.Mnemonics.setLocalizedText(ccLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.ccLabel.text")); // NOI18N
 
         ccField.setColumns(15);
 
+        dependsLabel.setLabelFor(dependsField);
         org.openide.awt.Mnemonics.setLocalizedText(dependsLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsLabel.text")); // NOI18N
 
         dependsField.setColumns(15);
 
+        blocksLabel.setLabelFor(blocksField);
         org.openide.awt.Mnemonics.setLocalizedText(blocksLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksLabel.text")); // NOI18N
 
         blocksField.setColumns(15);
 
+        addCommentLabel.setLabelFor(addCommentArea);
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentLabel.text")); // NOI18N
 
         addCommentArea.setColumns(20);
@@ -853,6 +872,7 @@ public class IssuePanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(refreshButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.text")); // NOI18N
         refreshButton.addActionListener(formListener);
 
+        duplicateLabel.setLabelFor(duplicateField);
         org.openide.awt.Mnemonics.setLocalizedText(duplicateLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(keywordsButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsButton.text")); // NOI18N
@@ -870,10 +890,12 @@ public class IssuePanel extends javax.swing.JPanel {
         dependsOnButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         dependsOnButton.addActionListener(formListener);
 
+        osLabel.setLabelFor(osCombo);
         org.openide.awt.Mnemonics.setLocalizedText(osLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.osLabel.text")); // NOI18N
 
         osCombo.addActionListener(formListener);
 
+        summaryLabel.setLabelFor(summaryField);
         org.openide.awt.Mnemonics.setLocalizedText(summaryLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.summaryLabel.text")); // NOI18N
 
         messagePanel.setLayout(new javax.swing.BoxLayout(messagePanel, javax.swing.BoxLayout.PAGE_AXIS));
@@ -1303,6 +1325,7 @@ public class IssuePanel extends javax.swing.JPanel {
             duplicateLabel.setVisible(false);
             duplicateField.setVisible(false);
         }
+        resolutionLabel.setLabelFor(resolutionCombo.isVisible() ? resolutionCombo : resolutionField);
     }//GEN-LAST:event_statusComboActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
