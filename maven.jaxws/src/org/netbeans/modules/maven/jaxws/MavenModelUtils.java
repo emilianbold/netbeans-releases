@@ -39,23 +39,24 @@
 
 package org.netbeans.modules.maven.jaxws;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.maven.artifact.Artifact;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Dependency;
+import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.openide.filesystems.FileObject;
 import javax.xml.namespace.QName;
@@ -69,6 +70,7 @@ import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.PluginExecution;
 import org.netbeans.modules.maven.model.pom.Resource;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -387,34 +389,103 @@ public final class MavenModelUtils {
         }
     }
 
-    /** Adds JAX-WS 2.1 Library.
+    /** Add JAX-WS 2.1 Library.
      *
      * @param project Project
-     * @throws java.io.IOException throws when Library cannot be found
+     * @return true if library was successfully added
      */
-    public static boolean addJaxws21Library(Project project) throws IOException {
+    public static boolean addJaxws21Library(final Project project) {
+        if (!isJaxWs21Library(project)) {
+            //add the Metro library
+            final boolean[] libraryAdded = new boolean[1];
+            ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+
+                public void performOperation(POMModel model) {
+                    try {
+                        addJaxws21Library(project, model);
+                        libraryAdded[0] = true;
+                    } catch (Exception ex) {
+                        Logger.getLogger(
+                            MavenModelUtils.class.getName()).log(
+                                Level.INFO, "Cannot add Metro libbrary to pom file", ex); //NOI18N
+                        libraryAdded[0] = false;
+                    }
+                }
+
+            };
+            FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+            Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
+
+            if (libraryAdded[0]) {
+                addJavadoc(project);
+            }
+
+            return libraryAdded[0];
+        }
+        return false;
+    }
+
+    /** Add JAX-WS 2.1 Library.
+     *
+     * @param project Project
+     * @param model POMModel instance
+     * @return true if library was successfully added
+     */
+    public static void addJaxws21Library(Project project, POMModel model) {
+        Dependency dep =
+               ModelUtils.checkModelDependency(model, "com.sun.xml.ws", "webservices-rt", true); //NOI18N
+        if (dep != null) {
+            dep.setVersion("1.4"); //NOI18N
+            dep.setScope(Artifact.SCOPE_PROVIDED);
+        }
+
+        NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
+        if (mavenProject != null) {
+            Repository rep =
+                    ModelUtils.addModelRepository(
+                        mavenProject.getMavenProject(),
+                        model,
+                        "http://download.java.net/maven/2"); //NOI18N
+            if (rep != null) {
+                rep.setId("metro"); //NOI18N
+                rep.setLayout("default"); //NOI18N
+                rep.setName("Repository for library[metro]"); //NOI18N
+            }
+        }
+    }
+
+    /** Detect JAX-WS 2.1 Library in project.
+     *
+     * @param project Project
+     * @return true if library was detected
+     */
+    public static boolean isJaxWs21Library(Project project) {
         SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (srcGroups.length > 0) {
             ClassPath classPath = ClassPath.getClassPath(srcGroups[0].getRootFolder(), ClassPath.COMPILE);
             FileObject wsimportFO = classPath.findResource("javax/xml/ws/WebServiceFeature.class"); // NOI18N
             if (wsimportFO == null) {
-                //add the Metro library
-                Library metroLib = LibraryManager.getDefault().getLibrary("metro"); //NOI18N
-                if (metroLib == null) {
-                    throw new IOException("Unable to find Metro Library."); //NOI18N
-                }
-                try {
-                    ProjectClassPathModifier.addLibraries(new Library[] {metroLib},
-                            srcGroups[0].getRootFolder(),
-                            ClassPath.COMPILE);
-                    return true;
-                } catch (IOException e) {
-                    throw new IOException("Unable to add Metro Library. " + e.getMessage()); //NOI18N
-                }
+                return false;
             }
         }
-        return false;
+        return true;
+    }
+
+    /** Add Javadoc to project
+     * @param project Project
+     */
+    public static void addJavadoc(final Project project) {
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
+                if (mavenProject != null) {
+                    mavenProject.downloadDependencyAndJavadocSource();
+                }
+            }
+
+        });
     }
 
     /** get list of wsdl files in Maven project
