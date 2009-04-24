@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
-import java.io.PrintStream;
-
 public interface HostInfo {
 
     public static enum CpuFamily {

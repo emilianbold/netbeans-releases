@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,6 +50,7 @@ import java.util.regex.Pattern;
  *
  */
 public final class WindowsSupport {
+
     private static final WindowsSupport instance = new WindowsSupport();
     private String cygwinBase = null;
     private String cygwinShell = null;
@@ -81,8 +82,8 @@ public final class WindowsSupport {
 
         // 2. Try msys
         String msysRoot = queryWindowsRegistry(
-                "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1",  // NOI18N
-                "Inno Setup: App Path",  // NOI18N
+                "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
+                "Inno Setup: App Path", // NOI18N
                 ".*REG_SZ(.*)"); // NOI18N
 
         if (msysRoot != null) {
@@ -138,7 +139,6 @@ public final class WindowsSupport {
         return null;
     }
 
-
     /**
      * For now it is assumed that once cygwin was found it is used for starting
      * shell ... So in this case will convert to /cygdrive/....
@@ -172,6 +172,22 @@ public final class WindowsSupport {
 
         return result;
 
+    }
+
+    public String convertoToWindowsPath(String path) {
+        String result = ""; // NOI18N
+
+        if (path.startsWith("/cygdrive/")) { // NOI18N
+            path = path.substring(9);
+        }
+
+        if (path.startsWith("/") && path.charAt(2) == '/') {
+            result = path.charAt(1) + ":"; // NOI18N
+            path = path.substring(2);
+        }
+
+        result = result + path;
+        return result.replaceAll("/", "\\\\"); // NOI18N
     }
 
     public String normalizeAllPaths(String paths) {
