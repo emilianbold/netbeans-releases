@@ -90,7 +90,7 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             return ;
         }
         
-        LOG.log(Level.FINE, "invocationCount={0}, file={0}", new Object [] { invocationCount, info.getFileObject() });
+        LOG.log(Level.FINE, "invocationCount={0}, file={1}", new Object [] { invocationCount, info.getFileObject() });
         if (invocationCount++ > 1) {
             LOG.log(Level.FINE, "Too many invocations: {0}", invocationCount);
             return ;
