@@ -170,7 +170,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             int count = 20;
 
             // this can get called while var is waiting for its type to be returned
-            while (type == null && count-- > 0 && debugger.getState() == GdbDebugger.State.STOPPED) {
+            while (type == null && count-- > 0 && debugger.isStopped()) {
                 if (log.isLoggable(Level.FINE) && count == 19) {
                     log.fine("AV.waitForType: Waiting on type for " + name);
                 }
@@ -437,7 +437,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     * @return 0 if the variable shouldn't have a turner and fields.length if it should
     */
     public int getFieldsCount() {
-        if (getDebugger() == null || getDebugger().getState() != GdbDebugger.State.STOPPED) {
+        if (getDebugger() == null || !getDebugger().isStopped()) {
             return 0;
         } else if (fields.length > 0) {
             return fields.length;

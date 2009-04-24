@@ -192,7 +192,7 @@ final class MemoryViewTopComponent extends TopComponent implements PropertyChang
         }
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                if (debugger.getState() != GdbDebugger.State.STOPPED) {
+                if (!debugger.isStopped()) {
                     return;
                 }
                 CommandBuffer cb = debugger.getGdbProxy().data_read_memory(addr, (len-1)/GdbProxy.MEMORY_READ_WIDTH+1);
