@@ -348,7 +348,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     }
 
     @Override
-    public GizmoOptionsImpl clone() {
+    public GizmoOptionsImpl clone(Configuration c) {
         GizmoOptionsImpl clone = new GizmoOptionsImpl(getBaseDir(), null);
 
         clone.setProfileOnRun(getProfileOnRun().clone());

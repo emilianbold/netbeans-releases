@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.ListenableIntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
@@ -655,7 +656,7 @@ public class RunProfile implements ConfigurationAuxObject {
      * All fields are cloned except for 'parent'.
      */
     @Override
-    public RunProfile clone() {
+    public RunProfile clone(Configuration conf) {
         RunProfile p = new RunProfile(getBaseDir(), this.platform);
         //p.setParent(getParent());
         p.setCloneOf(this);
