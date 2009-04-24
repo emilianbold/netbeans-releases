@@ -40,13 +40,16 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,7 +60,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.junit.MockServices;
+import org.netbeans.core.startup.TopLogging;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
@@ -65,12 +68,18 @@ import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.test.MockLookup;
 
 /**
+ * todo:
+ * - test indexing empty roots (with no files)
+ *
  *
  * @author vita
  */
@@ -85,6 +94,9 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        MockLookup.init();
+        TopLogging.initializeQuietly();
+        
         super.setUp();
 
         this.clearWorkDir();
@@ -134,7 +146,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
                 return 0;
             }
         };
-        MockServices.setServices(testAddIndexingJob_PathRecognizer.class);
+        MockLookup.setInstances(new testAddIndexingJob_PathRecognizer());
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), factory);
         Util.allMimeTypes = Collections.singleton("text/plain");
 
@@ -271,7 +283,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         final FileObject file3 = srcRoot3.createData("file3.txt");
         url2file.put(srcRoot3.getURL(), srcRoot3);
 
-        MockServices.setServices(testRootsWorkCancelling_PathRecognizer.class);
+        MockLookup.setInstances(new testRootsWorkCancelling_PathRecognizer());
         final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
         GlobalPathRegistry.getDefault().register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
 
@@ -410,6 +422,138 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
     } // End of FixedCustomIndexerFactory class
 
+
+    public void testClasspathDeps1() throws IOException, InterruptedException {
+        FileUtil.setMIMEType("txt", "text/plain");
+        final FileObject srcRoot1 = workDir.createFolder("src1");
+        srcRoot1.createData("file1.txt");
+        final FileObject srcRoot2 = workDir.createFolder("src2");
+        srcRoot2.createData("file2.txt");
+        final FileObject srcRoot3 = workDir.createFolder("src3");
+        srcRoot3.createData("file3.txt");
+        final FileObject srcRoot4 = workDir.createFolder("src4");
+        srcRoot4.createData("file4.txt");
+
+        final RepositoryUpdaterTest.MutableClassPathImplementation mcpi1 = new RepositoryUpdaterTest.MutableClassPathImplementation();
+        final ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        mcpi1.addResource(srcRoot1);
+        final RepositoryUpdaterTest.MutableClassPathImplementation mcpi2 = new RepositoryUpdaterTest.MutableClassPathImplementation();
+        final ClassPath cp2 = ClassPathFactory.createClassPath(mcpi2);
+        mcpi2.addResource(srcRoot2);
+        final RepositoryUpdaterTest.MutableClassPathImplementation mcpi3 = new RepositoryUpdaterTest.MutableClassPathImplementation();
+        final ClassPath cp3 = ClassPathFactory.createClassPath(mcpi3);
+        mcpi3.addResource(srcRoot3);
+
+        Map<String, ClassPath> deps1 = new HashMap<String, ClassPath>();
+        deps1.put(testClasspathDeps1_PathRecognizer.CP1, cp1);
+        deps1.put(testClasspathDeps1_PathRecognizer.CP2, cp2);
+//        deps1.put(testClasspathDeps1_PathRecognizer.CP3, cp3);
+
+        Map<String, ClassPath> deps2 = new HashMap<String, ClassPath>();
+        deps2.put(testClasspathDeps1_PathRecognizer.CP2, cp2);
+//        deps2.put(testClasspathDeps1_PathRecognizer.CP3, cp3);
+
+//        Map<String, ClassPath> deps3 = new HashMap<String, ClassPath>();
+//        deps3.put(testClasspathDeps1_PathRecognizer.CP3, cp3);
+
+        Map<FileObject, Map<String, ClassPath>> allDeps = new HashMap<FileObject, Map<String, ClassPath>>();
+        allDeps.put(srcRoot1, deps1);
+        allDeps.put(srcRoot2, deps2);
+//        allDeps.put(srcRoot3, deps3);
+
+        final FixedClassPathProvider cpProvider = new FixedClassPathProvider(allDeps);
+        MockLookup.setInstances(cpProvider, new testClasspathDeps1_PathRecognizer());
+
+        final testClasspathDeps1_Indexer indexer = new testClasspathDeps1_Indexer();
+        MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer));
+        Util.allMimeTypes = Collections.singleton("text/plain");
+
+        assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
+
+        GlobalPathRegistry.getDefault().register(testClasspathDeps1_PathRecognizer.CP1, new ClassPath[] { cp1 });
+        GlobalPathRegistry.getDefault().register(testClasspathDeps1_PathRecognizer.CP2, new ClassPath[] { cp2 });
+        GlobalPathRegistry.getDefault().register(testClasspathDeps1_PathRecognizer.CP3, new ClassPath[] { cp3 });
+
+        Collection<? extends PathRecognizer> pathRecognizers = Lookup.getDefault().lookupAll(PathRecognizer.class);
+        Logger.getLogger(RepositoryUpdater.class.getName()).fine("PathRecognizers: " + pathRecognizers);
+
+        Thread.sleep(2000);
+        RepositoryUpdater.getDefault().waitUntilFinished(-1);
+
+        assertEquals("All roots should be indexed now", 3, indexer.indexedRoots.size());
+        assertEquals("Wrong first root", srcRoot2.getURL(), indexer.indexedRoots.get(0));
+        assertEquals("Wrong second root", srcRoot1.getURL(), indexer.indexedRoots.get(1));
+        assertEquals("Wrong third root", srcRoot3.getURL(), indexer.indexedRoots.get(2));
+
+        indexer.indexedRoots.clear();
+        mcpi2.addResource(srcRoot4);
+        
+        Thread.sleep(2000);
+        RepositoryUpdater.getDefault().waitUntilFinished(-1);
+
+        assertEquals("Additional and dependent roots not indexed", 3, indexer.indexedRoots.size());
+        assertEquals("Wrong first root", srcRoot4.getURL(), indexer.indexedRoots.get(0));
+        assertEquals("Wrong second root", srcRoot2.getURL(), indexer.indexedRoots.get(1));
+        assertEquals("Wrong second root", srcRoot1.getURL(), indexer.indexedRoots.get(2));
+
+    }
+
+    private static final class testClasspathDeps1_PathRecognizer extends PathRecognizer {
+
+        public static final String CP1 = "testClasspathDeps1_PathRecognizer/CP1";
+        public static final String CP2 = "testClasspathDeps1_PathRecognizer/CP2";
+        public static final String CP3 = "testClasspathDeps1_PathRecognizer/CP3";
+
+        @Override
+        public Set<String> getSourcePathIds() {
+            return new HashSet<String>(Arrays.asList(new String [] {
+                CP1, CP3
+            }));
+        }
+
+        @Override
+        public Set<String> getLibraryPathIds() {
+            return Collections.singleton(CP2);
+        }
+
+        @Override
+        public Set<String> getBinaryLibraryPathIds() {
+            return null;
+        }
+
+        @Override
+        public Set<String> getMimeTypes() {
+            return Collections.singleton("text/plain");
+        }
+    } // End of testClasspathDeps1_PathRecognizer class
+
+    private static final class testClasspathDeps1_Indexer extends CustomIndexer {
+
+        public final List<URL> indexedRoots = new LinkedList<URL>();
+
+        protected @Override void index(Iterable<? extends Indexable> files, Context context) {
+            indexedRoots.add(context.getRootURI());
+        }
+    
+    } // End of testClasspathDeps1_Indexer class
+
+    private static final class FixedClassPathProvider implements ClassPathProvider {
+
+        private final Map<FileObject, Map<String, ClassPath>> map = new HashMap<FileObject, Map<String, ClassPath>>();
+
+        public FixedClassPathProvider(Map<FileObject, Map<String, ClassPath>> dependencies) {
+            this.map.putAll(dependencies);
+        }
+        
+        public ClassPath findClassPath(FileObject file, String type) {
+            Map<String, ClassPath> classpaths = map.get(file);
+            if (classpaths != null) {
+                return classpaths.get(type);
+            } else {
+                return null;
+            }
+        }
+    } // End of FixedClassPathProvider class
 
     
     // ---------- !!!!!! This MUST be the last test in the suite,
