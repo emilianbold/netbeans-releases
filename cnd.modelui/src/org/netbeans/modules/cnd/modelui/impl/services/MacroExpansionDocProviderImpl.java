@@ -144,7 +144,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                             tt.appendInterval(endOffset - tt.currentIn.start, 0, false);
                             break;
                         }
-                        if (docTokenEndOffset <= fileToken.getOffset() || !APTUtils.isMacro(fileToken)) {
+                        if (docTokenEndOffset <= fileToken.getOffset() || !APTUtils.isMacroExpandedToken(fileToken)) {
                             if (isOnInclude(docTS)) {
                                 if (!(inMacroParams || inDeadCode)) {
                                     copyInterval(inDoc, docTokenStartOffset - tt.currentIn.start, tt, expandedData);
@@ -426,7 +426,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                             tt.appendInterval(endOffset - tt.currentIn.start, 0, false);
                             break;
                         }
-                        if (docTokenEndOffset <= fileToken.getOffset() || !APTUtils.isMacro(fileToken)) {
+                        if (docTokenEndOffset <= fileToken.getOffset() || !APTUtils.isMacroExpandedToken(fileToken)) {
                             if (isOnInclude(docTS)) {
                                 if (!(inMacroParams || inDeadCode)) {
                                     copyInterval(doc, docTokenStartOffset - tt.currentIn.start, tt, null);
