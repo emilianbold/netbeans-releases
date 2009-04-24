@@ -1,4 +1,4 @@
-        Copyright © 1997 - 2008 Sun Microsystems, Inc. All rights reserved.
+        Copyright © 1997 - 2009 Sun Microsystems, Inc. All rights reserved.
 
         Sun Microsystems, Inc. has intellectual property rights relating
 to technology embodied in the product that is described in this
@@ -20,7 +20,7 @@ U.S. and other countries.
 
     French:
 
-        Copyright © 1997 - 2008 Sun Microsystems, Inc. Tous droits réservés.
+        Copyright © 1997 - 2009 Sun Microsystems, Inc. Tous droits réservés.
 
         Sun Microsystems, Inc. détient les droits de propriété
 intellectuels relatifs à la technologie incorporée dans le produit qui
@@ -38,4 +38,5 @@ des tierces parties.
         Sun, Sun Microsystems, le logo Sun, Java et Solaris sont des
 marques de fabrique ou des marques déposées de Sun Microsystems, Inc.
 aux Etats-Unis et dans d'autres pays.
+
 
