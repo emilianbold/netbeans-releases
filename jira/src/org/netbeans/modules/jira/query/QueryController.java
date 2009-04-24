@@ -68,6 +68,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
@@ -134,7 +135,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private QueryTask searchTask;
     private QueryTask refreshTask;
 
-    public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition filterDefinition) {
+    public QueryController(JiraRepository repository, JiraQuery query, JiraFilter jiraFilter) {
         this.repository = repository;
         this.query = query;
         
@@ -205,7 +206,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(query.isSaved()) {
             setAsSaved();
         }
-        postPopulate(filterDefinition);
+        if(jiraFilter != null && jiraFilter instanceof FilterDefinition) {
+            postPopulate((FilterDefinition) jiraFilter);
+        }
     }
 
     @Override
