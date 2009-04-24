@@ -229,11 +229,7 @@ public class JiraQuery extends Query {
     int getSize() {
         return issues.size();
     }
-//
-//    public FilterDefinition getFilterDefinition() {
-//        return getController().getFilterDefinition();
-//    }
-
+    
     public void setName(String name) {
         this.name = name;
     }
