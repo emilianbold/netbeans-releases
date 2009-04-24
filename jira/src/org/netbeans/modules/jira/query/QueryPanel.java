@@ -62,7 +62,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
+import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.query.QueryParameter.ParameterValueCellRenderer;
 import org.openide.util.ImageUtilities;
 
@@ -122,22 +124,27 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         refreshCheckBox.setVisible(false);
         noContentPanel.setVisible(false);
 
+        summaryCheckBox.setSelected(true);
+        descriptionCheckBox.setSelected(true);
+        commentsCheckBox.setSelected(false);
+        environmentCheckBox.setSelected(false);
+
 //        bugAssigneeCheckBox.setOpaque(false);
 //        reporterCheckBox.setOpaque(false);
 //        ccCheckBox.setOpaque(false);
 //        commenterCheckBox.setOpaque(false);
 
-        summaryComboBox.setModel(new DefaultComboBoxModel());
-        commentComboBox.setModel(new DefaultComboBoxModel());
-        keywordsComboBox.setModel(new DefaultComboBoxModel());
+//        summaryComboBox.setModel(new DefaultComboBoxModel());
+//        commentComboBox.setModel(new DefaultComboBoxModel());
+//        keywordsComboBox.setModel(new DefaultComboBoxModel());
 //        peopleComboBox.setModel(new DefaultComboBoxModel());
         
-        summaryComboBox.setRenderer(new ParameterValueCellRenderer());
-        commentComboBox.setRenderer(new ParameterValueCellRenderer());
-        keywordsComboBox.setRenderer(new ParameterValueCellRenderer());
+//        summaryComboBox.setRenderer(new ParameterValueCellRenderer());
+//        commentComboBox.setRenderer(new ParameterValueCellRenderer());
+//        keywordsComboBox.setRenderer(new ParameterValueCellRenderer());
 //        peopleComboBox.setRenderer(new ParameterValueCellRenderer());
 //        severityList.setCellRenderer(new ParameterValueCellRenderer());
-        productList.setCellRenderer(new ParameterValueCellRenderer());
+        projectList.setCellRenderer(new ProjectRenderer());
         componentList.setCellRenderer(new ParameterValueCellRenderer());
 //        versionList.setCellRenderer(new ParameterValueCellRenderer());
 //        statusList.setCellRenderer(new ParameterValueCellRenderer());
@@ -158,22 +165,22 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 //        changedFromTextField.addFocusListener(this);
 //        changedList.addFocusListener(this);
 //        changedToTextField.addFocusListener(this);
-        commentComboBox.addFocusListener(this);
-        commentTextField.addFocusListener(this);
+//        commentComboBox.addFocusListener(this);
+//        commentTextField.addFocusListener(this);
 //        commenterCheckBox.addFocusListener(this);
         componentList.addFocusListener(this);
         filterComboBox.addFocusListener(this);
         gotoIssueButton.addFocusListener(this);
         idTextField.addFocusListener(this);
-        keywordsButton.addFocusListener(this);
-        keywordsComboBox.addFocusListener(this);
-        keywordsTextField.addFocusListener(this);
+//        keywordsButton.addFocusListener(this);
+//        keywordsComboBox.addFocusListener(this);
+//        keywordsTextField.addFocusListener(this);
         modifyButton.addFocusListener(this);
 //        newValueTextField.addFocusListener(this);
 //        peopleComboBox.addFocusListener(this);
 //        peopleTextField.addFocusListener(this);
 //        priorityList.addFocusListener(this);
-        productList.addFocusListener(this);
+        projectList.addFocusListener(this);
         queryNameTextField.addFocusListener(this);
         refreshButton.addFocusListener(this);
         refreshCheckBox.addFocusListener(this);
@@ -186,8 +193,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         seenButton.addFocusListener(this);
 //        severityList.addFocusListener(this);
 //        statusList.addFocusListener(this);
-        summaryComboBox.addFocusListener(this);
-        summaryTextField.addFocusListener(this);
+//        summaryComboBox.addFocusListener(this);
+        queryTextField.addFocusListener(this);
         tablePanel.addFocusListener(this);
         tableSummaryLabel.addFocusListener(this);
         urlTextField.addFocusListener(this);
@@ -264,10 +271,10 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         byDetailsPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
-        productLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        productLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         productLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.productLabel.text")); // NOI18N
 
-        componentLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        componentLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         componentLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.componentLabel.text")); // NOI18N
 
         jScrollPane6.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -282,13 +289,13 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         jScrollPane7.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        productList.setModel(new javax.swing.AbstractListModel() {
+        projectList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
-        productList.setMaximumSize(new java.awt.Dimension(100, 2));
-        jScrollPane7.setViewportView(productList);
+        projectList.setMaximumSize(new java.awt.Dimension(100, 2));
+        jScrollPane7.setViewportView(projectList);
 
         org.jdesktop.layout.GroupLayout byDetailsPanelLayout = new org.jdesktop.layout.GroupLayout(byDetailsPanel);
         byDetailsPanel.setLayout(byDetailsPanelLayout);
@@ -321,30 +328,22 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         byTextPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
-        summaryLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.summaryLabel.text_1")); // NOI18N
+        queryLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.queryLabel.text_1")); // NOI18N
 
-        commentLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.commentLabel.text")); // NOI18N
+        queryTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.queryTextField.text")); // NOI18N
 
-        keywordsLabel.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.keywordsLabel.text")); // NOI18N
+        summaryCheckBox.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.summaryCheckBox.text")); // NOI18N
 
-        summaryComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        commentComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        keywordsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        summaryTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.summaryTextField.text")); // NOI18N
-
-        commentTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.commentTextField.text")); // NOI18N
-
-        keywordsTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.keywordsTextField.text")); // NOI18N
-
-        keywordsButton.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.keywordsButton.text")); // NOI18N
-        keywordsButton.addActionListener(new java.awt.event.ActionListener() {
+        descriptionCheckBox.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.descriptionCheckBox.text")); // NOI18N
+        descriptionCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                keywordsButtonActionPerformed(evt);
+                descriptionCheckBoxActionPerformed(evt);
             }
         });
+
+        commentsCheckBox.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.commentsCheckBox.text")); // NOI18N
+
+        environmentCheckBox.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.environmentCheckBox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout byTextPanelLayout = new org.jdesktop.layout.GroupLayout(byTextPanel);
         byTextPanel.setLayout(byTextPanelLayout);
@@ -352,43 +351,37 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(byTextPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(summaryLabel)
-                    .add(commentLabel)
-                    .add(keywordsLabel))
+                .add(queryLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(summaryComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(keywordsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(commentComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(keywordsTextField)
-                    .add(commentTextField)
-                    .add(summaryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(keywordsButton)
-                .addContainerGap(38, Short.MAX_VALUE))
+                    .add(byTextPanelLayout.createSequentialGroup()
+                        .add(byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(summaryCheckBox)
+                            .add(commentsCheckBox))
+                        .add(18, 18, 18)
+                        .add(byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(environmentCheckBox)
+                            .add(descriptionCheckBox)))
+                    .add(queryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 621, Short.MAX_VALUE))
+                .addContainerGap())
         );
         byTextPanelLayout.setVerticalGroup(
             byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(byTextPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(summaryLabel)
-                    .add(summaryComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(summaryTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(queryLabel)
+                    .add(queryTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(commentLabel)
-                    .add(commentTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(commentComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(keywordsLabel)
-                    .add(keywordsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(keywordsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(keywordsButton))
+                .add(byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(byTextPanelLayout.createSequentialGroup()
+                        .add(summaryCheckBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(commentsCheckBox))
+                    .add(byTextPanelLayout.createSequentialGroup()
+                        .add(descriptionCheckBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(environmentCheckBox)))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -838,9 +831,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         // TODO add your handling code here:
 }//GEN-LAST:event_urlToggleButtonActionPerformed
 
-    private void keywordsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keywordsButtonActionPerformed
+    private void descriptionCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_descriptionCheckBoxActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_keywordsButtonActionPerformed
+    }//GEN-LAST:event_descriptionCheckBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -857,12 +850,12 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JLabel byTextLabel = new javax.swing.JLabel();
     private javax.swing.JPanel byTextPanel;
     final javax.swing.JButton cancelChangesButton = new javax.swing.JButton();
-    final javax.swing.JComboBox commentComboBox = new javax.swing.JComboBox();
-    final javax.swing.JLabel commentLabel = new javax.swing.JLabel();
-    final javax.swing.JTextField commentTextField = new javax.swing.JTextField();
+    final javax.swing.JCheckBox commentsCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JLabel componentLabel = new javax.swing.JLabel();
     final javax.swing.JList componentList = new javax.swing.JList();
     private javax.swing.JPanel criteriaPanel;
+    final javax.swing.JCheckBox descriptionCheckBox = new javax.swing.JCheckBox();
+    final javax.swing.JCheckBox environmentCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JComboBox filterComboBox = new javax.swing.JComboBox();
     private javax.swing.JLabel filterLabel;
     final javax.swing.JButton gotoIssueButton = new javax.swing.JButton();
@@ -878,10 +871,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel jLabel8;
     final javax.swing.JScrollPane jScrollPane6 = new HackedScrollPane();
     final javax.swing.JScrollPane jScrollPane7 = new javax.swing.JScrollPane();
-    final javax.swing.JButton keywordsButton = new javax.swing.JButton();
-    final javax.swing.JComboBox keywordsComboBox = new javax.swing.JComboBox();
-    final javax.swing.JLabel keywordsLabel = new javax.swing.JLabel();
-    final javax.swing.JTextField keywordsTextField = new javax.swing.JTextField();
     final javax.swing.JLabel lastRefreshDateLabel = new javax.swing.JLabel();
     private javax.swing.JLabel lastRefreshLabel;
     public final org.netbeans.modules.bugtracking.util.LinkButton modifyButton = new org.netbeans.modules.bugtracking.util.LinkButton();
@@ -889,9 +878,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel noContentLabel;
     private javax.swing.JPanel noContentPanel;
     final javax.swing.JLabel productLabel = new javax.swing.JLabel();
-    final javax.swing.JList productList = new javax.swing.JList();
+    final javax.swing.JList projectList = new javax.swing.JList();
     private javax.swing.JPanel queryHeaderPanel;
+    final javax.swing.JLabel queryLabel = new javax.swing.JLabel();
     final javax.swing.JTextField queryNameTextField = new javax.swing.JTextField();
+    final javax.swing.JTextField queryTextField = new javax.swing.JTextField();
     final org.netbeans.modules.bugtracking.util.LinkButton refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JCheckBox refreshCheckBox = new javax.swing.JCheckBox();
     public final org.netbeans.modules.bugtracking.util.LinkButton removeButton = new org.netbeans.modules.bugtracking.util.LinkButton();
@@ -902,9 +893,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JButton searchButton = new javax.swing.JButton();
     final javax.swing.JPanel searchPanel = new javax.swing.JPanel();
     final org.netbeans.modules.bugtracking.util.LinkButton seenButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    final javax.swing.JComboBox summaryComboBox = new javax.swing.JComboBox();
-    final javax.swing.JLabel summaryLabel = new javax.swing.JLabel();
-    final javax.swing.JTextField summaryTextField = new javax.swing.JTextField();
+    final javax.swing.JCheckBox summaryCheckBox = new javax.swing.JCheckBox();
     private javax.swing.JPanel tableFieldsPanel;
     private javax.swing.JPanel tableHeaderPanel;
     final javax.swing.JPanel tablePanel = new javax.swing.JPanel();
@@ -926,9 +915,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 //        summaryTextField.setEnabled(enable);
 //        commentTextField.setEnabled(enable);
 //        keywordsTextField.setEnabled(enable);
-        summaryLabel.setEnabled(enable);
-        commentLabel.setEnabled(enable);
-        keywordsLabel.setEnabled(enable);
+        queryLabel.setEnabled(enable);
+//        commentLabel.setEnabled(enable);
+//        keywordsLabel.setEnabled(enable);
 
         productLabel.setEnabled(enable);
 //        productList.setEnabled(enable);
@@ -1063,6 +1052,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         // do nothing
     }
 
+    // XXX reuse with bugzilla
     class ExpandablePanel {
         private final JPanel panel;
         private final JLabel label;
@@ -1106,6 +1096,16 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if(value instanceof Query.Filter) {
                 value = ((Query.Filter)value).getDisplayName();
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+    }
+
+    private static class ProjectRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if(value instanceof Project) {
+                value = ((Project) value).getName();
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
