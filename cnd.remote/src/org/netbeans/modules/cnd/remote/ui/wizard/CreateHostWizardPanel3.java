@@ -77,12 +77,8 @@ import org.openide.util.HelpCtx;
         );
     }
 
-    private static final String PROP_DEFAULT_TC = "defaulttoolchain"; //NOI18N
-
     public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(PROP_DEFAULT_TC, getComponent().getDefaultCompilerSetDisplayName());
         settings.putProperty(CreateHostWizardConstants.PROP_DISPLAY_NAME, getComponent().getHostDisplayName());
-        //Lookup.getDefault().lookup(ServerList.class).addServer((String)settings.getProperty(CreateHostWizardPanel2.PROP_HOSTKEY), false, false);
     }
 }
 
