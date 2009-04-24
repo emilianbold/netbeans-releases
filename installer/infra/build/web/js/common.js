@@ -212,7 +212,7 @@ function write_page_languages() {
 	get_request = get_request.replace(regexp, PAGELANG_SEP);
     }
     for(var i=0;i<LANGUAGES.length;i++) {
-	if(LANGUAGES[i].suffix && locale_suffix!=LANGUAGES[i].suffix) {
+	if(LANGUAGES[i].webpagename && locale_suffix!=LANGUAGES[i].suffix) {
             document.write('<li><a href="' + page + get_request.replace(PAGELANG_SEP, PAGELANG_SEP + LANGUAGES[i].suffix) + '">' + LANGUAGES[i].webpagename + '</a></li>');
         }
     }
@@ -366,8 +366,8 @@ function add_language(id, name, suffix, webpagename) {
     LANGUAGES[index] = new Object;
     LANGUAGES[index].name        = name;
     LANGUAGES[index].id          = id;
-    if(suffix) 
+    if(suffix || webpagename) {
        LANGUAGES[index].suffix      = suffix;
-    if(webpagename) 
        LANGUAGES[index].webpagename = webpagename;
+    }
 }
