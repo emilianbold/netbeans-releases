@@ -381,6 +381,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return;
         }
         // Init file token sequence
+        // why only one token stream is analyzed and not all preprocessor branches?
         final MyTokenSequence fileTS = getFileTokenSequence(file, 0, doc.getLength());
         if (fileTS == null) {
             return;
@@ -623,6 +624,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         FileImpl fileImpl = null;
         if (file instanceof FileImpl) {
             fileImpl = (FileImpl) file;
+            // why only one token stream is analyzed and not all preprocessor branches?
             TokenStream ts = fileImpl.getTokenStream(startOffset, endOffset, 0, false);
             if (ts != null) {
                 return new MyTokenSequence(ts, fileImpl);
