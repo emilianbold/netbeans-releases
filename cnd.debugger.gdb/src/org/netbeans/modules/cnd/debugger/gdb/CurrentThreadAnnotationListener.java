@@ -113,7 +113,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         }
         
         // 1) no current thread => remove annotations
-        if (currentDebugger.getState() != GdbDebugger.State.STOPPED) {
+        if (!currentDebugger.isStopped()) {
             removeAnnotations();
             return;
         }
