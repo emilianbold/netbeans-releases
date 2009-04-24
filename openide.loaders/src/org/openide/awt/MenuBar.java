@@ -78,6 +78,7 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.Utilities;
@@ -459,9 +460,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
             // Listen for changes in Node's DisplayName/Icon
             Node n = master.getNodeDelegate ();
             n.addNodeListener (org.openide.nodes.NodeOp.weakNodeListener (this, n));
-            updateProps();
-            getModel().addChangeListener(this);
-
+            Mutex.EVENT.readAccess(this);
         }
         
         protected @Override boolean processKeyBinding(KeyStroke ks,
@@ -506,6 +505,8 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }            
 
         private void updateProps() {
+            assert EventQueue.isDispatchThread();
+            getModel().removeChangeListener(this);
             if (master.isValid()) {
                 // set the text and be aware of mnemonics
                 Node n = master.getNodeDelegate ();
@@ -516,6 +517,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 setText(master.getName());
                 setIcon(null);
             }
+            getModel().addChangeListener(this);
         }
 
         /** Update the properties. Exported via Runnable interface so it
@@ -531,12 +533,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 Node.PROP_NAME.equals (ev.getPropertyName ()) ||
                 Node.PROP_ICON.equals (ev.getPropertyName ())
             ) {
-                // update the properties in AWT queue
-                if (EventQueue.isDispatchThread ()) {
-                    updateProps(); // do the update synchronously
-                } else {
-                    EventQueue.invokeLater (this);
-                }
+                Mutex.EVENT.readAccess(this);
             }
         }
 
