@@ -62,8 +62,10 @@ public class MakeMasterJNLP extends Task {
     
     public FileSet createModules()
     throws BuildException {
-        addConfigured(new FileSet());
-        return (FileSet) files;
+        FileSet fs = new FileSet();
+        fs.setProject(getProject());
+        addConfigured(fs);
+        return fs;
     }
 
     public void addConfigured(ResourceCollection rc) throws BuildException {

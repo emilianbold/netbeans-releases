@@ -269,7 +269,7 @@ final class FindersHelper {
         }
 
         if (multiple) {
-            return RubyType.create("Array<" + model.first() + ">"); // NOI18N
+            return RubyType.ARRAY;
         } else {
             return model;
         }
