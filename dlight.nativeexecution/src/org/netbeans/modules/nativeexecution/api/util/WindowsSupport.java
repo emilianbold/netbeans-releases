@@ -181,7 +181,7 @@ public final class WindowsSupport {
             path = path.substring(9);
         }
 
-        if (path.startsWith("/") && path.charAt(2) == '/') {
+        if (path.startsWith("/") && path.charAt(2) == '/') { // NOI18N
             result = path.charAt(1) + ":"; // NOI18N
             path = path.substring(2);
         }
