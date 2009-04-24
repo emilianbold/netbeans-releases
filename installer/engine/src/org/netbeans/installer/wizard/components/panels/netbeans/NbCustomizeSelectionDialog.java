@@ -88,6 +88,7 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiDialog;
+import org.netbeans.installer.utils.helper.swing.NbiFrame;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiList;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
@@ -132,9 +133,11 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     private Icon emptyIcon;
     
     public NbCustomizeSelectionDialog(
+            final NbiFrame parent,
             final NbWelcomePanel panel,
             final Runnable callback,
             final List<RegistryNode> registryNodes) {
+        super(parent);
         this.panel = panel;
         this.callback = callback;
         this.registryNodes = registryNodes;
