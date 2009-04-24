@@ -89,7 +89,12 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
     protected Level logLevel() {
         return Level.WARNING;
     }
-
+    
+    @Override
+    protected boolean runInEQ () {
+        return true;
+    }
+    
     @Override
     protected void setUp() throws Exception {
         CreateOnlyOnceAction.instancesCount = 0;
