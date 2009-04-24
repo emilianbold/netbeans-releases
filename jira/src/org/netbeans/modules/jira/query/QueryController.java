@@ -680,7 +680,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onWeb() {
-        final String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/query.cgi" + "?format=advanced"; // NOI18N //XXX need constants
+        final String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/secure/IssueNavigator.jspa"; // NOI18N //XXX need constants
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 URL url;
