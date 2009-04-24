@@ -1008,6 +1008,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return createPreprocHandler(file, getFileContainer().getPreprocState(file));
     }
 
+    public final APTPreprocHandler getPreprocHandler(File file, FileContainer.StatePair statePair) {
+        return createPreprocHandler(file, statePair == null ? getFileContainer().getPreprocState(file) : statePair.state);
+    }
+
     /* package */ final APTPreprocHandler createPreprocHandler(File file, APTPreprocHandler.State state) {
         APTPreprocHandler preprocHandler = createEmptyPreprocHandler(file);
         if (state != null) {
@@ -1237,6 +1241,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(csmFile/*, preprocHandler*/);
             APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, pcState);
             walker.visit();
+            pcState.trimSize();
             csmFile.cacheVisitedState(newState, preprocHandler);
 
             if (comparisonResult == ComparisonResult.WORSE) {
