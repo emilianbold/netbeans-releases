@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;

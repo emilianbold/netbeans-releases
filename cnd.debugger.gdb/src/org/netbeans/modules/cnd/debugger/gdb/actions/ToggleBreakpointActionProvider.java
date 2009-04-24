@@ -51,6 +51,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
@@ -66,15 +67,23 @@ import org.openide.util.NbBundle;
 public class ToggleBreakpointActionProvider extends ActionsProviderSupport implements PropertyChangeListener {
 
     private final Logger log = Logger.getLogger("gdb.breakpoint.annotations"); // NOI18N
+
+    private final GdbDebugger debugger;
     
-    /** Creates a new instance of ToggleBreakpointActionProvider */
+    // TODO: most probably this constructor is not used any more and can be removed
     public ToggleBreakpointActionProvider() {
+        this.debugger = null;
         EditorContextBridge.getContext().addPropertyChangeListener(this);
     } 
     
     /** Creates a new instance of ToggleBreakpointActionProvider */
     public ToggleBreakpointActionProvider(ContextProvider lookupProvider) {
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
         EditorContextBridge.getContext().addPropertyChangeListener(this);       
+    }
+
+    private void destroy () {
+        EditorContextBridge.getContext().removePropertyChangeListener(this);
     }
     
     public void doAction(Object o) {
@@ -148,5 +157,8 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
                 || mimeType.equals(MIMENames.ASM_MIME_TYPE))
                         && lnum > 0;
         setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, isValid);
+        if (debugger != null && debugger.getState() == GdbDebugger.State.EXITED) {
+            destroy();
+        }
     }
 }

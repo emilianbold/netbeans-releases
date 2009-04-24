@@ -117,7 +117,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         ExecutionEnvironment currExecEnv = mconf.getDevelopmentHost().getExecutionEnvironment();
 
         for (ServerRecord record : ServerList.getRecords()) {
-            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(record.getDisplayName(), currExecEnv.equals(record.getExecutionEnvironment()));
+            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(record.getServerDisplayName(), currExecEnv.equals(record.getExecutionEnvironment()));
             subMenu.add(jmi);
             jmi.putClientProperty(HOST_ENV, record.getExecutionEnvironment());
             jmi.putClientProperty(CONF, mconf);
