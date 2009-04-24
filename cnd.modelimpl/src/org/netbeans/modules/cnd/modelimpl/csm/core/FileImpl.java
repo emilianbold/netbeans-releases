@@ -521,6 +521,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
                 state = State.MODIFIED;
             }
+            clearStateCache();
             if (invalidateCache) {
                 synchronized (tokStreamLock) {
                     tsRef = null;
