@@ -43,8 +43,12 @@ package org.netbeans.modules.cnd.apt.impl.support;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap.StateImpl;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
@@ -88,6 +92,26 @@ public class APTHandlersSupportImpl {
         return ((APTPreprocHandlerImpl.StateImpl)orig).copyInvalid();
     }
     
+    public static Map<CharSequence, APTMacro> extractMacroMap(APTPreprocHandler.State state){
+        assert state != null;
+        APTBaseMacroMap.StateImpl macro = (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
+        Map<CharSequence, APTMacro> tmpMap = new HashMap<CharSequence, APTMacro>(128);
+        APTMacroMapSnapshot.addAllMacros(macro.snap, tmpMap);
+        return tmpMap;
+    }
+
+    public static int getMacroSize(APTPreprocHandler.State state) {
+        assert state != null;
+        APTBaseMacroMap.StateImpl macro = (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
+        return APTMacroMapSnapshot.getMacroSize(macro.snap);
+    }
+
+    public static int getIncludeStackDepth(APTPreprocHandler.State state) {
+        assert state != null;
+        APTIncludeHandlerImpl.StateImpl incl = (APTIncludeHandlerImpl.StateImpl) ((APTPreprocHandlerImpl.StateImpl) state).inclState;
+        return incl == null ? 0 : incl.getIncludeStackDepth();
+    }
+
     public static List<APTIncludeHandler.IncludeInfo> extractIncludeStack(APTPreprocHandler.State state) {
         assert state != null;
         List<APTIncludeHandler.IncludeInfo> inclStack = getIncludeStack(((APTPreprocHandlerImpl.StateImpl)state).inclState);

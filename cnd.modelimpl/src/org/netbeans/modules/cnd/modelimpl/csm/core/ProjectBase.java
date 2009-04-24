@@ -1137,6 +1137,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             FileImpl csmFile = findFile(new File(file.toString()), FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
+            APTPreprocHandler.State newState = preprocHandler.getState();
+            if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
+                APTPreprocHandler.State cachedOut = csmFile.getCachedVisitedState(newState);
+                if (cachedOut != null) {
+                    preprocHandler.setState(cachedOut);
+                    return csmFile;
+                }
+            }
+
             APTFile aptLight = getAPTLight(csmFile);
 
             if (aptLight == null) {
@@ -1144,8 +1153,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 Utils.LOG.info("Can not find or build APT for file " + file); //NOI18N
                 return csmFile;
             }
-
-            APTPreprocHandler.State newState = preprocHandler.getState();
 
             FileContainer.Entry entry = getFileContainer().getEntry(csmFile.getBuffer().getFile());
 
@@ -1226,6 +1233,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(csmFile/*, preprocHandler*/);
             APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, pcState);
             walker.visit();
+            csmFile.cacheVisitedState(newState, preprocHandler);
 
             if (comparisonResult == ComparisonResult.WORSE) {
                 if (TRACE_FILE && FileImpl.traceFile(file)) {
