@@ -50,8 +50,8 @@ import org.openide.util.WeakSet;
  */
 public class VariablesTreeExpansionModel implements TreeExpansionModel {
 
-    private Set expandedNodes = new WeakSet();
-    private Set collapsedNodes = new WeakSet();
+    private Set<Object> expandedNodes = new WeakSet<Object>();
+    private Set<Object> collapsedNodes = new WeakSet<Object>();
 
     /**
      * Defines default state (collapsed, expanded) of given node.

@@ -170,7 +170,7 @@ public class PushAction extends ContextAction {
         final String toPrjName = pushTarget.isFile()
                                  ? HgProjectUtils.getProjectName(new File(pushTarget.getPath()))
                                  : null;
-        performPush(root, pushTarget, fromPrjName, toPrjName, logger);
+        performPush(root, pushTarget, fromPrjName, toPrjName, logger, true);
 
     }
 
@@ -206,7 +206,7 @@ public class PushAction extends ContextAction {
                                                   INFORMATION_MESSAGE));
     }
 
-    static void performPush(File root, HgURL pushUrl, String fromPrjName, String toPrjName, OutputLogger logger) {
+    static void performPush(File root, HgURL pushUrl, String fromPrjName, String toPrjName, OutputLogger logger, boolean showSaveCredsOption) {
         try {
             boolean bLocalPush = pushUrl.isFile();
             String pushPath = bLocalPush ? pushUrl.getPath() : null;
@@ -231,7 +231,7 @@ public class PushAction extends ContextAction {
                                            : pushUrl));
             }
 
-            List<String> listOutgoing = HgCommand.doOutgoing(root, pushUrl, logger);
+            List<String> listOutgoing = HgCommand.doOutgoing(root, pushUrl, logger, showSaveCredsOption);
             if ((listOutgoing == null) || listOutgoing.isEmpty()) {
                 return;
             }
@@ -273,7 +273,7 @@ public class PushAction extends ContextAction {
                         // XXX handle veto
                     }
                 }
-                list = HgCommand.doPush(root, pushUrl, logger);
+                list = HgCommand.doPush(root, pushUrl, logger, showSaveCredsOption);
                 for (HgHook hgHook : hooks) {
                     hgHook.afterPush(context);
                 }

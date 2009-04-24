@@ -102,6 +102,7 @@ public class LandingPagePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 24, 20, 30);
         add(iconLabel, gridBagConstraints);
 
+        jScrollPane1.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
@@ -113,12 +114,17 @@ public class LandingPagePanel extends javax.swing.JPanel {
         messageEditorPane.setEditable(false);
         messageEditorPane.setText(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.text")); // NOI18N
         jScrollPane1.setViewportView(messageEditorPane);
+        messageEditorPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.AccessibleContext.accessibleName")); // NOI18N
+        messageEditorPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints);
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 

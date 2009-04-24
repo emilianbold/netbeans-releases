@@ -39,7 +39,14 @@
 
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
+import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.List;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -60,18 +67,32 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
     private ExecutionEnvironment execEnv;
     private ToolsCacheManager cacheManager;
+    private CompilerSetManager compilerSetManager;
 
     void init(ExecutionEnvironment execEnv, ToolsCacheManager cacheManager) {
         this.execEnv = execEnv;
         this.cacheManager = cacheManager;
         textHostDisplayName.setText(execEnv.getDisplayName());
-        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(execEnv);
-        labelPlatformValue.setText(PlatformTypes.toString(csm.getPlatform()));
+        compilerSetManager = cacheManager.getCompilerSetManagerCopy(execEnv);
+        labelPlatformValue.setText(PlatformTypes.toString(compilerSetManager.getPlatform()));
         labelUsernameValue.setText(execEnv.getUser());
         labelHostnameValue.setText(execEnv.getHost());
-        List<String> sets = csm.getCompilerSetDisplayNames();
-        cbDefaultToolchain.setModel(new javax.swing.DefaultComboBoxModel(sets.toArray(new String[sets.size()])));
-        List<CompilerSet> sets2 = csm.getCompilerSets();
+        cbDefaultToolchain.setModel(new DefaultComboBoxModel(compilerSetManager.getCompilerSets().toArray()));
+        cbDefaultToolchain.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel out = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                CompilerSet cset = (CompilerSet) value;
+                out.setText(cset.getDisplayName());
+                return out;
+            }
+        });
+        cbDefaultToolchain.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                compilerSetManager.setDefault((CompilerSet) cbDefaultToolchain.getSelectedItem());
+            }
+        });
+        List<CompilerSet> sets2 = compilerSetManager.getCompilerSets();
         StringBuilder st = new StringBuilder();
         for (CompilerSet set : sets2) {
             if (st.length() > 0) {
@@ -80,10 +101,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
             st.append(set.getName()).append(" (").append(set.getDirectory()).append(")");//NOI18N
         }
         jTextArea1.setText(st.toString());
-    }
-
-    String getDefaultCompilerSetDisplayName() {
-        return (String)cbDefaultToolchain.getSelectedItem();
     }
 
     String getHostDisplayName() {

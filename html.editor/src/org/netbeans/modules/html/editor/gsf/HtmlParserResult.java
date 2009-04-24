@@ -174,7 +174,7 @@ public class HtmlParserResult extends ParserResult {
                                     node.startOffset(),
                                     node.endOffset(),
                                     false /* not line error */,
-                                    Severity.ERROR); //NOI18N
+                                    Severity.WARNING); //NOI18N
                             _errors.add(error);
 
                         } else if (node.type() == AstNode.NodeType.TAG || 

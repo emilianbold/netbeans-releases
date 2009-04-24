@@ -122,6 +122,15 @@ public class HgUtils {
 
     private static HashMap<String, Set<Pattern>> ignorePatterns;
 
+
+    /**
+     * Timeout for remote repository check in seconds, after expires the repository will be considered valid.
+     */
+    public static final String HG_CHECK_REPOSITORY_TIMEOUT_SWITCH = "mercurial.checkRepositoryTimeout"; //NOI18N
+    public static final String HG_CHECK_REPOSITORY_DEFAULT_TIMEOUT = "5";
+    public static final int HG_CHECK_REPOSITORY_DEFAULT_ROUNDS = 50;
+    private static int repositoryValidityCheckRounds = 0;
+
     /**
      * addDaysToDate - add days (+days) or subtract (-days) from the given date
      *
@@ -1084,6 +1093,27 @@ itor tabs #66700).
             }
         }
         return false;
+    }
+
+    /**
+     * Returns a number of 100ms-lasting waiting loops in a repository validity check.
+     * If a sysprop defined in HgUtils.HG_CHECK_REPOSITORY_TIMEOUT_SWITCH is set, this returns a number count from HG_CHECK_REPOSITORY_TIMEOUT_SWITCH, otherwise it uses
+     * a defaut value HgUtils.HG_CHECK_REPOSITORY_DEFAULT_ROUNDS.
+     * @return number of rounds
+     */
+    public static int getNumberOfRoundsForRepositoryValidityCheck() {
+        if (repositoryValidityCheckRounds <= 0) {
+            try {
+                repositoryValidityCheckRounds = Integer.parseInt(System.getProperty(HG_CHECK_REPOSITORY_TIMEOUT_SWITCH, HG_CHECK_REPOSITORY_DEFAULT_TIMEOUT)) * 10; // number of 100ms lasting rounds
+            } catch (NumberFormatException ex) {
+                Mercurial.LOG.log(Level.INFO, "Parsing integer failed, default value will be used", ex);
+            }
+            if (repositoryValidityCheckRounds <= 0) {
+                Mercurial.LOG.fine("Using default value for number of rounds in repository validity check: " + HG_CHECK_REPOSITORY_DEFAULT_ROUNDS);
+                repositoryValidityCheckRounds = HG_CHECK_REPOSITORY_DEFAULT_ROUNDS;
+            }
+        }
+        return repositoryValidityCheckRounds;
     }
 
     /**
