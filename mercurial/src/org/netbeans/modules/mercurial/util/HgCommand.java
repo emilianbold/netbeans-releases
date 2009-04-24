@@ -77,6 +77,7 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
+import org.netbeans.modules.mercurial.ui.repository.UserCredentialsSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -301,6 +302,7 @@ public class HgCommand {
     private static final String HG_EPOCH_PLUS_ONE_YEAR = "1971-01-01"; // NOI18N
 
     private static final String HG_AUTHORIZATION_REQUIRED_ERR = "authorization required"; // NOI18N
+    private static final String HG_AUTHORIZATION_FAILED_ERR = "authorization failed"; // NOI18N
 
     /**
      * Merge working directory with the head revision
@@ -560,7 +562,7 @@ public class HgCommand {
      * @return hg pull output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doPull(File repository, HgURL from, OutputLogger logger) throws HgException {
+    public static List<String> doPull(File repository, HgURL from, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || from == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -572,7 +574,11 @@ public class HgCommand {
         command.additionalOptions.add(HG_VERBOSE_CMD);
         command.additionalOptions.add(HG_UPDATE_CMD);
 
-        return command.invoke();
+        List<String> retval = command.invoke();
+        command.saveCredentials(HgConfigFiles.HG_DEFAULT_PULL_VALUE);
+        command.saveCredentials(HgConfigFiles.HG_DEFAULT_PULL);
+
+        return retval;
     }
 
     /**
@@ -654,7 +660,7 @@ public class HgCommand {
      * @return hg incoming output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doIncoming(File repository, HgURL from, File bundle, OutputLogger logger) throws HgException {
+    public static List<String> doIncoming(File repository, HgURL from, File bundle, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || from == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -665,12 +671,17 @@ public class HgCommand {
         command.remoteUrl = from;
         command.repository = repository;
         command.additionalOptions.add(HG_VERBOSE_CMD);
+        command.showSaveOption = showSaveCredentialsOption;
         if (bundle != null) {
             command.additionalOptions.add(HG_OPT_BUNDLE);
             command.additionalOptions.add(bundle.getAbsolutePath());
         }
 
-        return command.invoke();
+        List<String> retval = command.invoke();
+        command.saveCredentials(HgConfigFiles.HG_DEFAULT_PULL_VALUE);
+        command.saveCredentials(HgConfigFiles.HG_DEFAULT_PULL);
+
+        return retval;
     }
 
     /**
@@ -682,7 +693,7 @@ public class HgCommand {
      * @return hg outgoing output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doOutgoing(File repository, HgURL toUrl, OutputLogger logger) throws HgException {
+    public static List<String> doOutgoing(File repository, HgURL toUrl, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || toUrl == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -694,8 +705,12 @@ public class HgCommand {
         command.repository = repository;
         command.additionalOptions.add(HG_VERBOSE_CMD);
         command.additionalOptions.add(HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD);
+        command.showSaveOption = showSaveCredentialsOption;
 
-        return command.invoke();
+        List<String> retval = command.invoke();
+        command.saveCredentials(HgConfigFiles.HG_DEFAULT_PUSH);
+
+        return retval;
     }
 
     /**
@@ -707,7 +722,7 @@ public class HgCommand {
      * @return hg push output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doPush(File repository, final HgURL toUrl, OutputLogger logger) throws HgException {
+    public static List<String> doPush(File repository, final HgURL toUrl, OutputLogger logger, boolean showSaveCredentialsOption) throws HgException {
         if (repository == null || toUrl == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -718,7 +733,10 @@ public class HgCommand {
         command.remoteUrl = toUrl;
         command.repository = repository;
 
-        return command.invoke();
+        List<String> retval = command.invoke();
+        command.saveCredentials(HgConfigFiles.HG_DEFAULT_PUSH);
+
+        return retval;
     }
 
     /**
@@ -808,8 +826,13 @@ public class HgCommand {
         command.additionalOptions.add(HG_VERBOSE_CMD);
         command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
         command.additionalOptions.add(HG_FETCH_EXT_CMD);
+        command.showSaveOption = true;
 
-        return command.invoke();
+        List<String> retval = command.invoke();
+        command.saveCredentials(HgConfigFiles.HG_DEFAULT_PULL_VALUE);
+        command.saveCredentials(HgConfigFiles.HG_DEFAULT_PULL);
+
+        return retval;
     }
 
     public static List<HgLogMessage> processLogMessages(File root, List<File> files, List<String> list, final List<HgLogMessage> messages) {
@@ -1648,7 +1671,7 @@ public class HgCommand {
                 } else if (isErrorNoResponse(list.get(list.size() - 1))) {
                     handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_RESPONSE_ERR"), logger);
                 } else if (isErrorAbort(list.get(list.size() - 1))) {
-                    if ((credentials = handleAuthenticationError(list, target, rawUrl, credentials == null ? "" : credentials.getUserName())) != null) { //NOI18N
+                    if ((credentials = handleAuthenticationError(list, target, rawUrl, credentials == null ? "" : credentials.getUserName(), new UserCredentialsSupport())) != null) { //NOI18N
                         // try again with new credentials
                         retry = true;
                     } else {
@@ -2970,11 +2993,11 @@ public class HgCommand {
         }
     }
 
-    private static PasswordAuthentication handleAuthenticationError(List<String> cmdOutput, File repository, String url, String userName) {
-        return handleAuthenticationError(cmdOutput, repository, url, userName, true);
+    private static PasswordAuthentication handleAuthenticationError(List<String> cmdOutput, File repository, String url, String userName, UserCredentialsSupport credentialsSupport) {
+        return handleAuthenticationError(cmdOutput, repository, url, userName, credentialsSupport, true);
     }
 
-    private static PasswordAuthentication handleAuthenticationError(List<String> cmdOutput, File repository, String url, String userName, boolean showKenaiLoginDialog) {
+    private static PasswordAuthentication handleAuthenticationError(List<String> cmdOutput, File repository, String url, String userName, UserCredentialsSupport credentialsSupport, boolean showKenaiLoginDialog) {
         PasswordAuthentication credentials = null;
         String msg = cmdOutput.get(cmdOutput.size() - 1).toLowerCase();
         if (isAuthMsg(msg)) {
@@ -2983,7 +3006,7 @@ public class HgCommand {
                 // try to login
                 credentials = handleKenaiAuthorisation(support, url);
             } else {
-                // TODO: show common login dialog and save
+                credentials = credentialsSupport.getUsernamePasswordCredentials(repository, url, userName);
             }
         }
         return credentials;
@@ -2995,7 +3018,8 @@ public class HgCommand {
     }
 
     public static boolean isAuthMsg(String msg) {
-        return msg.contains(HG_AUTHORIZATION_REQUIRED_ERR);
+        return msg.contains(HG_AUTHORIZATION_REQUIRED_ERR)
+                || msg.contains(HG_AUTHORIZATION_FAILED_ERR);
     }
 
     public static boolean isMergeNeededMsg(String msg) {
@@ -3252,7 +3276,8 @@ public class HgCommand {
             });
             t1.start();
             // wait for the clone to finish
-            int rounds = 50;
+            int rounds = HgUtils.getNumberOfRoundsForRepositoryValidityCheck();
+
             while (t1.isAlive()) {
                 try {
                     Thread.sleep(100);
@@ -3315,6 +3340,9 @@ public class HgCommand {
         protected boolean acquireCredentialsFirst;
         protected boolean outputDetails;
         protected List<String> additionalOptions;
+        protected UserCredentialsSupport credentialsSupport;
+        protected boolean showSaveOption;
+        private PasswordAuthentication credentials;
 
         public InterRepositoryCommand () {
             hgCommand = getHgCommand();
@@ -3322,11 +3350,28 @@ public class HgCommand {
             additionalOptions = new LinkedList<String>();
         }
 
+        /**
+         * This will save the credentials along with URLs into the hgrc config file if user checked 'Save values' in a login dialog
+         * @param propertyName property to be saved (default, default-push/pull)
+         */
+        public void saveCredentials (String propertyName) {
+            if (credentials != null && credentialsSupport != null && credentialsSupport.shallSaveValues()) {
+                try {
+                    // user logged-in successfully during the process and checked 'Save values'
+                    HgModuleConfig.getDefault().setProperty(repository, propertyName, new HgURL(remoteUrl.toHgCommandUrlString(), credentials.getUserName(), new String(credentials.getPassword())).toCompleteUrlString());
+                } catch (URISyntaxException ex) {
+                    Mercurial.LOG.log(Level.INFO, null, ex);
+                } catch (IOException ex) {
+                    Mercurial.LOG.log(Level.INFO, null, ex);
+                }
+            }
+        }
+
         public List<String> invoke() throws HgException {
             List<String> list = null;
             boolean retry = true;
             boolean showLoginWindow = true;
-            PasswordAuthentication credentials = null;
+            credentials = null;
             HgKenaiSupport supp = HgKenaiSupport.getInstance();
             String rawUrl = remoteUrl.toUrlString(true, true);
             acquireCredentialsFirst |= supp.isLoggedIntoKenai();
@@ -3340,6 +3385,8 @@ public class HgCommand {
             }
 
             HgURL url = remoteUrl;
+            credentialsSupport = new UserCredentialsSupport();
+            credentialsSupport.setShowSaveOption(showSaveOption);
             while (retry) {
                 retry = false;
                 try {
@@ -3376,7 +3423,7 @@ public class HgCommand {
                     if (HG_PUSH_CMD.equals(hgCommandType) && isErrorAbortPush(list.get(list.size() - 1))) {
                         // 
                     } else {
-                        if ((credentials = handleAuthenticationError(list, repository, rawUrl, credentials == null ? "" : credentials.getUserName(), showLoginWindow)) != null) { //NOI18N
+                        if ((credentials = handleAuthenticationError(list, repository, rawUrl, credentials == null ? "" : credentials.getUserName(), credentialsSupport, showLoginWindow)) != null) { //NOI18N
                             // auth redone, try again
                             retry = true;
                         } else {
