@@ -49,7 +49,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -114,10 +116,10 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         MakeConfiguration mconf = (MakeConfiguration) conf;
         ExecutionEnvironment currExecEnv = mconf.getDevelopmentHost().getExecutionEnvironment();
 
-        for (ExecutionEnvironment execEnv : mconf.getDevelopmentHost().getServerEnvironments()) {
-            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(execEnv.getDisplayName(), currExecEnv.equals(execEnv));
+        for (ServerRecord record : ServerList.getRecords()) {
+            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(record.getDisplayName(), currExecEnv.equals(record.getExecutionEnvironment()));
             subMenu.add(jmi);
-            jmi.putClientProperty(HOST_ENV, execEnv);
+            jmi.putClientProperty(HOST_ENV, record.getExecutionEnvironment());
             jmi.putClientProperty(CONF, mconf);
             jmi.putClientProperty(PROJECT, project);
             jmi.addActionListener(jmiActionListener);

@@ -108,6 +108,12 @@ public final class RubyIndex {
     private FileObject context;
 
     private final QuerySupport querySupport;
+
+    /**
+     * The base class for AR model classes, needs special handling in various
+     * places.
+     */
+    static final String ACTIVE_RECORD_BASE = "ActiveRecord::Base"; //NOI18N
     
     private RubyIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
@@ -1095,7 +1101,7 @@ public final class RubyIndex {
                     true, true);
             }
         } else {
-            if ("ActiveRecord::Base".equals(extendsClass)) { // NOI18N
+            if (ACTIVE_RECORD_BASE.equals(extendsClass)) { // NOI18N
                 // Add in database fields as well
                 addDatabaseProperties(prefix, kind, classFqn, methods);
             }

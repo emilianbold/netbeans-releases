@@ -181,7 +181,7 @@ public class RepositoryConnection {
     //}
     
     public static String getString(RepositoryConnection rc) {
-        String url = rc.url.toUrlString(false, true, false);
+        String url = rc.url.toUrlString(true, false);
         String username = rc.getUsername();
         String password = rc.getPassword();
         String extCommand = rc.getExternalCommand();

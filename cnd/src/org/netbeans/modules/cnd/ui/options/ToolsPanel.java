@@ -78,6 +78,8 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -171,14 +173,14 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         }
         cbDevHost.removeItemListener(this);
 
-        Collection<ExecutionEnvironment> hostList = cacheManager.getHosts();
+        Collection<? extends ServerRecord> hostList = cacheManager.getHosts();
         if (hostList != null) {
             cbDevHost.removeAllItems();
-            for (ExecutionEnvironment env : hostList) {
-                cbDevHost.addItem(env);
+            for (ServerRecord rec : hostList) {
+                cbDevHost.addItem(rec);
             }
         } else {
-            cbDevHost.addItem(ExecutionEnvironmentFactory.getLocal());
+            cbDevHost.addItem(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
         }
 
         if (model.getSelectedDevelopmentHost() != null) {
@@ -191,7 +193,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         cbDevHost.addItemListener(this);
         cbDevHost.setEnabled(model.getEnableDevelopmentHostChange());
         btEditDevHost.setEnabled(model.getEnableDevelopmentHostChange());
-        execEnv =  getSelectedEnvironment();
+        execEnv =  getSelectedRecord().getExecutionEnvironment();
 
         btBaseDirectory.setEnabled(false);
         btCBrowse.setEnabled(false);
@@ -281,18 +283,18 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     }
 
     private void onNewDevHostSelected() {
-        if (!execEnv.equals(getSelectedEnvironment())) {
+        if (!execEnv.equals(getSelectedRecord().getExecutionEnvironment())) {
             log.fine("TP.itemStateChanged: About to update");
             changed = true;
             if (!cacheManager.hasCache()) {
-                List<ExecutionEnvironment> nulist = new ArrayList<ExecutionEnvironment>(cbDevHost.getItemCount());
+                List<ServerRecord> nulist = new ArrayList<ServerRecord>(cbDevHost.getItemCount());
                 for (int i = 0; i < cbDevHost.getItemCount(); i++) {
-                    nulist.add((ExecutionEnvironment) cbDevHost.getItemAt(i));
+                    nulist.add((ServerRecord) cbDevHost.getItemAt(i));
                 }
                 cacheManager.setHosts(nulist);
             }
             cacheManager.setDefaultIndex(cbDevHost.getSelectedIndex());
-            execEnv = getSelectedEnvironment();
+            execEnv = getSelectedRecord().getExecutionEnvironment();
             model.setSelectedDevelopmentHost(execEnv);
             update(true);
         } else {
@@ -528,11 +530,11 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     }
 
     private boolean isRemoteHostSelected() {
-        return ((ExecutionEnvironment)cbDevHost.getSelectedItem()).isRemote();
+        return ((ServerRecord)cbDevHost.getSelectedItem()).isRemote();
     }
 
-    private ExecutionEnvironment getSelectedEnvironment() {
-        return (ExecutionEnvironment) cbDevHost.getSelectedItem();
+    private ServerRecord getSelectedRecord() {
+        return (ServerRecord) cbDevHost.getSelectedItem();
     }
 
     private boolean isHostValidForEditing() {
@@ -920,7 +922,6 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     // implemet ItemListener
     public void itemStateChanged(ItemEvent ev) {
         Object o = ev.getSource();
-
         if (!updating) {
             if (o == cbDevHost && ev.getStateChange() == ItemEvent.SELECTED) {
                 onNewDevHostSelected();
@@ -980,14 +981,14 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
             cbDevHost.removeAllItems();
             log.fine("TP.editDevHosts: Adding " + cacheManager.getHosts().size() + " items to cbDevHost");
-            for (ExecutionEnvironment env : cacheManager.getHosts()) {
-                log.fine("    Adding " + env);
-                cbDevHost.addItem(env);
+            for (ServerRecord rec : cacheManager.getHosts()) {
+                log.fine("    Adding " + rec);
+                cbDevHost.addItem(rec);
             }
             log.fine("TP.editDevHosts: cbDevHost has " + cbDevHost.getItemCount() + " items");
             log.fine("TP.editDevHosts: getDefaultIndex returns " + cacheManager.getDefaultHostIndex());
             cbDevHost.setSelectedIndex(cacheManager.getDefaultHostIndex());
-            cacheManager.ensureHostSetup(getSelectedEnvironment());
+            cacheManager.ensureHostSetup(getSelectedRecord().getExecutionEnvironment());
             cbDevHost.addItemListener(this);
             onNewDevHostSelected();
         }
@@ -1734,9 +1735,8 @@ private boolean selectTool(JTextField tf) {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            ExecutionEnvironment execEnv = (ExecutionEnvironment) value;
-            label.setText(execEnv.isLocal() ? "localhost" : //NOI18N
-                String.format("%s@%s:%d", execEnv.getUser(), execEnv.getHost(), execEnv.getSSHPort())); //NOI18N
+            ServerRecord rec = (ServerRecord) value;
+            label.setText(rec.getDisplayName());
             if (index == cacheManager.getDefaultHostIndex()) {
                 label.setFont(label.getFont().deriveFont(Font.BOLD));
             }

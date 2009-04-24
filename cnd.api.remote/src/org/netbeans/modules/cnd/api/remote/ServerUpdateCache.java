@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.api.remote;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Since the ServerList is updated from the Tools->Options panel, changes must be cached
@@ -52,7 +51,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public final class ServerUpdateCache {
 
-    private List<ExecutionEnvironment> hosts;
+    private List<ServerRecord> hosts;
     private int defaultIndex;
     private Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
@@ -61,16 +60,16 @@ public final class ServerUpdateCache {
         defaultIndex = -1;
     }
     
-    public List<ExecutionEnvironment> getHosts() {
-        List<ExecutionEnvironment> h = hosts;
+    public List<ServerRecord> getHosts() {
+        List<ServerRecord> h = hosts;
         if (h == null) {
             throw new IllegalStateException("hosts should not be null"); //NOI18N
         }
-        return new ArrayList<ExecutionEnvironment>(hosts);
+        return new ArrayList<ServerRecord>(hosts);
     }
 
-    public void setHosts(List<ExecutionEnvironment> newHosts) {
-        hosts = new ArrayList<ExecutionEnvironment>(newHosts);
+    public void setHosts(List<ServerRecord> newHosts) {
+        hosts = new ArrayList<ServerRecord>(newHosts);
     }
 
     public int getDefaultIndex() {
