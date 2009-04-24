@@ -136,6 +136,7 @@ made subject to such option by the copyright holder.
                 <package>org.eclipse.mylyn.internal.jira.core.model</package>
                 <package>org.eclipse.mylyn.internal.jira.core.model.filter</package>
                 <package>org.eclipse.mylyn.internal.jira.core.service</package>
+                <package>org.eclipse.mylyn.internal.jira.core.util</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/org.eclipse.mylyn.jira.core-3.1.1.jar</runtime-relative-path>

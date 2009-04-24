@@ -142,7 +142,7 @@ public class PushOtherAction extends ContextAction implements ChangeListener {
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() { 
-               PushAction.performPush(root, pushPath, fromPrjName, toPrjName, this.getLogger()); 
+               PushAction.performPush(root, pushPath, fromPrjName, toPrjName, this.getLogger(), false);
             } 
         };
 

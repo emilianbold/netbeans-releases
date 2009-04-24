@@ -38,9 +38,6 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -49,10 +46,8 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
-import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  * ProcDataProvider engine for Solaris.
@@ -61,33 +56,12 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
  */
 public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
 
-    private static final String PSRINFO = "/usr/sbin/psrinfo"; // NOI18N
-
     private final ProcDataProvider provider;
     private int cpuCount;
 
     public ProcDataProviderSolaris(ProcDataProvider provider, ExecutionEnvironment env) {
         this.provider = provider;
-        NativeProcessBuilder npb = new NativeProcessBuilder(env, PSRINFO);
-        try {
-            int onlineCpuCount = 0;
-            NativeProcess np = npb.call();
-            BufferedReader r = new BufferedReader(new InputStreamReader(np.getInputStream()));
-            try {
-                String line;
-                while ((line = r.readLine()) != null) {
-                    if (line.contains("on-line")) { // NOI18N
-                        ++onlineCpuCount;
-                    }
-                }
-            } finally {
-                r.close();
-            }
-            cpuCount = onlineCpuCount;
-        } catch (IOException ex) {
-            DLightLogger.instance.severe(ex.getMessage());
-            cpuCount = 1;
-        }
+        this.cpuCount = HostInfoUtils.getHostInfo(env).getCpuNum();
     }
 
     public String getCommand(int pid) {

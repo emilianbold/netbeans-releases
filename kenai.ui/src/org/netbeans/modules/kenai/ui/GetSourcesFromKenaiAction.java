@@ -95,7 +95,7 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
 
             final KenaiFeature feature = sourcesInfo.feature;
 
-            if (KenaiService.Names.SUBVERSION.equals(feature.getService())) { // XXX service or name
+            if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
@@ -113,7 +113,7 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                         }
                     }
                 });
-            } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) { // XXX service or name
+            } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
