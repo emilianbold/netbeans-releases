@@ -153,7 +153,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.gotoIssueButton.addActionListener(this);
         panel.webButton.addActionListener(this);
         panel.saveButton.addActionListener(this);
-        panel.urlToggleButton.addActionListener(this);
         panel.refreshButton.addActionListener(this);
         panel.modifyButton.addActionListener(this);
         panel.seenButton.addActionListener(this);
@@ -503,8 +502,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onWeb();
         } else if (e.getSource() == panel.saveButton) {
             onSave();
-        } else if (e.getSource() == panel.urlToggleButton) {
-            onDefineAs();
         } else if (e.getSource() == panel.refreshButton) {
             onRefresh();
         } else if (e.getSource() == panel.modifyButton) {
@@ -714,10 +711,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
 //            }
 //        }
 //        populateProductDetails(products);
-    }
-
-    private void onDefineAs() {
-        panel.switchQueryFields(panel.urlPanel.isVisible());
     }
 
     private void onKeywords() {
