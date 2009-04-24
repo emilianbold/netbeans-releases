@@ -1027,6 +1027,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return preprocHandler;
     }
 
+    public final Collection<FileContainer.StatePair> getPreprocStatePairs(File file) {
+        return getFileContainer().getStatePairs(file);
+    }
+    
     public final Collection<APTPreprocHandler> getPreprocHandlers(File file) {
         Collection<APTPreprocHandler.State> states = getFileContainer().getPreprocStates(file);
         Collection<APTPreprocHandler> result = new ArrayList<APTPreprocHandler>(states.size());
@@ -1212,7 +1216,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             // We need to make this pre check
             // at least for the case of recursion
             synchronized (entry.getLock()) {
-                comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
+                comparisonResult = fillStatesToKeep(newState, entry.getStatePairs(), statesToKeep, newStateFound);
                 if (TRACE_FILE && FileImpl.traceFile(file)) {
                     traceIncludeStates("comparison 1 " + comparisonResult, csmFile, newState, null, newStateFound.get(), null, statesToKeep); // NOI18N
                 }
@@ -1258,7 +1262,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 // if the entry has been changed since previous check, check again
                 if (entry.getModCount() != entryModCount) {
                     // Phase B1
-                    comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
+                    comparisonResult = fillStatesToKeep(newState, entry.getStatePairs(), statesToKeep, newStateFound);
                     if (TRACE_FILE && FileImpl.traceFile(file)) {
                         traceIncludeStates("comparison 2 " + comparisonResult, csmFile, newState, pcState, newStateFound.get(), null, statesToKeep); // NOI18N
                     }
