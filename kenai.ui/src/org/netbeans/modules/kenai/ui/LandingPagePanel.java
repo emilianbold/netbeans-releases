@@ -102,6 +102,7 @@ public class LandingPagePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 24, 20, 30);
         add(iconLabel, gridBagConstraints);
 
+        jScrollPane1.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
