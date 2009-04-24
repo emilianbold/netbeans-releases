@@ -121,10 +121,6 @@ public class InstanceDialog extends DialogDescriptor {
                     LOG.log(Level.INFO, null, x);
                     problem(NbBundle.getMessage(InstanceDialog.class, "MSG_FailedToConnect"));
                     return;
-                } catch (IllegalArgumentException x) { // JRE #6797318
-                    LOG.log(Level.FINE, null, x);
-                    problem(NbBundle.getMessage(InstanceDialog.class, "MSG_FailedToConnect"));
-                    return;
                 }
                 created = HudsonInstanceImpl.createHudsonInstance(panel.getDisplayName(), panel.getUrl(), String.valueOf(panel.getSyncTime()));
                 EventQueue.invokeLater(new Runnable() {

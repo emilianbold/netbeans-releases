@@ -439,17 +439,15 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
                     targetStatus = Status.getCompoundStatus(s, targetStatus);
             }
             
-            if (annotations.getNumberOfAnnotations(line) > 1) {
-                AnnotationDesc[] descriptions = annotations.getPasiveAnnotations(line);
-                
+            AnnotationDesc[] descriptions = annotations.getPasiveAnnotations(line);
+            if(descriptions!=null) {
                 for (int cntr = 0; cntr < descriptions.length; cntr++) {
                     Status s = get(descriptions[cntr].getAnnotationTypeInstance());
-                    
+
                     if (s != null)
                         targetStatus = Status.getCompoundStatus(s, targetStatus);
                 }
             }
-            
             line++;
         }
         

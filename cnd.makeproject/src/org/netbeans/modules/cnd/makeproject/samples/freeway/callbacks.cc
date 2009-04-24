@@ -153,7 +153,7 @@ void
 randx(GtkWidget *w, gpointer user_data)
 {
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w))) {
-        traffic_randomize((int) user_data);
+        traffic_randomize(GPOINTER_TO_INT(user_data));
     }
 }
 
@@ -161,7 +161,7 @@ randx(GtkWidget *w, gpointer user_data)
 void 
 zone_speed(GtkWidget *w, gpointer user_data )
 {
-    int zone = ((int) user_data) - 1;
+    int zone = GPOINTER_TO_INT(user_data) - 1;
     int i = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
     
     if (zone >= 0 && zone < NZONES && i >= 0 && i < NSPEEDS) {

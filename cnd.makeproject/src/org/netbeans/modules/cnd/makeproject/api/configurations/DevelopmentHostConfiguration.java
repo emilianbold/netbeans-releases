@@ -97,7 +97,7 @@ public class DevelopmentHostConfiguration {
     }
 
     public String getHostDisplayName(boolean displayIfNotFound) {
-        String out = getExecutionEnvironment().getHost();
+        String out = ServerList.get(getExecutionEnvironment()).getServerDisplayName();
         if (displayIfNotFound && !isConfigured()) {
             out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
         }

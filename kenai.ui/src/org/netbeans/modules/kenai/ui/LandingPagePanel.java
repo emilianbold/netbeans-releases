@@ -102,20 +102,22 @@ public class LandingPagePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 24, 20, 30);
         add(iconLabel, gridBagConstraints);
 
-        jScrollPane1.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane1.setEnabled(false);
+        jScrollPane1.setOpaque(false);
 
-        messageEditorPane.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         messageEditorPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         messageEditorPane.setContentType(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.contentType")); // NOI18N
         messageEditorPane.setEditable(false);
         messageEditorPane.setText(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.text")); // NOI18N
+        messageEditorPane.setOpaque(false);
         jScrollPane1.setViewportView(messageEditorPane);
         messageEditorPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.AccessibleContext.accessibleName")); // NOI18N
         messageEditorPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.AccessibleContext.accessibleDescription")); // NOI18N
+
+        jScrollPane1.getViewport().setOpaque(false);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;

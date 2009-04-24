@@ -144,7 +144,7 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
     }
 
     public static MessageDestination createMessageDestination(String name, MessageDestination.Type type, File resourceDir) throws ConfigurationException {
-        SunMessageDestination msgDest = null;
+        SunMessageDestination msgDest;
         if(! name.startsWith(JMS_PREFIX)){
             name = JMS_PREFIX + name;
         }

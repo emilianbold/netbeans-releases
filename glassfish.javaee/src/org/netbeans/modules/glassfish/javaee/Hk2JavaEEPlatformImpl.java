@@ -246,7 +246,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      */
     public java.io.File[] getPlatformRoots() {
         String gfRootStr = dm.getProperties().getGlassfishRoot();
-        File returnedElement = null;
+        File returnedElement;
         File[] retVal = new File[0];
         if (gfRootStr != null) {
             returnedElement = new File(gfRootStr);

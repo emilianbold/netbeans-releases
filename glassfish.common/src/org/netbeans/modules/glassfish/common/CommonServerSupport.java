@@ -475,11 +475,11 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                 if(result.get(30, TimeUnit.SECONDS) == OperationState.COMPLETED) {
                     long end = System.nanoTime();
                     Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() + " responded in " + (end - start)/1000000 + "ms");  // NOI18N
-                    String installRoot = getGlassfishRoot();
-                    String targetInstallRoot = command.getInstallRoot();
-                    if(installRoot != null && targetInstallRoot != null) {
-                        File installDir = FileUtil.normalizeFile(new File(installRoot));
-                        File targetInstallDir = FileUtil.normalizeFile(new File(targetInstallRoot));
+                    String domainRoot = getDomainsRoot() + File.separator + getDomainName();
+                    String targetDomainRoot = command.getDomainRoot();
+                    if(domainRoot != null && targetDomainRoot != null) {
+                        File installDir = FileUtil.normalizeFile(new File(domainRoot));
+                        File targetInstallDir = FileUtil.normalizeFile(new File(targetDomainRoot));
                         isReady = installDir.equals(targetInstallDir);
                     } else {
                         isReady = false;
