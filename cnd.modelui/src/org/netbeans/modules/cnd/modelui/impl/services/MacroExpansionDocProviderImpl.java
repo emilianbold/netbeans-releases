@@ -761,6 +761,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         public boolean contains(int offset) {
             return (start <= offset && end >= offset);
         }
+
+        @Override
+        public String toString() {
+            return "["+start+"-"+end+"]"; // NOI18N
+        }
     }
 
     private static class IntervalCorrespondence {
@@ -786,6 +791,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
          */
         public CharSequence getMacroExpansion() {
             return macroExpansion;
+        }
+
+        @Override
+        public String toString() {
+            return "IN:"+inInterval + " OUT:"+outInterval; // NOI18N
         }
     }
 
