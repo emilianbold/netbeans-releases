@@ -94,6 +94,7 @@ public class AttachmentsPanel extends JPanel {
         ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
         noneLabel = new JLabel(bundle.getString("AttachmentsPanel.noneLabel.text")); // NOI18N
         createNewButton = new LinkButton(new CreateNewAction());
+        createNewButton.getAccessibleContext().setAccessibleDescription(bundle.getString("AttachmentPanels.createNewButton.AccessibleContext.accessibleDescription")); // NOI18N
     }
 
     public void setIssue(BugzillaIssue issue) {
@@ -186,6 +187,7 @@ public class AttachmentsPanel extends JPanel {
                 JPopupMenu menu = menuFor(attachment, patchButton);
                 filenameButton.setAction(new DefaultAttachmentAction(attachment));
                 filenameButton.setText(filename);
+                filenameButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AttachmentsPanel.class, "AttachmentPanels.filenameButton.AccessibleContext.accessibleDescription")); // NOI18N
                 dateLabel = new JLabel(DateFormat.getDateInstance().format(date));
                 authorLabel = new JLabel(author);
                 descriptionLabel.setComponentPopupMenu(menu);
@@ -248,6 +250,7 @@ public class AttachmentsPanel extends JPanel {
             // Lower the first letter
             String label = patchButton.getText();
             patchButton.setText(label.substring(0,1).toLowerCase()+label.substring(1));
+            patchButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AttachmentsPanel.class, "AttachmentPanels.patchButton.AccessibleContext.accessibleDescription")); // NOI18N
         }
         return menu;
     }

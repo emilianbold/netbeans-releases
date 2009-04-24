@@ -83,7 +83,7 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent ev) {
         if (ev.getPropertyName().equals(GdbDebugger.PROP_STATE) &&
-                debugger.getState() == GdbDebugger.State.STOPPED) {
+                debugger.isStopped()) {
             fireTreeChanged();
         }
     }

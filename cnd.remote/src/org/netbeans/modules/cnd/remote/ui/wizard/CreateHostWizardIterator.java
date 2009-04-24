@@ -44,6 +44,7 @@ import java.text.MessageFormat;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
@@ -152,8 +153,8 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
             if (displayName == null) {
                 displayName = execEnv.getDisplayName();
             }
-            return ServerList.addServer(execEnv, displayName, false, false);
-
+            final ServerRecord record = ServerList.addServer(execEnv, displayName, false, false);
+            return record;
         } else {
             return null;
         }

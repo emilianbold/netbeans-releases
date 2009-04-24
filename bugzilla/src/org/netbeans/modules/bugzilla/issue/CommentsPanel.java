@@ -227,9 +227,11 @@ public class CommentsPanel extends JPanel {
         String rightFormat = bundle.getString("CommentsPanel.rightLabel.format"); // NOI18N
         String rightTxt = MessageFormat.format(rightFormat, dateTimeString, author);
         rightLabel.setText(rightTxt);
+        rightLabel.setLabelFor(textPane);
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N
         replyButton.addActionListener(getReplyListener());
         replyButton.putClientProperty(REPLY_TO_PROPERTY, textPane);
+        replyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.replyButton.AccessibleContext.accessibleDescription")); // NOI18N
         setupTextPane(textPane, text);
 
         // Layout
@@ -318,6 +320,8 @@ public class CommentsPanel extends JPanel {
         textPane.setEditable(false);
         textPane.addMouseListener(listener);
         textPane.addMouseMotionListener(listener);
+        textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
+        textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
     }
 
     private ActionListener replyListener;

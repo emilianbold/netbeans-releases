@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
-import org.netbeans.modules.nativeexecution.api.util.*;
-import org.netbeans.modules.nativeexecution.api.*;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -51,7 +49,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.HostInfo.Bitness;
+import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OS;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 
 public class HostInfoImpl implements HostInfo {
 
@@ -90,7 +97,7 @@ public class HostInfoImpl implements HostInfo {
         }
 
         hi.init(props);
-//        props.list(System.err);
+        
         return hi;
     }
 
@@ -98,11 +105,22 @@ public class HostInfoImpl implements HostInfo {
         Properties hostInfo = new Properties();
 
         try {
-            ProcessBuilder pb = new ProcessBuilder("sh", // NOI18N
+            String shell = "sh"; // NOI18N
+
+            if (Utilities.isWindows()) {
+                shell = WindowsSupport.getInstance().getShell();
+            }
+
+            ProcessBuilder pb = new ProcessBuilder(shell, // NOI18N
                     hostinfoScript.getAbsolutePath());
 
-            pb.environment().put("TMPBASE", // NOI18N
-                    System.getProperty("java.io.tmpdir")); // NOI18N
+            String tmpBase = System.getProperty("java.io.tmpdir"); // NOI18N
+
+            if (Utilities.isWindows()) {
+                tmpBase = WindowsSupport.getInstance().normalizePath(tmpBase);
+            }
+
+            pb.environment().put("TMPBASE", tmpBase); // NOI18N
             pb.environment().put("PATH", "/bin:/usr/bin"); // NOI18N
 
             Process hostinfoProcess = pb.start();
@@ -111,6 +129,9 @@ public class HostInfoImpl implements HostInfo {
 
             if (result == 0) {
                 hostInfo.load(hostinfoProcess.getInputStream());
+                if (Utilities.isWindows()) {
+                    hostInfo.setProperty("SH", shell); // NOI18N
+                }
             } else {
                 log.fine(hostinfoScript + " rc == " + result); // NOI18N
             }

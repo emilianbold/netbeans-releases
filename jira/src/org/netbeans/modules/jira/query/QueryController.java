@@ -56,17 +56,26 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
+import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.eclipse.mylyn.internal.jira.core.model.Project;
+import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
+import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
+import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
@@ -78,9 +87,8 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
-import org.netbeans.modules.jira.query.QueryParameter.CheckBoxParameter;
-import org.netbeans.modules.jira.query.QueryParameter.ComboParameter;
 import org.netbeans.modules.jira.query.QueryParameter.ListParameter;
 import org.netbeans.modules.jira.query.QueryParameter.ParameterValue;
 import org.netbeans.modules.jira.query.QueryParameter.TextFieldParameter;
@@ -104,18 +112,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private static final String CHANGED_NOW = "Now";                            // NOI18N
 
-    private final ComboParameter summaryParameter;
-    private final ComboParameter commentsParameter;
-    private final ComboParameter keywordsParameter;
-    private final ComboParameter peopleParameter;
+//    private final ComboParameter summaryParameter;
+//    private final ComboParameter commentsParameter;
+//    private final ComboParameter keywordsParameter;
+//    private final ComboParameter peopleParameter;
     private final ListParameter productParameter;
-    private final ListParameter componentParameter;
-    private final ListParameter versionParameter;
-    private final ListParameter statusParameter;
-    private final ListParameter resolutionParameter;
-    private final ListParameter priorityParameter;
-    private final ListParameter changedFieldsParameter;
-    private final ListParameter severityParameter;
+//    private final ListParameter componentParameter;
+//    private final ListParameter versionParameter;
+//    private final ListParameter statusParameter;
+//    private final ListParameter resolutionParameter;
+//    private final ListParameter priorityParameter;
+//    private final ListParameter changedFieldsParameter;
+//    private final ListParameter severityParameter;
 
     private final Map<String, QueryParameter> parameters;
     
@@ -129,78 +137,79 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private QueryTask searchTask;
     private QueryTask refreshTask;
 
-    public QueryController(JiraRepository repository, JiraQuery query, String urlParameters) {
+    public QueryController(JiraRepository repository, JiraQuery query, JiraFilter jiraFilter) {
         this.repository = repository;
         this.query = query;
         
         panel = new QueryPanel(query.getTableComponent(), this);
 
-        panel.productList.addListSelectionListener(this);
+        panel.projectList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
         panel.refreshCheckBox.addActionListener(this);
-        panel.keywordsButton.addActionListener(this);
+//        panel.keywordsButton.addActionListener(this);
         panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
         panel.gotoIssueButton.addActionListener(this);
         panel.webButton.addActionListener(this);
         panel.saveButton.addActionListener(this);
-        panel.urlToggleButton.addActionListener(this);
         panel.refreshButton.addActionListener(this);
         panel.modifyButton.addActionListener(this);
         panel.seenButton.addActionListener(this);
         panel.removeButton.addActionListener(this);
-        panel.changedFromTextField.addFocusListener(this);
+//        panel.changedFromTextField.addFocusListener(this);
 
         panel.idTextField.addActionListener(this);
-        panel.productList.addKeyListener(this);
+        panel.projectList.addKeyListener(this);
         panel.componentList.addKeyListener(this);
-        panel.versionList.addKeyListener(this);
-        panel.statusList.addKeyListener(this);
-        panel.resolutionList.addKeyListener(this);
-        panel.severityList.addKeyListener(this);
-        panel.priorityList.addKeyListener(this);
-        panel.changedList.addKeyListener(this);
+//        panel.versionList.addKeyListener(this);
+//        panel.statusList.addKeyListener(this);
+//        panel.resolutionList.addKeyListener(this);
+//        panel.severityList.addKeyListener(this);
+//        panel.priorityList.addKeyListener(this);
+//        panel.changedList.addKeyListener(this);
 
-        panel.summaryTextField.addActionListener(this);
-        panel.commentTextField.addActionListener(this);
-        panel.keywordsTextField.addActionListener(this);
-        panel.peopleTextField.addActionListener(this);
-        panel.changedFromTextField.addActionListener(this);
-        panel.changedToTextField.addActionListener(this);
-        panel.changedToTextField.addActionListener(this);
+        panel.queryTextField.addActionListener(this);
+//        panel.commentTextField.addActionListener(this);
+//        panel.keywordsTextField.addActionListener(this);
+//        panel.peopleTextField.addActionListener(this);
+//        panel.changedFromTextField.addActionListener(this);
+//        panel.changedToTextField.addActionListener(this);
+//        panel.changedToTextField.addActionListener(this);
 
         // setup parameters
         parameters = new LinkedHashMap<String, QueryParameter>();
-        summaryParameter = createQueryParameter(ComboParameter.class, panel.summaryComboBox, "short_desc_type");    // NOI18N
-        commentsParameter = createQueryParameter(ComboParameter.class, panel.commentComboBox, "long_desc_type");    // NOI18N
-        keywordsParameter = createQueryParameter(ComboParameter.class, panel.keywordsComboBox, "keywords_type");    // NOI18N
-        peopleParameter = createQueryParameter(ComboParameter.class, panel.peopleComboBox, "emailtype1");           // NOI18N
-        productParameter = createQueryParameter(ListParameter.class, panel.productList, "product");                 // NOI18N
-        componentParameter = createQueryParameter(ListParameter.class, panel.componentList, "component");           // NOI18N
-        versionParameter = createQueryParameter(ListParameter.class, panel.versionList, "version");                 // NOI18N
-        statusParameter = createQueryParameter(ListParameter.class, panel.statusList, "bug_status");                // NOI18N
-        resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");        // NOI18N
-        priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
-        changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
-        severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");          // NOI18N
+//        summaryParameter = createQueryParameter(ComboParameter.class, panel.summaryComboBox, "short_desc_type");    // NOI18N
+//        commentsParameter = createQueryParameter(ComboParameter.class, panel.commentComboBox, "long_desc_type");    // NOI18N
+//        keywordsParameter = createQueryParameter(ComboParameter.class, panel.keywordsComboBox, "keywords_type");    // NOI18N
+//        peopleParameter = createQueryParameter(ComboParameter.class, panel.peopleComboBox, "emailtype1");           // NOI18N
+        productParameter = createQueryParameter(ListParameter.class, panel.projectList, "product");                 // NOI18N
+//        componentParameter = createQueryParameter(ListParameter.class, panel.componentList, "component");           // NOI18N
+//        versionParameter = createQueryParameter(ListParameter.class, panel.versionList, "version");                 // NOI18N
+//        statusParameter = createQueryParameter(ListParameter.class, panel.statusList, "bug_status");                // NOI18N
+//        resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");        // NOI18N
+//        priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
+//        changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
+//        severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");          // NOI18N
         
-        createQueryParameter(TextFieldParameter.class, panel.summaryTextField, "short_desc");                       // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.commentTextField, "long_desc");                        // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.keywordsTextField, "keywords");                        // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.peopleTextField, "email1");                            // NOI18N
-        createQueryParameter(CheckBoxParameter.class, panel.bugAssigneeCheckBox, "emailassigned_to1");              // NOI18N
-        createQueryParameter(CheckBoxParameter.class, panel.reporterCheckBox, "emailreporter1");                    // NOI18N
-        createQueryParameter(CheckBoxParameter.class, panel.ccCheckBox, "emailcc1");                                // NOI18N
-        createQueryParameter(CheckBoxParameter.class, panel.commenterCheckBox, "emaillongdesc1");                   // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.changedFromTextField, "chfieldfrom");                  // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                    // NOI18N
+        createQueryParameter(TextFieldParameter.class, panel.queryTextField, "short_desc");                       // NOI18N
+//        createQueryParameter(TextFieldParameter.class, panel.commentTextField, "long_desc");                        // NOI18N
+//        createQueryParameter(TextFieldParameter.class, panel.keywordsTextField, "keywords");                        // NOI18N
+//        createQueryParameter(TextFieldParameter.class, panel.peopleTextField, "email1");                            // NOI18N
+//        createQueryParameter(CheckBoxParameter.class, panel.bugAssigneeCheckBox, "emailassigned_to1");              // NOI18N
+//        createQueryParameter(CheckBoxParameter.class, panel.reporterCheckBox, "emailreporter1");                    // NOI18N
+//        createQueryParameter(CheckBoxParameter.class, panel.ccCheckBox, "emailcc1");                                // NOI18N
+//        createQueryParameter(CheckBoxParameter.class, panel.commenterCheckBox, "emaillongdesc1");                   // NOI18N
+//        createQueryParameter(TextFieldParameter.class, panel.changedFromTextField, "chfieldfrom");                  // NOI18N
+//        createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
+//        createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                    // NOI18N
 
         if(query.isSaved()) {
             setAsSaved();
         }
-        postPopulate(urlParameters);
+        if(jiraFilter != null && jiraFilter instanceof FilterDefinition) {
+            postPopulate((FilterDefinition) jiraFilter);
+        }
     }
 
     @Override
@@ -263,15 +272,43 @@ public class QueryController extends BugtrackingController implements DocumentLi
         
     }
 
-    public String getUrlParameters() {
-        StringBuffer sb = new StringBuffer();
-        for (QueryParameter p : parameters.values()) {
-            sb.append(p.get());
+    public FilterDefinition getFilterDefinition() {
+        FilterDefinition fd = new FilterDefinition();
+
+        // text search
+        String text = panel.queryTextField.getText().trim();
+        if(!text.equals("")) {                                                  // NOI18N
+            fd.setContentFilter(new ContentFilter(
+                    text,
+                    panel.summaryCheckBox.isSelected(),
+                    panel.descriptionCheckBox.isSelected(),
+                    panel.commentsCheckBox.isSelected(),
+                    panel.environmentCheckBox.isSelected()));
         }
-        return sb.toString();
+
+        // project
+        Project[] projects = getProjects();
+        if(projects.length > 0) {
+            fd.setProjectFilter(new ProjectFilter(getProjects()));
+        }
+
+
+        return fd;
     }
 
-    private void postPopulate(final String urlParameters) {
+    private Project[] getProjects() {
+        Object[] values = panel.projectList.getSelectedValues();
+        if(values == null || values.length == 0) {
+            return new Project[0];
+        }
+        Project[] projects = new Project[values.length];
+        for (int i = 0; i < projects.length; i++) {
+            projects[i] = (Project) values[i];
+        }
+        return projects;
+    }
+
+    private void postPopulate(final FilterDefinition filterDefinition) {
         enableFields(false);
 
         final Task[] t = new Task[1];
@@ -291,7 +328,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 handle.start();
                 try {
-                    populate(urlParameters);
+                    populate(filterDefinition);
                 } finally {
                     enableFields(true);
                     handle.finish();
@@ -301,14 +338,55 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
-    public void populate(final String urlParameters) {
+    public void populate(final FilterDefinition filterDefinition) {
         if(Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.fine("Starting populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
         try {
-//            BugzillaCommand cmd = new BugzillaCommand() {
-//                @Override
-//                public void execute() throws CoreException, IOException, MalformedURLException {
+            JiraCommand cmd = new JiraCommand() {
+                @Override
+                public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+                    JiraClient client = Jira.getInstance().getClient(repository.getTaskRepository());
+
+                    // XXX repository configuration
+                    Project[] projects = client.getProjects(new NullProgressMonitor());
+
+                    DefaultListModel model = new DefaultListModel();
+                    for (Project project : projects) {
+                        model.addElement(project);
+                    }
+                    panel.projectList.setModel(model);
+
+//                    JiraConfiguration bc = repository.getConfiguration();
+//                    if(bc == null) {
+//                        // XXX nice errro msg?
+//                        return;
+//                    }
+//                    productParameter.setParameterValues(toParameterValues(bc.getProducts()));
+//                    if (panel.productList.getModel().getSize() > 0) {
+//                        panel.productList.setSelectedIndex(0);
+//                        populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
+//                    }
+//                    severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
+//                    statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
+//                    resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
+//                    priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
+//                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
+//                    summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
+//                    commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
+//                    keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
+//                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
+//                    panel.changedToTextField.setText(CHANGED_NOW);
+//
+                      setFilterDefinition(filterDefinition);
+//
+//                    panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
+//
+//                    if(query.isSaved()) {
+//                        final boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
+//                        panel.refreshCheckBox.setSelected(autoRefresh);
+//                    }
+
 //                    JiraConfiguration bc = repository.getConfiguration();
 //                    if(bc == null) {
 //                        // XXX nice errro msg?
@@ -341,9 +419,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
 //                        final boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
 //                        panel.refreshCheckBox.setSelected(autoRefresh);
 //                    }
-//                }
-//            };
-//            repository.getExecutor().execute(cmd);
+                }
+            };
+            repository.getExecutor().execute(cmd);
         } finally {
             if(Jira.LOG.isLoggable(Level.FINE)) {
                 Jira.LOG.fine("Finnished populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
@@ -385,19 +463,19 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     public void valueChanged(ListSelectionEvent e) {
-        if(e.getSource() == panel.productList) {
+        if(e.getSource() == panel.projectList) {
             onProductChanged(e);
         }
         fireDataChanged();            // XXX do we need this ???
     }
 
     public void focusGained(FocusEvent e) {
-        if(panel.changedFromTextField.getText().equals("")) {                   // NOI18N
-            String lastChangeFrom = JiraConfig.getInstance().getLastChangeFrom();
-            panel.changedFromTextField.setText(lastChangeFrom);
-            panel.changedFromTextField.setSelectionStart(0);
-            panel.changedFromTextField.setSelectionEnd(lastChangeFrom.length());
-        }
+//        if(panel.changedFromTextField.getText().equals("")) {                   // NOI18N
+//            String lastChangeFrom = JiraConfig.getInstance().getLastChangeFrom();
+//            panel.changedFromTextField.setText(lastChangeFrom);
+//            panel.changedFromTextField.setSelectionStart(0);
+//            panel.changedFromTextField.setSelectionEnd(lastChangeFrom.length());
+//        }
     }
 
     public void focusLost(FocusEvent e) {
@@ -409,8 +487,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onSearch();
         } else if (e.getSource() == panel.gotoIssueButton) {
             onGotoIssue();
-        } else if (e.getSource() == panel.keywordsButton) {
-            onKeywords();
+//        } else if (e.getSource() == panel.keywordsButton) {
+//            onKeywords();
         } else if (e.getSource() == panel.searchButton) {
             onSearch();
         } else if (e.getSource() == panel.saveChangesButton) {
@@ -423,8 +501,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onWeb();
         } else if (e.getSource() == panel.saveButton) {
             onSave();
-        } else if (e.getSource() == panel.urlToggleButton) {
-            onDefineAs();
         } else if (e.getSource() == panel.refreshButton) {
             onRefresh();
         } else if (e.getSource() == panel.modifyButton) {
@@ -440,13 +516,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 onGotoIssue();
             }
         } else if (e.getSource() == panel.idTextField ||
-                   e.getSource() == panel.summaryTextField ||
+                   e.getSource() == panel.queryTextField /*||
                    e.getSource() == panel.commentTextField ||
                    e.getSource() == panel.keywordsTextField ||
                    e.getSource() == panel.peopleTextField ||
                    e.getSource() == panel.changedFromTextField ||
                    e.getSource() == panel.newValueTextField ||
-                   e.getSource() == panel.changedToTextField)
+                   e.getSource() == panel.changedToTextField*/)
         {
             onSearch();
         }
@@ -464,13 +540,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(e.getKeyCode() != KeyEvent.VK_ENTER) {
             return;
         }
-        if(e.getSource() == panel.productList ||
-           e.getSource() == panel.componentList ||
+        if(e.getSource() == panel.projectList ||
+           e.getSource() == panel.componentList /*||
            e.getSource() == panel.versionList ||
            e.getSource() == panel.statusList ||
            e.getSource() == panel.resolutionList ||
            e.getSource() == panel.priorityList ||
-           e.getSource() == panel.changedList)
+           e.getSource() == panel.changedList*/)
         {
             onSearch();
         }
@@ -540,10 +616,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void onCancelChanges() {
         if(query.getDisplayName() != null) { // XXX need a better semantic - isSaved?
-            String urlParameters = JiraConfig.getInstance().getUrlParams(repository, query.getDisplayName());
-            if(urlParameters != null) {
-                setParameters(urlParameters);
-            }
+            // XXX
+//            String urlParameters = JiraConfig.getInstance().getUrlParams(repository, query.getDisplayName());
+//            if(urlParameters != null) {
+//                setfilterDefinition(fil);
+//            }
         }
         setAsSaved();
     }
@@ -568,11 +645,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onGotoIssue() {
-        final String id = panel.idTextField.getText().trim();
+        final String id = panel.idTextField.getText().trim(); 
         if(id == null || id.trim().equals("") ) {                               // NOI18N
             return;
         }
-        
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
             public boolean cancel() {
@@ -587,7 +663,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 handle.start();
                 try {
-                    Issue issue = repository.getIssue(id);
+                    Issue issue = repository.getIssue(id.toUpperCase()); // XXX always uppercase?
                     if (issue != null) {
                         issue.open();
                     } else {
@@ -602,7 +678,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onWeb() {
-        final String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/query.cgi" + "?format=advanced"; // NOI18N //XXX need constants
+        final String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/secure/IssueNavigator.jspa"; // NOI18N //XXX need constants
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 URL url;
@@ -624,19 +700,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onProductChanged(ListSelectionEvent e) {
-        Object[] values =  panel.productList.getSelectedValues();
-        String[] products = null;
-        if(values != null) {
-            products = new String[values.length];
-            for (int i = 0; i < values.length; i++) {
-                products[i] = ((ParameterValue) values[i]).getValue();
-            }
-        }
-        populateProductDetails(products);
-    }
-
-    private void onDefineAs() {
-        panel.switchQueryFields(panel.urlPanel.isVisible());
+//        Object[] values =  panel.projectList.getSelectedValues();
+//        String[] products = null;
+//        if(values != null) {
+//            products = new String[values.length];
+//            for (int i = 0; i < values.length; i++) {
+//                products[i] = ((ParameterValue) values[i]).getValue();
+//            }
+//        }
+//        populateProductDetails(products);
     }
 
     private void onKeywords() {
@@ -651,10 +723,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
             searchTask = new QueryTask() {
                 public void executeQuery() {
                     try {
-                        String lastChageFrom = panel.changedFromTextField.getText().trim();
-                        if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
-                            JiraConfig.getInstance().setLastChangeFrom(lastChageFrom);
-                        }
+//                        String lastChageFrom = panel.changedFromTextField.getText().trim();
+//                        if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
+//                            JiraConfig.getInstance().setLastChangeFrom(lastChageFrom);
+//                        }
                         refreshIntern(false);
                     } finally {
                         
@@ -691,13 +763,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void refreshIntern(boolean autoRefresh) {
-        if (panel.urlPanel.isVisible()) {
-            // XXX check url format etc...
-            // XXX what if there is a different host in queries repository as in the url?
-            query.refresh(panel.urlTextField.getText(), autoRefresh);
-        } else {
-            query.refresh(getUrlParameters(), autoRefresh);
-        }
+//        if (panel.urlPanel.isVisible()) {
+//        XXX get rid of this
+//            // XXX check url format etc...
+//            // XXX what if there is a different host in queries repository as in the url?
+//            query.refresh(panel.urlTextField.getText(), autoRefresh);
+//        } else {
+            query.refresh(getFilterDefinition(), autoRefresh);
+//        }
     }
 
     private void post(Runnable r) {
@@ -800,6 +873,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
 //        versionParameter.setParameterValues(toParameterValues(newVersions));
     }
 
+    private List<ParameterValue> toParameterValues(Project[] projects) {
+        // XXX hack!!!
+        List<ParameterValue> ret = new ArrayList<ParameterValue>(projects.length);
+        for (Project p : projects) {
+            ret.add(new ParameterValue(p.getName(), p.getId()));
+        }
+        return ret;
+    }
+
     private List<ParameterValue> toParameterValues(List<String> values) {
         List<ParameterValue> ret = new ArrayList<ParameterValue>(values.size());
         for (String v : values) {
@@ -808,38 +890,39 @@ public class QueryController extends BugtrackingController implements DocumentLi
         return ret;
     }
 
-    private void setParameters(String urlParameters) {
-        if(urlParameters == null) {
-            return;
-        }
-        String[] params = urlParameters.split("&"); // NOI18N
-        if(params == null || params.length == 0) return;
-        Map<String, List<ParameterValue>> normalizedParams = new HashMap<String, List<ParameterValue>>();
-        for (String p : params) {
-            int idx = p.indexOf("="); // NOI18N
-            if(idx > -1) {
-                String parameter = p.substring(0, idx);
-                String value = p.substring(idx + 1, p.length());
-
-                ParameterValue pv = new ParameterValue(value, value);
-                List<ParameterValue> values = normalizedParams.get(parameter);
-                if(values == null) {
-                    values = new ArrayList<ParameterValue>();
-                    normalizedParams.put(parameter, values);
-                }
-                values.add(pv);
-            } else {
-                // XXX warning!!
-            }
-        }
-
-        for (Map.Entry<String, List<ParameterValue>> e : normalizedParams.entrySet()) {
-            QueryParameter pv = parameters.get(e.getKey());
-            if(pv != null) {
-                List<ParameterValue> pvs = e.getValue();    
-                pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
-            }
-        }
+    private void setFilterDefinition(FilterDefinition filterDefinition) {
+        // XXX
+//        if(urlParameters == null) {
+//            return;
+//        }
+//        String[] params = urlParameters.split("&"); // NOI18N
+//        if(params == null || params.length == 0) return;
+//        Map<String, List<ParameterValue>> normalizedParams = new HashMap<String, List<ParameterValue>>();
+//        for (String p : params) {
+//            int idx = p.indexOf("="); // NOI18N
+//            if(idx > -1) {
+//                String parameter = p.substring(0, idx);
+//                String value = p.substring(idx + 1, p.length());
+//
+//                ParameterValue pv = new ParameterValue(value, value);
+//                List<ParameterValue> values = normalizedParams.get(parameter);
+//                if(values == null) {
+//                    values = new ArrayList<ParameterValue>();
+//                    normalizedParams.put(parameter, values);
+//                }
+//                values.add(pv);
+//            } else {
+//                // XXX warning!!
+//            }
+//        }
+//
+//        for (Map.Entry<String, List<ParameterValue>> e : normalizedParams.entrySet()) {
+//            QueryParameter pv = parameters.get(e.getKey());
+//            if(pv != null) {
+//                List<ParameterValue> pvs = e.getValue();
+//                pv.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
+//            }
+//        }
     }
 
     private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {

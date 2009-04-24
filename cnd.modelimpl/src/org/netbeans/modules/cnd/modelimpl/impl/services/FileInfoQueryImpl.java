@@ -39,6 +39,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -201,45 +203,56 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         return false;
     }
 
+    private final ConcurrentMap<CsmFile, String> macroUsagesLocks = new ConcurrentHashMap<CsmFile, String>();
+    
     public List<CsmReference> getMacroUsages(CsmFile file) {
         List<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
-            List<CsmReference> res = fileImpl.getLastMacroUsages();
-            if (res != null) {
-                return res;
-            }
+            String lock = new String("getMacroUsages lock for " + file.getAbsolutePath()); // NOI18N
+            String prevLock = macroUsagesLocks.putIfAbsent(fileImpl, lock);
+            lock = prevLock != null ? prevLock : lock;
             try {
-                long lastParsedTime = fileImpl.getLastParsedTime();
-                APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
-                if (apt != null) {
-                    Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
-                    if (handlers.isEmpty()) {
-                        DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
-                        return Collections.<CsmReference>emptyList();                    
-                    } else if (handlers.size() == 1) {
-                        APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handlers.iterator().next());
-                        walker.getTokenStream();
-                        out = walker.getCollectedData();
-                    } else {
-                        Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
-                        TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
-                        for (APTPreprocHandler handler : handlers) {
-                            APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler);
-                            walker.getTokenStream();
-                            result.addAll(walker.getCollectedData());
+                synchronized (lock) {
+                    List<CsmReference> res = fileImpl.getLastMacroUsages();
+                    if (res != null) {
+                        return res;
+                    }
+                    try {
+                        long lastParsedTime = fileImpl.getLastParsedTime();
+                        APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
+                        if (apt != null) {
+                            Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
+                            if (handlers.isEmpty()) {
+                                DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
+                                return Collections.<CsmReference>emptyList();
+                            } else if (handlers.size() == 1) {
+                                APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handlers.iterator().next());
+                                walker.getTokenStream();
+                                out = walker.getCollectedData();
+                            } else {
+                                Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
+                                TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
+                                for (APTPreprocHandler handler : handlers) {
+                                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler);
+                                    walker.getTokenStream();
+                                    result.addAll(walker.getCollectedData());
+                                }
+                                out = new ArrayList<CsmReference>(result);
+                            }
                         }
-                        out = new ArrayList<CsmReference>(result);
+                        if (lastParsedTime == fileImpl.getLastParsedTime()) {
+                            fileImpl.setLastMacroUsages(out);
+                        }
+                    } catch (FileNotFoundException ex) {
+                        // file could be removed
+                    } catch (IOException ex) {
+                        System.err.println("skip marking macros\nreason:" + ex.getMessage()); //NOI18N
+                        DiagnosticExceptoins.register(ex);
                     }
                 }
-                if (lastParsedTime == fileImpl.getLastParsedTime()) {
-                    fileImpl.setLastMacroUsages(out);
-                }
-            } catch (FileNotFoundException ex) {
-                // file could be removed
-            } catch (IOException ex) {
-                System.err.println("skip marking macros\nreason:" + ex.getMessage()); //NOI18N
-		DiagnosticExceptoins.register(ex);
+            } finally {
+                macroUsagesLocks.remove(fileImpl, lock);
             }
         }
         return out;

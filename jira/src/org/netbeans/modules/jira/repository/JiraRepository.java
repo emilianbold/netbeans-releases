@@ -44,21 +44,22 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import java.awt.Image;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
-import org.eclipse.mylyn.internal.jira.core.model.JiraIssue;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.commands.JiraExecutor;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -83,6 +84,7 @@ public class JiraRepository extends Repository {
     private Task refreshIssuesTask;
     private Task refreshQueryTask;
     private RequestProcessor refreshProcessor;
+    private JiraExecutor executor;
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -98,10 +100,6 @@ public class JiraRepository extends Repository {
             password = "";                                                      // NOI18N
         }
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-    }
-
-    JiraRepository(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
     }
 
     public Query createQuery() {
@@ -132,16 +130,18 @@ public class JiraRepository extends Repository {
 
     @Override
     public Issue getIssue(String id) {
-        JiraIssue issue = null;
-        try {
-            issue = Jira.getInstance().getClient(taskRepository).getIssueByKey(id, new NullProgressMonitor());
-            if(issue != null) {
-                return new NbJiraIssue(issue, this);
-            }
-        } catch (JiraException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+
+        TaskData taskData = JiraUtils.getTaskData(JiraRepository.this, id);
+        if(taskData == null) {
+            return null;
         }
-        return null;
+        try {
+            return getIssueCache().setIssueData(id, taskData);
+        } catch (IOException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 
     @Override
@@ -393,12 +393,18 @@ public class JiraRepository extends Repository {
             super(JiraRepository.this.getUrl());
         }
         protected Issue createIssue(TaskData taskData) {
-            // XXX
-            return null; //new NbJiraIssue(taskData, JiraRepository.this);
+            return new NbJiraIssue(taskData, JiraRepository.this);
         }
         protected void setTaskData(Issue issue, TaskData taskData) {
-            // XXX
-            //((NbJiraIssue)issue).setTaskData(taskData);
+            ((NbJiraIssue)issue).setTaskData(taskData);
         }
     }
+
+    public JiraExecutor getExecutor() {
+        if(executor == null) {
+            executor = new JiraExecutor(this);
+        }
+        return executor;
+    }
+
 }

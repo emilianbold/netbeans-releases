@@ -37,21 +37,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira;
+package org.netbeans.modules.jira.query;
 
-import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
-import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
+import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.Issue;
 
@@ -80,7 +79,7 @@ public class JiraQueryTest extends NbTestCase {
         }
         // need this to initialize cache -> server defined status values & co
 //        getClient().getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
-        JiraTestUtil.cleanProject(getRepositoryConnector(), getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()));
+        JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));
     }
 
     @Override
@@ -94,40 +93,45 @@ public class JiraQueryTest extends NbTestCase {
             ids.add(createIssue("2"));
 
             FilterDefinition fd = new FilterDefinition();
-            fd.setProjectFilter(new ProjectFilter(JiraTestUtil.getProject(getClient())));
-            JiraQuery q = new JiraQuery(getRepositoryConnector(), new JiraRepository(getTaskRepository()));
-            q.setFilterDefinition(fd);
-            boolean ret = q.refresh();
-            assertTrue(ret);
-            Issue[] issues = q.getIssues();
-            assertNotNull(issues);
-            assertEquals(2, issues.length);
+            fd.setProjectFilter(new ProjectFilter(JiraTestUtil.getProject(JiraTestUtil.getClient())));
+            executeFilter(fd, 2);
 
         } catch (Exception exception) {
             JiraTestUtil.handleException(exception);
         }
     }
-    
+
+    public void testFilters() throws JiraException, CoreException {
+        NamedFilter[] filters = JiraTestUtil.getClient().getNamedFilters(JiraTestUtil.nullProgressMonitor);
+        assertTrue(filters.length > 0);
+
+        NamedFilter filter = null;
+        for (NamedFilter f : filters) {
+            if(f.getName().equals("TestFilter")) {
+                filter = f;
+                break;
+            }
+        }
+        assertNotNull(filter);
+
+        createIssue("blabla");
+        executeFilter(filter, 1);
+    }
+
     private String createIssue(String id) throws CoreException, JiraException {
-        RepositoryResponse rr = JiraTestUtil.createIssue(getRepositoryConnector(), getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()), "Kaputt " + id, "Alles Kaputt! " + id, "Bug");
+        RepositoryResponse rr = JiraTestUtil.createIssue(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()), "Kaputt " + id, "Alles Kaputt! " + id, "Bug");
         assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
-        assertNotNull(JiraTestUtil.getTaskData(getRepositoryConnector(), getTaskRepository(), rr.getTaskId()));
+        assertNotNull(JiraTestUtil.getTaskData(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()));
         return rr.getTaskId();
     }
 
-    private JiraClient getClient() {
-        return JiraTestUtil.getClient();
+    private void executeFilter(JiraFilter fd, int issuesCount) {
+        JiraQuery q = new JiraQuery("vole", JiraTestUtil.getRepository(), fd, -1);
+        boolean ret = q.refresh();
+        assertTrue(ret);
+        Issue[] issues = q.getIssues();
+        assertNotNull(issues);
+        assertEquals(issuesCount, issues.length);
     }
 
-    private JiraRepositoryConnector getRepositoryConnector() {
-        return JiraTestUtil.getRepositoryConnector();
-    }
-
-    private JiraRepository getRepository() {
-        return new JiraRepository(getTaskRepository());
-    }
-
-    private TaskRepository getTaskRepository() {
-        return JiraTestUtil.getRepository();
-    }
 }

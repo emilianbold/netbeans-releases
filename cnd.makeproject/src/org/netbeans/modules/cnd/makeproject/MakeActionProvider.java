@@ -495,7 +495,7 @@ public class MakeActionProvider implements ActionProvider {
                     int result = provider.run(conf.getDevelopmentHost().getExecutionEnvironment(), "which rsync", null); //NOI18N
                     String rsyncRemotePath = (result != 0 || provider.getOutput().indexOf(' ')>-1) ? "/opt/csw/bin/rsync" : provider.getOutput(); //NOI18N //YESCHEAT
                     // do sync
-                    RunProfile runSyncProfile = conf.getProfile().clone();
+                    RunProfile runSyncProfile = conf.getProfile().clone(conf);
                     // TODO: remote and local rsync paths from toolchain
                     // TODO: real project name
                     String lpath = project.getProjectDirectory().getNameExt();
@@ -563,7 +563,7 @@ public class MakeActionProvider implements ActionProvider {
                     int platform = conf.getPlatform().getValue();
                     if (platform == Platform.PLATFORM_WINDOWS) {
                         // On Windows we need to add paths to dynamic libraries from subprojects to PATH
-                        runProfile = conf.getProfile().clone();
+                        runProfile = conf.getProfile().clone(conf);
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
                         String path = ""; // NOI18N
                         // Add paths from subprojetcs
@@ -612,7 +612,7 @@ public class MakeActionProvider implements ActionProvider {
                             path.append(location);
                         }
                         if (path.length() > 0) {
-                            runProfile = conf.getProfile().clone();
+                            runProfile = conf.getProfile().clone(conf);
                             String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
                                 if (cancelled.get()) {
@@ -640,7 +640,7 @@ public class MakeActionProvider implements ActionProvider {
                             path.append(location);
                         }
                         if (path.length() > 0) {
-                            runProfile = conf.getProfile().clone();
+                            runProfile = conf.getProfile().clone(conf);
                             String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
                                 if (cancelled.get()) {
@@ -666,7 +666,7 @@ public class MakeActionProvider implements ActionProvider {
                         if (HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null) {
-                                runProfile = conf.getProfile().clone();
+                                runProfile = conf.getProfile().clone(conf);
                             }
                             runProfile.getEnvironment().putenv("DISPLAY", ":0.0"); // NOI18N
                         }

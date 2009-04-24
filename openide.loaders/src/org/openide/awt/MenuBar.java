@@ -78,6 +78,7 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.Utilities;
@@ -459,9 +460,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
             // Listen for changes in Node's DisplayName/Icon
             Node n = master.getNodeDelegate ();
             n.addNodeListener (org.openide.nodes.NodeOp.weakNodeListener (this, n));
-            updateProps();
-            getModel().addChangeListener(this);
-
+            Mutex.EVENT.readAccess(this);
         }
         
         protected @Override boolean processKeyBinding(KeyStroke ks,
@@ -506,6 +505,8 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }            
 
         private void updateProps() {
+            assert EventQueue.isDispatchThread();
+            getModel().removeChangeListener(this);
             if (master.isValid()) {
                 // set the text and be aware of mnemonics
                 Node n = master.getNodeDelegate ();
@@ -516,6 +517,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 setText(master.getName());
                 setIcon(null);
             }
+            getModel().addChangeListener(this);
         }
 
         /** Update the properties. Exported via Runnable interface so it
@@ -531,12 +533,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 Node.PROP_NAME.equals (ev.getPropertyName ()) ||
                 Node.PROP_ICON.equals (ev.getPropertyName ())
             ) {
-                // update the properties in AWT queue
-                if (EventQueue.isDispatchThread ()) {
-                    updateProps(); // do the update synchronously
-                } else {
-                    EventQueue.invokeLater (this);
-                }
+                Mutex.EVENT.readAccess(this);
             }
         }
 
@@ -547,35 +544,40 @@ public class MenuBar extends JMenuBar implements Externalizable {
         public void nodeDestroyed (NodeEvent ev) {}
             
         private boolean selected = false;
-        public void stateChanged(ChangeEvent event) {
-            if (selected) {
-                selected = false;
-            } else {
-                selected = true;
-                doInitialize();
-                dynaModel.checkSubmenu(this);
 
+        /* Used on Mac only where setPopupMenuVisible does not work */
+        public void stateChanged(ChangeEvent event) {
+            if (Utilities.isMac()) {
+                if (selected) {
+                    selected = false;
+                } else {
+                    selected = true;
+                    doInitialize();
+                    dynaModel.checkSubmenu(this);
+                }
             }
         }
         
 
 // mkleint: overriding setPopupMenuVisible doesn't work on mac, replaced by listening on changes of Button model.
         
-//        
-//    /** Overriden to provide better strategy for placing the JMenu on the screen.
-//    * @param b a boolean value -- true to make the menu visible, false to hide it
-//    */
-//    public void setPopupMenuVisible(boolean b) {
-//        boolean isVisible = isPopupMenuVisible();
-//
-//        if (b != isVisible) {
-//            if ((b == true) && isShowing()) {
-//                doInitialize();                
-//                dynaModel.checkSubmenu(this);
-//            }
-//        }
-//        super.setPopupMenuVisible(b);
-//    }        
+        
+        /** Overriden to provide better strategy for placing the JMenu on the screen on non Mac platforms.
+        * @param b a boolean value -- true to make the menu visible, false to hide it
+        */
+        public void setPopupMenuVisible(boolean b) {
+            if (!Utilities.isMac()) {
+                boolean isVisible = isPopupMenuVisible();
+
+                if (b != isVisible) {
+                    if ((b == true) && isShowing()) {
+                        doInitialize();
+                        dynaModel.checkSubmenu(this);
+                    }
+                }
+            }
+            super.setPopupMenuVisible(b);
+        }
         
 	private void doInitialize() {
         slave.waitFinishedSuper();
