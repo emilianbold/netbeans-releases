@@ -646,11 +646,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onGotoIssue() {
-        final String id = panel.idTextField.getText().trim();
+        final String id = panel.idTextField.getText().trim(); 
         if(id == null || id.trim().equals("") ) {                               // NOI18N
             return;
         }
-        
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
             public boolean cancel() {
@@ -665,7 +664,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 handle.start();
                 try {
-                    Issue issue = repository.getIssue(id);
+                    Issue issue = repository.getIssue(id.toUpperCase()); // XXX always uppercase?
                     if (issue != null) {
                         issue.open();
                     } else {
