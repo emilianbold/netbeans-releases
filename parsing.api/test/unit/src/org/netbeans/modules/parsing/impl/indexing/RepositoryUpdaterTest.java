@@ -154,6 +154,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+//        TopLogging.initializeQuietly();
         super.setUp();
         this.clearWorkDir();
         final File _wd = this.getWorkDir();
