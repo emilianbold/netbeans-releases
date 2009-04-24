@@ -547,35 +547,40 @@ public class MenuBar extends JMenuBar implements Externalizable {
         public void nodeDestroyed (NodeEvent ev) {}
             
         private boolean selected = false;
-        public void stateChanged(ChangeEvent event) {
-            if (selected) {
-                selected = false;
-            } else {
-                selected = true;
-                doInitialize();
-                dynaModel.checkSubmenu(this);
 
+        /* Used on Mac only where setPopupMenuVisible does not work */
+        public void stateChanged(ChangeEvent event) {
+            if (Utilities.isMac()) {
+                if (selected) {
+                    selected = false;
+                } else {
+                    selected = true;
+                    doInitialize();
+                    dynaModel.checkSubmenu(this);
+                }
             }
         }
         
 
 // mkleint: overriding setPopupMenuVisible doesn't work on mac, replaced by listening on changes of Button model.
         
-//        
-//    /** Overriden to provide better strategy for placing the JMenu on the screen.
-//    * @param b a boolean value -- true to make the menu visible, false to hide it
-//    */
-//    public void setPopupMenuVisible(boolean b) {
-//        boolean isVisible = isPopupMenuVisible();
-//
-//        if (b != isVisible) {
-//            if ((b == true) && isShowing()) {
-//                doInitialize();                
-//                dynaModel.checkSubmenu(this);
-//            }
-//        }
-//        super.setPopupMenuVisible(b);
-//    }        
+        
+        /** Overriden to provide better strategy for placing the JMenu on the screen on non Mac platforms.
+        * @param b a boolean value -- true to make the menu visible, false to hide it
+        */
+        public void setPopupMenuVisible(boolean b) {
+            if (!Utilities.isMac()) {
+                boolean isVisible = isPopupMenuVisible();
+
+                if (b != isVisible) {
+                    if ((b == true) && isShowing()) {
+                        doInitialize();
+                        dynaModel.checkSubmenu(this);
+                    }
+                }
+            }
+            super.setPopupMenuVisible(b);
+        }
         
 	private void doInitialize() {
         slave.waitFinishedSuper();
