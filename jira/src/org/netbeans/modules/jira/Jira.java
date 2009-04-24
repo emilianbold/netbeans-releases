@@ -163,28 +163,8 @@ public class Jira {
         return client.getProjects(new NullProgressMonitor());
     }
 
-    public JiraClient getClient(TaskRepository repo) {
-        try {
-            final JiraClient jiraClient = JiraClientFactory.getDefault().getJiraClient(repo);
-            if(!refreshedRepos.contains(repo)) { // XXX dummy
-                jiraClient.getCache().refreshDetails(new NullProgressMonitor());
-                jiraClient.getCache().refreshServerInfo(new NullProgressMonitor());
-            }
-            return jiraClient;
-        } catch (JiraException ex) {
-            // XXXX
-            ex.printStackTrace();
-        }
-        return null;
+    public JiraClient getClient(TaskRepository repo) throws JiraException {
+        return JiraClientFactory.getDefault().getJiraClient(repo);
     }
 
-    public String getResolveOperation(TaskRepository repo, String issueKey) throws JiraException {
-        JiraAction[] operations = getClient(repo).getAvailableActions(issueKey, null);
-		for (JiraAction action : operations) {
-			if (action.getName().toLowerCase().startsWith("resolve")) {
-				return action.getId();
-			}
-		}
-        return null;
-    }
 }
