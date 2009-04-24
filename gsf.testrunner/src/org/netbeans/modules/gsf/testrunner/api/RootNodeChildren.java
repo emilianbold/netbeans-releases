@@ -299,7 +299,7 @@ final class RootNodeChildren extends Children.Array {
     
     /**
      */
-    void setFiltered(final boolean filtered) {
+    synchronized void setFiltered(final boolean filtered) {
         assert EventQueue.isDispatchThread();
         
         if (filtered == this.filtered) {
@@ -307,7 +307,7 @@ final class RootNodeChildren extends Children.Array {
         }
         this.filtered = filtered;
         
-        if (!live) {
+        if (!live || (reports == null)) {
             return;
         }
 
@@ -326,28 +326,17 @@ final class RootNodeChildren extends Children.Array {
 
         List<Node> nodesToRemove = new ArrayList<Node>();
         final Node[] nodes = getNodes();
-        int nodesIndex = 0;
-        for (int index = 0;
-                    index < passedSuites;
-                    nodesIndex++) {
-            TestsuiteNode node = (TestsuiteNode) nodes[nodesIndex];
+        for (int index = 0; index < nodes.length; index++) {
+            TestsuiteNode node = (TestsuiteNode) nodes[index];
             Report report = node.getReport();
             if (report == null) {
                 continue;
             }
             if (!report.containsFailed() && (node != runningSuiteNode)) {
                 nodesToRemove.add(node);
-                index++;
             } else {
                 node.setFiltered(filtered);
             }
-        }
-        while (nodesIndex < nodes.length) {
-            Report report;
-            assert (report = ((TestsuiteNode) nodes[nodesIndex]).getReport())
-                           == null
-                   || report.containsFailed();
-            ((TestsuiteNode) nodes[nodesIndex++]).setFiltered(filtered);
         }
         remove(nodesToRemove.toArray(new Node[nodesToRemove.size()]));
     }
