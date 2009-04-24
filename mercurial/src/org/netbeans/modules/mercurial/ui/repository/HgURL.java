@@ -496,7 +496,11 @@ public final class HgURL {
         return toUrlString(false, false);
     }
 
-    public String toUrlString(boolean stripUserinfo, boolean maskPassword) {
+    public String toUrlStringWithoutUserInfo() {
+        return toUrlString(true, true);
+    }
+
+    private String toUrlString(boolean stripUserinfo, boolean maskPassword) {
         boolean authorityPartSeparationPending;
 
         StringBuilder buf = new StringBuilder(128);
