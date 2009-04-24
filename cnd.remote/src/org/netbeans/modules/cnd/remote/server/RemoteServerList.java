@@ -98,8 +98,8 @@ public class RemoteServerList implements ServerListImplementation {
                 int sepPos = hostKey.indexOf(SERVER_RECORD_SEPARATOR);
                 if (sepPos >= 0) {
                     assert sepPos > 0;
+                    displayName = hostKey.substring(sepPos+1);
                     hostKey = hostKey.substring(0, sepPos);
-                    displayName = hostKey.substring(sepPos);
                 }
                 ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostKey);
                 if (env.isRemote()) {
@@ -169,7 +169,7 @@ public class RemoteServerList implements ServerListImplementation {
         if (displayName == null) {
             displayName = execEnv.getDisplayName();
         }
-        RemoteServerRecord addServer = (RemoteServerRecord) addServer(execEnv, null, asDefault, false);
+        RemoteServerRecord addServer = (RemoteServerRecord) addServer(execEnv, displayName, asDefault, false);
         addServer.setState(state);
     }
 

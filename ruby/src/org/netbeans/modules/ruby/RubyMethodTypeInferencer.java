@@ -106,7 +106,7 @@ final class RubyMethodTypeInferencer {
             // -Possibly- ActiveRecord finders, very important
             if (receiverType.isSingleton() && getIndex() != null) {
                 IndexedClass superClass = getIndex().getSuperclass(receiverType.first());
-                if (superClass != null && "ActiveRecord::Base".equals(superClass.getFqn())) { // NOI18N
+                if (superClass != null && RubyIndex.ACTIVE_RECORD_BASE.equals(superClass.getFqn())) { // NOI18N
                     // Looks like a find method on active record The big
                     // question is whether this is going to return the type
                     // itself (receivedName) or an array of it; that depends on

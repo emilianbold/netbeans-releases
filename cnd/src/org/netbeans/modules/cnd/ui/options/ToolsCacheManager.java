@@ -66,11 +66,11 @@ public final class ToolsCacheManager {
         return serverUpdateCache;
     }
 
-    public List<ExecutionEnvironment> getHosts() {
+    public Collection<? extends ServerRecord> getHosts() {
         if (serverUpdateCache != null) {
             return serverUpdateCache.getHosts();
         } else if (isRemoteAvailable()) {
-            return ServerList.getEnvironments();
+            return ServerList.getRecords();
         } else {
             return null;
         }
@@ -86,7 +86,7 @@ public final class ToolsCacheManager {
         }
     }
 
-    public void setHosts(List<ExecutionEnvironment> list) {
+    public void setHosts(List<ServerRecord> list) {
         if (serverUpdateCache == null) {
             serverUpdateCache = new ServerUpdateCache();
         }
@@ -122,9 +122,9 @@ public final class ToolsCacheManager {
             if (serverUpdateCache != null) {
                 liveServers = new ArrayList<ExecutionEnvironment>();
                 ServerList.clear();
-                for (ExecutionEnvironment env : serverUpdateCache.getHosts()) {
-                    ServerList.addServer(env, env.getDisplayName(), false, false);
-                    liveServers.add(env);
+                for (ServerRecord rec : serverUpdateCache.getHosts()) {
+                    ServerList.addServer(rec.getExecutionEnvironment(), rec.getDisplayName(), false, false);
+                    liveServers.add(rec.getExecutionEnvironment());
                 }
                 ServerList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
                 serverUpdateCache = null;

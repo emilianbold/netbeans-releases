@@ -208,7 +208,7 @@ public class DevelopmentHostConfiguration {
         return l.toArray(new String[l.size()]);
     }
 
-    public List<ExecutionEnvironment> getServerEnvironments() {
+    private List<ExecutionEnvironment> getServerEnvironments() {
         return ServerList.getEnvironments();
 //        return Arrays.asList(ExecutionEnvironmentFactory.getLocal());
     }
