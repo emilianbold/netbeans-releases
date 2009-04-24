@@ -42,13 +42,9 @@ package org.netbeans.modules.jira;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.JiraClientFactory;
 import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
 import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
-import org.eclipse.mylyn.internal.jira.core.model.JiraAction;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -151,20 +147,12 @@ public class Jira {
         return jrc;
     }
 
-    public Project[] getProjects(TaskRepository repo) throws JiraException {
-        return getClient(repo).getProjects(new NullProgressMonitor());
-    }
-
-    public Resolution[] getResolutions(TaskRepository repo) throws JiraException {
-        return getClient(repo).getResolutions(new NullProgressMonitor());
-    }
-
-    public Project[] getProjects(JiraClient client) throws JiraException {
-        return client.getProjects(new NullProgressMonitor());
-    }
-
     public JiraClient getClient(TaskRepository repo) throws JiraException {
         return JiraClientFactory.getDefault().getJiraClient(repo);
+    }
+
+    public void removeClient(TaskRepository taskRepository) {
+        JiraClientFactory.getDefault().repositoryRemoved(taskRepository);
     }
 
 }

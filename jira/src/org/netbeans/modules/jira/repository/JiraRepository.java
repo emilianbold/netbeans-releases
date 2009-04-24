@@ -85,6 +85,7 @@ public class JiraRepository extends Repository {
     private Task refreshQueryTask;
     private RequestProcessor refreshProcessor;
     private JiraExecutor executor;
+    private JiraConfiguration configuration;
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -103,10 +104,18 @@ public class JiraRepository extends Repository {
     }
 
     public Query createQuery() {
+        if(getConfiguration() == null) {
+            // invalid connection data?
+            return null;
+        }
         return new JiraQuery(this);
     }
 
     public Issue createIssue() {
+        if(getConfiguration() == null) {
+            // invalid connection data?
+            return null;
+        }
         throw new UnsupportedOperationException();
     }
 
@@ -269,13 +278,27 @@ public class JiraRepository extends Repository {
     
     synchronized void resetRepository() {
         // XXX
-//        bc = null;
-//        if(getTaskRepository() != null) {
-//            Jira.getInstance()
-//                    .getRepositoryConnector()
-//                    .getClientManager()
-//                    .repositoryRemoved(getTaskRepository());
-//        }
+        configuration = null;
+        TaskRepository taskRepo = getTaskRepository();
+        if(taskRepo != null) {
+            Jira.getInstance().removeClient(taskRepo);
+        }
+    }
+
+    /**
+     * Returns the bugzilla configuration or null if not available
+     *
+     * @return
+     */
+    public synchronized JiraConfiguration getConfiguration() {
+        if(configuration == null) {
+            configuration = createConfiguration();
+        }
+        return configuration;
+    }
+
+    protected JiraConfiguration createConfiguration() {
+        return JiraConfiguration.create(this);
     }
 
     // XXX spi
