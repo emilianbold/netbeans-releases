@@ -82,7 +82,7 @@ public class IdeEnvironmentTest extends NbTestCase {
 
         FileObject jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "web/index.jsp");
         WebModule wm = TestUtil.getWebModule(jspFo);
-        Map library = JspParserFactory.getJspParser().getTaglibMap(wm);
+        Map<String, String[]> library = JspParserFactory.getJspParser().getTaglibMap(wm);
         assertNull("The JSTL library should not be present.", library.get("http://java.sun.com/jsp/jstl/fmt"));
 
         addLibrary("emptyWebProject", "jstl11");
