@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -54,6 +55,8 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.commands.GetMultiTaskDataCommand;
+import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
@@ -69,33 +72,33 @@ public class JiraQuery extends Query {
     private final Set<String> issues = new HashSet<String>();
     private Set<String> archivedIssues = new HashSet<String>();
 
-    protected String urlParameters;
+    protected FilterDefinition filterDefinition;
     private boolean firstRun = true;
 
     public JiraQuery(JiraRepository repository) {
         this(null, repository, null, false, -1);
     }
 
-//    protected JiraQuery(String name, JiraRepository repository, String urlParameters, boolean saved) {
-//        super();
-//        this.name = name;
-//        this.repository = repository;
-//        this.urlParameters = urlParameters;
-//        this.saved = saved;
-//        // let the subclass create the controller
-//    }
-
-    public JiraQuery(String name, JiraRepository repository, String urlParameters, long lastRefresh) {
-        this(name, repository, urlParameters, true, lastRefresh);
+    protected JiraQuery(String name, JiraRepository repository, FilterDefinition filterDefinition, boolean saved) {
+        super();
+        this.name = name;
+        this.repository = repository;
+        this.filterDefinition = filterDefinition;
+        this.saved = saved;
+        // let the subclass create the controller
     }
 
-    private JiraQuery(String name, JiraRepository repository, String urlParameters, boolean saved, long lastRefresh) {
+    public JiraQuery(String name, JiraRepository repository, FilterDefinition filterDefinition, long lastRefresh) {
+        this(name, repository, filterDefinition, true, lastRefresh);
+    }
+
+    private JiraQuery(String name, JiraRepository repository, FilterDefinition filterDefinition, boolean saved, long lastRefresh) {
         this.repository = repository;
         this.saved = saved;
         this.name = name;
-        this.urlParameters = urlParameters;
+        this.filterDefinition = filterDefinition;
         this.setLastRefresh(lastRefresh);
-        controller = createControler(repository, this, urlParameters);
+        controller = createControler(repository, this, filterDefinition);
     }
 
     @Override
@@ -111,7 +114,7 @@ public class JiraQuery extends Query {
     @Override
     public synchronized QueryController getController() {
         if (controller == null) {
-            controller = createControler(repository, this, urlParameters);
+            controller = createControler(repository, this, filterDefinition);
         }
         return controller;
     }
@@ -121,8 +124,8 @@ public class JiraQuery extends Query {
         return repository;
     }
 
-    protected QueryController createControler(JiraRepository r, JiraQuery q, String parameters) {
-        return new QueryController(r, q, parameters);
+    protected QueryController createControler(JiraRepository r, JiraQuery q, FilterDefinition filterDefinition) {
+        return new QueryController(r, q, filterDefinition);
     }
 
     @Override
@@ -137,67 +140,52 @@ public class JiraQuery extends Query {
 
     boolean refreshIntern(final boolean autoRefresh) { // XXX what if already running! - cancel task
 
-        assert urlParameters != null;
+        assert filterDefinition != null;
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
         final boolean ret[] = new boolean[1];
         executeQuery(new Runnable() {
             public void run() {
-                Jira.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
-//                try {
-//
-//                    // keeps all issues we will retrieve from the server
-//                    // - those matching the query criteria
-//                    // - and the obsolete ones
-//                    Set<String> queryIssues = new HashSet<String>();
-//
-//                    issues.clear();
-//                    archivedIssues.clear();
-//                    if(isSaved()) {
-//                        if(!wasRun() && issues.size() != 0) {
-//                                Jira.LOG.warning("query " + getDisplayName() + " supposed to be run for the first time yet already contains issues."); // NOI18N
-//                                assert false;
-//                        }
-//                        // read the stored state ...
-//                        queryIssues.addAll(repository.getIssueCache().readQueryIssues(JiraQuery.this.getDisplayName()));
-//                        queryIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(JiraQuery.this.getDisplayName()));
-//                        // ... and they might be rendered obsolete if not returned by the query
-//                        archivedIssues.addAll(queryIssues);
-//                    }
-//                    firstRun = false;
-//
-//                    // run query to know what matches the criteria
-//                    StringBuffer url = new StringBuffer();
-//                    url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST);
-//                    url.append(urlParameters); // XXX encode url?
-//                    // IssuesIdCollector will populate the issues set
-//                    PerformQueryCommand queryCmd = new PerformQueryCommand(repository, url.toString(), new IssuesIdCollector());
-//                    repository.getExecutor().execute(queryCmd, !autoRefresh);
-//                    ret[0] = queryCmd.hasFailed();
-//                    if(ret[0]) {
-//                        return;
-//                    }
-//
-//                    // only issues not returned by the query are obsolete
-//                    archivedIssues.removeAll(issues);
-//                    if(isSaved()) {
-//                        // ... and store all you got
-//                        repository.getIssueCache().storeQueryIssues(JiraQuery.this.getDisplayName(), issues.toArray(new String[issues.size()]));
-//                        repository.getIssueCache().storeArchivedQueryIssues(JiraQuery.this.getDisplayName(), archivedIssues.toArray(new String[archivedIssues.size()]));
-//                    }
-//
-//                    // now get the task data for
-//                    // - all issue returned by the query
-//                    // - and issues which were returned by some previous run and are archived now
-//                    queryIssues.addAll(issues);
-//
-//                    GetMultiTaskDataCommand dataCmd = new GetMultiTaskDataCommand(repository, queryIssues, new IssuesCollector());
-//                    repository.getExecutor().execute(dataCmd, !autoRefresh);
-//                    ret[0] = dataCmd.hasFailed();
-//                } finally {
-//                    logQueryEvent(issues.size(), autoRefresh);
-//                    Jira.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
-//                }
+                Jira.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name /* XXX , filterDefinition*/ }); // NOI18N
+                try {
+
+                    // keeps all issues we will retrieve from the server
+                    // - those matching the query criteria
+                    // - and the obsolete ones
+
+                    issues.clear();
+                    archivedIssues.clear();
+                    if(isSaved()) {
+                        if(!wasRun() && issues.size() != 0) {
+                                Jira.LOG.warning("query " + getDisplayName() + " supposed to be run for the first time yet already contains issues."); // NOI18N
+                                assert false;
+                        }
+                        // read the stored state ...
+                        archivedIssues.addAll(repository.getIssueCache().readQueryIssues(JiraQuery.this.getDisplayName()));
+                        archivedIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(JiraQuery.this.getDisplayName()));
+                    }
+                    firstRun = false;
+
+                    // run query to know what matches the criteria
+                    // IssuesIdCollector will populate the issues set
+                    PerformQueryCommand queryCmd = new PerformQueryCommand(repository, filterDefinition, new IssuesCollector());
+                    repository.getExecutor().execute(queryCmd, !autoRefresh);
+                    ret[0] = !queryCmd.hasFailed();
+                    if(!ret[0]) {
+                        return;
+                    }
+
+                    // only issues not returned by the query are archived
+                    archivedIssues.removeAll(issues);
+                    if(isSaved()) {
+                        // ... and store all you got
+                        repository.getIssueCache().storeQueryIssues(JiraQuery.this.getDisplayName(), issues.toArray(new String[issues.size()]));
+                        repository.getIssueCache().storeArchivedQueryIssues(JiraQuery.this.getDisplayName(), archivedIssues.toArray(new String[archivedIssues.size()]));
+                    }
+                } finally {
+                    logQueryEvent(issues.size(), autoRefresh);
+                    Jira.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name /* XXX , filterDefinition*/}); // NOI18N
+                }
             }
         });
         return ret[0];
@@ -212,9 +200,9 @@ public class JiraQuery extends Query {
             autoRefresh);
     }
 
-    void refresh(String urlParameters, boolean autoReresh) {
-        assert urlParameters != null;
-        this.urlParameters = urlParameters;
+    void refresh(FilterDefinition filterDefinition, boolean autoReresh) {
+        assert filterDefinition != null;
+        this.filterDefinition = filterDefinition;
         refreshIntern(autoReresh);
     }
 
@@ -241,10 +229,10 @@ public class JiraQuery extends Query {
     int getSize() {
         return issues.size();
     }
-
-    public String getUrlParameters() {
-        return getController().getUrlParameters();
-    }
+//
+//    public FilterDefinition getFilterDefinition() {
+//        return getController().getFilterDefinition();
+//    }
 
     public void setName(String name) {
         this.name = name;
@@ -298,13 +286,6 @@ public class JiraQuery extends Query {
         return !firstRun;
     }
 
-    private class IssuesIdCollector extends TaskDataCollector {
-        public IssuesIdCollector() {}
-        public void accept(TaskData taskData) {
-            String id = NbJiraIssue.getID(taskData);
-            issues.add(id);
-        }
-    };
     private class IssuesCollector extends TaskDataCollector {
         public IssuesCollector() {}
         public void accept(TaskData taskData) {
@@ -313,6 +294,7 @@ public class JiraQuery extends Query {
             try {
                 IssueCache cache = repository.getIssueCache();
                 issue = (NbJiraIssue) cache.setIssueData(id, taskData);
+                issues.add(issue.getID());
             } catch (IOException ex) {
                 Jira.LOG.log(Level.SEVERE, null, ex);
                 return;

@@ -37,8 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira;
+package org.netbeans.modules.jira.query;
 
+import org.netbeans.modules.jira.*;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,8 +96,7 @@ public class JiraQueryTest extends NbTestCase {
 
             FilterDefinition fd = new FilterDefinition();
             fd.setProjectFilter(new ProjectFilter(JiraTestUtil.getProject(getClient())));
-            JiraQuery q = new JiraQuery(getRepositoryConnector(), new JiraRepository(getTaskRepository()));
-            q.setFilterDefinition(fd);
+            JiraQuery q = new JiraQuery("vole", getRepository(), fd, -1);
             boolean ret = q.refresh();
             assertTrue(ret);
             Issue[] issues = q.getIssues();
@@ -124,7 +124,7 @@ public class JiraQueryTest extends NbTestCase {
     }
 
     private JiraRepository getRepository() {
-        return new JiraRepository(getTaskRepository());
+        return new JiraRepository("jira", JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD, null, null);
     }
 
     private TaskRepository getTaskRepository() {
