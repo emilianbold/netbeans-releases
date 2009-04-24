@@ -51,7 +51,7 @@ public class Util {
     private Util() {
     }
 
-    public static String GF_LOOKUP_PATH = "Servers/GlassFish"; // NOI18N
+    public static final String GF_LOOKUP_PATH = "Servers/GlassFish"; // NOI18N
     
     private static String INDICATOR = File.separatorChar == '/' ? "jrunscript" : "jrunscript.exe";
     private static FilenameFilter JDK6_DETECTION_FILTER = new FilenameFilter() {
