@@ -75,7 +75,7 @@ public class StopTask extends BasicTask<OperationState> {
         Logger.getLogger("glassfish").log(Level.FINEST, "StopTask.call() called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
         long start = System.currentTimeMillis();
         
-        String host = null;
+        String host; // = null;
         int port = 0;
         
         host = ip.get(GlassfishModule.HOSTNAME_ATTR);
@@ -117,7 +117,6 @@ public class StopTask extends BasicTask<OperationState> {
         while(System.currentTimeMillis() - start < STOP_TIMEOUT) {
             // Send the 'completed' event and return when the server is stopped
             if(!CommonServerSupport.isRunning(host, port)) {
-                support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, "", true); // NOI18N
                 try {
                     Thread.sleep(1000); // flush the process
                 } catch (InterruptedException e) {
