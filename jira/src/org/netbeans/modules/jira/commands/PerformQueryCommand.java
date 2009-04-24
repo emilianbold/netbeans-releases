@@ -43,10 +43,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.eclipse.mylyn.internal.jira.core.model.Project;
+import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
+import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.internal.jira.core.util.JiraUtil;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
@@ -67,11 +72,26 @@ public class PerformQueryCommand extends JiraCommand {
     }
 
     @Override
-    public void execute() throws CoreException {
+    public void execute() throws CoreException, JiraException {
+        ensureJiraCache();
+
         JiraRepositoryConnector rc = Jira.getInstance().getRepositoryConnector();
         RepositoryQuery repositoryQuery = new RepositoryQuery(rc.getConnectorKind(), "query"); // NOI18N
         JiraUtil.setQuery(repository.getTaskRepository(), repositoryQuery, jiraFilter);
         rc.performQuery(repository.getTaskRepository(), repositoryQuery, collector, null, new NullProgressMonitor());
     }
 
+    private void ensureJiraCache() throws JiraException {
+        if(jiraFilter instanceof FilterDefinition) {
+            FilterDefinition fd = (FilterDefinition) jiraFilter;
+            ProjectFilter pf = fd.getProjectFilter();
+            if(pf != null) {
+                Project[] projects = pf.getProjects();
+                JiraConfiguration configuration = repository.getConfiguration();
+                for (Project project : projects) {
+                    configuration.initilize(project);
+                }
+            }
+        }
+    }
 }

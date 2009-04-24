@@ -286,7 +286,7 @@ public class JiraRepository extends Repository {
     }
 
     /**
-     * Returns the bugzilla configuration or null if not available
+     * Returns the jira configuration or null if not available
      *
      * @return
      */
