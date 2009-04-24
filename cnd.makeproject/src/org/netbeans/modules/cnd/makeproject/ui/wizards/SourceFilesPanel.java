@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import javax.swing.JTable;
@@ -83,7 +84,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         IpeUtils.requestFocus(addButton);
     }
 
-    public Vector<FolderEntry> getListData() {
+    public List<FolderEntry> getListData() {
         return data;
     }
 
