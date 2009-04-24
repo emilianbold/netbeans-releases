@@ -48,6 +48,8 @@ import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 
 /**
+ * Initializing the JiraCache for huge repositories (e.g Kenai.com) lasts too long.
+ * Its quite less expesive to retrieve the needed project data in an on demand manner.
  *
  * @author Tomas Stupka
  */
