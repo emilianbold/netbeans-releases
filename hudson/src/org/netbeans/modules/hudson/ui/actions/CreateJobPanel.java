@@ -302,6 +302,14 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
                 .add(explanationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        server.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.server.AccessibleContext.accessibleDescription")); // NOI18N
+        addServer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.addServer.AccessibleContext.accessibleDescription")); // NOI18N
+        name.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.name.AccessibleContext.accessibleDescription")); // NOI18N
+        project.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.project.AccessibleContext.accessibleDescription")); // NOI18N
+        browse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.browse.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed

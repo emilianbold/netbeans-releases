@@ -241,7 +241,7 @@ public final class MakeProject implements Project, AntProjectListener {
                     new MakeArtifactProviderImpl(),
                     new ProjectXmlSavedHookImpl(),
                     new ProjectOpenedHookImpl(),
-                    new MakeSharabilityQuery(FileUtil.toFile(getProjectDirectory())),
+                    new MakeSharabilityQuery(projectDescriptorProvider, FileUtil.toFile(getProjectDirectory())),
                     sources,
                     new AntProjectHelperProvider(),
                     projectDescriptorProvider,
