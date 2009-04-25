@@ -50,9 +50,7 @@ import org.openide.loaders.*;
 import org.openide.util.*;
 import org.openide.nodes.*;
 import org.openide.cookies.*;
-import org.openide.actions.*;
 import org.openide.windows.CloneableOpenSupport;
-import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
@@ -275,11 +273,6 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
             setShortDescription (Util.THIS.getString (XMLDataObject.class, "PROP_XMLDataNode_description"));
         }
 
-        @Override
-        public SystemAction getDefaultAction() {
-            return SystemAction.get (OpenAction.class);
-        }
-    
     } // end of class XMLDataNode
 
 
