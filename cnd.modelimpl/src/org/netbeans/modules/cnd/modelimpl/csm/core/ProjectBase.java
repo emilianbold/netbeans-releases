@@ -1031,7 +1031,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return preprocHandler;
     }
 
-    public final Collection<FileContainer.StatePair> getPreprocStatePairs(File file) {
+    /*package-local*/ final Collection<FileContainer.StatePair> getPreprocStatePairs(File file) {
         return getFileContainer().getStatePairs(file);
     }
     
