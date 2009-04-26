@@ -438,13 +438,15 @@ public final class ClassIndex {
         });        
     }
     
-    private synchronized Iterable<? extends ClassIndexImpl> getQueries (final Set<SearchScope> scope) {        
-        Set<ClassIndexImpl> result = new HashSet<ClassIndexImpl> ();
-        if (scope.contains(SearchScope.SOURCE)) {            
-            result.addAll(this.sourceIndeces);
-        }        
-        if (scope.contains(SearchScope.DEPENDENCIES)) {
-            result.addAll(this.depsIndeces);
+    private Iterable<? extends ClassIndexImpl> getQueries (final Set<SearchScope> scope) {
+        final Set<ClassIndexImpl> result = new HashSet<ClassIndexImpl> ();
+        synchronized (this) {
+            if (scope.contains(SearchScope.SOURCE)) {
+                result.addAll(this.sourceIndeces);
+            }
+            if (scope.contains(SearchScope.DEPENDENCIES)) {
+                result.addAll(this.depsIndeces);
+            }
         }
         LOGGER.fine(String.format("ClassIndex.queries[Scope=%s, sourcePath=%s, bootPath=%s, classPath=%s] => %s\n",scope,sourcePath,bootPath,classPath,result));
         return result;
