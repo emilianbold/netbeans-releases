@@ -33,14 +33,22 @@ import java.io.IOException;
 /**
  *
  * @author Tomas Zezula
+ * Stateless => Single instance
  */
 public class LuceneIndexFactory implements IndexFactory {
 
-    public LuceneIndexFactory() {
+    //Guarded by class loader.
+    private static final LuceneIndexFactory instance = new LuceneIndexFactory();
+
+    private LuceneIndexFactory() {
     }
 
     public Index create(File cacheRoot) throws IOException {
         return LuceneIndex.create(cacheRoot);
+    }
+
+    public static LuceneIndexFactory getInstance () {        
+        return instance;
     }
 
 }
