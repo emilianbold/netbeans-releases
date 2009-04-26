@@ -448,19 +448,7 @@ public final class ClassIndex {
         }
         LOGGER.fine(String.format("ClassIndex.queries[Scope=%s, sourcePath=%s, bootPath=%s, classPath=%s] => %s\n",scope,sourcePath,bootPath,classPath,result));
         return result;
-    }
-    
-    private synchronized Set<? extends URL> getOldState (final Set<SearchScope> scope) {
-        final Set<URL> result = new HashSet<URL>();
-        if (scope.contains(SearchScope.SOURCE)) {
-            result.addAll(this.oldSources);
-        }
-        if (scope.contains(SearchScope.DEPENDENCIES)) {
-            result.addAll(this.oldBoot);
-            result.addAll(this.oldCompile);
-        }
-        return result;
-    }
+    }        
     
     private void createQueriesForRoots (final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries, final Set<? super URL> oldState) {
         final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
