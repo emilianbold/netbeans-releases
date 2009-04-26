@@ -333,7 +333,6 @@ public class Commands {
                 cmd.append(contextRoot);
             }
             cmd.append(PARAM_SEPARATOR + "force=true"); // NOI18N
-            addKeepSessions(cmd,preserveSessions);
             query = cmd.toString();
         }
         
