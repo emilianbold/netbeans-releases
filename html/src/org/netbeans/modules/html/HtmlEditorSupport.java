@@ -63,7 +63,6 @@ import org.netbeans.modules.html.palette.HtmlPaletteFactory;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -76,8 +75,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.Exceptions;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
@@ -100,6 +97,9 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     
     private static final String DOCUMENT_SAVE_ENCODING = "Document_Save_Encoding";
     private static final String UTF_8_ENCODING = "UTF-8";
+
+    // only to be ever user from unit tests:
+    public static boolean showConfirmationDialog = true;
     
     /** SaveCookie for this support instance. The cookie is adding/removing
      * data object's cookie set depending on if modification flag was set/unset.
@@ -175,7 +175,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     public void open() {
         String encoding = ((HtmlDataObject)getDataObject()).getFileEncoding();
         String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
-        if (encoding != null && !isSupportedEncoding(encoding)) {
+        if (encoding != null && !isSupportedEncoding(encoding) && showConfirmationDialog) {
 //            if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
 //                feqEncoding = UTF_8_ENCODING;
 //            }
