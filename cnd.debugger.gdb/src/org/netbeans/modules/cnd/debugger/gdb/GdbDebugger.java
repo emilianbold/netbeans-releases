@@ -1090,7 +1090,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             }
         // end of ^done block
-        } else if (msg.startsWith("^running") && getState() == State.STOPPED) { // NOI18N
+        } else if (msg.startsWith("^running") && isStopped()) { // NOI18N
             setRunning();
         } else if (msg.startsWith("^error,msg=")) { // NOI18N
             msg = msg.substring(11);
@@ -1160,7 +1160,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private void validateBreakpoint(int token, Map<String, String> map) {
         boolean checked = breakpointValidation(token, map);
-        if (!checked && getState() == State.SILENT_STOP && pendingBreakpointMap.isEmpty()) {
+        if (!checked && state == State.SILENT_STOP && pendingBreakpointMap.isEmpty()) {
             // TODO: check this looks like not reachable
             setRunning();
         }
@@ -2234,6 +2234,11 @@ public class GdbDebugger implements PropertyChangeListener {
     public String evaluate(String expression) {
         // IZ:131315 (gdb may not be initialized yet)
         if (gdb == null) {
+            return null;
+        }
+
+        // IZ:161093 (do not evalue anything if not stopped)
+        if (!isStopped()) {
             return null;
         }
 

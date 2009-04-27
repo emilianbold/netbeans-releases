@@ -380,6 +380,8 @@ public class VariableFormatterEditPanel extends javax.swing.JPanel {
             }
         });
         jScrollPane1.setViewportView(childrenVariablesTable);
+        childrenVariablesTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.childrenVariablesTable.a11y.name")); // NOI18N
+        childrenVariablesTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.childrenVariablesTable.a11y.description")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addVarButton, org.openide.util.NbBundle.getMessage(VariableFormatterEditPanel.class, "VariableFormatterEditPanel.addVarButton.text")); // NOI18N
         addVarButton.addActionListener(new java.awt.event.ActionListener() {
