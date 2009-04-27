@@ -594,7 +594,14 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
             }
 
             if (ioexc != null) {
-                deleteFile(safeName);
+                try {
+                    deleteFile(safeName);
+                } catch (IOException ioe) {
+                    if (ioe.getCause() == null) {
+                        ioe.initCause(ioexc);
+                    }
+                    throw ioe;
+                }
                 throw ioexc;
             } else {
                 try {
