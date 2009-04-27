@@ -47,6 +47,9 @@ import javax.swing.text.Element;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
@@ -65,13 +68,17 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
 
     public void testPersistence() {
         int[] bookmarkLines = new int[]{1, 7, 9};
+        EditorOperator editorOper = null;
 
         openDefaultProject();
 
-        openDefaultSampleFile();
+        Node node = new Node(new SourcePackagesNode(getDefaultProjectName()),
+                "org.netbeans.test.bookmarks.BookmarksPersistenceTest|testPersistence.java"); // NOI18N
+        new OpenAction().perform(node);
+
         try {
 
-            EditorOperator editorOper = getDefaultSampleEditorOperator();
+            editorOper = new EditorOperator("testPersistence.java");
             JEditorPaneOperator txtOper = editorOper.txtEditorPane();
             Document doc = txtOper.getDocument();
 
@@ -82,20 +89,20 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
             }
 
         } finally {
-            closeFileWithDiscard();
+            editorOper.closeDiscardAll();
         }
 
-        openDefaultSampleFile();
+        new OpenAction().perform(node);
         try {
 
-            EditorOperator editorOper = getDefaultSampleEditorOperator();
+            editorOper = new EditorOperator("testPersistence.java");
             JEditorPaneOperator txtOper = editorOper.txtEditorPane();
             Document doc = txtOper.getDocument();
             BookmarkList bml = BookmarkList.get(doc);
             checkBookmarksAtLines(bml, bookmarkLines);
 
         } finally {
-            closeFileWithDiscard();
+            editorOper.closeDiscardAll();
         }
     }
 
@@ -104,9 +111,12 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
         int lineToDelete = 12;
 
         openDefaultProject();
-        openDefaultSampleFile();
-        try {
-            EditorOperator editorOper = getDefaultSampleEditorOperator();
+        Node node = new Node(new SourcePackagesNode(getDefaultProjectName()),
+                "org.netbeans.test.bookmarks.BookmarksPersistenceTest|testBookmarkMove.java"); // NOI18N        
+        new OpenAction().perform(node);
+        EditorOperator editorOper = new EditorOperator("testBookmarkMove.java");
+
+        try {            
             JEditorPaneOperator txtOper = editorOper.txtEditorPane();
             Document doc = txtOper.getDocument();
             editorOper.setCaretPosition(getLineOffset(doc, bookmarkLine));
@@ -117,7 +127,7 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
             BookmarkList bml = BookmarkList.get(doc);
             checkBookmarksAtLines(bml, new int[]{bookmarkLine - 1});
         } finally {
-            closeFileWithDiscard();
+            editorOper.closeDiscardAll();
         }
     }
 
@@ -150,11 +160,12 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
         int[] expectedLines = new int[]{9, 10, 11, 9};
 
         openDefaultProject();
+        Node node = new Node(new SourcePackagesNode(getDefaultProjectName()),
+                "org.netbeans.test.bookmarks.BookmarksPersistenceTest|testNextBookmark.java"); // NOI18N
+        new OpenAction().perform(node);
+        EditorOperator editorOper = new EditorOperator("testNextBookmark.java");
 
-        openDefaultSampleFile();
         try {
-
-            EditorOperator editorOper = getDefaultSampleEditorOperator();
             JEditorPaneOperator txtOper = editorOper.txtEditorPane();
             Document doc = txtOper.getDocument();
             for (int i = 0; i < bookmarkLines.length; i++) {
@@ -169,7 +180,7 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
                 assertEquals("Caret is at bad location", j, actLine);
             }
         } finally {
-            closeFileWithDiscard();
+           editorOper.closeDiscardAll();
         }
     }
 
@@ -178,11 +189,11 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
         int[] expectedLines = new int[]{11, 10, 9, 11};
 
         openDefaultProject();
-
-        openDefaultSampleFile();
+        Node node = new Node(new SourcePackagesNode(getDefaultProjectName()),
+                "org.netbeans.test.bookmarks.BookmarksPersistenceTest|testPreviousBookmark.java"); // NOI18N
+        new OpenAction().perform(node);
+        EditorOperator editorOper = new EditorOperator("testPreviousBookmark.java");
         try {
-
-            EditorOperator editorOper = getDefaultSampleEditorOperator();
             JEditorPaneOperator txtOper = editorOper.txtEditorPane();
             Document doc = txtOper.getDocument();
             for (int i = 0; i < bookmarkLines.length; i++) {
@@ -197,7 +208,7 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
                 assertEquals("Caret is at bad location", j, actLine);
             }
         } finally {
-            closeFileWithDiscard();
+            editorOper.closeDiscardAll();
         }
     }
 
