@@ -58,6 +58,7 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
         System.setProperty("cnd.smart.parse", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         System.setProperty("cnd.modelimpl.parser.threads", "1");
+        System.setProperty("cnd.cache.file.state","false");
         ParseStatistics.getInstance().setEnabled(true);
         super.setUp();
     }
