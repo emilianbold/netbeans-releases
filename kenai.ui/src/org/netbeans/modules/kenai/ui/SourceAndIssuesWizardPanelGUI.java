@@ -179,10 +179,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         // XXX here will be some condition ???
         showRepoOnKenaiGUI();
         showIssuesOnKenaiGUI();
+        createChatRoom.setVisible(false);
+        chatSeparator.setVisible(false);
         if (!System.getProperty("kenai.com.url", "https://kenai.com").endsWith("testkenai.com")) {
-            createChatRoom.setVisible(false);
             createChatRoom.setSelected(false);
-            chatSeparator.setVisible(false);
         }
 
     }
