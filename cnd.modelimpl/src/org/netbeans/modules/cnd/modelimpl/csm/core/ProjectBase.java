@@ -1146,16 +1146,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             FileImpl csmFile = findFile(new File(file.toString()), FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
             APTPreprocHandler.State newState = preprocHandler.getState();
+            APTPreprocHandler.State cachedOut = null;
             if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
-                APTPreprocHandler.State cachedOut = csmFile.getCachedVisitedState(newState);
+                cachedOut = csmFile.getCachedVisitedState(newState);
                 if (cachedOut != null) {
-                    preprocHandler.setState(cachedOut);
+                    preprocHandler.getMacroMap().setState(APTHandlersSupport.extractMacroMapState(cachedOut));
                     return csmFile;
                 }
             }
 
             APTFile aptLight = getAPTLight(csmFile);
-
             if (aptLight == null) {
                 // in the case file was just removed
                 Utils.LOG.info("Can not find or build APT for file " + file); //NOI18N
@@ -1163,27 +1163,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
 
             FileContainer.Entry entry = getFileContainer().getEntry(csmFile.getBuffer().getFile());
-
             if (entry == null) {
-                // since file container can return empty container the entry can be null.
-                StringBuilder buf = new StringBuilder("File container does not have file "); //NOI18N
-                buf.append("["+file+"]"); //NOI18N
-                if (getFileContainer() == FileContainer.empty()) {
-                    buf.append(" because file container is EMPTY."); //NOI18N
-                } else {
-                    buf.append("."); //NOI18N
-                }
-                if (isDisposing()) {
-                    buf.append("\n\tIt is very strange but project is disposing."); //NOI18N
-                }
-                if (!isValid()) {
-                    buf.append("\n\tIt is very strange but project is invalid."); //NOI18N
-                }
-                Status st = getStatus();
-                if (st != null) {
-                    buf.append("\n\tProject "+toString()+" has status "+st+"."); //NOI18N
-                }
-                Utils.LOG.info(buf.toString());
+                entryNotFoundMessage(file);
                 return csmFile;
             }
 
@@ -1242,7 +1223,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, pcState);
             walker.visit();
             pcState.trimSize();
-            csmFile.cacheVisitedState(newState, preprocHandler);
+            if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
+                csmFile.cacheVisitedState(newState, preprocHandler);
+            }
 
             if (comparisonResult == ComparisonResult.WORSE) {
                 if (TRACE_FILE && FileImpl.traceFile(file)) {
@@ -1361,6 +1344,28 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 getFileContainer().put();
             }
         }
+    }
+
+    private void entryNotFoundMessage(CharSequence file) {
+        // since file container can return empty container the entry can be null.
+        StringBuilder buf = new StringBuilder("File container does not have file "); //NOI18N
+        buf.append("[" + file + "]"); //NOI18N
+        if (getFileContainer() == FileContainer.empty()) {
+            buf.append(" because file container is EMPTY."); //NOI18N
+        } else {
+            buf.append("."); //NOI18N
+        }
+        if (isDisposing()) {
+            buf.append("\n\tIt is very strange but project is disposing."); //NOI18N
+        }
+        if (!isValid()) {
+            buf.append("\n\tIt is very strange but project is invalid."); //NOI18N
+        }
+        Status st = getStatus();
+        if (st != null) {
+            buf.append("\n\tProject " + toString() + " has status " + st + "."); //NOI18N
+        }
+        Utils.LOG.info(buf.toString());
     }
 
     private static void traceIncludeStates(CharSequence title,

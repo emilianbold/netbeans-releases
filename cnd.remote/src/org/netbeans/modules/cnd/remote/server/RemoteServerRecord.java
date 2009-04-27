@@ -212,7 +212,16 @@ public class RemoteServerRecord implements ServerRecord {
 
     @Override
     public String getServerDisplayName() {
-        return (displayName != null && displayName.length() > 0) ? displayName : executionEnvironment.getHost();
+        if (displayName == null || displayName.length() == 0) {
+            // TODO: should we add ExecutionEnvironment.getHostDisplayName() ?
+            if (executionEnvironment.isLocal()) {
+                return "localhost"; //NOI18N
+            } else {
+                return executionEnvironment.getHost();
+            }
+        } else {
+            return displayName;
+        }
     }
 
     public void setDisplayName(String displayName) {

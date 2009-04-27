@@ -566,6 +566,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (reportParse || logState || TraceFlags.DEBUG) {
                 System.err.printf("#markMoreParseNeeded %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
             }
+            clearStateCache();
             switch (state) {
                 case BEING_PARSED:
                 case PARSED:
@@ -1069,6 +1070,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
             }
         }
+        clearStateCache();
         lastParsed = Math.max(System.currentTimeMillis(), fileBuffer.lastModified());
         lastMacroUsages = null;
         if (TraceFlags.TRACE_VALIDATION) {

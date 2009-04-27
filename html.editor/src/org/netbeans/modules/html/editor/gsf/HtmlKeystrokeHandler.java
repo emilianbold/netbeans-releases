@@ -47,6 +47,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -185,7 +186,9 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         //include the text under the carat to the ranges.
         //I need to do it this lexical way since we do not
         //add the text nodes into the ast due to performance reasons
-        TokenSequence ts = HtmlSyntaxSupport.getJoinedHtmlSequence(info.getSnapshot().getSource().getDocument(true));
+        Document doc = info.getSnapshot().getSource().getDocument(true);
+        TokenHierarchy hierarchy = TokenHierarchy.get(doc);
+        TokenSequence ts = HtmlSyntaxSupport.getJoinedHtmlSequence(doc);
         if(ts == null) {
             return Collections.emptyList();
         }
@@ -196,6 +199,14 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
             if(token.id() == HTMLTokenId.TEXT) {
                 int from = ts.offset();
                 int to = from + token.text().length();
+
+                //properly compute end offset of joined tokens
+                List<Token> tokenParts = token.joinedParts();
+                if(tokenParts != null) {
+                    //get last part token
+                    Token last = tokenParts.get(tokenParts.size() - 1);
+                    to = last.offset(hierarchy) + last.length();
+                }
 
                 //first add the range of trimmed text, then the whole text range
                 CharSequence text = token.text();
@@ -211,7 +222,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
                 for(int i = text.length() - 1; i >= 0 ; i--) {
                     char ch = text.charAt(i);
                     if(!Character.isWhitespace(ch)) {
-                        trimmed_to = from + i + 1;
+                        trimmed_to = to - ((text.length() - 1) - i);
                         break;
                     }
                 }
@@ -220,7 +231,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
                     ranges.add(new OffsetRange(trimmed_from, trimmed_to));
                 }
 
-                ranges.add(new OffsetRange(ts.offset(), ts.offset() + token.length()));
+                ranges.add(new OffsetRange(from, to));
             }
         }
 

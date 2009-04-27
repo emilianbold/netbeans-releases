@@ -49,6 +49,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.jrubyparser.ast.AliasNode;
@@ -96,6 +98,7 @@ import org.netbeans.modules.ruby.elements.IndexedField;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * Various utilities for operating on the JRuby ASTs that are used
@@ -108,15 +111,26 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class AstUtilities {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(AstUtilities.class.getName());
     /**
      * Whether or not the prefixes for defs should be highlighted, e.g. in def
      * HTTP.foo should "HTTP." be highlighted, or just the foo portion?
      */
     private static final boolean INCLUDE_DEFS_PREFIX = false;
 
+    /**
+     * Tries to cast the given <code>result</code> to <code>RubyParseResult</code> 
+     * and returns it. Returns <code>null</code> if it wasn't an instance of <code>RubyParseResult</code>.
+     * 
+     * @param result
+     * @return
+     */
     public static RubyParseResult getParseResult(Parser.Result result) {
-        assert result instanceof RubyParseResult : "Expecting RubyParseResult, but have " + result; //NOI18N
+        if (!(result instanceof RubyParseResult)) {
+            LOGGER.log(Level.WARNING, "Expected RubyParseResult, but have {0}", result);
+            return null;
+        }
         return (RubyParseResult) result;
     }
 

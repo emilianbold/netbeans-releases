@@ -46,12 +46,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap.StateImpl;
+import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap.FileStateImpl;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * utilities for working with APT states (macro-state, include-state, preproc-state)
@@ -98,6 +101,31 @@ public class APTHandlersSupportImpl {
         Map<CharSequence, APTMacro> tmpMap = new HashMap<CharSequence, APTMacro>(128);
         APTMacroMapSnapshot.addAllMacros(macro.snap, tmpMap);
         return tmpMap;
+    }
+
+    public static APTBaseMacroMap.State extractMacroMapState(APTPreprocHandler.State state){
+        assert state != null;
+        return (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
+    }
+
+    public static String getMacroMapID(APTPreprocHandler.State state){
+        assert state != null;
+        APTFileMacroMap.FileStateImpl macro = (FileStateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
+        Map<CharSequence, APTMacro> tree = new TreeMap<CharSequence, APTMacro>();
+        APTMacroMapSnapshot.addAllMacros(macro.snap, tree);
+        StringBuilder buf = new StringBuilder();
+        buf.append(macro.sysMacroMap.hashCode());
+        buf.append(";");
+        for(Map.Entry<CharSequence, APTMacro> entry : tree.entrySet()){
+            buf.append((char)entry.getValue().getKind().ordinal());
+            buf.append(entry.getValue().getName().getOffset());
+            buf.append(entry.getKey());
+            buf.append('=');
+            buf.append(APTUtils.debugString(entry.getValue().getBody()));
+            buf.append(';');
+        }
+        return buf.toString();
+
     }
 
     public static int getMacroSize(APTPreprocHandler.State state) {

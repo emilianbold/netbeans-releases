@@ -461,6 +461,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
             Node n = master.getNodeDelegate ();
             n.addNodeListener (org.openide.nodes.NodeOp.weakNodeListener (this, n));
             Mutex.EVENT.readAccess(this);
+            getModel().addChangeListener(this);
         }
         
         protected @Override boolean processKeyBinding(KeyStroke ks,
@@ -565,12 +566,13 @@ public class MenuBar extends JMenuBar implements Externalizable {
         /** Overriden to provide better strategy for placing the JMenu on the screen on non Mac platforms.
         * @param b a boolean value -- true to make the menu visible, false to hide it
         */
+        @Override
         public void setPopupMenuVisible(boolean b) {
             if (!Utilities.isMac()) {
                 boolean isVisible = isPopupMenuVisible();
-
+                
                 if (b != isVisible) {
-                    if ((b == true) && isShowing()) {
+                    if (b) {
                         doInitialize();
                         dynaModel.checkSubmenu(this);
                     }
