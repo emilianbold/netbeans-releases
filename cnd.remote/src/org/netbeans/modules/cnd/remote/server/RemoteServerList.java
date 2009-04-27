@@ -69,7 +69,7 @@ public class RemoteServerList implements ServerListImplementation {
     
     private static final String CND_REMOTE = "cnd.remote"; // NOI18N
     private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
-    private static final String SERVER_RECORD_SEPARATOR = "|"; //NOI18N
+    private static final char SERVER_RECORD_SEPARATOR = '|'; //NOI18N
     private static final String SERVER_LIST_SEPARATOR = ","; //NOI18N
     private static final String DEFAULT_INDEX = CND_REMOTE + ".default"; // NOI18N
     
@@ -93,16 +93,16 @@ public class RemoteServerList implements ServerListImplementation {
                 RemoteSyncFactory.getDefault(), // doesn't make a lot of sense here... but anyhow better than null
                 false, RemoteServerRecord.State.ONLINE);
         if (slist != null) {
-            for (String hostKey : slist.split(SERVER_LIST_SEPARATOR)) { // NOI18N
+            for (String serverString : slist.split(SERVER_LIST_SEPARATOR)) { // NOI18N
                 // there moght be to forms:
                 // 1) user@host:port
                 // 2) user@host:port|DisplayName
                 // 3) user@host:port|DisplayName|syncID
                 String displayName = null;
                 RemoteSyncFactory syncFactory = RemoteSyncFactory.getDefault();
-                final String[] arr = slist.split(SERVER_RECORD_SEPARATOR);
+                final String[] arr = serverString.split("\\" + SERVER_RECORD_SEPARATOR);
                 CndUtils.assertTrue(arr.length > 0);
-                hostKey = arr[0];
+                String hostKey = arr[0];
                 if (arr.length > 1) {
                     displayName = arr[1];
                 }
@@ -223,7 +223,9 @@ public class RemoteServerList implements ServerListImplementation {
         // ONLINE hosts.
         String slist = getPreferences().get(REMOTE_SERVERS, null);
         String hostKey = ExecutionEnvironmentFactory.toUniqueID(execEnv);
-        String preferencesKey = hostKey + SERVER_RECORD_SEPARATOR + ((displayName == null) ? "" : displayName);
+        String preferencesKey = hostKey + SERVER_RECORD_SEPARATOR + 
+                ((displayName == null) ? "" : displayName) + SERVER_RECORD_SEPARATOR +
+                syncFactory.getID();
         if (slist == null) {
             getPreferences().put(REMOTE_SERVERS, preferencesKey);
         } else {
