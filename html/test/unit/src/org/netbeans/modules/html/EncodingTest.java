@@ -105,6 +105,7 @@ public class EncodingTest extends NbTestCase {
     /** Loades a file that does not specify an encoding.
      */
     public void testLoadOfWrongEncoding () throws Exception {
+        HtmlEditorSupport.showConfirmationDialog = false;
         checkEncoding (null, "wrongencoding.html", false);
     }
     
