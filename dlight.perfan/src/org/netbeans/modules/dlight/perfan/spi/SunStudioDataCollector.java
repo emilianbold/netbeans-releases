@@ -52,6 +52,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
@@ -386,8 +387,10 @@ public class SunStudioDataCollector
             List<String> args = new ArrayList<String>();
 
             // Disregard collect's output...
-            args.add("-O"); // NOI18N
-            args.add("/dev/null"); // NOI18N
+            if (!log.isLoggable(Level.FINEST)) {
+                args.add("-O"); // NOI18N
+                args.add("/dev/null"); // NOI18N
+            }
 
             if (collectedInfo.contains(CollectedInfo.SYNCHRONIZATION) ||
                     collectedInfo.contains(CollectedInfo.SYNCSUMMARY)) {
