@@ -114,6 +114,8 @@ public class PHPFormatter implements Formatter {
     }
 
     public void reformat(Context context, ParserResult info) {
+        LOG.log(Level.FINE, "PHPFormatter snapshot: \n''{0}''\n", info.getSnapshot().getText().toString()); //NOI18N
+
         Map<Position, Integer> indentLevels = new LinkedHashMap<Position, Integer>();
         IndentLevelCalculator indentCalc = new IndentLevelCalculator(context.document(), indentLevels);
         PHPParseResult phpParseResult = ((PHPParseResult) info);
