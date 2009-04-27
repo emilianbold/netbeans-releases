@@ -90,8 +90,10 @@ public class KeywordsPanel extends javax.swing.JPanel {
         keywordsLabel = new javax.swing.JLabel();
 
         scrollPane.setViewportView(keywordsList);
+        keywordsList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KeywordsPanel.class, "KeywordsPanel.keywordsList.AccessibleContext.accessibleDescription")); // NOI18N
 
-        keywordsLabel.setText(org.openide.util.NbBundle.getMessage(KeywordsPanel.class, "KeywordsPanel.keywordsLabel.text")); // NOI18N
+        keywordsLabel.setLabelFor(keywordsList);
+        org.openide.awt.Mnemonics.setLocalizedText(keywordsLabel, org.openide.util.NbBundle.getMessage(KeywordsPanel.class, "KeywordsPanel.keywordsLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -104,7 +106,7 @@ public class KeywordsPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(keywordsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE)))
+                        .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -116,9 +118,11 @@ public class KeywordsPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(keywordsLabel)
-                        .addContainerGap(103, Short.MAX_VALUE))
+                        .addContainerGap(105, Short.MAX_VALUE))
                     .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)))
         );
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KeywordsPanel.class, "KeywordsPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     public String[] getSelectedKeywords() {

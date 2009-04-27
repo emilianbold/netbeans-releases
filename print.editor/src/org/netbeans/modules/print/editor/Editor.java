@@ -128,6 +128,32 @@ public final class Editor implements ActionListener {
             return iterators;
         }
 
+        private String getString(Color color) {
+            return "(" + color.getRed() + ", " + color.getGreen() + ", " + color.getBlue() + ")"; // NOI18N
+        }
+
+        private String getString(Font font) {
+            String style = ""; // NOI18N
+
+            if (font.isBold()) {
+                style += "bold"; // NOI18N
+            }
+            if (font.isItalic()) {
+                style += " italic"; // NOI18N
+            } else {
+                style += " plain"; // NOI18N
+            }
+            return "[" + font.getName() + ", " + style + ", " + font.getSize() + "]"; // NOI18N
+        }
+
+        private void out() {
+            System.out.println();
+        }
+
+        private void out(Object object) {
+            System.out.println("*** " + object); // NOI18N
+        }
+
         private AttributedCharacters myCharacters;
         private List<AttributedCharacters> myCharactersList;
     }

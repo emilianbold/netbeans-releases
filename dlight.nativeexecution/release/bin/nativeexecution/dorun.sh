@@ -1,6 +1,6 @@
 #!/bin/sh
 PATH=/bin:/usr/bin:${PATH}
-PROG=`basename $0`
+PROG=`basename '$0'`
 USAGE="usage: ${PROG} -p pidfile -e envfile [-w work dir] [-x prompt] ..."
 PROMPT=NO
 

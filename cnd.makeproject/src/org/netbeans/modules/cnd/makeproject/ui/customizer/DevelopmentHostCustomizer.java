@@ -75,7 +75,7 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
      */
     public DevelopmentHostCustomizer(DevelopmentHostConfiguration dhconf, PropertyEnv propertyEnv) {
         super(NbBundle.getMessage(DevelopmentHostCustomizer.class, 
-                dhconf.isConfigured() ? "ERR_NothingToDo" : "ERR_NeedToInitializeRemoteHost", dhconf.getName()), // NOI18N
+                dhconf.isConfigured() ? "ERR_NothingToDo" : "ERR_NeedToInitializeRemoteHost", dhconf.getDisplayName(false)), // NOI18N
                 dhconf.isConfigured() ? INFORMATION_MESSAGE : QUESTION_MESSAGE,
                 DEFAULT_OPTION, null, new Object[] { });
         this.dhconf = dhconf;

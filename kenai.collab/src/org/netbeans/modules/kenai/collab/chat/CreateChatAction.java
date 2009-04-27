@@ -125,9 +125,12 @@ public class CreateChatAction extends AbstractAction {
                                         SwingUtilities.invokeLater(new Runnable() {
 
                                             public void run() {
-                                                ChatTopComponent.findInstance().addChat(new ChatPanel(KenaiConnection.getDefault().createChat(f)));
+                                                final ChatTopComponent chatTc = ChatTopComponent.findInstance();
+                                                chatTc.open();
+                                                chatTc.addChat(new ChatPanel(KenaiConnection.getDefault().createChat(f)));
                                                 mainWindow.setCursor(Cursor.getDefaultCursor());
                                                 progress.finish();
+                                                chatTc.requestActive();
                                             }
                                         });
                                     } catch (KenaiException kenaiException) {
