@@ -38,60 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package sample1;
 
-package org.netbeans.jellytools.modules.debugger.actions;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperator;
-import org.netbeans.junit.NbTestSuite;
-
-/** Test DeleteAllBreakpointsAction.
- *
- * @author Martin.Schovanek@sun.com
+/**
+ * This is a sample class used in Jellytools tests
  */
-public class DeleteAllBreakpointsActionTest extends JellyTestCase {
+public class SampleClass1 {
 
-    /** constructor required by JUnit
-     * @param testName method name to be used as testcase
+    /** Creates a new instance of SampleClass1 */
+    public SampleClass1() {
+    }
+
+    /**
+     * @param args the command line arguments
      */
-    public DeleteAllBreakpointsActionTest(String testName) {
-        super(testName);
+    public static void main(String[] args) {
     }
-    
-    /** method used for explicit testsuite definition
-     */
-    public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new DeleteAllBreakpointsActionTest("testPerformPopup"));
-        // XXX fails on Mac OS X
-        // suite.addTest(new DeleteAllBreakpointsActionTest("testPerformShortcut"));
-        return suite;
-         */
-        return createModuleTest(DeleteAllBreakpointsActionTest.class);
-    }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
-    /** Test performMenu() method. */
-    public void testPerformPopup() {
-        BreakpointsWindowOperator window = BreakpointsWindowOperator.invoke();
-        new DeleteAllBreakpointsAction().performPopup(window);
-        window.close();
-    }
-    
-    /** Test performShortcut(). */
-    public void testPerformShortcut() {
-        new DeleteAllBreakpointsAction().performShortcut();
-        new BreakpointsWindowOperator().close();
-    }
+
 }
+

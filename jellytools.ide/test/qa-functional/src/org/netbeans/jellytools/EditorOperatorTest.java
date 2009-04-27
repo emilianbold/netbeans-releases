@@ -46,6 +46,8 @@ import javax.swing.text.JTextComponent;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.actions.DockWindowAction;
+import org.netbeans.jellytools.actions.UndockWindowAction;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -66,9 +68,11 @@ public class EditorOperatorTest extends JellyTestCase {
 
     public static final String[] tests = new String[] {
                 "testTxtEditorPane",
+                "testUndockWindow",
                 "testLblRowColumn",
                 "testLblStatusBar",
                 "testLblInputMode",
+                "testDockWindow",
                 "testGetText",
                 "testContains",
                 "testSelect",
@@ -164,7 +168,17 @@ public class EditorOperatorTest extends JellyTestCase {
         String text = eo.txtEditorPane().getText();
         assertTrue("Wrong editor pane found.", text.indexOf(SAMPLE_CLASS_1) != -1);
     }
-    
+
+    /**
+     * More than a test this is here, because the following three tests (testLblRowColumn(),
+     * testLblInputMode() and testLblStatusBar()) fail if the editor window is docked. When docked,
+     * these three labels are a part of MainWindow.     *
+     */
+    public void testUndockWindow()
+    {
+        (new UndockWindowAction()).perform();
+    }
+
     /** Test of lblRowColumn method. */
     public void testLblRowColumn() {
         assertEquals("1:1", eo.lblRowColumn().getText());
@@ -196,6 +210,14 @@ public class EditorOperatorTest extends JellyTestCase {
             fail("Error in reflection operations: "+e.getMessage());
         }
         assertEquals("Wrong label found.", expected, eo.lblStatusBar().getText());
+    }
+
+    /**
+     * Dock after testing the previous three labels.
+     */
+    public void testDockWindow()
+    {
+        (new DockWindowAction()).perform();
     }
      
     /** Test of getText method. */

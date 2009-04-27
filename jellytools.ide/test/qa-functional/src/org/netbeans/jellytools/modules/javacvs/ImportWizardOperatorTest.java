@@ -52,6 +52,7 @@ import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
+import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -61,7 +62,11 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */ 
 public class ImportWizardOperatorTest extends JellyTestCase {
-    
+
+    public static final String[] tests = new String[] {
+        "testInvoke", "testSetCVSRoot", "testFolderToImport", "testFinish"
+    };
+
     /** Use for internal test execution inside IDE
      * @param args command line arguments
      */
@@ -89,6 +94,7 @@ public class ImportWizardOperatorTest extends JellyTestCase {
         "testFinish");
          */
         //comment out for now
+        //return createModuleTest(ImportWizardOperatorTest.class, tests);
         return new TestSuite();
     }
 

@@ -66,6 +66,7 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.NewJavaFileWizardOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OptionsOperator;
@@ -253,7 +254,7 @@ public class IDEValidation extends JellyTestCase {
         String javaClassesLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes");
         // "Java Package"
         String packageLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Package");
-        NewFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, packageLabel, null, SAMPLE1_PACKAGE_NAME);
+        NewJavaFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, packageLabel, null, SAMPLE1_PACKAGE_NAME);
         // wait package node is created
         Node sample1Node = new Node(new SourcePackagesNode(SAMPLE_PROJECT_NAME), SAMPLE1_PACKAGE_NAME);
         
@@ -1181,7 +1182,7 @@ public class IDEValidation extends JellyTestCase {
         String javaClassesLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes");
         // "Java Package"
         String packageLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Package");
-        NewFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, packageLabel, null, "xml"); // NOI18N
+        NewJavaFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, packageLabel, null, "xml"); // NOI18N
         Node xmlNode = new Node(new SourcePackagesNode(SAMPLE_PROJECT_NAME), "xml"); //NOI18N
         // "XML"
         String xmlCategory = Bundle.getString("org.netbeans.api.xml.resources.Bundle", "Templates/XML");

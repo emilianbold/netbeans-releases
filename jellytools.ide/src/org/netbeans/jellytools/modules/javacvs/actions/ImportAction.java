@@ -52,6 +52,10 @@ public class ImportAction extends ActionNoBlock {
     /** "Versioning" menu item. */
     public static final String VERSIONING_ITEM = Bundle.getStringTrimmed(
            "org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
+
+    public static final String TEAM_ITEM = Bundle.getStringTrimmed(
+           "org.netbeans.modules.versioning.Bundle", "Menu/Versioning");
+
     /** "CVS" menu item. */
     public static final String CVS_ITEM = Bundle.getStringTrimmed(
                 "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
@@ -65,7 +69,7 @@ public class ImportAction extends ActionNoBlock {
     
     /** Creates new ImportAction instance. */
     public ImportAction() {
-        super(VERSIONING_ITEM+"|"+CVS_ITEM+"|"+IMPORT_ITEM, VERSIONING_ITEM+"|"+IMPORT_CVS_ITEM);
+        super(TEAM_ITEM+"|"+CVS_ITEM+"|"+IMPORT_ITEM, VERSIONING_ITEM+"|"+IMPORT_CVS_ITEM);
     }
 }
 

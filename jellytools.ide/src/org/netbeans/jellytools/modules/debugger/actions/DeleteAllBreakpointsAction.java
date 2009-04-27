@@ -40,7 +40,6 @@
  */
 package org.netbeans.jellytools.modules.debugger.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 

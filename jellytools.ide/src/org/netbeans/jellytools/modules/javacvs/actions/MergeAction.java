@@ -52,7 +52,7 @@ public class MergeAction extends ActionNoBlock {
 
     /** "Versioning" menu item. */
     private static final String VERSIONING_ITEM = Bundle.getStringTrimmed(
-           "org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
+           "org.netbeans.modules.versioning.Bundle", "Menu/Versioning");
     // "CVS"
     private static final String CVS_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",

@@ -50,7 +50,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 public class CheckoutAction extends ActionNoBlock {
     /** "Versioning" menu item. */
     public static final String VERSIONING_ITEM = Bundle.getStringTrimmed(
-           "org.netbeans.modules.versioning.Bundle", "Menu/Window/Versioning");
+           "org.netbeans.modules.versioning.Bundle", "Menu/Versioning");
     /** "CVS" menu item. */
     public static final String CVS_ITEM = Bundle.getStringTrimmed(
                 "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
