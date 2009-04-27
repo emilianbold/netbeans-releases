@@ -102,6 +102,8 @@ public final class HgURL {
 
     }
     
+    public static final HgURL NO_URL = new HgURL();
+
     private static final char SEGMENT_SEPARATOR = '/';
     private static final String PASSWORD_REPLACEMENT = "****";          //NOI18N
     private static final String hexadecimalChars = "0123456789abcdef";  //NOI18N
@@ -235,6 +237,18 @@ public final class HgURL {
         for (int i = from; i < to; i++) {
             buf.append(s.charAt(i) | 0x20);
         }
+    }
+
+    private HgURL() {
+        scheme = null;
+        username = null;
+        password = null;
+        host = null;
+        port = -1;
+        path = null;
+        rawPath = null;
+        rawQuery = null;
+        rawFragment = null;
     }
 
     public HgURL(File file) {
@@ -477,9 +491,19 @@ public final class HgURL {
             // Workaround for http://www.selenic.com/mercurial/bts/issue776
             // Do not use file:/ or file:/// in local file URIs
             hgCommandForm = isFile() ? getFilePath()
-                                     : toUrlString(false, false);
+                                     : toUrlString();
         }
         return hgCommandForm;
+    }
+
+    public String toHgCommandUrlStringWithoutUserInfo() {
+        return isFile() ? getFilePath()
+                        : toUrlStringWithoutUserInfo();
+    }
+
+    public String toHgCommandStringWithMaskedPassword() {
+        return isFile() ? getFilePath()
+                        : toUrlString(false, true);
     }
 
     public URL toURL() {
@@ -493,6 +517,10 @@ public final class HgURL {
     }
 
     public String toCompleteUrlString() {
+        return toUrlString();
+    }
+
+    public String toUrlString() {
         return toUrlString(false, false);
     }
 
@@ -501,6 +529,10 @@ public final class HgURL {
     }
 
     private String toUrlString(boolean stripUserinfo, boolean maskPassword) {
+        if (this == NO_URL) {
+            return "";                                                  //NOI18N
+        }
+
         boolean authorityPartSeparationPending;
 
         StringBuilder buf = new StringBuilder(128);
