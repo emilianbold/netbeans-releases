@@ -344,7 +344,7 @@ public class VariablesTableModel implements TableModel, Constants {
         return c.substring (i + 1);
     }
     
-    private static String getMessage (InvalidExpressionException e) {
+    static String getMessage (InvalidExpressionException e) {
         String m = e.getLocalizedMessage ();
         if (m == null) {
             m = e.getMessage ();
