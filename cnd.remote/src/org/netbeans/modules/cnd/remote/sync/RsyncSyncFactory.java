@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.api.remote;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Map;
+package org.netbeans.modules.cnd.remote.sync;
+
+import java.io.File;
+import java.io.PrintWriter;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 
 /**
- * An interface to allow cnd modules to run a RemoteCommandSupport from cnd.remote.
- * 
- * @author gordonp
+ *
+ * @author Vladimir Kvashin
  */
-public interface InteractiveCommandProvider {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=200)
+public class RsyncSyncFactory extends RemoteSyncFactory {
 
-    /**
-     * Run a remote commane via cnd.remote's RemoteInteractiveCommandSupport.
-     *
-     * @param execEnv The user and remote host (user@host)
-     * @param cmd The command to run
-     * @param env The (possibly null) environment to send to the remote command
-     * @return true if the command started, otherwise false
-     */
-    public boolean run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env);
+    @Override
+    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
+        return new SharedSyncWorker(localDir, executionEnvironment, out, err);
+    }
 
-    public boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env);
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(getClass(), "RSYNC_Factory_Name");
+    }
+    
+    @Override
+    public String getDescription() {
+        return NbBundle.getMessage(getClass(), "RSYNC_Factory_Description");
+    }
 
-    public InputStream getInputStream() throws IOException;
+    @Override
+    public String getID() {
+        return "scp"; //NOI18N
+    }
 
-    public OutputStream getOutputStream() throws IOException;
-
-    public void disconnect();
-
-    public int waitFor();
-
-    public int getExitStatus();
-
+    @Override
+    public boolean isApplicable(ExecutionEnvironment execEnv) {
+        return true;
+    }
 }

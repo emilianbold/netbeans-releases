@@ -48,7 +48,6 @@ import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiActivity;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
@@ -140,7 +139,7 @@ public class ChatNotifications {
     public synchronized  MessagingHandleImpl getMessagingHandle(String id) {
         MessagingHandleImpl handle=groupMessages.get(id);
         if (handle==null) {
-            handle =new MessagingHandleImpl();
+            handle =new MessagingHandleImpl(id);
             groupMessages.put(id, handle);
             handle.setMessageCount(0);
         }

@@ -287,7 +287,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         }
     }
 
-    private void updateCache(int startOffset, int endOffset, OffsetsBag bag) {
+    private void updateCache(final int startOffset, final int endOffset, OffsetsBag bag) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Updating cache: <" + startOffset + ", " + endOffset + ">"); //NOI18N
         }
@@ -298,8 +298,56 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             }
 
             try {
-                HighlightsSequence seq = layers[i].getHighlights(startOffset, endOffset);
-                bag.addAllHighlights(seq);
+                final HighlightsSequence seq = layers[i].getHighlights(startOffset, endOffset);
+                final int layerIndex = i; //saving this so we can debug corrupt layers (aka the ones that need clipping)
+                final HighlightsContainer currentLayerObject = layers[i];
+                bag.addAllHighlights(new HighlightsSequence() {
+
+                    int start = -1, end = -1;
+                    public boolean moveNext() {
+                        boolean hasNext = seq.moveNext();
+                        //XXX: the problem here is if the sequence we are wrapping is sorted by startOffset.
+                        // In practice I think it is, but I cannot afford to make that assumption now.
+                        // So I have to check both boundaries, not only start and end offset separately.
+                        boolean retry = hasNext;
+                        while(retry){
+                            start = seq.getStartOffset();
+                            end = seq.getEndOffset();
+                            assert start <=end : "Start should come before the end offset in the sequence"; //NOI18N
+
+                            if (start > endOffset || end < startOffset) {
+                                //this highlight is totally outside our rage, there is nothing we can clip, we must retry
+                                LOG.warning("Corrupt layer found (#" + layerIndex + ":" + currentLayerObject + "). Start offset " + start + " and end offset "+end+" are outside the range [" + startOffset + "," + endOffset+"], skipping."); //NOI18N
+                                retry = hasNext = seq.moveNext();
+                            }else{
+                                retry = false;
+                            }
+                        }
+                        if(hasNext){
+                            if (start < startOffset) {
+                                LOG.warning("Corrupt layer found (#" + layerIndex + ":" + currentLayerObject + "). Start offset " + start + " should be >=" + startOffset + ". Clipping..."); //NOI18N
+                                start = startOffset;
+                            }
+                            if (end > endOffset) {
+                                LOG.warning("Corrupt layer found (#" + layerIndex + ":" + currentLayerObject + "). End offset " + end + " should be <=" + endOffset + ". Clipping..."); //NOI18N
+                                end = endOffset;
+                            }
+                        }
+                        return hasNext;
+                    }
+
+                    public int getStartOffset() {
+                        return start;
+                    }
+
+                    public int getEndOffset() {
+                        return end;
+                    }
+
+                    public AttributeSet getAttributes() {
+                        return seq.getAttributes();
+                    }
+                });
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine(dumpLayerHighlights(layers[i], startOffset, endOffset));
                 }

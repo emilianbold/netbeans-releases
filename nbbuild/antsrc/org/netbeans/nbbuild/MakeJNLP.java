@@ -184,7 +184,34 @@ public class MakeJNLP extends Task {
     public void setSignJars(boolean s) {
         this.signJars = s;
     }
+    
+    private boolean processJarVersions = false;
+    /**
+     * Whether to add versions and sizes of jars into jnlp files. Defaults to false
+     * (if not supplied).
+     * @param b
+     */
+    public void setProcessJarVersions(boolean b) {
+      this.processJarVersions = b;
+    }
+    
+    private HashMap<String, String> jarVersions;
+    /**
+     * Explicit definition of jar file versions (for jars without versions specified
+     * in manifest file)
+     * @param jarVersions
+     */
+    public void setJarVersions(HashMap<String, String> jarVersions) {
+      this.jarVersions = jarVersions;
+    }
+    
+    private HashSet<String> nativeLibraries;
+    public void setNativeLibraries(HashSet<String> libs) {
+      this.nativeLibraries = libs;
+    }
 
+    private HashSet<File> jarDirectories;
+    
     /**
      * Signs or copies the given files according to the signJars variable value.
      */
@@ -194,7 +221,6 @@ public class MakeJNLP extends Task {
             log("Localization file " + from + " is referenced, but cannot be found. Skipping.", Project.MSG_WARN);
             return;
         }
-        
         if (signJars) {
             getSignTask().setJar(from);
             if (to != null) {
@@ -208,6 +234,12 @@ public class MakeJNLP extends Task {
             copy.setFile(from);
             copy.setTofile(to);
             copy.execute();
+        }        
+        if (processJarVersions) {
+          if (jarDirectories == null) {
+            jarDirectories = new HashSet<File>();
+          }
+          jarDirectories.add(new File(to.getParent()));
         }
     }
     
@@ -215,9 +247,11 @@ public class MakeJNLP extends Task {
     public void execute() throws BuildException {
         if (targetFile == null) throw new BuildException("Output dir must be provided");
         if (files == null) throw new BuildException("modules must be provided");
-        
         try {
             generateFiles();
+            if (processJarVersions && jarDirectories!=null && jarDirectories.size() > 0) {
+              generateVersionXMLFiles();
+            }
         } catch (IOException ex) {
             throw new BuildException(ex);
         }
@@ -307,7 +341,7 @@ public class MakeJNLP extends Task {
             } else {
                 writeJNLP.write("  <resources os='" + osDep + "'>\n");
             }
-            writeJNLP.write("    <jar href='" + dashcnb + '/' + jar.getName() + "'/>\n");
+            writeJNLP.write(constructJarHref(jar, dashcnb));
             
             processExtensions(jar, theJar.getManifest(), writeJNLP, dashcnb, codebase);
             processIndirectJars(writeJNLP, dashcnb);
@@ -334,7 +368,7 @@ public class MakeJNLP extends Task {
                         File t = new File(new File(targetFile, dashcnb), name);
 
                         signOrCopy(n, t);
-                        writeJNLP.write("    <jar href='" + dashcnb + '/' + name + "'/>\n");
+                        writeJNLP.write(constructJarHref(n, dashcnb));
                     }
 
                     writeJNLP.write("  </resources>\n");
@@ -478,7 +512,7 @@ public class MakeJNLP extends Task {
         File nblibJar = new File(new File(new File(f.getParentFile().getParentFile(), "ant"), "nblib"), dashcnb + ".jar");
         if (nblibJar.isFile()) {
             File ext = new File(new File(targetFile, dashcnb), "ant-nblib-" + nblibJar.getName());
-            fileWriter.write("    <jar href='" + dashcnb + '/' + ext.getName() + "'/>\n");
+            fileWriter.write(constructJarHref(ext, dashcnb));
             signOrCopy(nblibJar, ext);
         }
 
@@ -520,7 +554,9 @@ public class MakeJNLP extends Task {
                 writeJNLP.write("  </information>\n");
                 writeJNLP.write(permissions +"\n");
                 writeJNLP.write("  <resources>\n");
-                writeJNLP.write("    <jar href='" + dashcnb + '/' + t.getName() + "'/>\n");
+                
+                fileWriter.write(constructJarHref(t, dashcnb));
+                
                 writeJNLP.write("  </resources>\n");
                 writeJNLP.write("  <component-desc/>\n");
                 writeJNLP.write("</jnlp>\n");
@@ -529,10 +565,9 @@ public class MakeJNLP extends Task {
                 fileWriter.write("    <extension name='" + e.getName().replaceFirst("\\.jar$", "") + "' href='" + extJnlpName + "'/>\n");
             } else {
                 File ext = new File(new File(targetFile, dashcnb), s.replace('/', '-'));
-                
-                fileWriter.write("    <jar href='" + dashcnb + '/' + ext.getName() + "'/>\n");
-
                 signOrCopy(e, ext);
+
+                fileWriter.write(constructJarHref(ext, dashcnb));
             }
         }
     }
@@ -571,7 +606,8 @@ public class MakeJNLP extends Task {
             jartask.addZipfileset(zfs);
             jartask.execute();
             blank.delete();
-            fileWriter.write("    <jar href='" + dashcnb + '/' + ext.getName() + "'/>\n");
+            
+            fileWriter.write(constructJarHref(ext, dashcnb));
             signOrCopy(ext, null);
         }
     }
@@ -598,7 +634,7 @@ public class MakeJNLP extends Task {
             jartask.addZipfileset(zfs);
         }
         jartask.execute();
-        fileWriter.write("    <jar href='" + dashcnb + '/' + ext.getName() + "'/>\n");
+        fileWriter.write(constructJarHref(ext, dashcnb));
         signOrCopy(ext, null);
     }
 
@@ -628,5 +664,82 @@ public class MakeJNLP extends Task {
         }
     }
     private static final Pattern SF = Pattern.compile("META-INF/(.+)\\.SF");
+    
+    /**
+     * returns version of jar file depending on manifest.mf or explicitly specified
+     * @param jar
+     * @return
+     * @throws IOException
+     */
+    private String getJarVersion(JarFile jar) throws IOException {      
+        String version = jar.getManifest().getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
+        if (version == null) {
+          version = jar.getManifest().getMainAttributes().getValue("Specification-Version");
+        }
+        if (version == null && jarVersions != null) {
+          version = jarVersions.get(jar.getName());
+        }
+        return version;
+      }
+    
+    /**
+     * Constructs jar or nativelib tag for jars
+     * @param f
+     * @param dashcnb
+     * @return
+     * @throws IOException
+     */
+    private String constructJarHref(File f, String dashcnb) throws IOException {
+      JarFile extJar = new JarFile(f);
+      String version = getJarVersion(extJar);
+      String tag = "jar";
+      if (nativeLibraries!= null && nativeLibraries.contains(f.getName())) {
+        tag = "nativelib";
+      }
+      String jarHref = "";
+      if (processJarVersions && version != null) {
+        jarHref = "    <"+tag+" href='" + dashcnb + '/' + f.getName() + "' version='"+version+"' size='"+f.length()+"'/>\n";
+      } else {
+        jarHref = "    <"+tag+" href='" + dashcnb + '/' + f.getName() + "'/>\n";
+      }
+      return jarHref;
+    }
+    
+    private void generateVersionXMLFiles() throws IOException {
+      FileSet fs = new FileSet();
+      fs.setIncludes("**/*.jar");
+      for (File directory : jarDirectories) {
+        fs.setDir(directory);
+        DirectoryScanner scan = fs.getDirectoryScanner(getProject());
+        StringWriter writeVersionXML = new StringWriter();
+        writeVersionXML.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        writeVersionXML.append("<jnlp-versions>\n");
+        for (String jarName : scan.getIncludedFiles()) {
+          File jar = new File(scan.getBasedir(), jarName);
+          JarFile jarFile = new JarFile(jar);
+          String version = getJarVersion(jarFile);
+          if (version != null) {
+            writeVersionXML.append("    <resource>\n        <pattern>\n            <name>");
+            writeVersionXML.append(jar.getName());
+            writeVersionXML.append("</name>\n            <version-id>");
+            writeVersionXML.append(version);
+            writeVersionXML.append("</version-id>\n        </pattern>\n        <file>");
+            writeVersionXML.append(jar.getName());
+            writeVersionXML.append("</file>\n    </resource>\n");
+          } else {
+            writeVersionXML.append("    <!-- No version found for ");
+            writeVersionXML.append(jar.getName());
+            writeVersionXML.append(" -->\n");
+          }
+        }
+        writeVersionXML.append("</jnlp-versions>\n");
+        writeVersionXML.close();
+        
+        File versionXML = new File(directory, "version.xml");
+        FileWriter w = new FileWriter(versionXML);
+        w.write(writeVersionXML.toString());
+        w.close();
+      }
+    }
     
 }

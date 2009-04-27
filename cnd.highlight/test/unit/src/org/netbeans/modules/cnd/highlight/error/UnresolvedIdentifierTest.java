@@ -217,7 +217,7 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         }
 
         @Override
-        protected Class getTestCaseDataClass() {
+        protected Class<?> getTestCaseDataClass() {
             return UnresolvedIdentifierTest.class;
         }
 

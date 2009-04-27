@@ -46,6 +46,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
@@ -70,6 +72,7 @@ public class RemoteServerRecord implements ServerRecord {
     private final Object stateLock;
     private String reason;
     private String displayName;
+    private RemoteSyncFactory syncFactory;
     
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
@@ -78,16 +81,11 @@ public class RemoteServerRecord implements ServerRecord {
      * in the AWT Event thread if called while adding a node from ToolsPanel, or in a different
      * thread if called during startup from cached information.
      */
-    protected RemoteServerRecord(ExecutionEnvironment env) {
-        this(env, false);
-    }
-
-    protected RemoteServerRecord(final ExecutionEnvironment env, boolean connect) {
-        this(env, null, connect);
-    }
-
-    protected RemoteServerRecord(final ExecutionEnvironment env, String displayName, boolean connect) {
+    /*package-local*/ RemoteServerRecord(final ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean connect) {
+        CndUtils.assertTrue(env != null);
+        CndUtils.assertTrue(syncFactory != null);
         this.executionEnvironment = env;
+        this.syncFactory = syncFactory;
         stateLock = new String("RemoteServerRecord state lock for " + toString()); // NOI18N
         reason = null;
         deleted = false;
@@ -212,7 +210,16 @@ public class RemoteServerRecord implements ServerRecord {
 
     @Override
     public String getServerDisplayName() {
-        return (displayName != null && displayName.length() > 0) ? displayName : executionEnvironment.getHost();
+        if (displayName == null || displayName.length() == 0) {
+            // TODO: should we add ExecutionEnvironment.getHostDisplayName() ?
+            if (executionEnvironment.isLocal()) {
+                return "localhost"; //NOI18N
+            } else {
+                return executionEnvironment.getHost();
+            }
+        } else {
+            return displayName;
+        }
     }
 
     public void setDisplayName(String displayName) {
@@ -231,6 +238,14 @@ public class RemoteServerRecord implements ServerRecord {
     
     public String getReason() {
         return reason == null ? "" : reason;
+    }
+
+    public RemoteSyncFactory getSyncFactory() {
+        return this.syncFactory;
+    }
+
+    public void setSyncFactory(RemoteSyncFactory factory) {
+        this.syncFactory = factory;
     }
 
     /*package*/void setState(State state) {

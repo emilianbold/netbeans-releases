@@ -39,7 +39,9 @@
 package org.netbeans.modules.dlight.tools.impl;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
@@ -54,8 +56,12 @@ import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
  */
 public class ProcDataProviderLinux implements ProcDataProvider.Engine {
 
-    private static final int USR_TIME_IDX = 12; // count starts from 0
-    private static final int SYS_TIME_IDX = 13; // count starts from 0
+    private static final Set<Integer> USR_TIME_IDX = new HashSet<Integer>(Arrays.asList(
+            /* utime */ 12, /* cutime */ 14, /* guest_time */ 42, /* cguest_time */ 43));
+
+    private static final Set<Integer> SYS_TIME_IDX = new HashSet<Integer>(Arrays.asList(
+            /* stime */ 13, /* cstime */ 15, /* delayacct_blkio_ticks */ 41));
+
     private final ProcDataProvider provider;
 
     public ProcDataProviderLinux(ProcDataProvider provider) {
@@ -97,14 +103,18 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
                 } else {
                     prevUsrTicks = currUsrTicks;
                     prevSysTicks = currSysTicks;
-                    for (int i = 0; i <= USR_TIME_IDX || i <= SYS_TIME_IDX; ++i) {
+                    long usrTicks = 0;
+                    long sysTicks = 0;
+                    for (int i = 0; tokenizer.hasMoreTokens(); ++i) {
                         String token = tokenizer.nextToken();
-                        if (i == USR_TIME_IDX) {
-                            currUsrTicks = Long.parseLong(token);
-                        } else if (i == SYS_TIME_IDX) {
-                            currSysTicks = Long.parseLong(token);
+                        if (USR_TIME_IDX.contains(i)) {
+                            usrTicks += Long.parseLong(token);
+                        } else if (SYS_TIME_IDX.contains(i)) {
+                            sysTicks += Long.parseLong(token);
                         }
                     }
+                    currUsrTicks = usrTicks;
+                    currSysTicks = sysTicks;
                     if (0 < prevTicks) {
                         long deltaTicks = currTicks - prevTicks;
                         float usrPercent = percent(currUsrTicks - prevUsrTicks, deltaTicks);

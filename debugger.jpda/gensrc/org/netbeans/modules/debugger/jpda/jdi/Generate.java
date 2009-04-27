@@ -70,6 +70,7 @@ import java.util.zip.ZipFile;
 
 /**
  * Generates wrapper methods for JDI calls.
+ * Use "ant generate" to run this class and generate JDI wrapper classes.
  */
 public class Generate {
 
@@ -984,6 +985,43 @@ public class Generate {
                               "                }\n"+
                               "            }\n";
             return catchNPE;
+        }
+        if (com.sun.jdi.StackFrame.class.getName().equals(className) && methodName.equals("thisObject")) {
+            String catchJDWPException = "            try {\n"+
+                                        "    "+exec+
+                                        "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                        "                if (iex.errorCode() == 35) { // INVALID_SLOT, see http://www.netbeans.org/issues/show_bug.cgi?id=163652\n"+
+                                        "                    return null;\n"+
+                                        "                } else {\n"+
+                                        "                    throw iex; // re-throw the original\n"+
+                                        "                }\n"+
+                                        "            }\n";
+            return catchJDWPException;
+        }
+        if (com.sun.jdi.Location.class.getName().equals(className) &&
+                (methodName.equals("sourcePath") || methodName.equals("sourceName"))) {
+            String catchJDWPException = "            try {\n"+
+                                        "    "+exec+
+                                        "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                        "                if (iex.errorCode() == 101) { // ABSENT_INFORMATION\n"+
+                                        "                    throw new com.sun.jdi.AbsentInformationException(iex.getMessage());\n"+
+                                        "                } else {\n"+
+                                        "                    throw iex; // re-throw the original\n"+
+                                        "                }\n"+
+                                        "            }\n";
+            return catchJDWPException;
+        }
+        if (com.sun.jdi.Location.class.getName().equals(className) && methodName.equals("lineNumber")) {
+            String catchJDWPException = "            try {\n"+
+                                        "    "+exec+
+                                        "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                        "                if (iex.errorCode() == 101) { // ABSENT_INFORMATION\n"+
+                                        "                    return -1;\n"+
+                                        "                } else {\n"+
+                                        "                    throw iex; // re-throw the original\n"+
+                                        "                }\n"+
+                                        "            }\n";
+            return catchJDWPException;
         }
         return exec;
     }

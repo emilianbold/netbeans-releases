@@ -41,24 +41,28 @@
 package org.netbeans.modules.mercurial.ui.wizards;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.JTextField;
+import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
+import org.netbeans.modules.mercurial.ui.repository.Repository;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import static org.openide.DialogDescriptor.DEFAULT_ALIGN;
+import static org.openide.NotifyDescriptor.CANCEL_OPTION;
+import static org.openide.NotifyDescriptor.CLOSED_OPTION;
 
-public class ClonePathsWizardPanel implements WizardDescriptor.ValidatingPanel {
+public class ClonePathsWizardPanel implements WizardDescriptor.Panel {
     
     /**
      * The visual component that displays this panel. If you need to access the
@@ -67,9 +71,9 @@ public class ClonePathsWizardPanel implements WizardDescriptor.ValidatingPanel {
     private ClonePathsPanel component;
     private HgURL repositoryOrig;
     private Listener listener;
-    private Document pullPathDoc, pushPathDoc;
-    private boolean pullUrlValidated, pushUrlValidated;
     private HgURL pullUrl, pushUrl;
+    private HgURL defaultUrl;
+    private String defaultUrlString;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -86,110 +90,188 @@ public class ClonePathsWizardPanel implements WizardDescriptor.ValidatingPanel {
     private void initInteraction() {
         listener = new Listener();
 
-        pullPathDoc = component.defaultPullPathField.getDocument();
-        pushPathDoc = component.defaultPushPathField.getDocument();
-
-        pullPathDoc.addDocumentListener(listener);
-        pushPathDoc.addDocumentListener(listener);
-
         component.defaultValuesButton.addActionListener(listener);
+        component.changePullPathButton.addActionListener(listener);
+        component.changePushPathButton.addActionListener(listener);
     }
 
-    final class Listener implements ActionListener, DocumentListener {
+    final class Listener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            assert e.getSource() == component.defaultValuesButton;
+            HgURL changedUrl;
 
-            setTextFromRepository(component.defaultPullPathField);
-            setTextFromRepository(component.defaultPushPathField);
-        }
-
-        public void insertUpdate(DocumentEvent e) {
-            textChanged(e);
-        }
-        public void removeUpdate(DocumentEvent e) {
-            textChanged(e);
-        }
-        public void changedUpdate(DocumentEvent e) {
-            textChanged(e);
-        }
-
-        private void textChanged(DocumentEvent e) {
-            Document doc = e.getDocument();
-
-            boolean wasKnownToBeInvalid = isKnownToBeInvalid();
-
-            if (doc == pullPathDoc) {
-                pullUrlValidated = false;
-                pullUrl = null;
-            } else if (doc == pushPathDoc) {
-                pushUrlValidated = false;
-                pushUrl = null;
+            Object source = e.getSource();
+            if (source == component.defaultValuesButton) {
+                setDefaultValues();
+            } else if (source == component.changePullPathButton) {
+                changedUrl = changeUrl("changePullPath.Title");         //NOI18N
+                if (changedUrl != null) {
+                    component.defaultPullPathField.setText(
+                            changedUrl.toHgCommandStringWithMaskedPassword());
+                    pullUrl = (changedUrl != HgURL.NO_URL) ? changedUrl : null;
+                }
+            } else if (source == component.changePushPathButton) {
+                changedUrl = changeUrl("changePushPath.Title");         //NOI18N
+                if (changedUrl != null) {
+                    component.defaultPushPathField.setText(
+                            changedUrl.toHgCommandStringWithMaskedPassword());
+                    pushUrl = (changedUrl != HgURL.NO_URL) ? changedUrl : null;
+                }
             } else {
                 assert false;
             }
-
-            if (isKnownToBeInvalid() != wasKnownToBeInvalid) {
-                fireChangeEvent();
-            }
         }
 
     }
 
-    private boolean isKnownToBeInvalid() {
-        return (pullUrlValidated && (pullUrl == null))
-               || (pushUrlValidated && (pushUrl == null));
+    /**
+     * Invoked when the second page of wizard <em>Clone External Repository</em>
+     * (aka <em>Clone Other...</em>) is displayed and one of the
+     * <em>Change...</em> buttons is pressed. It displays a repository chooser
+     * dialog.
+     * 
+     * @param  titleMsgKey  resource bundle key for the title of the repository
+     *                      chooser dialog
+     * @return  {@code HgURL} of the selected repository if one was selected,
+     *          {@code HgURL.NO_URL} if the <em>Clear Path</em> button was
+     *          selected, {@code null} otherwise (button <em>Cancel</em> pressed
+     *          or the dialog closed without pressing any of the above buttons)
+     */
+    private HgURL changeUrl(String titleMsgKey) {
+        int repoModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS;
+        String title = getMessage(titleMsgKey);
 
+        final JButton set   = new JButton();
+        final JButton clear = new JButton();
+        Mnemonics.setLocalizedText(set,   getMessage("changePullPushPath.Set"));   //NOI18N
+        Mnemonics.setLocalizedText(clear, getMessage("changePullPushPath.Clear")); //NOI18N
+
+        final Repository repository = new Repository(repoModeMask, title, true);
+        set.setEnabled(repository.isValid());
+        clear.setDefaultCapable(false);
+
+        final DialogDescriptor dialogDescriptor
+                = new DialogDescriptor(
+                        HgUtils.addContainerBorder(repository.getPanel()),
+                        title,                          //title
+                        true,                           //modal
+                        new Object[] {set,
+                                      clear,
+                                      CANCEL_OPTION},
+                        set,                            //default option
+                        DEFAULT_ALIGN,                  //alignment
+                        new HelpCtx(ClonePathsWizardPanel.class.getName()
+                                    + ".change"),                       //NOI18N
+                        null);                          //action listener
+        dialogDescriptor.setClosingOptions(new Object[] {clear, CANCEL_OPTION});
+
+        final NotificationLineSupport notificationLineSupport
+                = dialogDescriptor.createNotificationLineSupport();
+
+        class RepositoryChangeListener implements ChangeListener, ActionListener {
+            private Dialog dialog;
+            public void setDialog(Dialog dialog) {
+                this.dialog = dialog;
+            }
+            public void stateChanged(ChangeEvent e) {
+                assert e.getSource() == repository;
+                boolean isValid = repository.isValid();
+                dialogDescriptor.setValid(isValid);
+                set.setEnabled(isValid);
+                if (isValid) {
+                    notificationLineSupport.clearMessages();
+                } else {
+                    String errMsg = repository.getMessage();
+                    if ((errMsg != null) && (errMsg.length() != 0)) {
+                        notificationLineSupport.setErrorMessage(errMsg);
+                    } else {
+                        notificationLineSupport.clearMessages();
+                    }
+                }
+            }
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() != set) {
+                    return;
+                }
+
+                try {
+                    //remember the selected URL:
+                    dialogDescriptor.setValue(repository.getUrl());
+
+                    /*
+                     * option "set" is not closing so we must handle closing
+                     * of the dialog explictly here:
+                     */
+                    dialog.setVisible(false);
+                    dialog.dispose();
+                } catch (URISyntaxException ex) {
+                    repository.setInvalid();
+                    notificationLineSupport.setErrorMessage(ex.getMessage());
+                }
+            }
+        }
+
+        RepositoryChangeListener optionListener = new RepositoryChangeListener();
+        repository.addChangeListener(optionListener);
+
+        dialogDescriptor.setButtonListener(optionListener);
+
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+        optionListener.setDialog(dialog);
+
+        dialog.pack();
+        dialog.setVisible(true);
+        
+        Object selectedValue = dialogDescriptor.getValue();
+        assert (selectedValue instanceof HgURL)
+               || (selectedValue == clear)
+               || (selectedValue == CANCEL_OPTION)
+               || (selectedValue == CLOSED_OPTION);
+
+        if (selectedValue instanceof HgURL) {
+            return (HgURL) selectedValue;
+        } else if (selectedValue == clear) {
+            return HgURL.NO_URL;
+        } else {
+            return null;        //CANCEL_OPTION, CLOSED_OPTION
+        }
     }
-    
+
     public boolean isValid() {
-        return !isKnownToBeInvalid();
+        return true;
     }
 
     public HelpCtx getHelp() {
         return new HelpCtx(ClonePathsWizardPanel.class);
     }
     
-    private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>(3);
     public final void addChangeListener(ChangeListener l) {
-        changeListeners.add(l);
+        //always valid - no changes - no change listeners
     }
     public final void removeChangeListener(ChangeListener l) {
-        changeListeners.remove(l);
+        //always valid - no changes - no change listeners
     }
 
-    protected final void fireChangeEvent() {
-        if (!changeListeners.isEmpty()) {
-            ChangeEvent e = new ChangeEvent(this);
-            for (ChangeListener l : changeListeners) {
-                l.stateChanged(e);
-            }
-        }
+    private void setDefaultValues() {
+        setDefaultValues(true, true);
     }
 
-    public void validate() throws WizardValidationException {
-        if (!pullUrlValidated) {
-            pullUrlValidated = true;
-            pullUrl = validateUrl(component.defaultPullPathField,
-                                  "pull path invalid",                  //NOI18N
-                                  "defaultPullPath.Invalid");           //NOI18N
+    private void setDefaultValues(boolean pullPath, boolean pushPath) {
+        if (pullPath) {
+            component.defaultPullPathField.setText(getDefaultPath());
+            pullUrl = repositoryOrig;
         }
-        if (!pushUrlValidated) {
-            pushUrlValidated = true;
-            pushUrl = validateUrl(component.defaultPushPathField,
-                                  "push path invalid",                  //NOI18N
-                                  "defaultPushPath.Invalid");           //NOI18N
+        if (pushPath) {
+            component.defaultPushPathField.setText(getDefaultPath());
+            pushUrl = repositoryOrig;
         }
     }
 
-    private HgURL validateUrl(JTextField field, String systemErrMsg, String errMsgKey) throws WizardValidationException {
-        try {
-            return new HgURL(field.getText().trim());
-        } catch (URISyntaxException ex) {
-            throw new WizardValidationException(component,
-                                                systemErrMsg,
-                                                getMessage(errMsgKey));
+    private String getDefaultPath() {
+        if (defaultUrlString == null) {
+            defaultUrlString = repositoryOrig.toHgCommandUrlStringWithoutUserInfo();
         }
+        return defaultUrlString;
     }
 
     // You can use a settings object to keep track of state. Normally the
@@ -197,29 +279,26 @@ public class ClonePathsWizardPanel implements WizardDescriptor.ValidatingPanel {
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
-        if (settings instanceof WizardDescriptor) {
-            HgURL repository = (HgURL) ((WizardDescriptor) settings).getProperty("repository"); // NOI18N
-            boolean repoistoryChanged = repositoryOrig == null || !repository.equals(repositoryOrig);
-            repositoryOrig = repository;
-            
-            if(repoistoryChanged || component.defaultPullPathField.getText().equals(""))
-                setTextFromRepository(component.defaultPullPathField);
-            if(repoistoryChanged || component.defaultPushPathField.getText().equals(""))
-                setTextFromRepository(component.defaultPushPathField);
-        }
+        assert (settings instanceof WizardDescriptor);
+
+        defaultUrl = (HgURL) ((WizardDescriptor) settings).getProperty("repository"); // NOI18N
+        HgURL repository = defaultUrl;
+        boolean repoistoryChanged = !repository.equals(repositoryOrig);
+        repositoryOrig = repository;
+        defaultUrlString = null;
+
+        boolean resetPullPath = repoistoryChanged || (pullUrl == null);
+        boolean resetPushPath = repoistoryChanged || (pushUrl == null);
+
+        setDefaultValues(resetPullPath,
+                         resetPushPath);
     }
     public void storeSettings(Object settings) {
-        if (!pullUrlValidated || !pushUrlValidated) {
-            return;
-        };
+
         if (settings instanceof WizardDescriptor) {
             ((WizardDescriptor) settings).putProperty("defaultPullPath", pullUrl); // NOI18N
             ((WizardDescriptor) settings).putProperty("defaultPushPath", pushUrl); // NOI18N
         }
-    }
-
-    private void setTextFromRepository(JTextField textField) {
-        textField.setText(repositoryOrig.toHgCommandUrlString());  //incl. username and password
     }
 
     private static String getMessage(String msgKey) {

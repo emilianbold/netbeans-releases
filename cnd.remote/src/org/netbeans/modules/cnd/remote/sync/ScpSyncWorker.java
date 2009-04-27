@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,23 +34,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.cnd.remote.sync;
 
-import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
-import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
+import java.io.File;
+import java.io.PrintWriter;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory.class)
-public class RemoteInteractiveCommandProviderFactory extends InteractiveCommandProviderFactory {
+/*package-local*/ class ScpSyncWorker extends BaseSync implements RemoteSyncWorker {
+
+    public ScpSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
+        super(localDir, executionEnvironment, out, err);
+    }
+    
+    public boolean synchronize() {
+        return true;
+    }
+
     @Override
-    public InteractiveCommandProvider createInstance(ExecutionEnvironment execEnv) {
-        return new RemoteInteractiveCommandProvider(execEnv);
+    public boolean cancel() {
+        return false;
     }
 }

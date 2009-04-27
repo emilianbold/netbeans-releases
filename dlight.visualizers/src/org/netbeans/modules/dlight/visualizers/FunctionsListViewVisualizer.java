@@ -61,6 +61,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
@@ -108,6 +109,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private final ColumnsUIMapping  columnsUIMapping;
     private final List<Column> metrics;
     private final FunctionsListViewVisualizerConfiguration configuration;
+    private final TableCellRenderer outlineNodePropertyDefault;
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
         explorerManager = new ExplorerManager();
@@ -125,6 +127,8 @@ public class FunctionsListViewVisualizer extends JPanel implements
         outlineView = new OutlineView(nodeLabel);
         outlineView.getOutline().setRootVisible(false);
         outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
+        outlineNodePropertyDefault = outlineView.getOutline().getDefaultRenderer(Node.Property.class);
+        outlineView.getOutline().setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), metrics));
         List<Property> result = new ArrayList<Property>();
         for (Column c : metrics) {
             String displayedName = columnsUIMapping == null || columnsUIMapping.getDisplayedName(c.getColumnName()) == null ? c.getColumnUName() : columnsUIMapping.getDisplayedName(c.getColumnName());
