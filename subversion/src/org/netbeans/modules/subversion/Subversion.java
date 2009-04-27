@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
@@ -61,7 +62,6 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
@@ -221,15 +221,25 @@ public class Subversion {
         return client;
     }
 
-    public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport support) throws SVNClientException {
+    public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport progressSupport) throws SVNClientException {
         String username = ""; // NOI18N
         String password = ""; // NOI18N
-        RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl.toString());
-        if(rc != null) {
-            username = rc.getUsername();
-            password = rc.getPassword();
+        
+        SvnKenaiSupport kenaiSupport = SvnKenaiSupport.getInstance();
+        if(kenaiSupport.isKenai(repositoryUrl.toString())) {
+            PasswordAuthentication pa = kenaiSupport.getPasswordAuthentication(repositoryUrl.toString(), true);
+            if(pa != null) {
+                username = pa.getUserName();
+                password = new String(pa.getPassword());
+            }
+        } else {
+            RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl.toString());
+            if(rc != null) {
+                username = rc.getUsername();
+                password = rc.getPassword();
+            }
         }
-        return getClient(repositoryUrl, username, password, support);
+        return getClient(repositoryUrl, username, password, progressSupport);
     }
 
     public SvnClient getClient(SVNUrl repositoryUrl,
