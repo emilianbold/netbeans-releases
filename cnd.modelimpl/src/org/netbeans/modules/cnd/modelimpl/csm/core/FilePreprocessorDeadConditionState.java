@@ -62,8 +62,13 @@ public final class FilePreprocessorDeadConditionState implements APTParseFileWal
     private final transient CharSequence fileName;
 
     public FilePreprocessorDeadConditionState(FileImpl file) {
+        this(file.getBuffer().getAbsolutePath());
+    }
+
+    // for internal use and tests
+    /*package*/FilePreprocessorDeadConditionState(CharSequence fileName) {
         offsets = new int[512];
-        fileName = file.getBuffer().getAbsolutePath();
+        this.fileName = fileName;
     }
 
     public FilePreprocessorDeadConditionState(FilePreprocessorDeadConditionState state2copy) {
@@ -231,7 +236,7 @@ public final class FilePreprocessorDeadConditionState implements APTParseFileWal
     }
 
     /**
-     * check if this state can be used in-place of other (it is superset && NOT the same as other)
+     * check if this state can be used in-place of other (it is superset or the same as other)
      * @param other
      * @return
      */
@@ -251,7 +256,14 @@ public final class FilePreprocessorDeadConditionState implements APTParseFileWal
         for (int i = 0; i < other.size; i += 2) {
             int secondStart = other.offsets[i];
             int secondEnd = other.offsets[i + 1];
-            if (!canReplaceBlock(secondStart, secondEnd)) {
+            if (!canReplaceBlock(secondStart, secondEnd, true)) {
+                return false;
+            }
+        }
+        for (int i = 0; i < this.size; i += 2) {
+            int firstStart = this.offsets[i];
+            int firstEnd = this.offsets[i + 1];
+            if (other.isInActiveBlock(firstStart, firstEnd)) {
                 return false;
             }
         }
@@ -279,7 +291,7 @@ public final class FilePreprocessorDeadConditionState implements APTParseFileWal
             int end = offsets[i + 1];
             boolean isBlockReplaceable = false;
             for (FilePreprocessorDeadConditionState state : others) {
-                if (state != null && state.canReplaceBlock(start, end)) {
+                if (state != null && state.canReplaceBlock(start, end, false)) {
                     isBlockReplaceable = true;
                     break;
                 }
@@ -299,16 +311,24 @@ public final class FilePreprocessorDeadConditionState implements APTParseFileWal
      * @param otherBlockEnd
      * @return
      */
-    private boolean canReplaceBlock(int checkBlockStart, int checkBlockEnd) {
+    private boolean canReplaceBlock(int checkBlockStart, int checkBlockEnd, boolean allowEqual) {
         // empty blocks area can replace everything
         Boolean isBlockReplaceableCheck = this.size == 0 ? Boolean.TRUE : null;
         for (int i = 0; i < this.size; i += 2) {
             int blockStart = this.offsets[i];
             int blockEnd = this.offsets[i + 1];
-            if (checkBlockStart < blockStart && blockEnd < checkBlockEnd) {
-                // dead block area is inside the check block => the checked block is replaceable
-                isBlockReplaceableCheck = Boolean.TRUE;
-                break;
+            if (allowEqual) {
+                if (checkBlockStart <= blockStart && blockEnd <= checkBlockEnd) {
+                    // dead block area is inside or equal of the check block => the checked block is replaceable
+                    isBlockReplaceableCheck = Boolean.TRUE;
+                    break;
+                }
+            } else {
+                if (checkBlockStart < blockStart && blockEnd < checkBlockEnd) {
+                    // dead block area is inside the check block => the checked block is replaceable
+                    isBlockReplaceableCheck = Boolean.TRUE;
+                    break;
+                }
             }
             if (blockStart < checkBlockStart && checkBlockEnd < blockEnd) {
                 // the checked dead block is inside one of dead blocks area => the checked block is not replaceable
@@ -333,16 +353,21 @@ public final class FilePreprocessorDeadConditionState implements APTParseFileWal
         if (startNode != null && endNode != null) {
             int startDeadBlock = startNode.getEndOffset();
             int endDeadBlock = endNode.getOffset() - 1;
-            if (endDeadBlock > startDeadBlock) {
-                if (size == this.offsets.length) {
-                    // expand
-                    int[] newOffsets = new int[2*this.offsets.length];
-                    System.arraycopy(this.offsets, 0, newOffsets, 0, size);
-                    this.offsets = newOffsets;
-                }
-                this.offsets[size++] = startDeadBlock;
-                this.offsets[size++] = endDeadBlock;
-            }
+            addBlockImpl(startDeadBlock, endDeadBlock);
         }
     }
+
+    /*package*/final void addBlockImpl(int startDeadBlock, int endDeadBlock) {
+        if (endDeadBlock > startDeadBlock) {
+            if (size == this.offsets.length) {
+                // expand
+                int[] newOffsets = new int[2 * (this.offsets.length + 1)];
+                System.arraycopy(this.offsets, 0, newOffsets, 0, size);
+                this.offsets = newOffsets;
+            }
+            this.offsets[size++] = startDeadBlock;
+            this.offsets[size++] = endDeadBlock;
+        }
+    }
+
 }
