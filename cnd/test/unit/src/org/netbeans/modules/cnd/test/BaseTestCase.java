@@ -228,7 +228,7 @@ public abstract class BaseTestCase extends NbTestCase {
      * in path ${xtest.data}/${classname}
      * @see getGoldenFile
      */    
-    protected Class getTestCaseDataClass() {
+    protected Class<?> getTestCaseDataClass() {
         return this.getClass();
     }
     

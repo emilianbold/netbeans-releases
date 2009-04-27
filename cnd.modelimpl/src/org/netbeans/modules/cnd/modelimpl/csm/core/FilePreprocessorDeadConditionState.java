@@ -43,10 +43,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import org.netbeans.modules.cnd.apt.structure.APT;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 
 /**
@@ -55,22 +52,23 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
  */
 public final class FilePreprocessorDeadConditionState implements APTParseFileWalker.EvalCallback {
 
-    /** a SORTED array of offset-pairs for which conditionals were evaluated to false */
+    /** a SORTED array of blocks [start-end] for which conditionals were evaluated to false */
     private int[] offsets;
 
-    /** amount of states in the data array  */
+    /** amount of dead blocks (*2)  in the data array  */
     private int size;
-    private int activeBlocks = 0;
 
     /** for debugging purposes */
-    private transient CharSequence fileName;
+    private final transient CharSequence fileName;
 
-    //private boolean isCpp;
+    public FilePreprocessorDeadConditionState(FileImpl file) {
+        this(file.getBuffer().getAbsolutePath());
+    }
 
-    public FilePreprocessorDeadConditionState(FileImpl file/*, APTPreprocHandler preprocHandler*/) {
-        offsets = new int[1024];
-        fileName = file.getBuffer().getAbsolutePath();
-        //this.isCpp = preprocHandler.getMacroMap().isDefined("__cplusplus");
+    // for internal use and tests
+    /*package*/FilePreprocessorDeadConditionState(CharSequence fileName) {
+        offsets = new int[512];
+        this.fileName = fileName;
     }
 
     public FilePreprocessorDeadConditionState(FilePreprocessorDeadConditionState state2copy) {
@@ -101,190 +99,103 @@ public final class FilePreprocessorDeadConditionState implements APTParseFileWal
         }
     }
 
-    public void clear() {
-        size = 0;
-    }
-
     /**
      * Implements APTParseFileWalker.EvalCallback -
      * adds offset of dead branch to offsets array
      */
     public void onEval(APT apt, boolean result) {
-        int startDeadBlock = -1;
-        int endDeadBlock = -1;
         if (result) {
-            activeBlocks++;
             // if condition was evaluated as 'true' check if we
             // need to mark siblings as dead blocks
-            APT  sibling = apt.getNextSibling();
-            if (sibling != null) {
-                startDeadBlock = sibling.getOffset();
-                deadBlock:
-                do {
-                    switch (sibling.getType()) {
+            APT start = apt.getNextSibling();
+            deadBlocks:
+            while (start != null) {
+                APT end = start.getNextSibling();
+                if (end != null) {
+                    switch (end.getType()) {
                         case APT.Type.ELIF:
                         case APT.Type.ELSE:
-                            endDeadBlock = sibling.getEndOffset();
+                            addDeadBlock(start, end);
+                            // continue
+                            start = end;
                             break;
                         case APT.Type.ENDIF:
-                            if (endDeadBlock > 0) {
-                                endDeadBlock = sibling.getEndOffset();
-                            } else {
-                                break deadBlock;
-                            }
+                            addDeadBlock(start, end);
+                            // stop
+                            start = null;
                             break;
                         default:
-                            break deadBlock;
+                            // stop
+                            start = null;
+                            break;
                     }
-                    sibling = sibling.getNextSibling();
-                } while (sibling != null);
+                }
             }
         } else {
             // if condition was evaluated as 'false' mark it as dead block
-            startDeadBlock = apt.getOffset();
-            APT sibling = apt.getNextSibling();
-            if (sibling != null) {
-                switch (sibling.getType()) {
+            APT end = apt.getNextSibling();
+            if (end != null) {
+                switch (end.getType()) {
                     case APT.Type.ELIF:
-                        endDeadBlock = sibling.getOffset() - 1;
-                        break;
                     case APT.Type.ELSE:
-                        activeBlocks++;
-                        endDeadBlock = sibling.getOffset()-1;
-                        break;
                     case APT.Type.ENDIF:
-                        endDeadBlock = sibling.getEndOffset();
+                        addDeadBlock(apt, end);
                         break;
                 }
             }
         }
-        if (endDeadBlock > startDeadBlock) {
-            addDeadBlock(startDeadBlock, endDeadBlock);
-        }
     }
 
-    public final boolean isBetter(FilePreprocessorDeadConditionState other) {
-        int result = compareToImpl(other);
-        if (TraceFlags.TRACE_PC_STATE || TraceFlags.TRACE_PC_STATE_COMPARISION) {
-            traceComparison(other, result);
-        }
-        return result > 0;
-    }
-    
-    public final boolean isEqual(FilePreprocessorDeadConditionState other) {
-        if (this == other) {
-            return true;
-        }
-        // we assume that the array is ordered
-        if (this.activeBlocks == other.activeBlocks && this.size == other.size) {
-            for (int i = 0; i < size; i++) {
-                if (this.offsets[i] != other.offsets[i]) {
-                    return false;
-                }
-            }
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public final boolean isSubset(Collection<FilePreprocessorDeadConditionState> others) {
-        SortedSet<Integer> sorted = new TreeSet<Integer>();
-        for (FilePreprocessorDeadConditionState state : others) {
-            if (state == null) {
-                return false;
-            }
-            for (int i = 0; i < state.size; i++) {
-                sorted.add(state.offsets[i]);
-            }
-        }
-        int[] arr = new int[sorted.size()];
-        int pos = 0;
-        for (int offset : sorted) {
-            arr[pos++] = offset;
-        }
-        return isSubset(arr, arr.length);
-    }
-
-    public final boolean isSubset(FilePreprocessorDeadConditionState other) {
-        return (other == null) ? false : isSubset(other.offsets, other.size);
-    }
-
-    /**
-     * checks if this state is subset of another state
-     * @param otherOffsets offsets of another state
-     * @param otherSize size of another state
-     * @return true if this state is subset of another state
-     */
-    private final boolean isSubset(int[] otherOffsets, int otherSize) {
-        // we assume that the array is ordered
-        if (this.size <= otherSize) {
-            int thisPos = 0;
-            int otherPos = 0;
-            outer:
-            while (thisPos < size && otherPos < otherSize) {
-                // on each iteration we assume
-                // that all on the left of the current position
-                // this is a subset of other
-                if (this.offsets[thisPos] == otherOffsets[otherPos]) {
-                    thisPos++;
-                    otherPos++;
-                    continue;
-                } else if (this.offsets[thisPos] < otherOffsets[otherPos]) {
-                    return false;
-                } else { // this.offsets[thisPos] > other.offsets[thisPos]
-                    while (++otherPos < otherSize) {
-                        if (this.offsets[thisPos] == otherOffsets[otherPos]) {
-                            thisPos++;
-                            otherPos++;
-                            continue outer;
-                        }
-                    }
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private void traceComparison(FilePreprocessorDeadConditionState other, int result) {
-        System.err.printf("compareTo (%s): %s %s %s \n", fileName, toStringBrief(this),
-                (result < 0) ? "<" : ((result > 0) ? ">" : "="), // NOI18N
-                toStringBrief(other)); //NOI18N
-    }
-
-    private int compareToImpl(FilePreprocessorDeadConditionState other) {
-        if (other == this) {
-            return 0;
-        } else if (other == null) {
-            return (size > 0) ? 1 : 0; // null and empty are the same
-        } else if (activeBlocks != other.activeBlocks) {
-            // more active blocks is better
-            return (activeBlocks - other.activeBlocks);
-        } else if (this.size != other.size) {
-            // less dead blocks is better (after the previous check of active blocks!)
-            return (other.size - this.size);
-        } else {
-            // the same number of dead blocks
-            // to have predictable behavior we select the state by the first difference in offsets
-            for (int i = 0; i < size; i++) {
-                if (this.offsets[i] != other.offsets[i]) {
-                    return other.offsets[i] - this.offsets[i];
-                }
-            }
-            return 0;
-        }
-    }
+//    /**
+//     * check if "this" object is better than "other".
+//     * If returns "false" it doens't mean that other is "better", only that "this" is not "better"
+//     * @param other anotehr state to compare with
+//     * @return returns "true" only if "this" is "better" than other.
+//     *         returns "false" if "this" is not better or they are not comparable
+//     */
+//    public final boolean isBetter(FilePreprocessorDeadConditionState other) {
+//        boolean result = false;
+//        if (other == this) {
+//            // same is not better
+//            result = false;
+//        } else if (other == null) {
+//            // not comparable
+//            result = false;
+//        } else {
+//            // "this" is better only if it can be used instead of "other"
+//            result = isFirstCanReplaceSecond(this.offsets, this.size, other.offsets, other.size);
+//        }
+//        if (TraceFlags.TRACE_PC_STATE || TraceFlags.TRACE_PC_STATE_COMPARISION) {
+//            traceComparison(other, result ? 1 : 0);
+//        }
+//        return result;
+//    }
+//
+//    public final boolean isEqual(FilePreprocessorDeadConditionState other) {
+//        if (this == other) {
+//            return true;
+//        }
+//        // we assume that the array is ordered
+//        if (this.size == other.size) {
+//            for (int i = 0; i < size; i++) {
+//                if (this.offsets[i] != other.offsets[i]) {
+//                    return false;
+//                }
+//            }
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
+//
+//    private void traceComparison(FilePreprocessorDeadConditionState other, int result) {
+//        System.err.printf("compareTo (%s): %s %s %s \n", fileName, toStringBrief(this),
+//                (result < 0) ? "<" : ((result > 0) ? ">" : "="), // NOI18N
+//                toStringBrief(other)); //NOI18N
+//    }
 
     @Override
     public String toString() {
-//        StringBuilder sb = new StringBuilder(); // "FilePreprocessorDeadConditionState "
-//        sb.append(fileName);
-//        sb.append(' ');
-//        sb.append(toStringBrief(this));
-//        sb.append(" size=" + size); //NOI18N
-//        return sb.toString();
         return toStringBrief(this);
     }
 
@@ -292,7 +203,7 @@ public final class FilePreprocessorDeadConditionState implements APTParseFileWal
         if (state == null) {
             return "null"; // NOI18N
         }
-        StringBuilder sb = new StringBuilder(/*state.isCpp ? "c++ " : "c   "*/); // NOI18N
+        StringBuilder sb = new StringBuilder();
         sb.append("[");//NOI18N
         for (int i = 0; i < state.size; i+=2) {
             if (i > 0) {
@@ -310,7 +221,7 @@ public final class FilePreprocessorDeadConditionState implements APTParseFileWal
         if (size == 0 || startContext == 0) {
             return true;
         }
-        // TODO: improve to ln speed, if needed
+        // TODO: improve speed, if needed
         for (int i = 0; i < size; i+=2) {
             int start = offsets[i];
             int end = offsets[i+1];
@@ -324,20 +235,139 @@ public final class FilePreprocessorDeadConditionState implements APTParseFileWal
         return true;
     }
 
-    void trimSize() {
+    /**
+     * check if this state can be used in-place of other (it is superset or the same as other)
+     * @param other
+     * @return
+     */
+    public final boolean canReplaceOther(FilePreprocessorDeadConditionState other) {
+        if (other == null) {
+            return false;
+        }
+        if (this.size == 0) {
+            // can replace only if not empty as well
+            return other.size > 0;
+        }
+        if (other.size == 0) {
+            // not empty can not replace empty
+            return false;
+        }
+        // TODO: improve speed, if needed
+        for (int i = 0; i < other.size; i += 2) {
+            int secondStart = other.offsets[i];
+            int secondEnd = other.offsets[i + 1];
+            if (!canReplaceBlock(secondStart, secondEnd, true)) {
+                return false;
+            }
+        }
+        for (int i = 0; i < this.size; i += 2) {
+            int firstStart = this.offsets[i];
+            int firstEnd = this.offsets[i + 1];
+            if (other.isInActiveBlock(firstStart, firstEnd)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * check if this state can be completely replaced by composition of other states (but not equal to them)
+     * @param other
+     * @return
+     */
+    public final boolean canBeReplacedByComposition(Collection<FilePreprocessorDeadConditionState> others) {
+        if (this.size == 0) {
+            // empty can be replaced only by composition containing empty as well
+            for (FilePreprocessorDeadConditionState state : others) {
+                if (state != null && state.size == 0) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        for (int i = 0; i < size; i += 2) {
+            // check each block of this state and detect if it can be replaced by at least one of other states
+            int start = offsets[i];
+            int end = offsets[i + 1];
+            boolean isBlockReplaceable = false;
+            for (FilePreprocessorDeadConditionState state : others) {
+                if (state != null && state.canReplaceBlock(start, end, false)) {
+                    isBlockReplaceable = true;
+                    break;
+                }
+            }
+            if (!isBlockReplaceable) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * checks if other block is completely replaceable by this state:
+     * it is either larger than existing dead block of this state
+     * or checked block is placed in active area of this state
+     * @param otherBlockStart
+     * @param otherBlockEnd
+     * @return
+     */
+    private boolean canReplaceBlock(int checkBlockStart, int checkBlockEnd, boolean allowEqual) {
+        // empty blocks area can replace everything
+        Boolean isBlockReplaceableCheck = this.size == 0 ? Boolean.TRUE : null;
+        for (int i = 0; i < this.size; i += 2) {
+            int blockStart = this.offsets[i];
+            int blockEnd = this.offsets[i + 1];
+            if (allowEqual) {
+                if (checkBlockStart <= blockStart && blockEnd <= checkBlockEnd) {
+                    // dead block area is inside or equal of the check block => the checked block is replaceable
+                    isBlockReplaceableCheck = Boolean.TRUE;
+                    break;
+                }
+            } else {
+                if (checkBlockStart < blockStart && blockEnd < checkBlockEnd) {
+                    // dead block area is inside the check block => the checked block is replaceable
+                    isBlockReplaceableCheck = Boolean.TRUE;
+                    break;
+                }
+            }
+            if (blockStart < checkBlockStart && checkBlockEnd < blockEnd) {
+                // the checked dead block is inside one of dead blocks area => the checked block is not replaceable
+                isBlockReplaceableCheck = Boolean.FALSE;
+                break;
+            }
+            // else it's still a candidate to be replaced because stay in active area (out of dead blocks)
+        }
+        if (isBlockReplaceableCheck == Boolean.FALSE) {
+            return false;
+        }
+        return true;
+    }
+
+    /*package-local*/void trimSize() {
         int[] newOffsets = new int[size];
         System.arraycopy(this.offsets, 0, newOffsets, 0, size);
         this.offsets = newOffsets;
     }
 
-    private void addDeadBlock(int startDeadBlock, int endDeadBlock) {
-        if (size == this.offsets.length) {
-            // expand
-            int[] newOffsets = new int[2*this.offsets.length];
-            System.arraycopy(this.offsets, 0, newOffsets, 0, size);
-            this.offsets = newOffsets;
+    private void addDeadBlock(APT startNode, APT endNode) {
+        if (startNode != null && endNode != null) {
+            int startDeadBlock = startNode.getEndOffset();
+            int endDeadBlock = endNode.getOffset() - 1;
+            addBlockImpl(startDeadBlock, endDeadBlock);
         }
-        this.offsets[size++] = startDeadBlock;
-        this.offsets[size++] = endDeadBlock;
     }
+
+    /*package*/final void addBlockImpl(int startDeadBlock, int endDeadBlock) {
+        if (endDeadBlock > startDeadBlock) {
+            if (size == this.offsets.length) {
+                // expand
+                int[] newOffsets = new int[2 * (this.offsets.length + 1)];
+                System.arraycopy(this.offsets, 0, newOffsets, 0, size);
+                this.offsets = newOffsets;
+            }
+            this.offsets[size++] = startDeadBlock;
+            this.offsets[size++] = endDeadBlock;
+        }
+    }
+
 }
