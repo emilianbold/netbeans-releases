@@ -46,51 +46,89 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import junit.framework.Assert;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.project.JavaAntLogger;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author  pj97932, Tomas Mysik
  */
-final class TestUtil {
+public final class TestUtil extends ProxyLookup {
 
-    private TestUtil() {
+    static {
+        TestUtil.class.getClassLoader().setDefaultAssertionStatus(true);
+        System.setProperty("org.openide.util.Lookup", TestUtil.class.getName());
+        Assert.assertEquals(TestUtil.class, Lookup.getDefault().getClass());
+        Lookup p = Lookups.forPath("Services/AntBasedProjectTypes/");
+        p.lookupAll(AntBasedProjectType.class);
+        projects = p;
+        setLookup(new Object[0]);
+    }
+
+    private static TestUtil DEFAULT;
+    private static final int BUFFER = 2048;
+    private static final Lookup projects;
+
+
+    public TestUtil() {
+        Assert.assertNull(DEFAULT);
+        DEFAULT = this;
+        ClassLoader l = TestUtil.class.getClassLoader();
+        setLookups(new Lookup[] {
+            Lookups.metaInfServices(l),
+            Lookups.singleton(l)
+        });
+    }
+
+    /**
+     * Set the global default lookup.
+     * Caution: if you don't include Lookups.metaInfServices, you may have trouble,
+     * e.g. {@link #makeScratchDir} will not work.
+     */
+    public static void setLookup(Lookup l) {
+        DEFAULT.setLookups(new Lookup[] {l});
+    }
+
+    /**
+     * Set the global default lookup with some fixed instances including META-INF/services/*.
+     */
+    public static void setLookup(Object... instances) {
+        ClassLoader l = TestUtil.class.getClassLoader();
+        DEFAULT.setLookups(new Lookup[] {
+            Lookups.fixed(instances),
+            Lookups.metaInfServices(l),
+            Lookups.singleton(l),
+            projects
+        });
     }
 
     static void setup(NbTestCase test) throws Exception {
-
         test.clearWorkDir();
-
-        File javaCluster = new File(JavaAntLogger.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                .getParentFile().getParentFile();
-        File enterCluster = new File(WebModule.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                .getParentFile().getParentFile();
-        System.setProperty("netbeans.dirs", javaCluster.getPath() + File.pathSeparator + enterCluster.getPath());
-
-        Logger.getLogger("org.netbeans.core.startup.ModuleList").setLevel(Level.OFF);
-
         Logger.getLogger("org.netbeans.modules.web.jspparser_ext").setLevel(Level.FINE);
-
-        // module system
-        Lookup.getDefault().lookup(ModuleInfo.class);
-
         // unzip test project
         TestUtil.getProject(test, "project3");
+        TestUtil.initParserJARs();
     }
 
     static FileObject getFileInWorkDir(String path, NbTestCase test) throws Exception {
@@ -193,4 +231,25 @@ final class TestUtil {
         is.close();
         os.close();
     }
+    
+    public static void initParserJARs() throws MalformedURLException {
+        List<URL> list = getJARs("jsp.parser.jars");
+        JspParserImpl.setParserJARs(list.toArray(new URL[list.size()]));
+    }
+
+    public static List<URL> getJARs(String propertyName) throws MalformedURLException {
+        String path = System.getProperty(propertyName);
+        String[] paths = PropertyUtils.tokenizePath(path);
+        List<URL> list = new ArrayList();
+        for (int i = 0; i< paths.length; i++) {
+            String token = paths[i];
+            File f = new File(token);
+            if (!f.exists()) {
+                throw new RuntimeException("cannot find file "+token);
+            }
+            list.add(f.toURI().toURL());
+        }
+        return list;
+    }
+
 }
