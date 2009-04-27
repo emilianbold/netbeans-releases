@@ -43,8 +43,14 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.DevelopmentHostCustomizer;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node;
@@ -142,8 +148,18 @@ public class DevelopmentHostNodeProp extends Node.Property {
         }
 
         @Override
+        public void setValue(Object value) {
+            super.setValue(value);
+        }
+
+
+        @Override
         public String[] getTags() {
-            return configuration.getServerNames();
+            List<String> l = new ArrayList<String>();
+            for (ServerRecord record : ServerList.getRecords()) {
+                l.add(record.getDisplayName());
+            }
+            return l.toArray(new String[l.size()]);
         }
 
         @Override

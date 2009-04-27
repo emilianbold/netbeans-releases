@@ -220,7 +220,7 @@ public class ProjectActionSupport {
             if (paes.length > 0) {
                 MakeConfiguration conf = paes[0].getConfiguration();
                 if (!conf.getDevelopmentHost().isLocalhost()) {
-                    String hkey = conf.getDevelopmentHost().getName();
+                    String hkey = conf.getDevelopmentHost().getHostKey();
                     name.append(" - ").append(hkey); //NOI18N
                 }
             }

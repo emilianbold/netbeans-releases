@@ -291,7 +291,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     public void propertyChange(final PropertyChangeEvent evt) {
         CompilerSet ocs = null;
-        String hkey = ((DevelopmentHostConfiguration) evt.getNewValue()).getName();
+        String hkey = ((DevelopmentHostConfiguration) evt.getNewValue()).getHostKey();
         final ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hkey);
         final String oldName = oldNameMap.get(hkey);
         if (oldName != null) {
@@ -301,6 +301,9 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         }
         if (ocs == null) {
             ocs = CompilerSetManager.getDefault(env).getCompilerSet(0);
+        }
+        if (ocs == null) {
+            return;
         }
 
         String okey = (String) evt.getOldValue();
