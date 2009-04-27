@@ -68,11 +68,19 @@ import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
+import org.eclipse.mylyn.internal.tasks.core.TaskActivityManager;
+import org.eclipse.mylyn.internal.tasks.core.TaskList;
+import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
+import org.eclipse.mylyn.internal.tasks.core.TaskTask;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataStore;
+import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizationSession;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -167,6 +175,50 @@ public class JiraIssueTest extends NbTestCase {
 
             // close issue
             closeIssue(issue);
+
+        } catch (Exception exception) {
+            JiraTestUtil.handleException(exception);
+        }
+    }
+
+    public void testSyncSession() throws Throwable {
+        try {
+
+            // create
+            RepositoryResponse rr = JiraTestUtil.createIssue(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()), "Kaputt", "Alles Kaputt!", "Bug");
+            assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
+            assertNotNull(JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()));
+
+            String taskId = rr.getTaskId();
+
+            TaskRepositoryManager trm = new TaskRepositoryManager();
+            trm.addRepository(JiraTestUtil.getTaskRepository());
+            trm.addRepositoryConnector(getRepositoryConnector());
+            TaskDataStore tds = new TaskDataStore(trm);
+
+            TaskList tl = new TaskList();
+            TaskActivityManager tam = new TaskActivityManager(trm, tl);
+            TaskDataManager tdm = new TaskDataManager(tds, trm, tl, tam);
+            tdm.setDataPath("/tmp/dilino");
+            SynchronizationSession ss = new SynchronizationSession(tdm);
+
+            // list
+            System.out.println("   +++++++++++++++++++++++++++++++++++++ ");
+            long t = System.currentTimeMillis();
+            List<TaskData> l = list(ss);
+            long n = System.currentTimeMillis();
+            System.out.println(" +++ " + (n - t));
+            for (TaskData taskData : l) {
+                tdm.putUpdatedTaskData(
+                    new TaskTask(JiraTestUtil.getTaskRepository().getConnectorKind(), JiraTestUtil.getTaskRepository().getUrl(), taskData.getTaskId()),
+                    taskData,
+                    true);
+            }
+            t = System.currentTimeMillis();
+            l = list(ss);
+            n = System.currentTimeMillis();
+            System.out.println(" +++ " + (n - t));
+            System.out.println("   +++++++++++++++++++++++++++++++++++++ ");
 
         } catch (Exception exception) {
             JiraTestUtil.handleException(exception);
@@ -341,6 +393,19 @@ public class JiraIssueTest extends NbTestCase {
             }
         }
         assertNotNull(data);
+    }
+
+    public List<TaskData> list(ISynchronizationSession session) throws Throwable {
+        JiraClientFactory.getDefault().getJiraClient(JiraTestUtil.getTaskRepository()).getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
+
+        FilterDefinition fd = new FilterDefinition();
+        fd.setProjectFilter(new ProjectFilter(JiraTestUtil.getProject(getClient())));
+        fd.setStatusFilter(new StatusFilter(new JiraStatus[] {getStatusByName(getClient(), "Open")}));
+        fd.setIssueTypeFilter(new IssueTypeFilter(new IssueType[] {getIssueTypeByName("Bug")}));
+        JiraTestUtil.TestTaskDataCollector tdc = JiraTestUtil.list(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), fd, session);
+
+        assertTrue(tdc.data.size() > 0);
+        return tdc.data;
     }
 
     public void listJiraIssues(JiraIssue issue) throws Throwable {
