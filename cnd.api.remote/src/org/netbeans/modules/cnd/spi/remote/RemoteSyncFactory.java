@@ -131,9 +131,9 @@ public abstract class RemoteSyncFactory {
     }
 
 
-//    public static RemoteSyncFactory getDefault() {
-//        RemoteSyncFactory[] factories = getFactories();
-//        assert factories.length > 0;
-//        return factories[0];
-//    }
+    public static RemoteSyncFactory getDefault() {
+        RemoteSyncFactory[] factories = getFactories();
+        assert factories.length > 0;
+        return factories[0];
+    }
 }
