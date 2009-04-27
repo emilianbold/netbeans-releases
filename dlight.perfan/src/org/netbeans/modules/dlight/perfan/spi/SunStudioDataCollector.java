@@ -385,22 +385,14 @@ public class SunStudioDataCollector
 
             List<String> args = new ArrayList<String>();
 
-            // From collect(1):
-            // ...
-            // -l signal
-            //    Record a sample point  whenever  the  given  signal  is
-            //    delivered to the process.
-            // ..
-            // Add this arguments to allow indicator provider based on
-            // mmonitor to coexist with collect
-
-            args.add("-l"); // NOI18N
-            args.add("USR1"); // NOI18N
+            // Disregard collect's output...
+            args.add("-O"); // NOI18N
+            args.add("/dev/null"); // NOI18N
 
             if (collectedInfo.contains(CollectedInfo.SYNCHRONIZATION) ||
                     collectedInfo.contains(CollectedInfo.SYNCSUMMARY)) {
                 args.add("-s"); // NOI18N
-                args.add("30"); // NOI18N
+                args.add("1000"); // NOI18N
             }
 
             if (collectedInfo.contains(CollectedInfo.MEMORY) ||
