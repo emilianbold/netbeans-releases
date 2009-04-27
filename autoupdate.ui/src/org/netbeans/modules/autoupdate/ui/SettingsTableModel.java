@@ -120,7 +120,12 @@ public class SettingsTableModel extends AbstractTableModel {
         if (oldValue != null && ! oldValue.isEmpty () && ! newValue.containsAll (oldValue)) {
             getSettingsTab ().setNeedRefresh ();
         }
-        updateProviders = new ArrayList<UpdateUnitProvider> (providers);
+        updateProviders = new ArrayList<UpdateUnitProvider> ();
+        for (UpdateUnitProvider p : providers) {
+            if (p.getDisplayName() != null) {
+                updateProviders.add(p);
+            }
+        }
         originalProviders = newValue;
         sortAlphabetically (updateProviders);
         fireTableDataChanged ();

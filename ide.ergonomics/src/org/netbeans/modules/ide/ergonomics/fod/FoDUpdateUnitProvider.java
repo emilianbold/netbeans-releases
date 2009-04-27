@@ -40,7 +40,6 @@ import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /** Feature On Demand Unit Provider.
@@ -59,12 +58,12 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
     }
 
     public String getDisplayName () {
-        return NbBundle.getMessage (FoDUpdateUnitProvider.class, "MSG_FoDUpdateUnitProvider"); // NOI18N
+        return null;
     }
 
 
     public String getDescription() {
-        return NbBundle.getMessage (FoDUpdateUnitProvider.class, "DESC_FoDUpdateUnitProvider"); // NOI18N
+        return null;
     }
 
     public CATEGORY getCategory() {
