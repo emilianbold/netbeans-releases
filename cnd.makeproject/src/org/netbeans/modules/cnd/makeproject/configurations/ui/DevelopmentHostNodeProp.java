@@ -49,8 +49,6 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.DevelopmentHostCustomizer;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node;
