@@ -47,9 +47,24 @@ package org.netbeans.modules.mercurial.ui.repository;
  */
 public class RepositoryPanel extends javax.swing.JPanel {
 
+    private Runnable postInitRoutine;
+
     /** Creates new form RepositoryPanel */
     public RepositoryPanel() {
         initComponents();
+    }
+
+    void schedulePostInitRoutine(Runnable postInitRoutine) {
+        this.postInitRoutine = postInitRoutine;
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        setPreferredSize(getPreferredSize());
+        if (postInitRoutine != null) {
+            postInitRoutine.run();
+        }
     }
 
     /** This method is called from within the constructor to

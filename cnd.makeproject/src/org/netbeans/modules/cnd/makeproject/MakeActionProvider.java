@@ -505,9 +505,10 @@ public class MakeActionProvider implements ActionProvider {
                         System.err.println("Rsync not fould in Toolchain: sources can not be synchronized");
                         return;
                     } else {
+                        // TODO: using getName() does not suite for non-standard ssh port
                         String rsyncArgs = " --rsh=ssh --recursive --verbose --perms --links --delete --rsync-path=" + rsyncRemotePath + //NOI18N
                                 " --exclude \"build*\" --exclude \"dist*\" --cvs-exclude . " + //NOI18N
-                                conf.getDevelopmentHost().getName() + ":" + remotePath; //NOI18N
+                                conf.getDevelopmentHost().getHostKey() + ":" + remotePath; //NOI18N
                         runSyncProfile.setArgs(rsyncArgs);
                         runSyncProfile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
 
@@ -910,7 +911,7 @@ public class MakeActionProvider implements ActionProvider {
         StringBuilder actionName = new StringBuilder(projectName);
         actionName.append(" (").append(targetName); // NOI18N
         if (!conf.getDevelopmentHost().isLocalhost()) {
-            actionName.append(" - ").append(conf.getDevelopmentHost().getName()); // NOI18N
+            actionName.append(" - ").append(conf.getDevelopmentHost().getHostKey()); // NOI18N
         }
         actionName.append(")"); // NOI18N
         return actionName.toString();
@@ -1076,7 +1077,7 @@ public class MakeActionProvider implements ActionProvider {
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
             boolean validated, AtomicBoolean cancelled) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getName());
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getHostKey());
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
         String csname;
@@ -1231,7 +1232,8 @@ public class MakeActionProvider implements ActionProvider {
                 // User can't change anything in BTA for remote host yet,
                 // so showing above dialog will only confuse him
                 NotifyDescriptor nd = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", csname, conf.getDevelopmentHost().getName()));
+                        NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET",
+                        csname, conf.getDevelopmentHost().getDisplayName(false)));
                 DialogDisplayer.getDefault().notify(nd);
                 lastValidation = false;
             }

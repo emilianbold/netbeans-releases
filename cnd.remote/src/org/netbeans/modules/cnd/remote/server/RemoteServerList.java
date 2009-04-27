@@ -43,7 +43,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -160,7 +159,7 @@ public class RemoteServerList implements ServerListImplementation {
     }
     
     @Override
-    public List<ExecutionEnvironment> getEnvironments() {
+    public synchronized  List<ExecutionEnvironment> getEnvironments() {
         List<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(items.size());
         for (RemoteServerRecord item : items) {
             result.add(item.getExecutionEnvironment());
@@ -293,7 +292,7 @@ public class RemoteServerList implements ServerListImplementation {
     
     @Override
     public synchronized Collection<? extends ServerRecord> getRecords() {
-        return Collections.unmodifiableCollection(items);
+        return new ArrayList<RemoteServerRecord>(items);
     }
     
     // TODO: Are these still needed?

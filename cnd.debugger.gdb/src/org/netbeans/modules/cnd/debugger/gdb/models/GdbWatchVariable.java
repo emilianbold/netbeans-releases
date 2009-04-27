@@ -109,7 +109,6 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         if (pname.equals(GdbDebugger.PROP_CURRENT_THREAD) ||
                 pname.equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) ||
                 pname.equals(Watch.PROP_EXPRESSION)) {
-            final GdbWatchVariable gwv = this;
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     if (pname.equals(Watch.PROP_EXPRESSION)) {
@@ -118,7 +117,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
                     type = getDebugger().requestWhatis(watch.getExpression());
                     if (type != null && type.length() > 0) {
                         value = getDebugger().evaluate(watch.getExpression());
-                        String rt = getTypeInfo().getResolvedType(gwv);
+                        String rt = getTypeInfo().getResolvedType(GdbWatchVariable.this);
                         if (GdbUtils.isPointer(rt)) {
                             derefValue = getDebugger().evaluate('*' + watch.getExpression());
                         }
