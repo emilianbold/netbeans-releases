@@ -998,6 +998,31 @@ public class Generate {
                                         "            }\n";
             return catchJDWPException;
         }
+        if (com.sun.jdi.Location.class.getName().equals(className) &&
+                (methodName.equals("sourcePath") || methodName.equals("sourceName"))) {
+            String catchJDWPException = "            try {\n"+
+                                        "    "+exec+
+                                        "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                        "                if (iex.errorCode() == 101) { // ABSENT_INFORMATION\n"+
+                                        "                    throw new com.sun.jdi.AbsentInformationException(iex.getMessage());\n"+
+                                        "                } else {\n"+
+                                        "                    throw iex; // re-throw the original\n"+
+                                        "                }\n"+
+                                        "            }\n";
+            return catchJDWPException;
+        }
+        if (com.sun.jdi.Location.class.getName().equals(className) && methodName.equals("lineNumber")) {
+            String catchJDWPException = "            try {\n"+
+                                        "    "+exec+
+                                        "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                        "                if (iex.errorCode() == 101) { // ABSENT_INFORMATION\n"+
+                                        "                    return -1;\n"+
+                                        "                } else {\n"+
+                                        "                    throw iex; // re-throw the original\n"+
+                                        "                }\n"+
+                                        "            }\n";
+            return catchJDWPException;
+        }
         return exec;
     }
 
