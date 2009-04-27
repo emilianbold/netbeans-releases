@@ -494,7 +494,6 @@ public class ProjectActionSupport {
                     if (cmd != null) {
                         ok = cmd.run(execEnv, "test -x " + executable + " -a -f " + executable, null) == 0; // NOI18N
                     }
-                    ok = false;
                 } else {
                     // FIXUP: getExecutable should really return fully qualified name to executable including .exe
                     // but it is too late to change now. For now try both with and without.
