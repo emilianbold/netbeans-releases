@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/platform/resources/templates/javaplatform.html"/>
                     <file name="javaplatform.xml" url="templates/javaplatform.xml">
                         <attr name="template" boolvalue="true"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seplatform.resources.Bundle"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.platform.resources.Bundle"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/platform/resources/platform.gif"/>
                         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/platform/resources/templates/javaplatformdefinition.html"/>
                         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.platform.wizard.PlatformInstallIterator.create"/>
