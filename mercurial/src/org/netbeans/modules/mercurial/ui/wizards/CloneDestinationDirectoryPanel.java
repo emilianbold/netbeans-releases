@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -92,7 +92,7 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         String name = nameField.getText();
         File file = new File (dir, name);
         if (file.exists()) {
-            message = NbBundle.getMessage(CloneRepositoryPanel.class, "MSG_TARGET_EXISTS"); // NOI18N
+            message = NbBundle.getMessage(CloneDestinationDirectoryPanel.class, "MSG_TARGET_EXISTS"); // NOI18N
             return false;
         } else {
             message = "";

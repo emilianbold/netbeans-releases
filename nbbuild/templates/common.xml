@@ -292,6 +292,7 @@ made subject to such option by the copyright holder.
         <property name="jnlp.sign.jars" value="false"/>
         <property name="jnlp.indirect.jars" value="[NOTHING]"/>
         <property name="jnlp.indirect.files" value="[NOTHING]"/>
+        <property name="jnlp.generate.versions" value="false"/>
     </target>
 
     <target name="jnlp" depends="init,netbeans,jnlp-master,-jnlp-init" description="Builds JNLP descriptor and signs JAR files" >
@@ -305,6 +306,7 @@ made subject to such option by the copyright holder.
             verifyexcludes="${jnlp.verify.excludes}"
             permissions="${jnlp.permissions}"
             signjars="${jnlp.sign.jars}"
+            processjarversions="${jnlp.generate.versions}"
         >
             <modules dir="${cluster}" >
                 <include name="${module.jar}" />

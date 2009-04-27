@@ -555,7 +555,7 @@ public abstract class BaseFileObj extends FileObject {
         stopWatch.stop();
     }
 
-    private void fireFileAttributeChangedEvent(final String attrName, final Object oldValue, final Object newValue) {
+    final void fireFileAttributeChangedEvent(final String attrName, final Object oldValue, final Object newValue) {
         final BaseFileObj parent = getExistingParent();
         Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
 

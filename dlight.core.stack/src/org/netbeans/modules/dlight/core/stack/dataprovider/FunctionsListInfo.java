@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +31,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.api.remote;
+package org.netbeans.modules.dlight.core.stack.dataprovider;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 
 /**
- * An interface to allow cnd modules to run a RemoteCommandSupport from cnd.remote.
- * 
- * @author gordonp
+ *
+ * @author mt154047
  */
-public interface InteractiveCommandProvider {
+public interface FunctionsListInfo {
 
-    /**
-     * Run a remote commane via cnd.remote's RemoteInteractiveCommandSupport.
-     *
-     * @param execEnv The user and remote host (user@host)
-     * @param cmd The command to run
-     * @param env The (possibly null) environment to send to the remote command
-     * @return true if the command started, otherwise false
-     */
-    public boolean run(ExecutionEnvironment execEnv, String cmd, Map<String, String> env);
+    List<FunctionCall> getFunctionCalls();
 
-    public boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env);
+    MetricsSummary getMetricsSummary();
 
-    public InputStream getInputStream() throws IOException;
+    public interface MetricsSummary {
 
-    public OutputStream getOutputStream() throws IOException;
-
-    public void disconnect();
-
-    public int waitFor();
-
-    public int getExitStatus();
-
+        public Object getValue(FunctionMetric metric);
+    }
 }
