@@ -146,6 +146,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
 
         this.result = AstUtilities.getParseResult(result);
+        if (this.result == null) {
+            return Collections.<StructureItem>emptyList();
+        }
 
         AnalysisResult ar = this.result.getStructure();
         List<?extends AstElement> elements = ar.getElements();
