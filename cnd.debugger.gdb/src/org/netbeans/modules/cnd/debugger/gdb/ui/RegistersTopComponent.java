@@ -60,8 +60,6 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
         jTable1.setDefaultRenderer(RegisterValue.class, new RegisterCellRendererForValue());
         TableColumn col = jTable1.getColumnModel().getColumn(RegisterTableModel.COLUMN_VALUE);
         col.setCellEditor(new RegisterTableCellEditor());
-        
-        model.refresh();
     }
 
     /** This method is called from within the constructor to

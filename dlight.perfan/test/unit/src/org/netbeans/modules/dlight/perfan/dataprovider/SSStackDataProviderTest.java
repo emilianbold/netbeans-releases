@@ -54,7 +54,7 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTable
 import org.netbeans.modules.dlight.perfan.storage.impl.PerfanDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Exceptions;
 
 /**
@@ -197,7 +197,7 @@ public class SSStackDataProviderTest {
 
         final SSStackDataProvider provider = new SSStackDataProvider();
         PerfanDataStorage storage = new PerfanDataStorage();
-        storage.init(new ExecutionEnvironment(), "/shared/dp/sstrunk/intel-S2", "/var/tmp/dlightExperiment.er");
+        storage.init(ExecutionEnvironmentFactory.getLocal(), "/shared/dp/sstrunk/intel-S2", "/var/tmp/dlightExperiment.er");
         provider.attachTo(storage);
 
         int threadLimit = 20;

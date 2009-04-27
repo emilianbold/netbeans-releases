@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -106,7 +106,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             if (info != null) {
                 String dh = info.getDevelopmentHost();
                 if (dh != null) {
-                    developmentHost = ExecutionEnvironmentFactory.getExecutionEnvironment(dh);
+                    developmentHost = ExecutionEnvironmentFactory.fromUniqueID(dh);
                 }
             }
         }

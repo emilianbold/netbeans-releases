@@ -87,14 +87,14 @@ public class FixTestDependenciesTest extends NbTestCase {
 
     public void testWrongBuilClassDep() throws IOException {
         FixTestDependencies ftd = newFixTestDependencies();
-        Set/*<String>*/ cnb = new HashSet();
-        Set/*<String>*/ testCnb = new HashSet();
+        Set<String> cnb = new HashSet<String>();
+        Set<String> testCnb = new HashSet<String>();
  
         Properties props = new Properties();
         String PNAME = "cp.extra";
         String PVALUE = "../build/test/unit/classes";
         props.setProperty(PNAME,PVALUE);
-        ftd.readCodeNameBases(cnb,testCnb,props,"cp.extra",Collections.EMPTY_SET,Collections.EMPTY_SET);
+        ftd.readCodeNameBases(cnb, testCnb, props, "cp.extra", Collections.<String>emptySet(), Collections.<ModuleListParser.Entry>emptySet());
         assertEquals("No dependency on module.",0,cnb.size());        
         assertEquals("No test dependency on module.",0,testCnb.size()); 
         assertEquals("property value",PVALUE,props.getProperty(PNAME));
@@ -210,8 +210,8 @@ public class FixTestDependenciesTest extends NbTestCase {
   
     }    
 
-     private Set getEntries() {
-           Set entries = new HashSet();
+    private Set<ModuleListParser.Entry> getEntries() {
+        Set<ModuleListParser.Entry> entries = new HashSet<ModuleListParser.Entry>();
         entries.add(new ModuleListParser.Entry("org.openide.io",new File("extra/modules/org-openide-io.jar"),
             new File[0],    null,"openide/io",
             new String[]{"org.openide.util"},

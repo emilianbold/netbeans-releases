@@ -44,6 +44,9 @@ import java.text.MessageFormat;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -129,25 +132,29 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     public void removeChangeListener(ChangeListener l) {
     }
 
-    static final String PROP_CACHE_MANAGER = "cachemanager"; //NOI18N
-
-    public static ExecutionEnvironment invokeMe(ToolsCacheManager cacheManager) {
+    public static ServerRecord invokeMe(ToolsCacheManager cacheManager) {
         WizardDescriptor.Iterator<WizardDescriptor> iterator = new CreateHostWizardIterator();
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); //NOI18N
         wizardDescriptor.setTitle(getString("CreateNewHostWizardTitle"));
-        wizardDescriptor.putProperty(PROP_CACHE_MANAGER, cacheManager);
+        wizardDescriptor.putProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER, cacheManager);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
-            Runnable r = (Runnable) wizardDescriptor.getProperty(CreateHostWizardPanel2.PROP_RUN_ON_FINISH);
+            Runnable r = (Runnable) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_RUN_ON_FINISH);
             CndUtils.assertFalse(r == null);
             if (r != null) {
                 r.run();
             }
-            return (ExecutionEnvironment)wizardDescriptor.getProperty(CreateHostWizardPanel2.PROP_HOST);
+            ExecutionEnvironment execEnv = (ExecutionEnvironment)wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_HOST);
+            String displayName = (String) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_DISPLAY_NAME);
+            if (displayName == null) {
+                displayName = execEnv.getDisplayName();
+            }
+            final ServerRecord record = ServerList.addServer(execEnv, displayName, false, false);
+            return record;
         } else {
             return null;
         }

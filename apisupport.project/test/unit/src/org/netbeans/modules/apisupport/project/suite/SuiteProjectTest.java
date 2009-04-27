@@ -74,7 +74,7 @@ public class SuiteProjectTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-//        MockLookup.setLayersAndInstances();
+        MockLookup.setLayersAndInstances(getClass().getClassLoader());
         TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
     }
     

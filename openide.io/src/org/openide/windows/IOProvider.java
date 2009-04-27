@@ -111,14 +111,13 @@ public abstract class IOProvider {
 
     
     /** 
-     *Gets a named instance of InputOutput with additional actions displayed in the
+     *Gets a named instance of InputOutput with actions displayed in the
      * toolbar.
      * Streams for reading/writing can be accessed via
      * getters on the returned instance. 
-     * Additional actions are displayed on the output's toolbar.
      *
      * @param name A localized display name for the tab
-     * @param additionalActions array of actions that are added to the toolbar, Can be empty array, but not null.
+     * @param actions array of actions that are added to the toolbar, Can be empty array, but not null.
      *   The number of actions should not exceed 5 and each should have the <code>Action.SMALL_ICON</code> property defined.
      * @return an <code>InputOutput</code> instance for accessing the new tab
      * @see InputOutput
@@ -127,7 +126,7 @@ public abstract class IOProvider {
      * extending <code>IOProvider</code> and implementing its abstract classes, you are encouraged to override
      * this method as well. The default implementation falls back to the <code>getIO(name, newIO)</code> method, ignoring the actions passed.
      */
-    public InputOutput getIO(String name, Action[] additionalActions) {
+    public InputOutput getIO(String name, Action[] actions) {
         return getIO(name, true);
     }
 
@@ -135,7 +134,7 @@ public abstract class IOProvider {
      * Gets a named instance of {@link InputOutput}. Corresponding IO tab will be placed
      * in parent container corresponding to provided {@link IOContainer}.
      * @param name A localized display name for the tab
-     * @param additionalActions array of actions that are added to the toolbar, Can be empty array, but not null.
+     * @param actions array of actions that are added to the toolbar, Can be empty array, but not null.
      *   The number of actions should not exceed 5 and each should have the <code>Action.SMALL_ICON</code> property defined.
      * @param ioContainer parent container accessor
      * @return an <code>InputOutput</code> instance for accessing the new tab
@@ -143,10 +142,10 @@ public abstract class IOProvider {
      * @since 1.15
      * <br>Note: The method is non-abstract for backward compatibility reasons only. If you are
      * extending <code>IOProvider</code> and implementing its abstract classes, you are encouraged to override
-     * this method as well. The default implementation falls back to the <code>getIO(name, additionalActions)</code> method, ignoring the ioContainer passed.
+     * this method as well. The default implementation falls back to the <code>getIO(name, actions)</code> method, ignoring the ioContainer passed.
      */
-    public InputOutput getIO(String name, Action[] additionalActions, IOContainer ioContainer) {
-        return getIO(name, additionalActions);
+    public InputOutput getIO(String name, Action[] actions, IOContainer ioContainer) {
+        return getIO(name, actions);
     }
 
     /**

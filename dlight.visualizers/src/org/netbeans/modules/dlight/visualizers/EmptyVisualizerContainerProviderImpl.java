@@ -51,7 +51,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final  class EmptyVisualizerContainerProviderImpl implements EmptyVisualizerContainerProvider{
 
     public VisualizerContainer getEmptyVisualizerContainer() {
-        return VisualizerTopComponentTopComponent.getDefault();
+        return VisualizerTopComponentTopComponent.findInstance();
     }
 
 }

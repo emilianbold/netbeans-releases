@@ -87,7 +87,7 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -286,9 +286,7 @@ public class MakeActionProvider implements ActionProvider {
         if (exeEnv.isLocal()) {
             actionWorker.run();
         } else {
-            ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-            assert registry != null;
-            ServerRecord record = registry.get(exeEnv);
+            ServerRecord record = ServerList.get(exeEnv);
             assert record != null;
             invokeRemoteHostAction(record, actionWorker);
         }
@@ -316,15 +314,13 @@ public class MakeActionProvider implements ActionProvider {
             String message;
             int res = JOptionPane.NO_OPTION;
             if (record.isDeleted()) {
-                message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getName());
+                message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getDisplayName());
                 res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
                 if (res == JOptionPane.YES_OPTION) {
-                    ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-                    assert registry != null;
-                    registry.addServer(record.getExecutionEnvironment(), false, true);
+                    ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), false, true);
                 }
             } else if (!record.isOnline()) {
-                message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
+                message = MessageFormat.format(getString("ERR_NeedToConnectToRemoteHost"), record.getDisplayName());
                 res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
             }
             if (res != JOptionPane.YES_OPTION) {
@@ -349,7 +345,7 @@ public class MakeActionProvider implements ActionProvider {
                         cancel();
                     } catch (Exception e) {
                         e.printStackTrace();
-                        final String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getName()); //NOI18N
+                        final String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getDisplayName()); //NOI18N
                         final String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
@@ -365,7 +361,7 @@ public class MakeActionProvider implements ActionProvider {
             };
         }
         Frame mainWindow = WindowManager.getDefault().getMainWindow();
-        String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getName());
+        String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getDisplayName());
         String title = NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Validate_Host");
         ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
     }
@@ -499,7 +495,7 @@ public class MakeActionProvider implements ActionProvider {
                     int result = provider.run(conf.getDevelopmentHost().getExecutionEnvironment(), "which rsync", null); //NOI18N
                     String rsyncRemotePath = (result != 0 || provider.getOutput().indexOf(' ')>-1) ? "/opt/csw/bin/rsync" : provider.getOutput(); //NOI18N //YESCHEAT
                     // do sync
-                    RunProfile runSyncProfile = conf.getProfile().clone();
+                    RunProfile runSyncProfile = conf.getProfile().clone(conf);
                     // TODO: remote and local rsync paths from toolchain
                     // TODO: real project name
                     String lpath = project.getProjectDirectory().getNameExt();
@@ -516,7 +512,7 @@ public class MakeActionProvider implements ActionProvider {
                         runSyncProfile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
 
                         MakeConfiguration syncConf = (MakeConfiguration) conf.clone();
-                        syncConf.setDevelopmentHost(new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.getLocalExecutionEnvironment())); // rsync should be ran only locally
+                        syncConf.setDevelopmentHost(new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.getLocal())); // rsync should be ran only locally
                         ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                                 project,
                                 actionEvent,
@@ -567,7 +563,7 @@ public class MakeActionProvider implements ActionProvider {
                     int platform = conf.getPlatform().getValue();
                     if (platform == Platform.PLATFORM_WINDOWS) {
                         // On Windows we need to add paths to dynamic libraries from subprojects to PATH
-                        runProfile = conf.getProfile().clone();
+                        runProfile = conf.getProfile().clone(conf);
                         Set subProjectOutputLocations = conf.getSubProjectOutputLocations();
                         String path = ""; // NOI18N
                         // Add paths from subprojetcs
@@ -616,7 +612,7 @@ public class MakeActionProvider implements ActionProvider {
                             path.append(location);
                         }
                         if (path.length() > 0) {
-                            runProfile = conf.getProfile().clone();
+                            runProfile = conf.getProfile().clone(conf);
                             String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
                                 if (cancelled.get()) {
@@ -644,7 +640,7 @@ public class MakeActionProvider implements ActionProvider {
                             path.append(location);
                         }
                         if (path.length() > 0) {
-                            runProfile = conf.getProfile().clone();
+                            runProfile = conf.getProfile().clone(conf);
                             String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
                             if (extPath == null) {
                                 if (cancelled.get()) {
@@ -670,7 +666,7 @@ public class MakeActionProvider implements ActionProvider {
                         if (HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
                             // DISPLAY hasn't been set
                             if (runProfile == null) {
-                                runProfile = conf.getProfile().clone();
+                                runProfile = conf.getProfile().clone(conf);
                             }
                             runProfile.getEnvironment().putenv("DISPLAY", ":0.0"); // NOI18N
                         }
@@ -1080,12 +1076,11 @@ public class MakeActionProvider implements ActionProvider {
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
             boolean validated, AtomicBoolean cancelled) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.getExecutionEnvironment(conf.getDevelopmentHost().getName());
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getName());
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
         String csname;
         File file;
-        ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
         boolean cRequired = conf.hasCFiles(pd);
         boolean cppRequired = conf.hasCPPFiles(pd);
         boolean fRequired = conf.hasFortranFiles(pd);
@@ -1097,8 +1092,7 @@ public class MakeActionProvider implements ActionProvider {
         }
 
         if (!conf.getDevelopmentHost().isLocalhost()) {
-            assert serverList != null;
-            ServerRecord record = serverList.get(env);
+            ServerRecord record = ServerList.get(env);
             assert record != null;
             record.validate(false);
             if (cancelled.get()) {
@@ -1156,10 +1150,8 @@ public class MakeActionProvider implements ActionProvider {
                 runBTA = true;
             }
         } else {
-            if (serverList != null && !unknownCompilerSet) {
-                if (!serverList.isValidExecutable(env, makeTool.getPath())) {
-                    runBTA = true;
-                }
+            if (!isValidExecutable(makeTool.getPath(), pi)) {
+                runBTA = true;
             }
         }
 
@@ -1294,8 +1286,44 @@ public class MakeActionProvider implements ActionProvider {
         return true;
     }
 
+    /** cache for file existence status. */
+    private static Map<String, Boolean> fileExistenceCache = new HashMap<String, Boolean>();
+
+    /** cache for valid executables */
+    private static Map<String, Boolean> validExecutablesCache = new HashMap<String, Boolean>();
+
+    private static final boolean isValidExecutable(String path, PlatformInfo pi) {
+        return existsImpl(path, pi, true);
+    }
     private static boolean exists(String path, PlatformInfo pi) {
-        return pi.fileExists(path) || pi.isWindows() && pi.fileExists(path+".lnk") || pi.findCommand(path) != null; // NOI18N
+        return existsImpl(path, pi, false);
+    }
+
+    private static boolean existsImpl(String path, PlatformInfo pi, boolean checkExecutable) {
+        ExecutionEnvironment execEnv = pi.getExecutionEnvironment();
+        String key = path + ExecutionEnvironmentFactory.toUniqueID(execEnv);
+        Map<String, Boolean> map = checkExecutable ? validExecutablesCache : fileExistenceCache;
+
+        synchronized (map) {
+            Boolean cached = map.get(key);
+            if (cached != null && cached.booleanValue()) {
+                return true;
+            }
+        }
+        
+        boolean result;
+        if (checkExecutable) {
+            result = ServerList.isValidExecutable(execEnv, path);
+        } else {
+            result = pi.fileExists(path) || pi.isWindows() && pi.fileExists(path+".lnk") || pi.findCommand(path) != null; // NOI18N
+        }
+        
+        if (result) {
+            synchronized (map) {
+                map.put(key, Boolean.TRUE);
+            }
+        }
+        return result;
     }
 
 //    private static String getExePath(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {

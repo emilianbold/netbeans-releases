@@ -47,12 +47,10 @@ import javax.swing.JOptionPane;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.explorer.propertysheet.PropertyEnv;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
@@ -77,11 +75,12 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
      */
     public DevelopmentHostCustomizer(DevelopmentHostConfiguration dhconf, PropertyEnv propertyEnv) {
         super(NbBundle.getMessage(DevelopmentHostCustomizer.class, 
-                dhconf.isOnline() ? "ERR_NothingToDo" : "ERR_NeedToInitializeRemoteHost", dhconf.getName()), // NOI18N
-                QUESTION_MESSAGE, DEFAULT_OPTION, null, new Object[] { });
+                dhconf.isConfigured() ? "ERR_NothingToDo" : "ERR_NeedToInitializeRemoteHost", dhconf.getName()), // NOI18N
+                dhconf.isConfigured() ? INFORMATION_MESSAGE : QUESTION_MESSAGE,
+                DEFAULT_OPTION, null, new Object[] { });
         this.dhconf = dhconf;
         this.propertyEnv = propertyEnv;
-        if (!dhconf.isOnline()) {
+        if (!dhconf.isConfigured()) {
             propertyEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
             propertyEnv.addVetoableChangeListener(this);
         }
@@ -96,11 +95,9 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
      * @throws java.beans.PropertyVetoException
      */
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-        if (!dhconf.isOnline()) {
+        if (!dhconf.isConfigured()) {
             ExecutionEnvironment execEnv = dhconf.getExecutionEnvironment();
-            ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-            assert registry != null;
-            final ServerRecord record = registry.get(execEnv);
+            final ServerRecord record = ServerList.get(execEnv);
             assert record != null;
 
             // start validation phase
@@ -118,8 +115,9 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
                 }
             };
             // Note: Messages come from different class bundle...
-            String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Configure_Host_Progress", record.getName());
-            ModalMessageDlg.runLongTask(mainWindow, csmWorker, null, null, NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Configure_Host"), msg);
+            String msg = NbBundle.getMessage(getClass(), "MSG_Configure_Host_Progress", record.getDisplayName());
+            final String title = NbBundle.getMessage(getClass(), "DLG_TITLE_Configure_Host", record.getExecutionEnvironment().getHost());
+            ModalMessageDlg.runLongTask(mainWindow, csmWorker, null, null, title, msg);
             propertyEnv.removeVetoableChangeListener(this);
             propertyEnv.setState(PropertyEnv.STATE_VALID);
             if (!record.isOnline()) {

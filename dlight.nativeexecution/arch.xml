@@ -141,7 +141,7 @@ Microsystems, Inc. All Rights Reserved.
             </p>
 <usecase id="StartRemoteProcess" name="Start Remote System Process">
 <pre>
-    ExecutionEnvironment env = new ExecutionEnvironment(userName, host);
+    ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(userName, host);
     NativeProcessBuilder npb = new NativeProcessBuilder(env, "/bin/ls");
     npb = npb.setArguments(".").setWorkingDirectory("/tmp");
     ExecutionDescriptor descr = new ExecutionDescriptor().controllable(true);
@@ -226,7 +226,7 @@ and then invokes it (or associate with
 some Action handler).
 
 <pre>
-ExecutionEnvironment ee = new ExecutionEnvironment(user, host, port);
+ExecutionEnvironment ee = ExecutionEnvironmentFactory.createNew(user, host, port);
 ConnectionManager cm = ConnectionManager.getInstance();
 
 Runnable onConnect = new Runnable() {

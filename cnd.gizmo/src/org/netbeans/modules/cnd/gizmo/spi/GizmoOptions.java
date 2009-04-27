@@ -41,70 +41,42 @@
 package org.netbeans.modules.cnd.gizmo.spi;
 
 import java.util.Collection;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 
 public interface GizmoOptions {
 
-    public static enum DataProvider {
+    static enum DataProvider {
 
         SUN_STUDIO,
         DTRACE,
+        SIMPLE
     };
 
     /**
      * @return the profileOnRun
      */
-    public boolean getProfileOnRunValue();
+    boolean getProfileOnRunValue();
 
     /**
      * @param profileOnRunOption the profileOnRunOption value to set
      */
-    public void setProfileOnRunValue(boolean profileOnRunValue);
+    void setProfileOnRunValue(boolean profileOnRunValue);
 
-    public boolean getValueByName(String name);
+    boolean getValueByName(String name);
 
-    public void setValueByName(String name, boolean value);
+    void setValueByName(String name, boolean value);
 
-    public Collection<String> getNames();
+    Collection<String> getNames();
 
-//    public void setDataProviderValue(String value);
-
-//    /**
-//     * @return the cpu
-//     */
-//    public boolean getCpuValue();
-//
-//    /**
-//     * @param cpu the cpu value to set
-//     */
-//    public void setCpuValue(boolean cpu);
-//
-//    /**
-//     * @return the memory
-//     */
-//    public boolean getMemoryValue();
-//
-//    /**
-//     * @param memory the memory value to set
-//     */
-//    public void setMemoryValue(boolean memory);
-//
-//    /**
-//     * @return the synchronization
-//     */
-//    public boolean getSynchronizationValue();
-//
-//    /**
-//     * @param synchronization the synchronization value to set
-//     */
-//    public void setSynchronizationValue(boolean synchronization);
-//
     /**
      * @return the dataProvider
      */
-    public DataProvider getDataProviderValue();
+    DataProvider getDataProviderValue();
 
     /**
      * @param dataProvider the dataProvider to set
      */
-    public void setDataProviderValue(DataProvider dataProvider);
+    void setDataProviderValue(DataProvider dataProvider);
+
+    void init(Configuration conf);
 }

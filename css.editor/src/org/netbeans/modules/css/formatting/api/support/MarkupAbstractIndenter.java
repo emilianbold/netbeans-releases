@@ -203,7 +203,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 }
                 // find tag open and keep searching backwards ignoring it:
                 if (moveToOpeningTag(ts)) {
-                    assert getTokenName(ts.token()).equals(tag) : "tag="+tag+" token="+ts.token();
+                    assert getTokenName(ts.token()).equalsIgnoreCase(tag) : "tag="+tag+" token="+ts.token();
                     int rangeStart;
                     // if document is being editted end tag symbol might be accidentally missing:
                     if (ts.movePrevious() && isStartTagSymbol(ts.token())) {
@@ -241,7 +241,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             }
             return new MarkupItem(tagName, true, indentation, optionalEnd, children, empty != null ? empty.booleanValue() : false, false, false);
         } else {
-            return new MarkupItem(tagName, false, indentation, false, null, false, false, false);
+            Boolean empty = isEmptyTag(tagName);
+            return new MarkupItem(tagName, false, indentation, false, null, empty != null ? empty.booleanValue() : false, false, false);
         }
 
     }
@@ -500,8 +501,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                                     context.getLineStartOffset()));
                                 item.processed = true;
                             } else {
-                                if (closingTag) {
-                                    assert item.tagName.equalsIgnoreCase(tokenName) : "was expecting tag "+tokenName+" but was "+item+ ": "+fileStack+" index="+index;
+                                if (closingTag && item.tagName.equalsIgnoreCase(tokenName)) {
                                     iis.add(new IndentCommand(IndentCommand.Type.RETURN,
                                         context.getLineStartOffset()));
                                     item.processed = true;
@@ -738,6 +738,9 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                     // nothing to do:
                     break;
                 } else if (item.optionalClosingTag) {
+                    if (lastFailureSize == -1) {
+                        lastFailureSize = newItems.size();
+                    }
                     newItems.add(MarkupAbstractIndenter.createVirtualMarkupItem(item.tagName, item.empty));
                 } else {
                     if (lastFailureSize == -1) {
@@ -750,6 +753,8 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                         if (AbstractIndenter.DEBUG) {
                             System.err.println("WARNING: cannot find opening tag for "+newItem+": "+getStack()+" stopped searching at "+item);
                         }
+                        // resuse eliminated attribute here to simply ignore newItem
+                        newItem.eliminated = true;
                         break;
                     }
 

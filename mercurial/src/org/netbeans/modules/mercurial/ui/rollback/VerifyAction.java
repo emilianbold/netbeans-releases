@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -83,9 +83,8 @@ public class VerifyAction extends ContextAction {
     public static void verify(final VCSContext ctx){
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
-        String repository = root.getAbsolutePath();
          
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
                 
@@ -116,7 +115,7 @@ public class VerifyAction extends ContextAction {
                 }
             }
         };
-        support.start(rp, repository,org.openide.util.NbBundle.getMessage(VerifyAction.class, "MSG_VERIFY_PROGRESS")); // NOI18N
+        support.start(rp, root, org.openide.util.NbBundle.getMessage(VerifyAction.class, "MSG_VERIFY_PROGRESS")); // NOI18N
     }
     
     public boolean isEnabled() {

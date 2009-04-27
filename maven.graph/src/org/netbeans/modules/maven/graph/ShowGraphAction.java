@@ -42,22 +42,12 @@ package org.netbeans.modules.maven.graph;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -84,6 +74,12 @@ public class ShowGraphAction extends AbstractAction implements ContextAwareActio
     
     public Action createContextAwareInstance(Lookup lookup) {
         Project prj = lookup.lookup(Project.class);
+        if (prj == null) {
+            FileObject fo = lookup.lookup(FileObject.class);
+            if (fo != null) {
+                prj = FileOwnerQuery.getOwner(fo);
+            }
+        }
         return new ShowGraphAction(prj);
     }
 }

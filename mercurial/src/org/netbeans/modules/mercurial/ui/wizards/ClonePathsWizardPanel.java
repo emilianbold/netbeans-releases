@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,29 +40,37 @@
  */
 package org.netbeans.modules.mercurial.ui.wizards;
 
-import java.io.File;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
-public class ClonePathsWizardPanel implements WizardDescriptor.Panel, DocumentListener {
+public class ClonePathsWizardPanel implements WizardDescriptor.ValidatingPanel {
     
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
     private ClonePathsPanel component;
-    private boolean valid;
-    private String errorMessage;
-    private String repositoryOrig;
+    private HgURL repositoryOrig;
+    private Listener listener;
+    private Document pullPathDoc, pushPathDoc;
+    private boolean pullUrlValidated, pushUrlValidated;
+    private HgURL pullUrl, pushUrl;
+
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
@@ -70,107 +78,117 @@ public class ClonePathsWizardPanel implements WizardDescriptor.Panel, DocumentLi
     public Component getComponent() {
         if (component == null) {
             component = new ClonePathsPanel();
-            component.defaultPullPathField.getDocument().addDocumentListener(this);
-            component.defaultPushPathField.getDocument().addDocumentListener(this);
-            valid();
+            initInteraction();
         }
         return component;
     }
+
+    private void initInteraction() {
+        listener = new Listener();
+
+        pullPathDoc = component.defaultPullPathField.getDocument();
+        pushPathDoc = component.defaultPushPathField.getDocument();
+
+        pullPathDoc.addDocumentListener(listener);
+        pushPathDoc.addDocumentListener(listener);
+
+        component.defaultValuesButton.addActionListener(listener);
+    }
+
+    final class Listener implements ActionListener, DocumentListener {
+
+        public void actionPerformed(ActionEvent e) {
+            assert e.getSource() == component.defaultValuesButton;
+
+            setTextFromRepository(component.defaultPullPathField);
+            setTextFromRepository(component.defaultPushPathField);
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            textChanged(e);
+        }
+        public void removeUpdate(DocumentEvent e) {
+            textChanged(e);
+        }
+        public void changedUpdate(DocumentEvent e) {
+            textChanged(e);
+        }
+
+        private void textChanged(DocumentEvent e) {
+            Document doc = e.getDocument();
+
+            boolean wasKnownToBeInvalid = isKnownToBeInvalid();
+
+            if (doc == pullPathDoc) {
+                pullUrlValidated = false;
+                pullUrl = null;
+            } else if (doc == pushPathDoc) {
+                pushUrlValidated = false;
+                pushUrl = null;
+            } else {
+                assert false;
+            }
+
+            if (isKnownToBeInvalid() != wasKnownToBeInvalid) {
+                fireChangeEvent();
+            }
+        }
+
+    }
+
+    private boolean isKnownToBeInvalid() {
+        return (pullUrlValidated && (pullUrl == null))
+               || (pushUrlValidated && (pushUrl == null));
+
+    }
     
+    public boolean isValid() {
+        return !isKnownToBeInvalid();
+    }
+
     public HelpCtx getHelp() {
         return new HelpCtx(ClonePathsWizardPanel.class);
     }
     
-    //public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
-        //return true;
-        // If it depends on some condition (form filled out...), then:
-        // return someCondition();
-        // and when this condition changes (last form field filled in...) then:
-        // fireChangeEvent();
-        // and uncomment the complicated stuff below.
-    //}
-    
-    public void insertUpdate(DocumentEvent e) {
-        textChanged(e);
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-        textChanged(e);
-    }
-
-    public void changedUpdate(DocumentEvent e) {
-        textChanged(e);
-    }
-
-    private void textChanged(final DocumentEvent e) {
-        // repost later to AWT otherwise it can deadlock because
-        // the document is locked while firing event and we try
-        // synchronously access its content
-        Runnable awt = new Runnable() {
-            public void run() {
-                if (e.getDocument() == component.defaultPullPathField.getDocument () || 
-                        e.getDocument() == component.defaultPushPathField.getDocument()) {
-                    if (component.isInputValid()) {
-                        valid(component.getMessage());
-                    } else {
-                        invalid(component.getMessage());
-                    }
-                }
-            }
-        };
-        SwingUtilities.invokeLater(awt);
-    }
-
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
+    private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>(3);
     public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        changeListeners.add(l);
     }
     public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        changeListeners.remove(l);
     }
+
     protected final void fireChangeEvent() {
-        Iterator<ChangeListener> it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            it.next().stateChanged(ev);
+        if (!changeListeners.isEmpty()) {
+            ChangeEvent e = new ChangeEvent(this);
+            for (ChangeListener l : changeListeners) {
+                l.stateChanged(e);
+            }
         }
     }
-    
-    protected final void valid() {
-        setValid(true, null);
+
+    public void validate() throws WizardValidationException {
+        if (!pullUrlValidated) {
+            pullUrlValidated = true;
+            pullUrl = validateUrl(component.defaultPullPathField,
+                                  "pull path invalid",                  //NOI18N
+                                  "defaultPullPath.Invalid");           //NOI18N
+        }
+        if (!pushUrlValidated) {
+            pushUrlValidated = true;
+            pushUrl = validateUrl(component.defaultPushPathField,
+                                  "push path invalid",                  //NOI18N
+                                  "defaultPushPath.Invalid");           //NOI18N
+        }
     }
 
-    protected final void valid(String extErrorMessage) {
-        setValid(true, extErrorMessage);
-    }
-
-    protected final void invalid(String message) {
-        setValid(false, message);
-    }
-
-    public final boolean isValid() {
-        return valid;
-    }
-
-    public final String getErrorMessage() {
-        return errorMessage;
-    }
-
-    private void setValid(boolean valid, String errorMessage) {
-        boolean fire = this.valid != valid;
-        fire |= errorMessage != null && (errorMessage.equals(this.errorMessage) == false);
-        this.valid = valid;
-        this.errorMessage = errorMessage;
-        if (fire) {
-            fireChangeEvent();
+    private HgURL validateUrl(JTextField field, String systemErrMsg, String errMsgKey) throws WizardValidationException {
+        try {
+            return new HgURL(field.getText().trim());
+        } catch (URISyntaxException ex) {
+            throw new WizardValidationException(component,
+                                                systemErrMsg,
+                                                getMessage(errMsgKey));
         }
     }
 
@@ -180,21 +198,32 @@ public class ClonePathsWizardPanel implements WizardDescriptor.Panel, DocumentLi
     // by the user.
     public void readSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
-            String repository = (String) ((WizardDescriptor) settings).getProperty("repository"); // NOI18N
+            HgURL repository = (HgURL) ((WizardDescriptor) settings).getProperty("repository"); // NOI18N
             boolean repoistoryChanged = repositoryOrig == null || !repository.equals(repositoryOrig);
             repositoryOrig = repository;
             
             if(repoistoryChanged || component.defaultPullPathField.getText().equals(""))
-                component.defaultPullPathField.setText(repository);
+                setTextFromRepository(component.defaultPullPathField);
             if(repoistoryChanged || component.defaultPushPathField.getText().equals(""))
-                component.defaultPushPathField.setText(repository);
+                setTextFromRepository(component.defaultPushPathField);
         }
     }
     public void storeSettings(Object settings) {
+        if (!pullUrlValidated || !pushUrlValidated) {
+            return;
+        };
         if (settings instanceof WizardDescriptor) {
-            ((WizardDescriptor) settings).putProperty("defaultPullPath", ((ClonePathsPanel) component).getPullPath()); // NOI18N
-            ((WizardDescriptor) settings).putProperty("defaultPushPath", ((ClonePathsPanel) component).getPushPath()); // NOI18N
+            ((WizardDescriptor) settings).putProperty("defaultPullPath", pullUrl); // NOI18N
+            ((WizardDescriptor) settings).putProperty("defaultPushPath", pushUrl); // NOI18N
         }
     }
-}
 
+    private void setTextFromRepository(JTextField textField) {
+        textField.setText(repositoryOrig.toHgCommandUrlString());  //incl. username and password
+    }
+
+    private static String getMessage(String msgKey) {
+        return NbBundle.getMessage(ClonePathsWizardPanel.class, msgKey);
+    }
+
+}

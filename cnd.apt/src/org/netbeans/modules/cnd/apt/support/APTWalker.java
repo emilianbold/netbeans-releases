@@ -290,14 +290,16 @@ public abstract class APTWalker {
                 break;
             default:
                 assert(false) : "unsupported " + APTTraceUtils.getTypeName(node); // NOI18N
-        }   
-        APTUtils.LOG.log(Level.FINE, "onAPT: {0}; {1} {2}",  // NOI18N
-                new Object[]    {
-                                node, 
-                                (wasInBranch ? "Was before;" : ""), // NOI18N
-                                (visitChild ? "Will visit children" : "") // NOI18N
-                                }
-                        );
+        }
+        if (APTUtils.LOG.isLoggable(Level.FINE)) {
+            APTUtils.LOG.log(Level.FINE, "onAPT: {0}; {1} {2}",  // NOI18N
+                    new Object[]    {
+                                    node,
+                                    (wasInBranch ? "Was before;" : ""), // NOI18N
+                                    (visitChild ? "Will visit children" : "") // NOI18N
+                                    }
+                            );
+        }
         return visitChild;
     }
     

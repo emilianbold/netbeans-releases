@@ -46,9 +46,11 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.NbBundle;
 
@@ -59,6 +61,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             Integer.valueOf(System.getProperty(
             "dlight.nativeexecutor.pidtimeout", "70")); // NOI18N
     protected final NativeProcessInfo info;
+    protected final HostInfo hostInfo;
     private final String id;
     // Immutable listeners list.
     private final Collection<ChangeListener> listeners;
@@ -75,6 +78,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         state = State.INITIAL;
         id = info.getCommandLine();
         stateLock = new String("StateLock: " + id); // NOI18N
+        hostInfo = HostInfoUtils.getHostInfo(info.getExecutionEnvironment());
 
         Collection<ChangeListener> ll = info.getListeners();
         listeners = (ll == null || ll.isEmpty()) ? null
@@ -84,6 +88,10 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
     public NativeProcess createAndStart() {
         try {
+            if (hostInfo == null) {
+                throw new IllegalStateException("Unable to create process - no HostInfo available"); // NOI18N
+            }
+
             setState(State.STARTING);
             create();
             setState(State.RUNNING);

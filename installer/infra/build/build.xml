@@ -391,14 +391,14 @@
 		<set property="glassfish.ml.appendix" value="-ml"/>
 		<set property="sjsas.ml.appendix"     value="-ml"/>
 	</if>
-
+	<!--
         <get
             src="${glassfish.builds.host}/java/re/glassfish_branch/10.0/promoted/prelude/latest/archive/bundles"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
             prefix="glassfish-mod"/>
-
+        -->
 	<set property="glassfish-mod.milestone.number"      value="28"/>
 	<set property="glassfish-mod.milestone.number.real" value="28c"/>
 	<set property="glassfish-mod.build.type"            value="prelude"/>
@@ -653,7 +653,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
                 <!-- openesb -->
 		<include name="**/openesb*"/>
-                <exclude name="**/openesb*${server.milestone.number}${server.build.number}.${openesb.build.number}*"/>
+                <exclude name="**/openesb*${server.milestone.number}.${openesb.build.number}*"/>
                 
                 <!-- tomcat -->
 		<include name="**/tomcat*"/>

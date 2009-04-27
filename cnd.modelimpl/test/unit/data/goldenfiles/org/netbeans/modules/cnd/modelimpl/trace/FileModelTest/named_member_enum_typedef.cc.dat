@@ -15,10 +15,18 @@ CLASS Cls (Cls ) [1:1/0-3:2/59] lcurly=10 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         TYPEDEF pletters  [2:9/13-2:53/57] TYPE: *Cls::letters TEXT=letters*  [2:9/13-2:53/57] SCOPE: Cls 
+        ENUM letters [2:17/21-2:41/45] SCOPE: Cls 
+            A
+            B
+            C
 
 ========== Dumping model of PROJECT DummyProject
 CLASS Cls (Cls ) [1:1/0-3:2/59] lcurly=10 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         TYPEDEF pletters  [2:9/13-2:53/57] TYPE: *Cls::letters TEXT=letters*  [2:9/13-2:53/57] SCOPE: Cls 
+        ENUM letters [2:17/21-2:41/45] SCOPE: Cls 
+            A
+            B
+            C
 

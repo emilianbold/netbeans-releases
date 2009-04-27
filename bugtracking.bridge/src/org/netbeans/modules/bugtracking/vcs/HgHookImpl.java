@@ -118,9 +118,9 @@ public class HgHookImpl extends HgHook {
 
             LOG.log(Level.FINER, " svn commit hook issue info '" + issueInfo + "'");     // NOI18N
             if(format.isAbove()) {
-                msg = issueInfo + "\n" + msg;
+                msg = issueInfo + "\n" + msg;                                   // NOI18N
             } else {
-                msg = msg + "\n" + issueInfo;
+                msg = msg + "\n" + issueInfo;                                   // NOI18N
             }
             
             context = new HgHookContext(context.getFiles(), msg, context.getLogEntries());
@@ -154,7 +154,7 @@ public class HgHookImpl extends HgHook {
         }
 
         String msg = context.getMessage();
-        if(!panel.addCommentCheckBox.isSelected() || msg == null || msg.trim().equals("")) {
+        if(!panel.addCommentCheckBox.isSelected() || msg == null || msg.trim().equals("")) { // NOI18N
             msg = null;
         }
         if(panel.addRevisionCheckBox.isSelected()) {
@@ -198,7 +198,7 @@ public class HgHookImpl extends HgHook {
             return;
         }
         File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "push hook start for " + file);
+        LOG.log(Level.FINE, "push hook start for " + file);                     // NOI18N
 
         Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, true);
         if(repo == null) {

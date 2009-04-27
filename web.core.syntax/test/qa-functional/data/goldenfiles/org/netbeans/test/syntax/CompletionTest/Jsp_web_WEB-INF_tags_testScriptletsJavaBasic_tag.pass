@@ -17,7 +17,7 @@ TypeNotPresentException
 End cursor position = 590
 [<% testBean.|, Integer getId (), <% testBean.getId(), 724]
 boolean equals (Object obj )
-Class <?> getClass ()
+Class  getClass ()
 Integer getId ()
 String getName ()
 int hashCode ()

@@ -303,6 +303,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         initializeCardsPanel();
 
         if ((label == null) && (combo == null)) {
+            addInsetsToPanel(cardsPanel);
             return cardsPanel;
         }
 
@@ -377,7 +378,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         }
         private HelpCtx getHelpFor(Repository repository) {
             return (repository != null)
-                   ? repository.getController().getHelpContext()
+                   ? repository.getController().getHelpCtx()
                    : null;
         }
 

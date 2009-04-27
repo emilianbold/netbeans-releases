@@ -88,6 +88,7 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiDialog;
+import org.netbeans.installer.utils.helper.swing.NbiFrame;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiList;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
@@ -132,9 +133,11 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     private Icon emptyIcon;
     
     public NbCustomizeSelectionDialog(
+            final NbiFrame parent,
             final NbWelcomePanel panel,
             final Runnable callback,
             final List<RegistryNode> registryNodes) {
+        super(parent);
         this.panel = panel;
         this.callback = callback;
         this.registryNodes = registryNodes;
@@ -242,13 +245,14 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         // componentsScrollPane /////////////////////////////////////////////////////
         componentsScrollPane = new NbiScrollPane(componentsList);
         componentsScrollPane.setVerticalScrollBarPolicy(
-                NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+                NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);       
+
         messageLabel.setLabelFor(componentsScrollPane);
         
         // descriptionPane //////////////////////////////////////////////////////////
         descriptionPane = new NbiTextPane();
         descriptionPane.setBorder(
-                new EmptyBorder(5, 5, 5, 5));
+                new EmptyBorder(5, 5, 5, 5));        
         
         // descriptionScrollPane ////////////////////////////////////////////////////
         descriptionScrollPane = new NbiScrollPane(descriptionPane);
@@ -256,7 +260,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         descriptionScrollPane.setBorder(
                 new TitledBorder(FEATURE_DESCRIPTION_TITLE));
-        descriptionScrollPane.setPreferredSize(new Dimension(200, 10));
+        descriptionScrollPane.setPreferredSize(new Dimension(200, 10));     
         
         // componentPanel ///////////////////////////////////////////////////////////
         componentPanel = new NbiPanel();
@@ -266,7 +270,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         
         // sizesLabel ///////////////////////////////////////////////////////////////
         sizesLabel = new NbiLabel();
-        sizesLabel.setFocusable(true);
+        //sizesLabel.setFocusable(true);
         
         // errorMessageLabel ////////////////////////////////////////////////////////
         errorLabel = new NbiLabel();
@@ -355,7 +359,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                okButtonPressed();
+                cancelButtonPressed();
             }
         });
         getRootPane().setDefaultButton(okButton);

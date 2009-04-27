@@ -111,11 +111,10 @@ public final class NewWadlWizardIterator implements TemplateWizard.Iterator {
         } catch (IOException ioe) {
             wizard.setTargetFolder(folder);
         }
-        SourceGroup[] sourceGroups = roots.toArray(new SourceGroup[roots.size()]);
         folderPanel = new WadlPanel(project);
         // creates simple wizard panel with bottom panel
         WizardDescriptor.Panel firstPanel =
-                new WizardNewWadlStep(Templates.createSimpleTargetChooser(project, sourceGroups, folderPanel));
+                new WizardNewWadlStep(Templates.createSimpleTargetChooser(project, null, folderPanel));
         JComponent c = (JComponent) firstPanel.getComponent();
         // the bottom panel should listen to changes on file name text field
         ((WadlPanel) folderPanel).setNameTF(findFileNameField(c, Templates.getTargetName(wizard)));

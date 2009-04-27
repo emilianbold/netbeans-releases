@@ -57,6 +57,7 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
     private static ExtensionClassLoader specialLoader = null;
     private static boolean registryInstalled = false;
         
+    @Override
     public void close() {
         if(registryInstalled) {
             try {
@@ -72,7 +73,8 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
             }
         }
     }
-    
+
+    @Override
     public void uninstalled() {
         close();
     }
@@ -120,31 +122,9 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
         "modules/ext/jaxrpc16/saaj-impl.jar",
         "modules/ext/jaxrpc16/xsdlib.jar"
     };
-    
-    private static String JAXRPC_16_XML [] = {
-        "modules/ext/jaxrpc16_xml/dom.jar",
-        "modules/ext/jaxrpc16_xml/sax.jar",
-        "modules/ext/jaxrpc16_xml/xercesImpl.jar",
-        "modules/ext/jaxrpc16_xml/xalan.jar"
-    };
         
     public static void updatesSpecialLoader(ExtensionClassLoader loader) throws Exception {
         try {
-                
-                String javaVersion = System.getProperty("java.version"); //NOI18N
-                
-                if (javaVersion!=null && javaVersion.startsWith("1.4")) { //NOI18N
-                    InstalledFileLocator loc = InstalledFileLocator.getDefault();
-                    for(int i = 0; i < JAXRPC_16_XML.length; i++) {
-                        File jarFile = loc.locate(JAXRPC_16_XML[i], "org.netbeans.modules.websvc.jaxrpc16_xml", false); //NOI18N
-                        if (jarFile != null) {
-                            loader.addURL(jarFile);
-                        } else {
-                            //System.out.println("Cannot load jar: " + JAXRPC_16_XML[i]);
-                            return;
-                        }
-                    }
-                }
                 
                 InstalledFileLocator locator = InstalledFileLocator.getDefault();
                 

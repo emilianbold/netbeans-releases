@@ -35,10 +35,7 @@
  */
 
 /* Languages and their ids which NetBeans is available*/
-var LANGUAGE_IDS   = new Array();
-var LANGUAGE_NAMES = new Array();
-var LANGUAGE_SUFFIXES = new Array();
-var LANGUAGE_WEBPAGE_NAMES = new Array();
+var LANGUAGES   = new Array();
 
 var PLATFORM_IDS         = new Array();
 var PLATFORM_LONG_NAMES  = new Array();
@@ -47,6 +44,9 @@ var PLATFORM_SHORT_NAMES = new Array();
 var BUNDLE_IDS   = new Array();
 var BUNDLE_LONG_NAMES = new Array();
 var BUNDLE_SHORT_NAMES = new Array();
+
+var FILES = new Array();
+var FILES_SET_NUMBER = 0;
 
 PLATFORM_IDS   	     [0] = "windows";
 PLATFORM_IDS   	     [1] = "linux";
@@ -90,7 +90,13 @@ function getPlatformLongName(id) {
 }
 
 function getLanguageName(id) {
-    return getNameById(id, LANGUAGE_IDS, LANGUAGE_NAMES);
+    var ids = new Array();
+    var names = new Array();
+    for(var i=0;i<LANGUAGES.length;i++) {
+        ids.push(LANGUAGES[i].id);
+        names.push(LANGUAGES[i].name);
+    }
+    return getNameById(id, ids, names);
 }
 
 function getBundleShortName(id) {
@@ -111,10 +117,19 @@ function get_overridden_language() {
     
 }
 
-function get_language(variants) {
+
+function get_language_id(variants) {
+    return get_language(variants, 0);
+}
+
+function get_language_suffix(variants) {
+    return get_language(variants, 1);
+}
+
+function get_language(variants, option) {
     var resultLanguage = "";
     if(variants) {
-        var lang = variants[0];
+        var lang = variants[0].id;
 
         var override = get_overridden_language();
 
@@ -123,9 +138,10 @@ function get_language(variants) {
         else if(navigator.language) lang = navigator.language;
         lang = lang.replace("-", "_");        
         for(var i=0; i < variants.length; i++ ) {
-            if(lang.toLowerCase().indexOf(variants[i].toLowerCase())!=-1) {
-                if(variants[i].length > resultLanguage.length) {
-                    resultLanguage = variants[i];		
+            var value = (option == 0 ) ? variants[i].id : variants[i].suffix;
+            if(value && lang.toLowerCase().indexOf(value.toLowerCase())!=-1) {
+                if(value.length > resultLanguage.length) {
+                    resultLanguage = value;		
                 }
             }
         }    
@@ -144,7 +160,7 @@ function load_page_js_locale(name,locale) {
 function load_js_locale(script_filename, extension) {  
     var suffix = "";
     var locale_suffix = "";
-    locale_suffix = get_language(LANGUAGE_SUFFIXES);
+    locale_suffix = get_language_suffix(LANGUAGES);
     if(locale_suffix!="") {
 	suffix = "_" + locale_suffix;
     }
@@ -163,10 +179,19 @@ function load_page_css(css) {
     document.write('<link rel="stylesheet" type="text/css" href="' + CSS_LOCATION + css + '" media="screen"/>');
 }
 
-function write_page_languages() {    
-    var locale_suffix = get_language(LANGUAGE_SUFFIXES);
+function other_webpage_langs_available() {
+    for(var i=0 ; i < LANGUAGES.length; i++) {
+        if ( LANGUAGES[i].suffix && LANGUAGES[i].suffix.length > 0) {
+            return true;
+        }
+    }    
+    return false;
+}
 
-    if(LANGUAGE_SUFFIXES.length > 1) {
+function write_page_languages() {    
+    var locale_suffix = get_language_suffix(LANGUAGES);
+
+    if(other_webpage_langs_available()) {
         document.getElementById("pagelanguagesbox").style.visibility = 'visible';
     }
     var url = "" + window.location;
@@ -186,9 +211,9 @@ function write_page_languages() {
         var regexp =  new RegExp(PAGELANG_SEP + "[a-zA-Z]+(_[a-zA-Z]+){0,2}","g");
 	get_request = get_request.replace(regexp, PAGELANG_SEP);
     }
-    for(var i=0;i<LANGUAGE_SUFFIXES.length;i++) {
-	if(locale_suffix!=LANGUAGE_SUFFIXES[i]) {
-            document.write('<li><a href="' + page + get_request.replace(PAGELANG_SEP, PAGELANG_SEP + LANGUAGE_SUFFIXES[i]) + '">' + LANGUAGE_WEBPAGE_NAMES[i]+ '</a></li>');
+    for(var i=0;i<LANGUAGES.length;i++) {
+	if(LANGUAGES[i].webpagename && locale_suffix!=LANGUAGES[i].suffix) {
+            document.write('<li><a href="' + page + get_request.replace(PAGELANG_SEP, PAGELANG_SEP + LANGUAGES[i].suffix) + '">' + LANGUAGES[i].webpagename + '</a></li>');
         }
     }
 }
@@ -215,10 +240,10 @@ function startList() {
 
 function get_file_list(dir) {	
 	lst = new Array();
-	if(typeof file_names!='undefined' && typeof file_sizes!='undefined') {
-            for (var i = 0; i < file_names.length; i++) {		
-		if(file_names[i].indexOf(dir)==0) {
-			var stripped = file_names[i].substring(dir.length, file_names[i].length);
+	if(FILES.length > 0) {
+            for (var i = 0; i < FILES.length; i++) {		
+		if(FILES[i].name.indexOf(dir)==0) {
+			var stripped = FILES[i].name.substring(dir.length, FILES[i].name.length);
 			if(stripped.indexOf('/')==-1) {
 			    lst[lst.length] = stripped;
 			}
@@ -230,10 +255,10 @@ function get_file_list(dir) {
 
 function getSize(filename) {
 	var size = "";
-	if(typeof file_names!='undefined' && typeof file_sizes!='undefined') {
-            for (var i = 0; i < file_names.length; i++) {		
-		if(file_names[i] == filename) {		
-			size = file_sizes[i];
+	if(FILES.length > 0) {
+            for (var i = 0; i < FILES.length; i++) {		
+		if(FILES[i].name == filename) {		
+			size = FILES[i].size;
 			break;
 		}
             }
@@ -319,4 +344,30 @@ function set_page_title(title) {
 
 function set_page_description(desc) {
     document.write('<meta name="description" content="' + desc + '"/>');
+}
+
+function add_file(name, size, md5, locales) {
+    var index = FILES.length;
+    FILES[index] = new Object;
+    FILES[index].name = name;
+    FILES[index].size = size;
+    FILES[index].md5  = md5;
+    FILES[index].set  = FILES_SET_NUMBER;
+    FILES[index].locales = locales;
+}
+
+function load_files_information(name) {
+    load_page_js(name);
+    FILES_SET_NUMBER++;
+}
+
+function add_language(id, name, suffix, webpagename) {
+    var index = LANGUAGES.length;
+    LANGUAGES[index] = new Object;
+    LANGUAGES[index].name        = name;
+    LANGUAGES[index].id          = id;
+    if(suffix || webpagename) {
+       LANGUAGES[index].suffix      = suffix;
+       LANGUAGES[index].webpagename = webpagename;
+    }
 }

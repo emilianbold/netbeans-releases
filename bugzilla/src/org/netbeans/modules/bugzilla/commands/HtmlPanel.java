@@ -46,10 +46,11 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
 public class HtmlPanel extends javax.swing.JPanel {
 
@@ -66,17 +67,17 @@ public class HtmlPanel extends javax.swing.JPanel {
                 String desc = e.getDescription();
                 URL url = null;
                 try {
-                    url = new URL(baseUrl + "/" + desc);
+                    url = new URL(baseUrl + "/" + desc);                        // NOI18N
                 } catch (MalformedURLException mue) {
                     Bugzilla.LOG.log(Level.WARNING, null, mue);
                     return;
                 }
                 HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
-                assert displayer != null : "HtmlBrowser.URLDisplayer found.";
+                assert displayer != null : NbBundle.getMessage(HtmlPanel.class, "HTMLBROWSER.URLDISPLAYER_FOUND.");   // NOI18N
                 if (displayer != null) {
                     displayer.showURL(url);
                 } else {
-                    Bugzilla.LOG.info("No URLDisplayer found.");
+                    Bugzilla.LOG.info(NbBundle.getMessage(HtmlPanel.class, "NO_URLDISPLAYER_FOUND."));                // NOI18N
                 }
             }
         });

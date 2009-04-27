@@ -41,7 +41,6 @@
 
 package org.openide.util.lookup;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -63,21 +62,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import junit.framework.Test;
 import org.bar.Comparator2;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
 
 /** Test finding services from manifest.
@@ -365,7 +363,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
             @Override
             protected Enumeration findResources(String name) throws IOException {
                 if (name.equals(prefix() + "java.lang.Runnable")) {
-                    return Enumerations.singleton(findResource(name));
+                    return Collections.enumeration(Collections.singleton(findResource(name)));
                 }
                 return super.findResources(name);
             }
@@ -407,7 +405,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
 
             public synchronized void resultChanged(LookupEvent ev) {
                 toInterrupt = Thread.currentThread();
-                RequestProcessor.getDefault().post(this);
+                Executors.newSingleThreadScheduledExecutor().schedule(this, 0, TimeUnit.MICROSECONDS);
                 try {
                     wait(3000);
                     fail("Should be interrupted - means it was not possible to finish query in run() method");
@@ -435,7 +433,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         }, c0);
         Lookup lookup = Lookups.metaInfServices(ctmp, prefix());
 
-        Collection<?> colAWT = lookup.lookupAll(Component.class);
+        Collection<?> colAWT = lookup.lookupAll(IOException.class);
         assertEquals("There is enough objects to switch to InheritanceTree", 12, colAWT.size());
         
         

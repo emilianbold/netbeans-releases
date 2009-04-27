@@ -445,16 +445,13 @@ public class BugtrackingUtil {
     }
 
     public static void logQueryEvent(String connector, String name, int count, boolean isKenai, boolean isAutoRefresh) {
-        if(name == null) {
-            name = "Find Issues"; // NOI18N
-        } else {
-            name = getMD5(name);
-}
+        name = obfuscateQueryName(name);
         logBugtrackingEvents(USG_BUGTRACKING_QUERY, new Object[] {connector, name, count, isKenai, isAutoRefresh} );
     }
 
-    public static void logAutoRefreshEvent(String connector, boolean on) {
-        logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, on} );
+    public static void logAutoRefreshEvent(String connector, String queryName, boolean isKenai, boolean on) {
+        queryName = obfuscateQueryName(queryName);
+        logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, queryName, isKenai, on} );
     }
 
     /**
@@ -464,18 +461,10 @@ public class BugtrackingUtil {
      * @param parameters - the parameters for the given event
      */
     private static void logBugtrackingEvents(String key, Object[] parameters) {
-//        System.out.println("------------------------");
-//        System.out.println(key);
-//        for (Object object : parameters) {
-//            System.out.println(object);
-//        }
-//        System.out.println("------------------------");
-
-        // XXX activate me
-//        LogRecord rec = new LogRecord(Level.INFO, key);
-//        rec.setParameters(parameters);
-//        rec.setLoggerName(METRICS_LOG.getName());
-//        METRICS_LOG.log(rec);
+        LogRecord rec = new LogRecord(Level.INFO, key);
+        rec.setParameters(parameters);
+        rec.setLoggerName(METRICS_LOG.getName());
+        METRICS_LOG.log(rec);
     }
 
     private static String getMD5(String name) {
@@ -497,6 +486,15 @@ public class BugtrackingUtil {
             ret.append(hex);
         }
         return ret.toString();
+    }
+
+    private static String obfuscateQueryName(String name) {
+        if (name == null) {
+            name = "Find Issues"; // NOI18N
+        } else {
+            name = getMD5(name);
+        }
+        return name;
     }
     
 }

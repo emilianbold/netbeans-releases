@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -46,6 +47,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -64,9 +66,10 @@ public class UnbufferSupport {
         }
 
         final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
-        final String targetOS = HostInfoUtils.getOS(execEnv);
-        boolean isWindows = targetOS.toLowerCase().startsWith("win"); // NOI18N
-        boolean isMacOS = targetOS.toLowerCase().startsWith("darwin"); // NOI18N
+        final HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
+
+        boolean isWindows = hinfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
+        boolean isMacOS = hinfo.getOSFamily() == HostInfo.OSFamily.MACOSX;
 
         String unbufferPath = null; // NOI18N
         String unbufferLib = null; // NOI18N
@@ -86,12 +89,12 @@ public class UnbufferSupport {
             if (file != null && file.exists()) {
                 if (execEnv.isRemote()) {
                     String remotePath = null;
-                    
+
                     synchronized (cache) {
                         remotePath = cache.get(execEnv);
 
                         if (remotePath == null) {
-                            remotePath = HostInfoUtils.getTempDir(execEnv) + unbufferPath;
+                            remotePath = hinfo.getTempDir() + unbufferPath;
                             NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "/bin/mkdir"); // NOI18N
                             npb = npb.setArguments("-p", remotePath, remotePath + "_64"); // NOI18N
 
@@ -107,7 +110,7 @@ public class UnbufferSupport {
                                 if (!HostInfoUtils.fileExists(execEnv, remotePath + "/" + unbufferLib)) { // NOI18N
                                     String fullLocalPath = file.getParentFile().getAbsolutePath(); // NOI18N
                                     Future<Integer> copyTask;
-                                    copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "/" + unbufferLib, execEnv, remotePath, 0755, null);
+                                    copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "/" + unbufferLib, execEnv, remotePath, 0755, null); // NOI18N
                                     copyTask.get();
                                     copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "_64/" + unbufferLib, execEnv, remotePath + "_64", 0755, null); // NOI18N
                                     copyTask.get();

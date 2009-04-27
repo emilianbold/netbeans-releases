@@ -49,7 +49,7 @@ import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 public final class DefaultEmptyVisualizerContainerProvider implements EmptyVisualizerContainerProvider{
 
     public VisualizerContainer getEmptyVisualizerContainer() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); //NOI18N
     }
 
 }

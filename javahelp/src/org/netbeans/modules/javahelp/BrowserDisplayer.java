@@ -203,60 +203,74 @@ public class BrowserDisplayer extends JButton implements ActionListener, ViewAwa
      * button like appearance.
      */
     private void createLinkLabel() {
-	setBorder(new EmptyBorder(1,1,1,1));
-	setBorderPainted(false);
-	setFocusPainted(false);
-	setAlignmentY(getPreferredLabelAlignment());
-	setContentAreaFilled(false);
+        setBorder(new EmptyBorder(1,1,1,1));
+        setBorderPainted(false);
+        setFocusPainted(false);
+        setAlignmentY(getPreferredAlignmentY());
+        setContentAreaFilled(false);
         setHorizontalAlignment(SwingConstants.LEFT);
-	setBackground(UIManager.getColor("EditorPane.background"));
-	if (textAttribs != null &&
-	    textAttribs.isDefined(StyleConstants.Foreground)) {
-	    setForeground((Color)textAttribs.getAttribute(StyleConstants.Foreground));
-	} else {
-	    setForeground(Color.blue);
-	}
-	invalidate();
+        setBackground(UIManager.getColor("EditorPane.background"));
+        if (textAttribs != null &&
+            textAttribs.isDefined(StyleConstants.Foreground)) {
+            setForeground((Color)textAttribs.getAttribute(StyleConstants.Foreground));
+        } else {
+            setForeground(Color.blue);
+        }
+        invalidate();
     }
 
     /**
      * Determine the alignment offset so the text is aligned with other views
      * correctly.
      */
-    private float getPreferredLabelAlignment() {
-        Icon icon = (Icon)getIcon();
-        String text = getText();
-
+    private float getPreferredAlignmentY() {
+        // Fix for the Issue #68316
         Font font = getFont();
         FontMetrics fm = getToolkit().getFontMetrics(font);
-          
-        Rectangle iconR = new Rectangle();
-        Rectangle textR = new Rectangle();
-        Rectangle viewR = new Rectangle(Short.MAX_VALUE, Short.MAX_VALUE);
+        float h = fm.getHeight();
+        float d = fm.getDescent();
+        return (h - d) / h;
 
-        SwingUtilities.layoutCompoundLabel(
-            this, fm, text, icon,
-            getVerticalAlignment(), getHorizontalAlignment(),
-            getVerticalTextPosition(), getHorizontalTextPosition(),
-            viewR, iconR, textR,
-	    (text == null ? 0 : ((BasicButtonUI)ui).getDefaultTextIconGap(this))
-        );
-
-        // The preferred size of the button is the size of 
-        // the text and icon rectangles plus the buttons insets.
-        Rectangle r = iconR.union(textR);
-
-        Insets insets = getInsets();
-        r.height += insets.top + insets.bottom;
-
-        // Ensure that the height of the button is odd,
-        // to allow for the focus line.
-        if(r.height % 2 == 0) { 
-	    r.height += 1;
-	}
-
-	float offAmt = fm.getMaxAscent() + insets.top;
-	return offAmt/(float)r.height;
+// Original implementation below is commented out due to Issue #68316.
+// It tries also take into account a size of the icon, but according to javadoc
+// of the class "Only text is supported".
+// Original implementation is commented out below due to the bug #68316.
+// It tries also to take into account a size of the icon, but according to
+// javadoc of the class "Only text is supported".
+//
+//        Icon icon = (Icon)getIcon();
+//        String text = getText();
+//
+//        Font font = getFont();
+//        FontMetrics fm = getToolkit().getFontMetrics(font);
+//
+//        Rectangle iconR = new Rectangle();
+//        Rectangle textR = new Rectangle();
+//        Rectangle viewR = new Rectangle(Short.MAX_VALUE, Short.MAX_VALUE);
+//
+//        SwingUtilities.layoutCompoundLabel(
+//            this, fm, text, icon,
+//            getVerticalAlignment(), getHorizontalAlignment(),
+//            getVerticalTextPosition(), getHorizontalTextPosition(),
+//            viewR, iconR, textR,
+//	    (text == null ? 0 : ((BasicButtonUI)ui).getDefaultTextIconGap(this))
+//        );
+//
+//        // The preferred size of the button is the size of
+//        // the text and icon rectangles plus the buttons insets.
+//        Rectangle r = iconR.union(textR);
+//
+//        Insets insets = getInsets();
+//        r.height += insets.top + insets.bottom;
+//
+//        // Ensure that the height of the button is odd,
+//        // to allow for the focus line.
+//        if(r.height % 2 == 0) {
+//            r.height += 1;
+//        }
+//
+//        float offAmt = fm.getMaxAscent() + insets.top;
+//        return offAmt/(float)r.height;
     }
     
     /**

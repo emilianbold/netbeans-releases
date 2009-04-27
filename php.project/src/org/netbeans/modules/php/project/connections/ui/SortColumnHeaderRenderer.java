@@ -65,6 +65,9 @@ public final class SortColumnHeaderRenderer implements TableCellRenderer {
     private boolean sortAscending;
 
     public SortColumnHeaderRenderer(TransferFileTableModel model, TableCellRenderer textRenderer) {
+        assert model != null;
+        assert textRenderer != null;
+
         this.model = model;
         this.textRenderer = textRenderer;
         sortColumnIndex = getPreferences().getInt(SORTING_COLUMN_INDEX, getDefaultSortingColumn());

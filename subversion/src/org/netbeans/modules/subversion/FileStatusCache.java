@@ -978,5 +978,17 @@ public class FileStatusCache {
         public File getConflictNew() {
             return value.getConflictNew();
         }
+
+        public boolean hasTreeConflict() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public SVNConflictDescriptor getConflictDescriptor() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isFileExternal() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }    
 }

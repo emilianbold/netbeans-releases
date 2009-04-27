@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.MyFile;
 
 /**
@@ -176,7 +175,7 @@ public final class Tracer {
             CsmFile csmFile = file.getFileUID().getObject();
             printStream.println("\t\tModel File "+csmFile.getAbsolutePath());
             printStream.println("\t\tNumber of states "+file.getPrerocStates().size());
-            for (FileContainer.StatePair statePair : file.getStates()) {
+            for (FileContainer.StatePair statePair : file.getStatePairs()) {
                 StringTokenizer st = new StringTokenizer(FilePreprocessorConditionState.toStringBrief(statePair.pcState),"\n");
                 boolean first = true;
                 while (st.hasMoreTokens()) {

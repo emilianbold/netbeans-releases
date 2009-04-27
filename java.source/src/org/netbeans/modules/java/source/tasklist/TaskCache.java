@@ -183,7 +183,9 @@ public class TaskCache {
             try {
                 return new File(url.toURI().getPath());
             } catch (URISyntaxException ex) {
-                throw new IllegalStateException(ex);
+                if (LOG.isLoggable(Level.WARNING))
+                    LOG.log(Level.WARNING, "The caller module provide unencoded URL. Please report this issue against caller module.", ex);
+                return new File(url.getPath());
             }
         }
 

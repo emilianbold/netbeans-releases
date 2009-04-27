@@ -69,8 +69,8 @@ made subject to such option by the copyright holder.
                 <package>org.eclipse.mylyn.internal.bugzilla.core</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.mylyn.bugzilla.core_3.0.5.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.bugzilla.core_3.0.5.jar</binary-origin>
+                <runtime-relative-path>ext/org.eclipse.mylyn.bugzilla.core_3.1.1.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.mylyn.bugzilla.core_3.1.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

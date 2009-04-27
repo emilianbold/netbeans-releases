@@ -51,9 +51,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -63,7 +60,6 @@ import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.debugger.gdb.EnvUtils;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -86,7 +82,9 @@ public class GdbProxyEngine {
     private PrintStream toGdb;
     private final GdbDebugger debugger;
     private final GdbProxy gdbProxy;
-    private final List<CommandInfo> tokenList = Collections.synchronizedList(new LinkedList<CommandInfo>());
+
+    private final MICommand[] commandList = new MICommand[20];
+    private int nextCommandPos = 0;
     
     //TODO: int may not be enough here, consider using long
     private int nextToken = MIN_TOKEN;
@@ -118,6 +116,8 @@ public class GdbProxyEngine {
             if (tty != null) {
                 debuggerCommand.add("-tty"); // NOI18N
                 debuggerCommand.add(tty);
+            } else {
+                throw new IllegalStateException(NbBundle.getMessage(GdbProxyEngine.class, "ERR_ExternalTerminalFailedMessage")); // NOI18N
             }
         }
         this.debugger = debugger;
@@ -128,6 +128,7 @@ public class GdbProxyEngine {
         getLogger().logMessage("Env[" + debuggerEnvironment.length + "]: " + // NOI18N
                 Arrays.asList(debuggerEnvironment));
         getLogger().logMessage("workingDirectory: " + workingDirectory); // NOI18N
+        getLogger().logMessage("NB version: " + System.getProperty("netbeans.buildnumber")); // NOI18N
         getLogger().logMessage("================================================"); // NOI18N
         
         if (debugger.getHostExecutionEnvironment().isLocal()) {
@@ -255,24 +256,26 @@ public class GdbProxyEngine {
      * @param cmd - a command to be sent to the debugger
      */
     int sendCommand(String cmd) {
-        int token = nextToken();
-        sendCommand(token, cmd);
-        return token;
+        MICommand command = createMICommand(cmd);
+        sendCommand(command);
+        return command.getToken();
     }
 
-    private synchronized void sendCommand(final int token, final String cmd) {
+    private void sendCommand(int token, String cmd) {
+        sendCommand(new MICommandImpl(token, cmd));
+    }
+
+
+    private void sendCommand(final MICommand command) {
         if (active) {
             sendQueue.post(new Runnable() {
                 public void run() {
-                    String time = CommandBuffer.getTimePrefix(timerOn);
-                    if (cmd.charAt(0) != '-') {
-                        tokenList.add(new CommandInfo(token, cmd));
+                    if (command.getText().charAt(0) != '-') {
+                        addCommand(command);
                     }
-                    StringBuilder fullcmd = new StringBuilder(String.valueOf(token));
-                    fullcmd.append(cmd);
-                    fullcmd.append('\n');
-                    gdbProxy.getLogger().logMessage(time + fullcmd.toString());
-                    toGdb.print(fullcmd.toString());
+                    String fullcmd = Integer.toString(command.getToken()) + command.getText();
+                    gdbProxy.getLogger().logMessage(CommandBuffer.addTimePrefix(timerOn, fullcmd));
+                    toGdb.println(fullcmd);
                 }
             });
         }
@@ -301,6 +304,15 @@ public class GdbProxyEngine {
     void stopSending() {
         active = false;
     }
+
+    private void addCommand(MICommand command) {
+        synchronized (commandList) {
+            commandList[nextCommandPos] = command;
+            if (++nextCommandPos >= commandList.length) {
+                nextCommandPos = 0;
+            }
+        }
+    }
     
     /**
      * Process the first complete reply from the queue
@@ -308,7 +320,6 @@ public class GdbProxyEngine {
      * @return null if the reply is not recognized, otherwise return reply
      */
     private void processMessage(String msg) {
-        String time = CommandBuffer.getTimePrefix(timerOn);
         if (msg.equals("(gdb)")) { // NOI18N
             return; // skip prompts
         }
@@ -316,12 +327,12 @@ public class GdbProxyEngine {
         if (token < 0) {
             token = getCurrentToken(msg);
             if (token != -1) {
-                gdbProxy.getLogger().logMessage(time + token + msg);
+                gdbProxy.getLogger().logMessage(CommandBuffer.addTimePrefix(timerOn, token) + msg);
             } else {
-                gdbProxy.getLogger().logMessage(time + msg);
+                gdbProxy.getLogger().logMessage(CommandBuffer.addTimePrefix(timerOn, msg));
             }
         } else {
-            gdbProxy.getLogger().logMessage(time + msg);
+            gdbProxy.getLogger().logMessage(CommandBuffer.addTimePrefix(timerOn,msg));
         }
         msg = stripToken(msg);
 
@@ -372,35 +383,26 @@ public class GdbProxyEngine {
     }
     
     private int getCurrentToken(String msg) {
-        char ch1 = msg.charAt(0);
-        if (ch1 == '&') {
-            CommandInfo ci = getCommandInfo(msg);
-            if (ci != null) {
-                synchronized (tokenList) {
-                    for (Iterator<CommandInfo> iter = tokenList.iterator(); iter.hasNext();) {
-                        CommandInfo info = iter.next();
-                        if (ci.getCommand().equals(info.getCommand())) {
-                            iter.remove();
-                        }
+        if (msg.charAt(0) == '&') {
+            msg = msg.substring(2, msg.length() - 1).replace("\\n", ""); // NOI18N
+            synchronized (commandList) {
+                for (int i = nextCommandPos-1;;i--) {
+                    if (i < 0) {
+                        i = commandList.length-1;
+                    }
+                    if (i == nextCommandPos) {
+                        break;
+                    }
+                    MICommand command = commandList[i];
+                    if (command != null && command.getText().equals(msg)) {
+                        commandList[i] = null;
+                        currentToken = command.getToken();
+                        break;
                     }
                 }
-                currentToken = ci.getToken();
             }
         }
         return currentToken;
-    }
-    
-    private CommandInfo getCommandInfo(String msg) {
-        msg = msg.substring(2, msg.length() - 1).replace("\\n", ""); // NOI18N
-
-        synchronized (tokenList) {
-            for (CommandInfo ci : tokenList) {
-                if (ci.getCommand().equals(msg)) {
-                    return ci;
-                }
-            }
-        }
-        return null;
     }
 
     /**
@@ -464,40 +466,55 @@ public class GdbProxyEngine {
         }
         return msg;
     }
-    
+   
     private GdbLogger getLogger() {
         return gdbProxy.getLogger();
     }
+
+    public MICommand createMICommand(String cmd) {
+        return new MICommandImpl(nextToken(), cmd);
+    }
     
-    private static class CommandInfo {
-        
+    private class MICommandImpl implements MICommand {
         private final int token;
         private final String cmd;
+        private boolean sent = false;
         
-        public CommandInfo(int token, String cmd) {
+        public MICommandImpl(int token, String cmd) {
             this.token = token;
             this.cmd = cmd;
         }
         
-        private String getCommand() {
+        public String getText() {
             return cmd;
         }
         
         public int getToken() {
             return token;
         }
+
+        public synchronized void send() {
+            assert !sent : "sending command " + this + " twice"; // NOI18N
+            sendCommand(this);
+            sent = true;
+        }
         
         @Override
         public boolean equals(Object o) {
-            if (o instanceof CommandInfo) {
-                return token == ((CommandInfo) o).token;
+            if (o instanceof MICommand) {
+                return getToken() == ((MICommand) o).getToken();
             }
             return false;
         }
 
         @Override
         public int hashCode() {
-            return token;
+            return getToken();
+        }
+
+        @Override
+        public String toString() {
+            return token + cmd;
         }
     }
     

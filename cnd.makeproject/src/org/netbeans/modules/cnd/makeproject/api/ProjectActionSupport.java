@@ -473,7 +473,13 @@ public class ProjectActionSupport {
             // Check existence of executable
             if (!IpeUtils.isPathAbsolute(executable) && (executable.startsWith(".") || executable.indexOf(File.separatorChar) > 0)) { // NOI18N
                 //executable is relative to project root - convert to absolute and check. Should be safe (?).
-                executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
+                String runDir = pae.getProfile().getRunDir();
+                if (runDir == null || runDir.length() == 0 || IpeUtils.isPathAbsolute(runDir)) {
+                    executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
+                }
+                else {
+                    executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir() + "/" + runDir, executable); // NOI18N
+                }
                 executable = FilePathAdaptor.normalize(executable);
             }
             if (IpeUtils.isPathAbsolute(executable)) {
@@ -481,7 +487,14 @@ public class ProjectActionSupport {
                 boolean ok = true;
 
                 if (conf instanceof MakeConfiguration && !((MakeConfiguration) conf).getDevelopmentHost().isLocalhost()) {
-                    ok = verifyRemoteExecutable(((MakeConfiguration) conf).getDevelopmentHost().getExecutionEnvironment(), executable);
+                    final ExecutionEnvironment execEnv = ((MakeConfiguration) conf).getDevelopmentHost().getExecutionEnvironment();
+                    PathMap mapper = HostInfoProvider.getMapper(execEnv);
+                    executable = mapper.getRemotePath(executable);
+                    CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
+                    if (cmd != null) {
+                        ok = cmd.run(execEnv, "test -x " + executable + " -a -f " + executable, null) == 0; // NOI18N
+                    }
+                    ok = false;
                 } else {
                     // FIXUP: getExecutable should really return fully qualified name to executable including .exe
                     // but it is too late to change now. For now try both with and without.
@@ -494,7 +507,7 @@ public class ProjectActionSupport {
                     }
                 }
                 if (!ok) {
-                    String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", pae.getExecutable()); // NOI18N
+                    String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", executable); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                     return false;
                 }
@@ -504,22 +517,24 @@ public class ProjectActionSupport {
 
     }
 
-    /**
-     * Verify a remote executable exists, is executable, and is not a directory.
-     *
-     * @param execEnv The remote host
-     * @param executable The file to remotely check
-     * @return true if executable exists and is an executable, otherwise false
-     */
-    private static boolean verifyRemoteExecutable(ExecutionEnvironment execEnv, String executable) {
-        PathMap mapper = HostInfoProvider.getMapper(execEnv);
-        String remoteExecutable = mapper.getRemotePath(executable);
-        CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
-        if (cmd != null) {
-            return cmd.run(execEnv, "test -x " + remoteExecutable + " -a -f " + remoteExecutable, null) == 0; // NOI18N
-        }
-        return false;
-    }
+// VK: inlined since it's used once; and caller should know not only return status,
+// but mapped name as well => it's easier to inline
+//    /**
+//     * Verify a remote executable exists, is executable, and is not a directory.
+//     *
+//     * @param execEnv The remote host
+//     * @param executable The file to remotely check
+//     * @return true if executable exists and is an executable, otherwise false
+//     */
+//    private static boolean verifyRemoteExecutable(ExecutionEnvironment execEnv, String executable) {
+//        PathMap mapper = HostInfoProvider.getMapper(execEnv);
+//        String remoteExecutable = mapper.getRemotePath(executable);
+//        CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
+//        if (cmd != null) {
+//            return cmd.run(execEnv, "test -x " + remoteExecutable + " -a -f " + remoteExecutable, null) == 0; // NOI18N
+//        }
+//        return false;
+//    }
 
     private static final class StopAction extends AbstractAction {
 

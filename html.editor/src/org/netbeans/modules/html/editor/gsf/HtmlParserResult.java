@@ -46,6 +46,7 @@ import java.util.Set;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.AstNode.Description;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
@@ -147,7 +148,6 @@ public class HtmlParserResult extends ParserResult {
     }
 
     private void analyzeParseResult() {
-        final DTD dtd = dtd();
         final List<Error> _errors = new ArrayList<Error>();
         AstNodeUtils.visitChildren(root(),
                 new AstNodeVisitor() {
@@ -155,9 +155,9 @@ public class HtmlParserResult extends ParserResult {
                     public void visit(AstNode node) {
                         if (node.type() == AstNode.NodeType.UNMATCHED_TAG) {
                             AstNode unmatched = node.children().get(0);
-                            if (dtd != null) {
+                            if (dtd() != null) {
                                 //check the unmatched tag according to the DTD
-                                Element element = dtd.getElement(node.name().toUpperCase(Locale.US));
+                                Element element = dtd().getElement(node.name().toUpperCase(Locale.US));
                                 if (element != null) {
                                     if (unmatched.type() == AstNode.NodeType.OPEN_TAG && element.hasOptionalEnd() /*||
                                             unmatched.type() == AstNode.NodeType.ENDTAG && element.hasOptionalStart()*/) {
@@ -167,36 +167,34 @@ public class HtmlParserResult extends ParserResult {
                             }
 
                             Error error =
-                                    new DefaultError("unmatched_tag",
-                                    NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"),
+                                    DefaultError.createDefaultError("unmatched_tag",//NOI18N
+                                    NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"),//NOI18N
                                     null,
                                     getSnapshot().getSource().getFileObject(),
                                     node.startOffset(),
                                     node.endOffset(),
+                                    false /* not line error */,
                                     Severity.WARNING); //NOI18N
                             _errors.add(error);
 
-                        } else if (node.type() == AstNode.NodeType.TAG || node.type() == AstNode.NodeType.OPEN_TAG) {
+                        } else if (node.type() == AstNode.NodeType.TAG || 
+                                node.type() == AstNode.NodeType.OPEN_TAG ||
+                                node.type() == AstNode.NodeType.ENDTAG) {
 
-                            if (node.getErrorMessages().size() > 0) {
-                                StringBuffer b = new StringBuffer();
-                                for (String s : node.getErrorMessages()) {
-                                    b.append(s);
-                                    b.append(';');
-                                    b.append('\n');
+                            for(Description desc : node.getDescriptions()) {
+                                if(desc.getType() < Description.WARNING) {
+                                    continue;
                                 }
-                                //remove the tail ';\n'
-                                b.delete(b.length() - 2, b.length());
-
                                 //some error in the node, report
                                 Error error =
-                                        new DefaultError("tag_error",
-                                        b.toString(),
+                                        DefaultError.createDefaultError("tag_error", //NOI18N
+                                        desc.getText(),
                                         null,
                                         getSnapshot().getSource().getFileObject(),
-                                        node.startOffset(),
-                                        node.endOffset(),
-                                        Severity.WARNING); //NOI18N
+                                        desc.getFrom(),
+                                        desc.getTo(),
+                                        false /* not line error */,
+                                        desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
                                 _errors.add(error);
 
                             }
