@@ -190,6 +190,9 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
     }
 
     private void setValid(boolean valid, String errorMessage) {
+        if ((errorMessage != null) && (errorMessage.length() == 0)) {
+            errorMessage = null;
+        }
         boolean fire = this.valid != valid;
         fire |= errorMessage != null && (errorMessage.equals(this.errorMessage) == false);
         this.valid = valid;
