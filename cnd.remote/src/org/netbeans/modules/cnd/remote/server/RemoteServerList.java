@@ -100,7 +100,7 @@ public class RemoteServerList implements ServerListImplementation {
                 // 3) user@host:port|DisplayName|syncID
                 String displayName = null;
                 RemoteSyncFactory syncFactory = RemoteSyncFactory.getDefault();
-                final String[] arr = serverString.split("\\" + SERVER_RECORD_SEPARATOR);
+                final String[] arr = serverString.split("\\" + SERVER_RECORD_SEPARATOR); // NOI18N
                 CndUtils.assertTrue(arr.length > 0);
                 String hostKey = arr[0];
                 if (arr.length > 1) {
