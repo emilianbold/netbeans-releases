@@ -205,7 +205,7 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
 	}
 	
         @Override
-	protected Class getTestCaseDataClass() {
+	protected Class<?> getTestCaseDataClass() {
 	    return SmartParseHeaderTest.class;
 	}
 	
