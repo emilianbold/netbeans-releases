@@ -45,7 +45,7 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
             true,
             new HeadersHighlighting(context.getDocument())),
             HighlightsLayer.create(PROP_HIGLIGHT_BLOCKS_LAYER,
-            ZOrder.DEFAULT_RACK.forPosition(110),
+            ZOrder.BOTTOM_RACK.forPosition(110),
             true,
             new BlocksHighlighting(context.getDocument()))
         };
