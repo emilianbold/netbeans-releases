@@ -115,7 +115,7 @@ public class APTHandlersSupportImpl {
         APTMacroMapSnapshot.addAllMacros(macro.snap, tree);
         StringBuilder buf = new StringBuilder();
         buf.append(macro.sysMacroMap.hashCode());
-        buf.append(";");
+        buf.append(';');
         for(Map.Entry<CharSequence, APTMacro> entry : tree.entrySet()){
             buf.append((char)entry.getValue().getKind().ordinal());
             buf.append(entry.getValue().getName().getOffset());
