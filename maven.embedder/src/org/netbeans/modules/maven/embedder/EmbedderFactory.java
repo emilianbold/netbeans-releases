@@ -237,7 +237,7 @@ public final class EmbedderFactory {
 
     }
 
-    public static MavenEmbedder createOnlineEmbedder() {
+    /*public*/ static MavenEmbedder createOnlineEmbedder() {
         Configuration req = new DefaultConfiguration();
         req.setClassLoader(EmbedderFactory.class.getClassLoader());
         setLocalRepoPreference(req);
