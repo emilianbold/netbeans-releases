@@ -1008,6 +1008,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return createPreprocHandler(file, getFileContainer().getPreprocState(file));
     }
 
+    public final APTPreprocHandler getPreprocHandler(File file, FileContainer.StatePair statePair) {
+        return createPreprocHandler(file, statePair == null ? getFileContainer().getPreprocState(file) : statePair.state);
+    }
+
     /* package */ final APTPreprocHandler createPreprocHandler(File file, APTPreprocHandler.State state) {
         APTPreprocHandler preprocHandler = createEmptyPreprocHandler(file);
         if (state != null) {
@@ -1027,6 +1031,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return preprocHandler;
     }
 
+    /*package-local*/ final Collection<FileContainer.StatePair> getPreprocStatePairs(File file) {
+        return getFileContainer().getStatePairs(file);
+    }
+    
     public final Collection<APTPreprocHandler> getPreprocHandlers(File file) {
         Collection<APTPreprocHandler.State> states = getFileContainer().getPreprocStates(file);
         Collection<APTPreprocHandler> result = new ArrayList<APTPreprocHandler>(states.size());
@@ -1137,6 +1145,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             FileImpl csmFile = findFile(new File(file.toString()), FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
+            APTPreprocHandler.State newState = preprocHandler.getState();
+            if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
+                APTPreprocHandler.State cachedOut = csmFile.getCachedVisitedState(newState);
+                if (cachedOut != null) {
+                    preprocHandler.setState(cachedOut);
+                    return csmFile;
+                }
+            }
+
             APTFile aptLight = getAPTLight(csmFile);
 
             if (aptLight == null) {
@@ -1144,8 +1161,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 Utils.LOG.info("Can not find or build APT for file " + file); //NOI18N
                 return csmFile;
             }
-
-            APTPreprocHandler.State newState = preprocHandler.getState();
 
             FileContainer.Entry entry = getFileContainer().getEntry(csmFile.getBuffer().getFile());
 
@@ -1205,7 +1220,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             // We need to make this pre check
             // at least for the case of recursion
             synchronized (entry.getLock()) {
-                comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
+                comparisonResult = fillStatesToKeep(newState, entry.getStatePairs(), statesToKeep, newStateFound);
                 if (TRACE_FILE && FileImpl.traceFile(file)) {
                     traceIncludeStates("comparison 1 " + comparisonResult, csmFile, newState, null, newStateFound.get(), null, statesToKeep); // NOI18N
                 }
@@ -1226,6 +1241,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(csmFile/*, preprocHandler*/);
             APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, pcState);
             walker.visit();
+            pcState.trimSize();
+            csmFile.cacheVisitedState(newState, preprocHandler);
 
             if (comparisonResult == ComparisonResult.WORSE) {
                 if (TRACE_FILE && FileImpl.traceFile(file)) {
@@ -1250,7 +1267,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 // if the entry has been changed since previous check, check again
                 if (entry.getModCount() != entryModCount) {
                     // Phase B1
-                    comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
+                    comparisonResult = fillStatesToKeep(newState, entry.getStatePairs(), statesToKeep, newStateFound);
                     if (TRACE_FILE && FileImpl.traceFile(file)) {
                         traceIncludeStates("comparison 2 " + comparisonResult, csmFile, newState, pcState, newStateFound.get(), null, statesToKeep); // NOI18N
                     }

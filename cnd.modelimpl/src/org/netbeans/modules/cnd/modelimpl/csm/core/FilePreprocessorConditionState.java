@@ -303,4 +303,14 @@ public final class FilePreprocessorConditionState
         sb.append("]"); //NOI18N
         return sb.toString();
     }
+
+    void trimSize() {
+        int[] newOffsets = new int[size];
+        System.arraycopy(this.offsets, 0, newOffsets, 0, size);
+        this.offsets = newOffsets;
+    }
+
+    public boolean isInActiveBlock(int startContext, int endContext) {
+        return true;
+    }
 }

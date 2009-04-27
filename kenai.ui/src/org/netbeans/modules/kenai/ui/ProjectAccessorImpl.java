@@ -61,6 +61,7 @@ import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -81,13 +82,13 @@ public class ProjectAccessorImpl extends ProjectAccessor {
                 for (KenaiFeature feature : prj.getFeatures(KenaiService.Type.SOURCE)) {
                     if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
                         try {
-                            Subversion.addRecentUrl(feature.getLocation().toURL().toExternalForm());
+                            Subversion.addRecentUrl(feature.getLocation());
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }
                     } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
                         try {
-                            Mercurial.addRecentUrl(feature.getLocation().toURL().toExternalForm());
+                            Mercurial.addRecentUrl(feature.getLocation());
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -134,7 +135,17 @@ public class ProjectAccessorImpl extends ProjectAccessor {
             new RemoveProjectAction(project),
             new AbstractAction( NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_RefreshProject") ) {
                 public void actionPerformed( ActionEvent e ) {
-                    project.firePropertyChange(ProjectHandle.PROP_CONTENT, null, project);
+                    RequestProcessor.getDefault().post(new Runnable() {
+
+                    public void run() {
+                        try {
+                            Kenai.getDefault().getProject(project.getId(), true);
+                            project.firePropertyChange(ProjectHandle.PROP_CONTENT, null, project);
+                        } catch (KenaiException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
                 }
             }
         };

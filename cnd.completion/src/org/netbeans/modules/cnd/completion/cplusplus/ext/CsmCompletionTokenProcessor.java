@@ -618,8 +618,11 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
 
     @SuppressWarnings("fallthrough")
     public boolean token(Token<CppTokenId> token, int tokenOffset) {
+        if (inPP == null) { // not yet initialized
+            inPP = (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE);
+        }
         if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
-            return true;
+            return inPP;
         }
         int tokenLen = token.length();
         tokenOffset += bufferOffsetDelta;
@@ -633,7 +636,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
             }
         }
 
-        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER || tokenID == CppTokenId.SIZEOF) {
+        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER 
+                || tokenID == CppTokenId.SIZEOF
+                || tokenID == CppTokenId.TYPEID) {
             // change preproc identifier into normal identifier
             // to simplify handling of result expression
             tokenID = CppTokenId.IDENTIFIER;
@@ -827,7 +832,6 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
 //                        if (topID == GENERIC_WILD_CHAR)
 //                            break;
 
-                    case TYPEID:
                     case IDENTIFIER: // identifier found e.g. 'a'
                          {
                             switch (topID) {
@@ -1545,6 +1549,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                             case SPECIAL_PARENTHESIS_OPEN:
                             case OPERATOR:
                             case UNARY_OPERATOR:
+                            case TYPE_PREFIX:
                             case NO_EXP: // alone :: is OK as access to global context
                                 CsmCompletionExpression emptyVar = CsmCompletionExpression.createEmptyVariable(curTokenPosition);
                                 int openExpID = tokenID2OpenExpID(tokenID);
@@ -2104,7 +2109,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
             }
         }
 
-        if (kwdType != null && tokenID != CppTokenId.TYPEID) { // keyword constant (in conversions)
+        if (kwdType != null) { // keyword constant (in conversions)
             switch (topID) {
                 case NO_EXP: // declaration started with type name
                 case NEW: // possibly new kwdType[]
@@ -2181,12 +2186,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
         return false;
     }
     private int lastSeparatorOffset = -1;
-
+    private Boolean inPP;
     public int getLastSeparatorOffset() {
         return lastSeparatorOffset;
     }
 
     public void start(int startOffset, int firstTokenOffset, int lastOffset) {
+        inPP = null;
     }
 
     @SuppressWarnings("fallthrough")

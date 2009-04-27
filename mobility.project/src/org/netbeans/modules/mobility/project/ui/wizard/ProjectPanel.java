@@ -62,6 +62,7 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
 /**
@@ -489,6 +490,7 @@ public class ProjectPanel extends javax.swing.JPanel {
                 showError(NbBundle.getMessage(ProjectPanel.class, "ERR_Project_ProjectFolderReadOnly")); // NOI18N
                 return false;
             }
+            projLoc = FileUtil.normalizeFile(projLoc);
             if (FileUtil.toFileObject(projLoc) == null) {
                 showError(NbBundle.getMessage(ProjectPanel.class, "ERR_Project_InvalidProjectsHome")); // NOI18N
                 return false;

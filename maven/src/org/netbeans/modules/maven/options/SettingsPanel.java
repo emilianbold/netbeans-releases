@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.options;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -54,7 +55,10 @@ import java.util.zip.ZipEntry;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -91,10 +95,34 @@ public class SettingsPanel extends javax.swing.JPanel {
     private DocumentListener docList;
     private MavenOptionController controller;
     private TextValueCompleter completer;
-    
+
     /** Creates new form SettingsPanel */
     SettingsPanel(MavenOptionController controller) {
         initComponents();
+
+        MavenSettings.DownloadStrategy[] downloads = MavenSettings.DownloadStrategy.values();
+        comBinaries.setModel(new DefaultComboBoxModel(downloads));
+        comJavadoc.setModel(new DefaultComboBoxModel(downloads));
+        comSource.setModel(new DefaultComboBoxModel(downloads));
+
+        ListCellRenderer rend = new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                String txt = ""; //NOI18N
+                if (value.equals(MavenSettings.DownloadStrategy.NEVER)) {
+                    txt = org.openide.util.NbBundle.getMessage(SettingsPanel.class, "TIT_NEVER");
+                } else if (value.equals(MavenSettings.DownloadStrategy.EVERY_OPEN)) {
+                    txt = org.openide.util.NbBundle.getMessage(SettingsPanel.class, "TIT_EVERY");
+                } else if (value.equals(MavenSettings.DownloadStrategy.FIRST_OPEN)) {
+                    txt = org.openide.util.NbBundle.getMessage(SettingsPanel.class, "TIT_FIRST");
+                }
+                return super.getListCellRendererComponent(list, txt, index, isSelected, cellHasFocus);
+            }
+        };
+        comBinaries.setRenderer(rend);
+        comSource.setRenderer(rend);
+        comJavadoc.setRenderer(rend);
+
         this.controller = controller;
         docList = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
@@ -108,11 +136,11 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         };
         initValues();
-        ((MyJTextField)txtLocalRepository).setHintText("<Use default local repository as defined by Maven>");
+        ((MyJTextField)txtLocalRepository).setHintText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "txt_default_repository"));
         listener = new ActionListenerImpl();
         cbSnapshots.addActionListener(listener);
         comIndex.addActionListener(listener);
-        completer = new TextValueCompleter(getGlobalOptions(), txtOptions, " ");
+        completer = new TextValueCompleter(getGlobalOptions(), txtOptions, " "); //NOI18N
         initEmbeddedVersion();
     }
 
@@ -135,19 +163,19 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     static String[] getAvailableOptionsDescriptions() {
         return new String[] {
-            "Work offline.",
-            "Produce execution debug output.",
-            "Produce execution error messages.",
-            "Run in non-interactive (batch) mode.",
-            "Stop at first failure in reactorized builds\n\nExclusive with --fail-at-end and --fail-never.",
-            "Only fail the build afterwards; allow all non-impacted builds to continue.\n\nExclusive with --fail-fast and --fail-never.",
-            "NEVER fail the build, regardless of project result.\n\nExclusive with --fail-fast and --fail-at-end.",
-            "Fail the build if checksums don't match.\n\n Exclusive with --lax-checksums.",
-            "Warn if checksums don't match.\n\nExclusive with --strict-checksums.",
-            "Force upToDate check for any relevant registered plugins.\n\nExclusive with --no-plugin-updates.",
-            "Suppress upToDate check for any relevant registered plugins.\n\nExclusive with --check-plugin-updates.",
-            "Forces a check for updated releases and snapshots on remote repositories.",
-            "Don't use ~/.m2/plugin-registry.xml for plugin versions"
+            org.openide.util.NbBundle.getMessage(SettingsPanel.class, "WORK_OFFLINE"),
+            org.openide.util.NbBundle.getMessage(SettingsPanel.class, "PRODUCE_EXECUTION_DEBUG_OUTPUT"),
+            org.openide.util.NbBundle.getMessage(SettingsPanel.class, "PRODUCE_EXECUTION_ERROR_MESSAGES"),
+            org.openide.util.NbBundle.getMessage(SettingsPanel.class, "NON-INTERACTIVE_MODE."),
+            org.openide.util.NbBundle.getMessage(SettingsPanel.class, "STOP_AT_FIRST_FAILURE"),
+            org.openide.util.NbBundle.getMessage(SettingsPanel.class, "ONLY_FAIL_THE_BUILD_AFTERWARDS"),
+            org.openide.util.NbBundle.getMessage(SettingsPanel.class, "NEVER_FAIL_THE_BUILD"),
+            org.openide.util.NbBundle.getMessage(SettingsPanel.class, "FAIL_CHECKSUMS"),
+            org.openide.util.NbBundle.getMessage(SettingsPanel.class, "WARN_CHECKSUMS"),
+            org.openide.util.NbBundle.getMessage(SettingsPanel.class, "FORCE_UPTODATE_CHECK"),
+            org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SUPPRESS_UPTODATE_CHECK"),
+            org.openide.util.NbBundle.getMessage(SettingsPanel.class, "FORCES_A_CHECK"),
+            org.openide.util.NbBundle.getMessage(SettingsPanel.class, "DON'T_USE_PLUGIN-REGISTRY")
         };
     }
 
@@ -282,15 +310,24 @@ public class SettingsPanel extends javax.swing.JPanel {
         lblCommandLine = new javax.swing.JLabel();
         txtCommandLine = new javax.swing.JTextField();
         btnCommandLine = new javax.swing.JButton();
+        lblExternalVersion = new javax.swing.JLabel();
         lblOptions = new javax.swing.JLabel();
         txtOptions = new javax.swing.JTextField();
         btnOptions = new javax.swing.JButton();
-        btnGoals = new javax.swing.JButton();
-        lblEmbeddedVersion = new javax.swing.JLabel();
-        lblExternalVersion = new javax.swing.JLabel();
+        cbSkipTests = new javax.swing.JCheckBox();
         lblLocalRepository = new javax.swing.JLabel();
         txtLocalRepository = new MyJTextField();
         btnLocalRepository = new javax.swing.JButton();
+        lblEmbeddedVersion = new javax.swing.JLabel();
+        lblBinaries = new javax.swing.JLabel();
+        comBinaries = new javax.swing.JComboBox();
+        lblJavadoc = new javax.swing.JLabel();
+        comJavadoc = new javax.swing.JComboBox();
+        lblSource = new javax.swing.JLabel();
+        comSource = new javax.swing.JComboBox();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        btnGoals = new javax.swing.JButton();
         lblIndex = new javax.swing.JLabel();
         comIndex = new javax.swing.JComboBox();
         btnIndex = new javax.swing.JButton();
@@ -307,6 +344,8 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(lblExternalVersion, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblExternalVersion.text", new Object[] {})); // NOI18N
+
         org.openide.awt.Mnemonics.setLocalizedText(lblOptions, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblOptions.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(btnOptions, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnOptions.text")); // NOI18N
@@ -316,16 +355,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnGoals, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnGoals.text")); // NOI18N
-        btnGoals.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnGoalsActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblEmbeddedVersion, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblEmbeddedVersion.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblExternalVersion, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblExternalVersion.text", new Object[] {})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbSkipTests, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbSkipTests.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(lblLocalRepository, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblLocalRepository.text")); // NOI18N
 
@@ -333,6 +363,29 @@ public class SettingsPanel extends javax.swing.JPanel {
         btnLocalRepository.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnLocalRepositoryActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblEmbeddedVersion, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblEmbeddedVersion.text")); // NOI18N
+
+        lblBinaries.setLabelFor(comBinaries);
+        org.openide.awt.Mnemonics.setLocalizedText(lblBinaries, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblBinaries.text")); // NOI18N
+
+        lblJavadoc.setLabelFor(comJavadoc);
+        org.openide.awt.Mnemonics.setLocalizedText(lblJavadoc, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblJavadoc.text")); // NOI18N
+
+        lblSource.setLabelFor(comSource);
+        org.openide.awt.Mnemonics.setLocalizedText(lblSource, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblSource.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel3.text")); // NOI18N
+        jLabel3.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel1.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnGoals, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnGoals.text")); // NOI18N
+        btnGoals.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGoalsActionPerformed(evt);
             }
         });
 
@@ -358,36 +411,58 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(lblIndex)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(comIndex, 0, 225, Short.MAX_VALUE)
-                            .add(cbSnapshots))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(btnIndex))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblCommandLine)
-                            .add(lblOptions)
-                            .add(lblLocalRepository))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblEmbeddedVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(txtCommandLine, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
-                                .add(6, 6, 6)
-                                .add(btnCommandLine))
-                            .add(lblExternalVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(txtOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
-                                    .add(txtLocalRepository, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE))
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(lblCommandLine)
+                                    .add(lblOptions))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, btnLocalRepository)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, btnOptions)))))
-                    .add(btnGoals))
-                .addContainerGap())
+                                    .add(lblEmbeddedVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 579, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                        .add(txtCommandLine, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                                        .add(6, 6, 6)
+                                        .add(btnCommandLine))
+                                    .add(lblExternalVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 579, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                            .add(org.jdesktop.layout.GroupLayout.LEADING, comSource, 0, 473, Short.MAX_VALUE)
+                                            .add(org.jdesktop.layout.GroupLayout.LEADING, txtLocalRepository, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                                            .add(txtOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                                .add(cbSkipTests)
+                                                .add(41, 41, 41))
+                                            .add(org.jdesktop.layout.GroupLayout.LEADING, comBinaries, 0, 473, Short.MAX_VALUE)
+                                            .add(org.jdesktop.layout.GroupLayout.LEADING, comJavadoc, 0, 473, Short.MAX_VALUE))
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(btnLocalRepository)
+                                            .add(btnOptions)))))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(lblIndex)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(comIndex, 0, 479, Short.MAX_VALUE)
+                                    .add(cbSnapshots))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(btnIndex)))
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(btnGoals)
+                        .addContainerGap(498, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lblLocalRepository)
+                            .add(jLabel1)
+                            .add(layout.createSequentialGroup()
+                                .add(12, 12, 12)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(lblJavadoc)
+                                    .add(lblBinaries)
+                                    .add(lblSource)
+                                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 650, Short.MAX_VALUE))
+                                .add(106, 106, 106)))
+                        .addContainerGap())))
         );
 
         layout.linkSize(new java.awt.Component[] {btnCommandLine, btnIndex, btnLocalRepository, btnOptions}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -409,14 +484,32 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .add(txtOptions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(btnOptions))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbSkipTests)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lblLocalRepository)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(btnLocalRepository)
-                        .add(txtLocalRepository, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(lblLocalRepository))
-                .add(18, 18, 18)
+                        .add(txtLocalRepository, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(btnLocalRepository)))
+                .add(16, 16, 16)
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblBinaries)
+                    .add(comBinaries, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblJavadoc)
+                    .add(comJavadoc, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblSource)
+                    .add(comSource, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 44, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 117, Short.MAX_VALUE)
                 .add(btnGoals)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 114, Short.MAX_VALUE)
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(btnIndex)
                     .add(lblIndex)
@@ -516,7 +609,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void btnOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOptionsActionPerformed
         GlobalOptionsPanel pnl = new GlobalOptionsPanel();
-        DialogDescriptor dd = new DialogDescriptor(pnl, "Add Global Option(s)");
+        DialogDescriptor dd = new DialogDescriptor(pnl, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "TIT_Add_Globals"));
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (ret == DialogDescriptor.OK_OPTION) {
             txtOptions.setText(txtOptions.getText() + pnl.getSelectedOnes());
@@ -534,14 +627,23 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnIndex;
     private javax.swing.JButton btnLocalRepository;
     private javax.swing.JButton btnOptions;
+    private javax.swing.JCheckBox cbSkipTests;
     private javax.swing.JCheckBox cbSnapshots;
+    private javax.swing.JComboBox comBinaries;
     private javax.swing.JComboBox comIndex;
+    private javax.swing.JComboBox comJavadoc;
+    private javax.swing.JComboBox comSource;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel lblBinaries;
     private javax.swing.JLabel lblCommandLine;
     private javax.swing.JLabel lblEmbeddedVersion;
     private javax.swing.JLabel lblExternalVersion;
     private javax.swing.JLabel lblIndex;
+    private javax.swing.JLabel lblJavadoc;
     private javax.swing.JLabel lblLocalRepository;
     private javax.swing.JLabel lblOptions;
+    private javax.swing.JLabel lblSource;
     private javax.swing.JTextField txtCommandLine;
     private javax.swing.JTextField txtLocalRepository;
     private javax.swing.JTextField txtOptions;
@@ -561,6 +663,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         comIndex.setSelectedIndex(RepositoryPreferences.getInstance().getIndexUpdateFrequency());
         String repo = MavenSettings.getDefault().getCustomLocalRepository();
         ((MyJTextField)txtLocalRepository).setRealText(repo != null ? repo : "");
+        comBinaries.setSelectedItem(MavenSettings.getDefault().getBinaryDownloadStrategy());
+        comJavadoc.setSelectedItem(MavenSettings.getDefault().getJavadocDownloadStrategy());
+        comSource.setSelectedItem(MavenSettings.getDefault().getSourceDownloadStrategy());
+        cbSkipTests.setSelected(MavenSettings.getDefault().isSkipTests());
     }
     
     public void applyValues() {
@@ -579,6 +685,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
         RepositoryPreferences.getInstance().setIndexUpdateFrequency(comIndex.getSelectedIndex());
         RepositoryPreferences.getInstance().setIncludeSnapshots(cbSnapshots.isSelected());
+        MavenSettings.getDefault().setBinaryDownloadStrategy((MavenSettings.DownloadStrategy) comBinaries.getSelectedItem());
+        MavenSettings.getDefault().setJavadocDownloadStrategy((MavenSettings.DownloadStrategy) comJavadoc.getSelectedItem());
+        MavenSettings.getDefault().setSourceDownloadStrategy((MavenSettings.DownloadStrategy) comSource.getSelectedItem());
+        MavenSettings.getDefault().setSkipTests(cbSkipTests.isSelected());
         changed = false;
     }
     

@@ -111,36 +111,36 @@ public class VCSHooksConfig {
         if(value == null) return null;
         String values[] = value.split(DELIMITER);
         getPreferences().remove(HG_HOOK_PUSH_ + changeset);
-        return new PushAction(values[0], values[1], values[2].equals("1") ? true : false);
+        return new PushAction(values[0], values[1], values[2].equals("1") ? true : false); // NOI18N
     }
 
     private Format getDefaultHgFormat() {
         return new Format(false, normalizeFormat(new String[] {
-            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Changeset"),
-            "{changeset}\n",
-            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Author"),
-            "{author}\n",
-            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Date"),
-            "{date}\n",
-            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Message"),
-            "{message}"
+            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Changeset"),         // NOI18N
+            "{changeset}\n",                                                    // NOI18N
+            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Author"),            // NOI18N
+            "{author}\n",                                                       // NOI18N
+            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Date"),              // NOI18N
+            "{date}\n",                                                         // NOI18N
+            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Message"),           // NOI18N
+            "{message}"                                                         // NOI18N
         }));
     }
 
     private Format getDefaultIssueFormat() {
-        return new Format(false, NbBundle.getMessage(VCSHooksConfig.class, "LBL_Issue") + "{id} - {summary}");
+        return new Format(false, NbBundle.getMessage(VCSHooksConfig.class, "LBL_Issue") + "{id} - {summary}");  // NOI18N
     }
 
     private Format getDefaultSvnFormat() {
         return new Format(false, normalizeFormat(new String[] {
-            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Revision"),
-            "{revision}\n",
-            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Author"),
-            "{author}\n",
-            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Date"),
-            "{date}\n",
-            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Message"),
-            "{message}"
+            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Revision"),          // NOI18N
+            "{revision}\n",                                                     // NOI18N
+            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Author"),            // NOI18N
+            "{author}\n",                                                       // NOI18N
+            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Date"),              // NOI18N
+            "{date}\n",                                                         // NOI18N
+            NbBundle.getMessage(VCSHooksConfig.class, "LBL_Message"),           // NOI18N
+            "{message}"                                                         // NOI18N
         }));
     }
 
@@ -150,7 +150,7 @@ public class VCSHooksConfig {
             format = defaultFormat;
         } else {
             String[] values = value.split(DELIMITER);
-            format = new Format(values[0].equals("1"), values[1]);
+            format = new Format(values[0].equals("1"), values[1]);              // NOI18N
         }
         return format;
     }
@@ -164,7 +164,7 @@ public class VCSHooksConfig {
         for (int i = 0; i < params.length; i++) {
             ret.append(params[i]);
             StringBuffer s = new StringBuffer();
-            for (int j = 0; j < l - params[i].length() + 1; j++) s.append(" ");
+            for (int j = 0; j < l - params[i].length() + 1; j++) s.append(" "); // NOI18N
             ret.append(s.toString());
             ret.append(params[++i]);
         }
@@ -196,7 +196,7 @@ public class VCSHooksConfig {
             sb.append(DELIMITER);
             sb.append(getMsg());
             sb.append(DELIMITER);
-            sb.append(isClose() ? "1" : "0");
+            sb.append(isClose() ? "1" : "0");                                   // NOI18N
             return sb.toString();
         }
     }
@@ -218,7 +218,7 @@ public class VCSHooksConfig {
         @Override
         public String toString() {
             StringBuffer sb = new StringBuffer();
-            sb.append(above ? "1" : "0");
+            sb.append(above ? "1" : "0");                                       // NOI18N
             sb.append(DELIMITER);
             sb.append(format);
             return sb.toString();

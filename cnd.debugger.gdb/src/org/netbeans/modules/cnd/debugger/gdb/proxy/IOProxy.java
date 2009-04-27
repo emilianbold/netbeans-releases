@@ -49,9 +49,8 @@ import java.io.Reader;
 import java.io.Writer;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
-import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -292,8 +291,6 @@ public abstract class IOProxy {
         private final String inFilename;
         private final String outFilename;
         private final ExecutionEnvironment execEnv;
-        private InteractiveCommandProvider inProvider = null;
-        private InteractiveCommandProvider outProvider = null;
 
         public RemoteIOProxy(ExecutionEnvironment execEnv, Reader ioReader, Writer ioWriter) {
             super(ioReader, ioWriter);
@@ -309,11 +306,8 @@ public abstract class IOProxy {
 
         @Override
         protected OutputStream createInStream() throws IOException {
-            inProvider = InteractiveCommandProviderFactory.create(execEnv);
-            if (inProvider != null && inProvider.run(execEnv, "cat > " + inFilename, null)) { // NOI18N
-                return inProvider.getOutputStream();
-            }
-            return null;
+            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "cat > " + inFilename); // NOI18N
+            return npb.call().getOutputStream();
         }
 
         @Override
@@ -323,11 +317,8 @@ public abstract class IOProxy {
 
         @Override
         protected InputStream createOutStream() throws IOException {
-            outProvider = InteractiveCommandProviderFactory.create(execEnv);
-            if (outProvider != null && outProvider.run(execEnv, "cat " + outFilename, null)) { // NOI18N
-                return outProvider.getInputStream();
-            }
-            return null;
+            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "cat " + outFilename); // NOI18N
+            return npb.call().getInputStream();
         }
 
         private static String createNewFifo(ExecutionEnvironment execEnv) {
@@ -344,12 +335,6 @@ public abstract class IOProxy {
         @Override
         public void stop() {
             super.stop();
-//            if (inProvider != null) {
-//                inProvider.disconnect();
-//            }
-//            if (outProvider != null) {
-//                outProvider.disconnect();
-//            }
             // delete files
             CommandProvider cp = Lookup.getDefault().lookup(CommandProvider.class);
             if (cp != null) {

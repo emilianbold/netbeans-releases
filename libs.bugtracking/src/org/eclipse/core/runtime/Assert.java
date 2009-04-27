@@ -46,16 +46,16 @@ package org.eclipse.core.runtime;
 public final class Assert {
     
     public static void isNotNull(Object object) {
-        
     }
 
     public static void isNotNull(Object object, String string) {
-
     }
 
-    public static void isTrue(boolean b) {
+    public static boolean isTrue(boolean b) {
+        return b;
     }
 
-    public static void isLegal(boolean b) {
+    public static boolean isLegal(boolean b) {
+        return b;
     }
 }

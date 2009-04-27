@@ -44,7 +44,6 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -70,6 +69,7 @@ public class RemoteServerRecord implements ServerRecord {
     private State state;
     private final Object stateLock;
     private String reason;
+    private String displayName;
     
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
@@ -83,10 +83,15 @@ public class RemoteServerRecord implements ServerRecord {
     }
 
     protected RemoteServerRecord(final ExecutionEnvironment env, boolean connect) {
+        this(env, null, connect);
+    }
+
+    protected RemoteServerRecord(final ExecutionEnvironment env, String displayName, boolean connect) {
         this.executionEnvironment = env;
         stateLock = new String("RemoteServerRecord state lock for " + toString()); // NOI18N
         reason = null;
         deleted = false;
+        this.displayName = displayName;
         
         if (env.isLocal()) {
             editable = false;
@@ -107,22 +112,23 @@ public class RemoteServerRecord implements ServerRecord {
         return executionEnvironment.toString();
     }
 
+    @Override
     public synchronized void validate(final boolean force) {
         if (isOnline()) {
             return;
         }
         log.fine("RSR.validate2: Validating " + toString());
         if (force) {
-            ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", getName())); // NOI18N
+            ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", getDisplayName())); // NOI18N
             ph.start();
             init(null);
             ph.finish();
         }
         String msg;
         if (isOnline()) {
-            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_OK", getName());// NOI18N
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_OK", getDisplayName());// NOI18N
         } else {
-            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_ERR", getName(), getStateAsText(), getReason());// NOI18N
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_ERR", getDisplayName(), getStateAsText(), getReason());// NOI18N
         }
         StatusDisplayer.getDefault().setStatusText(msg);        
     }
@@ -170,11 +176,13 @@ public class RemoteServerRecord implements ServerRecord {
         // TODO: not good to use object's toString as resource key
         return NbBundle.getMessage(RemoteServerRecord.class, state.toString());
     }
-    
+
+    @Override
     public boolean isOnline() {
         return state == State.ONLINE;
     }
-    
+
+    @Override
     public boolean isOffline() {
         return state == State.OFFLINE;
     }
@@ -183,6 +191,7 @@ public class RemoteServerRecord implements ServerRecord {
         this.deleted = deleted;
     }
 
+    @Override
     public boolean isDeleted() {
         return deleted;
     }
@@ -191,19 +200,40 @@ public class RemoteServerRecord implements ServerRecord {
         return editable;
     }
 
+    @Override
     public boolean isRemote() {
         return executionEnvironment.isRemote();
     }
 
-    /** TODO: deprcate and remove */
-    public String getName() {
-        return ExecutionEnvironmentFactory.getHostKey(executionEnvironment);
+    @Override
+    public String getDisplayName() {
+        return (displayName != null && displayName.length() > 0) ? displayName : executionEnvironment.getDisplayName();
     }
 
+    @Override
+    public String getServerDisplayName() {
+        if (displayName == null || displayName.length() == 0) {
+            // TODO: should we add ExecutionEnvironment.getHostDisplayName() ?
+            if (executionEnvironment.isLocal()) {
+                return "localhost"; //NOI18N
+            } else {
+                return executionEnvironment.getHost();
+            }
+        } else {
+            return displayName;
+        }
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    @Override
     public String getServerName() {
         return executionEnvironment.getHost();
     }
 
+    @Override
     public String getUserName() {
         return executionEnvironment.getUser();
     }

@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
+import org.openide.util.NbBundle;
 
 /**
  * Abstraction of commands for V3 server administration
@@ -137,10 +138,8 @@ public class Commands {
 
             String [] apps = appsList.split(";"); // NOI18N
             for(String appKey: apps) {
-                if("null".equals(appKey)) {
-                    Logger.getLogger("glassfish").log(Level.WARNING, 
-                            "list-applications contains an invalid result.  " +
-                            "Check server log for possible exceptions.");
+                if("null".equals(appKey)) { // NOI18N
+                    Logger.getLogger("glassfish").log(Level.WARNING, "list-applications contains an invalid result.  " + "Check server log for possible exceptions."); // NOI18N
                     continue;
                 }
                 
@@ -149,24 +148,24 @@ public class Commands {
                     continue;
                 }
                 
-                String engine = getPreferredEngine(appAttrs.getValue("nb-engine_value"));
+                String engine = getPreferredEngine(appAttrs.getValue("nb-engine_value")); // NOI18N
                 
-                String name = appAttrs.getValue("nb-name_value");
+                String name = appAttrs.getValue("nb-name_value");  // NOI18N
                 if(name == null || name.length() == 0) {
-                    Logger.getLogger("glassfish").log(Level.FINE, "Skipping application with no name..."); // FIXME better log message.
+                    Logger.getLogger("glassfish").log(Level.FINE, "Skipping application with no name..."); // NOI18N  FIXME better log message.
                     continue;
                 }
                 
-                String path = appAttrs.getValue("nb-location_value");
-                if(path.startsWith("file:")) {
+                String path = appAttrs.getValue("nb-location_value");  // NOI18N
+                if(path.startsWith("file:")) {  // NOI18N
                     path = path.substring(5);
                 }
                 
-                String contextRoot = appAttrs.getValue("nb-context-root_value");
+                String contextRoot = appAttrs.getValue("nb-context-root_value"); // NOI18N
                 if(contextRoot == null) {
                     contextRoot = name;
                 }
-                if(contextRoot.startsWith("/")) {
+                if(contextRoot.startsWith("/")) {  // NOI18N
                     contextRoot = contextRoot.substring(1);
                 }
 
@@ -190,10 +189,10 @@ public class Commands {
         // until we have better display semantics for such things.
         // XXX bias order of list for JavaONE demos.
         private static final List<String> engineBias = 
-                Arrays.asList(new String [] { "jruby", "web", "ejb" });
+                Arrays.asList(new String [] { "jruby", "web", "ejb" }); // NOI18N
         
         private String getPreferredEngine(String engineList) {
-            String [] engines = engineList.split(",");
+            String [] engines = engineList.split(",");  // NOI18N
             String engine = null;
             int bias = -1;
             for(int i = 0; i < engines.length; i++) {
@@ -211,7 +210,7 @@ public class Commands {
             if(bias != -1) {
                 engine = engineBias.get(bias);
             } else if(engine == null) {
-                engine = "unknown";
+                engine = "unknown"; // NOI18N
             }
             return engine;
         }
@@ -224,7 +223,7 @@ public class Commands {
          */
         private boolean skipContainer(String currentContainer) {
             return container != null ? !container.equals(currentContainer) :
-                "security_ContractProvider".equals(currentContainer);
+                "security_ContractProvider".equals(currentContainer); // NOI18N
         }
         
     };
@@ -288,7 +287,7 @@ public class Commands {
                         resList.add(new ResourceDesc(name, cmdSuffix));
                     }
                 } else {
-                    Logger.getLogger("glassfish").log(Level.FINE, "No resource attributes returned for " + r);
+                    Logger.getLogger("glassfish").log(Level.FINE, "No resource attributes returned for " + r); // NOI18N
                 }
             }
             
@@ -296,7 +295,7 @@ public class Commands {
         }
 
         private boolean skipResource(String r) {
-            return false;
+            return r.equals(NbBundle.getMessage(Commands.class, "nothingToList")); //NOI18N
         }
     
     };
@@ -333,8 +332,7 @@ public class Commands {
                 cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
                 cmd.append(contextRoot);
             }
-            cmd.append(PARAM_SEPARATOR + "force=true");
-            addKeepSessions(cmd,preserveSessions);
+            cmd.append(PARAM_SEPARATOR + "force=true"); // NOI18N
             query = cmd.toString();
         }
         
@@ -393,7 +391,7 @@ public class Commands {
     private static void addKeepSessions(StringBuilder cmd, Boolean preserveSessions) {
         if (Boolean.TRUE.equals(preserveSessions)) {
             cmd.append(ServerCommand.PARAM_SEPARATOR + "properties="); // NOI18N
-            cmd.append("keepSessions=true");
+            cmd.append("keepSessions=true");  // NOI18N
         }        
     }
     
@@ -404,7 +402,7 @@ public class Commands {
         
         public UndeployCommand(final String name) {
             super("undeploy"); // NOI18N
-            query = "name=" + name;
+            query = "name=" + name; // NOI18N
         }
         
     }
@@ -420,7 +418,7 @@ public class Commands {
 
             StringBuilder cmd = new StringBuilder(128);
             if(cascade) {
-                cmd.append("cascade=true");
+                cmd.append("cascade=true"); // NOI18N
                 cmd.append(PARAM_SEPARATOR);
             }
             cmd.append(cmdPropertyName);
@@ -488,8 +486,8 @@ public class Commands {
             
             Attributes mainAttrs = info.getMainAttributes();
             if(mainAttrs != null) {
-                installRoot = mainAttrs.getValue("Base-Root_value");
-                domainRoot = mainAttrs.getValue("Domain-Root_value");
+                installRoot = mainAttrs.getValue("Base-Root_value");  // NOI18N
+                domainRoot = mainAttrs.getValue("Domain-Root_value");  // NOI18N
             }
             
             return true;

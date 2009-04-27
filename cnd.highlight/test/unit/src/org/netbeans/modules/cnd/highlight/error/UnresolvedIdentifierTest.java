@@ -59,6 +59,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void testIZ162745() throws Exception {
+        // IZ#162745:unnamed_enum_typedef.cpp
+        performStaticTest("unnamed_enum_typedef.cpp");
+    }
+    
     public void testDDD() throws Exception {
         // test for number of DDD problems
         performStaticTest("ddd_errors.cpp");
@@ -195,6 +200,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
     public void testIZ150827() throws Exception {
         // IZ#150827 : Expression statement with & is treated as a declaration
         performStaticTest("iz150827.cpp");
+    }
+
+    public void testIZ142674() throws Exception {
+        // IZ#142674 : Function-try-catch (C++) in editor shows error
+        performStaticTest("iz142674.cpp");
     }
 
     /////////////////////////////////////////////////////////////////////

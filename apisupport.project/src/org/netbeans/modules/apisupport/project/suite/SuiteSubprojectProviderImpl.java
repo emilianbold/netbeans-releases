@@ -87,9 +87,11 @@ final class SuiteSubprojectProviderImpl implements SubprojectProvider {
     }
     
     public Set<NbModuleProject> getSubprojects() {
-        if (projects == null || reloadNeeded) {
-            projects = loadProjects();
-            reloadNeeded = false;
+        synchronized (changeSupport) {
+            if (projects == null || reloadNeeded) {
+                reloadNeeded = false;   // must set before loadProjects so that prop. change is not lost when loading from another thread
+                projects = loadProjects();
+            }
         }
         return projects;
     }

@@ -88,7 +88,7 @@ public class GoToSupportTest extends NbTestCase {
     
     public void testGoToMethod() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test { public void test() {} public static void main(String[] args) {test();}}", 97, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -102,13 +102,13 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToClass() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test { public static void main(String[] args) {TT tt} } class TT { }", 75, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -122,13 +122,13 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToConstructor() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test { public Test() {} public static void main(String[] args) {new Test();}}", 97, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -142,13 +142,13 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToGenerifiedConstructor() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test<T> { public Test() {} public static void main(String[] args) {new Test<String>();}}", 100, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -162,13 +162,13 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToSuperConstructor() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test extends Base { public Test() {super(1);} } class Base {public Base() {} public Base(int i) {}}", 64, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -182,13 +182,13 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToThisConstructor() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test { public Test() {this(1);} public Test(int i) {}}", 50, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -202,14 +202,14 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToSuperMethod1() throws Exception {
         //try to go to "super" in super.methodInParent():
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test extends Base { public void test() {super.methodInParent();} } class Base {public void methodInParent() {}}", 75, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -223,14 +223,14 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToSuperMethod2() throws Exception {
         //try to go to "super" in super.methodInParent():
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test extends Base { public void test() {super.methodInParent();} } class Base {public void methodInParent() {}}", 70, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -242,13 +242,13 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToGarbage() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test {ddddddddd public void test() {super.methodInParent();} }", 36, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -260,10 +260,10 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testTooltipForGarbage() throws Exception {
         String tooltip = performTest("package test; public class Test {ddddddddd public void test() {super.methodInParent();} }", 36, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
@@ -278,9 +278,34 @@ public class GoToSupportTest extends NbTestCase {
         }, true);
     }
     
+    public void testTooltipForInnerClasses() throws Exception {
+        String code = "package test; public class Test {enum EE {A} class CC {} EE a; CC c;}";
+        int[] offset = new int[] {82, 88};
+        String[] golden = new String[] {
+            "<html><body>static final enum test.Test.<b>EE</b>",
+            "<html><body>class test.Test.<b>CC</b>",
+        };
+        assertEquals(offset.length, golden.length);
+        for (int cntr = 0; cntr < offset.length; cntr++) {
+            String tooltip = performTest(code, offset[cntr] - 24, new OrigUiUtilsCaller() {
+                public void open(FileObject fo, int pos) {
+                    fail("Should not be called.");
+                }
+                public void beep() {
+                    fail("Should not be called.");
+                }
+                public void open(ClasspathInfo info, Element el) {
+                    fail("Should not be called.");
+                }
+            }, true);
+
+            assertEquals(golden[cntr], tooltip);
+        }
+    }
+
     public void testGoToIntoAnnonymous() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test {public void test() {new Runnable() {int var; public void run() {var = 0;}};} }", 99, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 wasCalled[0] = true;
@@ -294,13 +319,13 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToString() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test {public void test() {String s = null;} }", 56, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -314,13 +339,13 @@ public class GoToSupportTest extends NbTestCase {
                 wasCalled[0] = true;
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToAnnonymousInnerClass() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test {public void test() {new Runnable() {public void run(){}};} }", 61, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -334,13 +359,13 @@ public class GoToSupportTest extends NbTestCase {
                 wasCalled[0] = true;
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToAnnonymousInnerClass2() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test {public void test() {new java.util.ArrayList(c) {public void run(){}};} java.util.Collection c;}", 70, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -351,26 +376,26 @@ public class GoToSupportTest extends NbTestCase {
             public void open(ClasspathInfo info, Element el) {
                 assertEquals(ElementKind.CONSTRUCTOR, el.getKind());
                 assertEquals("java.util.ArrayList", ((TypeElement) el.getEnclosingElement()).getQualifiedName().toString());
-                
+
                 ExecutableElement ee = (ExecutableElement) el;
-                
+
                 assertEquals(1, ee.getParameters().size());
-                
+
                 TypeMirror paramType = ee.getParameters().get(0).asType();
-                
+
                 assertEquals(TypeKind.DECLARED, paramType.getKind());
                 assertEquals("java.util.Collection", ((TypeElement) ((DeclaredType) paramType).asElement()).getQualifiedName().toString());
-                
+
                 wasCalled[0] = true;
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToAnnonymousInnerClass3() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test {java.util.List l = new java.util.ArrayList() {public void run(){}};}", 70, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -381,21 +406,21 @@ public class GoToSupportTest extends NbTestCase {
             public void open(ClasspathInfo info, Element el) {
                 assertEquals(ElementKind.CONSTRUCTOR, el.getKind());
                 assertEquals("java.util.ArrayList", ((TypeElement) el.getEnclosingElement()).getQualifiedName().toString());
-                
+
                 ExecutableElement ee = (ExecutableElement) el;
-                
+
                 assertEquals(0, ee.getParameters().size());
-                
+
                 wasCalled[0] = true;
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToParameter() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test {public void test(int xx) {xx = 0;}}", 60, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -409,13 +434,13 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToLocalVariable() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test {public void test() {int xx;xx = 0;}}", 61, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -429,13 +454,13 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToTypeVariable() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test<TTT> {public void test() {TTT t;}}", 60, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -449,13 +474,13 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToSynteticConstructorInDifferentClass() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test {public void test() {new Auxiliary();}}", 62, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -469,13 +494,13 @@ public class GoToSupportTest extends NbTestCase {
                 wasCalled[0] = true;
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToCArray90875() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test {public void test() {int ar[][] = null; System.err.println(ar);}}", 92, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -489,13 +514,13 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testNewClass91637() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test {public Test(int x){} public void test() {int ii = 0; new Test(ii);}}", 96, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -509,11 +534,11 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
-        
+
         wasCalled[0] = false;
-      
+
         performTest("package test; public class Test<T> {public Test(int x){} public void test() {int ii = 0; new Test<Object>(ii);}}", 107, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -527,11 +552,11 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
-        
+
         wasCalled[0] = false;
-      
+
         performTest("package test; public class Test<T> {public Test(int x){} public void test() {int ii = 0; new Test<Object>(ii);}}", 100, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -545,13 +570,13 @@ public class GoToSupportTest extends NbTestCase {
                 wasCalled[0] = true;
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testNewClass91769() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test {public void test() {new AB(name);} private static class AB {public AB(String n){}}}", 58, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -565,11 +590,11 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
-        
+
         wasCalled[0] = false;
-        
+
         performTest("package test; public class Test {public void test() {new AB<Object>(name);} private static class AB<T> {public AB(String n){}}}", 58, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -583,11 +608,11 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
-        
+
         wasCalled[0] = false;
-        
+
         performTest("package test; public class Test {public void test() {new AB(name);} private static class AB {public AB(String n){}}}", 62, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -599,11 +624,11 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
-        
+
         wasCalled[0] = false;
-        
+
         performTest("package test; public class Test {public void test() {new AB<Object>(name);} private static class AB<T> {public AB(String n){}}}", 63, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -617,14 +642,14 @@ public class GoToSupportTest extends NbTestCase {
                 wasCalled[0] = true;
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testBeepOnDeclarations() throws Exception {
         String code = "package test; public class Test {public void test(String s) {} public String test2(String s) {} public void test3() {} private static class AB {} private String FIELD; private void test4(String name1, String name2) {}}";
         final boolean[] wasCalled = new boolean[1];
-        
+
         for (final int pos : new int[] {53, 71, 103, 134, 165, 187, 220, 234}) {
             performTest(code, pos - 24, new OrigUiUtilsCaller() {
                 public void open(FileObject fo, int pos) {
@@ -637,12 +662,12 @@ public class GoToSupportTest extends NbTestCase {
                     fail("Should not be called, position= " + pos + ".");
                 }
             }, false);
-            
+
             assertTrue(wasCalled[0]);
-            
+
             wasCalled[0] = false;
         }
-        
+
         for (final int pos : new int[] {77, 97, 109, 181, 214, 228}) {
             performTest(code, pos - 24, new OrigUiUtilsCaller() {
                 public void open(FileObject fo, int pos) {
@@ -657,17 +682,17 @@ public class GoToSupportTest extends NbTestCase {
                     wasCalled[0] = true;
                 }
             }, false);
-            
+
             assertTrue(wasCalled[0]);
-            
+
             wasCalled[0] = false;
         }
     }
-    
+
     public void test113474() throws Exception {
         String code = "package test; public class Test {}whatever";
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest(code, 63 - 24, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called, position= " + pos + ".");
@@ -679,14 +704,14 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called, element= " + el + ".");
             }
         }, false);
-        
+
         wasCalled[0] = false;
     }
-    
+
     public void testGoToImport() throws Exception {
         final boolean[] wasCalled = new boolean[1];
         String code = "package test; import java.awt.Color; public class Test {}";
-        
+
         performTest(code, code.indexOf("Color") + 1, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -700,14 +725,14 @@ public class GoToSupportTest extends NbTestCase {
                 wasCalled[0] = true;
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToStaticImport() throws Exception {
         final boolean[] wasCalled = new boolean[1];
         String code = "package test; import static java.awt.Color.BLACK; public class Test {}";
-        
+
         performTest(code, code.indexOf("BLACK") + 1, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -722,14 +747,14 @@ public class GoToSupportTest extends NbTestCase {
                 wasCalled[0] = true;
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void test110185() throws Exception {
         final boolean[] wasCalled = new boolean[1];
         String code = "package test; public class Test { private Test t;}";
-        
+
         performTest(code, code.lastIndexOf("Test") + 1, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -743,14 +768,14 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testNearlyMatchingMethod1() throws Exception {
         final boolean[] wasCalled = new boolean[1];
         String code = "package test; public class Test { public void x() {Object o = null; test(o);} public void test(int i, float f) {} public void test(Integer i) {} }";
-        
+
         performTest(code, code.indexOf("test(") + 1, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -764,13 +789,13 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void test122637() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        final String code = "package test;\n" + 
+        final String code = "package test;\n" +
                       "public class Test {\n" +
                       "    private void x() {\n" +
                       "        RequestProcessor.post(new Runnable() {\n" +
@@ -781,7 +806,7 @@ public class GoToSupportTest extends NbTestCase {
                       "        });\n" +
                       "    }\n" +
                       "}\n";
-        
+
         performTest(code, code.indexOf("test.length") + 1, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
@@ -795,13 +820,13 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToCannotOpen1() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test { public static void main(String[] args) {TT tt} } class TT { }", 75, new UiUtilsCaller() {
             public boolean open(FileObject fo, int pos) {
                 return false;
@@ -818,13 +843,13 @@ public class GoToSupportTest extends NbTestCase {
                 wasCalled[0] = true;
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testGoToCannotOpen2() throws Exception {
         final boolean[] wasCalled = new boolean[1];
-        
+
         performTest("package test; public class Test { public static void main(String[] args) {TT tt} } class TT { }", 62, new UiUtilsCaller() {
             public boolean open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -841,27 +866,27 @@ public class GoToSupportTest extends NbTestCase {
                 wasCalled[0] = true;
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
-    
+
     public void testDeadlock135736() throws Exception {
         final CountDownLatch l1 = new CountDownLatch(1);
         final CountDownLatch l2 = new CountDownLatch(1);
         final boolean[] wasCalled = new boolean[1];
-        
+
         new Thread() {
             @Override
             public void run() {
                 try {
                     FileObject f = FileUtil.createMemoryFileSystem().getRoot().createData("Test.java");
-                    
+
                     try {
                         l1.await();
                     } catch (InterruptedException ex) {
                         throw new IllegalStateException(ex);
                     }
-                    
+
                     JavaSource.forFileObject(f).runUserActionTask(new Task<CompilationController>() {
                         public void run(CompilationController parameter) throws Exception {
                             l2.countDown();
@@ -872,7 +897,7 @@ public class GoToSupportTest extends NbTestCase {
                 }
             }
         }.start();
-        
+
         performTest("package test; public class Test { public static void main(String[] args) {} }", 62, new UiUtilsCaller() {
             public boolean open(FileObject fo, int pos) {
                 fail("Should not be called.");
@@ -898,7 +923,7 @@ public class GoToSupportTest extends NbTestCase {
                 fail("Should not be called.");
             }
         }, false);
-        
+
         assertTrue(wasCalled[0]);
     }
     

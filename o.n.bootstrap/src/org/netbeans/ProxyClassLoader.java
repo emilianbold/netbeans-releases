@@ -572,7 +572,9 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         if (!"commons-logging.properties".equals(name) &&
             !"jndi.properties".equals(name) &&
             !"log4j.properties".equals(name) &&
-            !"simplelog.properties".equals(name)) { // NOI18N
+            !"simplelog.properties".equals(name) &&
+            !"emma_default.properties".equals(name) &&
+            !"emma.properties".equals(name)) { // NOI18N
             LOGGER.log(Level.INFO, null, new IllegalStateException("You are trying to access file: " + name + " from the default package. Please see http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#default_package"));
         }
     }

@@ -241,7 +241,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
         }
     }
 
-    synchronized private void init(boolean initCopy) {
+    synchronized void init(boolean initCopy) {
         if (IS_FINE_LOGGABLE) {
                 String format = "Copy support for project \"%s\" INIT";//NOI18N
                 LOGGER.fine(String.format(format, project.getName()));
@@ -264,6 +264,8 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
     public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
         final String propertyName = propertyChangeEvent.getPropertyName();
         if (isProjectOpened) {
+            // invalidate factories, e.g. remote client (it's better to simply create a new client)
+            operationFactory.invalidate();
             if (propertyName.equals(PhpProjectProperties.COPY_SRC_TARGET) ||
                     propertyName.equals(PhpProjectProperties.SRC_DIR) ||
                     propertyName.equals(PhpProjectProperties.COPY_SRC_FILES)) {
@@ -296,6 +298,11 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
         void init() {
             this.localFactoryError = false;
             this.remoteFactoryError = false;
+        }
+
+        void invalidate() {
+            localFactory.invalidate();
+            remoteFactory.invalidate();
         }
 
         @Override
@@ -352,7 +359,7 @@ public class CopySupport extends FileChangeAdapter implements PropertyChangeList
                             LOGGER.log(Level.INFO, "Remote On Save Fail: ", exc);
                             String message = NbBundle.getMessage(CopySupport.class, "LBL_Remote_On_Save_Fail");
                             Object continueCopying = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, JOptionPane.YES_NO_OPTION));
-                            if (!continueCopying.equals(JOptionPane.YES_OPTION)) {
+                            if (continueCopying.equals(JOptionPane.YES_OPTION)) {
                                 remoteFactoryError = true;
                                 LOGGER.log(Level.INFO, "Remote On Save  Disabled By User", exc);
                             }

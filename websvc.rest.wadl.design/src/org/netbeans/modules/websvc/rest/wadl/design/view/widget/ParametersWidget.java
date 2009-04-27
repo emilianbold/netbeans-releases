@@ -109,7 +109,8 @@ public class ParametersWidget<T extends WadlComponent> extends AbstractTitledWid
         removeAction = new RemoveParamAction(parent, wadlModel);
         removeAction.addPropertyChangeListener(this);
         initUI();
-        setExpanded(false);
+        if(ExpanderWidget.isExpanded(this, false))
+            setExpanded(true);
     }
 
     public WadlModel getModel() {
@@ -226,10 +227,12 @@ public class ParametersWidget<T extends WadlComponent> extends AbstractTitledWid
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
+        boolean expand = false;
         if (evt.getPropertyName().equals(AddParamAction.ADD_PARAM)) {
             Param param = (Param) evt.getNewValue();
             model.addParameter(param);
             populateContentWidget(getContentWidget());
+            expand = true;
         } else if (evt.getPropertyName().equals(RemoveParamAction.REMOVE_PARAMS)) {
             Set<Param> resources = (Set<Param>) evt.getOldValue();
             for (Param p : resources) {
@@ -238,8 +241,12 @@ public class ParametersWidget<T extends WadlComponent> extends AbstractTitledWid
             if (!resources.isEmpty()) {
                 populateContentWidget(getContentWidget());
             }
+            expand = true;
         }
         getScene().validate();
+        if(expand) {
+            expandWidget();
+        }
     }
 
     static Collection getParameters(Collection<Param> params, ParamStyle style) {

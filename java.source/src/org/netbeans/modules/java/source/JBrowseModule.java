@@ -53,7 +53,6 @@ import javax.management.ObjectName;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.LuceneIndexMBean;
 import org.netbeans.modules.java.source.usages.LuceneIndexMBeanImpl;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.util.LowMemoryNotifierMBean;
 import org.netbeans.modules.java.source.util.LowMemoryNotifierMBeanImpl;
 import org.openide.ErrorManager;
@@ -63,6 +62,7 @@ import org.openide.util.Exceptions;
 /**
  *
  * @author Petr Hrebejk
+ * @author Tomas Zezula
  */
 public class JBrowseModule extends ModuleInstall {
     
@@ -87,9 +87,8 @@ public class JBrowseModule extends ModuleInstall {
         System.setProperty("useJavaUtilZip", "true");
     }   
     
-    public @Override boolean closing () {
-        final boolean ret = super.closing();
-        RepositoryUpdater.getDefault().close();
+    public @Override void close () {
+        super.closing();
         try {
             ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                  public Void run() throws IOException {
@@ -106,7 +105,6 @@ public class JBrowseModule extends ModuleInstall {
         if (ENABLE_MBEANS) {
             unregisterMBeans();
         }
-        return ret;
     }
     
     private static void registerMBeans() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,9 +42,8 @@ package org.netbeans.modules.mercurial.ui.wizards;
 
 import java.awt.Component;
 import java.awt.BorderLayout;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.security.KeyManagementException;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.JPanel;
@@ -52,7 +51,6 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
-import java.net.URI;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
@@ -61,26 +59,28 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.List;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.swing.JComponent;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
+import static org.netbeans.modules.mercurial.ui.repository.HgURL.Scheme.FILE;
+import static org.netbeans.modules.mercurial.ui.repository.HgURL.Scheme.HTTP;
+import static org.netbeans.modules.mercurial.ui.repository.HgURL.Scheme.HTTPS;
 
-public class CloneRepositoryWizardPanel implements WizardDescriptor.AsynchronousValidatingPanel, PropertyChangeListener {
+public class CloneRepositoryWizardPanel implements WizardDescriptor.AsynchronousValidatingPanel, ChangeListener {
     
     /**
      * The visual component that displays this panel. If you need to access the
@@ -101,10 +101,10 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         if (component == null) {
             component = new CloneRepositoryPanel();
             if (repository == null) {
-                repositoryModeMask = repositoryModeMask | Repository.FLAG_URL_EDITABLE | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
+                repositoryModeMask = repositoryModeMask | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
                 String title = org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Location");       // NOI18N
                 repository = new Repository(repositoryModeMask, title, false);
-                repository.addPropertyChangeListener(this);
+                repository.addChangeListener(this);
                 CloneRepositoryPanel panel = (CloneRepositoryPanel)component;
                 panel.repositoryPanel.setLayout(new BorderLayout());
                 panel.repositoryPanel.add(repository.getPanel());
@@ -128,13 +128,11 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         // and uncomment the complicated stuff below.
     //}
     
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Repository.PROP_VALID)) {
-            if(repository.isValid()) {
-                valid(repository.getMessage());
-            } else {
-                invalid(repository.getMessage());
-            }
+    public void stateChanged(ChangeEvent evt) {
+        if(repository.isValid()) {
+            valid(repository.getMessage());
+        } else {
+            invalid(repository.getMessage());
         }
     }
 
@@ -180,7 +178,21 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         return errorMessage;
     }
 
+    private void displayErrorMessage(String errorMessage) {
+        if (errorMessage == null) {
+            throw new IllegalArgumentException("<null> message");
+        }
+
+        if (!errorMessage.equals(this.errorMessage)) {
+            this.errorMessage = errorMessage;
+            fireChangeEvent();
+        }
+    }
+
     private void setValid(boolean valid, String errorMessage) {
+        if ((errorMessage != null) && (errorMessage.length() == 0)) {
+            errorMessage = null;
+        }
         boolean fire = this.valid != valid;
         fire |= errorMessage != null && (errorMessage.equals(this.errorMessage) == false);
         this.valid = valid;
@@ -190,11 +202,19 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         }
     }
 
-    protected void validateBeforeNext() {
+    protected void validateBeforeNext() throws WizardValidationException {
         try {
+            HgURL url;
+            try {
+                url = repository.getUrl();
+            } catch (URISyntaxException ex) {
+                throw new WizardValidationException((JComponent) component,
+                                                    ex.getMessage(),
+                                                    ex.getLocalizedMessage());
+            }
+
             support = new RepositoryStepProgressSupport(component.progressPanel);
 
-            String url = getUrl();
             support.setRepositoryRoot(url);
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(url);
             RequestProcessor.Task task = support.start(rp, url, NbBundle.getMessage(CloneRepositoryWizardPanel.class, "BK2012"));
@@ -224,31 +244,37 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
     public void readSettings(Object settings) {}
     public void storeSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
-            ((WizardDescriptor) settings).putProperty("repository", repository.getSelectedRC().getUrl()); // NOI18N
-            ((WizardDescriptor) settings).putProperty("username", repository.getSelectedRC().getUsername()); // NOI18N
-            ((WizardDescriptor) settings).putProperty("password", repository.getSelectedRC().getPassword()); // NOI18N
+            try {
+                ((WizardDescriptor) settings).putProperty("repository", repository.getUrl()); // NOI18N
+            } catch (URISyntaxException ex) {
+                /*
+                 * The panel's data may not be validated yet (bug #163078)
+                 * so we cannot assume that the entered URL is valid - so
+                 * we must catch the URISyntaxException.
+                 */
+                Logger.getLogger(getClass().getName()).throwing(
+                                                        getClass().getName(),
+                                                        "storeSettings",//NOI18N
+                                                        ex);
+            }
         }
     }
 
     public void prepareValidation() {
     }
 
-    private String getUrl() {
-        return getSelectedRepositoryConnection().getUrl();
-    }
-
     private void storeHistory() {
-        RepositoryConnection rc = getSelectedRepositoryConnection();
+        RepositoryConnection rc = getRepositoryConnection();
         if(rc != null) {
             HgModuleConfig.getDefault().insertRecentUrl(rc);
         }
     }
 
-    private RepositoryConnection getSelectedRepositoryConnection() {
+    private RepositoryConnection getRepositoryConnection() {
         try {
-            return repository.getSelectedRC();
+            return repository.getRepositoryConnection();
         } catch (Exception ex) {
-            invalid(ex.getLocalizedMessage());
+            displayErrorMessage(ex.getLocalizedMessage());
             return null;
         }
     }
@@ -266,37 +292,33 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         }
 
         public void perform() {
-            final RepositoryConnection rc = getSelectedRepositoryConnection();
+            final RepositoryConnection rc = getRepositoryConnection();
             if (rc == null) {
                 return;
             }
             String invalidMsg = null;
             HttpURLConnection con = null;
             try {
-                invalid(null);
+                HgURL hgUrl = getRepositoryRoot();
 
-                // This command validates the url
-                rc.getHgUrl();
-                String urlStr = rc.getUrl();
-                URI uri = new URI(urlStr);
-                String uriSch = uri.getScheme();
-                if(uriSch.equals("file")){
-                    File f = new File(urlStr.substring("file://".length()));
+                HgURL.Scheme uriSch = hgUrl.getScheme();
+                if (uriSch == FILE) {
+                    File f = HgURL.getFile(hgUrl);
                     if(!f.exists() || !f.canRead()){
                         invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
                                "MSG_Progress_Clone_CannotAccess_Err");
                         return;
                     }
-                }else if(uriSch.equals("http") || uriSch.equals("https")) {
-                    URL url = new URL(urlStr);
+                } else if ((uriSch == HTTP) || (uriSch == HTTPS)) {
+                    URL url = hgUrl.toURL();
                     con = (HttpURLConnection) url.openConnection();
                     // Note: valid repository returns con.getContentLength() = -1
                     // so no way to reliably test if this url exists, without using hg
-                    if (con != null){
-                        String userInfo = uri.getUserInfo();
+                    if (con != null) {
+                        String userInfo = url.getUserInfo();
                         boolean bNoUserAndOrPasswordInURL = userInfo == null;
                         // If username or username:password is in the URL the con.getResponseCode() returns -1 and this check would fail
-                        if(uriSch.equals("https")) {
+                        if (uriSch == HTTPS) {
                             setupHttpsConnection(con);
                         }
                         if (bNoUserAndOrPasswordInURL && con.getResponseCode() != HttpURLConnection.HTTP_OK){
@@ -320,11 +342,6 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                  invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
                                   "MSG_Progress_Clone_CannotAccess_Err");
                 return;
-            } catch (URISyntaxException ex) {
-                 Mercurial.LOG.log(Level.INFO, ex.getMessage(), ex);
-                 invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
-                                  "MSG_Progress_Clone_InvalidURL_Err");
-                return;
             } catch (RuntimeException re) {
                 Throwable t = re.getCause();
                 if(t != null) {
@@ -339,18 +356,17 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                     con.disconnect();
                 }
                 if(isCanceled()) {
-                    valid(org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Canceled")); // NOI18N
+                  displayErrorMessage(org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Canceled")); // NOI18N
                 } else if(invalidMsg == null) {
-                  valid();
                   storeHistory();
                 } else {
-                  invalid(invalidMsg);
+                  displayErrorMessage(invalidMsg);
                 }
             }
         }
 
         public void setEditable(boolean editable) {
-            repository.setEditable(editable);
+            //XXX PENDING: repository.setEditable(editable);
         }
 
         private void setupHttpsConnection(HttpURLConnection con) {

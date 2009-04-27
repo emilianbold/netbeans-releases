@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.navigation.macroview;
 
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
@@ -155,12 +156,25 @@ public class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTaskFactor
                     if (doc2CarretPositionFromDoc >= 0 && doc2CarretPositionFromDoc < doc2.getLength()) {
                         JEditorPane ep = MacroExpansionViewUtils.getEditor(doc2);
                         if (ep != null && doc2CarretPosition != doc2CarretPositionFromDoc &&
-                                docCarretPosition != docCarretPositionFromDoc2 && !ep.hasFocus()) {
-                            ep.setCaretPosition(doc2CarretPositionFromDoc);
+                                docCarretPosition != docCarretPositionFromDoc2 && !ep.hasFocus()) {                            
+                            setCaretPosition(ep, doc2CarretPositionFromDoc);
                         }
                     }
                 }
             }
+        }
+    }
+
+    private static void setCaretPosition(final JEditorPane pane, final int position) {
+        Runnable setCaret = new Runnable() {
+            public void run() {
+                pane.setCaretPosition(position);
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            setCaret.run();
+        } else {
+            SwingUtilities.invokeLater(setCaret);
         }
     }
 

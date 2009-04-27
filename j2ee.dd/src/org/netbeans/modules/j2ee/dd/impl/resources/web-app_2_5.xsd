@@ -877,13 +877,9 @@
     <xsd:sequence>
       <xsd:element name="servlet-name"
 		   type="javaee:servlet-nameType"/>
-   <!-- TODO: fix this in DD API
       <xsd:element name="url-pattern"
 		   type="javaee:url-patternType"
            minOccurs="1" maxOccurs="unbounded"/>
-   -->
-      <xsd:element name="url-pattern"
-		   type="javaee:url-patternType"/>
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:ID"/>
   </xsd:complexType>

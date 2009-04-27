@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
@@ -39,11 +38,14 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             final Session session = ConnectionManagerAccessor.getDefault().
                     getConnectionSession(mgr, execEnv, true);
 
-            final String sh = HostInfoUtils.getShell(execEnv);
+            final String sh = hostInfo.getShell();
             final MacroMap envVars = info.getEnvVariables();
 
             // Setup LD_PRELOAD to load unbuffer library...
             UnbufferSupport.initUnbuffer(info, envVars);
+
+            // Always prepend /bin and /usr/bin to PATH
+            envVars.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
 
             synchronized (lock) {
                 cstreams = execCommand(session, sh + " -s"); // NOI18N

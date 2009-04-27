@@ -41,8 +41,6 @@
 
 package org.openide.util.lookup;
 
-import junit.framework.Test;
-import org.netbeans.junit.MockServices;
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 

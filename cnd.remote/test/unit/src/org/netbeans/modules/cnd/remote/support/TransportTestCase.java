@@ -67,11 +67,11 @@ public class TransportTestCase extends RemoteTestBase {
     public void testRun() throws Exception {
         if (canTestRemote()) {
             final String randomString = "i am just a random string, it does not matter that I mean";
-            RemoteCommandSupport rcs = new RemoteCommandSupport(getExecutionEnvironment(), "echo " + randomString);
+            RemoteCommandSupport rcs = new RemoteCommandSupport(getRemoteExecutionEnvironment(), "echo " + randomString);
             rcs.run();
 //            rcs.disconnect();
-            assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getExecutionEnvironment() + "' returned " + rcs.getExitStatus();
-            assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getExecutionEnvironment() + "' produced unexpected output: " + rcs.getOutput();
+            assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getRemoteExecutionEnvironment() + "' returned " + rcs.getExitStatus();
+            assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getRemoteExecutionEnvironment() + "' produced unexpected output: " + rcs.getOutput();
         } else {
             System.err.println("Remote tests are not configured."); // to test remote runs
         }
@@ -92,8 +92,8 @@ public class TransportTestCase extends RemoteTestBase {
 
     public void testFileExistst() throws Exception {
         if (canTestRemote()) {
-            assert HostInfoProvider.fileExists(getExecutionEnvironment(), "/etc/passwd");
-            assert !HostInfoProvider.fileExists(getExecutionEnvironment(), "/etc/passwd/noway");
+            assert HostInfoProvider.fileExists(getRemoteExecutionEnvironment(), "/etc/passwd");
+            assert !HostInfoProvider.fileExists(getRemoteExecutionEnvironment(), "/etc/passwd/noway");
         } else {
             System.err.println("Remote tests are not configured.");
         }
@@ -101,7 +101,7 @@ public class TransportTestCase extends RemoteTestBase {
 
     public void testGetEnv() throws Exception {
         if (canTestRemote()) {
-            Map<String, String> env = HostInfoProvider.getEnv(getExecutionEnvironment());
+            Map<String, String> env = HostInfoProvider.getEnv(getRemoteExecutionEnvironment());
             System.err.println("Environment: " + env);
             assert env != null && env.size() > 0;
             assert env.containsKey("PATH") || env.containsKey("Path") || env.containsKey("path");
@@ -124,7 +124,7 @@ public class TransportTestCase extends RemoteTestBase {
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(sb.toString());
             out.close();
-            ExecutionEnvironment execEnv = getExecutionEnvironment();
+            ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
             RemoteCopySupport rcs = new RemoteCopySupport(execEnv);
             String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
             rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N

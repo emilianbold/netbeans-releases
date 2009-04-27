@@ -46,9 +46,9 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.WhenNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.WhenNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -92,7 +92,7 @@ public class ColonToThen extends RubyAstRule {
 
         WhenNode when = (WhenNode)node;
         Node body = when.getBodyNode();
-        if (body == null) {
+        if (RubyHints.isNullOrInvisible(body)) {
             return;
         }
         

@@ -93,12 +93,20 @@ public class DTDParserTest extends TestBase {
 
         Element el = dtd.getElement("TABLE");
         assertNotNull(el);
-
         Content c = el.getContentModel().getContent();
 
 //        dumpContent(c);
+//        assertEquals(Content.EMPTY_CONTENT, c.reduce("TR"));
 
-        assertEquals(Content.EMPTY_CONTENT, c.reduce("TR"));
+      }
+
+      public void testOption() {
+        DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
+        assertNotNull(dtd);
+
+        Element el = dtd.getElement("OPTION");
+        assertNotNull(el);
+        assertFalse(el.isEmpty());
 
       }
 

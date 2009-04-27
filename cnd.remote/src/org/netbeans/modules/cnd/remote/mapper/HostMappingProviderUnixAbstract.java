@@ -47,7 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.support.RunFacade;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -113,7 +113,7 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
 
     private static String getLocalHostName() {
         String hostName = null;
-        RunFacade runner = RunFacade.getInstance(ExecutionEnvironmentFactory.getLocalExecutionEnvironment());
+        RunFacade runner = RunFacade.getInstance(ExecutionEnvironmentFactory.getLocal());
         if (runner.run("uname -a")) { //NOI18N
             String result = runner.getOutput();
             if (result != null) {

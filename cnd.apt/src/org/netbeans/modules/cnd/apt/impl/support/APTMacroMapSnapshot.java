@@ -99,18 +99,29 @@ public final class APTMacroMapSnapshot {
     }
     
     public static void addAllMacros(APTMacroMapSnapshot snap, Map<CharSequence, APTMacro> out) {
-        if (snap.parent != null) {
-            addAllMacros(snap.parent, out);
-        }
-        for (Map.Entry<CharSequence, APTMacro> cur : snap.macros.entrySet()) {
-            if (cur.getValue() != UNDEFINED_MACRO) {
-                out.put(cur.getKey(), cur.getValue());
-            } else {
-                out.remove(cur.getKey());
+        if (snap != null) {
+            if (snap.parent != null) {
+                addAllMacros(snap.parent, out);
+            }
+            for (Map.Entry<CharSequence, APTMacro> cur : snap.macros.entrySet()) {
+                if (cur.getValue() != UNDEFINED_MACRO) {
+                    out.put(cur.getKey(), cur.getValue());
+                } else {
+                    out.remove(cur.getKey());
+                }
             }
         }
     }    
-    
+
+    public static int getMacroSize(APTMacroMapSnapshot snap) {
+        int size = 0;
+        while (snap != null) {
+            size += snap.macros.size();
+            snap = snap.parent;
+        }
+        return size;
+    }
+
     public boolean isEmtpy() {
         return macros.isEmpty();
     }

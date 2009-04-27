@@ -48,7 +48,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
  */
 public class SyncIndicatorConfiguration extends IndicatorConfiguration {
 
-    static final String ID = "SyncIndicatorConfigurationID";
+    static final String ID = "SyncIndicatorConfigurationID"; // NOI18N
 //  private final String colName;
 
     public SyncIndicatorConfiguration(IndicatorMetadata metadata, int position) {

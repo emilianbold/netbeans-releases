@@ -71,9 +71,12 @@ var NOTE_OTHER   = "Note: The UML Pack is available on the Update Center.";
 
 var MORE_LANGUAGES    = "More Languages...";
 var COMMUNITY_MESSAGE = "The NetBeans Community has fully contributed to the language(s) that can be downloaded from this page. To get more insight about localization volume downloaded check the <a href=\"http://wiki.netbeans.org/TFL10nCommunityStatus\">community status page</a>. To download latest community contribution, visit the <a href=\"http://wiki.netbeans.org/TFLocalizationDevelopmentUC\">localization plugin page</a>.";
+var COMMUNITY_CONTRIBUTED_SEP    = " -- Community Contributed -- " ;
+var SUN_SUPPORTED_SEP            = " -- Sun Supported -- " ;
 
 var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans IDE Download";
 var NETBEANS_DOWNLOAD_PAGE_DESCRIPTION = "NetBeans IDE Download";
+
 
 
 var NETBEANS_DOWNLOAD_HEADER = "NetBeans IDE {0} Download";
@@ -88,7 +91,7 @@ var LANGUAGE_LABEL           = "Language:";
 var PLATFORM_LABEL           = "Platform:";
 var PLUGIN_MANAGER_LABEL     = "You can add or remove packs later using the IDE's Plugin Manager (Tools | Plugins).<br><br>";
 var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part of the <a href=\"http://java.sun.com/javaee/downloads/index.jsp\">Java EE 5 Tools Bundle</a> or <a href=\"http://download.netbeans.org/netbeans/6.1/mysql_bundle/\">MySQL GlassFish Bundle</a>.";
-var SOURCE_BINARY_LABEL      = "NetBeans source code and binary builds without bundled runtimes are also available in <a href=\"{0}\">zip file format</a>.";
+var SOURCE_BINARY_LABEL      = "NetBeans source code and binary builds without bundled runtimes are also available in <a id=\"zip_link\" href=\"{0}\">zip file format</a>.";
 var BUILD_WIKI_LABEL         = "See also <a href=\"http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources\">instructions on how to build the IDE from sources</a> or <a href=\"{0}\">installation instructions</a>.";
 
 var LICENSE_NOTES_LINK      = "http://www.netbeans.org/about/legal/product-licences.html";

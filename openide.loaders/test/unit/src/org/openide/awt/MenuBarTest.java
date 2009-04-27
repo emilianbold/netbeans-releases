@@ -57,6 +57,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileSystem;
@@ -74,6 +75,7 @@ import org.openide.util.actions.Presenter;
  *
  * @author Jaroslav Tulach
  */
+@RandomlyFails // Temporary solution
 public class MenuBarTest extends NbTestCase implements ContainerListener {
     private DataFolder df;
     private MenuBar mb;
@@ -89,7 +91,12 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
     protected Level logLevel() {
         return Level.WARNING;
     }
-
+    
+    @Override
+    protected boolean runInEQ () {
+        return true;
+    }
+    
     @Override
     protected void setUp() throws Exception {
         CreateOnlyOnceAction.instancesCount = 0;

@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTTestToken;
 import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
+import org.netbeans.modules.cnd.apt.impl.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
@@ -434,9 +435,11 @@ public class APTUtils {
         return false;
     }
 
-    public static boolean isMacro(Token token) {
+    public static boolean isMacroExpandedToken(Token token) {
         if(token instanceof MacroExpandedToken) {
             return true;
+        } else if (token instanceof APTBaseLanguageFilter.FilterToken) {
+            return isMacroExpandedToken(((APTBaseLanguageFilter.FilterToken)token).getOriginalToken());
         }
         return false;
     }
@@ -589,6 +592,21 @@ public class APTUtils {
         @Override
         public int getType() {
             return APTTokenTypes.EOF;
+        }
+
+        @Override
+        public String getText() {
+            return "<EOF>"; // NOI18N
+        }
+
+        @Override
+        public int getColumn() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public int getLine() {
+            return Integer.MAX_VALUE;
         }
 
         @Override

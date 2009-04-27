@@ -49,7 +49,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
  * @author mt154047
  */
 public class MemoryIndicatorConfiguration extends IndicatorConfiguration{
-  static final String ID = "MemoryIndicatorConfigurationID";
+  static final String ID = "MemoryIndicatorConfigurationID"; // NOI18N
 
   public MemoryIndicatorConfiguration(IndicatorMetadata metadata, int position) {
     super(metadata, position);

@@ -78,7 +78,7 @@ public class PlatformNodeProp extends Node.Property {
     @Override
     public String getHtmlDisplayName() {
         if (platformConfiguration.getModified()) {
-            return platformConfiguration.isDevHostOnline() ? "<b>" + getDisplayName() : getDisplayName(); // NOI18N
+            return platformConfiguration.isConfigured() ? "<b>" + getDisplayName() : getDisplayName(); // NOI18N
         } else {
             return null;
         }

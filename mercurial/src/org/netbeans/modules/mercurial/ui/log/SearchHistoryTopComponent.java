@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -74,11 +74,6 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         initComponents(roots, commitMessage, username, from, to);
     }
 
-    public SearchHistoryTopComponent(String repositoryUrl, File localRoot, long revision) {
-        this();
-        initComponents(repositoryUrl, localRoot, revision);
-    }
-
     /**
      * Support for openning file history with a specific DiffResultsView
      * @param file it's history shall be shown
@@ -107,18 +102,9 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         scp.setTo("");
     }
 
-    private void initComponents(String repositoryUrl, File localRoot, long revision) {
-        setLayout(new BorderLayout());
-        scp = new SearchCriteriaPanel(repositoryUrl);
-        scp.setFrom(Long.toString(revision));
-        scp.setTo(Long.toString(revision));
-        shp = new SearchHistoryPanel(repositoryUrl, localRoot, scp);
-        add(shp);
-        }
-
     private void initComponents(File[] roots, String commitMessage, String username, Date from, Date to) {
         setLayout(new BorderLayout());
-        scp = new SearchCriteriaPanel(roots);
+        scp = new SearchCriteriaPanel();
         scp.setCommitMessage(commitMessage);
         scp.setUsername(username);
         if (from != null){ 

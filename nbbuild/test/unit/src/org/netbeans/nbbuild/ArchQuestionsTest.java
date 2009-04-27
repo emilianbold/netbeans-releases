@@ -44,8 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
 import javax.xml.parsers.*;
 
 import org.netbeans.junit.*;
@@ -61,7 +60,7 @@ import org.xml.sax.SAXException;
  */
 public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
     /** debug messages to show if necessary */
-    private ArrayList/*<String>*/ msg = new ArrayList();
+    private List<String> msg = new ArrayList<String>();
     
     public ArchQuestionsTest (String name) {
         super (name);

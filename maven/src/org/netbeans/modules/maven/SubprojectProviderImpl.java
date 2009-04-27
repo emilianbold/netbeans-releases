@@ -43,6 +43,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -68,23 +69,24 @@ import org.openide.util.WeakListeners;
 public class SubprojectProviderImpl implements SubprojectProvider {
 
     private NbMavenProjectImpl project;
+    private NbMavenProject watcher;
     private List<ChangeListener> listeners;
     private ChangeListener listener2;
+    private PropertyChangeListener propertyChange;
 
     /** Creates a new instance of SubprojectProviderImpl */
     public SubprojectProviderImpl(NbMavenProjectImpl proj, NbMavenProject watcher) {
         project = proj;
+        this.watcher = watcher;
         listeners = new ArrayList<ChangeListener>();
-        watcher.addPropertyChangeListener(new PropertyChangeListener() {
-
+        propertyChange = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                     fireChange();
                 }
             }
-        });
+        };
         listener2 = new ChangeListener() {
-
             public void stateChanged(ChangeEvent event) {
                 fireChange();
             }
@@ -98,7 +100,12 @@ public class SubprojectProviderImpl implements SubprojectProvider {
     public Set<? extends Project> getSubprojects() {
         Set<Project> projects = new HashSet<Project>();
         File basedir = FileUtil.toFile(project.getProjectDirectory());
-        addProjectModules(basedir, projects, project.getOriginalMavenProject().getModules());
+        try {
+            addProjectModules(basedir, projects, project.getOriginalMavenProject().getModules());
+        } catch (InterruptedException x) {
+            // can be interrupted in the open project dialog..
+            return Collections.emptySet();
+        }
         addOpenedCandidates(projects);
         projects.remove(project);
         return projects;
@@ -131,12 +138,15 @@ public class SubprojectProviderImpl implements SubprojectProvider {
         return false;
     }
 
-    private void addProjectModules(File basedir, Set<Project> resultset, List modules) {
+    private void addProjectModules(File basedir, Set<Project> resultset, List modules) throws InterruptedException {
         if (modules == null || modules.size() == 0) {
             return;
         }
         Iterator it = modules.iterator();
         while (it.hasNext()) {
+            if (Thread.interrupted()) {
+                throw new InterruptedException();
+            }
             String path = (String) it.next();
             File sub = new File(basedir, path);
             File projectFile = FileUtil.normalizeFile(sub);
@@ -181,11 +191,17 @@ public class SubprojectProviderImpl implements SubprojectProvider {
     }
 
     public synchronized void addChangeListener(ChangeListener changeListener) {
+        if (listeners.size() == 0) {
+            watcher.addPropertyChangeListener(propertyChange);
+        }
         listeners.add(changeListener);
     }
 
     public synchronized void removeChangeListener(ChangeListener changeListener) {
         listeners.remove(changeListener);
+        if (listeners.size() == 0) {
+            watcher.removePropertyChangeListener(propertyChange);
+        }
     }
 
     private void fireChange() {
