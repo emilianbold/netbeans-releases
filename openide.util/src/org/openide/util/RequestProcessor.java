@@ -135,7 +135,12 @@ public final class RequestProcessor implements Executor{
 
     /** The counter for automatic naming of unnamed RequestProcessors */
     private static int counter = 0;
-    static final boolean SLOW = Boolean.getBoolean("org.openide.util.RequestProcessor.Item.SLOW");
+    private static final boolean SLOW;
+    static {
+        boolean slow = false;
+        assert slow = true;
+        SLOW = slow;
+    }
 
     /** The name of the RequestProcessor instance */
     String name;
@@ -811,9 +816,9 @@ public final class RequestProcessor implements Executor{
         private final RequestProcessor owner;
         private Object action;
         private boolean enqueued;
+        String message;
 
         Item(Task task, RequestProcessor rp) {
-            super("Posted StackTrace"); // NOI18N
             action = task;
             owner = rp;
         }
@@ -849,6 +854,11 @@ public final class RequestProcessor implements Executor{
         public Throwable fillInStackTrace() {
             return SLOW ? super.fillInStackTrace() : this;
         }
+
+        public @Override String getMessage() {
+            return message;
+        }
+
     }
 
     //------------------------------------------------------------------------------
@@ -1077,10 +1087,12 @@ public final class RequestProcessor implements Executor{
 
         /** @see "#20467" */
         private static void doNotify(RequestProcessor.Task todo, Throwable ex) {
-            logger().log(Level.SEVERE, null, ex);
-            if (SLOW) {
-                logger.log(Level.SEVERE, null, todo.item);
+            if (SLOW && todo.item.message == null) {
+                todo.item.message = "task failed: " + ex;
+                todo.item.initCause(ex);
+                ex = todo.item;
             }
+            logger().log(Level.SEVERE, null, ex);
         }
 
         /**
