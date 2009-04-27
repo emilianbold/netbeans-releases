@@ -292,10 +292,12 @@ public class I18nManager {
         if (replaceCount>0) {
             //Need to save resource
             SaveCookie save = support.getResourceHolder().getResource().getCookie(SaveCookie.class);
-            try {
-                save.save();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            if (save!=null) {
+                try {
+                    save.save();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         replaceCount = 0;
