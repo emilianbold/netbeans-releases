@@ -67,16 +67,8 @@ public class SvnKenaiSupport {
         return kenaiSupport != null && kenaiSupport.isKenai(url);
     }
 
-    public PasswordAuthentication getPasswordAuthentication(String url, boolean forceRelogin) {
-//        if(forceRelogin) {
-//            // we already queried the authentication for this url, but it didn't
-//            // seem to be accepted -> force a new login, the current user
-//            // might not be authorized for the given kenai project (url).
-//            if(!kenaiSupport.showLogin()) {
-//                return null;
-//            }
-//        }
-        return kenaiSupport.getPasswordAuthentication();
+    public PasswordAuthentication getPasswordAuthentication(boolean forceRelogin) {
+        return kenaiSupport.getPasswordAuthentication(forceRelogin);
     }
 
 }

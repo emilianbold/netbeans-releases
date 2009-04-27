@@ -227,7 +227,7 @@ public class Subversion {
         
         SvnKenaiSupport kenaiSupport = SvnKenaiSupport.getInstance();
         if(kenaiSupport.isKenai(repositoryUrl.toString())) {
-            PasswordAuthentication pa = kenaiSupport.getPasswordAuthentication(repositoryUrl.toString(), true);
+            PasswordAuthentication pa = kenaiSupport.getPasswordAuthentication(false);
             if(pa != null) {
                 username = pa.getUserName();
                 password = new String(pa.getPassword());
