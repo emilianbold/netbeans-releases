@@ -70,6 +70,7 @@ import java.util.zip.ZipFile;
 
 /**
  * Generates wrapper methods for JDI calls.
+ * Use "ant generate" to run this class and generate JDI wrapper classes.
  */
 public class Generate {
 
