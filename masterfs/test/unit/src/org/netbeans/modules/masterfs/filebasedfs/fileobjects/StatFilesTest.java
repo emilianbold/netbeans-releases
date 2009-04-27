@@ -341,13 +341,15 @@ public class StatFilesTest extends NbTestCase {
         FileObject fobj = getFileObject(testFile);
         monitor.reset();
         fobj.refresh();
-        monitor.getResults().assertResult(2, StatFiles.ALL);
+        monitor.getResults().assertResult(3, StatFiles.ALL);
         monitor.getResults().assertResult(2, StatFiles.READ);
+        monitor.getResults().assertResult(1, StatFiles.WRITE); //#129178
         //second time
         monitor.reset();
         fobj.refresh();
-        monitor.getResults().assertResult(2, StatFiles.ALL);
+        monitor.getResults().assertResult(3, StatFiles.ALL);
         monitor.getResults().assertResult(2, StatFiles.READ);
+        monitor.getResults().assertResult(1, StatFiles.WRITE);  //#129178
     }
 
     private void monitor() {
