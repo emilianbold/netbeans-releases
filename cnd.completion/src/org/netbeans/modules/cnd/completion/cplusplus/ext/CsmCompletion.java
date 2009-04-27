@@ -87,29 +87,38 @@ abstract public class CsmCompletion {
     public static final SimpleClass LONG_CLASS = new SimpleClass("long", ""); // NOI18N
     public static final SimpleClass SHORT_CLASS = new SimpleClass("short", ""); // NOI18N
     public static final SimpleClass VOID_CLASS = new SimpleClass("void", ""); // NOI18N
-    public static final BaseType BOOLEAN_TYPE = new BaseType(BOOLEAN_CLASS, 0, false, 0);
-    public static final BaseType BYTE_TYPE = new BaseType(BYTE_CLASS, 0, false, 0);
-    public static final BaseType CHAR_TYPE = new BaseType(CHAR_CLASS, 0, false, 0);
-    public static final BaseType DOUBLE_TYPE = new BaseType(DOUBLE_CLASS, 0, false, 0);
-    public static final BaseType FLOAT_TYPE = new BaseType(FLOAT_CLASS, 0, false, 0);
-    public static final BaseType INT_TYPE = new BaseType(INT_CLASS, 0, false, 0);
-    public static final BaseType LONG_TYPE = new BaseType(LONG_CLASS, 0, false, 0);
-    public static final BaseType SHORT_TYPE = new BaseType(SHORT_CLASS, 0, false, 0);
-    public static final BaseType VOID_TYPE = new BaseType(VOID_CLASS, 0, false, 0);
+    public static final BaseType BOOLEAN_TYPE = new BaseType(BOOLEAN_CLASS, 0, false, 0, false);
+    public static final BaseType BYTE_TYPE = new BaseType(BYTE_CLASS, 0, false, 0, false);
+    public static final BaseType CHAR_TYPE = new BaseType(CHAR_CLASS, 0, false, 0, false);
+    public static final BaseType DOUBLE_TYPE = new BaseType(DOUBLE_CLASS, 0, false, 0, false);
+    public static final BaseType FLOAT_TYPE = new BaseType(FLOAT_CLASS, 0, false, 0, false);
+    public static final BaseType INT_TYPE = new BaseType(INT_CLASS, 0, false, 0, false);
+    public static final BaseType LONG_TYPE = new BaseType(LONG_CLASS, 0, false, 0, false);
+    public static final BaseType SHORT_TYPE = new BaseType(SHORT_CLASS, 0, false, 0, false);
+    public static final BaseType VOID_TYPE = new BaseType(VOID_CLASS, 0, false, 0, false);
     public static final SimpleClass INVALID_CLASS = new SimpleClass("", ""); // NOI18N
-    public static final BaseType INVALID_TYPE = new BaseType(INVALID_CLASS, 0, false, 0);
+    public static final BaseType INVALID_TYPE = new BaseType(INVALID_CLASS, 0, false, 0, false);
     public static final SimpleClass NULL_CLASS = new SimpleClass("null", ""); // NOI18N
-    public static final BaseType NULL_TYPE = new BaseType(NULL_CLASS, 0, false, 0);
+    public static final BaseType NULL_TYPE = new BaseType(NULL_CLASS, 0, false, 0, false);
     public static final SimpleClass OBJECT_CLASS_ARRAY = new SimpleClass("java.lang.Object[]", "java.lang".length(), true); // NOI18N
-    public static final BaseType OBJECT_TYPE_ARRAY = new BaseType(OBJECT_CLASS_ARRAY, 0, false, 0);
+    public static final BaseType OBJECT_TYPE_ARRAY = new BaseType(OBJECT_CLASS_ARRAY, 0, false, 0, false);
     public static final SimpleClass OBJECT_CLASS = new SimpleClass("java.lang.Object", "java.lang".length(), true); // NOI18N
-    public static final BaseType OBJECT_TYPE = new BaseType(OBJECT_CLASS, 0, false, 0);
+    public static final BaseType OBJECT_TYPE = new BaseType(OBJECT_CLASS, 0, false, 0, false);
     public static final SimpleClass CLASS_CLASS = new SimpleClass("java.lang.Class", "java.lang".length(), true); // NOI18N
-    public static final BaseType CLASS_TYPE = new BaseType(CLASS_CLASS, 0, false, 0);
+    public static final BaseType CLASS_TYPE = new BaseType(CLASS_CLASS, 0, false, 0, false);
     public static final SimpleClass STRING_CLASS = new SimpleClass("char", 0, true); // NOI18N
-    public static final BaseType STRING_TYPE = new BaseType(STRING_CLASS, 1, false, 0);
+    public static final BaseType STRING_TYPE = new BaseType(STRING_CLASS, 1, false, 0, false);
     public static final SimpleClass CONST_STRING_CLASS = new SimpleClass("const char", 0, true); // NOI18N
-    public static final BaseType CONST_STRING_TYPE = new BaseType(CONST_STRING_CLASS, 1, false, 0);
+    public static final BaseType CONST_STRING_TYPE = new BaseType(CONST_STRING_CLASS, 1, false, 0, true);
+    public static final BaseType CONST_BOOLEAN_TYPE = new BaseType(BOOLEAN_CLASS, 0, false, 0, true);
+    public static final BaseType CONST_BYTE_TYPE = new BaseType(BYTE_CLASS, 0, false, 0, true);
+    public static final BaseType CONST_CHAR_TYPE = new BaseType(CHAR_CLASS, 0, false, 0, true);
+    public static final BaseType CONST_DOUBLE_TYPE = new BaseType(DOUBLE_CLASS, 0, false, 0, true);
+    public static final BaseType CONST_FLOAT_TYPE = new BaseType(FLOAT_CLASS, 0, false, 0, true);
+    public static final BaseType CONST_INT_TYPE = new BaseType(INT_CLASS, 0, false, 0, true);
+    public static final BaseType CONST_LONG_TYPE = new BaseType(LONG_CLASS, 0, false, 0, true);
+    public static final BaseType CONST_SHORT_TYPE = new BaseType(SHORT_CLASS, 0, false, 0, true);
+    public static final BaseType CONST_VOID_TYPE = new BaseType(VOID_CLASS, 0, false, 0, true);
 
     // the bit for local member. the modificator is not saved within this bit.
     public static final int LOCAL_MEMBER_BIT = (1 << 29);
@@ -136,8 +145,10 @@ abstract public class CsmCompletion {
 
         // initialize predefined types cache
         types = new BaseType[]{
-                    NULL_TYPE, OBJECT_TYPE_ARRAY, OBJECT_TYPE, CLASS_TYPE, STRING_TYPE, CONST_STRING_TYPE
-                };
+                    NULL_TYPE, OBJECT_TYPE_ARRAY, OBJECT_TYPE, CLASS_TYPE, STRING_TYPE, CONST_STRING_TYPE,
+                    CONST_BOOLEAN_TYPE, CONST_BYTE_TYPE, CONST_CHAR_TYPE, CONST_DOUBLE_TYPE, CONST_FLOAT_TYPE,
+                    CONST_INT_TYPE, CONST_LONG_TYPE, CONST_SHORT_TYPE, CONST_VOID_TYPE
+                 };
 
         for (int i = types.length - 1; i >= 0; i--) {
             String typeName = types[i].getClassifier().getName().toString();
@@ -232,8 +243,8 @@ abstract public class CsmCompletion {
         return new SimpleClass(name, packageName, CsmDeclaration.Kind.CLASS);
     }
 
-    public static CsmType createType(CsmClassifier cls, int ptrDepth, int arrayDepth) {
-        return new BaseType(cls, ptrDepth, false, arrayDepth);
+    public static CsmType createType(CsmClassifier cls, int ptrDepth, int arrayDepth, boolean _const) {
+        return new BaseType(cls, ptrDepth, false, arrayDepth, _const);
     }
 
     /** returns type for dereferenced object
@@ -243,12 +254,12 @@ abstract public class CsmCompletion {
     public static CsmType getObjectType(CsmObject obj) {
         CsmType type = null;
         if (CsmKindUtilities.isClassifier(obj)) {
-            type = CsmCompletion.getType((CsmClassifier) obj, 0, false, 0);
+            type = CsmCompletion.getType((CsmClassifier) obj, 0, false, 0, false);
         } else if (CsmKindUtilities.isFunction(obj)) {
             CsmFunction fun = (CsmFunction) obj;
             if (CsmKindUtilities.isConstructor(fun)) {
                 CsmClassifier cls = ((CsmConstructor) obj).getContainingClass();
-                type = CsmCompletion.getType(cls, 0, false, 0);
+                type = CsmCompletion.getType(cls, 0, false, 0, false);
             } else {
                 type = fun.getReturnType();
             }
@@ -268,11 +279,11 @@ abstract public class CsmCompletion {
      * on the real completion classes that can become obsolete and thus should
      * be garbage collected.
      */
-    public static CsmType getType(CsmClassifier cls, int pointerDepth, boolean reference, int arrayDepth) {
+    public static CsmType getType(CsmClassifier cls, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
         if (cls == null) {
             return null;
         }
-        return new BaseType(cls, pointerDepth, reference, arrayDepth);
+        return new BaseType(cls, pointerDepth, reference, arrayDepth, _const);
     }
 
     public static class SimpleClass implements CsmClassifier {
@@ -455,12 +466,14 @@ abstract public class CsmCompletion {
         protected int arrayDepth;
         protected int pointerDepth;
         protected boolean reference;
+        protected boolean _const;
 
-        public BaseType(CsmClassifier clazz, int pointerDepth, boolean reference, int arrayDepth) {
+        public BaseType(CsmClassifier clazz, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
             this.clazz = clazz;
             this.arrayDepth = arrayDepth;
             this.pointerDepth = pointerDepth;
             this.reference = reference;
+            this._const = _const;
             if (arrayDepth < 0) {
                 throw new IllegalArgumentException("Array depth " + arrayDepth + " < 0."); // NOI18N
             }
@@ -474,7 +487,11 @@ abstract public class CsmCompletion {
         }
 
         public String format(boolean useFullName) {
-            StringBuilder sb = new StringBuilder(useFullName ? getClassifier().getQualifiedName()
+            StringBuilder sb = new StringBuilder();
+            if(_const) {
+                sb.append("const "); // NOI18N
+            }
+            sb.append(useFullName ? getClassifier().getQualifiedName()
                     : getClassifier().getName());
             int pd = pointerDepth;
             while (pd > 0) {
@@ -513,8 +530,11 @@ abstract public class CsmCompletion {
             }
             if (o instanceof CsmType) {
                 CsmType t = (CsmType) o;
-                return clazz.equals(t.getClassifier()) && arrayDepth == t.getArrayDepth() && pointerDepth == t.getPointerDepth();
-            }
+                return clazz.equals(t.getClassifier()) &&
+                        arrayDepth == t.getArrayDepth() &&
+                        pointerDepth == t.getPointerDepth() &&
+                        _const == t.isConst();
+             }
             return false;
         }
 
@@ -560,7 +580,7 @@ abstract public class CsmCompletion {
         }
 
         public boolean isConst() {
-            return false;
+            return _const;
         }
 
         public CharSequence getText() {

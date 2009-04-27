@@ -497,7 +497,7 @@ public final class CompletionSupport implements DocumentListener {
                 if (type.getArrayDepth() > 0) {
                     CsmClassifier cls = type.getClassifier();
                     if (cls != null) {
-                        type = CsmCompletion.getType(cls, 0, false, 0);
+                        type = CsmCompletion.getType(cls, 0, false, 0, false);
                     }
                 }
                 return type;
