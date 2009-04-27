@@ -986,6 +986,18 @@ public class Generate {
                               "            }\n";
             return catchNPE;
         }
+        if (com.sun.jdi.StackFrame.class.getName().equals(className) && methodName.equals("thisObject")) {
+            String catchJDWPException = "            try {\n"+
+                                        "    "+exec+
+                                        "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                        "                if (iex.errorCode() == 35) { // INVALID_SLOT, see http://www.netbeans.org/issues/show_bug.cgi?id=163652\n"+
+                                        "                    return null;\n"+
+                                        "                } else {\n"+
+                                        "                    throw iex; // re-throw the original\n"+
+                                        "                }\n"+
+                                        "            }\n";
+            return catchJDWPException;
+        }
         return exec;
     }
 
