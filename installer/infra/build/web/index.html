@@ -42,30 +42,52 @@
 	<script type="text/javascript">
 
 		var PAGE_ARTIFACTS_LOCATION = "";
+		var ADDITIONAL_PAGE_ARTIFACTS_LOCATION = "";
 
 	</script>
 
 	<script type="text/javascript">
+	        var currentLocation = PAGE_ARTIFACTS_LOCATION;
 
-		var JS_LOCATION  = PAGE_ARTIFACTS_LOCATION + "js/";
-		var IMG_LOCATION = PAGE_ARTIFACTS_LOCATION + "img/";
-		var CSS_LOCATION = PAGE_ARTIFACTS_LOCATION + "css/";
+		function getPageArtifactsLocation(another) {
+	            return anotherLocation(another) ? ADDITIONAL_PAGE_ARTIFACTS_LOCATION : PAGE_ARTIFACTS_LOCATION;
+		}
 
-		function load_page_js(script_filename) {
-		    document.write('<' + 'script ' + 'language="javascript" type="text/javascript" src="' + JS_LOCATION + script_filename + '"><' + '/' + 'script' + '>');
+		function getJSLocation(another) {
+                    return getPageArtifactsLocation(another) + "js/";
+                }
+		function getCSSLocation() {
+                    return getPageArtifactsLocation() + "css/";
+                }
+		function getImagesLocation() {
+                    return getPageArtifactsLocation(useAnotherLocation()) + "img/";
+                }
+                function anotherLocation(another) {
+                    if (another) {
+                        return (another == "true" || another == true);
+                    } else {
+	                return false;
+		    }
+                }
+
+		function load_page_js(script_filename, another) {
+                    currentLocation = anotherLocation(another) ? ADDITIONAL_PAGE_ARTIFACTS_LOCATION : PAGE_ARTIFACTS_LOCATION;
+                    var page_location = getJSLocation(another) + script_filename;
+		    document.write('<' + 'script ' + 'language="javascript" type="text/javascript" src="' + page_location + '"><' + '/' + 'script' + '>');
 		}
 	</script>
         <script src="http://www.netbeans.org/images/js/companion-projects.js" type="text/javascript"></script>
         <script type="text/javascript">load_page_js("common.js")</script>
-	<script type="text/javascript">load_page_js("languages.js")</script>
+	<script type="text/javascript">load_languages_current()</script>
+	<script type="text/javascript">load_languages_additional()</script>
 	<script type="text/javascript">load_page_js_locale("common_strings",".js")</script>
         <script type="text/javascript">load_page_js_locale("download_strings",".js")</script>
         <script type="text/javascript">load_files_information("files.js")</script>
         <script type="text/javascript">load_page_js("download.js")</script>
         <script type="text/javascript">load_page_js("build_info.js")</script>
         <script type="text/javascript">load_page_js_locale("components",".js")</script>
-        <script type="text/javascript">set_page_title(NETBEANS_DOWNLOAD_PAGE_TITLE.replace('{0}',BUILD_DISPLAY_VERSION))</script>
-        <script type="text/javascript">set_page_description(NETBEANS_DOWNLOAD_PAGE_DESCRIPTION.replace('{0}',BUILD_DISPLAY_VERSION))</script>
+        <script type="text/javascript">set_page_title(NETBEANS_DOWNLOAD_PAGE_TITLE.replace('{0}',get_build_info().BUILD_DISPLAY_VERSION))</script>
+        <script type="text/javascript">set_page_description(NETBEANS_DOWNLOAD_PAGE_DESCRIPTION.replace('{0}', get_build_info().BUILD_DISPLAY_VERSION))</script>
 
         <link rel="stylesheet" type="text/css" href="http://www.netbeans.org/netbeans.css" media="screen"/>
         <script type="text/javascript">load_page_css("download.css")</script>
@@ -126,9 +148,9 @@
                         <!-- Top header -->
                         <table class="top_header">
                               <tr>
-                                  <td class="title"><script type="text/javascript">message(NETBEANS_DOWNLOAD_HEADER.replace('{0}',BUILD_DISPLAY_VERSION))</script></td>
+                                  <td class="title"><script type="text/javascript">message(NETBEANS_DOWNLOAD_HEADER.replace('{0}',get_build_info().BUILD_DISPLAY_VERSION))</script></td>
                                   <td class="menu">
-                                      <script type="text/javascript">add_download_tabs()</script>
+                                      <script type="text/javascript">get_build_info().add_download_tabs()</script>
                                   </td>
                               </tr>
                         </table>
@@ -224,7 +246,7 @@
 							</span>
                           		            </p>
 			                            <p style="width: 95%">							                                
-                                          		<script type="text/javascript">message(SOURCE_BINARY_LABEL.replace("{0}",SOURCES_AND_BINARIES_URL))</script>
+                                          		<script type="text/javascript">message(SOURCE_BINARY_LABEL.replace("{0}", getZipUrl()))</script>
 							<script type="text/javascript">message(BUILD_WIKI_LABEL.replace("{0}",INSTALL_NOTES_LINK))</script>                                
                           		            </p>
                           	        	</div>
@@ -250,7 +272,7 @@
 						<div>
 	                        	    		<script type="text/javascript">
 								message(LEGAL_INFO_MESSAGE.
-								replace("{0}",BUILD_DISPLAY_VERSION_SHORT).
+								replace("{0}",get_build_info().BUILD_DISPLAY_VERSION_SHORT).
 								replace("{1}",CDDL_GPLV2_LINK).
 								replace("{2}",LICENSE_DETAILS_LINK).
 								replace("{3}",LICENSE_NOTES_LINK))
@@ -295,19 +317,19 @@
         </div>
 
 	<script type="text/javascript">
-		if(LOAD_OMNITURE_CODE==1) {
+		if(get_build_info().LOAD_OMNITURE_CODE==1) {
 			load_js(OMNITURE_CODE_JS);
 		}
 	</script>
 
 	<!-- Begin Google webtracking analytics -->
 	<script type="text/javascript">
-		if(LOAD_GOOGLE_ANALYTICS_CODE==1) {
+		if(get_build_info().LOAD_GOOGLE_ANALYTICS_CODE==1) {
 			load_js(GOOGLE_ANALYTICS_JS);
 		}
 	</script>
 	<script type="text/javascript">
-		if(LOAD_GOOGLE_ANALYTICS_CODE==1) {
+		if(get_build_info().LOAD_GOOGLE_ANALYTICS_CODE==1) {
 			var pageTracker = _gat._getTracker("UA-2149007-1");
 			pageTracker._setDomainName("netbeans.org");
 			pageTracker._initData();
