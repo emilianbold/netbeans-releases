@@ -150,12 +150,12 @@ function initialize() {
 	            if(filename!="") {
 			for(var i=0;i<PLATFORM_IDS.length;i++) {
 			    for(var j=0;j<BUNDLE_IDS.length;j++) {
-				var testFileName = get_file_name(PLATFORM_IDS[i], BUNDLE_IDS[j]);
+				var testFileName = get_file_name(PLATFORM_IDS[i], BUNDLE_IDS[j], "en");
 				
 				if(testFileName==filename) {
 				    platform_id = PLATFORM_IDS[i];
 				    option_id   = BUNDLE_IDS[j];
-				    lang_id     = get_language_id(LANGUAGES);
+				    lang_id     = get_language_id();
 				    if(lang_id=="") lang_id = "en";
 				    i = PLATFORM_IDS.length;
 				    j = BUNDLE_IDS.length;	
@@ -166,31 +166,30 @@ function initialize() {
 		    }
 
 		    if(option_id != "" && platform_id != "") {
-	    	        if (USE_BOUNCER == 1) {
-                            url      = get_file_bouncer_url(platform_id, option_id);
+	    	        if (useBouncer(lang_id) == 1) {
+                            url      = get_file_bouncer_url(platform_id, option_id, lang_id);
                         } else {
-                            url      = get_file_url(get_file_name(platform_id, option_id));
+                            url      = get_file_url(get_file_name(platform_id, option_id, lang_id), lang_id);
 		        }
-                        filename     = get_file_name(platform_id, option_id);
+                        filename     = get_file_name(platform_id, option_id, lang_id, lang_id);
 		    } else if(filename!="") {
 	    	        ADDITIONAL_BUNDLES = new Array();
 			ADDITIONAL_BUNDLES[0] = "javadoc";
 			ADDITIONAL_BUNDLES[1] = "src";
 			ADDITIONAL_BUNDLES[2] = "platform-src";
 
-			if (USE_BOUNCER == 1) {
+			if (useBouncer(lang_id) == 1) {
                 	    for(var i=0;i<ADDITIONAL_BUNDLES.length;i++) {
-			        var testFileName = get_file_name("zip", ADDITIONAL_BUNDLES[i]);
+			        var testFileName = get_file_name("zip", ADDITIONAL_BUNDLES[i], lang_id);
 			            if(testFileName==filename) {
-				        url      = get_file_bouncer_url("zip", ADDITIONAL_BUNDLES[i]);
+				        url      = get_file_bouncer_url("zip", ADDITIONAL_BUNDLES[i], lang_id);
 					break;
 				    }
                             }
 			}
 
 			if (url == "") {
-			    USE_BOUNCER = 0;
-			    url      = get_file_url(filename);
+			    url      = get_file_url(filename, lang_id);
 			}
 		    }
 
@@ -211,10 +210,10 @@ function write_download_header() {
 	document.write('</p>');
 }
 
-function getMD5(name) {
+function getMD5(name,lang_id) {
 	var md5 = "";
         for (var i = 0; i < FILES.length; i++) {		
-		if(FILES[i].name == name) {		
+		if(FILES[i].name == name && languageCompatible(FILES[i].locales, lang_id)) {
 			md5 = FILES[i].md5;
 			break;
 		}
@@ -222,9 +221,13 @@ function getMD5(name) {
 	return md5;
 }
 
+function useBouncer(lang_id) {
+        return get_build_info(isMainLanguage(lang_id)).USE_BOUNCER == 1; 
+}
+
 function write_download_info() {
-	var size = getSize(filename);
-	var md5 = getMD5(filename);		
+	var size = getSize(filename,lang_id);
+	var md5 = getMD5(filename,lang_id);		
 	var platform_display_name = getPlatformShortName(platform_id);
 	var lang_display_name     = getLanguageName(lang_id);
         var option_display_name   = getBundleShortName(option_id);
@@ -241,12 +244,12 @@ function write_download_info() {
         var info = "";
 	if (platform_display_name!="" && lang_display_name!="" && filename!="") {
 		 info = INFO_MESSAGE.
-				replace('{0}', PRODUCT_NAME.replace('{0}',BUILD_DISPLAY_VERSION)).
+				replace('{0}', PRODUCT_NAME.replace('{0}',get_build_info().BUILD_DISPLAY_VERSION)).
 		 		replace('{1}', ((option_display_name != "") ? (' ' + option_display_name) : '')).
 		 		replace('{2}', ((platform_id == 'zip') ? (platform_display_name) : (INSTALLER_MESSAGE.replace('{0}',platform_display_name)))).
 		 		replace('{3}', lang_display_name).
 		 		replace('{4}', lang_id).
-		 		replace('{5}', get_file_name_short(platform_id,option_id)).
+		 		replace('{5}', get_file_name_short(platform_id,option_id,lang_id)).
 				replace('{6}', size).
 		 		replace('{7}', md5);
     	} else if(filename!="") {

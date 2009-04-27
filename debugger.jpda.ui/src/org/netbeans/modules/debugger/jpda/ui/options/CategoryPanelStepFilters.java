@@ -143,6 +143,8 @@ class CategoryPanelStepFilters extends StorablePanel {
         filterClassesTable.setShowVerticalLines(false);
         filterClassesTable.setTableHeader(null);
         filterClassesScrollPane.setViewportView(filterClassesTable);
+        filterClassesTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterClassesLabel.a11y.name")); // NOI18N
+        filterClassesTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.filterClassesLabel.a11y.description")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(stepThroughFiltersCheckBox, org.openide.util.NbBundle.getMessage(CategoryPanelStepFilters.class, "CategoryPanelStepFilters.stepThroughFiltersCheckBox.text")); // NOI18N
 
