@@ -128,7 +128,7 @@ public final class RequestProcessor implements Executor{
     private static RequestProcessor UNLIMITED = new RequestProcessor("Default RequestProcessor", 50); // NOI18N
 
     /** A shared timer used to pass timeouted tasks to pending queue */
-    private static Timer starterThread = new Timer(true);
+    private static final Timer starterThread = new Timer(true);
 
     /** logger */
     private static Logger logger;
@@ -151,7 +151,7 @@ public final class RequestProcessor implements Executor{
 
     /** The lock covering following four fields. They should be accessed
      * only while having this lock held. */
-    private Object processorLock = new Object();
+    private final Object processorLock = new Object();
 
     /** The set holding all the Processors assigned to this RequestProcessor */
     private HashSet<Processor> processors = new HashSet<Processor>();
@@ -340,10 +340,8 @@ public final class RequestProcessor implements Executor{
     */
     public boolean isRequestProcessorThread() {
         Thread c = Thread.currentThread();
-
-        //        return c instanceof Processor && ((Processor)c).source == this;
         synchronized (processorLock) {
-            return processors.contains(c);
+            return c instanceof Processor && processors.contains((Processor) c);
         }
     }
 
@@ -872,7 +870,7 @@ public final class RequestProcessor implements Executor{
      */
     private static class Processor extends Thread {
         /** A stack containing all the inactive Processors */
-        private static Stack<Processor> pool = new Stack<Processor>();
+        private static final Stack<Processor> pool = new Stack<Processor>();
 
         /* One minute of inactivity and the Thread will die if not assigned */
         private static final int INACTIVE_TIMEOUT = 60000;
@@ -889,7 +887,7 @@ public final class RequestProcessor implements Executor{
         private boolean idle = true;
 
         /** Waiting lock */
-        private Object lock = new Object();
+        private final Object lock = new Object();
 
         public Processor() {
             super(getTopLevelThreadGroup(), "Inactive RequestProcessor thread"); // NOI18N
