@@ -548,7 +548,7 @@ public class FileModelTest extends TraceModelTestBase {
 	}
 	
         @Override
-	protected Class getTestCaseDataClass() {
+	protected Class<?> getTestCaseDataClass() {
 	    return FileModelTest.class;
 	}
 	

@@ -51,5 +51,6 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
     static final String PROP_CACHE_MANAGER = "cachemanager"; //NOI18N
     static final String PROP_HOSTNAME = "hostname"; // NOI18N
     static final String PROP_PORT = "port"; //NOI18N
+    static final String PROP_SYNC = "sync"; //NOI18N
 
 }

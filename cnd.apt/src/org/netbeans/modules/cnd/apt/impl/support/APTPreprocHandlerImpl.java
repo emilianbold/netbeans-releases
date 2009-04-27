@@ -264,7 +264,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             this.attributes = input.readByte();
             this.inclState = APTSerializeUtils.readIncludeState(input);
             this.macroState = APTSerializeUtils.readMacroMapState(input);
-        }        
+        }
     }    
     
     ////////////////////////////////////////////////////////////////////////////

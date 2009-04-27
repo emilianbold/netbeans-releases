@@ -88,7 +88,7 @@ public class JBrowseModule extends ModuleInstall {
     }   
     
     public @Override void close () {
-        super.closing();
+        super.close();
         try {
             ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
                  public Void run() throws IOException {

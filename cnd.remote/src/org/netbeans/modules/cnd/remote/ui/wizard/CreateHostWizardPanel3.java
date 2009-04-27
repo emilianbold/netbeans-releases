@@ -79,6 +79,7 @@ import org.openide.util.HelpCtx;
 
     public void storeSettings(WizardDescriptor settings) {
         settings.putProperty(CreateHostWizardConstants.PROP_DISPLAY_NAME, getComponent().getHostDisplayName());
+        settings.putProperty(CreateHostWizardConstants.PROP_SYNC, getComponent().getRemoteSyncFactory());
     }
 }
 

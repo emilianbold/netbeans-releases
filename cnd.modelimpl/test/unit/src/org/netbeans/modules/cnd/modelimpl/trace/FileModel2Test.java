@@ -68,6 +68,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ149525() throws Exception {
+        // IZ#149525: can't process lazy body of macro expanded function
+        performTest("iz149525.cc");
+    }
+    
     public void testIZ162280() throws Exception {
         // IZ#162280: Inaccuracy tests: regression in Boost and Vlc
         performTest("iz162280_friend_fwd_cls.cpp");
