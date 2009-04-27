@@ -74,6 +74,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -837,6 +838,23 @@ public class DataEditorSupport extends CloneableEditorSupport {
             }
         }
 
+        /** Called from EnvListener if read-only state is externally changed (#129178).
+         * @param readOnly true if changed to read-only state, false if changed to read-write
+         */
+        private void readOnlyChanged(boolean readOnly) {
+            if (readOnly && isModified()) {
+                // notify user if the object is modified and externally changed to read-only
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                        NbBundle.getMessage(DataObject.class,
+                        "MSG_FileReadOnlyChanging",
+                        new Object[]{getFileImpl().getNameExt()}),
+                        NotifyDescriptor.WARNING_MESSAGE));
+            }
+            // event is consumed in CloneableEditorSupport
+            firePropertyChange("DataEditorSupport.read-only.changing", null, readOnly);  //NOI18N
+        }
+
         /** Called from the <code>EnvListener</code>.
          * The components are going to be closed anyway and in case of
          * modified document its asked before if to save the change. */
@@ -1010,6 +1028,16 @@ public class DataEditorSupport extends CloneableEditorSupport {
             }
         }
         
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fae) {
+            // wait only for event from org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj.refreshImpl()
+            if ("DataEditorSupport.read-only.changing".equals(fae.getName())) {  //NOI18N
+                Env myEnv = this.env.get();
+                if (myEnv != null) {
+                    myEnv.readOnlyChanged((Boolean) fae.getNewValue());
+                }
+            }
+        }
     }
     
     /** Listener on node representing associated data object, listens to the
