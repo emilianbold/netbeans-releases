@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,52 +34,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.ui.wizard;
 
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
+package org.netbeans.modules.cnd.api.remote;
 
-/*package*/ final class CreateHostWizardPanel3 implements WizardDescriptor.Panel<WizardDescriptor> {
+import org.openide.util.Cancellable;
 
-    private CreateHostVisualPanel3 component;
+/**
+ * RemoteSyncWorker is responsible for the synchronization between local and remomte host.
+ * It is created by RemoteSyncFactory each time synchronization is needed
+ * (for example, each time the project is built).
+ * @author Vladimir Kvashin
+ */
+public interface RemoteSyncWorker extends Cancellable {
 
-    public CreateHostVisualPanel3 getComponent() {
-        if (component == null) {
-            component = new CreateHostVisualPanel3();
-        }
-        return component;
-    }
-
-    public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    public boolean isValid() {
-        return true;
-    }
-
-    public final void addChangeListener(ChangeListener l) {
-    }
-
-    public final void removeChangeListener(ChangeListener l) {
-    }
-
-    public void readSettings(WizardDescriptor settings) {
-        getComponent().init(
-            (ExecutionEnvironment)settings.getProperty(CreateHostWizardConstants.PROP_HOST),
-            (ToolsCacheManager)settings.getProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER)
-        );
-    }
-
-    public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(CreateHostWizardConstants.PROP_DISPLAY_NAME, getComponent().getHostDisplayName());
-        settings.putProperty(CreateHostWizardConstants.PROP_SYNC, getComponent().getRemoteSyncFactory());
-    }
+    /**
+     * Performs synchronization
+     *
+     * There are no parameters, because a separate instance is created
+     * for each synchronization work;
+     * so these are factory method parameters, which define what to copy,
+     * where to copy, etc.
+     *
+     * @return true in the case synchronization succeeded, otehrwise false
+     */
+    boolean synchronize();
 }
-
