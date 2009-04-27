@@ -44,7 +44,6 @@ package org.netbeans.modules.gsf.testrunner.api;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -53,7 +52,7 @@ import org.openide.nodes.Node;
  *
  * @author Marian Petras
  */
-final class RootNodeChildren extends Children.Array {
+final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
 
     /** */
     private volatile boolean filtered;
@@ -103,7 +102,7 @@ final class RootNodeChildren extends Children.Array {
         if (live) {
             runningSuiteNode = session.getNodeFactory().createTestSuiteNode(suiteName, filtered);
             suiteNodes.add(runningSuiteNode);
-            add(new Node[] {runningSuiteNode});
+            addNotify();
         }
         
         assert runningSuiteName != null;
@@ -137,7 +136,7 @@ final class RootNodeChildren extends Children.Array {
             
             if (live) {
                 if (filtered && isPassedSuite && report.completed) {
-                    remove(new Node[] {runningSuiteNode});
+                    refreshKey(runningSuiteNode);
                     correspondingNode = null;
                 } else {
                     runningSuiteNode.displayReport(report);
@@ -148,8 +147,8 @@ final class RootNodeChildren extends Children.Array {
             }
         } else {
             if (live && !(filtered && isPassedSuite && report.completed)) {
-                add(new Node[] {
-                    correspondingNode = getNode(report)});
+                correspondingNode = getNode(report);
+                refreshKey(correspondingNode);
             } else {
                 correspondingNode = null;
             }
@@ -186,7 +185,6 @@ final class RootNodeChildren extends Children.Array {
                     updateStatistics(report);
                     nodesToAdd[index++] = getNode(report);
                 }
-                add(nodesToAdd);
             } else {
                 List<Node> toAdd = new ArrayList<Node>(newReports.size());
                 for (Report report : newReports) {
@@ -197,9 +195,9 @@ final class RootNodeChildren extends Children.Array {
                 }
                 if (!toAdd.isEmpty()) {
                     nodesToAdd = toAdd.toArray(new Node[toAdd.size()]);
-                    add(nodesToAdd);
                 }
             }
+            addNotify();
         }
     }
     
@@ -238,7 +236,7 @@ final class RootNodeChildren extends Children.Array {
         super.addNotify();
         
         live = true;                      //PENDING
-        addAllMatchingNodes();
+        setKeys(suiteNodes);
     }
     
     /**
@@ -247,12 +245,14 @@ final class RootNodeChildren extends Children.Array {
     protected void removeNotify() {
         super.removeNotify();
         live = false;
+        setKeys(EMPTY_NODE_ARRAY);
     }
     
     /**
      * Adds all nodes matching the current filter (if the filter is enabled)
      * or all nodes generally (if the filter is off).
      */
+/*
     private void addAllMatchingNodes() {
         final boolean filterOn = filtered;
         final int matchingNodesCount = filterOn ? failedSuites
@@ -277,13 +277,11 @@ final class RootNodeChildren extends Children.Array {
             add(nodesToAdd.toArray(new TestsuiteNode[nodesToAdd.size()]));
         }
     }
-    
-    /**
-     */
+  
     private void removeAllNodes() {
         remove(getNodes());
     }
-    
+*/
     /**
      */
     private TestsuiteNode getNode(final Report report) {
@@ -310,16 +308,21 @@ final class RootNodeChildren extends Children.Array {
         if (!live || (reports == null)) {
             return;
         }
-
+/*
         if (filtered) {
             removePassedSuites();
         } else {
             addPassedSuites();
         }
+ */
+        for(TestsuiteNode suite: suiteNodes){
+            suite.setFiltered(filtered);
+            refreshKey(suite);
+        }
+
     }
-    
-    /**
-     */
+
+/*
     private synchronized void removePassedSuites() {
         assert EventQueue.isDispatchThread();
         assert live;
@@ -341,14 +344,24 @@ final class RootNodeChildren extends Children.Array {
         remove(nodesToRemove.toArray(new Node[nodesToRemove.size()]));
     }
     
-    /**
-     */
     private void addPassedSuites() {
         assert EventQueue.isDispatchThread();
         assert live;
         
         removeAllNodes();
         addAllMatchingNodes();
+    }
+*/
+    private static final TestsuiteNode[] EMPTY_NODE_ARRAY = new TestsuiteNode[0];
+
+    @Override
+    protected Node[] createNodes(TestsuiteNode suite) {
+        Report report = suite.getReport();
+        if (filtered && (suite != runningSuiteNode) && (report != null) && !report.containsFailed()){
+            return EMPTY_NODE_ARRAY;
+        }else{
+            return new Node[]{suite};
+        }
     }
     
 }
