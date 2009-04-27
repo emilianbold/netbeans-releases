@@ -61,6 +61,8 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
@@ -74,6 +76,7 @@ import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.FunctionsListViewVisualizerConfigurationAccessor;
+import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.AbstractNode;
@@ -108,6 +111,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private final ColumnsUIMapping  columnsUIMapping;
     private final List<Column> metrics;
     private final FunctionsListViewVisualizerConfiguration configuration;
+    private final TableCellRenderer outlineNodePropertyDefault;
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
         explorerManager = new ExplorerManager();
@@ -125,6 +129,8 @@ public class FunctionsListViewVisualizer extends JPanel implements
         outlineView = new OutlineView(nodeLabel);
         outlineView.getOutline().setRootVisible(false);
         outlineView.getOutline().setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
+        outlineNodePropertyDefault = outlineView.getOutline().getDefaultRenderer(Node.Property.class);
+        //outlineView.getOutline().setDefaultRenderer(Node.Property.class, new MyTableCellRenderer());
         List<Property> result = new ArrayList<Property>();
         for (Column c : metrics) {
             String displayedName = columnsUIMapping == null || columnsUIMapping.getDisplayedName(c.getColumnName()) == null ? c.getColumnUName() : columnsUIMapping.getDisplayedName(c.getColumnName());
@@ -496,5 +502,26 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
+    }
+
+    private class MyTableCellRenderer implements TableCellRenderer{
+
+        public MyTableCellRenderer() {
+        }
+
+        public Node nodeForRow(int row) {
+            Outline outline = outlineView.getOutline();
+            int r = outline.convertRowIndexToModel(row);
+            TreePath tp = outline.getLayoutCache().getPathForRow(r);
+            return org.openide.explorer.view.Visualizer.findNode(tp.getLastPathComponent());
+        }
+
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (row == -1 || (column == 0 || metrics.get(column -1).getColumnClass().getSuperclass() != Number.class)) {
+                return outlineNodePropertyDefault.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+            return new JLabel(value + " This is my test");
+        }
+
     }
 }
