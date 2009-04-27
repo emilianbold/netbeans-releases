@@ -61,17 +61,25 @@ public final class ClonePathsPanel extends javax.swing.JPanel {
                 defaultPushPathLabel = new javax.swing.JLabel();
                 defaultValuesButton = new javax.swing.JButton();
 
+                setName(org.openide.util.NbBundle.getMessage(ClonePathsPanel.class, "pathsPanel.Name")); // NOI18N
+
                 org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ClonePathsPanel.class, "defaultLabel.Name")); // NOI18N
 
                 defaultPullPathLabel.setLabelFor(defaultPullPathField);
                 org.openide.awt.Mnemonics.setLocalizedText(defaultPullPathLabel, org.openide.util.NbBundle.getMessage(ClonePathsPanel.class, "defaultPullLabel.Name")); // NOI18N
 
                 defaultPullPathField.setColumns(30);
+                defaultPullPathField.setEditable(false);
+
+                org.openide.awt.Mnemonics.setLocalizedText(changePullPathButton, org.openide.util.NbBundle.getMessage(ClonePathsPanel.class, "changePullPushPath.Name")); // NOI18N
 
                 defaultPushPathLabel.setLabelFor(defaultPushPathField);
                 org.openide.awt.Mnemonics.setLocalizedText(defaultPushPathLabel, org.openide.util.NbBundle.getMessage(ClonePathsPanel.class, "defaultPushLabel.Name")); // NOI18N
 
                 defaultPushPathField.setColumns(30);
+                defaultPushPathField.setEditable(false);
+
+                org.openide.awt.Mnemonics.setLocalizedText(changePushPathButton, org.openide.util.NbBundle.getMessage(ClonePathsPanel.class, "changePullPushPath.Name")); // NOI18N
 
                 org.openide.awt.Mnemonics.setLocalizedText(defaultValuesButton, org.openide.util.NbBundle.getMessage(ClonePathsPanel.class, "setDefaultValues.Name")); // NOI18N
 
@@ -80,15 +88,19 @@ public final class ClonePathsPanel extends javax.swing.JPanel {
                 layout.setHorizontalGroup(
                         layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                         .add(jLabel1)
-                        .add(defaultValuesButton)
                         .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                        .add(defaultPushPathLabel)
-                                        .add(defaultPullPathLabel))
+                                        .add(defaultPullPathLabel)
+                                        .add(defaultPushPathLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                         .add(defaultPullPathField)
-                                        .add(defaultPushPathField)))
+                                        .add(defaultPushPathField))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                        .add(changePushPathButton)
+                                        .add(changePullPathButton)))
+                        .add(defaultValuesButton)
                 );
                 layout.setVerticalGroup(
                         layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -97,17 +109,21 @@ public final class ClonePathsPanel extends javax.swing.JPanel {
                                 .add(18, 18, 18)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                                         .add(defaultPullPathLabel)
-                                        .add(defaultPullPathField))
+                                        .add(defaultPullPathField)
+                                        .add(changePullPathButton))
                                 .add(18, 18, 18)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                                         .add(defaultPushPathLabel)
-                                        .add(defaultPushPathField))
+                                        .add(defaultPushPathField)
+                                        .add(changePushPathButton))
                                 .add(18, 18, 18)
                                 .add(defaultValuesButton))
                 );
         }// </editor-fold>//GEN-END:initComponents
     
         // Variables declaration - do not modify//GEN-BEGIN:variables
+        final javax.swing.JButton changePullPathButton = new javax.swing.JButton();
+        final javax.swing.JButton changePushPathButton = new javax.swing.JButton();
         final javax.swing.JTextField defaultPullPathField = new javax.swing.JTextField();
         private javax.swing.JLabel defaultPullPathLabel;
         final javax.swing.JTextField defaultPushPathField = new javax.swing.JTextField();
