@@ -70,7 +70,9 @@ public class BugzillaUtil {
 
     public static boolean show(JPanel panel, String title, String okName, HelpCtx helpCtx) {
         JButton ok = new JButton(okName);
+        ok.getAccessibleContext().setAccessibleDescription(ok.getText());
         JButton cancel = new JButton(NbBundle.getMessage(BugzillaUtil.class, "LBL_Cancel")); // NOI18N
+        cancel.getAccessibleContext().setAccessibleDescription(cancel.getText());
         DialogDescriptor descriptor = new DialogDescriptor (
                 panel,
                 title,
