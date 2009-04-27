@@ -108,14 +108,14 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
     public void setFlat(boolean f) {
 
         Color controlDkShadow = Color.lightGray;
-        if (UIManager.getColor("controlDkShadow") != null) {
+        if (UIManager.getColor("controlDkShadow") != null) { // NOI18N
             controlDkShadow = UIManager.getColor("controlDkShadow"); // NOI18N
         }
         Color controlLtHighlight = Color.black;
-        if (UIManager.getColor("controlLtHighlight") != null) {
+        if (UIManager.getColor("controlLtHighlight") != null) { // NOI18N
             controlLtHighlight = UIManager.getColor("controlLtHighlight"); // NOI18N
         }
-        Color buttonFocusColor = Color.blue;
+        Color buttonFocusColor = Color.blue; // NOI18N
         if (UIManager.getColor("Button.focus") != null) {
             buttonFocusColor = UIManager.getColor("Button.focus"); // NOI18N
         }
@@ -254,11 +254,10 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
     private FocusedPropertyPanel getRenderer(Property p, Node n, boolean hasFocus) {
         if (renderer == null) {
             renderer = new FocusedPropertyPanel(p, PropertyPanel.PREF_READ_ONLY | PropertyPanel.PREF_TABLEUI);
-            renderer.putClientProperty("beanBridgeIdentifier",
-                    this); //NOI18N
+            renderer.putClientProperty("beanBridgeIdentifier", this); //NOI18N
         }
         renderer.setProperty(p);
-        renderer.putClientProperty("flat", Boolean.TRUE);
+        renderer.putClientProperty("flat", Boolean.TRUE); // NOI18N
         renderer.setFocused(hasFocus);
         return renderer;
     }
@@ -308,7 +307,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
             } else {
                 propPanel = getRenderer(property, n, hasFocus);
             }
-            Object computeTooltip = table.getClientProperty("ComputingTooltip");
+            Object computeTooltip = table.getClientProperty("ComputingTooltip"); // NOI18N
             if (Boolean.TRUE.equals(computeTooltip)) {
                 String toolT = null;
                 PropertyEditor propEd = property.getPropertyEditor();
@@ -411,8 +410,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
             editor = new PropertyPanel(p, prefs);
 
             editor.putClientProperty("flat", Boolean.TRUE); //NOI18N
-            editor.putClientProperty("beanBridgeIdentifier",
-                    this); //NOI18N
+            editor.putClientProperty("beanBridgeIdentifier", this); //NOI18N
 
             //Intentionally set the property again so it will look up the
             //bean bridge
@@ -527,7 +525,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
                 String name = super.getAccessibleName();
 
                 if (name == null) {
-                    name = getString("ACS_NullPanel");
+                    name = getString("ACS_NullPanel"); // NOI18N
                 }
                 return name;
             }
@@ -540,7 +538,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
                     Node node = weakNode.get();
                     if (node != null) {
                         description = MessageFormat.format(
-                                getString("ACSD_NullPanel"),
+                                getString("ACSD_NullPanel"), // NOI18N
                                 new Object[]{
                                     node.getDisplayName()
                                 });
@@ -589,7 +587,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
         @Override
         public void firePropertyChange(String s, Object a, Object b) {
             //do nothing
-            if ("flat".equals(s)) {
+            if ("flat".equals(s)) { // NOI18N
                 super.firePropertyChange(s, a, b);
             }
         }
@@ -661,10 +659,10 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
                 PropertyEditor editor = getPropertyEditor();
 
                 return MessageFormat.format(
-                        getString("ACS_PropertyPanelRenderer"),
+                        getString("ACS_PropertyPanelRenderer"), // NOI18N
                         new Object[]{
                             fd.getDisplayName(),
-                            (editor == null) ? getString("CTL_No_value") : editor.getAsText()
+                            (editor == null) ? getString("CTL_No_value") : editor.getAsText() // NOI18N
                         });
             }
 
@@ -676,10 +674,10 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
                 Node node = (Node) ((ExPropertyModel) getModel()).getBeans()[0];
                 Class clazz = getModel().getPropertyType();
                 return MessageFormat.format(
-                        getString("ACSD_PropertyPanelRenderer"),
+                        getString("ACSD_PropertyPanelRenderer"), // NOI18N
                         new Object[]{
                             fd.getShortDescription(),
-                            clazz == null ? getString("CTL_No_type") : clazz.getName(),
+                            clazz == null ? getString("CTL_No_type") : clazz.getName(), // NOI18N
                             node.getDisplayName()
                         });
             }
