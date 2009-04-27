@@ -839,6 +839,20 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz104943.cc", 16, 20, "iz104943.cc", 5, 5);
     }
 
+    public void testIZ104945() throws Exception {
+        // IZ#104945 : Hyperlink works wrong on overloaded methods with const
+        performTest("iz104945.cc", 3, 12, "iz104945.cc", 10, 1);
+        performTest("iz104945.cc", 4, 12, "iz104945.cc", 14, 1);
+        performTest("iz104945.cc", 5, 12, "iz104945.cc", 18, 1);
+        performTest("iz104945.cc", 6, 12, "iz104945.cc", 22, 1);
+        performTest("iz104945.cc", 7, 12, "iz104945.cc", 26, 1);
+        performTest("iz104945.cc", 10, 20, "iz104945.cc", 3, 5);
+        performTest("iz104945.cc", 14, 20, "iz104945.cc", 4, 5);
+        performTest("iz104945.cc", 18, 20, "iz104945.cc", 5, 5);
+        performTest("iz104945.cc", 22, 20, "iz104945.cc", 6, 5);
+        performTest("iz104945.cc", 26, 20, "iz104945.cc", 7, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -848,20 +862,6 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
 
         public Failed(String testName) {
             super(testName);
-        }
-
-        public void testIZ104945() throws Exception {
-            // IZ#104945 : Hyperlink works wrong on overloaded methods with const
-            performTest("iz104945.cc", 3, 12, "iz104945.cc", 10, 1);
-            performTest("iz104945.cc", 4, 12, "iz104945.cc", 14, 1);
-            performTest("iz104945.cc", 5, 12, "iz104945.cc", 18, 1);
-            performTest("iz104945.cc", 6, 12, "iz104945.cc", 22, 1);
-            performTest("iz104945.cc", 7, 12, "iz104945.cc", 26, 1);
-            performTest("iz104945.cc", 10, 20, "iz104945.cc", 3, 5);
-            performTest("iz104945.cc", 14, 20, "iz104945.cc", 4, 5);
-            performTest("iz104945.cc", 18, 20, "iz104945.cc", 5, 5);
-            performTest("iz104945.cc", 22, 20, "iz104945.cc", 6, 5);
-            performTest("iz104945.cc", 26, 20, "iz104945.cc", 7, 5);
         }
 
         public void allFailedTests() throws Exception {
