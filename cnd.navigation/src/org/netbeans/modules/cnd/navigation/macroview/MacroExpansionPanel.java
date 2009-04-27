@@ -447,7 +447,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
             doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, isLocalContext());
             update();
         } else {
-            doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CARET, true);
+            doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CARET, false);
             doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, false);
         }
 }//GEN-LAST:event_autoRefreshActionPerformed

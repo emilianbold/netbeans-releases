@@ -50,7 +50,7 @@
                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                       <Component id="formatterNameLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="jSeparator1" pref="455" max="32767" attributes="0"/>
+                      <Component id="jSeparator1" pref="480" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -60,7 +60,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="formatterClassTypesLabel" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="formatterClassTypesTextField" pref="341" max="32767" attributes="0"/>
+                                      <Component id="formatterClassTypesTextField" pref="366" max="32767" attributes="0"/>
                                   </Group>
                                   <Component id="formatValueLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="childrenCodeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -70,7 +70,7 @@
                               <EmptySpace min="6" pref="6" max="6" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
-                              <Component id="formattersScrollPane" pref="456" max="32767" attributes="0"/>
+                              <Component id="formattersScrollPane" pref="481" max="32767" attributes="0"/>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -139,6 +139,14 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JList" name="formattersList">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelFormatters.formattersList.a11y.name" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/options/Bundle.properties" key="CategoryPanelFormatters.formattersList.a11y.description" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
         </Component>
       </SubComponents>
     </Container>

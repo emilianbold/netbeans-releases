@@ -116,7 +116,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             return;
         }
 
-        hkey = ((MakeConfiguration) activeConfiguration).getDevelopmentHost().getName();
+        hkey = ((MakeConfiguration) activeConfiguration).getDevelopmentHost().getHostKey();
         //if we have sun studio compiler along compiler collections presentedCompiler
         CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
         List<CompilerSet> compilers = compilerSetManager.getCompilerSets();
