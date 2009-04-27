@@ -44,9 +44,9 @@ import java.text.MessageFormat;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -153,7 +153,8 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
             if (displayName == null) {
                 displayName = execEnv.getDisplayName();
             }
-            final ServerRecord record = ServerList.addServer(execEnv, displayName, false, false);
+            final RemoteSyncFactory syncFactory = (RemoteSyncFactory) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_SYNC);
+            final ServerRecord record = ServerList.addServer(execEnv, displayName, syncFactory, false, false);
             return record;
         } else {
             return null;

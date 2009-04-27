@@ -116,7 +116,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
             controlLtHighlight = UIManager.getColor("controlLtHighlight"); // NOI18N
         }
         Color buttonFocusColor = Color.blue; // NOI18N
-        if (UIManager.getColor("Button.focus") != null) {
+        if (UIManager.getColor("Button.focus") != null) { // NOI18N
             buttonFocusColor = UIManager.getColor("Button.focus"); // NOI18N
         }
         flat = f ? Boolean.TRUE : Boolean.FALSE;

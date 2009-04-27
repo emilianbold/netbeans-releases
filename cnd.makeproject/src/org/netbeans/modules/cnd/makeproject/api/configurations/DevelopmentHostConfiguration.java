@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
@@ -161,7 +162,7 @@ public class DevelopmentHostConfiguration {
     }
 
     private boolean addDevelopmentHost(String host) {
-        final ServerRecord record = ServerList.addServer(ExecutionEnvironmentFactory.fromUniqueID(host), null, false, false);
+        final ServerRecord record = ServerList.addServer(ExecutionEnvironmentFactory.fromUniqueID(host), null, RemoteSyncFactory.getDefault(), false, false);
         return record != null;
     }
 

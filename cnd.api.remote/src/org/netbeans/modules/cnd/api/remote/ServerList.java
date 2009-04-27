@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.api.remote;
 
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
@@ -98,8 +99,8 @@ public class ServerList {
         getDefault().clear();
     }
 
-    public static ServerRecord addServer(ExecutionEnvironment env, String displayName, boolean asDefault, boolean connect) {
-        return getDefault().addServer(env, displayName, asDefault, connect);
+    public static ServerRecord addServer(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean asDefault, boolean connect) {
+        return getDefault().addServer(env, displayName, syncFactory, asDefault, connect);
     }
 
     public static boolean isValidExecutable(ExecutionEnvironment env, String path) {
