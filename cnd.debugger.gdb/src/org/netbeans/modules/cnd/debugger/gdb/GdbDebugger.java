@@ -2237,6 +2237,11 @@ public class GdbDebugger implements PropertyChangeListener {
             return null;
         }
 
+        // IZ:161093 (do not evalue anything if not stopped)
+        if (!isStopped()) {
+            return null;
+        }
+
         boolean suspendAll = expression.indexOf('(') != -1;
 
         if (suspendAll) {
