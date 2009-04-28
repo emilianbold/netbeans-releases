@@ -161,8 +161,8 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
             if(t.id() == null || t.id().primaryCategory() == null || t.id().name() == null) {
                 continue;
             }
-            if (t.id().primaryCategory().toUpperCase().indexOf("COMMENT") > -1      ||  // primaryCategory == commment should be more or less a convention
-                t.id().name().toUpperCase().indexOf("COMMENT") > -1)                    // consider this as a fallback
+            if (t.id().primaryCategory().toUpperCase().indexOf("COMMENT") > -1      ||  // primaryCategory == commment should be more or less a convention // NOI18N
+                t.id().name().toUpperCase().indexOf("COMMENT") > -1)                    // consider this as a fallback // NOI18N
             {
                 String text = t.text().toString();
                 int[] span = IssueFinder.getIssueSpans(text);

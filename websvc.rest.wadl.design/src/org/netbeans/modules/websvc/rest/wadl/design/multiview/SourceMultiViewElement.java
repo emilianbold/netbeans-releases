@@ -51,6 +51,7 @@ import javax.swing.JEditorPane;
 import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -295,6 +296,15 @@ public class SourceMultiViewElement extends CloneableEditor
         }
         super.componentDeactivated();
         WadlEditorSupport editor = schemaDataObject.getWadlEditorSupport();
+//        try {
+//            if(editor.getDocument() != null) {
+//                editor.getDocument().insertString(0, "a", null);
+//                editor.getDocument().remove(0, 1);
+//                editor.saveDocument();
+//            }
+//        } catch (IOException ex) {
+//        } catch (BadLocationException ex) {
+//        }
         // Sync model before having undo manager listen to the model,
         // lest we get redundant undoable edits added to the queue.
         editor.syncModel();

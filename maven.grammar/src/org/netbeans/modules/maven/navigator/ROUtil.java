@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
@@ -72,6 +73,10 @@ public class ROUtil {
         if ("pom".equals(fo.getExt())) { //NOI18N
             LocalFileSystem lfs = checkFSCache(file);
             toRet = lfs.findResource(getPath(file));
+            if (toRet == null) {
+                Logger.getLogger(ROUtil.class.getName()).info("Could not find a ReadOnly fileobject for " + getPath(file) + " in " + lfs.getRootDirectory() + ": " + lfs);
+                toRet = fo;
+            }
         }
         return toRet;
     }

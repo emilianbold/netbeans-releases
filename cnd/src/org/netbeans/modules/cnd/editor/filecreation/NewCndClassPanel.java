@@ -43,6 +43,7 @@ import java.awt.Component;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -119,7 +120,7 @@ public class NewCndClassPanel extends CndPanel {
 
             return false;
         }
-        if (!org.openide.util.Utilities.isJavaIdentifier( getGui().getClassName() )) {
+        if (!CndLexerUtilities.isCppIdentifier( getGui().getClassName() )) {
             setErrorMessage( NbBundle.getMessage(NewCndClassPanel.class, "MSG_not_valid_classname") );
             return false;
         }

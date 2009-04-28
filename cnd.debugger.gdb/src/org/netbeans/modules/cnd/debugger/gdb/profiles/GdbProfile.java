@@ -60,12 +60,12 @@ import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -170,8 +170,7 @@ public class GdbProfile implements ConfigurationAuxObject {
                 }
             } else {
                 // Remote gdb...
-                ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
-                if (serverList != null && serverList.isValidExecutable(execEnv, gdbPath)) {
+                if (ServerList.isValidExecutable(execEnv, gdbPath)) {
                     return gdbPath;
                 }
             }
@@ -339,7 +338,7 @@ public class GdbProfile implements ConfigurationAuxObject {
      * Clone itself to an identical (deep) copy.
      */
     @Override
-    public Object clone() {
+    public GdbProfile clone(Configuration conf) {
 	GdbProfile p = new GdbProfile();
 
 	p.setGdbCommand(getGdbCommand());

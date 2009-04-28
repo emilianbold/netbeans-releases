@@ -44,6 +44,7 @@ import java.util.Date;
 import org.netbeans.modules.subversion.client.cli.commands.StatusCommand.Status;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
@@ -161,6 +162,18 @@ public class CLIStatus implements ISVNStatus {
         return status.getLockComment();
     }
 
+    public boolean hasTreeConflict() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public SVNConflictDescriptor getConflictDescriptor() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isFileExternal() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     private class UnversionedInfo implements ISVNInfo {
         private final File file;
         public UnversionedInfo(String path) {
@@ -222,7 +235,11 @@ public class CLIStatus implements ISVNStatus {
         }
         public String getLockComment() {
             return null;
-        }        
+        }
+
+        public int getDepth() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
             
 }

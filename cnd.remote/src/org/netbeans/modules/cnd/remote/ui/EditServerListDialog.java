@@ -62,15 +62,13 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 import org.netbeans.modules.cnd.remote.ui.wizard.CreateHostWizardIterator;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -84,7 +82,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private DefaultListModel model;
     private DialogDescriptor desc;
     private int defaultIndex;
-    private JButton ok;
     private ProgressHandle phandle;
     private PropertyChangeSupport pcs;
     private boolean buttonsEnabled;
@@ -96,8 +93,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         initComponents();
         initServerList(cacheManager.getServerUpdateCache());
         desc = null;
-        lbReason.setText(" "); // NOI18N - this keeps the dialog from resizing
-        tfReason.setVisible(false);
+        //lbReason.setText(" "); // NOI18N - this keeps the dialog from resizing
+        tfReason.setEnabled(false); // setVisible(false);
         pbarStatusPanel.setVisible(false);
         initListeners();
     }
@@ -118,14 +115,13 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         model = new DefaultListModel();
 
         if (cache == null) {
-            ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-            for (ExecutionEnvironment env : registry.getEnvironments()) {
-                model.addElement(env);
+            for (ServerRecord rec : ServerList.getRecords()) {
+                model.addElement(rec);
             }
-            defaultIndex = registry.getDefaultIndex();
+            defaultIndex = ServerList.getDefaultIndex();
         } else {
-            for (ExecutionEnvironment env : cache.getHosts()) {
-                model.addElement(env);
+            for (ServerRecord rec : cache.getHosts()) {
+                model.addElement(rec);
             }
             defaultIndex = cache.getDefaultIndex();
         }
@@ -143,14 +139,11 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         }
     }
 
-    private void revalidateRecord(final ExecutionEnvironment env, String password, boolean rememberPassword) {
-        final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(env);
+    private void revalidateRecord(final RemoteServerRecord record, String password, boolean rememberPassword) {
         if (!record.isOnline()) {
             record.resetOfflineState(); // this is a do-over
             setButtons(false);
             hideReason();
-            RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(env, true);
-            userInfo.setPassword(password, rememberPassword);
             phandle = ProgressHandleFactory.createHandle("");
             pbarStatusPanel.removeAll();
             pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
@@ -165,7 +158,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 public void run() {
                     record.init(pcs);
                     if (record.isOnline()) {
-                        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env);
+                        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment());
                         csm.initialize(false, true);
                     }
                     phandle.finish();
@@ -188,9 +181,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel out = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            ExecutionEnvironment execEnv = (ExecutionEnvironment) value;
-            out.setText(execEnv.isLocal() ? "localhost" : //NOI18N
-                String.format("%s@%s:%d", execEnv.getUser(), execEnv.getHost(), execEnv.getSSHPort())); //NOI18N
+            ServerRecord rec = (ServerRecord) value;
+            out.setText(rec.getDisplayName());
             if (index == getDefaultIndex()) {
                 out.setFont(out.getFont().deriveFont(Font.BOLD));
             }
@@ -202,10 +194,10 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         this.desc = desc;
     }
 
-    public List<ExecutionEnvironment> getHosts() {
-        List<ExecutionEnvironment> result = new ArrayList<ExecutionEnvironment>(model.getSize());
+    public List<ServerRecord> getHosts() {
+        List<ServerRecord> result = new ArrayList<ServerRecord>(model.getSize());
         for (int i = 0; i < model.getSize(); i++) {
-            result.add((ExecutionEnvironment) model.get(i));
+            result.add((ServerRecord) model.get(i));
         }
         return result;
     }
@@ -215,7 +207,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
 
     private void showPathMapper() {
-        EditPathMapDialog.showMe((ExecutionEnvironment) lstDevHosts.getSelectedValue(), getHosts());
+        EditPathMapDialog.showMe((ServerRecord) lstDevHosts.getSelectedValue(), getHosts());
     }
 
     private void setButtons(boolean enable) {
@@ -244,13 +236,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     public void valueChanged(ListSelectionEvent evt) {
         int idx = lstDevHosts.getSelectedIndex();
         if (idx >= 0) {
-            ExecutionEnvironment env = getSelectedEnvironment();
-            RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(env);
+            RemoteServerRecord record = getSelectedRecord();
             tfStatus.setText(record.getStateAsText());
             btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
-            btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(env));
-
-            btPathMapper.setEnabled(buttonsEnabled && env.isRemote() && record.isOnline());
+            btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(record.getExecutionEnvironment()));
+            btProperties.setEnabled(record.isRemote());
+            btPathMapper.setEnabled(buttonsEnabled && record.isRemote() && record.isOnline());
             if (!record.isOnline()) {
                 showReason(record.getReason());
                 btRetry.setEnabled(true);
@@ -266,12 +257,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private void showReason(String reason) {
         lbReason.setText(NbBundle.getMessage(EditServerListDialog.class, "LBL_Reason"));
         tfReason.setText(reason);
-        tfReason.setVisible(true);
+        tfReason.setEnabled(true); // setVisible(true);
     }
 
     private void hideReason() {
-        lbReason.setText(" "); // NOI18N
-        tfReason.setVisible(false);
+        //lbReason.setText(" "); // NOI18N
+        tfReason.setEnabled(false); // setVisible(false);
     }
 
     public void actionPerformed(ActionEvent evt) {
@@ -280,12 +271,11 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         if (o instanceof JButton) {
             JButton b = (JButton) o;
             if (b.getActionCommand().equals("Add")) { // NOI18N
-                ExecutionEnvironment execEnv = CreateHostWizardIterator.invokeMe(cacheManager);
-                if (execEnv != null) {
-                    if (!model.contains(execEnv)) {
-                        Lookup.getDefault().lookup(ServerList.class).addServer(execEnv, false, false);
-                        model.addElement(execEnv);
-                        lstDevHosts.setSelectedValue(execEnv, true);
+                ServerRecord result = CreateHostWizardIterator.invokeMe(cacheManager);
+                if (result != null) {
+                    if (!model.contains(result)) {
+                        model.addElement(result);
+                        lstDevHosts.setSelectedValue(result, true);
                     }
                 }
             } else if (b.getActionCommand().equals("Remove")) { // NOI18N
@@ -308,9 +298,9 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         }
     }
 
-    private ExecutionEnvironment getSelectedEnvironment() {
-        ExecutionEnvironment env = (ExecutionEnvironment) lstDevHosts.getSelectedValue();
-        return env;
+    private RemoteServerRecord getSelectedRecord() {
+        // we know for sure it's a RemoteServerRecord, not just a ServerRecord
+        return (RemoteServerRecord) lstDevHosts.getSelectedValue();
     }
 
     /** This method is called from within the constructor to
@@ -330,6 +320,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btRemoveServer = new javax.swing.JButton();
         btSetAsDefault = new javax.swing.JButton();
         btPathMapper = new javax.swing.JButton();
+        btProperties = new javax.swing.JButton();
         lbStatus = new javax.swing.JLabel();
         tfStatus = new javax.swing.JTextField();
         btRetry = new javax.swing.JButton();
@@ -363,7 +354,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.gridheight = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1000.0;
@@ -414,12 +405,26 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btPathMapper, gridBagConstraints);
 
+        btProperties.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "EditServerListDialog.btProperties.text")); // NOI18N
+        btProperties.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btPropertiesActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        add(btProperties, gridBagConstraints);
+
         lbStatus.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_Status").charAt(0));
         lbStatus.setLabelFor(tfStatus);
         lbStatus.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Status")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(lbStatus, gridBagConstraints);
@@ -428,7 +433,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfStatus.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1000.0;
@@ -445,7 +450,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 6, 0, 6);
         add(btRetry, gridBagConstraints);
@@ -455,7 +460,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         lbReason.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Reason")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(lbReason, gridBagConstraints);
@@ -464,7 +469,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfReason.setPreferredSize(new java.awt.Dimension(40, 21));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -483,12 +488,20 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRetryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRetryActionPerformed
-        this.revalidateRecord(getSelectedEnvironment(), null, false);
+        this.revalidateRecord(getSelectedRecord(), null, false);
     }//GEN-LAST:event_btRetryActionPerformed
+
+    private void btPropertiesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btPropertiesActionPerformed
+        RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
+        if (record.isRemote()) {
+            HostPropertiesDialog.invokeMe(record);
+        }
+    }//GEN-LAST:event_btPropertiesActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddServer;
     private javax.swing.JButton btPathMapper;
+    private javax.swing.JButton btProperties;
     private javax.swing.JButton btRemoveServer;
     private javax.swing.JButton btRetry;
     private javax.swing.JButton btSetAsDefault;

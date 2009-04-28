@@ -4,9 +4,12 @@
  */
 package org.netbeans.modules.dlight.core.ui.components;
 
+import java.beans.PropertyChangeEvent;
+import java.util.List;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.ui.spi.IndicatorComponentDelegator;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -14,12 +17,9 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mt154047
  */
-@ServiceProvider(service = IndicatorComponentDelegator.class)
-public final class DLightIndicatorDelegator implements IndicatorComponentDelegator {
+@ServiceProvider(service = IndicatorComponentDelegator.class, position=100)
+public final class DLightIndicatorDelegator implements IndicatorComponentDelegator{
 
-//    public IndicatorComponent get() {
-//        return DLightIndicatorsTopComponent.getDefault();
-//    }
     public void activeSessionChanged(DLightSession oldSession, final DLightSession newSession) {
         if (oldSession == newSession) {
             return;
@@ -33,6 +33,12 @@ public final class DLightIndicatorDelegator implements IndicatorComponentDelegat
 //        if (newSession.getState() != SessionState.CONFIGURATION)
         UIThread.invoke(new Runnable() {
             public void run() {
+                if (newSession != null){
+                    List<DataStorage> storages = newSession.getStorages();
+                    if (storages != null){
+                        
+                    }
+                }
                 DLightIndicatorsTopComponent.findInstance().setSession(newSession);
             }
         });
@@ -53,7 +59,7 @@ public final class DLightIndicatorDelegator implements IndicatorComponentDelegat
     }
 
     public void sessionAdded(DLightSession newSession) {
-        System.out.println("Session added");
+        //System.out.println("Session added");
     }
 
     public void sessionRemoved(DLightSession removedSession) {

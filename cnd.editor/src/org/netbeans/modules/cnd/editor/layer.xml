@@ -50,6 +50,8 @@
                 <file name="x-c" url="resources/cplusplus/CExample"/>
                 <file name="x-fortran" url="resources/fortran/FExample"/>
                 <file name="x-make" url="resources/makefile/MakeExample"/>
+		<file name="sh" url="resources/sh/ShExample.sh"/>
+		<file name="bat" url="resources/bat/BatExample.bat"/>
             </folder>
         </folder>
     </folder>
@@ -57,6 +59,30 @@
     <folder name="Editors">
 
         <folder name="text">
+		<folder name="sh">
+			<folder name="FontsColors">
+				<folder name="NetBeans">
+					<folder name="Defaults">
+						<file name="FontAndColors.xml" url="resources/sh/FontAndColors.xml">
+							<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.sh.Bundle"/>
+						</file>
+					</folder>
+				</folder>
+			</folder>
+			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.sh.Bundle"/>
+		</folder>
+		<folder name="bat">
+			<folder name="FontsColors">
+				<folder name="NetBeans">
+					<folder name="Defaults">
+						<file name="FontAndColors.xml" url="resources/bat/FontAndColors.xml">
+							<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.bat.Bundle"/>
+						</file>
+					</folder>
+				</folder>
+			</folder>
+			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.bat.Bundle"/>
+		</folder>
             <folder name="x-cpp-preprocessor">
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-cnd-editor-cplusplus-CppBracesMatcher.instance">
@@ -471,4 +497,48 @@
         </folder>
     </folder>
 
+    <folder name="OptionsExport">
+        <folder name="Editor">
+            <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#Editor_Category_Display_Name"/>
+            <file name="Other">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/cnd/editor/.*"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Formatting_Style_Display_Name"/>
+            </file>
+        </folder>
+        <folder name="CND">
+            <attr name="position" intvalue="900"/>
+            <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Category_Display_Name"/>
+            <file name="BuildTools">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/cnd\.properties"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Build_Tools_Display_Name"/>
+            </file>
+            <file name="ProjectOptions">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/cnd/makeproject\.properties"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Project_Options_Display_Name"/>
+            </file>
+            <!--  This is binary data. Make sure that format is not changed. -->
+            <file name="CodeAssistance">
+                <attr name="include" stringvalue="config/cnd-compilers/.*"/>
+                <attr name="position" intvalue="300"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Code_Assistance_Display_Name"/>
+            </file>
+            <file name="Highlighting">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/cnd/(highlight|modelutil)\.properties"/>
+                <attr name="position" intvalue="400"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Highlighting_Display_Name"/>
+            </file>
+            <file name="Remote">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/cnd/remote\.properties"/>
+                <attr name="position" intvalue="500"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Remote_Display_Name"/>
+            </file>
+            <file name="Other">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/cnd/(utils|refactoring|callgraph|classview|qnavigator)\.properties"/>
+                <attr name="position" intvalue="600"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Other_Display_Name"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

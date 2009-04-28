@@ -113,7 +113,7 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="800"/>
             <file name="StrutsAction.java" url="templates/StrutsAction.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -137,7 +137,7 @@ made subject to such option by the copyright holder.
             </file>
             <file name="StrutsActionForm.java" url="templates/StrutsActionForm.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>

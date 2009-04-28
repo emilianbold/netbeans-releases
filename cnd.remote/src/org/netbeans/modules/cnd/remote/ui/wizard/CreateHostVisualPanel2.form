@@ -25,7 +25,7 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel3" alignment="0" pref="514" max="32767" attributes="0"/>
+                  <Component id="jLabel3" alignment="0" pref="522" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="cbSavePassword" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -43,12 +43,12 @@
                               </Group>
                               <Component id="btConnect" min="-2" pref="132" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jScrollPane1" alignment="0" pref="494" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" alignment="0" pref="510" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="pbarStatusPanel" pref="494" max="32767" attributes="0"/>
+                      <Component id="pbarStatusPanel" pref="510" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -77,7 +77,7 @@
               <Component id="jScrollPane1" min="-2" pref="208" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="pbarStatusPanel" min="-2" pref="11" max="-2" attributes="0"/>
-              <EmptySpace pref="25" max="32767" attributes="0"/>
+              <EmptySpace pref="56" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

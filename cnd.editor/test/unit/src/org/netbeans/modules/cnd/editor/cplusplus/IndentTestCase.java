@@ -848,4 +848,124 @@ public class IndentTestCase extends EditorBase {
             "if (a &&\n"+
             "        )");
     }
+
+    public void testIZ161572() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "enum {\n" +
+            "  t1 = 1,|\n" +
+            "}");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "enum {\n" +
+            "  t1 = 1,\n" +
+            "  \n" +
+            "}");
+    }
+
+    public void testIZ161572_1() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "enum A {\n" +
+            "  t1 = 1,|\n" +
+            "}");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "enum A {\n" +
+            "  t1 = 1,\n" +
+            "  \n" +
+            "}");
+    }
+
+    public void testIZ161572_2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "enum A {\n" +
+            "  t1 = 1,|\n" +
+            "}");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "enum A {\n" +
+            "  t1 = 1,\n" +
+            "  \n" +
+            "}");
+    }
+
+    public void testIZ161572_3() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "enum A {\n" +
+            "  t1,|\n" +
+            "}");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "enum A {\n" +
+            "  t1,\n" +
+            "  \n" +
+            "}");
+    }
+
+    public void testIZ161572_4() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class A {\n" +
+            "  int a,|\n" +
+            "}");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "class A {\n" +
+            "  int a,\n" +
+            "  \n" +
+            "}");
+    }
+
+    public void testIZ161572_5() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class A {\n" +
+            "  int b;\n" +
+            "  int a,|\n" +
+            "}");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "class A {\n" +
+            "  int b;\n" +
+            "  int a,\n" +
+            "  \n" +
+            "}");
+    }
+
+    public void testIZ161572_6() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class A {\n" +
+            "  int b(int p, int j){}\n" +
+            "  int a,|\n" +
+            "}");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "class A {\n" +
+            "  int b(int p, int j){}\n" +
+            "  int a,\n" +
+            "  \n" +
+            "}");
+    }
+
+    public void testIZ161572_7() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class A {\n" +
+            "  int b(int p, int j){\n" +
+            "      int a,|\n" +
+            "  }\n" +
+            "}");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:161572 Wrong indent for multiline code",
+            "class A {\n" +
+            "  int b(int p, int j){\n" +
+            "      int a,\n" +
+            "              \n" +
+            "  }\n" +
+            "}");
+    }
 }

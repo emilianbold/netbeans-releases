@@ -417,8 +417,10 @@ public class Hk2PluginProperties {
         try {
             return isRunning(host, Integer.parseInt(port));
         } catch (NumberFormatException e) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, host+"  "+port, e); // NOI18N
             return false;
         } catch (IOException ioe) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, host+"  "+port, ioe); // NOI18N
             return false;
         }
     }

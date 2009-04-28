@@ -95,7 +95,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @param executable executable to run.
      */
     public NativeProcessBuilder(final String executable) {
-        this(new ExecutionEnvironment(), executable);
+        this(ExecutionEnvironmentFactory.getLocal(), executable);
     }
 
     private NativeProcessBuilder(NativeProcessBuilder b) {

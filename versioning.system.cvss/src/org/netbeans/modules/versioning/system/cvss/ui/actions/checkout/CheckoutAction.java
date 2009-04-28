@@ -91,18 +91,7 @@ public final class CheckoutAction extends SystemAction {
      * Shows interactive checkout wizard.
      */
     public void actionPerformed(ActionEvent ev) {
-        CheckoutWizard wizard = new CheckoutWizard();
-        if (wizard.show() == false) return;
-
-        final String tag = wizard.getTag();
-        final String modules = wizard.getModules();
-        final String workDir = wizard.getWorkingDir();
-        final String cvsRoot = wizard.getCvsRoot();
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                checkout(cvsRoot, modules, tag, workDir, true, null);
-            }
-        });
+        perform();
     }
 
 
@@ -171,6 +160,24 @@ public final class CheckoutAction extends SystemAction {
             group.execute();
         }
         return executor;
+    }
+
+    /**
+     * Shows interactive checkout wizard.
+     */
+    public void perform() {
+        CheckoutWizard wizard = new CheckoutWizard();
+        if (wizard.show() == false) return;
+
+        final String tag = wizard.getTag();
+        final String modules = wizard.getModules();
+        final String workDir = wizard.getWorkingDir();
+        final String cvsRoot = wizard.getCvsRoot();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                checkout(cvsRoot, modules, tag, workDir, true, null);
+            }
+        });
     }
 
     /** On task finish shows next steps UI.*/

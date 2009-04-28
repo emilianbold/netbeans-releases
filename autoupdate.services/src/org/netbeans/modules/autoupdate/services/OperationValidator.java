@@ -323,6 +323,29 @@ abstract class OperationValidator {
             return res;
         }
         
+        private List<Module> getModulesToEnable(ModuleManager mm, final Set<Module> modules) {
+            List<Module> toEnable = new ArrayList<Module>();
+            boolean stateChanged = true;
+            while (stateChanged) {
+                stateChanged = false;
+                try {
+                    toEnable = mm.simulateEnable(modules);
+                } catch (IllegalArgumentException e) {
+                    //#160500
+                    LOGGER.log(Level.INFO, "Cannot enable all modules " + modules, e);
+                    Set<Module> tempModules = new LinkedHashSet<Module>(modules);
+                    for (Module module : tempModules) {
+                        if (!Utilities.canEnable(module)) {
+                            modules.remove(module);
+                            stateChanged = true;
+                        }
+                    }
+                    assert stateChanged : "Can`t enable modules " + modules;
+                }
+            }
+            return toEnable;
+        }
+
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
@@ -337,7 +360,7 @@ abstract class OperationValidator {
             }
             List<UpdateElement> retval = new ArrayList<UpdateElement>();
             if (mm != null) {
-                List<Module> toEnable = mm.simulateEnable(modules);
+                List<Module> toEnable = getModulesToEnable(mm, modules);
                 for (Module module : toEnable) {
                     if (!modules.contains(module) && Utilities.canEnable (module)) {
                         retval.add(Utilities.toUpdateUnit(module).getInstalled());

@@ -99,7 +99,7 @@ public class RubyIndexerTest extends RubyTestBase {
     public void testAnalysis2() throws Exception {
         checkIndexer("testfiles/ape.rb");
     }
-    
+
     public void testAnalysis() throws Exception {
         checkIndexer("testfiles/postgresql_adapter.rb");
     }
@@ -123,15 +123,15 @@ public class RubyIndexerTest extends RubyTestBase {
     public void testRails2() throws Exception {
         checkIndexer("testfiles/action_view.rb");
     }
-    
+
     public void testRails3() throws Exception {
         checkIndexer("testfiles/action_mailer.rb");
     }
-    
+
     public void testRails4() throws Exception {
         checkIndexer("testfiles/action_web_service.rb");
     }
-    
+
     public void testRails5() throws Exception {
         checkIndexer("testfiles/active_record.rb");
     }
@@ -143,7 +143,7 @@ public class RubyIndexerTest extends RubyTestBase {
     public void testTopLevel() throws Exception {
         checkIndexer("testfiles/top_level.rb");
     }
-    
+
     public void testTopLevel2() throws Exception {
         checkIndexer("testfiles/option_parser_spec.rb");
     }
@@ -189,15 +189,15 @@ public class RubyIndexerTest extends RubyTestBase {
     public void testRails20Migrations() throws Exception {
         checkIndexer("testfiles/migrate/100_rails20_migrations.rb");
     }
-    
+
     public void testRails20Migrations2() throws Exception {
         checkIndexer("testfiles/migrate/101_rails20_migrations.rb");
     }
-    
+
     public void testRails20Migrations3() throws Exception {
         checkIndexer("testfiles/migrate/102_rails20_migrations.rb");
     }
-    
+
     public void testSchemaDepot() throws Exception {
         checkIndexer("testfiles/migrate/schemas/depot/db/schema.rb");
     }
@@ -225,7 +225,7 @@ public class RubyIndexerTest extends RubyTestBase {
     public void testRails21Migrations2() throws Exception {
         checkIndexer("testfiles/migrate/20080403222904_add_names.rb");
     }
-    
+
     public void testEmpty1() throws Exception {
         checkIndexer("testfiles/empty.rb");
     }

@@ -180,6 +180,9 @@ public class MavenProjectNode extends AbstractNode {
         } else {
             lst.add(provider.createProfilesPopupAction());
         }
+
+        lst.add(null);
+        lst.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-maven/DependenciesActions")); //NOI18N
         
         // separator
         lst.add(null);

@@ -41,38 +41,29 @@
 
 package org.netbeans.modules.websvc.registry.jaxrpc;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.websvc.registry.util.Util;
 import org.netbeans.modules.websvc.registry.util.WebProxySetter;
 import org.netbeans.modules.websvc.registry.model.WebServiceData;
-import org.netbeans.modules.websvc.registry.WebServiceException;
-import com.sun.xml.rpc.spi.JaxRpcObjectFactory;
 
-import com.sun.xml.rpc.processor.model.Operation;
+import com.sun.xml.rpc.spi.JaxRpcObjectFactory;
 import com.sun.xml.rpc.processor.model.Port;
-import com.sun.xml.rpc.processor.model.java.JavaException;
-import com.sun.xml.rpc.processor.model.java.JavaMethod;
-import com.sun.xml.rpc.spi.model.JavaInterface;
 import com.sun.xml.rpc.spi.model.Model;
 import com.sun.xml.rpc.spi.model.Service;
 import com.sun.xml.rpc.spi.tools.CompileTool;
-import com.sun.xml.rpc.spi.tools.CompileToolDelegate;
 import com.sun.xml.rpc.spi.tools.GeneratedFileInfo;
-import com.sun.xml.rpc.tools.wscompile.ActionConstants;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.OutputStreamWriter;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.IOException;
 
-import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.openide.ErrorManager;
@@ -220,24 +211,27 @@ public class Wsdl2Java {
         }
         wsdl.setPackageName(getPackageName());
         wsCompileArgs.setConfiguration(config);
-        
+
         boolean ret = false;
-        try{
-            //System.out.println("WSCOMPILE ARGS=" + wsCompileArgs.toString());
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(Wsdl2Java.class.getClassLoader());
+        try {
             ret = compTool.run(wsCompileArgs.toArgs());
             if(ret) {
                 createWrapperClients(inWSData);
             } else {
                 ErrorManager.getDefault().log(Wsdl2Java.class.getName() + NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_INTERNAL"));
-//                StatusDisplayer.getDefault().displayError(NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_EXTERNAL"),2);
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_EXTERNAL"));
             }
-        }catch(Exception exc){
-            ErrorManager.getDefault().notify(exc);
-            ErrorManager.getDefault().log(Wsdl2Java.class.getName() + NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_INTERNAL"));
-//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_EXTERNAL"),2);
+        } catch (Exception exc) {
+            Logger.getLogger(Wsdl2Java.class.getName()).log(Level.WARNING, NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_INTERNAL"), exc);
+//            ErrorManager.getDefault().notify(exc);
+//            ErrorManager.getDefault().log(Wsdl2Java.class.getName() + NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_INTERNAL"));
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_EXTERNAL"));
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
+
         return ret;
     }
     

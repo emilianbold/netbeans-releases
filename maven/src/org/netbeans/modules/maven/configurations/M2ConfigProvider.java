@@ -76,6 +76,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     private String initialActive;
     private AuxiliaryConfiguration aux;
     private ProjectProfileHandler profileHandler;
+    private PropertyChangeListener propertyChange;
     
     public M2ConfigProvider(NbMavenProjectImpl proj, AuxiliaryConfiguration aux, ProjectProfileHandler prof) {
         project = proj;
@@ -93,7 +94,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         }
         
         active = DEFAULT;
-        project.getProjectWatcher().addPropertyChangeListener(new PropertyChangeListener() {
+        propertyChange = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                     synchronized (M2ConfigProvider.this) {
@@ -107,7 +108,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                     });
                 }
             }
-        });
+        };
         //trigger the active configuration check..
         getActiveConfiguration();
     }
@@ -177,12 +178,19 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         return true;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener lst) {
+    public synchronized void addPropertyChangeListener(PropertyChangeListener lst) {
+        if (support.getPropertyChangeListeners().length == 0) {
+            project.getProjectWatcher().addPropertyChangeListener(propertyChange);
+        }
         support.addPropertyChangeListener(lst);
+
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener lst) {
+    public synchronized void removePropertyChangeListener(PropertyChangeListener lst) {
         support.removePropertyChangeListener(lst);
+        if (support.getPropertyChangeListeners().length == 0) {
+            project.getProjectWatcher().addPropertyChangeListener(propertyChange);
+        }
     }
 
     public synchronized M2Configuration getActiveConfiguration() {

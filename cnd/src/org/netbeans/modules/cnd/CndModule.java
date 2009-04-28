@@ -85,7 +85,7 @@ public class CndModule extends ModuleInstall {
                 addFile(files, "bin/unbuffer-Mac_OS_X-x86.dylib"); // NOI18N
                 addFile(files, "bin/unbuffer-Mac_OS_X-x86_64.dylib"); // NOI18N
             }
-            setPermissions(files);
+            chmod755(files, log);
         }
     }
 
@@ -96,7 +96,7 @@ public class CndModule extends ModuleInstall {
         }
     }
 
-    private static void setPermissions(List<String> files) {
+    public static void chmod755(List<String> files, Logger log) {
         if (files.isEmpty()) {
             return;
         }
@@ -118,10 +118,10 @@ public class CndModule extends ModuleInstall {
                 Process process = pb.start();
                 // We need to wait for the process completion
                 if (process.waitFor() != 0) {
-                    log.log(Level.INFO, "chmod failed: " + commands); // NOI18N
+                    log.log(Level.WARNING, "chmod failed: " + commands); // NOI18N
                 }
             } catch (Exception ex) {
-                log.log(Level.INFO, "chmod failed: " + commands, ex); // NOI18N
+                log.log(Level.WARNING, "chmod failed: " + commands, ex); // NOI18N
             }
         }
     }

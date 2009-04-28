@@ -42,9 +42,9 @@ package org.netbeans.modules.ruby;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.lexer.yacc.ISourcePosition;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.SourcePosition;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -75,7 +75,7 @@ public class AstOffsetTest extends RubyTestBase {
                 int line = Utilities.getLineOffset(doc, node.getPosition().getStartOffset());
                 int offset = node.getPosition().getStartOffset()-Utilities.getRowStart(doc, node.getPosition().getStartOffset());
                 String offsetDesc = line + ":" + offset;
-                String n = node.nodeId.name() + "[" + offsetDesc + "]";
+                String n = node.getNodeType().name() + "[" + offsetDesc + "]";
                 if (s != null) {
                     s = n + ":" + s;
                 } else {
@@ -85,7 +85,7 @@ public class AstOffsetTest extends RubyTestBase {
 
             return s;
         } else {
-            return node.nodeId.name();
+            return node.getNodeType().name();
         }
     }
 
@@ -101,13 +101,15 @@ public class AstOffsetTest extends RubyTestBase {
     private void initialize(Node node, List<Object> validNodes, List<Object> invalidNodes, Map<Object,
             OffsetRange> positions, BaseDocument doc) throws Exception {
         
-        if (node.nodeId != NodeType.NEWLINENODE) { // Skipping newline nodes since they're everywhere
-            ISourcePosition pos = node.getPosition();
+        if (node.getNodeType() != NodeType.NEWLINENODE) { // Skipping newline nodes since they're everywhere
+            SourcePosition pos = node.getPosition();
             OffsetRange range = new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
             if (range.getStart() != 0 || range.getEnd() != 0) { // Don't include 0-0 nodes, these are errors
-                validNodes.add(node);
-                positions.put(node, range);
-            } else {
+                if (!validNodes.contains(node)) {
+                    validNodes.add(node);
+                    positions.put(node, range);
+                }
+            } else if (!invalidNodes.contains(node)) {
                 invalidNodes.add(node);
             }
         }
@@ -127,7 +129,7 @@ public class AstOffsetTest extends RubyTestBase {
     public void testAnalysis2() throws Exception {
         checkOffsets("testfiles/ape.rb");
     }
-    
+
     public void testAnalysis() throws Exception {
         checkOffsets("testfiles/postgresql_adapter.rb");
     }

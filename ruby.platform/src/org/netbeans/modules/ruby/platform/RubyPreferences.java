@@ -89,7 +89,10 @@ public final class RubyPreferences {
      * used for operation like 'gem list'.
      */
     public static boolean shallFetchGemDescriptions() {
-        return RubyPreferences.getPreferences().getBoolean(FETCH_GEM_DESCRIPTIONS, true);
+        // false by default since fetching with -d often causes error -- see 
+        // #22598 in the rubygems issue tracker 
+        // (http://rubyforge.org/tracker/index.php?func=detail&aid=22598&group_id=126&atid=575)
+        return RubyPreferences.getPreferences().getBoolean(FETCH_GEM_DESCRIPTIONS, false);
     }
 
     /**

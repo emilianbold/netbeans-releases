@@ -140,10 +140,10 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             "   <type>org.netbeans.modules.apisupport.project</type>" +
             "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">" +
             "       <code-name-base>org.netbeans.modules.scripting.bsf</code-name-base>" +
+            "       <module-dependencies/>" +
             "       <public-packages>" +
             "           <subpackages>org.hello</subpackages>" +
             "       </public-packages>" +
-            "       <javadoc/>" +
             "   </data></configuration>" +
             "</project>"
         );
@@ -181,10 +181,10 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             "   <type>org.netbeans.modules.apisupport.project</type>" +
             "   <configuration><data xmlns=\"http://www.netbeans.org/ns/nb-module-project/2\">" +
             "       <code-name-base>org.netbeans.modules.scripting.bsf</code-name-base>" +
+            "       <module-dependencies/>" +
             "       <public-packages>" +
             "           <subpackages>org.hello</subpackages>" +
             "       </public-packages>" +
-            "       <javadoc/>" +
             "   </data></configuration>" +
             "</project>"
         );
@@ -275,7 +275,7 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         // for me now, I leave it for the time when somebody really 
         // needs that...
         
-        List arr = new ArrayList();
+        List<String> arr = new ArrayList<String>();
         arr.add ("-f");
         arr.add (f.toString ());
         arr.addAll(Arrays.asList(args));
@@ -286,7 +286,7 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         
         try {
             sec.setActive(true);
-            org.apache.tools.ant.Main.main ((String[])arr.toArray (new String[0]));
+            org.apache.tools.ant.Main.main(arr.toArray(new String[0]));
         } catch (MySecExc ex) {
             assertNotNull ("The only one to throw security exception is MySecMan and should set exitCode", sec.exitCode);
             ExecutionError.assertExitCode (
@@ -318,19 +318,24 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
     }
     
     private static class MySecExc extends SecurityException {
+        @Override
         public void printStackTrace() {
         }
+        @Override
         public void printStackTrace(PrintStream ps) {
         }
+        @Override
         public void printStackTrace(PrintWriter ps) {
         }
     }
     
+    @SuppressWarnings("deprecation")
     private static class MySecMan extends SecurityManager {
         public Integer exitCode;
         
         private boolean active;
         
+        @Override
         public void checkExit (int status) {
             if (active) {
                 exitCode = new Integer (status);
@@ -338,9 +343,11 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             }
         }
 
+        @Override
         public void checkPermission(Permission perm, Object context) {
         }
 
+        @Override
         public void checkPermission(Permission perm) {
         /*
             if (perm instanceof RuntimePermission) {
@@ -351,84 +358,111 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
          */
         }
 
+        @Override
         public void checkMulticast(InetAddress maddr) {
         }
 
+        @Override
         public void checkAccess (ThreadGroup g) {
         }
 
+        @Override
         public void checkWrite (String file) {
         }
 
+        @Override
         public void checkLink (String lib) {
         }
 
+        @Override
         public void checkExec (String cmd) {
         }
 
+        @Override
         public void checkDelete (String file) {
         }
 
+        @Override
         public void checkPackageAccess (String pkg) {
         }
 
+        @Override
         public void checkPackageDefinition (String pkg) {
         }
 
+        @Override
         public void checkPropertyAccess (String key) {
         }
 
+        @Override
         public void checkRead (String file) {
         }
 
+        @Override
         public void checkSecurityAccess (String target) {
         }
 
+        @Override
         public void checkWrite(FileDescriptor fd) {
         }
 
+        @Override
         public void checkListen (int port) {
         }
 
+        @Override
         public void checkRead(FileDescriptor fd) {
         }
 
+        @Override
         public void checkMulticast(InetAddress maddr, byte ttl) {
         }
 
+        @Override
         public void checkAccess (Thread t) {
         }
 
+        @Override
         public void checkConnect (String host, int port, Object context) {
         }
 
+        @Override
         public void checkRead (String file, Object context) {
         }
 
+        @Override
         public void checkConnect (String host, int port) {
         }
 
+        @Override
         public void checkAccept (String host, int port) {
         }
 
+        @Override
         public void checkMemberAccess (Class clazz, int which) {
         }
 
+        @Override
         public void checkSystemClipboardAccess () {
         }
 
+        @Override
         public void checkSetFactory () {
         }
 
+        @Override
         public void checkCreateClassLoader () {
         }
 
+        @Override
         public void checkAwtEventQueueAccess () {
         }
 
+        @Override
         public void checkPrintJobAccess () {
         }
 
+        @Override
         public void checkPropertiesAccess () {
         }
 

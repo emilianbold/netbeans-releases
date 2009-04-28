@@ -43,6 +43,7 @@ import java.awt.BorderLayout;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.CancellationException;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
@@ -52,17 +53,17 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetReporter;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-public final class CreateHostVisualPanel2 extends JPanel {
+/*package*/ final class CreateHostVisualPanel2 extends JPanel {
 
     private final ChangeListener wizardListener;
 
@@ -242,12 +243,12 @@ public final class CreateHostVisualPanel2 extends JPanel {
     private Runnable runOnFinish = null;
 
     private ExecutionEnvironment getExecutionEnvironment() {
-        return ExecutionEnvironmentFactory.getExecutionEnvironment(getLoginName(), hostname, port);
+        return ExecutionEnvironmentFactory.createNew(getLoginName(), hostname, port);
     }
 
-    private void revalidateRecord(String password, boolean rememberPassword) {
+    private void revalidateRecord(final String password, final boolean rememberPassword) {
         final ExecutionEnvironment env = getExecutionEnvironment();
-        final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(env);
+        final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
         final boolean alreadyOnline = record.isOnline();
         enableButtons(false);
         if (alreadyOnline) {
@@ -256,8 +257,6 @@ public final class CreateHostVisualPanel2 extends JPanel {
             tpOutput.setText(message);
         } else {
             record.resetOfflineState(); // this is a do-over
-            RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(env, true);
-            userInfo.setPassword(password, rememberPassword);
             tpOutput.setText("");
         }
         phandle = ProgressHandleFactory.createHandle(""); ////NOI18N
@@ -272,7 +271,20 @@ public final class CreateHostVisualPanel2 extends JPanel {
                 if (!alreadyOnline) {
                     addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgConnectingTo",
                             env.getHost()));
-                    record.init(null);                    
+                }
+                try {
+                    if (password == null || password.length() == 0) {
+                        ConnectionManager.getInstance().connectTo(env);
+                    } else {
+                        ConnectionManager.getInstance().connectTo(env, password.toCharArray(), rememberPassword);
+                    }
+                } catch (IOException ex) {
+                    addOuputTextInUiThread(ex.getMessage());
+                } catch (CancellationException ex) {
+                    return;
+                }
+                if (!alreadyOnline) {
+                    record.init(null);
                 }
                 if (record.isOnline()) {
                     if (!alreadyOnline) {

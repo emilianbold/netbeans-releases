@@ -41,14 +41,36 @@ package org.netbeans.modules.cnd.debugger.gdb.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import org.netbeans.modules.cnd.debugger.gdb.DebuggerStartException;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 public final class DebugCoreAction implements ActionListener {
+    private JButton bOk;
+    private JButton bCancel;
+
     public void actionPerformed(ActionEvent e) {
-        SelectCorePanel panel = new SelectCorePanel();
+        bOk = new JButton (NbBundle.getMessage (DebugCoreAction.class, "CTL_Ok")); // NOI18N
+        bCancel = new JButton (NbBundle.getMessage (DebugCoreAction.class, "CTL_Cancel")); // NOI18N
+        bOk.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (DebugCoreAction.class, "ACSD_CTL_Ok")); // NOI18N
+        bCancel.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (DebugCoreAction.class, "ACSD_CTL_Cancel")); // NOI18N
+        SelectCorePanel panel = new SelectCorePanel(bOk);
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(DebugCoreAction.class, "SELECT_CORE_TITLE")); // NOI18N
-        DialogDisplayer.getDefault().notify(dd);
+        dd.setOptions (new JButton[] {
+            bOk, bCancel
+        });
+        if (DialogDisplayer.getDefault().notify(dd) == bOk) {
+            try {
+                GdbDebugger.debugCore(panel.getCorePath(), panel.getProjectInformation());
+            } catch (DebuggerStartException dse) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(DebugCoreAction.class,
+                       "ERR_UnexpectedDebugCoreFailure", panel.getCorePath()))); // NOI18N
+            }
+        }
     }
 }

@@ -293,7 +293,8 @@ public class BugzillaRepository extends Repository {
 
     @Override
     public Query[] getQueries() {
-        return getQueriesIntern().toArray(new Query[queries.size()]);
+        Set<Query> l = getQueriesIntern();
+        return l.toArray(new Query[l.size()]);
     }
 
     public IssueCache getIssueCache() {

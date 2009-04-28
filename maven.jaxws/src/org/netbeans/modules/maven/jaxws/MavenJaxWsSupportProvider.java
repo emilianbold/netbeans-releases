@@ -41,12 +41,24 @@ package org.netbeans.modules.maven.jaxws;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
+import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -54,16 +66,32 @@ import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
  */
 class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider {
 
-    private JAXWSLightSupport jaxWsSupport;
-    private PropertyChangeListener wsdlFolderListener;
-    private NbMavenProject mp;
+    private static final RequestProcessor METADATA_MODEL_RP =
+            new RequestProcessor("MavenJaxWsSupportProvider.WS_REQUEST_PROCESSOR"); //NOI18N
 
-    MavenJaxWsSupportProvider(Project prj, JAXWSLightSupport jaxWsSupport) {
+    private JAXWSLightSupport jaxWsSupport;
+    private PropertyChangeListener wsdlFolderListener, pcl;
+    private NbMavenProject mp;
+    private Project prj;
+
+    MavenJaxWsSupportProvider(final Project prj, final JAXWSLightSupport jaxWsSupport) {
+        this.prj = prj;
         this.jaxWsSupport = jaxWsSupport;
-        mp = prj.getLookup().lookup(NbMavenProject.class);
-        if (mp != null) {
-            registerWsdlListener(prj, mp);
-        }
+
+        METADATA_MODEL_RP.post(new Runnable() {
+
+            public void run() {
+                mp = prj.getLookup().lookup(NbMavenProject.class);
+                if (mp != null) {
+                    registerWsdlListener(prj, mp);
+                }
+                MetadataModel<WebservicesMetadata> wsModel = jaxWsSupport.getWebservicesMetadataModel();
+                if (wsModel != null) {
+                    registerAnnotationListener(wsModel);
+                }
+            }
+
+        });
     }
 
     public JAXWSLightSupport findJAXWSSupport() {
@@ -100,8 +128,197 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider {
         mp.addPropertyChangeListener(wsdlFolderListener);
     }
 
+    void registerAnnotationListener(final MetadataModel<WebservicesMetadata> wsModel) {
+        try {
+            wsModel.runReadActionWhenReady(new MetadataModelAction<WebservicesMetadata, Void>() {
+
+                public Void run(final WebservicesMetadata metadata) {
+                    Webservices webServices = metadata.getRoot();
+                    if (pcl != null) {
+                        webServices.removePropertyChangeListener(pcl);
+                    }
+                    pcl = new WebservicesChangeListener(jaxWsSupport, wsModel);
+                    webServices.addPropertyChangeListener(pcl);
+                    return null;
+                }
+            });
+        } catch (java.io.IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     void unregisterWsdlListener(NbMavenProject mp) {
         mp.removePropertyChangeListener(wsdlFolderListener);
+    }
+
+    void unregisterAnnotationListener() {
+        if (pcl != null) {
+            final MetadataModel<WebservicesMetadata> wsModel = jaxWsSupport.getWebservicesMetadataModel();
+            if (wsModel != null) {
+                try {
+                    wsModel.runReadActionWhenReady(new MetadataModelAction<WebservicesMetadata, Void>() {
+
+                        public Void run(final WebservicesMetadata metadata) {
+                            Webservices webServices = metadata.getRoot();
+                            webServices.removePropertyChangeListener(pcl);
+                            return null;
+                        }
+                    });
+                } catch (java.io.IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private class WebservicesChangeListener implements PropertyChangeListener {
+
+        private JAXWSLightSupport jaxWsSupport;
+
+        private MetadataModel<WebservicesMetadata> wsModel;
+
+        private RequestProcessor.Task updateJaxWsTask = METADATA_MODEL_RP.create(new Runnable() {
+
+            public void run() {
+                updateJaxWs();
+            }
+        });
+
+        WebservicesChangeListener(JAXWSLightSupport jaxWsSupport, MetadataModel<WebservicesMetadata> wsModel) {
+            this.jaxWsSupport = jaxWsSupport;
+            this.wsModel = wsModel;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            //requestModelUpdate();
+            updateJaxWsTask.schedule(1000);
+        }
+
+        private synchronized void updateJaxWs() {
+            try {
+                Map<String, ServiceInfo> newServices = wsModel.runReadAction(
+                        new MetadataModelAction<WebservicesMetadata, Map<String, ServiceInfo>>() {
+
+                    public Map<String, ServiceInfo> run(WebservicesMetadata metadata) {
+                        Map<String, ServiceInfo> result = new HashMap<String, ServiceInfo>();
+                        Webservices webServices = metadata.getRoot();
+                        for (WebserviceDescription wsDesc : webServices.getWebserviceDescription()) {
+                            PortComponent[] ports = wsDesc.getPortComponent();
+                            for (PortComponent port : ports) {
+                                // key = imlpementation class package name
+                                // value = service name
+                                QName portName = port.getWsdlPort();
+                                result.put(port.getDisplayName(),
+                                new ServiceInfo(
+                                        wsDesc.getWebserviceDescriptionName(),
+                                        (portName == null ? null : portName.getLocalPart()),
+                                        port.getDisplayName(),
+                                        wsDesc.getWsdlFile()));
+                            }
+
+                        }
+                        return result;
+                    }
+                });
+                List<JaxWsService> oldJaxWsServices = jaxWsSupport.getServices();
+                Map<String, JaxWsService> oldServices = new HashMap<String, JaxWsService>();
+
+                for (JaxWsService s : oldJaxWsServices) {
+                    // implementationClass -> Service
+                    if (s.isServiceProvider()) {
+                        oldServices.put(s.getImplementationClass(), s);
+                    }
+                }
+                // compare new services with existing
+                // looking for common services (implementationClass)
+                Set<String> commonServices = new HashSet<String>();
+                Set<String> keys1 = oldServices.keySet();
+                Set<String> keys2 = newServices.keySet();
+                for (String key : keys1) {
+                    if (keys2.contains(key)) {
+                        commonServices.add(key);
+                    }
+                }
+                for (String key : commonServices) {
+                    oldServices.remove(key);
+                    newServices.remove(key);
+                }
+
+                // remove old services
+                boolean needToSave = false;
+                for (String key : oldServices.keySet()) {
+                    jaxWsSupport.removeService(oldServices.get(key));
+                }
+                // add new services
+                for (String key : newServices.keySet()) {
+                    ServiceInfo serviceInfo = newServices.get(key);
+                    String wsdlLocation = serviceInfo.getWsdlLocation();
+                    JaxWsService service = new JaxWsService(serviceInfo.getServiceName(), key);
+                    if (wsdlLocation != null && wsdlLocation.length() > 0) {
+                        service.setWsdlLocation(wsdlLocation);
+                        if (wsdlLocation.startsWith("WEB-INF/wsdl/")) {
+                            service.setLocalWsdl(wsdlLocation.substring(13));
+                        } else if (wsdlLocation.startsWith("META-INF/wsdl/")) {
+                            service.setLocalWsdl(wsdlLocation.substring(14));
+                        } else {
+                            service.setLocalWsdl(wsdlLocation);
+                        }
+                        service.setWsdlUrl(WSUtils.getOriginalWsdlUrl(prj, jaxWsSupport, service.getLocalWsdl(), true));
+                    }
+                    service.setPortName(serviceInfo.getPortName());
+                    jaxWsSupport.addService(service);
+                }
+            } catch (java.io.IOException ioe) {
+                ioe.printStackTrace();
+            }
+
+        }
+    }
+
+    private class ServiceInfo {
+        private String serviceName;
+        private String portName;
+        private String implClass;
+        private String wsdlLocation;
+
+        public ServiceInfo(String serviceName, String portName, String implClass, String wsdlLocation) {
+            this.serviceName = serviceName;
+            this.portName = portName;
+            this.implClass = implClass;
+            this.wsdlLocation = wsdlLocation;
+        }
+
+        public String getImplClass() {
+            return implClass;
+        }
+
+        public void setImplClass(String implClass) {
+            this.implClass = implClass;
+        }
+
+        public String getPortName() {
+            return portName;
+        }
+
+        public void setPortName(String portName) {
+            this.portName = portName;
+        }
+
+        public String getServiceName() {
+            return serviceName;
+        }
+
+        public void setServiceName(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        public String getWsdlLocation() {
+            return wsdlLocation;
+        }
+
+        public void setWsdlLocation(String wsdlLocation) {
+            this.wsdlLocation = wsdlLocation;
+        }
     }
 
 }

@@ -60,25 +60,38 @@ import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 
 public final class H2DataStorage extends SQLDataStorage implements StackDataStorage {
 
-    private static final String SQL_QUERY_DELIMETER = ";";
+    private static final String SQL_QUERY_DELIMETER = ";"; // NOI18N
     private static final Logger logger = DLightLogger.getLogger(H2DataStorage.class);
     private static boolean driverLoaded = false;
     private static final AtomicInteger dbIndex = new AtomicInteger();
     private SQLStackStorage stackStorage;
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
-    private static final String url = "jdbc:h2:/tmp/dlight";
+    private static final String tmpDir;
+    private static final String url;
+    private String dbURL;
 
 
     static {
         try {
-            Class driver = Class.forName("org.h2.Driver");
-            logger.info("Driver for H2DB (" + driver.getName() + ") Loaded ");
+            Class driver = Class.forName("org.h2.Driver"); // NOI18N
+            logger.info("Driver for H2DB (" + driver.getName() + ") Loaded "); // NOI18N
         } catch (ClassNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
+
+        HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+        String tempDir = hi.getTempDir();
+        url = "jdbc:h2:" + tempDir + "/dlight"; // NOI18N
+        tmpDir = hi.getOSFamily() == HostInfo.OSFamily.WINDOWS
+                ? WindowsSupport.getInstance().convertoToWindowsPath(tempDir)
+                : tempDir;
     }
 
     private void initStorageTypes() {
@@ -93,6 +106,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
 
     private H2DataStorage(String url) throws SQLException {
         super(url);
+        dbURL = url;
         try {
             initStorageTypes();
             stackStorage = new SQLStackStorage(this);
@@ -102,17 +116,16 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
             logger.log(Level.SEVERE, null, ex);
         }
     }
-
     // FIXUP: deleting /tmp/dlight*
 
 
     static {
-        File tmpDir = new File("/tmp");
-        if (tmpDir.exists()) {
-            File[] files = tmpDir.listFiles(new FilenameFilter() {
+        File tmpDirFile = new File(tmpDir); // NOI18N
+        if (tmpDirFile.exists()) {
+            File[] files = tmpDirFile.listFiles(new FilenameFilter() {
 
                 public boolean accept(File dir, String name) {
-                    return name.startsWith("dlight");
+                    return name.startsWith("dlight"); // NOI18N
                 }
             });
             int newValue = 0;
@@ -127,6 +140,25 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
                 dbIndex.set(newValue);
             }
         }
+    }
+
+    @Override
+    public boolean shutdown() {
+        boolean result = stackStorage.shutdown() && super.shutdown();
+        final String filesToDelete = dbURL.substring(dbURL.lastIndexOf("/") + 1);//NOI18N
+        File tmpDirFile = new File(tmpDir); // NOI18N
+        if (tmpDirFile.exists()) {
+            File[] files = tmpDirFile.listFiles(new FilenameFilter() {
+
+                public boolean accept(File dir, String name) {
+                    return name.startsWith(filesToDelete); // NOI18N
+                }
+            });
+            for (int i = 0; i < files.length; i++) {
+                result &= files[i].delete();
+            }
+        }
+        return result;
     }
 
     @Override
@@ -149,7 +181,7 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
 
     @Override
     protected void connect(String dburl) throws SQLException {
-        connection = DriverManager.getConnection(dburl, "admin", "");
+        connection = DriverManager.getConnection(dburl, "admin", ""); // NOI18N
     }
 
     public int putStack(List<CharSequence> stack, long sampleDuration) {

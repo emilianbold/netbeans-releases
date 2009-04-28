@@ -69,6 +69,7 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
 //        suite.addTest(new JavadocCompletionUtilsTest("testIsLineBreak"));
 //        suite.addTest(new JavadocCompletionUtilsTest("testIsLineBreak2"));
 //        suite.addTest(new JavadocCompletionUtilsTest("testIsWhiteSpace"));
+//        suite.addTest(new JavadocCompletionUtilsTest("testIsInvalidDocInstance"));
         return suite;
     }
     
@@ -546,6 +547,12 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
                 "\n" +
                 "     */\n" +
                 "    int f8;\n" +
+                "    /**  **/\n" +
+                "    int f9_issue_139147;\n" +
+                "    /**  ***/\n" +
+                "    int f10_issue_139147;\n" +
+                "    /**  * */\n" +
+                "    int f11_issue_139147;\n" +
                 "}\n";
         prepareTest(code);
 
@@ -569,6 +576,12 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         doIsTokenOfEmptyJavadoc(7, false);
         doIsInvalidJavadoc(8, null, null, null, false);
         doIsTokenOfEmptyJavadoc(8, false);
+        doIsInvalidJavadoc(9, null, null, null, false);
+        doIsTokenOfEmptyJavadoc(9, true);
+        doIsInvalidJavadoc(10, null, null, null, false);
+        doIsTokenOfEmptyJavadoc(10, true);
+        doIsInvalidJavadoc(11, null, null, null, false);
+        doIsTokenOfEmptyJavadoc(11, false);
     }
 
     private void doIsInvalidJavadoc(int fieldIndex, Element fieldEl, Doc jdoc, TokenSequence<JavadocTokenId> jdts, boolean isInvalid) {

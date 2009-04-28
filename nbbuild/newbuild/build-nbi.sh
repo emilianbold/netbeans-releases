@@ -68,16 +68,20 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
+tail -f $MAC_LOG_NEW &
+TAIL_PID=$!
+
 set +x
 RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
 #Wait for the end of native mac build
-while [ $RUNNING_JOBS_COUNT -ge 1 ]; do
+while [ $RUNNING_JOBS_COUNT -ge 2 ]; do
     #1 or more jobs
     sleep 10
     jobs > /dev/null
     RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
 done
 set -x
+kill -s 9 $TAIL_PID
 
 if [ -d $DIST/ml ]; then
     mv $OUTPUT_DIR/ml/* $DIST/ml
@@ -136,7 +140,7 @@ fi
 
 if [ $ML_BUILD == 1 ]; then
     cd $DIST/ml
-    bash ${SCRIPTS_DIR}/files-info.sh bundles zip
+    bash ${SCRIPTS_DIR}/files-info.sh bundles zip zip/moduleclusters
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"

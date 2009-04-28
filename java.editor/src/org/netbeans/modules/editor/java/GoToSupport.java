@@ -679,7 +679,7 @@ public class GoToSupport {
             Element enclosing = e.getEnclosingElement();
             
             if (enclosing == SourceUtils.getEnclosingTypeElement(e)) {
-                result.append(e.getQualifiedName());
+                result.append(((TypeElement) enclosing).getQualifiedName());
                 result.append('.');
                 boldStartCheck(highlightName);
                 result.append(e.getSimpleName());

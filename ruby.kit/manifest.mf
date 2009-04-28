@@ -2,4 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.ruby.kit/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/ruby/kit/Bundle.properties
 OpenIDE-Module-Specification-Version: 0.105
+OpenIDE-Module-Recommends: org.netbeans.modules.web.client.tools.kit
 

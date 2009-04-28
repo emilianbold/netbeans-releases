@@ -1,6 +1,6 @@
 #!/bin/sh
 PATH=/bin:/usr/bin:${PATH}
-PROG=`basename $0`
+PROG=`basename '$0'`
 USAGE="usage: ${PROG} -p pidfile -e envfile [-w work dir] [-x prompt] ..."
 PROMPT=NO
 
@@ -42,10 +42,10 @@ fi
 STATUS=-1
 
 if [ -r ${ENVFILE} ]; then
-  /bin/sh -c "echo \$\$>${PIDFILE} && . ${ENVFILE} && cd ${WDIR} && exec $@"
+  /bin/sh -c "echo \$\$>${PIDFILE} && . ${ENVFILE} && cd '${WDIR}' && exec $@"
   STATUS=$?
 else
-  /bin/sh -c "echo \$\$>${PIDFILE} && cd ${WDIR} && exec $@"
+  /bin/sh -c "echo \$\$>${PIDFILE} && cd '${WDIR}' && exec $@"
   STATUS=$?
 fi
 

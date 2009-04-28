@@ -342,7 +342,9 @@ public final class AntBuildExtender {
     private void readProjectMetadata() {
         AuxiliaryConfiguration config = ProjectUtils.getAuxiliaryConfiguration(implementation.getOwningProject());
         Element cfgEl = config.getConfigurationFragment(AntBuildExtenderAccessor.ELEMENT_ROOT, AntBuildExtenderAccessor.AUX_NAMESPACE, true);
-        FileObject nbproj = implementation.getOwningProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH).getParent();
+        FileObject projectXMLFO = implementation.getOwningProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+        assert projectXMLFO != null : "Missing project.xml for project " + implementation.getOwningProject();
+        FileObject nbproj = projectXMLFO.getParent();
         extensions = new HashMap<String, Extension>();
         if (cfgEl != null) {
             String namespace = cfgEl.getNamespaceURI();

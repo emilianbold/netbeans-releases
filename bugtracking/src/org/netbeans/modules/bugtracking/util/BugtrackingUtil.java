@@ -85,6 +85,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -216,8 +217,10 @@ public class BugtrackingUtil {
         JPanel panel = new JPanel();
         BoxLayout layout = new BoxLayout(panel, BoxLayout.PAGE_AXIS);
         panel.setLayout(layout);
-        JLabel label = new JLabel(message);
+        JLabel label = new JLabel();
+        Mnemonics.setLocalizedText(label, message);
         panel.add(label);
+        label.setLabelFor(bar.getCommand());
         LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
         int gap = layoutStyle.getPreferredGap(label, bar, LayoutStyle.RELATED, SwingConstants.SOUTH, panel);
         panel.add(Box.createVerticalStrut(gap));
@@ -233,10 +236,12 @@ public class BugtrackingUtil {
                 layoutStyle.getContainerGap(panel, SwingConstants.WEST, null),
                 0,
                 layoutStyle.getContainerGap(panel, SwingConstants.EAST, null)));
+        panel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_IssueSelector"));
         Issue issue = null;
-
         JButton ok = new JButton(bundle.getString("LBL_Select")); // NOI18N
+        ok.getAccessibleContext().setAccessibleDescription(ok.getText());
         JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
+        cancel.getAccessibleContext().setAccessibleDescription(cancel.getText());
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
                 bundle.getString("LBL_Issues"), // NOI18N
@@ -445,16 +450,13 @@ public class BugtrackingUtil {
     }
 
     public static void logQueryEvent(String connector, String name, int count, boolean isKenai, boolean isAutoRefresh) {
-        if(name == null) {
-            name = "Find Issues"; // NOI18N
-        } else {
-            name = getMD5(name);
-}
+        name = obfuscateQueryName(name);
         logBugtrackingEvents(USG_BUGTRACKING_QUERY, new Object[] {connector, name, count, isKenai, isAutoRefresh} );
     }
 
-    public static void logAutoRefreshEvent(String connector, boolean on) {
-        logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, on} );
+    public static void logAutoRefreshEvent(String connector, String queryName, boolean isKenai, boolean on) {
+        queryName = obfuscateQueryName(queryName);
+        logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, queryName, isKenai, on} );
     }
 
     /**
@@ -464,18 +466,10 @@ public class BugtrackingUtil {
      * @param parameters - the parameters for the given event
      */
     private static void logBugtrackingEvents(String key, Object[] parameters) {
-//        System.out.println("------------------------");
-//        System.out.println(key);
-//        for (Object object : parameters) {
-//            System.out.println(object);
-//        }
-//        System.out.println("------------------------");
-
-        // XXX activate me
-//        LogRecord rec = new LogRecord(Level.INFO, key);
-//        rec.setParameters(parameters);
-//        rec.setLoggerName(METRICS_LOG.getName());
-//        METRICS_LOG.log(rec);
+        LogRecord rec = new LogRecord(Level.INFO, key);
+        rec.setParameters(parameters);
+        rec.setLoggerName(METRICS_LOG.getName());
+        METRICS_LOG.log(rec);
     }
 
     private static String getMD5(String name) {
@@ -497,6 +491,15 @@ public class BugtrackingUtil {
             ret.append(hex);
         }
         return ret.toString();
+    }
+
+    private static String obfuscateQueryName(String name) {
+        if (name == null) {
+            name = "Find Issues"; // NOI18N
+        } else {
+            name = getMD5(name);
+        }
+        return name;
     }
     
 }
