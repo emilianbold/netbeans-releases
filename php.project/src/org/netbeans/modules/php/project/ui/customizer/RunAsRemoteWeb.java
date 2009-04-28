@@ -299,7 +299,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         // #141849 - can be null if one adds remote config for the first time for a project but already has some remote connection
         DefaultComboBoxModel model = (DefaultComboBoxModel) remoteConnectionComboBox.getModel();
         if (remoteConnection == null
-                && model.getIndexOf(NO_REMOTE_CONFIGURATION) != -1) {
+                && model.getIndexOf(NO_REMOTE_CONFIGURATION) >= 0) {
             remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONFIGURATION);
             return;
         }
@@ -318,6 +318,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         // remote connection is missing (probably removed?)
         remoteConnectionComboBox.addItem(MISSING_REMOTE_CONFIGURATION);
         remoteConnectionComboBox.setSelectedItem(MISSING_REMOTE_CONFIGURATION);
+        // # 162230
+        model.removeElement(NO_REMOTE_CONFIGURATION);
     }
 
     void updateRemoteConnectionHint() {
