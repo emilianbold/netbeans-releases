@@ -62,7 +62,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /*package*/ final class CreateHostVisualPanel2 extends JPanel {
 
@@ -134,7 +133,6 @@ import org.openide.util.RequestProcessor;
         jLabel2 = new javax.swing.JLabel();
         textPassword = new javax.swing.JPasswordField();
         cbSavePassword = new javax.swing.JCheckBox();
-        btConnect = new javax.swing.JButton();
         pbarStatusPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tpOutput = new javax.swing.JTextPane();
@@ -152,13 +150,6 @@ import org.openide.util.RequestProcessor;
         textPassword.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.textPassword.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbSavePassword, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.cbSavePassword.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(btConnect, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.btConnect.text")); // NOI18N
-        btConnect.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btConnectActionPerformed(evt);
-            }
-        });
 
         pbarStatusPanel.setMaximumSize(new java.awt.Dimension(2147483647, 10));
         pbarStatusPanel.setMinimumSize(new java.awt.Dimension(100, 10));
@@ -178,22 +169,22 @@ import org.openide.util.RequestProcessor;
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
+                        .addContainerGap())
                     .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 514, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, cbSavePassword)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                .add(layout.createSequentialGroup()
-                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                        .add(jLabel2)
-                                        .add(jLabel1))
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                        .add(textPassword)
-                                        .add(textLoginName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 204, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                                .add(btConnect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 132, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE))
-                        .addContainerGap())
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(jLabel2)
+                                    .add(jLabel1))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                    .add(textPassword)
+                                    .add(textLoginName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 204, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                        .addContainerGap(237, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
                         .addContainerGap())))
@@ -212,23 +203,13 @@ import org.openide.util.RequestProcessor;
                     .add(textPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbSavePassword)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(btConnect)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 208, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(18, 18, 18)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 232, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(25, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void btConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btConnectActionPerformed
-        revalidateRecord(getPassword(), cbSavePassword.isSelected());
-    }//GEN-LAST:event_btConnectActionPerformed
-
-    private void enableButtons(boolean enable) {
-        btConnect.setEnabled(enable);
-    }
 
     private ProgressHandle phandle;
     
@@ -247,11 +228,22 @@ import org.openide.util.RequestProcessor;
         return ExecutionEnvironmentFactory.createNew(getLoginName(), hostname, port);
     }
 
-    private void revalidateRecord(final String password, final boolean rememberPassword) {
+    public void enableControls(boolean enable) {
+        textPassword.setEnabled(enable);
+        textLoginName.setEnabled(enable);
+        cbSavePassword.setEnabled(enable);
+    }
+
+    public boolean canValidateHost() {
+        return true;
+    }
+
+    public void validateHost() {
+        final String password = getPassword();
+        final boolean rememberPassword = cbSavePassword.isSelected();
         final ExecutionEnvironment env = getExecutionEnvironment();
         final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
         final boolean alreadyOnline = record.isOnline();
-        enableButtons(false);
         if (alreadyOnline) {
             String message = NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected1");
             message = String.format(message, env.toString());
@@ -266,75 +258,70 @@ import org.openide.util.RequestProcessor;
         pbarStatusPanel.validate();
         phandle.start();        
         // move expensive operation out of EDT
-        RequestProcessor.getDefault().post(new Runnable() {
 
+        if (!alreadyOnline) {
+            addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgConnectingTo",
+                    env.getHost()));
+        }
+        try {
+            if (password == null || password.length() == 0) {
+                ConnectionManager.getInstance().connectTo(env);
+            } else {
+                ConnectionManager.getInstance().connectTo(env, password.toCharArray(), rememberPassword);
+            }
+        } catch (IOException ex) {
+            addOuputTextInUiThread("\n" + RemoteCommandSupport.getMessage(ex)); //NOI18N
+            phandle.finish();
+            return;
+        } catch (CancellationException ex) {
+            phandle.finish();
+            return;
+        }
+        if (!alreadyOnline) {
+            record.init(null);
+        }
+        if (record.isOnline()) {
+            if (!alreadyOnline) {
+                addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
+            }
+            CompilerSetReporter.setWriter(new Writer() {
+
+                @Override
+                public void write(char[] cbuf, int off, int len) throws IOException {
+                    final String value = new String(cbuf, off, len);
+                    addOuputTextInUiThread(value);
+                }
+
+                @Override
+                public void flush() throws IOException {
+                }
+
+                @Override
+                public void close() throws IOException {
+                }
+            });
+            final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env);
+           csm.initialize(false, false);
+            runOnFinish = new Runnable() {
+                public void run() {
+                    csm.finishInitialization();
+                }
+            };
+            hostFound = csm.getExecutionEnvironment(); //TODO: no validations, pure cheat
+            wizardListener.stateChanged(null);
+        } else {
+            addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.ErrConn")
+                    + '\n' + record.getReason()); //NOI18N
+        }
+        phandle.finish();
+        CompilerSetReporter.setWriter(null);
+        // back to EDT to work with Swing
+        SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (!alreadyOnline) {
-                    addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgConnectingTo",
-                            env.getHost()));
+                pbarStatusPanel.setVisible(false);
+                if (alreadyOnline) {
+                    addOuputTextInUiThread('\n' + NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected2"));
                 }
-                try {
-                    if (password == null || password.length() == 0) {
-                        ConnectionManager.getInstance().connectTo(env);
-                    } else {
-                        ConnectionManager.getInstance().connectTo(env, password.toCharArray(), rememberPassword);
-                    }
-                } catch (IOException ex) {
-                    addOuputTextInUiThread("\n" + RemoteCommandSupport.getMessage(ex)); //NOI18N
-                    phandle.finish();
-                    return;
-                } catch (CancellationException ex) {
-                    phandle.finish();
-                    return;
-                }
-                if (!alreadyOnline) {
-                    record.init(null);
-                }
-                if (record.isOnline()) {
-                    if (!alreadyOnline) {
-                        addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
-                    }
-                    CompilerSetReporter.setWriter(new Writer() {
-
-                        @Override
-                        public void write(char[] cbuf, int off, int len) throws IOException {
-                            final String value = new String(cbuf, off, len);
-                            addOuputTextInUiThread(value);
-                        }
-
-                        @Override
-                        public void flush() throws IOException {
-                        }
-
-                        @Override
-                        public void close() throws IOException {
-                        }
-                    });
-                    final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env);
-                   csm.initialize(false, false);
-                    runOnFinish = new Runnable() {
-                        public void run() {
-                            csm.finishInitialization();
-                        }
-                    };
-                    hostFound = csm.getExecutionEnvironment(); //TODO: no validations, pure cheat
-                    wizardListener.stateChanged(null);
-                } else {
-                    addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.ErrConn")
-                            + '\n' + record.getReason()); //NOI18N
-                }
-                phandle.finish();
-                CompilerSetReporter.setWriter(null);
-                // back to EDT to work with Swing
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        pbarStatusPanel.setVisible(false);
-                        enableButtons(true);
-                        if (alreadyOnline) {
-                            addOuputTextInUiThread('\n' + NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected2"));
-                        }
-                    }
-                });
             }
         });
     }
@@ -359,7 +346,6 @@ import org.openide.util.RequestProcessor;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btConnect;
     private javax.swing.JCheckBox cbSavePassword;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
