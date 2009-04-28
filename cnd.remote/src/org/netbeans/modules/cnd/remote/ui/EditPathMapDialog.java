@@ -203,7 +203,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 int row = tblPathMappings.getSelectedRow();
                 row = (row < 0) ? 0: row;
                 DefaultTableModel model = (DefaultTableModel) tblPathMappings.getModel();
-                model.insertRow(row, new Object[] {"", ""});
+                model.insertRow(row, new Object[] {"", ""}); // NOI18N
             }
         };
 
