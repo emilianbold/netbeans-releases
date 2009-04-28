@@ -278,9 +278,9 @@ public class StreamTerm extends Term {
     public void connect(OutputStream pin, InputStream pout, InputStream perr) {
 
         if (pout_reader != null)
-            throw new IllegalStateException("Cannot call connect() twice");
+            throw new IllegalStateException("Cannot call connect() twice"); //NOI18N
         if (pipe != null)
-            throw new IllegalStateException("Cannot call connect() after getIn()");
+            throw new IllegalStateException("Cannot call connect() after getIn()"); //NOI18N
 
         // Now that we have a stream force resize notifications to be sent out.
         updateTtySize();
@@ -381,7 +381,7 @@ public class StreamTerm extends Term {
      */
     public Reader getIn() {
         if (pout_reader != null)
-            throw new IllegalStateException("Cannot call getIn() after connect()");
+            throw new IllegalStateException("Cannot call getIn() after connect()"); //NOI18N
         if (pipe == null) {
             try {
                 pipe = new Pipe(this);

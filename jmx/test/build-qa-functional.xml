@@ -45,10 +45,16 @@ made subject to such option by the copyright holder.
 
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
-    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <!-- <import file="../../xtest/lib/templates/xtest-qa-functional.xml"/> -->
 
     <!-- Adds property to IDE command line: suppress scanning of classpath -->
     <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.javacore.noscan=false"/>
+
+    <path id="jemmy.and.jelly.path">
+        <pathelement location="../../nbbuild/netbeans/nb6.7/modules/org-netbeans-modules-jellytools.jar"/>
+        <pathelement location="../../nbbuild/netbeans/harness/modules/org-netbeans-modules-jellytools-platform.jar"/>
+        <pathelement location="../../nbbuild/netbeans/harness/modules/ext/jemmy-2.3.0.0.jar"/>
+    </path>
 
     <!-- Creates an empty Java project in IDE -->
     <!-- <property name="xtest.ide.create.project" value="true"/> -->
@@ -60,7 +66,7 @@ made subject to such option by the copyright holder.
     <!-- ========= -->
 
     <!-- You can override default qa-functional-compiler if you need something special -->
-         <!--
+         
     <target name="qa-functional-compiler">
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
             <classpath>
@@ -69,14 +75,14 @@ made subject to such option by the copyright holder.
             </classpath>
         </buildTests>
     </target>
-    -->
+    
     
     <!-- ========= -->
     <!-- Executors -->
     <!-- ========= -->
     
     <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
-         If you need to customize it, you can uncomment the following and override it.
+         If you need to customize it, you can uncomment the following and override it. -->
     <target name="runidetest">        
         <executeTests  pluginName="ide">
             <classpath>
@@ -84,7 +90,7 @@ made subject to such option by the copyright holder.
             </classpath>
         </executeTests>
     </target>
-    -->
+    
     
 </project>
 
