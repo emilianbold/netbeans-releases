@@ -47,7 +47,6 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -65,7 +64,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -129,12 +127,22 @@ public class KenaiSearchPanel extends JPanel {
         }
 
     }
-    
+
+    /**
+     * Returns project selected in search project dialog
+     *
+     * @return selected KenaiProject or null if no project selected or dialog canceled
+     */
     public KenaiProject getSelectedProject() {
         KenaiProjectSearchInfo searchInfo = (KenaiProjectSearchInfo) kenaiProjectsList.getSelectedValue();
         return (searchInfo != null) ? searchInfo.kenaiProject : null;
     }
 
+    public KenaiProjectSearchInfo getSelectedProjectSearchInfo() {
+        KenaiProjectSearchInfo searchInfo = (KenaiProjectSearchInfo) kenaiProjectsList.getSelectedValue();
+        return (searchInfo != null) ? searchInfo : null;
+    }
+    
     /**
      * Returns projects selected in search project dialog
      *
