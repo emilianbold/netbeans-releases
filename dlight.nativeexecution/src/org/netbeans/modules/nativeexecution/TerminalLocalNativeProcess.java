@@ -95,9 +95,9 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         this.terminal = terminal;
         this.processOutput = new ByteArrayInputStream(
                 (loc("TerminalLocalNativeProcess.ProcessStarted.text") + '\n').getBytes()); // NOI18N
-        
-        isWindows = hostInfo.getOSFamily() == OSFamily.WINDOWS;
-        isMacOS = hostInfo.getOSFamily() == OSFamily.MACOSX;
+
+        isWindows = hostInfo != null && hostInfo.getOSFamily() == OSFamily.WINDOWS;
+        isMacOS = hostInfo != null && hostInfo.getOSFamily() == OSFamily.MACOSX;
 
     }
 

@@ -1600,7 +1600,11 @@ abstract public class CsmCompletionQuery {
 
                 case CsmCompletionExpression.TYPE:
                     if (findType) {
-                        lastType = getPredefinedType(item);
+                        if (item.getParameterCount() > 0) {
+                            lastType = resolveType(item.getParameter(0));
+                        } else {
+                            lastType = getPredefinedType(item);
+                        }
                     }
                     if (!findType || lastType == null) {
                         // this is the case of code completion on parameter or unresolved predefined type

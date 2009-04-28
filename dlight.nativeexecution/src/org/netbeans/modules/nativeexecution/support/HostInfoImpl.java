@@ -46,8 +46,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -64,6 +68,7 @@ public class HostInfoImpl implements HostInfo {
 
     private static final File hostinfoScript;
     private static final java.util.logging.Logger log = Logger.getInstance();
+    private static final String UNKNOWN = "UNKNOWN"; // NOI18N
 
 
     static {
@@ -84,24 +89,23 @@ public class HostInfoImpl implements HostInfo {
     private HostInfoImpl() {
     }
 
-    public static HostInfoImpl getHostInfo(ExecutionEnvironment execEnv) {
+    public static HostInfoImpl getHostInfo(ExecutionEnvironment execEnv) throws IOException {
         HostInfoImpl hi = new HostInfoImpl();
         Properties props;
 
         if (hostinfoScript == null) {
-            log.severe("Unable to find hostinfo.sh script!"); // NOI18N
-            props = new Properties();
-        } else {
-            props = execEnv.isLocal()
-                    ? getLocalHostInfo() : getRemoteHostInfo(execEnv);
+            throw new IOException("Unable to find hostinfo.sh script!"); // NOI18N
         }
 
+        props = execEnv.isLocal()
+                ? getLocalHostInfo() : getRemoteHostInfo(execEnv);
+
         hi.init(props);
-        
+
         return hi;
     }
 
-    private static Properties getLocalHostInfo() {
+    private static Properties getLocalHostInfo() throws IOException {
         Properties hostInfo = new Properties();
 
         try {
@@ -125,26 +129,46 @@ public class HostInfoImpl implements HostInfo {
 
             Process hostinfoProcess = pb.start();
 
+            // In case of some error goes to stderr, waitFor() will not exit
+            // until error stream is read/closed. (at least on Windows)
+            // So this case sould be handled.
+
+            // We safely can do this in the same thread (in this exact case)
+            List<String> errorLines = new ArrayList();
+            InputStream err = hostinfoProcess.getErrorStream();
+
+            if (err != null) {
+                BufferedReader errReader = new BufferedReader(new InputStreamReader(err));
+                while (true) {
+                    String line = errReader.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    errorLines.add(line);
+                }
+            }
+
             int result = hostinfoProcess.waitFor();
 
-            if (result == 0) {
-                hostInfo.load(hostinfoProcess.getInputStream());
-                if (Utilities.isWindows()) {
-                    hostInfo.setProperty("SH", shell); // NOI18N
-                }
-            } else {
-                log.fine(hostinfoScript + " rc == " + result); // NOI18N
+            if (result != 0) {
+                log.log(Level.INFO, "stderr:", errorLines.toArray(new String[0])); // NOI18N
+                throw new IOException(hostinfoScript + " rc == " + result); // NOI18N
+            }
+
+            hostInfo.load(hostinfoProcess.getInputStream());
+
+            if (Utilities.isWindows()) {
+                hostInfo.setProperty("SH", shell); // NOI18N
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-        } catch (IOException ex) {
-            log.fine("Exception while receiving HostInfo for localhost: " + ex); // NOI18N
+            throw new IOException("HostInfo receiving for localhost interrupted " + ex); // NOI18N
         }
 
         return hostInfo;
     }
 
-    private static Properties getRemoteHostInfo(final ExecutionEnvironment execEnv) {
+    private static Properties getRemoteHostInfo(final ExecutionEnvironment execEnv) throws IOException {
         Properties hostInfo = new Properties();
         OutputStream hiOutputStream = null;
         InputStream hiInputStream = null;
@@ -179,10 +203,8 @@ public class HostInfoImpl implements HostInfo {
                 scriptReader.close();
                 hostInfo.load(hiInputStream);
             }
-        } catch (IOException ex) {
-            log.fine("Exception while receiving HostInfo for " + execEnv.toString() + ": " + ex); // NOI18N
         } catch (JSchException ex) {
-            log.fine("Exception while receiving HostInfo for " + execEnv.toString() + ": " + ex); // NOI18N
+            throw new IOException("Exception while receiving HostInfo for " + execEnv.toString() + ": " + ex); // NOI18N
         } finally {
             try {
                 if (hiOutputStream != null) {
@@ -200,7 +222,6 @@ public class HostInfoImpl implements HostInfo {
 
         return hostInfo;
     }
-    private static final String UNKNOWN = "UNKNOWN"; // NOI18N
 
     private void init(Properties props) {
         OSImpl _os = new OSImpl();

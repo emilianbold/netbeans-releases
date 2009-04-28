@@ -62,7 +62,9 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
@@ -491,8 +493,16 @@ abstract public class CsmCompletion {
             if(_const) {
                 sb.append("const "); // NOI18N
             }
-            sb.append(useFullName ? getClassifier().getQualifiedName()
-                    : getClassifier().getName());
+            if (false && this.isInstantiation()) {
+                sb.append(CsmInstantiationProvider.getDefault().getInstantiatedText(this));
+            } else {
+                CsmClassifier classifier = getClassifier();
+                if (false && CsmKindUtilities.isTemplate(classifier)) {
+                    sb.append(CsmInstantiationProvider.getDefault().getTemplateSignature(((CsmTemplate)classifier)));
+                } else {
+                    sb.append(classifier.getQualifiedName());
+                }
+            }
             int pd = pointerDepth;
             while (pd > 0) {
                 sb.append("*"); // NOI18N

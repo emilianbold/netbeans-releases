@@ -95,6 +95,16 @@ public class ErprintSession {
         }
     }
 
+    public ThreadsStatistic getThreadsStatistic(int timeout, boolean restart) throws IOException {
+        final Erprint erp = restartAndLock(restart);
+        try {
+            return erp.getThreadsStatistics();
+        } finally {
+            erp.releaseLock();
+        }
+    }
+
+
     public LeaksStatistics getExperimentLeaks(boolean restart) throws IOException {
         final Erprint erp = restartAndLock(restart);
         try {
