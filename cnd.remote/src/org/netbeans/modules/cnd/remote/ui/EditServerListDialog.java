@@ -221,6 +221,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btPathMapper.setEnabled(enable);
         btSetAsDefault.setEnabled(enable);
         btRetry.setEnabled(enable);
+        btProperties.setEnabled(enable);
     }
 
     /** Helps the AddServerDialog know when to enable/disable the OK button */

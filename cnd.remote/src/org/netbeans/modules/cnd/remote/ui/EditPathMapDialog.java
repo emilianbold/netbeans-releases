@@ -1,29 +1,72 @@
 /*
- * EditPathMapDialog.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on 14 Июль 2008 г., 16:11
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.remote.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.AbstractCellEditor;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -107,7 +150,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
         tblPathMappings.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         tblPathMappings.getTableHeader().setPreferredSize(new Dimension(0, 20));
-
+//        JTextField tmp = new JTextField();
+//        tblPathMappings.setRowHeight(tmp.getPreferredSize().height);
         cbHostsList.setSelectedItem(currentHost);
 
         String explanationText;
@@ -173,6 +217,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
     private void updatePathMappingsTable(DefaultTableModel tableModel) {
         tblPathMappings.setModel(tableModel);
+        tblPathMappings.getColumnModel().getColumn(0).setCellEditor(new PathCellEditor());
         setColumnNames();
     }
 
@@ -428,4 +473,52 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
         }
         return sb.toString();
     }
+
+    private static class PathCellEditor extends AbstractCellEditor 
+            implements TableCellEditor, ActionListener {
+
+        private final JPanel panel;
+        private final JTextField tfPath;
+        private final JButton btnBrowse;
+
+        public PathCellEditor() {
+            tfPath = new JTextField();
+            btnBrowse = new JButton(NbBundle.getMessage(EditPathMapDialog.class, "BTN_Browse"));
+            panel = new JPanel();
+            //panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+            panel.setLayout(new BorderLayout());
+            
+            tfPath.setBorder(BorderFactory.createEmptyBorder());//  getInsets() setInsets(new Insets(0, 0, 0, 0));
+            //btnBrowse.setMaximumSize(btnBrowse.getMinimumSize());
+            btnBrowse.setBorder(BorderFactory.createLineBorder(Color.gray));
+
+            panel.add(tfPath, BorderLayout.CENTER);
+            panel.add(btnBrowse, BorderLayout.EAST);
+            btnBrowse.addActionListener(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            File file = new File(tfPath.getText());
+            JFileChooser fc = new JFileChooser(file);
+            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            fc.setApproveButtonText(NbBundle.getMessage(EditPathMapDialog.class, "BTN_Choose"));
+            fc.setDialogTitle(NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title"));
+            fc.setApproveButtonMnemonic(KeyEvent.VK_ENTER);
+            if (fc.showOpenDialog(panel) == JFileChooser.APPROVE_OPTION) {
+                tfPath.setText(fc.getSelectedFile().getAbsolutePath());
+            }
+        }
+
+        public Object getCellEditorValue() {
+            return tfPath.getText().trim();
+        }
+
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            tfPath.setText((String) value);
+            return panel;
+        }
+    }
+
 }
