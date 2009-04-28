@@ -63,9 +63,6 @@ final class ChildrenArray extends NodeAdapter {
 
     private Map<Info, Collection<Node>> map;
 
-    /** the reference that points to us */
-    private Reference<ChildrenArray> ref;
-
     private static final Logger LOG_NODES_FOR = Logger.getLogger(
             "org.openide.nodes.ChildrenArray.nodesFor"); // NOI18N
 
@@ -75,18 +72,6 @@ final class ChildrenArray extends NodeAdapter {
 
     public Children getChildren() {
         return entrySupport == null ? null : entrySupport.children;
-    }
-
-    /** When finalized notify the children.
-    */
-    @Override
-    protected void finalize() {
-        entrySupport.finalizedChildrenArray(ref);
-    }
-        
-    /** Now points to me */
-    final void pointedBy(Reference<ChildrenArray> ref) {
-        this.ref = ref;
     }
 
     /** Getter method to receive a set of computed nodes.
