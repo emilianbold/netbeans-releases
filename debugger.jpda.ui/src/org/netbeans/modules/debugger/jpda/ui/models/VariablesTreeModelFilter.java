@@ -42,6 +42,8 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.awt.datatransfer.Transferable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -54,6 +56,7 @@ import java.util.prefs.Preferences;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
 import javax.swing.Action;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -95,7 +98,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     private LinkedList evaluationQueue = new LinkedList();
 
-    private PreferenceChangeListener prefListener;
+    private VariablesPreferenceChangeListener prefListener;
     private Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(VariablesViewButtons.PREFERENCES_NAME);
     
     public VariablesTreeModelFilter (ContextProvider lookupProvider) {
@@ -103,6 +106,8 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         evaluationRP = lookupProvider.lookupFirst(null, RequestProcessor.class);
         prefListener = new VariablesPreferenceChangeListener();
         preferences.addPreferenceChangeListener(prefListener);
+        Properties properties = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N
+        properties.addPropertyChangeListener(prefListener);
     }
 
     /** 
@@ -587,18 +592,28 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
 
-    private class VariablesPreferenceChangeListener implements PreferenceChangeListener {
+    private class VariablesPreferenceChangeListener implements PreferenceChangeListener, PropertyChangeListener {
 
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
             if (VariablesViewButtons.SHOW_VALUE_AS_STRING.equals(key)) {
-                try {
-                    fireModelChange(new ModelEvent.NodeChanged(this, TreeModel.ROOT));
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t) {
-                    Exceptions.printStackTrace(t);
-                }
+                refresh();
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if ("VariableFormatters".equals(evt.getPropertyName())) {
+                refresh();
+            }
+        }
+
+        private void refresh() {
+            try {
+                fireModelChange(new ModelEvent.NodeChanged(this, TreeModel.ROOT));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                Exceptions.printStackTrace(t);
             }
         }
 
