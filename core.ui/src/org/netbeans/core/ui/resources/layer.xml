@@ -368,7 +368,7 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="SwingBrowser.settings" url="SwingBrowser.xml">
-                <attr name="SystemFileSystem.icon" stringvalue="nbres:org/openide/resources/html/htmlView.gif"/>
+                <attr name="SystemFileSystem.icon" stringvalue="nbres:/org/openide/resources/html/htmlView.gif"/>
                 <attr name="hidden" boolvalue="true"/>
                 <attr name="position" intvalue="700"/>
             </file>
