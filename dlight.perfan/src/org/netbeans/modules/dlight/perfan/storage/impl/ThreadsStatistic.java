@@ -36,39 +36,35 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.sync;
 
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
-import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+package org.netbeans.modules.dlight.perfan.storage.impl;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author mt154047
  */
-public class SyncIndicatorConfiguration extends IndicatorConfiguration {
-    private final List<String> threadColumnNames;
-    static final String ID = "SyncIndicatorConfigurationID"; // NOI18N
-//  private final String colName;
+public final class ThreadsStatistic {
+    private  int threadsCount = 1;
+    private static Pattern lineEndsWithInteger = Pattern.compile(".* ([0-9]+)$"); // NOI18N
 
-    public SyncIndicatorConfiguration(IndicatorMetadata metadata, int position) {
-        this(metadata, Arrays.asList("threads"), position);//NOI18N
+    public ThreadsStatistic(String[] toParse) {
+        //we should have 3 lines here
+        if (toParse != null && toParse.length == 3){
+            Matcher match = lineEndsWithInteger.matcher(toParse[2].trim());
+            if (match.matches()){
+                threadsCount = Integer.parseInt(match.group(1));
+            }
+        }
     }
 
-    public SyncIndicatorConfiguration(IndicatorMetadata metadata, List<String> threadsColumnNames, int position) {
-        super(metadata, position);
-        this.threadColumnNames = threadsColumnNames;
-    }
-
-    List<String> getThreadColumnNames(){
-        return threadColumnNames;
+    public int getThreadsCount(){
+        return threadsCount;
     }
 
 
-    @Override
-    public String getID() {
-        return ID;
-    }
+
+
 }

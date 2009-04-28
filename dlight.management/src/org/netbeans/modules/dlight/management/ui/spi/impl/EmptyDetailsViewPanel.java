@@ -138,7 +138,12 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
                 if (!status.isKnown()) {
                     p.add(new JLabel(status.getReason()));
                 } else if (status.isValid()) {
-                    p.add(new JLabel(NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun")));//NOI18N
+                    String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");
+                    if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
+                        message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");
+                    }
+                    p.add(new JLabel(message));//NOI18N
+
                 } else if (status.isInvalid()) {
                     p.add(new JLabel(status.getReason()));
 
