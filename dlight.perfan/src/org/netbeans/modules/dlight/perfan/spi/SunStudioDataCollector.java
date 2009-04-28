@@ -280,7 +280,7 @@ public class SunStudioDataCollector
                 }
 
                 if (notFound) {
-                    validationStatus = ValidationStatus.invalidStatus("No SunStudio Found, use link http://developers.sun.com/sunstudio/ to download latest SunStudio"); //NOI18N
+                    validationStatus = ValidationStatus.invalidStatus(NbBundle.getMessage(SunStudioDataCollector.class, "ValidationStatus.NoSunStudioFound.html")); //NOI18N
                     return validationStatus;
                 }
 
