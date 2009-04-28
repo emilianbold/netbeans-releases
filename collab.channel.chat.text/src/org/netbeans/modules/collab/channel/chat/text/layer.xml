@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
                 <file name="chat-Text.instance">
                     <attr name="position" intvalue="200"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.chat.text.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/collab/channel/chat/text/resources/txtObject.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/collab/channel/chat/text/resources/txtObject.gif"/>
                     <attr name="contentType" stringvalue="text/plain"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.collab.channel.chat.messagetype.CollabContentType"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.collab.channel.chat.messagetype.CollabContentTypeImpl.create"/>

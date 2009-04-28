@@ -50,7 +50,7 @@ import java.util.logging.Logger;
  *
  * @author ivan
  */
-public final class Util {
+final class Util {
 
     /**
      * Assign a numeric value to the {@link FileDescriptor} object.
