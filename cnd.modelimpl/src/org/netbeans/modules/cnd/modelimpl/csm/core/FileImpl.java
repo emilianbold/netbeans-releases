@@ -341,9 +341,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private StatePair getContextPreprocStatePair(int startContext, int endContext) {
-        if (true) {
-            return null;
-        }
         ProjectBase projectImpl = getProjectImpl(true);
         if (projectImpl == null) {
             return null;
@@ -774,7 +771,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     "\n while getting TS of file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
             return null;
         }
-        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler);
+        FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(apt.getPath());
+        outPcState.set(pcState);
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, pcState);
         if(filtered) {
             return walker.getFilteredTokenStream(getLanguageFilter(ppState));
         } else {
@@ -828,7 +827,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // for now cache only filtered streams
             if (offsTS.filtered) {
                 synchronized (tokStreamLock) {
-                    if (tsRef == null) {
+                    if (tsRef == null && offsTS.filtered) {
                         tsRef = new SoftReference<FileTokenStreamCache<OffsetTokenStream>>(new FileTokenStreamCache<OffsetTokenStream>(offsTS, offsTS.pcState, offsTS.filtered));
                     }
                 }
@@ -878,6 +877,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
             }
         }
+
+        @Override
+        public String toString() {
+            return "TS with " + this.pcState + " endOffset:" +endOffset + " nextToken:" + next; // NOI18N
+        }
+
     };
 
     /** For test purposes only */

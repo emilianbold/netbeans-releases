@@ -1004,7 +1004,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return createPreprocHandler(file, getFileContainer().getPreprocState(file));
     }
 
-    public final APTPreprocHandler getPreprocHandler(File file, FileContainer.StatePair statePair) {
+    /*package*/ final APTPreprocHandler getPreprocHandler(File file, FileContainer.StatePair statePair) {
         return createPreprocHandler(file, statePair == null ? getFileContainer().getPreprocState(file) : statePair.state);
     }
 
@@ -1500,8 +1500,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         boolean isSuperset = true; // true if this state is a superset of each old state
 
-        Collection<FilePreprocessorConditionState> possibleSuperSet = new ArrayList<FilePreprocessorConditionState>();
-
         // we assume that
         // 1. all oldStates are valid
         // 2. either them all are compileContext
@@ -1511,9 +1509,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         statesToKeep.clear();
 
         for (FileContainer.StatePair old : oldStates) {
-            if (pcState.isSubset(old.pcState)) {
-                return ComparisonResult.WORSE;
-            }
             if (old.pcState == null) {
                 isSuperset = false;
                 // not yet filled - somebody is filling it right now => we don't know what it will be => keep it
@@ -1522,8 +1517,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 statesToKeep.add(old);
             } else {
-                possibleSuperSet.add(old.pcState);
-                if (!old.pcState.isSubset(pcState)) {
+                if (old.pcState.isBetterOrEqual(pcState)) {
+                    return ComparisonResult.WORSE;
+                } else if (pcState.isBetterOrEqual(old.pcState)) {
+                    // still superset or current can replace old
+                } else {
+                    // states are not comparable => not superset
                     isSuperset = false;
                     if (!old.state.isCleaned()) {
                         old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), old.pcState);
@@ -1533,14 +1532,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         if (isSuperset) {
-            statesToKeep.clear();
+            assert statesToKeep.isEmpty() : "should be empty, but it is: " + Arrays.toString(statesToKeep.toArray());
             return ComparisonResult.BETTER;
         } else {
-            if (pcState.isSubset(possibleSuperSet)) {
-                return ComparisonResult.WORSE;
-            } else {
-                return ComparisonResult.SAME;
-            }
+            return ComparisonResult.SAME;
         }
     }
 
