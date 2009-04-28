@@ -146,14 +146,10 @@ public class ViewRevisionAction extends AbstractAction implements Runnable {
         Utils.copyStreamsCloseAll(new FileOutputStream(daoFile), new FileInputStream(original)); 
         Utils.associateEncoding(base, daoFile);
         final FileObject fo = FileUtil.toFileObject(daoFile);
-        DataObject dao = DataObject.find(fo);
-        EditorCookie ec = dao.getCookie(EditorCookie.class);
-        if (ec != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    Utils.openFile(fo, revision);
-                }
-            });
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Utils.openFile(fo, revision);
+            }
+        });
     }
 }

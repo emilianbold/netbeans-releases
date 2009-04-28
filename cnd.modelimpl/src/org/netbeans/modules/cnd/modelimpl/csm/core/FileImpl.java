@@ -551,7 +551,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
                 state = State.MODIFIED;
             }
-            clearStateCache();
             if (invalidateCache) {
                 synchronized (tokStreamLock) {
                     tsRef = null;
@@ -1069,6 +1068,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
             }
         }
+        clearStateCache();
         lastParsed = Math.max(System.currentTimeMillis(), fileBuffer.lastModified());
         lastMacroUsages = null;
         if (TraceFlags.TRACE_VALIDATION) {

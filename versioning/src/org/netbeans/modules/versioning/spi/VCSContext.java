@@ -63,6 +63,8 @@ import java.io.FileFilter;
 import java.util.*;
 import java.lang.ref.WeakReference;
 import java.lang.ref.Reference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This encapsulates a context, typically set of selected files or nodes. Context is passed to VCSAnnotators when
@@ -287,9 +289,32 @@ public final class VCSContext {
             for (int i = 0; i < rootChildren.length; i++) {
                 FileObject rootChildFo = rootChildren[i];
                 File child = FileUtil.toFile(rootChildFo);
-                // TODO: #60516 deep scan is required here but not performed due to performace reasons 
-                if (child != null && !sourceGroup.contains(rootChildFo) && SharabilityQuery.getSharability(child) != SharabilityQuery.NOT_SHARABLE) {
-                    rootFilesExclusions.add(child);
+                // TODO: #60516 deep scan is required here but not performed due to performace reasons
+                try {
+                    if (child != null && rootChildFo.isValid() && !sourceGroup.contains(rootChildFo) && SharabilityQuery.getSharability(child) != SharabilityQuery.NOT_SHARABLE) {
+                        rootFilesExclusions.add(child);
+                    }
+                } catch (IllegalArgumentException ex) {
+                    // #161904
+                    Logger logger = Logger.getLogger(VCSContext.class.getName());
+                    logger.log(Level.WARNING, "addProjectFiles: IAE");
+                    logger.log(Level.WARNING, "rootFO: " + srcRootFo);
+                    if (srcRootFo != sourceGroup.getRootFolder()) {
+                        logger.log(Level.WARNING, "root FO has changed");
+                    }
+                    String children = "[";
+                    for (FileObject fo : rootChildren) {
+                        children += "\"" + fo.getPath() + "\", ";
+                    }
+                    children += "]";
+                    logger.log(Level.WARNING, "srcRootFo.getChildren(): " + children);
+                    if (!rootChildFo.isValid()) {
+                        logger.log(Level.WARNING, rootChildFo + " does not exist ");
+                    }
+                    if (!FileUtil.isParentOf(srcRootFo, rootChildFo)) {
+                        logger.log(Level.WARNING, rootChildFo + " is not under " + srcRootFo);
+                    }
+                    logger.log(Level.WARNING, null, ex);
                 }
             }
         }

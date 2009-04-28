@@ -42,11 +42,9 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.lang.ref.SoftReference;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -70,7 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
         this.file = file;
     }
     void cacheVisitedState(APTPreprocHandler.State inputState, APTPreprocHandler outputHandler) {
-        if (cacheStates) {
+        if (cacheStates && inputState.isCompileContext()) {
             stateCacheLock.writeLock().lock();
             try {
                 if ((stateCache.isEmpty() || APTHandlersSupport.getIncludeStackDepth(inputState) == 1) && isCacheableState(inputState)) {
@@ -89,8 +87,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
                         }
                         stateCache.remove(key);
                     }
-                    Map<CharSequence, APTMacro> map = APTHandlersSupport.extractMacroMap(inputState);
-                    stateCache.put(createKey(map), new Value(outputHandler.getState()));
+                    stateCache.put(createKey(inputState), new Value(outputHandler.getState()));
                 }
             } finally {
                 stateCacheLock.writeLock().unlock();
@@ -100,13 +97,14 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
     /*package-local*/ APTPreprocHandler.State getCachedVisitedState(APTPreprocHandler.State inputState) {
         APTPreprocHandler.State res = null;
-        if (cacheStates) {
+        if (cacheStates && inputState.isCompileContext()) {
             if (TRACE) {stateCacheAttempt++;}
             stateCacheLock.readLock().lock();
+            String key = null;
             try {
                 if (isCacheableState(inputState)) {
-                    Map<CharSequence, APTMacro> map = APTHandlersSupport.extractMacroMap(inputState);
-                    Value value = stateCache.get(createKey(map));
+                    key = createKey(inputState);
+                    Value value = stateCache.get(key);
                     if (value != null) {
                         res = value.value.get();
                         value.count++;
@@ -118,6 +116,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
             if (TRACE && res != null) {
                 stateCacheSuccessAttempt++;
                 System.err.println("State Cache Attempt="+stateCacheAttempt+" successful="+stateCacheSuccessAttempt+" cache size="+stateCache.size()+" in file "+file.getName());
+                System.err.println("    Key="+key);
+                //System.err.println("    Res="+createKey(APTHandlersSupport.extractMacroMap(res)));
             }
         }
         return res;
@@ -134,18 +134,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
         }
     }
 
-    private String createKey(Map<CharSequence, APTMacro> map){
-        TreeMap<CharSequence, APTMacro> tree = new TreeMap<CharSequence, APTMacro>(map);
-        StringBuilder buf = new StringBuilder();
-        for(Map.Entry<CharSequence, APTMacro> entry : tree.entrySet()){
-            buf.append((char)entry.getValue().getKind().ordinal());
-            buf.append(entry.getValue().getName().getOffset());
-            buf.append(entry.getKey());
-            buf.append('=');
-            buf.append(entry.getValue().getBody());
-            buf.append(';');
-        }
-        return buf.toString();
+    private static String createKey(APTPreprocHandler.State inputState){
+        return APTHandlersSupport.getMacroMapID(inputState);
     }
 
     private boolean isCacheableState(APTPreprocHandler.State inputState) {

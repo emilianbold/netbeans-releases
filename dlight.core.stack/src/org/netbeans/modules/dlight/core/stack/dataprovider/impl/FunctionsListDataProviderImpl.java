@@ -38,13 +38,16 @@
  */
 package org.netbeans.modules.dlight.core.stack.dataprovider.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
@@ -58,6 +61,7 @@ import org.openide.util.Lookup;
  * @author mt154047
  */
 class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
+
     private StackDataStorage storage;
     private ServiceInfoDataStorage serviceInfoStorage;
 
@@ -70,6 +74,16 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
     }
 
     public List<FunctionCall> getFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
+        if (functionDescription.getOffsetColumn() == null) {
+            List<FunctionCall> result = new ArrayList<FunctionCall>();
+            List<FunctionCallTreeTableNode> nodes = FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(storage.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, Integer.MAX_VALUE));
+            for (FunctionCallTreeTableNode node : nodes) {
+                FunctionCall call = node.getDeligator();
+                result.add(call);
+            }
+
+            return result;
+        }
         return storage.getFunctionsList(metadata, metricsColumn, functionDescription);
     }
 

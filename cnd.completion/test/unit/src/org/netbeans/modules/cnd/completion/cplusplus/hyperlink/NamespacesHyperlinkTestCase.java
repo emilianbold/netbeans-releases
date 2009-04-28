@@ -283,7 +283,7 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
-        protected Class getTestCaseDataClass() {
+        protected Class<?> getTestCaseDataClass() {
             return NamespacesHyperlinkTestCase.class;
         }
 

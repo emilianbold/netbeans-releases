@@ -187,7 +187,15 @@ public final class StackFrameWrapper {
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.ObjectReference thisObject(com.sun.jdi.StackFrame a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
         try {
-            return a.thisObject();
+            try {
+                return a.thisObject();
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 35) { // INVALID_SLOT, see http://www.netbeans.org/issues/show_bug.cgi?id=163652
+                    return null;
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);

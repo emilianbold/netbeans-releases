@@ -42,8 +42,11 @@ package org.netbeans.modules.kenai.collab.chat;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
 import org.openide.awt.Notification;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -56,9 +59,19 @@ public class MessagingHandleImpl extends MessagingHandle {
     private int onlineCount;
     private int messageCount = -1;
 
-    MessagingHandleImpl() {
+    MessagingHandleImpl(String id) {
         if (System.getProperty("kenai.com.url", "https://kenai.com").endsWith("testkenai.com")) {
-            onlineCount = Kenai.getDefault().getPasswordAuthentication()==null?-1:-2;
+            Kenai k = Kenai.getDefault();
+            try {
+                final KenaiProject prj = k.getProject(id);
+                if (k.getMyProjects().contains(prj)) {
+                    onlineCount = -2;
+                } else {
+                    onlineCount = -1;
+                }
+            } catch (KenaiException kenaiException) {
+                Exceptions.printStackTrace(kenaiException);
+            }
         } else {
             onlineCount = -1;
         }
