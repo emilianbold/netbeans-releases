@@ -130,7 +130,9 @@ public class BugtrackingUtil {
 
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
+        ok.getAccessibleContext().setAccessibleDescription(ok.getText());
         JButton cancel = new JButton(NbBundle.getMessage(BugtrackingUtil.class, "LBL_Cancel")); // NOI18N
+        cancel.getAccessibleContext().setAccessibleDescription(cancel.getText());
         final DialogDescriptor dd =
             new DialogDescriptor(
                     panel,

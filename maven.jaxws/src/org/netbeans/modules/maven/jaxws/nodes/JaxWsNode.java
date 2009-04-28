@@ -310,7 +310,6 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
      */
     private String getWebServiceURL() {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
         String serverInstanceID = provider.getServerInstanceID();
         if (serverInstanceID == null || WSStackUtils.DEVNULL.equals(serverInstanceID)) {
             Logger.getLogger(JaxWsNode.class.getName()).log(Level.INFO, "Can not detect target J2EE server"); //NOI18N
