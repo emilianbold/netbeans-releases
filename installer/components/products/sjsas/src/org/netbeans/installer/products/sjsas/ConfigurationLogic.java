@@ -39,6 +39,7 @@ package org.netbeans.installer.products.sjsas;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -564,7 +565,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         shortcut.setRelativePath(getString(AS_RELATIVE_SHORTCUT_LOCATION));
         return shortcut;
     }
-    
+    @Override
+    public String[] getProhibitedInstallationPathParts() {
+        // http://www.netbeans.org/issues/show_bug.cgi?id=163233
+        final String [] parts = super.getProhibitedInstallationPathParts(); //NOI18N
+        ArrayList <String> list = new ArrayList(Arrays.asList(parts));
+        for(String s : new String [] {"(", ")"}) {//NOI18N
+            if(!list.contains(s)) {
+                list.add(s);
+            }
+        }
+        return list.toArray(new String[] {});
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String WIZARD_COMPONENTS_URI =

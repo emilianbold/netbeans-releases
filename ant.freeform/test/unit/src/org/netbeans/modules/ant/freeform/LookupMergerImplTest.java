@@ -53,6 +53,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -132,33 +133,32 @@ public class LookupMergerImplTest extends NbTestCase {
                 ranMockAction[0] = true;
             }
             public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-                FileObject f = context.lookup(FileObject.class);
+                DataObject d = context.lookup(DataObject.class);
+                FileObject f = d.getPrimaryFile();
                 return f != null && !f.getNameExt().contains("2");
             }
         }
         ActionProvider proxy = new LookupMergerImpl().merge(Lookups.fixed(new MockActionProvider(), new Actions(p)));
         assertTrue(Arrays.asList(proxy.getSupportedActions()).contains(cmd));
-        Lookup selection = Lookups.singleton(x1fo);
+        Lookup selection = Lookups.singleton(DataObject.find(x1fo));
         assertTrue(proxy.isActionEnabled(cmd, selection));
         proxy.invokeAction(cmd, selection);
-        /* XXX failing: #137765
         assertEquals("[build.xml:[twiddle]:{file=x1}]", targetsRun.toString());
         assertFalse(ranMockAction[0]);
         targetsRun.clear();
-        selection = Lookups.singleton(x2fo);
+        selection = Lookups.singleton(DataObject.find(x2fo));
         assertTrue(proxy.isActionEnabled(cmd, selection));
         proxy.invokeAction(cmd, selection);
         assertEquals("[build.xml:[twiddle]:{file=x2}]", targetsRun.toString());
         assertFalse(ranMockAction[0]);
         targetsRun.clear();
-        selection = Lookups.singleton(y1fo);
+        selection = Lookups.singleton(DataObject.find(y1fo));
         assertTrue(proxy.isActionEnabled(cmd, selection));
         proxy.invokeAction(cmd, selection);
         assertEquals("[]", targetsRun.toString());
         assertTrue(ranMockAction[0]);
-        selection = Lookups.singleton(y2fo);
+        selection = Lookups.singleton(DataObject.find(y2fo));
         assertFalse(proxy.isActionEnabled(cmd, selection));
-         */
     }
 
 }

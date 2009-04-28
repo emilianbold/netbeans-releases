@@ -120,7 +120,7 @@ public class WadlDataObject extends MultiDataObject {
         if (isModified()) {
             setModified(false);
         }
-//        getWadlEditorSupport().getEnv().unmarkModified();
+        getWadlEditorSupport().getEnv().unmarkModified();
         super.handleDelete();
     }
 

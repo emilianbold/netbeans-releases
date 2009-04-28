@@ -728,14 +728,16 @@ public class InstallSupportImpl {
         }
         return increment;
     }
-    
+
     private int doValidate (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int verified) throws OperationException {
         UpdateElement installed = toUpdateImpl.getUpdateUnit ().getInstalled ();
         
         // find target dir
         File targetCluster = getTargetCluster (installed, toUpdateImpl, isGlobal);
 
-        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName());
+        URL source = toUpdateImpl.getInstallInfo().getDistribution();
+        boolean isNbm = source.getFile ().toLowerCase (Locale.US).endsWith (Utilities.NBM_EXTENTSION.toLowerCase (Locale.US));
+        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), isNbm);
         assert dest.exists () : dest.getAbsolutePath();        
         
         int wasVerified = 0;

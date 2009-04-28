@@ -117,7 +117,7 @@ public class AttachIssueProvider extends ExportDiffSupport.ExportDiffProvider im
 
     @Override
     public boolean isValid() {
-        return !panel.descriptionTextField.getText().trim().equals("") &&
+        return !panel.descriptionTextField.getText().trim().equals("") &&       // NOI18N
                 panel.getIssue() != null;
     }
 

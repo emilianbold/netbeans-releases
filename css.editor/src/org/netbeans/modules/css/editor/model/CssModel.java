@@ -148,7 +148,7 @@ public final class CssModel {
                                 SimpleNode value = SimpleNodeUtil.getChildByType(declaration, CssParserTreeConstants.JJTEXPR);
 
                                 int semicolonOffset = i < semicolons.size() ? semicolons.get(i) : -1; //there may not be the semicolon after last declaration
-                                int colonOffset = colons.get(i);
+                                int colonOffset = i < colons.size() ? colons.get(i) : -1; //missing colon in declaration
 
                                 CssRuleItem ruleItem = new CssRuleItem(property.image().trim(), property.startOffset(), value.image().trim(), value.startOffset(), colonOffset, semicolonOffset);
 

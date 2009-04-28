@@ -190,6 +190,9 @@ public class AcceptanceTestCase extends JellyTestCase {
     // 5. Finish wizard
     public void createNewSchema() {
         startTest();
+
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        pto.invoke( );
         
         // Workaround for MacOS platform
         // TODO : check platform

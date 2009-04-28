@@ -29,22 +29,22 @@ package org.netbeans.modules.refactoring.ruby;
 
 import java.util.Iterator;
 import javax.swing.text.Document;
-import org.jruby.nb.ast.ArgumentNode;
-import org.jruby.nb.ast.ClassNode;
-import org.jruby.nb.ast.ClassVarAsgnNode;
-import org.jruby.nb.ast.ClassVarDeclNode;
-import org.jruby.nb.ast.ClassVarNode;
-import org.jruby.nb.ast.ConstNode;
-import org.jruby.nb.ast.GlobalAsgnNode;
-import org.jruby.nb.ast.GlobalVarNode;
-import org.jruby.nb.ast.IScopingNode;
-import org.jruby.nb.ast.InstAsgnNode;
-import org.jruby.nb.ast.InstVarNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.ModuleNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.SClassNode;
-import org.jruby.nb.ast.SymbolNode;
+import org.jrubyparser.ast.ArgumentNode;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.ClassVarAsgnNode;
+import org.jrubyparser.ast.ClassVarDeclNode;
+import org.jrubyparser.ast.ClassVarNode;
+import org.jrubyparser.ast.ConstNode;
+import org.jrubyparser.ast.GlobalAsgnNode;
+import org.jrubyparser.ast.GlobalVarNode;
+import org.jrubyparser.ast.IScopingNode;
+import org.jrubyparser.ast.InstAsgnNode;
+import org.jrubyparser.ast.InstVarNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.ModuleNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.SClassNode;
+import org.jrubyparser.ast.SymbolNode;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -116,7 +116,7 @@ public class RubyElementCtx {
         FindNode:
         while (it.hasNext()) {
             leaf = it.next();
-            switch (leaf.nodeId) {
+            switch (leaf.getNodeType()) {
                 case ARGUMENTNODE:
                 case LOCALVARNODE:
                 case LOCALASGNNODE:
@@ -199,7 +199,7 @@ public class RubyElementCtx {
 
     public ElementKind getKind() {
         if (kind == null) {
-            switch (node.nodeId) {
+            switch (node.getNodeType()) {
             case DEFNNODE:
             case DEFSNODE:
                 kind = AstUtilities.isConstructorMethod((MethodDefNode)node)

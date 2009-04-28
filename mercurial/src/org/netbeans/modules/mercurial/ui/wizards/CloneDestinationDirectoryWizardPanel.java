@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,6 +50,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -179,15 +180,17 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
     // by the user.
     public void readSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
-            String repository = (String) ((WizardDescriptor) settings).getProperty("repository"); // NOI18N
+            HgURL repository = (HgURL) ((WizardDescriptor) settings).getProperty("repository"); // NOI18N
 
-            component.nameField.setText(new File(repository).getName());
+            component.nameField.setText(new File(repository.getPath()).getName());
         }
     }
     public void storeSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
-            ((WizardDescriptor) settings).putProperty("directory", ((CloneDestinationDirectoryPanel) component).getDirectory()); // NOI18N
-            ((WizardDescriptor) settings).putProperty("cloneName", ((CloneDestinationDirectoryPanel) component).getCloneName()); // NOI18N
+            String directory = ((CloneDestinationDirectoryPanel) component).getDirectory();
+            String cloneName = ((CloneDestinationDirectoryPanel) component).getCloneName();
+            ((WizardDescriptor) settings).putProperty("directory", new File(directory)); //NOI18N
+            ((WizardDescriptor) settings).putProperty("cloneName", cloneName);  //NOI18N
         }
     }
 }

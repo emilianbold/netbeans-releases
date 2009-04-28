@@ -180,7 +180,7 @@ class CyclicArray<T> {
                 data.length, size, last));
         for (int i = 0; i < data.length; i++) {
             if (i > 0) {
-                sb.append(", ");
+                sb.append(", "); //NOI18N
             }
             sb.append(toString(data[i]));
         }
@@ -190,17 +190,17 @@ class CyclicArray<T> {
 
     private String toString(Object v) {
         if (v == null) {
-            return "null";
+            return "null"; // NOI18N
         } else if(v.getClass().isArray()) {
             int length = Array.getLength(v);
-            StringBuilder sb = new StringBuilder("[");
+            StringBuilder sb = new StringBuilder("["); // NOI18N
             for (int i = 0; i < length; i++) {
                 if (i > 0) {
-                    sb.append(',');
+                    sb.append(','); // NOI18N
                 }
                 sb.append(toString(Array.get(v, i)));
             }
-            sb.append(']');
+            sb.append(']'); // NOI18N
             return sb.toString();
         } else {
             return v.toString();

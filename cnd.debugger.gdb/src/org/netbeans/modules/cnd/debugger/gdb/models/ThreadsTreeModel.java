@@ -190,7 +190,7 @@ public class ThreadsTreeModel implements TreeModel {
         public synchronized void propertyChange(PropertyChangeEvent e) {
             String propertyName = e.getPropertyName();
             if ((propertyName.equals(GdbDebugger.PROP_STATE) && 
-                    debugger.getState() == GdbDebugger.State.STOPPED) ||
+                    debugger.isStopped()) ||
                     propertyName.equals(GdbDebugger.PROP_CURRENT_THREAD)) {
                 synchronized (this) {
                     if (task == null) {
@@ -203,7 +203,7 @@ public class ThreadsTreeModel implements TreeModel {
         
         private class Refresher extends Object implements Runnable {
             public void run() {
-                if (debugger.getState() == GdbDebugger.State.STOPPED) {
+                if (debugger.isStopped()) {
                     ThreadsTreeModel tm = getModel();
                     if (tm != null) {
                         tm.fireTreeChanged();

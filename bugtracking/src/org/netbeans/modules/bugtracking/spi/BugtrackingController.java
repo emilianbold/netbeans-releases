@@ -69,10 +69,10 @@ public abstract class BugtrackingController {
      * Returns the help context assotiated with this controllers visual component
      * @return
      */
-    public abstract HelpCtx getHelpContext();
+    public abstract HelpCtx getHelpCtx();
 
     /**
-     * returns true if data in this controllers visual component are valid
+     * Returns true if data in this controllers visual component are valid
      * @return
      */
     public abstract boolean isValid();
@@ -86,7 +86,8 @@ public abstract class BugtrackingController {
     }
     
     /**
-     *
+     * Is called when the changes made in the
+     * controllers visual component are confirmed
      */
     public abstract void applyChanges() throws IOException; 
 
@@ -102,17 +103,6 @@ public abstract class BugtrackingController {
      */
     public void closed() {
 
-    }
-    
-    /**
-     * 
-     * Get current help context asociated with this panel.
-     * 
-     * 
-     * @return current help context
-     */
-    public HelpCtx getHelpCtx() {
-        return null;
     }
 
     /**

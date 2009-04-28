@@ -60,46 +60,55 @@ import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 
 /**
  *
  */
 public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage {
 
-    private static final String SQL_QUERY_DELIMETER = "";
-    static private int dbIndex = 1;
     private static final Logger logger = DLightLogger.getLogger(DerbyDataStorage.class);
+    private static final String SQL_QUERY_DELIMETER = "";
+    private static final String tmpDir;
+    private static int dbIndex = 1;
     private static boolean driverLoaded = false;
-    private SQLStackStorage stackStorage;
     private final List<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
+    private SQLStackStorage stackStorage;
 
 
     static {
-        Util.deleteLocalDirectory(new File("/tmp/derby_dlight"));
+        HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+        String tempDir = hi.getTempDir();
+        tmpDir = hi.getOSFamily() == HostInfo.OSFamily.WINDOWS
+                ? WindowsSupport.getInstance().convertoToWindowsPath(tempDir)
+                : tempDir;
+
+        Util.deleteLocalDirectory(new File(tmpDir + "/derby_dlight")); // NOI18N
+
         try {
-            String systemDir = "/tmp/derby_dlight";
-            System.setProperty("derby.system.home", systemDir);
-            Class driver = Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-            logger.info("Driver for Derby(JavaDB) (" + driver.getName() + ") Loaded ");
+            String systemDir = tmpDir + "/derby_dlight"; // NOI18N
+            System.setProperty("derby.system.home", systemDir); // NOI18N
+            Class driver = Class.forName("org.apache.derby.jdbc.EmbeddedDriver"); // NOI18N
+            logger.info("Driver for Derby(JavaDB) (" + driver.getName() + ") Loaded "); // NOI18N
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
         }
-
     }
 
     /**
      * Empty constructor, used by Lookup
      */
     public DerbyDataStorage() throws SQLException {
-        this("jdbc:derby:DerbyDlight" + (dbIndex++) + ";create=true;user=dbuser;password=dbuserpswd");
-
+        this("jdbc:derby:DerbyDlight" + (dbIndex++) + ";create=true;user=dbuser;password=dbuserpswd"); // NOI18N
     }
 
     private void initStorageTypes() {
         supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(DerbyDataStorageFactory.DERBY_DATA_STORAGE_TYPE));
         supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
         supportedStorageTypes.addAll(super.getStorageTypes());
-
     }
 
     private DerbyDataStorage(String url) throws SQLException {
@@ -116,9 +125,17 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
     }
 
     @Override
+    public boolean shutdown() {
+        //remove folder
+        boolean result = stackStorage.shutdown() && super.shutdown();
+        Util.deleteLocalDirectory(new File(tmpDir + "/derby_dlight" + (dbIndex - 1))); // NOI18N
+        return result;
+    }
+
+    @Override
     protected String classToType(Class clazz) {
         if (clazz == Integer.class) {
-            return "integer";
+            return "integer"; // NOI18N
         }
         return super.classToType(clazz);
     }

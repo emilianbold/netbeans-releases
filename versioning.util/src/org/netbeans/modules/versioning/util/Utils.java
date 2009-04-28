@@ -538,12 +538,26 @@ public final class Utils {
         return item;
     }
 
+    /**
+     * Creates a temporary folder. The folder has deleteOnExit flag set.
+     * @return
+     */
     public static File getTempFolder() {
+        return getTempFolder(true);
+    }
+
+    /**
+     * Creates a temporary folder. The folder will have deleteOnExit flag set to <code>deleteOnExit</code>.
+     * @return
+     */
+    public static File getTempFolder(boolean deleteOnExit) {
         File tmpDir = new File(System.getProperty("java.io.tmpdir"));   // NOI18N
         for (;;) {
             File dir = new File(tmpDir, "vcs-" + Long.toString(System.currentTimeMillis())); // NOI18N
             if (!dir.exists() && dir.mkdirs()) {
-                dir.deleteOnExit();
+                if (deleteOnExit) {
+                    dir.deleteOnExit();
+                }
                 return FileUtil.normalizeFile(dir);
             }
         }

@@ -40,7 +40,7 @@ package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.Color;
 
-public class GraphDescriptor {
+public final class GraphDescriptor {
 
     private final Color color;
     private final String description;

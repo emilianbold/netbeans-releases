@@ -356,13 +356,13 @@ public class CreateElementTest extends HintsTestBase {
 	performTestAnalysisTest("org.netbeans.test.java.hints.Bug111048", 202, Collections.<String>emptySet());
 	// but do it in writable
 	performTestAnalysisTest("org.netbeans.test.java.hints.Bug111048", 231, new HashSet<String>(Arrays.asList(
-		"CreateMethodFix:contains(java.lang.String string)boolean:org.netbeans.test.java.hints.bb"
+		"CreateMethodFix:contains(java.lang.String string)boolean:org.netbeans.test.java.hints.Bug111048"
         )));
 	// do not offer to create field/inner class in non-writable file/class
 	performTestAnalysisTest("org.netbeans.test.java.hints.Bug111048", 261, Collections.<String>emptySet());
 	performTestAnalysisTest("org.netbeans.test.java.hints.Bug111048", 301, new HashSet<String>(Arrays.asList(
-		"CreateInnerClass:org.netbeans.test.java.hints.bb.fieldOrClass:[static]:CLASS",
-		"CreateFieldFix:fieldOrClass:org.netbeans.test.java.hints.bb:java.lang.Object:[static]"
+		"CreateInnerClass:org.netbeans.test.java.hints.Bug111048.fieldOrClass:[private]:CLASS",
+		"CreateFieldFix:fieldOrClass:org.netbeans.test.java.hints.Bug111048:java.lang.Object:[private]"
         )));
     }
 

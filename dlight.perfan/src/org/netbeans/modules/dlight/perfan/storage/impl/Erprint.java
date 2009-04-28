@@ -212,7 +212,10 @@ final class Erprint {
     }
 
     private synchronized String[] exec(String command) throws IOException {
+        long startTime = System.currentTimeMillis();
+
         try {
+            log.finest("> " + command + "'"); // NOI18N
             post(command);
         } catch (IOException ex) {
             Throwable cause = ex.getCause();
@@ -223,7 +226,13 @@ final class Erprint {
             }
         }
 
-        return outProcessor.getOutput();
+        String[] output = outProcessor.getOutput();
+
+        log.finest("Command '" + command + "' done in " + // NOI18N
+                (System.currentTimeMillis() - startTime) / 1000 +
+                " secs. Response is " + output.length + " lines."); // NOI18N
+
+        return output;
     }
 
     private class OutputProcessor {

@@ -199,6 +199,7 @@ Searchable Keys:
   base : parameters;options;parameters;|PROPERTY|;;0;;;String;
   base : params;Selector;params;|PROPERTY|;;0;;;;
   base : parseexpression;Selector;parseExpression;|FUNCTION|;;0;;;;
+  base : parsequery;String;parseQuery;|PROPERTY|;;0;;;;
   base : partition;Enumerable;partition;|FUNCTION|;iterator;0;;;Array;
   base : pattern;Template;pattern;|PROPERTY|;;0;;;Boolean;
   base : periodicalexecuter;;PeriodicalExecuter;|CONSTRUCTOR|;;0;;;;
@@ -274,6 +275,7 @@ Searchable Keys:
   base : timedobserver;Abstract;TimedObserver;|CONSTRUCTOR|;;0;;;;
   base : timedobserver;Abstract;TimedObserver;|DOCUMENTED|CONSTRUCTOR|STATIC|;;0;e362;;Abstract.TimedObserver;
   base : title;Element._attributeTranslations.values;title;|FUNCTION|;element;0;;;;
+  base : toarray;Array;toArray;|PROPERTY|;;0;;;;
   base : toarray;Enumerable;toArray;|FUNCTION|;;0;;;;
   base : toggle;;Toggle;|PROPERTY|;;0;;;;
   base : toggle;Element;toggle;|FUNCTION|;element;0;;;;
@@ -410,6 +412,7 @@ Searchable Keys:
   fqn : ajax;;Ajax;|PROPERTY|;;0;;;;
   fqn : array.concat;;Array.concat;|FUNCTION|;;0;;;;
   fqn : array.from;;Array.from;|FUNCTION|STATIC|;iterable;0;;;;
+  fqn : array.toarray;;Array.toArray;|PROPERTY|;;0;;;;
   fqn : class.create;;Class.create;|FUNCTION|;;0;;;Function;
   fqn : class;;Class;|PROPERTY|;;0;;;;
   fqn : container.failure;;container.failure;|PROPERTY|;;0;;;Boolean;
@@ -623,6 +626,7 @@ Searchable Keys:
   fqn : selector;;Selector;|PROPERTY|;;0;;;;
   fqn : string.gsub.preparereplacement;;String.gsub.prepareReplacement;|FUNCTION|;replacement;0;;;;
   fqn : string.interpret;;String.interpret;|FUNCTION|STATIC|;value;0;;;;
+  fqn : string.parsequery;;String.parseQuery;|PROPERTY|;;0;;;;
   fqn : template.evaluate;;Template.evaluate;|FUNCTION|;object;0;;;;
   fqn : template.initialize;;Template.initialize;|CONSTRUCTOR|;template,pattern;0;;;Template;
   fqn : template.pattern;;Template.pattern;|PROPERTY|;;0;;;Boolean;

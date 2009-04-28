@@ -61,6 +61,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -212,7 +214,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_WS"), 50); //NOI18N
             //add the JAXWS 2.0 library, if not already added
             if (addJaxWsLib) {
-                boolean libraryAdded = MavenModelUtils.addJaxws21Library(project);
+                MavenModelUtils.addJaxws21Library(project);
             }
             generateJaxWSImplFromTemplate(pkg, WSUtils.isEJB(project));
             handle.finish();
@@ -279,11 +281,21 @@ public class JaxWsServiceCreator implements ServiceCreator {
             }
 
             if (wsdlFo != null) {
-                final boolean libraryAdded = MavenModelUtils.addJaxws21Library(project);
+                final boolean isJaxWsLibrary = MavenModelUtils.isJaxWs21Library(project);
                 final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
                 final String serviceName = wsdlFo.getName();
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
+                        if (!isJaxWsLibrary) {
+                            try {
+                                MavenModelUtils.addJaxws21Library(project, model);
+                                MavenModelUtils.addJavadoc(project);
+                            } catch (Exception ex) {
+                                Logger.getLogger(
+                                    JaxWsServiceCreator.class.getName()).log(
+                                        Level.INFO, "Cannot add Metro libbrary to pom file", ex); //NOI18N
+                            }
+                        }
                         org.netbeans.modules.maven.model.pom.Plugin plugin =
                                 WSUtils.isEJB(project) ?
                                     MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N

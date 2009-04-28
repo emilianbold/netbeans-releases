@@ -81,6 +81,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -258,20 +259,20 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
                 }
             }
         }
+    }
 
-        // If not visible check that the global panel is updated by values
-        if (!v) {
-            JTextComponent compoennt = editorUI.getComponent();
-            if (compoennt != null && compoennt.hasFocus()) {
-                // Update all cell mappings
-                for (Map.Entry<String,JLabel> e : cellName2GlobalCell.entrySet()) {
-                    if (CELL_MAIN.equals(e.getKey())) { // Do not sync main cell into global panel
-                        continue;
-                    }
-                    String s = getText(e.getKey());
-                    e.getValue().setText(s);
-                }
+    /**
+     * Update values into global cells.
+     * @since 1.37
+     */
+    public void updateGlobal() {
+        // Update all cell mappings
+        for (Map.Entry<String,JLabel> e : cellName2GlobalCell.entrySet()) {
+            if (CELL_MAIN.equals(e.getKey())) { // Do not sync main cell into global panel
+                continue;
             }
+            String s = getText(e.getKey());
+            e.getValue().setText(s);
         }
     }
 
@@ -534,7 +535,6 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
                 if (globalCell != null) {
                     if (CELL_MAIN.equals(cellName)) {
                         globalCell.putClientProperty("importance", importance);
-                        globalCell.setText(text);
                     }
                     globalCell.setText(text);
                 }
@@ -618,7 +618,10 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
             Caret c = caret;
             JTextComponent component = editorUI.getComponent();
 
-            if (component != null) {
+            // Also check whether the component is last focused since when undocking an editor
+            // all the components' carets fire this listener and so invalid component's
+            // data would get displayed in the global status bar.
+            if (component != null && component == EditorRegistry.lastFocusedComponent()) {
                 if (c != null) {
                     BaseDocument doc = Utilities.getDocument(editorUI.getComponent());
                     if (doc != null && doc.getDefaultRootElement().getElementCount()>0) {

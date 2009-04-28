@@ -560,7 +560,7 @@ public abstract class Element implements Serializable {
             if (item == null || !(item instanceof ItemElem))
                 return false;
             ItemElem ie = (ItemElem)item;
-            if ( ((key==null && ie.getKeyElem()==null) || (key!=null && ie.getKeyElem()!=null && getKey().equals(ie.getKey())) ) &&
+            if ( ((key==null && ie.getKeyElem()==null) || (key!=null && ie.getKeyElem()!=null && getKey()!=null && getKey().equals(ie.getKey())) ) &&
                  ((value==null && ie.getValueElem()==null) || (value!=null && ie.getValueElem()!=null && getValue().equals(ie.getValue())) ) &&
                  ((comment==null && ie.getCommentElem()==null) || (comment!=null && ie.getCommentElem()!=null && getComment().equals(ie.getComment())) ) )
                 return true;

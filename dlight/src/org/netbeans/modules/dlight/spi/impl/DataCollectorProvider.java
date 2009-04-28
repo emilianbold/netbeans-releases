@@ -5,7 +5,6 @@
 package org.netbeans.modules.dlight.spi.impl;
 
 import java.util.Collection;
-import java.util.Iterator;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
@@ -32,13 +31,16 @@ public final class DataCollectorProvider {
      * @param configuraiton
      * @return new instance of data collector is returned each time this method is invoked;
      */
-    public DataCollector createDataCollector(DataCollectorConfiguration configuraiton) {
+    public DataCollector<?> createDataCollector(DataCollectorConfiguration configuraiton) {
         Collection<? extends DataCollectorFactory> result =
                 Lookup.getDefault().lookupAll(DataCollectorFactory.class);
 
         for (DataCollectorFactory collectorFactory : result) {
             if (collectorFactory.getID().equals(configuraiton.getID())) {
-                return collectorFactory.create(configuraiton);
+                @SuppressWarnings("unchecked")
+                // Impossible to do it in checked manner. Have to rely on factory ID check.
+                DataCollector<?> dataCollector = collectorFactory.create(configuraiton);
+                return dataCollector;
             }
         }
 

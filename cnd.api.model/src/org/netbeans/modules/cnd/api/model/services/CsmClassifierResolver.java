@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -43,6 +43,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.openide.util.Lookup;
 
 /**
@@ -53,6 +54,7 @@ public abstract class CsmClassifierResolver {
     private static CsmClassifierResolver DEFAULT = new Default();
 
     public abstract CsmClassifier getOriginalClassifier(CsmClassifier orig, CsmFile contextFile);
+    public abstract CsmClassifier getTypeClassifier(CsmType type, CsmFile contextFile, int contextOffset, boolean resolveTypeChain);
 
     /**
      * trying to find classifier with full qualified name used in file
@@ -75,7 +77,7 @@ public abstract class CsmClassifierResolver {
 
     protected CsmClassifierResolver() {
     }
-    
+
     /**
      * Static method to obtain the CsmClassifierResolver implementation.
      * @return the selector
@@ -86,7 +88,7 @@ public abstract class CsmClassifierResolver {
 
     /**
      * Implementation of the default resolver
-     */  
+     */
     private static final class Default extends CsmClassifierResolver {
         private final Lookup.Result<CsmClassifierResolver> res;
         private static final boolean FIX_SERVICE = true;
@@ -119,8 +121,20 @@ public abstract class CsmClassifierResolver {
             return orig;
         }
 
+        public CsmClassifier getTypeClassifier(CsmType type, CsmFile contextFile, int contextOffset, boolean resolveTypeChain) {
+            CsmClassifierResolver service = getService();
+            if (service != null) {
+                return service.getTypeClassifier(type, contextFile, contextOffset, resolveTypeChain);
+            }
+            CsmClassifier classifier = type.getClassifier();
+            if (resolveTypeChain) {
+                classifier = getOriginalClassifier(classifier, contextFile);
+            }
+            return classifier;
+        }
+
         @Override
-        public CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName, CsmFile csmFile, boolean classesOnly) {
+        public CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName, CsmFile  csmFile, boolean classesOnly) {
             CsmClassifierResolver service = getService();
             if (service != null) {
                 return service.findClassifierUsedInFile(qualifiedName, csmFile, classesOnly);

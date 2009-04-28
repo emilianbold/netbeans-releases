@@ -68,9 +68,6 @@ import org.netbeans.modules.websvc.rest.wadl.model.*;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-//import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
-//import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
-//import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Node;
@@ -254,6 +251,7 @@ public class DesignMultiViewElement extends TopComponent
     @Override
     public void componentActivated() {
         super.componentActivated();
+//        syncModel();
         addUndoManager();
         ExplorerUtils.activateActions(manager, true);
     }
@@ -286,6 +284,7 @@ public class DesignMultiViewElement extends TopComponent
     @Override
     public void componentShowing() {
         super.componentShowing();
+//        syncModel();
         initUI();
         addUndoManager();
     }
@@ -357,5 +356,12 @@ public class DesignMultiViewElement extends TopComponent
 
     public ExplorerManager getExplorerManager() {
         return manager;
+    }
+
+    private void syncModel() {
+        WadlEditorSupport editor = dataObject.getWadlEditorSupport();
+        // Sync model before having undo manager listen to the model,
+        // lest we get redundant undoable edits added to the queue.
+        editor.syncModel();
     }
 }

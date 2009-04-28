@@ -76,9 +76,25 @@ TEXT:
 SYMBOL:<
 TAG:jsp:scriptlet
 SYMBOL:>
-TEXT:
-        String var = "str";
-        var.getBytes();
+WHITESPACE:
+        
+IDENTIFIER:String
+WHITESPACE: 
+IDENTIFIER:var
+WHITESPACE: 
+EQ:=
+WHITESPACE: 
+TEXT:str
+SEMICOLON:;
+WHITESPACE:
+        
+IDENTIFIER:var
+DOT:.
+IDENTIFIER:getBytes
+LPAREN:(
+RPAREN:)
+SEMICOLON:;
+WHITESPACE:
     
 SYMBOL:</
 ENDTAG:jsp:scriptlet

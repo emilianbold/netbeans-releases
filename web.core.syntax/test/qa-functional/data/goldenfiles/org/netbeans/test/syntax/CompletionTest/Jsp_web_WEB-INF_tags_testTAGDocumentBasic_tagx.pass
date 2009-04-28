@@ -41,3 +41,11 @@ End cursor position = 299
 < /jsp:body >
 </html >
 End cursor position = 401
+[<jsp:directive.attribute fragment="|"/>, true, <jsp:directive.attribute fragment="true"/>, 474]
+false
+true
+End cursor position = 514
+[<jsp:directive.tag isELIgnored="|"/>, false, <jsp:directive.tag isELIgnored="false"/>, 571]
+false
+true
+End cursor position = 609

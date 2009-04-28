@@ -79,6 +79,6 @@ public class KenaiQuery extends BugzillaQuery {
             count,
             true,
             autoRefresh);
-}
+    }
 
 }
