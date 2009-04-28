@@ -77,6 +77,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.MyFile;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.StatePair;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
@@ -109,8 +111,6 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent, CsmIdentifiable {
 
-    private volatile boolean needParseOrphan;
-
     /** Creates a new instance of CsmProjectImpl */
     protected ProjectBase(ModelImpl model, Object platformProject, String name) {
         RepositoryUtils.openUnit(createProjectKey(platformProject));
@@ -137,7 +137,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (TraceFlags.CLOSE_AFTER_PARSE) {
             Terminator.create(this);
         }
-        needParseOrphan = ModelSupport.needParseOrphan(platformProject);
     }
 
     private boolean checkConsistency() {
@@ -785,9 +784,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         } else {
             // put directly into parser queue if needed
-            if (isSourceFile || needParseOrphan) {
-                ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
-            }
+            ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
         }
     }
 
@@ -807,7 +804,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         initializationTask = null;
                     }
                 }
-                ;
             };
             String text = (status == Status.Initial) ? "Filling parser queue for " : "Validating files for ";	// NOI18N
             synchronized (initializationTaskLock) {
@@ -1008,7 +1004,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return createPreprocHandler(file, getFileContainer().getPreprocState(file));
     }
 
-    public final APTPreprocHandler getPreprocHandler(File file, FileContainer.StatePair statePair) {
+    /*package*/ final APTPreprocHandler getPreprocHandler(File file, FileContainer.StatePair statePair) {
         return createPreprocHandler(file, statePair == null ? getFileContainer().getPreprocState(file) : statePair.state);
     }
 
@@ -1504,8 +1500,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         boolean isSuperset = true; // true if this state is a superset of each old state
 
-        Collection<FilePreprocessorConditionState> possibleSuperSet = new ArrayList<FilePreprocessorConditionState>();
-
         // we assume that
         // 1. all oldStates are valid
         // 2. either them all are compileContext
@@ -1515,9 +1509,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         statesToKeep.clear();
 
         for (FileContainer.StatePair old : oldStates) {
-            if (pcState.isSubset(old.pcState)) {
-                return ComparisonResult.WORSE;
-            }
             if (old.pcState == null) {
                 isSuperset = false;
                 // not yet filled - somebody is filling it right now => we don't know what it will be => keep it
@@ -1526,8 +1517,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 statesToKeep.add(old);
             } else {
-                possibleSuperSet.add(old.pcState);
-                if (!old.pcState.isSubset(pcState)) {
+                if (old.pcState.isBetterOrEqual(pcState)) {
+                    return ComparisonResult.WORSE;
+                } else if (pcState.isBetterOrEqual(old.pcState)) {
+                    // still superset or current can replace old
+                } else {
+                    // states are not comparable => not superset
                     isSuperset = false;
                     if (!old.state.isCleaned()) {
                         old = new FileContainer.StatePair(APTHandlersSupport.createCleanPreprocState(old.state), old.pcState);
@@ -1537,14 +1532,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         if (isSuperset) {
-            statesToKeep.clear();
+            assert statesToKeep.isEmpty() : "should be empty, but it is: " + Arrays.toString(statesToKeep.toArray());
             return ComparisonResult.BETTER;
         } else {
-            if (pcState.isSubset(possibleSuperSet)) {
-                return ComparisonResult.WORSE;
-            } else {
-                return ComparisonResult.SAME;
-            }
+            return ComparisonResult.SAME;
         }
     }
 
@@ -2029,6 +2020,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             ProjectComponent.setStable(fileContainerKey);
             ProjectComponent.setStable(graphStorageKey);
             ProjectComponent.setStable(classifierStorageKey);
+            checkStates(this, libsAlreadyParsed);
 
             if (!libsAlreadyParsed) {
                 ParseFinishNotificator.onParseFinish(this);
@@ -2037,6 +2029,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (TraceFlags.PARSE_STATISTICS) {
             ParseStatistics.getInstance().printResults(this);
             ParseStatistics.getInstance().clear(this);
+        }
+    }
+
+    private static void checkStates(ProjectBase prj, boolean libsAlreadyParsed){
+        if (false) {
+            System.err.println("Checking states for project "+prj.getName());
+            for(Map.Entry<CharSequence, MyFile> entry : prj.getFileContainer().getFileStorage().entrySet()){
+                for(StatePair pair : entry.getValue().getStatePairs()){
+                    if (!pair.state.isValid()){
+                        System.err.println("Invalid state for file "+entry.getKey());
+                    }
+                }
+            }
+            if (libsAlreadyParsed) {
+                for(CsmProject p : prj.getLibraries()){
+                    if (p instanceof ProjectBase) {
+                        checkStates((ProjectBase) p, false);
+                    }
+                }
+            }
         }
     }
 

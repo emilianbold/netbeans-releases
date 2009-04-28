@@ -73,7 +73,7 @@ public class TraceFlags {
      */
     public static final boolean EXCLUDE_COMPOUND = DebugUtils.getBoolean("cnd.modelimpl.excl.compound", true); // NOI18N
     
-    public static final boolean APT_CHECK_GET_STATE = DebugUtils.getBoolean("apt.check.get.state", true); // NOI18N
+    public static final boolean APT_CHECK_GET_STATE = DebugUtils.getBoolean("apt.check.get.state", false); // NOI18N
  
     public static final int     BUF_SIZE = APTTraceFlags.BUF_SIZE;
     

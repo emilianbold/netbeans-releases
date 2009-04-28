@@ -54,6 +54,7 @@ import org.netbeans.spi.tasklist.Task;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 /**
+ * This code is temporarily disabled, see issue #163916
  *
  * @author Tomasz.Slota@Sun.COM
  */

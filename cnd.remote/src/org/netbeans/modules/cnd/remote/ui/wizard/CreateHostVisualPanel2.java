@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetReporter;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -279,8 +280,11 @@ import org.openide.util.RequestProcessor;
                         ConnectionManager.getInstance().connectTo(env, password.toCharArray(), rememberPassword);
                     }
                 } catch (IOException ex) {
-                    addOuputTextInUiThread(ex.getMessage());
+                    addOuputTextInUiThread("\n" + RemoteCommandSupport.getMessage(ex)); //NOI18N
+                    phandle.finish();
+                    return;
                 } catch (CancellationException ex) {
+                    phandle.finish();
                     return;
                 }
                 if (!alreadyOnline) {

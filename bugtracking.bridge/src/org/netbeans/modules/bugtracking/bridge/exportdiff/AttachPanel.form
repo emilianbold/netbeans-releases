@@ -9,7 +9,7 @@
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
@@ -64,6 +64,9 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="repositoryLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="repositoryComboBox"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/bugtracking/bridge/exportdiff/Bundle.properties" key="AttachPanel.repositoryLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -80,6 +83,11 @@
           </StringArray>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugtracking/bridge/exportdiff/Bundle.properties" key="AttachPanel.repositoryComboBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>
@@ -90,6 +98,11 @@
           <ResourceString bundle="org/netbeans/modules/bugtracking/bridge/exportdiff/Bundle.properties" key="AttachPanel.jButton2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugtracking/bridge/exportdiff/Bundle.properties" key="AttachPanel.jButton2.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton2ActionPerformed"/>
       </Events>
@@ -139,6 +152,9 @@
     </Container>
     <Component class="javax.swing.JLabel" name="descriptionLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="descriptionTextField"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/bugtracking/bridge/exportdiff/Bundle.properties" key="AttachPanel.descriptionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -150,6 +166,11 @@
           <ResourceString bundle="org/netbeans/modules/bugtracking/bridge/exportdiff/Bundle.properties" key="AttachPanel.descriptionTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugtracking/bridge/exportdiff/Bundle.properties" key="AttachPanel.descriptionTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>

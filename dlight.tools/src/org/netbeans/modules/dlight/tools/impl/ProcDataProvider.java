@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import java.io.IOException;
@@ -55,12 +56,15 @@ import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -126,10 +130,28 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
 
     private ValidationStatus doValidation(DLightTarget target) {
         ExecutionEnvironment env = target.getExecEnv();
-        OSFamily osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
+        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+            AsynchronousAction connectAction = ConnectionManager.getInstance().getConnectToAction(env, new Runnable() {
+
+                public void run() {
+                    DLightManager.getDefault().revalidateSessions();
+                }
+            });
+            return ValidationStatus.unknownStatus(
+                    getMessage("ValidationStatus.HostNotConnected"), // NOI18N
+                    connectAction);
+        }
+
+        OSFamily osFamily = OSFamily.UNKNOWN;
+
+        try {
+            osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
 
         if (osFamily != OSFamily.LINUX && osFamily != OSFamily.SUNOS) {
-            return ValidationStatus.invalidStatus(getMessage("ValidationStatus.OSNotSupported")); // NOI18N
+            return ValidationStatus.invalidStatus(getMessage("ValidationStatus.ProcReader.OSNotSupported")); // NOI18N
         }
 
         try {
@@ -185,7 +207,17 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
      */
     private synchronized void targetStarted(DLightTarget target) {
         ExecutionEnvironment env = target.getExecEnv();
-        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+        HostInfo hostInfo = null;
+        try {
+            hostInfo = HostInfoUtils.getHostInfo(env);
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        if (hostInfo == null) {
+            return;
+        }
+
         NativeProcessBuilder npb = new NativeProcessBuilder(env, hostInfo.getShell());
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.inputOutput(InputOutput.NULL);

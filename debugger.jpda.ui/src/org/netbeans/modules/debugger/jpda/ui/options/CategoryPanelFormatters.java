@@ -342,6 +342,9 @@ class CategoryPanelFormatters extends StorablePanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(formatChildrenCodeScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
         );
+
+        layout.linkSize(new java.awt.Component[] {formattersScrollPane, jPanel1}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
     }// </editor-fold>//GEN-END:initComponents
 
     private void formattersAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formattersAddButtonActionPerformed

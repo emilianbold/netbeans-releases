@@ -101,8 +101,8 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="formattersScrollPane" min="-2" pref="192" max="-2" attributes="1"/>
-                  <Component id="jPanel1" alignment="0" min="-2" max="-2" attributes="1"/>
+                  <Component id="formattersScrollPane" linkSize="3" min="-2" pref="192" max="-2" attributes="1"/>
+                  <Component id="jPanel1" linkSize="3" alignment="0" min="-2" max="-2" attributes="1"/>
               </Group>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
