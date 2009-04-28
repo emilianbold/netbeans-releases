@@ -81,7 +81,7 @@ public class WatchesNodeModel extends VariablesNodeModel {
                 getString ("CTL_WatchesModel_Column_Name_Name");
         if (o instanceof JPDAWatch) {
             if (isEmptyWatch(o)) {
-                return "<html><font color=\"#808080\">&lt;" +
+                return "<_html><font color=\"#808080\">&lt;" + // [TODO] <_html> tag used as workaround, see TreeModelNode.setName()
                     NbBundle.getBundle (WatchesNodeModel.class).getString("CTL_WatchesModel_Empty_Watch_Hint") +
                     "&gt;</font></html>";
             }

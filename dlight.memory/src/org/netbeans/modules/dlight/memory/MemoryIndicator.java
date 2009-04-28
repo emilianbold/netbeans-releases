@@ -126,7 +126,7 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
         } else {
             final JLabel label = new JLabel(
                     "<html><center>" // NOI18N
-                    + getMessage(getRepairActionProvider().isValid()? "Repair.Valid" : "Repair.Invalid") // NOI18N
+                    + getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()) // NOI18N
                     + "</center></html>"); // NOI18N
             label.setForeground(GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {

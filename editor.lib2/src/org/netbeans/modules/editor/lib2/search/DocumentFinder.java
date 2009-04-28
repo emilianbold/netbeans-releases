@@ -47,6 +47,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.DocUtils;
 import org.openide.DialogDisplayer;
@@ -229,14 +230,40 @@ public class DocumentFinder
             return null;
         }
         finder.reset();
-        CharSequence cs = DocumentUtilities.getText(doc, startOffset, endOffset - startOffset);
+
+        Boolean b = (Boolean)props.get(EditorFindSupport.FIND_BACKWARD_SEARCH);
+        boolean back = (b != null && b.booleanValue());
+        b = (Boolean)props.get(EditorFindSupport.FIND_BLOCK_SEARCH);
+        boolean blockSearch = (b != null && b.booleanValue());
+        Integer i = (Integer) props.get(EditorFindSupport.FIND_BLOCK_SEARCH_START);
+        int blockSearchStart = (i != null) ? i.intValue() : 0;
+        Position pos = (Position) props.get(EditorFindSupport.FIND_BLOCK_SEARCH_END);
+        int blockSearchEnd = (pos != null) ? pos.getOffset() : doc.getLength();
+
+        CharSequence cs = null;
+        if (blockSearch) 
+            cs = DocumentUtilities.getText(doc, blockSearchStart, blockSearchEnd - blockSearchStart);
+        else
+            cs = DocumentUtilities.getText(doc);
         if (cs==null) return null;
-        int findRet = finder.find(startOffset, cs);
+        int initOffset;
+        if (back && !blockSearch)
+            initOffset = (endOffset<doc.getLength()) ? endOffset : startOffset;
+        else if (back && blockSearch)
+            initOffset = endOffset - startOffset;
+        else if (!back && blockSearch) 
+            initOffset = startOffset - blockSearchStart;
+         else
+            initOffset = startOffset;
+        int findRet = finder.find(initOffset, cs);
         if (!finder.isFound()){
             ret[0]  = -1;
             return new FindReplaceResult(ret, replaceText);
         }
-        ret[0] = startOffset + findRet;
+        if (blockSearch)
+            ret[0] = blockSearchStart + findRet;
+        else
+            ret[0] = findRet;
         
         if (finder instanceof StringFinder){
             int length = ((StringFinder)finder).getFoundLength();
@@ -246,7 +273,7 @@ public class DocumentFinder
         if (finder instanceof RegExpFinder){
             Matcher matcher = ((RegExpFinder)finder).getMatcher();
             if (matcher != null && replaceText != null){
-                CharSequence foundString = cs.subSequence(ret[0]-startOffset, ret[1]-startOffset);
+                CharSequence foundString = cs.subSequence(ret[0], ret[1]);
                 matcher.reset(foundString);
                 if (matcher.find()){
                     try{
@@ -748,7 +775,7 @@ public class DocumentFinder
     private static abstract class GenericFwdFinder extends AbstractFinder {
 
         public final int find(int initOffset, CharSequence chars) {
-            int offset = 0;
+            int offset = initOffset;//0;
             int limitPos = chars.length();
             int limitOffset = limitPos - 1;
             while (offset >= 0 && offset < limitPos) {
@@ -781,7 +808,7 @@ public class DocumentFinder
     private static abstract class GenericBwdFinder extends AbstractFinder {
 
         public final int find(int initOffset, CharSequence chars) {
-            int offset = chars.length() - 1;
+            int offset = (initOffset != 0) ? initOffset-1 : chars.length() - 1;
             int offset2;
             int limitPos = 0;
             int limitOffset = chars.length();
@@ -1066,7 +1093,7 @@ public class DocumentFinder
         public int find(int initOffset, CharSequence chars) {
             char ch;
             
-            int charsEnd = chars.length() - 1;
+            int charsEnd = (initOffset !=0) ? initOffset-1 : chars.length() - 1;
             int lineEnd = charsEnd;
             int lineStart = charsEnd;
             for (int i = charsEnd; i>=0; i--){
@@ -1118,7 +1145,7 @@ public class DocumentFinder
 
         public int find(int initOffset, CharSequence chars) {
             matcher = pattern.matcher(chars);
-            if (matcher.find()){
+            if (matcher.find(initOffset)){
                 found = true;
                 int start = matcher.start();
                 int end = matcher.end(); 

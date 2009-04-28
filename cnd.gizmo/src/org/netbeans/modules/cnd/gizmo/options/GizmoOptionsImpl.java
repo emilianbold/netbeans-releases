@@ -73,7 +73,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     }
        
     public static final String PROFILE_ID = "gizmo_options"; // NOI18N
-    private PropertyChangeSupport pcs = null;
+    private final PropertyChangeSupport pcs;
     private boolean needSave = false;
     private String baseDir;
 
@@ -106,14 +106,8 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     public GizmoOptionsImpl(String baseDir, PropertyChangeSupport pcs) {
         this.baseDir = baseDir;
         this.pcs = pcs;
-        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
         toolConfigurations = new HashMap<String, BooleanConfiguration>();
         toolDescriptions = new HashMap<String, String>();
-        List<DLightTool> tools = gizmoConfiguration.getToolsSet();
-        for (DLightTool tool : tools) {
-            toolConfigurations.put(tool.getName(), new BooleanConfiguration(null, true, tool.getName(), tool.getName()));
-            toolDescriptions.put(tool.getName(), tool.getDetailedName());
-        }
         profileOnRun = new BooleanConfiguration(null, true, null, null);
         dataProvider = new IntConfiguration(null, 0, DATA_PROVIDER_NAMES, null);
         currentDPCollection = DataProvidersCollection.DEFAULT;
@@ -122,6 +116,14 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     public void init(Configuration conf) {
         MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
         ExecutionEnvironment execEnv = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
+        List<DLightTool> tools = gizmoConfiguration.getToolsSet();
+        for (DLightTool tool : tools) {
+            String toolName = tool.getName();
+            boolean oldValue = toolConfigurations.get(toolName) == null ? true : toolConfigurations.get(toolName).getValue();
+            toolConfigurations.put(toolName, new BooleanConfiguration(null, oldValue, toolName, toolName));
+            toolDescriptions.put(toolName, tool.getDetailedName());
+        }
 
         //if we have sun studio compiler along compiler collections presentedCompiler
         CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(execEnv);

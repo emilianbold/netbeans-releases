@@ -155,8 +155,7 @@ function initialize() {
 				if(testFileName==filename) {
 				    platform_id = PLATFORM_IDS[i];
 				    option_id   = BUNDLE_IDS[j];
-				    lang_id     = get_language_id();
-				    if(lang_id=="") lang_id = "en";
+				    lang_id     = get_language_id();				    
 				    i = PLATFORM_IDS.length;
 				    j = BUNDLE_IDS.length;	
 				    filename = "";
@@ -164,6 +163,8 @@ function initialize() {
                             }
                         }
 		    }
+
+		    if(lang_id=="") lang_id = "en";
 
 		    if(option_id != "" && platform_id != "") {
 	    	        if (useBouncer(lang_id) == 1) {

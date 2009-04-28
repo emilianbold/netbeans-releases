@@ -78,15 +78,16 @@ public class LazyNodeTest {
 
     @Test
     public void testCreateOriginalAfterNodeExpansion() {
-        doCreateOriginal(true);
+        doCreateOriginal(true, false);
     }
 
     @Test
     public void testCreateOriginalAfterGetActions() {
-        doCreateOriginal(false);
+        doCreateOriginal(false, false);
+        doCreateOriginal(false, true);
     }
 
-    private void doCreateOriginal(boolean askForChildren) {
+    private void doCreateOriginal(boolean askForChildren, boolean underReadAccess) {
         AbstractNode realNode = new AbstractNode(new Children.Array()) {
             @Override
             public Action[] getActions(boolean context) {
@@ -129,8 +130,18 @@ public class LazyNodeTest {
             Node[] arr = instance.getChildren().getNodes(true);
             assertEquals("Three children", 3, arr.length);
         } else {
-            Action[] arr = instance.getActions(true);
-            assertEquals("Three actions", 3, arr.length);
+            if (underReadAccess) {
+                try {
+                    Children.PR.enterReadAccess();
+                    Action[] arr = instance.getActions(true);
+                    assertEquals("Three actions", 3, arr.length);
+                } finally {
+                    Children.PR.exitReadAccess();
+                }
+            } else {
+                Action[] arr = instance.getActions(true);
+                assertEquals("Three actions", 3, arr.length);
+            }
         }
         
         assertEquals("Real node queried now", 1, chm.cnt);
