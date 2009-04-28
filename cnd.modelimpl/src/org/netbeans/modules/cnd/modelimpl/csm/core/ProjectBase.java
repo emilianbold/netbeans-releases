@@ -1517,9 +1517,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 statesToKeep.add(old);
             } else {
-                if (old.pcState.canReplaceOther(pcState)) {
+                if (old.pcState.isBetterOrEqual(pcState)) {
                     return ComparisonResult.WORSE;
-                } else if (pcState.canReplaceOther(old.pcState)) {
+                } else if (pcState.isBetterOrEqual(old.pcState)) {
                     // still superset or current can replace old
                 } else {
                     // states are not comparable => not superset

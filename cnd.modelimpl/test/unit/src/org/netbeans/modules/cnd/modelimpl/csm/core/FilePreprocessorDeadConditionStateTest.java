@@ -90,47 +90,47 @@ public class FilePreprocessorDeadConditionStateTest extends BaseTestCase {
         FilePreprocessorConditionState empty = new FilePreprocessorConditionState("emtpy");
         empty.trimSize();
 
-        assertTrue("state1:"+state1 + " must replace " + biggest, state1.canReplaceOther(biggest));
-        assertFalse("state1:"+state1 + " is not replaceable by " + biggest, biggest.canReplaceOther(state1));
+        assertTrue("state1:"+state1 + " must replace " + biggest, state1.isBetterOrEqual(biggest));
+        assertFalse("state1:"+state1 + " is not replaceable by " + biggest, biggest.isBetterOrEqual(state1));
 
-        assertTrue("state2:"+state2 + " must replace " + state1, state2.canReplaceOther(state1));
-        assertFalse("state2:"+state2 + " is not replaceable by " + state1, state1.canReplaceOther(state2));
+        assertTrue("state2:"+state2 + " must replace " + state1, state2.isBetterOrEqual(state1));
+        assertFalse("state2:"+state2 + " is not replaceable by " + state1, state1.isBetterOrEqual(state2));
 
-        assertTrue("state4:"+state4 + " must replace " + state1, state4.canReplaceOther(state1));
-        assertFalse("state4:"+state4 + " is not replaceable by " + state1, state1.canReplaceOther(state4));
+        assertTrue("state4:"+state4 + " must replace " + state1, state4.isBetterOrEqual(state1));
+        assertFalse("state4:"+state4 + " is not replaceable by " + state1, state1.isBetterOrEqual(state4));
 
-        assertTrue("state4:"+state4 + " must replace " + biggest, state4.canReplaceOther(biggest));
-        assertFalse("state4:"+state4 + " is not replaceable by " + biggest, biggest.canReplaceOther(state4));
+        assertTrue("state4:"+state4 + " must replace " + biggest, state4.isBetterOrEqual(biggest));
+        assertFalse("state4:"+state4 + " is not replaceable by " + biggest, biggest.isBetterOrEqual(state4));
 
-        assertTrue("emtpy:"+empty + " must replace " + state1, empty.canReplaceOther(state1));
-        assertFalse("emtpy:"+empty + " is not replaceable by " + state1, state1.canReplaceOther(empty));
+        assertTrue("emtpy:"+empty + " must replace " + state1, empty.isBetterOrEqual(state1));
+        assertFalse("emtpy:"+empty + " is not replaceable by " + state1, state1.isBetterOrEqual(empty));
 
-        assertTrue("emtpy:"+empty + " must replace " + state2, empty.canReplaceOther(state2));
-        assertFalse("emtpy:"+empty + " is not replaceable by " + state2, state2.canReplaceOther(empty));
+        assertTrue("emtpy:"+empty + " must replace " + state2, empty.isBetterOrEqual(state2));
+        assertFalse("emtpy:"+empty + " is not replaceable by " + state2, state2.isBetterOrEqual(empty));
 
-        assertTrue("emtpy:"+empty + " must replace " + biggest, empty.canReplaceOther(biggest));
-        assertFalse("emtpy:"+empty + " is not replaceable by " + biggest, biggest.canReplaceOther(empty));
+        assertTrue("emtpy:"+empty + " must replace " + biggest, empty.isBetterOrEqual(biggest));
+        assertFalse("emtpy:"+empty + " is not replaceable by " + biggest, biggest.isBetterOrEqual(empty));
         
-        assertTrue("emtpy:"+empty + " must replace " + state4, empty.canReplaceOther(state4));
-        assertFalse("emtpy:"+empty + " is not replaceable by " + state4, state4.canReplaceOther(empty));
+        assertTrue("emtpy:"+empty + " must replace " + state4, empty.isBetterOrEqual(state4));
+        assertFalse("emtpy:"+empty + " is not replaceable by " + state4, state4.isBetterOrEqual(empty));
 
-        assertFalse("state4:"+state4 + " is not comaprable with " + state2, state4.canReplaceOther(state2));
-        assertFalse("state2:"+state2 + " is not comaprable with " + state4, state2.canReplaceOther(state4));
+        assertFalse("state4:"+state4 + " is not comaprable with " + state2, state4.isBetterOrEqual(state2));
+        assertFalse("state2:"+state2 + " is not comaprable with " + state4, state2.isBetterOrEqual(state4));
 
-        assertFalse("state5:" + state5 + " is not comaprable with " + state2, state5.canReplaceOther(state2));
-        assertFalse("state2:" + state2 + " is not comaprable with " + state5, state2.canReplaceOther(state5));
+        assertFalse("state5:" + state5 + " is not comaprable with " + state2, state5.isBetterOrEqual(state2));
+        assertFalse("state2:" + state2 + " is not comaprable with " + state5, state2.isBetterOrEqual(state5));
 
-        assertFalse("state6:" + state6 + " is not comaprable with " + state2, state6.canReplaceOther(state2));
-        assertFalse("state2:" + state2 + " is not comaprable with " + state6, state2.canReplaceOther(state6));
+        assertFalse("state6:" + state6 + " is not comaprable with " + state2, state6.isBetterOrEqual(state2));
+        assertFalse("state2:" + state2 + " is not comaprable with " + state6, state2.isBetterOrEqual(state6));
 
-        assertTrue("state4:" + state4 + " must replace " + state5, state4.canReplaceOther(state5));
-        assertFalse("state4:" + state4 + " is not replaceable by " + state5, state5.canReplaceOther(state4));
+        assertTrue("state4:" + state4 + " must replace " + state5, state4.isBetterOrEqual(state5));
+        assertFalse("state4:" + state4 + " is not replaceable by " + state5, state5.isBetterOrEqual(state4));
 
         assertTrue("["+10+"-"+20+"] is in active block of " + state4, state4.isInActiveBlock(10, 20));
 
-        assertFalse("state7:" + state7 + " is not comaprable with " + state2, state7.canReplaceOther(state2));
-        assertFalse("state2:" + state2 + " is not comaprable with " + state7, state2.canReplaceOther(state7));
-        assertFalse("state7:" + state7 + " is not comaprable with " + state6, state7.canReplaceOther(state6));
-        assertFalse("state6:" + state6 + " is not comaprable with " + state7, state6.canReplaceOther(state7));
+        assertFalse("state7:" + state7 + " is not comaprable with " + state2, state7.isBetterOrEqual(state2));
+        assertFalse("state2:" + state2 + " is not comaprable with " + state7, state2.isBetterOrEqual(state7));
+        assertFalse("state7:" + state7 + " is not comaprable with " + state6, state7.isBetterOrEqual(state6));
+        assertFalse("state6:" + state6 + " is not comaprable with " + state7, state6.isBetterOrEqual(state7));
     }
 }

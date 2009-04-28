@@ -218,7 +218,12 @@ public final class FilePreprocessorConditionState implements APTParseFileWalker.
         return true;
     }
 
-    public final boolean canReplaceOther(FilePreprocessorConditionState other) {
+    /**
+     * check if this state can be used to replace another (it is better or equal to another)
+     * @param other
+     * @return
+     */
+    public final boolean isBetterOrEqual(FilePreprocessorConditionState other) {
         if (other == null) {
             return false;
         }
