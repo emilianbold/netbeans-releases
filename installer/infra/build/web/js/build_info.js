@@ -58,7 +58,7 @@ build_info.ADD_VERSION_INFO_TO_URL     = 0;
 
 build_info.BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 
-build_info.USE_HTML_ZIP_LISTING = 1;
+build_info.USE_HTML_ZIP_LISTING = 0;
 
 build_info.add_download_tabs = function() {
 	add_download_tab("6.5.1", "http://www.netbeans.org/downloads");
