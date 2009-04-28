@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.richexecution;
+package org.netbeans.lib.richexecution.program;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,11 +48,12 @@ import java.util.Map;
 
 /**
  * Description of a program to be executed.
- * After and partial delegator to {@link java.lang.ProcessBuilder}.
+ * Similar to {@link java.lang.ProcessBuilder} except for the lack of start().
  * Use {@link PtyExecutor} or subclasses thereof to run the program.
  * @author ivan
  */
 public class Program {
+    // Use ProcessBuilder strictly as a convenience to hold state
     private final ProcessBuilder processBuilder;
     private List<String> command;
 
@@ -89,10 +90,6 @@ public class Program {
     protected String basename(String name) {
         File nameFile = new File(name);
         return nameFile.getName();
-    }
-
-    public ProcessBuilder processBuilder() {
-        return processBuilder;
     }
 
     public List<String> command() {

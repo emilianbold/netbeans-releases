@@ -1,8 +1,8 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
- * Contributor(s):
- * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,43 +31,72 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.richexecution;
+package org.netbeans.modules.terminal.ioprovider;
 
-import java.util.StringTokenizer;
+import org.netbeans.lib.richexecution.program.Command;
+import org.netbeans.lib.richexecution.program.Program;
+import org.openide.util.Lookup;
+import org.openide.windows.InputOutput;
 
 /**
- * Description of a command to be run under a shell.
- * <p>
- * For example:
- * <pre>
- * Program printit = new Command("/bin/cat /etc/termcap");
- * </pre>
- * <p>
- * Use {@link PtyExecutor} or subclasses thereof to run the program.
- * @author ivan
+ * Command execution
+ * @since 1.15
+ * @author Tomas Holy
  */
-public final class Command extends Shell {
-    private final String name;
-
-    public Command(String command) {
-        StringTokenizer st = new StringTokenizer(command);
-        String cmdName = st.nextToken();
-        name = basename(cmdName);
-
-	if (OS.get() == OS.WINDOWS)
-	    add("/c");
-	else
-	    add("-c");
-        add(command);
+public abstract class IOExecution {
+    private static IOExecution find(InputOutput io) {
+        if (io instanceof Lookup.Provider) {
+            Lookup.Provider p = (Lookup.Provider) io;
+            return p.getLookup().lookup(IOExecution.class);
+        }
+        return null;
     }
 
     /**
-     * Return basename of the first word of the command.
-     * @return basename of the first word of the command.
+     * Executes command in provided IO
+     * @param io IO to operate on
+     * @param command command to execute
      */
-    public String name() {
-        return name;
+    @Deprecated
+    public static void executeCommand(InputOutput io, String command) {
+        IOExecution ioe = find(io);
+        if (ioe != null) {
+	    Program program = new Command(command);
+            ioe.execute(program);
+        }
     }
+
+    /**
+     * Executes program in provided IO
+     * @param io IO to operate on
+     * @param program program to execute
+     */
+    public static void execute(InputOutput io, Program program) {
+        IOExecution ioe = find(io);
+        if (ioe != null) {
+            ioe.execute(program);
+        }
+    }
+
+    /**
+     * Checks whether this feature is supported for provided IO
+     * @param io IO to check on
+     * @return true if supported
+     */
+    public static boolean isSupported(InputOutput io) {
+        return find(io) != null;
+    }
+
+    /**
+     * Executes program.
+     * @param program program to execute
+     */
+
+    abstract protected void execute(Program command);
 }

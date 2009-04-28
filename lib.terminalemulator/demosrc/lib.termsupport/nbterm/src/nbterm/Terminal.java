@@ -75,7 +75,7 @@ import org.netbeans.lib.termsupport.TermExecutor;
 import org.netbeans.lib.termsupport.DefaultFindState;
 import org.netbeans.lib.termsupport.FindBar;
 import org.netbeans.lib.termsupport.FindState;
-import org.netbeans.lib.richexecution.Program;
+import org.netbeans.lib.richexecution.program.Program;
 import org.netbeans.lib.richexecution.PtyProcess;
 import org.netbeans.lib.termsupport.TermOptions;
 import org.netbeans.lib.termsupport.TermOptionsPanel;

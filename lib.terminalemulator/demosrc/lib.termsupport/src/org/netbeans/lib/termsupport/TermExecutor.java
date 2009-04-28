@@ -44,7 +44,7 @@ package org.netbeans.lib.termsupport;
 import org.netbeans.lib.richexecution.PtyProcess;
 import org.netbeans.lib.richexecution.PtyExecutor;
 import org.netbeans.lib.richexecution.OS;
-import org.netbeans.lib.richexecution.Program;
+import org.netbeans.lib.richexecution.program.Program;
 import java.awt.Dimension;
 import java.util.Map;
 import org.netbeans.lib.terminalemulator.LineDiscipline;

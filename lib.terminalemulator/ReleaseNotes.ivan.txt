@@ -1,3 +1,51 @@
+nobugid (Streams from StreamTerm)
+	While experimenting with IOExecution it becaame clear that there
+	would be some merit for StreamTerm to provide actual Streams the way
+	InputOutput does. To that end StreamTerm provides:
+		Reader getIn()
+		Writer getOut().
+
+	This simplifies the implemenatation of TerminalInputOutput. Or rather,
+	factors some of the implementation into TerminalInputOutput.
+
+nobugid (external hyperlink generation)
+	Terminal can now recognize externally generated hyperlinks
+	(per http://wiki.netbeans.org/TerminalEmulatorHyperlinking).
+	You can generate such hyperlinks using 
+		lib.terminalemulator/demosrc/terminal/examples/make_filter.awk
+	as follows:
+		make | awk -f make_filter.awk
+
+	In order to process such hyperlinks one has to call
+	Terminal.setHyperlinkListener which takes a new interface 
+	HyperlinkListener. This is a bit cleaner than the older way
+	of doing this as described in
+		http://wiki.netbeans.org/TerminalEmulatorHyperlinking?version=6
+
+	CommandmermDirectAction (aka Command with pty and direct access to
+	Terminals) sets up a hyperlink listener.
+
+nobugid (Experimentation with IOExecution)
+	Have a temporary IOExecution per Tomas Holy's original
+	proposal in terminal/ioprovider.
+
+	Moved Program/Command and Shell into it's own package inside
+	richexecution. Program used to be based on ProcessBuilder and
+	even returned it. Now it's a pure data object and 
+	PtyExecutor builds the ProcessBuilder on demand.
+
+	TerminalInputOutput now implements it.
+
+nobugid (more: track new I/O API's)
+	terminal/example module has these:
+	- IOFeaturesAction creates a Term base InputOutput to 
+	  demonstrate various IOProvider features:
+	  - IOPosition
+	  - IOColorLines
+	  - IOColors
+	  - IOTab (this uses sunsky.png)
+	They are basically implemented in TerminalInputOutput.
+
 nobugid (track new I/O API's)
 	TerminalIOProviderSupport.getIOProvider() now uses
 	IOProvider.get("Terminal") instead of it's own iteration through

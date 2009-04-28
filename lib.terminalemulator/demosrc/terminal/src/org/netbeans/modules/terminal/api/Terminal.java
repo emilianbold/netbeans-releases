@@ -66,12 +66,14 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.StreamTerm;
-import org.netbeans.lib.richexecution.Program;
+import org.netbeans.lib.richexecution.program.Program;
 import org.netbeans.lib.termsupport.DefaultFindState;
 import org.netbeans.lib.termsupport.FindState;
 import org.netbeans.lib.richexecution.PtyProcess;
+import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.termsupport.TermExecutor;
 import org.netbeans.lib.termsupport.TermOptions;
 import org.netbeans.modules.terminal.TermAdvancedOption;
@@ -150,7 +152,8 @@ public class Terminal extends JComponent {
 
         public void closed() {
             System.out.printf("Terminal.CallBacks.closed()\n");
-            close();
+	    // Causes assertion error in IOContainer/IOWindow.
+            // OLD close();
         }
 
         public void selected() {
@@ -364,7 +367,7 @@ public class Terminal extends JComponent {
         if (terminalContainer != null)
             terminalContainer.setActions(this, actions);
         else if (ioContainer != null)
-            throw new UnsupportedOperationException("Not supported yet.");
+	    ioContainer.setToolbarActions(this, actions);
         pcs.firePropertyChange(PROP_ACTIONS, oldActions, actions);
     }
 
@@ -692,5 +695,16 @@ public class Terminal extends JComponent {
             }
         } );
         menu.show(term.getScreen(), p.x, p.y);
+    }
+
+    public void setHyperlinkListener(final HyperlinkListener hyperlinkListener) {
+	((ActiveTerm) term).setActionListener(new ActiveTermListener() {
+	    public void action(ActiveRegion r, InputEvent e) {
+		if (r.isLink()) {
+		    String url = (String) r.getUserObject();
+		    hyperlinkListener.action(url);
+		}
+	    }
+	});
     }
 }
