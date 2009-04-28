@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.jellytools.java</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.lib2</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.jellytools.ide</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -36,6 +45,16 @@
             <public-packages>
                 <package>org.netbeans.jellytools</package>
                 <package>org.netbeans.jellytools.actions</package>
+                <package>org.netbeans.jellytools.modules.db.derby</package>
+                <package>org.netbeans.jellytools.modules.db.derby.actions</package>
+                <package>org.netbeans.jellytools.modules.debugger</package>
+                <package>org.netbeans.jellytools.modules.debugger.actions</package>
+                <package>org.netbeans.jellytools.modules.form</package>
+                <package>org.netbeans.jellytools.modules.form.actions</package>
+                <package>org.netbeans.jellytools.modules.form.properties.editors</package>
+                <package>org.netbeans.jellytools.modules.freeform.actions</package>
+                <package>org.netbeans.jellytools.modules.freeform.nodes</package>
+                <package>org.netbeans.jellytools.modules.java.editor</package>
                 <package>org.netbeans.jellytools.nodes</package>
             </public-packages>
         </data>
