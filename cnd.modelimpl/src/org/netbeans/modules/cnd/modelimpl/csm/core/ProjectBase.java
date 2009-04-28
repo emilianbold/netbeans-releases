@@ -77,6 +77,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.MyFile;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.StatePair;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
@@ -109,8 +111,6 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent, CsmIdentifiable {
 
-    private volatile boolean needParseOrphan;
-
     /** Creates a new instance of CsmProjectImpl */
     protected ProjectBase(ModelImpl model, Object platformProject, String name) {
         RepositoryUtils.openUnit(createProjectKey(platformProject));
@@ -137,7 +137,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (TraceFlags.CLOSE_AFTER_PARSE) {
             Terminator.create(this);
         }
-        needParseOrphan = ModelSupport.needParseOrphan(platformProject);
     }
 
     private boolean checkConsistency() {
@@ -785,9 +784,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         } else {
             // put directly into parser queue if needed
-            if (isSourceFile || needParseOrphan) {
-                ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
-            }
+            ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
         }
     }
 
@@ -807,7 +804,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         initializationTask = null;
                     }
                 }
-                ;
             };
             String text = (status == Status.Initial) ? "Filling parser queue for " : "Validating files for ";	// NOI18N
             synchronized (initializationTaskLock) {
@@ -2029,6 +2025,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             ProjectComponent.setStable(fileContainerKey);
             ProjectComponent.setStable(graphStorageKey);
             ProjectComponent.setStable(classifierStorageKey);
+            checkStates(this, libsAlreadyParsed);
 
             if (!libsAlreadyParsed) {
                 ParseFinishNotificator.onParseFinish(this);
@@ -2037,6 +2034,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (TraceFlags.PARSE_STATISTICS) {
             ParseStatistics.getInstance().printResults(this);
             ParseStatistics.getInstance().clear(this);
+        }
+    }
+
+    private static void checkStates(ProjectBase prj, boolean libsAlreadyParsed){
+        if (false) {
+            System.err.println("Checking states for project "+prj.getName());
+            for(Map.Entry<CharSequence, MyFile> entry : prj.getFileContainer().getFileStorage().entrySet()){
+                for(StatePair pair : entry.getValue().getStatePairs()){
+                    if (!pair.state.isValid()){
+                        System.err.println("Invalid state for file "+entry.getKey());
+                    }
+                }
+            }
+            if (libsAlreadyParsed) {
+                for(CsmProject p : prj.getLibraries()){
+                    if (p instanceof ProjectBase) {
+                        checkStates((ProjectBase) p, false);
+                    }
+                }
+            }
         }
     }
 
