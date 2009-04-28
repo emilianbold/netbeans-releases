@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import java.io.IOException;
@@ -141,7 +142,13 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
                     connectAction);
         }
 
-        OSFamily osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
+        OSFamily osFamily = OSFamily.UNKNOWN;
+
+        try {
+            osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
 
         if (osFamily != OSFamily.LINUX && osFamily != OSFamily.SUNOS) {
             return ValidationStatus.invalidStatus(getMessage("ValidationStatus.ProcReader.OSNotSupported")); // NOI18N
@@ -200,7 +207,17 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
      */
     private synchronized void targetStarted(DLightTarget target) {
         ExecutionEnvironment env = target.getExecEnv();
-        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+        HostInfo hostInfo = null;
+        try {
+            hostInfo = HostInfoUtils.getHostInfo(env);
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        if (hostInfo == null) {
+            return;
+        }
+
         NativeProcessBuilder npb = new NativeProcessBuilder(env, hostInfo.getShell());
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.inputOutput(InputOutput.NULL);
