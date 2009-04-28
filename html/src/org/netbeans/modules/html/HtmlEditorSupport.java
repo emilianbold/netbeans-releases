@@ -128,47 +128,50 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     
     @Override 
     public void saveDocument() throws IOException {
-         //try to find encoding specification in the editor content
-            String documentContent = getDocumentText();
-            String encoding = HtmlDataObject.findEncoding(documentContent);
-            String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
-            String finalEncoding = null;
-            if (encoding != null) {
-                //found encoding specified in the file content by meta tag
-                if (!isSupportedEncoding(encoding) || !canEncode(documentContent, encoding)) {
-                    //test if the file can be saved by the original encoding or if it needs to be saved using utf-8
-                    finalEncoding = canEncode(documentContent, feqEncoding) ? feqEncoding : UTF_8_ENCODING;
-                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(HtmlEditorSupport.class, "MSG_unsupportedEncodingSave", new Object[]{getDataObject().getPrimaryFile().getNameExt(), encoding, finalEncoding, finalEncoding.equals(UTF_8_ENCODING) ? "" : " the original"}), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
-                    nd.setValue(NotifyDescriptor.NO_OPTION);
-                    DialogDisplayer.getDefault().notify(nd);
-                    if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+        updateEncoding();
+        super.saveDocument();
+        HtmlEditorSupport.this.getDataObject().setModified(false);
+    }
+
+    void updateEncoding() throws UserCancelException {
+        //try to find encoding specification in the editor content
+        String documentContent = getDocumentText();
+        String encoding = HtmlDataObject.findEncoding(documentContent);
+        String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
+        String finalEncoding = null;
+        if (encoding != null) {
+            //found encoding specified in the file content by meta tag
+            if (!isSupportedEncoding(encoding) || !canEncode(documentContent, encoding)) {
+                //test if the file can be saved by the original encoding or if it needs to be saved using utf-8
+                finalEncoding = canEncode(documentContent, feqEncoding) ? feqEncoding : UTF_8_ENCODING;
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(HtmlEditorSupport.class, "MSG_unsupportedEncodingSave", new Object[]{getDataObject().getPrimaryFile().getNameExt(), encoding, finalEncoding, finalEncoding.equals(UTF_8_ENCODING) ? "" : " the original"}), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+                nd.setValue(NotifyDescriptor.NO_OPTION);
+                DialogDisplayer.getDefault().notify(nd);
+                if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
                         throw new UserCancelException();
-                    }
-                } else {
-                    finalEncoding = encoding;
                 }
             } else {
-                //no encoding specified in the file, use FEQ value
-                if (!canEncode(documentContent, feqEncoding)) {
-                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(HtmlEditorSupport.class, "MSG_badCharConversionSave", new Object[]{getDataObject().getPrimaryFile().getNameExt(), feqEncoding}), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
-                    nd.setValue(NotifyDescriptor.NO_OPTION);
-                    DialogDisplayer.getDefault().notify(nd);
-                    if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
-                        throw new UserCancelException();
-                    } else {
-                        finalEncoding = UTF_8_ENCODING;
-                    }
-                } else {
-                    finalEncoding = feqEncoding;
-                }
+                finalEncoding = encoding;
             }
+        } else {
+            //no encoding specified in the file, use FEQ value
+            if (!canEncode(documentContent, feqEncoding)) {
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(HtmlEditorSupport.class, "MSG_badCharConversionSave", new Object[]{getDataObject().getPrimaryFile().getNameExt(), feqEncoding}), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+                nd.setValue(NotifyDescriptor.NO_OPTION);
+                DialogDisplayer.getDefault().notify(nd);
+                if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                        throw new UserCancelException();
+                } else {
+                    finalEncoding = UTF_8_ENCODING;
+                }
+            } else {
+                finalEncoding = feqEncoding;
+            }
+        }
 
-            //FEQ cannot be run in saveFromKitToStream since document is locked for writing,
-            //so setting the FEQ result to document property
-            getDocument().putProperty(DOCUMENT_SAVE_ENCODING, finalEncoding);
-            
-            super.saveDocument();
-            HtmlEditorSupport.this.getDataObject().setModified(false);
+        //FEQ cannot be run in saveFromKitToStream since document is locked for writing,
+        //so setting the FEQ result to document property
+        getDocument().putProperty(DOCUMENT_SAVE_ENCODING, finalEncoding);
     }
     
     @Override

@@ -94,7 +94,7 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel implements Lis
 
         projectNameLabel.setText("<html><b>" + searchInfo.kenaiProject.getDisplayName() + " (" + searchInfo.kenaiProject.getName() + ")</b></html>");
         if (searchInfo.kenaiFeature != null) {
-            repoPathLabel.setText(searchInfo.kenaiFeature.getWebLocation().toExternalForm());
+            repoPathLabel.setText(searchInfo.kenaiFeature.getLocation());
             repoTypeLabel.setText("(" + searchInfo.kenaiFeature.getService() + ")");
         }
         try {
