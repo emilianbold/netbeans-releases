@@ -207,6 +207,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz142674.cpp");
     }
 
+    public void testIZ149285() throws Exception {
+        // IZ#149285 : A problem with function bodies in different condition branches in headers
+        performStaticTest("iz149285.cpp");
+        performStaticTest("iz149285.h");
+    }
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

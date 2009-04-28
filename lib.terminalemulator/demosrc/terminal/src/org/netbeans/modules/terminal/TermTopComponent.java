@@ -127,6 +127,18 @@ public final class TermTopComponent extends TopComponent implements TerminalWind
         // TODO add custom code on component closing
     }
 
+    @Override
+    public void componentActivated() {
+        super.componentActivated();
+        tc.componentActivated();
+    }
+
+    @Override
+    public void componentDeactivated() {
+        super.componentDeactivated();
+        tc.componentDeactivated();
+    }
+
     /** replaces this in object stream */
     @Override
     public Object writeReplace() {

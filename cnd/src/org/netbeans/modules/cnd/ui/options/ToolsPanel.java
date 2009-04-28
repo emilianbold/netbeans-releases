@@ -173,18 +173,24 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         }
         cbDevHost.removeItemListener(this);
 
+        ExecutionEnvironment selectedEnv = model.getSelectedDevelopmentHost();
+        ServerRecord selectedRec = null;
+
         Collection<? extends ServerRecord> hostList = cacheManager.getHosts();
         if (hostList != null) {
             cbDevHost.removeAllItems();
             for (ServerRecord rec : hostList) {
+                if (rec.getExecutionEnvironment().equals(selectedEnv)) {
+                    selectedRec = rec;
+                }
                 cbDevHost.addItem(rec);
             }
         } else {
             cbDevHost.addItem(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
         }
 
-        if (model.getSelectedDevelopmentHost() != null) {
-            cbDevHost.setSelectedItem(model.getSelectedDevelopmentHost());
+        if (selectedRec != null) {
+            cbDevHost.setSelectedItem(selectedRec);
         } else {
             cbDevHost.setSelectedIndex(cacheManager.getDefaultHostIndex());
         }

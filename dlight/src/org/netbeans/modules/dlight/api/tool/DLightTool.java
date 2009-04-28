@@ -234,10 +234,12 @@ public final class DLightTool implements Validateable<DLightTarget> {
     }
 
     final List<Indicator<?>> getIndicators() {
-        if (indicators.size() == 0){
-            addAllIndicators();
+        synchronized(indicators){
+            if (indicators.size() == 0){
+                addAllIndicators();
+            }
+            return indicators;
         }
-        return indicators;
     }
 
     void registerCollector(DataCollector collector) {

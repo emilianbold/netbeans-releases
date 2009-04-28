@@ -38,10 +38,11 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.tools.*;
 import java.io.File;
-import java.io.StringWriter;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,6 +75,7 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -195,7 +197,13 @@ public class LLDataCollector
         if (env.isLocal()) {
             return localFile.getParentFile().getAbsolutePath();
         } else {
-            return HostInfoUtils.getHostInfo(env).getTempDir() + "/tools/" + dirname; // NOI18N
+            String tmpDir;
+            try {
+                tmpDir = HostInfoUtils.getHostInfo(env).getTempDir();
+            } catch (Throwable ex) {
+                tmpDir = "/var/tmp"; // NOI18N
+            }
+            return tmpDir + "/tools/" + dirname; // NOI18N
         }
     }
 
@@ -219,7 +227,7 @@ public class LLDataCollector
         AttachableTarget at = (AttachableTarget) target;
         ExecutionEnvironment env = target.getExecEnv();
         NativeProcessBuilder npb = null;
-        for (Map.Entry<String, File> entry: locateProfMonitors(env).entrySet()) {
+        for (Map.Entry<String, File> entry : locateProfMonitors(env).entrySet()) {
             npb = new NativeProcessBuilder(env,
                     getRemoteDir(env, entry.getValue(), entry.getKey()) + "/" + entry.getValue().getName()); // NOI18N
             break;
@@ -268,8 +276,10 @@ public class LLDataCollector
             } else if (line.startsWith("sync:")) { // NOI18N
                 String[] fields = line.substring(6).split("\t"); // NOI18N
                 float syncCurr = Float.parseFloat(fields[0]);
-                int threads = Integer.parseInt(fields[1]);
-                row = new DataRow(LLDataCollectorConfiguration.SYNC_TABLE.getColumnNames(), Arrays.asList(Float.valueOf((syncCurr - syncPrev) * 100 / threads), Integer.valueOf(threads)));
+                if (0f < syncPrev) {
+                    int threads = Integer.parseInt(fields[1]);
+                    row = new DataRow(LLDataCollectorConfiguration.SYNC_TABLE.getColumnNames(), Arrays.asList(Float.valueOf((syncCurr - syncPrev) * 100 / threads), Integer.valueOf(threads)));
+                }
                 syncPrev = syncCurr;
             }
             if (row != null) {
@@ -322,6 +332,18 @@ public class LLDataCollector
             return ValidationStatus.unknownStatus(
                     getMessage("ValidationStatus.HostNotConnected"), // NOI18N
                     connectAction);
+        }
+
+        OSFamily osFamily = OSFamily.UNKNOWN;
+
+        try {
+            osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        if (osFamily != OSFamily.LINUX) {
+            return ValidationStatus.invalidStatus(getMessage("ValidationStatus.ProfAgent.OSNotSupported")); // NOI18N
         }
 
         Map<String, File> profAgentsLocal = locateProfAgents(env);

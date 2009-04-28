@@ -52,6 +52,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -124,7 +125,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
             }
         }
         sb.append(')');
-        FunctionImpl.appendParametersSignature(getParameters(), sb);
+        InstantiationProviderImpl.appendParametersSignature(getParameters(), sb);
         return sb;
     }
 

@@ -94,7 +94,7 @@ made subject to such option by the copyright holder.
                             <sp1:OnlySignEntireHeadersAndBody/>
                             <sp1:AlgorithmSuite>
                                 <wsp1:Policy>
-                                        <sp1:Basic128/>
+                                        <sp1:Basic128Sha256/>
                                     </wsp1:Policy>
                             </sp1:AlgorithmSuite>
                     </wsp1:Policy>

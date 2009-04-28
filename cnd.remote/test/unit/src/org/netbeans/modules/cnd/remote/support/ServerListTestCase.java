@@ -40,6 +40,7 @@ package org.netbeans.modules.cnd.remote.support;
 
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -62,7 +63,7 @@ public class ServerListTestCase extends RemoteTestBase {
     public void testRun() throws Exception {        
         if (canTestRemote()) {
             ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
-            ServerRecord rec = ServerList.addServer(execEnv, execEnv.getDisplayName(), false, true);
+            ServerRecord rec = ServerList.addServer(execEnv, execEnv.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
             assertNotNull("Null server record", rec);
             assertEquals(rec.getExecutionEnvironment(), execEnv);
         } else {

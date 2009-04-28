@@ -57,6 +57,7 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo
 import org.netbeans.modules.dlight.perfan.storage.impl.ErprintSession;
 import org.netbeans.modules.dlight.perfan.storage.impl.ExperimentStatistics;
 import org.netbeans.modules.dlight.perfan.storage.impl.Metrics;
+import org.netbeans.modules.dlight.perfan.storage.impl.ThreadsStatistic;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -67,7 +68,7 @@ public class MonitorsUpdateService {
     private static Pattern lineStartsWithIntegerPattern = Pattern.compile("^ *([0-9]+).*$"); // NOI18N
     private static final Logger log = DLightLogger.getLogger(MonitorsUpdateService.class);
     private static final List<String> syncColNames = Collections.unmodifiableList(
-            Arrays.asList(SunStudioDCConfiguration.c_ulockSummary.getColumnName()));
+            Arrays.asList(SunStudioDCConfiguration.c_ulockSummary.getColumnName(), SunStudioDCConfiguration.c_threadsCount.getColumnName()));//NOI18N
     private static final List<String> leaksColNames = Collections.unmodifiableList(
             Arrays.asList(SunStudioDCConfiguration.c_leakSize.getColumnName()));
     private final ErprintSession erprintSession;
@@ -161,9 +162,10 @@ public class MonitorsUpdateService {
                     if (isSyncMonitor) {
                         try {
                             ExperimentStatistics stat = erprintSession.getExperimentStatistics(5, !restarted);
+                            ThreadsStatistic threadsStatistic = erprintSession.getThreadsStatistic(5, !restarted);
                             restarted = true;
                             if (stat != null) {
-                                newData.add(new DataRow(syncColNames, Arrays.asList(stat.getULock_p())));
+                                newData.add(new DataRow(syncColNames, Arrays.asList(stat.getULock_p(), threadsStatistic.getThreadsCount())));
                             }
                         } catch (Throwable ex) {
                             log.log(Level.FINEST, "Exception while getExperimentStatistics in MonitorUpdateService", ex);
