@@ -75,7 +75,7 @@ import org.netbeans.lib.termsupport.TermExecutor;
 import org.netbeans.lib.termsupport.DefaultFindState;
 import org.netbeans.lib.termsupport.FindBar;
 import org.netbeans.lib.termsupport.FindState;
-import org.netbeans.lib.richexecution.Program;
+import org.netbeans.lib.richexecution.program.Program;
 import org.netbeans.lib.richexecution.PtyProcess;
 import org.netbeans.lib.termsupport.TermOptions;
 import org.netbeans.lib.termsupport.TermOptionsPanel;
@@ -177,6 +177,7 @@ class Terminal extends JFrame implements Runnable {
 
     private void applyTermOptions(boolean initial) {
         Font font = term.getFont();
+        /* OLD
         if (font != null) {
             Font newFont = new Font(font.getName(),
                                     font.getStyle(),
@@ -188,6 +189,9 @@ class Terminal extends JFrame implements Runnable {
                                     termOptions.getFontSize());
             term.setFont(newFont);
         }
+        */
+        term.setFixedFont(true);
+        term.setFont(termOptions.getFont());
 
         term.setBackground(termOptions.getBackground());
         term.setForeground(termOptions.getForeground());
