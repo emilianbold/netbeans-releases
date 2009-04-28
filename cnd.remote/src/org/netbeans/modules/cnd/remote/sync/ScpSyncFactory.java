@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,52 +34,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.ui.wizard;
 
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+package org.netbeans.modules.cnd.remote.sync;
+
+import java.io.File;
+import java.io.PrintWriter;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
-/*package*/ final class CreateHostWizardPanel3 implements WizardDescriptor.Panel<WizardDescriptor> {
+/**
+ *
+ * @author Vladimir Kvashin
+ */
+public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=300)
+class ScpSyncFactory extends RemoteSyncFactory {
 
-    private CreateHostVisualPanel3 component;
-
-    public CreateHostVisualPanel3 getComponent() {
-        if (component == null) {
-            component = new CreateHostVisualPanel3();
-        }
-        return component;
+    @Override
+    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
+        return new SharedSyncWorker(localDir, executionEnvironment, out, err);
     }
 
-    public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(getClass(), "SCP_Factory_Name");
     }
 
-    public boolean isValid() {
+    @Override
+    public String getDescription() {
+        return NbBundle.getMessage(getClass(), "SCP_Factory_Description");
+    }
+
+    @Override
+    public String getID() {
+        return "scp"; //NOI18N
+    }
+
+    @Override
+    public boolean isApplicable(ExecutionEnvironment execEnv) {
         return true;
     }
-
-    public final void addChangeListener(ChangeListener l) {
-    }
-
-    public final void removeChangeListener(ChangeListener l) {
-    }
-
-    public void readSettings(WizardDescriptor settings) {
-        getComponent().init(
-            (ExecutionEnvironment)settings.getProperty(CreateHostWizardConstants.PROP_HOST),
-            (ToolsCacheManager)settings.getProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER)
-        );
-    }
-
-    public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(CreateHostWizardConstants.PROP_DISPLAY_NAME, getComponent().getHostDisplayName());
-        settings.putProperty(CreateHostWizardConstants.PROP_SYNC, getComponent().getRemoteSyncFactory());
-    }
 }
-
