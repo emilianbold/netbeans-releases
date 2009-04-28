@@ -126,6 +126,7 @@ public class SunStudioDataCollector
     private String sproHome;
     private DLightTarget target;
     private boolean isAttachable;
+    private HostInfo hostInfo = null;
 
 
     static {
@@ -240,22 +241,23 @@ public class SunStudioDataCollector
             this.target = target;
 
             ExecutionEnvironment execEnv = target.getExecEnv();
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-
-            switch (hostInfo.getOSFamily()) {
-                case LINUX:
-                case SUNOS:
-                    break;
-                default:
-                    validationStatus = ValidationStatus.invalidStatus(
-                            "SunStudioDataCollector works on SunOS or Linux only."); // NOI18N
-                    return validationStatus;
-            }
 
             String command = null;
             String sprohome = null;
-
             try {
+                hostInfo = HostInfoUtils.getHostInfo(execEnv);
+
+                switch (hostInfo.getOSFamily()) {
+                    case LINUX:
+                    case SUNOS:
+                        break;
+                    default:
+                        validationStatus = ValidationStatus.invalidStatus(
+                                loc("ValidationStatus.UnsupportedPlatform")); // NOI18N
+                        return validationStatus;
+                }
+
+
                 Collection<? extends SunStudioLocatorFactory> factories =
                         Lookup.getDefault().lookupAll(SunStudioLocatorFactory.class);
 
@@ -280,7 +282,8 @@ public class SunStudioDataCollector
                 }
 
                 if (notFound) {
-                    validationStatus = ValidationStatus.invalidStatus(NbBundle.getMessage(SunStudioDataCollector.class, "ValidationStatus.NoSunStudioFound.html")); //NOI18N
+                    validationStatus = ValidationStatus.invalidStatus(
+                            loc("ValidationStatus.NoSunStudioFound.html")); //NOI18N
                     return validationStatus;
                 }
 
@@ -349,7 +352,7 @@ public class SunStudioDataCollector
             DLightLogger.assertTrue(this.target == target,
                     "Validation was performed against another target"); // NOI18N
 
-            String tmpDirBase = HostInfoUtils.getHostInfo(target.getExecEnv()).getTempDir();
+            String tmpDirBase = hostInfo.getTempDir();
             this.experimentDir = tmpDirBase + "/experiment_" + uid.incrementAndGet() + ".er"; // NOI18N
             this.storage = (PerfanDataStorage) dataStorage;
 

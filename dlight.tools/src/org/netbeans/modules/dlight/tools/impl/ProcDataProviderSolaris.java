@@ -38,15 +38,18 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
+import java.util.concurrent.CancellationException;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
@@ -57,11 +60,20 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
 
     private final ProcDataProvider provider;
-    private int cpuCount;
+    private final int cpuCount;
 
     public ProcDataProviderSolaris(ProcDataProvider provider, ExecutionEnvironment env) {
         this.provider = provider;
-        this.cpuCount = HostInfoUtils.getHostInfo(env).getCpuNum();
+        int cpus = 1;
+
+        try {
+            HostInfo info = HostInfoUtils.getHostInfo(env);
+            cpus = info.getCpuNum();
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        this.cpuCount = cpus;
     }
 
     public String getCommand(int pid) {
@@ -151,7 +163,7 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
             if (total <= value) {
                 return 100f;
             } else {
-                return (float)(100f * value / total);
+                return (float) (100f * value / total);
             }
         } else {
             return 0f;
