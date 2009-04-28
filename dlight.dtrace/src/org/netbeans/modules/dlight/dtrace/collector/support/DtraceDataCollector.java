@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -243,11 +244,16 @@ public final class DtraceDataCollector
             Util.setExecutionPermissions(Arrays.asList(scriptPath));
         } else {
             File script = new File(localScriptPath);
-            scriptPath = HostInfoUtils.getHostInfo(execEnv).getTempDir() + "/" + script.getName(); // NOI18N
-            Future<Integer> copyResult = CommonTasksSupport.uploadFile(
-                    localScriptPath, execEnv, scriptPath, 0777, null);
             try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                scriptPath = hostInfo.getTempDir() + "/" + script.getName(); // NOI18N
+                Future<Integer> copyResult = CommonTasksSupport.uploadFile(
+                        localScriptPath, execEnv, scriptPath, 0777, null);
                 copyResult.get();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                Exceptions.printStackTrace(ex);
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
@@ -317,9 +323,15 @@ public final class DtraceDataCollector
         boolean connected = true;
         String error = ""; // NOI18N
 
-        final HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+        HostInfo hostInfo = null;
 
-        if (hostInfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
+        try {
+            hostInfo = HostInfoUtils.getHostInfo(execEnv);
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        if (hostInfo == null || hostInfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
             return ValidationStatus.invalidStatus(
                     NbBundle.getMessage(DtraceDataCollector.class,
                     "DtraceDataCollector.DtraceIsSupportedOnSunOSOnly")); // NOI18N
@@ -367,7 +379,7 @@ public final class DtraceDataCollector
 
         if (sps == null) {
             return ValidationStatus.invalidStatus(
-                    NbBundle.getMessage(DtraceDataCollector.class, 
+                    NbBundle.getMessage(DtraceDataCollector.class,
                     "DtraceDataCollector.NoPrivSupport", execEnv.toString())); // NOI18N
         }
 

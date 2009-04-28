@@ -64,6 +64,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
     private SyncIndicatorPanel panel;
     private final Set<String> acceptedColumnNames;
+    private final List<String> acceptedThreadsCountColumnNames;
     private int lastLocks;
     private int lastThreads;
 
@@ -73,6 +74,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
         for (Column column : getMetadataColumns()) {
             acceptedColumnNames.add(column.getColumnName());
         }
+        this.acceptedThreadsCountColumnNames = configuration.getThreadColumnNames();
     }
 
     @Override
@@ -87,14 +89,35 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
     }
 
     public void updated(List<DataRow> rows) {
+
         for (DataRow row : rows) {
-            String locks = row.getStringValue("locks"); // NOI18N
-            String threads = row.getStringValue("threads"); // NOI18N
+            String locks = null;
+            String threads = null;
+            for (String column : row.getColumnNames()) {
+                if (acceptedThreadsCountColumnNames.contains(column)){
+                    threads = row.getStringValue(column);
+                }else if (acceptedColumnNames.contains(column)) {
+                    String value = row.getStringValue(column); //TODO: change to Long
+                    locks = row.getStringValue(column);
+                }
+            }
+            if (threads == null){
+                threads = "1";//MOI18N
+            }
             if (locks != null && threads != null) {
                 lastThreads = Integer.parseInt(threads);
                 lastLocks = Math.round(lastThreads * Float.parseFloat(locks) / 100);
             }
         }
+//        for (DataRow row : rows) {
+//            String locks = row.getStringValue("locks"); // NOI18N
+//            //INCORRECT!! NEVER DO THIS AGAIN!!!
+//            String threads = row.getStringValue("threads"); // NOI18N
+//            if (locks != null && threads != null) {
+//                lastThreads = Integer.parseInt(threads);
+//                lastLocks = Math.round(lastThreads * Float.parseFloat(locks) / 100);
+//            }
+//        }
     }
 
     @Override
@@ -129,7 +152,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
         } else {
             final JLabel label = new JLabel(
                     "<html><center>" // NOI18N
-                    + getMessage(getRepairActionProvider().isValid()? "Repair.Valid" : "Repair.Invalid") // NOI18N
+                    + getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()) // NOI18N
                     + "</center></html>"); // NOI18N
             label.setForeground(GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {

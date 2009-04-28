@@ -344,7 +344,15 @@ public final class ConnectionManager {
                 NativeTaskExecutorService.submit(new Runnable() {
 
                     public void run() {
-                        HostInfoUtils.getHostInfo(env);
+                        try {
+                            // Initiate a task that will fetch host info...
+                            // fetched information will be buffered, so
+                            // those who will ask for it later will likely get
+                            // without wait
+                            HostInfoUtils.getHostInfo(env);
+                        } catch (IOException ex) {
+                        } catch (CancellationException ex) {
+                        }
                     }
                 }, "Fetch hosts info " + env.toString()); // NOI18N
 

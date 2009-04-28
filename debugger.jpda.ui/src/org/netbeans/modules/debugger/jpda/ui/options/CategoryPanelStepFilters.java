@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CellEditorListener;
@@ -76,6 +77,7 @@ class CategoryPanelStepFilters extends StorablePanel {
         filterClassesTable.getColumnModel().getColumn(0).setMaxWidth(new JCheckBox().getPreferredSize().width);
         filterClassesTable.getColumnModel().getColumn(0).setResizable(false);
         filterClassesTable.getColumnModel().getColumn(1).setResizable(true);
+        filterClassesTable.setRowHeight(Math.max(new JCheckBox().getPreferredSize().height, new JLabel("W").getPreferredSize().height));
         DisablingCellRenderer.apply(filterClassesTable);
         useStepFiltersCheckBoxActionPerformed(null);
     }
@@ -186,21 +188,27 @@ class CategoryPanelStepFilters extends StorablePanel {
                     .add(useStepFiltersCheckBox)
                     .add(layout.createSequentialGroup()
                         .add(21, 21, 21)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(filterStaticInitCheckBox)
-                            .add(filterSyntheticCheckBox)
-                            .add(filterConstructorsCheckBox)
-                            .add(filterClassesLabel)
-                            .add(stepThroughFiltersCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(filterClassesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(filtersUncheckAllButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 107, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(filtersCheckAllButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 107, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(filterRemoveButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 107, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(filterAddButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 107, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
+                            .add(stepThroughFiltersCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(filterStaticInitCheckBox)
+                                    .add(filterSyntheticCheckBox)
+                                    .add(filterConstructorsCheckBox)
+                                    .add(filterClassesLabel)
+                                    .add(layout.createSequentialGroup()
+                                        .add(filterClassesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                                .add(6, 6, 6)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(filterAddButton)
+                                    .add(filterRemoveButton)
+                                    .add(filtersCheckAllButton)
+                                    .add(filtersUncheckAllButton)))))))
         );
+
+        layout.linkSize(new java.awt.Component[] {filterAddButton, filterRemoveButton, filtersCheckAllButton, filtersUncheckAllButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -222,11 +230,13 @@ class CategoryPanelStepFilters extends StorablePanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(filtersCheckAllButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(filtersUncheckAllButton))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(filtersUncheckAllButton)
+                        .add(36, 36, 36))
+                    .add(layout.createSequentialGroup()
                         .add(filterClassesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(stepThroughFiltersCheckBox)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(stepThroughFiltersCheckBox)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

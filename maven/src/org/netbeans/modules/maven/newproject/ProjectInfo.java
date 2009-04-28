@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,43 +31,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.support;
 
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+package org.netbeans.modules.maven.newproject;
 
 /**
- * There hardly is a way to unit test remote operations.
- * This is just an entry point for manual validation.
  *
- * @author Sergey Grinev
+ * @author mkleint
  */
-public class ServerListTestCase extends RemoteTestBase {
-
-    static {
-//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
-//        System.setProperty("cnd.remote.logger.level", "0");
-//        System.setProperty("nativeexecution.support.logger.level", "0");
-    }
-    public ServerListTestCase(String testName) {
-        super(testName);
-    }
-
-    public void testRun() throws Exception {        
-        if (canTestRemote()) {
-            ExecutionEnvironment execEnv = getRemoteExecutionEnvironment();
-            ServerRecord rec = ServerList.addServer(execEnv, execEnv.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
-            assertNotNull("Null server record", rec);
-            assertEquals(rec.getExecutionEnvironment(), execEnv);
-        } else {
-            System.err.println("Remote tests are not configured."); // to test remote runs
-        }
-    }
+public class ProjectInfo {
+      public String groupId;
+      public String artifactId;
+      public String version;
+      public String packageName;
+      
 }

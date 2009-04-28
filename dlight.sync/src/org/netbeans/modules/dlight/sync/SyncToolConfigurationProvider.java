@@ -157,7 +157,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         indicatorColumns.addAll(LLDataCollectorConfiguration.SYNC_TABLE.getColumns());
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
         SyncIndicatorConfiguration indicatorConfiguration =
-            new SyncIndicatorConfiguration(indicatorMetadata, INDICATOR_POSITION);
+            new SyncIndicatorConfiguration(indicatorMetadata, Arrays.asList(threadsColumn.getColumnName(), SunStudioDCConfiguration.c_threadsCount.getColumnName()), INDICATOR_POSITION);
 
         indicatorConfiguration.addVisualizerConfiguration(getDetails(rawTableMetadata));
 
