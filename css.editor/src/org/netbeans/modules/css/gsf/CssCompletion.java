@@ -670,7 +670,7 @@ public class CssCompletion implements CodeCompletionHandler {
             
                 super(element, value, origin, kind, anchorOffset, addSemicolon);
         }
-                
+
         @Override
         public ImageIcon getIcon() {
             BufferedImage i = new BufferedImage(COLOR_ICON_SIZE, COLOR_ICON_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
