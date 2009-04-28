@@ -50,6 +50,7 @@ import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.internal.jira.core.util.JiraUtil;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -78,7 +79,12 @@ public class PerformQueryCommand extends JiraCommand {
         JiraRepositoryConnector rc = Jira.getInstance().getRepositoryConnector();
         RepositoryQuery repositoryQuery = new RepositoryQuery(rc.getConnectorKind(), "query"); // NOI18N
         JiraUtil.setQuery(repository.getTaskRepository(), repositoryQuery, jiraFilter);
-        rc.performQuery(repository.getTaskRepository(), repositoryQuery, collector, null, new NullProgressMonitor());
+        rc.performQuery(
+                repository.getTaskRepository(),
+                repositoryQuery,
+                collector,
+                BugtrackingRuntime.getInstance().getSynchronizationSession(),
+                new NullProgressMonitor());
     }
 
     private void ensureJiraCache() throws JiraException {

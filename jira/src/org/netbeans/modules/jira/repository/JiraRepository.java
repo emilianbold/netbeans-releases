@@ -107,7 +107,7 @@ public class JiraRepository extends Repository {
         if(password == null) {
             password = "";                                                      // NOI18N
         }
-        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
+        setTaskRepository(name, url, user, password, httpUser, httpPassword);
     }
 
     public Query createQuery() {
@@ -293,7 +293,10 @@ public class JiraRepository extends Repository {
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
-        TaskRepository repository = new TaskRepository(name, url);
+        TaskRepository repository =
+                new TaskRepository(
+                    Jira.getInstance().getRepositoryConnector().getConnectorKind(),
+                    url);
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
 

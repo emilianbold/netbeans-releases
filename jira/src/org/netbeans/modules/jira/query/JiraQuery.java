@@ -292,11 +292,11 @@ public class JiraQuery extends Query {
                 issue = (NbJiraIssue) cache.setIssueData(id, taskData);
                 issues.add(issue.getID());
                 
-                // XXX dummy
                 try {
+                    // XXX dummy
                     Jira.getInstance().storeTaskData(repository, taskData);
                 } catch (CoreException ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex); // XXX
+                    Jira.LOG.log(Level.SEVERE, null, ex); 
                 }
 
             } catch (IOException ex) {

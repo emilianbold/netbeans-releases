@@ -44,13 +44,21 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.commons.net.WebUtil;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryExternalizationParticipant;
+import org.eclipse.mylyn.internal.tasks.core.TaskActivityManager;
+import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataStore;
 import org.eclipse.mylyn.internal.tasks.core.externalization.ExternalizationManager;
 import org.eclipse.mylyn.internal.tasks.core.externalization.IExternalizationParticipant;
+import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizationSession;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 /**
+ *
+ * Mylyn specific runtime
  *
  * @author Tomas Stupka
  */
@@ -63,8 +71,10 @@ public class BugtrackingRuntime {
     private final String            DATA_DIRECTORY = "bugtracking";             // NOI18N
     private File                    cacheStore;
     private ExternalizationManager  externalizationManager;
-    private TaskRepositoryManager   repositoryManager;
-
+    private TaskRepositoryManager   taskRepositoryManager;
+    private TaskDataStore           taskDataStore;
+    private TaskDataManager         taskDataManager;
+    private SynchronizationSession  synchronizationSession;
 
     public static BugtrackingRuntime getInstance() {
         if(instance == null) {
@@ -90,15 +100,36 @@ public class BugtrackingRuntime {
     private void initIntern() {
         WebUtil.init();
 
+        // XXX this is dummy
+        taskRepositoryManager = new TaskRepositoryManager();
+
+        taskDataStore = new TaskDataStore(taskRepositoryManager);
+        TaskList tl = new TaskList();
+        TaskActivityManager tam = new TaskActivityManager(taskRepositoryManager, tl);
+        taskDataManager = new TaskDataManager(taskDataStore, taskRepositoryManager, tl, tam);
+        taskDataManager.setDataPath(BugtrackingRuntime.getInstance().getCacheStore().getAbsolutePath());
+        synchronizationSession = new SynchronizationSession(taskDataManager);
+
         externalizationManager = new ExternalizationManager(cacheStore.getAbsolutePath());
 
-        repositoryManager = new TaskRepositoryManager();
-        IExternalizationParticipant repositoryParticipant = new RepositoryExternalizationParticipant(externalizationManager, repositoryManager);
+        IExternalizationParticipant repositoryParticipant = new RepositoryExternalizationParticipant(externalizationManager, taskRepositoryManager);
         externalizationManager.addParticipant(repositoryParticipant);
     }
 
+    public void addRepositoryConnector(AbstractRepositoryConnector rc) {
+        taskRepositoryManager.addRepositoryConnector(rc);
+    }
+
+    public SynchronizationSession getSynchronizationSession() {
+        return synchronizationSession;
+    }
+
     public TaskRepositoryManager getTaskRepositoryManager() {
-        return repositoryManager;
+        return taskRepositoryManager;
+    }
+
+    public TaskDataManager getTaskDataManager() {
+        return taskDataManager;
     }
 
     public File getCacheStore() {

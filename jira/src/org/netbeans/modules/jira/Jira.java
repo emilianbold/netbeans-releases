@@ -77,10 +77,6 @@ public class Jira {
 
     public static Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
     private RequestProcessor rp;
-    private TaskRepositoryManager trm;
-    private TaskDataStore tds;
-    private TaskDataManager tdm;
-    private SynchronizationSession ss;
 
     private Jira() {
         JiraCorePlugin jcp = new JiraCorePlugin();
@@ -89,17 +85,7 @@ public class Jira {
         } catch (Exception ex) {
             throw new RuntimeException(ex); // XXX thisiscrap
         }
-
-        // XXX this is dummy
-        trm = new TaskRepositoryManager();
-
-        trm.addRepositoryConnector(getRepositoryConnector());
-        tds = new TaskDataStore(trm);
-        TaskList tl = new TaskList();
-        TaskActivityManager tam = new TaskActivityManager(trm, tl);
-        tdm = new TaskDataManager(tds, trm, tl, tam);
-        tdm.setDataPath(BugtrackingRuntime.getInstance().getCacheStore().getAbsolutePath());
-        ss = new SynchronizationSession(tdm);
+        BugtrackingRuntime.getInstance().addRepositoryConnector(getRepositoryConnector());
     }
 
     public static Jira getInstance() {
@@ -110,7 +96,13 @@ public class Jira {
     }
 
     public void storeTaskData(JiraRepository repository, TaskData data) throws CoreException {
-        tdm.putUpdatedTaskData(new TaskTask(getRepositoryConnector().getConnectorKind(), repository.getUrl(), data.getTaskId()), data, true);
+        BugtrackingRuntime.getInstance().getTaskDataManager().putUpdatedTaskData(
+                new TaskTask(
+                    getRepositoryConnector().getConnectorKind(),
+                    repository.getUrl(),
+                    data.getTaskId()),
+                    data,
+                    true);
     }
 
     /**
@@ -135,8 +127,10 @@ public class Jira {
         JiraConfig.getInstance().putRepository(repository.getDisplayName(), repository);
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().add(repository);
-            // XXX dummy
-            trm.addRepository(repository.getTaskRepository());
+            BugtrackingRuntime
+                    .getInstance()
+                    .getTaskRepositoryManager()
+                    .addRepository(repository.getTaskRepository());
         }
     }
 
@@ -144,8 +138,10 @@ public class Jira {
         JiraConfig.getInstance().removeRepository(repository.getDisplayName());
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().remove(repository);
-            // XXX dummy
-            trm.addRepository(repository.getTaskRepository());
+            BugtrackingRuntime
+                    .getInstance()
+                    .getTaskRepositoryManager()
+                    .addRepository(repository.getTaskRepository());
         }
     }
 
