@@ -63,7 +63,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         VALIDATION_PENDING,
         VALIDATION_FAILED,
         VALIDATED,
-        DELETION_PENDING
+        DELETED
     }
 
     protected final GdbDebugger debugger;
@@ -79,7 +79,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     }
 
     public final void completeValidation(Map<String, String> map) {
-        if (state == State.DELETION_PENDING) {
+        if (state == State.DELETED) {
             return;
         }
         
@@ -121,11 +121,15 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             breakpointNumber = Integer.parseInt(number);
             setState(State.VALIDATED);
             if (!breakpoint.isEnabled()) {
-                enableCMD(false).send();
+                MICommand command = enableCMD(false);
+                if (isRunWhenValidated()) {
+                    debugger.addRunAfterToken(command.getToken());
+                }
+                command.send();
             }
             String condition = breakpoint.getCondition();
             if (condition.length() > 0) {
-                MICommand command = requestConditionCMD(condition);
+                MICommand command = conditionCMD(condition);
                 if (isRunWhenValidated()) {
                     debugger.addRunAfterToken(command.getToken());
                 }
@@ -133,7 +137,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             }
             int skipCount = breakpoint.getSkipCount();
             if (skipCount > 0) {
-                MICommand command = requestBreakAfterCMD(skipCount);
+                MICommand command = breakAfterCMD(skipCount);
                 if (isRunWhenValidated()) {
                     debugger.addRunAfterToken(command.getToken());
                 }
@@ -203,13 +207,12 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     protected abstract String getBreakpointCommand();
 
     private void setRequests() {
-        if (debugger.getState() == GdbDebugger.State.RUNNING) {
-            debugger.setSilentStop();
-            setRunWhenValidated(true);
-        }
         if (state == State.UNVALIDATED || state == State.REVALIDATE) {
+            if (debugger.getState() == GdbDebugger.State.RUNNING) {
+                setRunWhenValidated(true);
+            }
             if (state == State.REVALIDATE && breakpointNumber > 0) {
-                requestDelete();
+                send(deleteCMD());
             }
             setState(State.VALIDATION_PENDING);
 	    String bpcmd = getBreakpointCommand();
@@ -220,30 +223,11 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                         bpcmd,
                         getBreakpoint().getThreadID());
 		debugger.addPendingBreakpoint(command.getToken(), this);
-                if (isRunWhenValidated()) {
-                    debugger.addRunAfterToken(command.getToken());
-                }
-                command.send();
+                send(command);
 	    } else {
 		breakpoint.setInvalid(err);
 		setState(State.VALIDATION_FAILED);
 	    }
-	} else {
-            if (breakpointNumber > 0) { // bnum < 0 for breakpoints from other projects...
-                MICommand command = null;
-                if (state == State.DELETION_PENDING) {
-                    command = debugger.getGdbProxy().break_deleteCMD(breakpointNumber);
-                } else if (state == State.VALIDATED) {
-                    command = enableCMD(getBreakpoint().isEnabled());
-                }
-                if (command != null) {
-                    if (isRunWhenValidated()) {
-                        setRunWhenValidated(false);
-                        debugger.addRunAfterToken(command.getToken());
-                    }
-                    command.send();
-                }
-            }
 	}
     }
 
@@ -253,12 +237,6 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         } else {
             return debugger.getGdbProxy().break_disableCMD(breakpointNumber);
         }
-    }
-
-    private void suspend() {
-        requestDelete();
-        setState(State.UNVALIDATED);
-        update();
     }
 
     void revalidate() {
@@ -275,49 +253,59 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         }
     }
 
+    // Support sending on the fly (when debugger is in running state)
+    private void send(MICommand command) {
+        if (debugger.getState() == GdbDebugger.State.RUNNING) {
+            debugger.addRunAfterToken(command.getToken());
+            debugger.setSilentStop();
+        }
+        command.send();
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         String pname = evt.getPropertyName();
         if (pname.equals(GdbBreakpoint.PROP_CONDITION)) {
-            // TODO: not capable of setting on the fly
-            requestConditionCMD(evt.getNewValue().toString()).send();
+            if (breakpointNumber > 0) {
+                send(conditionCMD(evt.getNewValue().toString()));
+            }
         } else if (pname.equals(GdbBreakpoint.PROP_SKIP_COUNT)) {
-            // TODO: not capable of setting on the fly
-            requestBreakAfterCMD((Integer)evt.getNewValue()).send();
+            if (breakpointNumber > 0) {
+                send(breakAfterCMD((Integer)evt.getNewValue()));
+            }
         } else if (pname.equals(GdbBreakpoint.PROP_ENABLED)) {
-            update();
+            if (breakpointNumber > 0) {
+                send(enableCMD(breakpoint.isEnabled()));
+            }
         } else if (pname.equals(GdbBreakpoint.PROP_SUSPEND)) {
-            suspend();
+            revalidate();
         } else if (pname.equals(GdbBreakpoint.PROP_LINE_NUMBER) && state == State.VALIDATED && !(getBreakpoint() instanceof FunctionBreakpoint)) {
-            setState(State.REVALIDATE);
-            update();
+            revalidate();
         } else if (pname.equals(GdbBreakpoint.PROP_FUNCTION_NAME) && state == State.VALIDATED) {
-            setState(State.REVALIDATE);
-            update();
+            revalidate();
         } else if (pname.equals(AddressBreakpoint.PROP_ADDRESS_VALUE) && state == State.VALIDATED) {
-            setState(State.REVALIDATE);
-            update();
+            revalidate();
         }
     }
 
-    private MICommand requestConditionCMD(String condition) {
+    private MICommand conditionCMD(String condition) {
         return debugger.getGdbProxy().break_conditionCMD(breakpointNumber, condition);
     }
 
-    private MICommand requestBreakAfterCMD(int skipCount) {
+    private MICommand breakAfterCMD(int skipCount) {
         return debugger.getGdbProxy().break_afterCMD(breakpointNumber, skipCount);
     }
 
-    private void requestDelete() {
-        debugger.getGdbProxy().break_deleteCMD(breakpointNumber).send();
+    private MICommand deleteCMD() {
+        return debugger.getGdbProxy().break_deleteCMD(breakpointNumber);
     }
 
     final void remove() {
         breakpoint.removePropertyChangeListener(this);
-        setState(State.DELETION_PENDING);
+        setState(State.DELETED);
         if (breakpointNumber > 0) {
             debugger.getBreakpointList().remove(breakpointNumber);
+            send(deleteCMD());
         }
-        update();
     }
 
     public GdbBreakpoint getBreakpoint() {
