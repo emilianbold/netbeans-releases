@@ -80,6 +80,9 @@ import org.openide.util.RequestProcessor;
 })
 public class JavaEEWSOpenHook extends ProjectOpenedHook {
 
+    private static final RequestProcessor METADATA_MODEL_RP =
+            new RequestProcessor("JavaEEWSOpenHook.WS_REQUEST_PROCESSOR"); //NOI18N
+
     private final Project prj;
     public JavaEEWSOpenHook(Project prj) {
         this.prj = prj;
@@ -123,7 +126,7 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
                 if (support != null && (JaxWsUtils.isEjbJavaEE5orHigher(prj) || Util.isJavaEE5orHigher(prj))) {
                     final MetadataModel<WebservicesMetadata> wsModel = support.getWebservicesMetadataModel();
                     try {
-                        wsModel.runReadAction(new MetadataModelAction<WebservicesMetadata, Void>() {
+                        wsModel.runReadActionWhenReady(new MetadataModelAction<WebservicesMetadata, Void>() {
 
                             public Void run(final WebservicesMetadata metadata) {
                                 Webservices webServices = metadata.getRoot();
@@ -141,7 +144,7 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
 
         MetadataModel<WebservicesMetadata> wsModel;
         Project prj;
-        private RequestProcessor.Task updateJaxWsTask = RequestProcessor.getDefault().create(new Runnable() {
+        private RequestProcessor.Task updateJaxWsTask = METADATA_MODEL_RP.create(new Runnable() {
 
             public void run() {
                 updateJaxWs();
@@ -154,7 +157,6 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            //requestModelUpdate();
             updateJaxWsTask.schedule(1000);
         }
 

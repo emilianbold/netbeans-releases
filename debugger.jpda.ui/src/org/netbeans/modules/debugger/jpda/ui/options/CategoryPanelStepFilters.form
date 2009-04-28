@@ -17,29 +17,35 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="useStepFiltersCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="filterStaticInitCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="filterSyntheticCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="filterConstructorsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="filterClassesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="stepThroughFiltersCheckBox" alignment="0" max="32767" attributes="1"/>
-                          <Component id="filterClassesScrollPane" alignment="0" pref="325" max="32767" attributes="1"/>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="filtersUncheckAllButton" alignment="0" min="-2" pref="107" max="-2" attributes="1"/>
-                          <Component id="filtersCheckAllButton" alignment="0" min="-2" pref="107" max="-2" attributes="1"/>
-                          <Component id="filterRemoveButton" alignment="0" min="-2" pref="107" max="-2" attributes="1"/>
-                          <Component id="filterAddButton" alignment="0" min="-2" pref="107" max="-2" attributes="1"/>
+                          <Component id="stepThroughFiltersCheckBox" alignment="0" pref="545" max="32767" attributes="1"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="filterStaticInitCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="filterSyntheticCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="filterConstructorsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="filterClassesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="filterClassesScrollPane" pref="432" max="32767" attributes="2"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="filterAddButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
+                                  <Component id="filterRemoveButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
+                                  <Component id="filtersCheckAllButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
+                                  <Component id="filtersUncheckAllButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
+                              </Group>
+                          </Group>
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -55,23 +61,25 @@
               <Component id="filterConstructorsCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="filterClassesLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="filterAddButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="filterRemoveButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="filtersCheckAllButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="filtersUncheckAllButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="1" attributes="0">
+                  <Group type="102" attributes="0">
                       <Component id="filterClassesScrollPane" pref="152" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="stepThroughFiltersCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="stepThroughFiltersCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>

@@ -40,14 +40,15 @@ cd Contents/Resources/NetBeans*/etc
 if [ -f netbeans.conf ]
 then
   echo netbeans.conf found: `pwd`/netbeans.conf
-  if [ -d $jdk_home ] || [ -L $jdk_home ]
-  then
-    echo JDK home exists: $jdk_home
-    cp netbeans.conf netbeans.conf_orig_jdk_home
-    cat netbeans.conf_orig_jdk_home  | sed -e 's|.*netbeans_jdkhome.*|netbeans_jdkhome='$jdk_home'|' > netbeans.conf
-  else
-    echo No JDK home: $jdk_home
-  fi
+## don't set netbeans_jdkhome: issue 159846 
+#  if [ -d $jdk_home ] || [ -L $jdk_home ]
+#  then
+#    echo JDK home exists: $jdk_home
+#    cp netbeans.conf netbeans.conf_orig_jdk_home
+#    cat netbeans.conf_orig_jdk_home  | sed -e 's|.*netbeans_jdkhome.*|netbeans_jdkhome='$jdk_home'|' > netbeans.conf
+#  else
+#    echo No JDK home: $jdk_home
+#  fi
   sed -E -i -e "s|\\$\{NETBEANS_HOME\}|$NETBEANS_INSTALL_DIR/Contents/Resources/NetBeans|g" netbeans.conf
 else
   echo No netbeans.conf in: `pwd`

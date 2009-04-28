@@ -37,71 +37,16 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.openide.nodes;
+package org.netbeans.modules.maven.newproject;
 
-import java.util.List;
-import java.util.Map;
-import javax.swing.Action;
-
-/** Lazy delegating node.
+/**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author mkleint
  */
-final class LazyNode extends FilterNode {
-    private Map map;
-
-    LazyNode(Map map) {
-        this(new ChFactory(), map);
-    }
-    private LazyNode(ChFactory factory, Map map) {
-        super(new AbstractNode(Children.create(factory, true)));
-        factory.node = this;
-        this.map = map;
-        
-        AbstractNode an = (AbstractNode)getOriginal();
-
-        an.setName((String) map.get("name")); // NOI18N
-        an.setDisplayName((String) map.get("displayName")); // NOI18N
-        an.setShortDescription((String) map.get("shortDescription")); // NOI18N
-        an.setIconBaseWithExtension((String)map.get("iconResource")); // NOI18N
-    }
-
-    @Override
-    public Action[] getActions(boolean context) {
-        return switchToOriginal().getActions(context);
-    }
-
-    final Node switchToOriginal() {
-        final Node[] n = new Node[]{null};
-        synchronized (this) {
-            if (map == null) {
-                return getOriginal();
-            }
-            n[0] = (Node)map.get("original"); // NOI18N
-            map = null;
-        }
-        Children.MUTEX.postWriteRequest(new Runnable() {
-
-            public void run() {
-                changeOriginal(n[0], true);
-            }
-        });
-        return n[0];
-    }
-
-    private static final class ChFactory extends ChildFactory<Object> {
-        LazyNode node;
-
-        @Override
-        protected boolean createKeys(List<Object> toPopulate) {
-            LazyNode n = node;
-            node = null;
-            if (n != null) {
-                n.switchToOriginal();
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
+public class ProjectInfo {
+      public String groupId;
+      public String artifactId;
+      public String version;
+      public String packageName;
+      
 }
