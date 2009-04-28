@@ -48,7 +48,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointListener;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -84,7 +83,6 @@ public abstract class GdbBreakpoint extends Breakpoint {
     private String                      threadID = "1"; // NOI18N
     private String                      printText;
     private final Set<GdbBreakpointListener>  breakpointListeners = new CopyOnWriteArraySet<GdbBreakpointListener>();
-    private GdbDebugger                 debugger;
     private String                      condition = ""; // NOI18N
     private int                         skipCount = 0;
     private String                      url = "";       // NOI18N
@@ -388,13 +386,5 @@ public abstract class GdbBreakpoint extends Breakpoint {
         for (GdbBreakpointListener listener : breakpointListeners) {
             listener.breakpointReached(event);
         }
-    }
-    
-    protected void setDebugger(GdbDebugger debugger) {
-	this.debugger = debugger;
-    }
-    
-    public GdbDebugger getDebugger() {
-	return debugger;
     }
 }
