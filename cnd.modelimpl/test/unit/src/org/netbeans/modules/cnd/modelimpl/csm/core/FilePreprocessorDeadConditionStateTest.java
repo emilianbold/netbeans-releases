@@ -53,41 +53,41 @@ public class FilePreprocessorDeadConditionStateTest extends BaseTestCase {
     }
 
     public void testDeadBlocksComparision() throws Exception {
-        FilePreprocessorDeadConditionState state1 = new FilePreprocessorDeadConditionState("state1");
+        FilePreprocessorConditionState state1 = new FilePreprocessorConditionState("state1");
         state1.addBlockImpl(10, 20);
         state1.addBlockImpl(30, 60);
         state1.addBlockImpl(70, 80);
         state1.trimSize();
 
-        FilePreprocessorDeadConditionState state2 = new FilePreprocessorDeadConditionState("state2");
+        FilePreprocessorConditionState state2 = new FilePreprocessorConditionState("state2");
         state2.addBlockImpl(10, 20);
         state2.addBlockImpl(70, 80);
         state2.trimSize();
 
-        FilePreprocessorDeadConditionState biggest = new FilePreprocessorDeadConditionState("biggest");
+        FilePreprocessorConditionState biggest = new FilePreprocessorConditionState("biggest");
         biggest.addBlockImpl(5, 90);
         biggest.trimSize();
 
-        FilePreprocessorDeadConditionState state4 = new FilePreprocessorDeadConditionState("state4");
+        FilePreprocessorConditionState state4 = new FilePreprocessorConditionState("state4");
         state4.addBlockImpl(40, 50);
         state4.trimSize();
 
-        FilePreprocessorDeadConditionState state5 = new FilePreprocessorDeadConditionState("state5");
+        FilePreprocessorConditionState state5 = new FilePreprocessorConditionState("state5");
         state5.addBlockImpl(10, 20);
         state5.addBlockImpl(40, 50);
         state5.trimSize();
 
-        FilePreprocessorDeadConditionState state6 = new FilePreprocessorDeadConditionState("state6");
+        FilePreprocessorConditionState state6 = new FilePreprocessorConditionState("state6");
         state6.addBlockImpl(30, 40);
         state6.addBlockImpl(50, 60);
         state6.trimSize();
 
-        FilePreprocessorDeadConditionState state7 = new FilePreprocessorDeadConditionState("state7");
+        FilePreprocessorConditionState state7 = new FilePreprocessorConditionState("state7");
         state7.addBlockImpl(50, 60);
         state7.addBlockImpl(70, 80);
         state7.trimSize();
 
-        FilePreprocessorDeadConditionState empty = new FilePreprocessorDeadConditionState("emtpy");
+        FilePreprocessorConditionState empty = new FilePreprocessorConditionState("emtpy");
         empty.trimSize();
 
         assertTrue("state1:"+state1 + " must replace " + biggest, state1.canReplaceOther(biggest));
@@ -132,6 +132,5 @@ public class FilePreprocessorDeadConditionStateTest extends BaseTestCase {
         assertFalse("state2:" + state2 + " is not comaprable with " + state7, state2.canReplaceOther(state7));
         assertFalse("state7:" + state7 + " is not comaprable with " + state6, state7.canReplaceOther(state6));
         assertFalse("state6:" + state6 + " is not comaprable with " + state7, state6.canReplaceOther(state7));
-        assertTrue("state7: " + state7 + " can be replaced by composition of " + state2 + " " + state6, state7.canBeReplacedByComposition(Arrays.asList(state2, state6)));
     }
 }
