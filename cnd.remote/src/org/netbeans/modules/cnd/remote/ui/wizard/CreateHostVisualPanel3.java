@@ -52,6 +52,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.remote.sync.SyncUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -104,25 +105,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
         }
         jTextArea1.setText(st.toString());
 
-        List<RemoteSyncFactory> factories = new ArrayList<RemoteSyncFactory>();
-        for (RemoteSyncFactory factory : RemoteSyncFactory.getFactories()) {
-            if (factory.isApplicable(execEnv)) {
-                factories.add(factory);
-            }
-        }
-
-        cbSyncMode.setModel(new DefaultComboBoxModel(factories.toArray()));
-        cbSyncMode.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                RemoteSyncFactory factory = (RemoteSyncFactory) value;
-                label.setText(factory.getDisplayName());
-                label.setToolTipText(factory.getDescription());
-                return label;
-            }
-        });
-
+        SyncUtils.arrangeComboBox(cbSyncMode, execEnv);
     }
 
     String getHostDisplayName() {
