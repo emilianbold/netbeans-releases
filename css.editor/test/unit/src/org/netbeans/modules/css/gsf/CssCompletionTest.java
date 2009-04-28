@@ -169,6 +169,10 @@ public class CssCompletionTest extends TestBase {
         checkCC("html tit| { }", arr("title"), Match.CONTAINS);
     }
 
+    public void testSystemColors() throws ParseException {
+        checkCC("div { color: | }", arr("menu", "window"), Match.CONTAINS);
+    }
+
     //--- utility methods ---
 
     private String[] arr(String... args) {
