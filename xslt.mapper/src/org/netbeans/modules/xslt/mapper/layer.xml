@@ -239,7 +239,7 @@
             <attr name="position" intvalue="200"/>
             <file name="equal">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/equal16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/equal16.png"/>
                 <attr name="Class" stringvalue="Operator"/>
                 <attr name="Method" stringvalue="equal"/>
                 <attr name="Operator" stringvalue="="/>
@@ -263,7 +263,7 @@
             </file>
             <file name="not_equal">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/not_equal16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/not_equal16.png"/>
                 <attr name="Class" stringvalue="Operator"/>
                 <attr name="Method" stringvalue="not_equal"/>
                 <attr name="Operator" stringvalue="!="/>
@@ -287,7 +287,7 @@
             </file>
             <file name="lesser_than"> <!-- DON'T RENAME THE NAME BECAUSE IT DEPENDS ON THE INTERNAL CONSTANTS FROM THE "XPath 1.1 Model" MODULE-->
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/less_than16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/less_than16.png"/>
                 <attr name="Class" stringvalue="Operator"/>
                 <attr name="Method" stringvalue="lesser_than"/>
                 <attr name="Operator" stringvalue="&lt;"/>
@@ -311,7 +311,7 @@
             </file>
             <file name="lesser_or_equal"> <!-- DON'T RENAME THE NAME BECAUSE IT DEPENDS ON THE INTERNAL CONSTANTS FROM THE "XPath 1.1 Model" MODULE-->
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/less_or_equal16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/less_or_equal16.png"/>
                 <attr name="Class" stringvalue="Operator"/>
                 <attr name="Method" stringvalue="lesser_or_equal"/>
                 <attr name="Operator" stringvalue="&lt;="/>
@@ -335,7 +335,7 @@
             </file>
             <file name="greater_than">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/greater_than16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/greater_than16.png"/>
                 <attr name="Class" stringvalue="Operator"/>
                 <attr name="Method" stringvalue="greater_than"/>
                 <attr name="Operator" stringvalue="&gt;"/>
@@ -359,7 +359,7 @@
             </file>
             <file name="greater_or_equal">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/greater_or_equal16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/greater_or_equal16.png"/>
                 <attr name="Class" stringvalue="Operator"/>
                 <attr name="Method" stringvalue="greater_or_equal"/>
                 <attr name="Operator" stringvalue="&gt;="/>
@@ -383,7 +383,7 @@
             </file>
             <file name="addition">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/addition16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/addition16.png"/>
                 <attr name="Class" stringvalue="Operator"/>
                 <attr name="Method" stringvalue="addition"/>
                 <attr name="Operator" stringvalue="+"/>
@@ -407,7 +407,7 @@
             </file>
             <file name="subtraction">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/subtraction16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/subtraction16.png"/>
                 <attr name="Class" stringvalue="Operator"/>
                 <attr name="Method" stringvalue="subtraction"/>
                 <attr name="Operator" stringvalue="-"/>
@@ -431,7 +431,7 @@
             </file>
             <file name="multiplication">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/multiplication16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/multiplication16.png"/>
                 <attr name="Class" stringvalue="Operator"/>
                 <attr name="Method" stringvalue="multiplication"/>
                 <attr name="Operator" stringvalue="*"/>
@@ -455,7 +455,7 @@
             </file>
             <file name="division">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/division16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/division16.png"/>
                 <attr name="Class" stringvalue="Operator"/>
                 <attr name="Method" stringvalue="division"/>
                 <attr name="Operator" stringvalue="div"/>
@@ -480,7 +480,7 @@
             </file>
             <file name="remainder">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/mod16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/mod16.png"/>
                 <attr name="Class" stringvalue="Operator"/>
                 <attr name="Method" stringvalue="remainder"/>
                 <attr name="Operator" stringvalue="mod"/>
@@ -504,7 +504,7 @@
             </file>
             <file name="negative">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/negative16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/negative16.png"/>
                 <attr name="Class" stringvalue="Operator"/>
                 <attr name="Method" stringvalue="negative"/>
                 <attr name="Operator" stringvalue="negative"/>
@@ -533,7 +533,7 @@
             <attr name="position" intvalue="400"/>
             <file name="string-literal">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/string-literal16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/string-literal16.png"/>
                 <attr name="Class" stringvalue="String"/>
                 <attr name="Method" stringvalue="string-literal"/>
                 <attr name="InputNum" stringvalue="0"/>
@@ -551,7 +551,7 @@
             </file>
             <file name="string">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/string16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/string16.png"/>
                 <attr name="Class" stringvalue="String"/>
                 <attr name="Method" stringvalue="string"/>
                 <attr name="Function" stringvalue="string"/>
@@ -572,7 +572,7 @@
             </file>
             <file name="concat">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/concat16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/concat16.png"/>
                 <attr name="Class" stringvalue="String"/>
                 <attr name="Method" stringvalue="concat"/>
                 <attr name="Function" stringvalue="concat"/>
@@ -597,7 +597,7 @@
             </file>
             <file name="starts-with">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/starts-with16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/starts-with16.png"/>
                 <attr name="Class" stringvalue="String"/>
                 <attr name="Method" stringvalue="starts-with"/>
                 <attr name="Function" stringvalue="starts-with"/>
@@ -621,7 +621,7 @@
             </file>
             <file name="contains">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/contains16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/contains16.png"/>
                 <attr name="Class" stringvalue="String"/>
                 <attr name="Method" stringvalue="contains"/>
                 <attr name="Function" stringvalue="contains"/>
@@ -645,7 +645,7 @@
             </file>
             <file name="substring-before">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/substring-before16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/substring-before16.png"/>
                 <attr name="Class" stringvalue="String"/>
                 <attr name="Method" stringvalue="substring-before"/>
                 <attr name="Function" stringvalue="substring-before"/>
@@ -669,7 +669,7 @@
             </file>
             <file name="substring-after">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/substring-after16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/substring-after16.png"/>
                 <attr name="Class" stringvalue="String"/>
                 <attr name="Method" stringvalue="substring-after"/>
                 <attr name="Function" stringvalue="substring-after"/>
@@ -693,7 +693,7 @@
             </file>
             <file name="substring">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/substring16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/substring16.png"/>
                 <attr name="Class" stringvalue="String"/>
                 <attr name="Method" stringvalue="substring"/>
                 <attr name="Function" stringvalue="substring"/>
@@ -720,7 +720,7 @@
             </file>
             <file name="normalize-space">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/normalize-space16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/normalize-space16.png"/>
                 <attr name="Class" stringvalue="String"/>
                 <attr name="Method" stringvalue="normalize-space"/>
                 <attr name="Function" stringvalue="normalize-space"/>
@@ -741,7 +741,7 @@
             </file>
             <file name="translate">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/translate16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/translate16.png"/>
                 <attr name="Class" stringvalue="String"/>
                 <attr name="Method" stringvalue="translate"/>
                 <attr name="Function" stringvalue="translate"/>
@@ -768,7 +768,7 @@
             </file>
             <file name="string-length">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/string-length16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/string-length16.png"/>
                 <attr name="Class" stringvalue="String"/>
                 <attr name="Method" stringvalue="string-length"/>
                 <attr name="Function" stringvalue="string-length"/>
@@ -797,7 +797,7 @@
             <attr name="position" intvalue="600"/>
             <file name="number">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/number16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/number16.png"/>
                 <attr name="Class" stringvalue="Number"/>
                 <attr name="Method" stringvalue="number"/>
                 <attr name="Function" stringvalue="number"/>
@@ -817,7 +817,7 @@
             </file>
             <file name="sum">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/sum16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/sum16.png"/>
                 <attr name="Class" stringvalue="Number"/>
                 <attr name="Method" stringvalue="sum"/>
                 <attr name="Function" stringvalue="sum"/>
@@ -837,7 +837,7 @@
             </file>
             <file name="floor">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/floor16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/floor16.png"/>
                 <attr name="Class" stringvalue="Number"/>
                 <attr name="Method" stringvalue="floor"/>
                 <attr name="Function" stringvalue="floor"/>
@@ -857,7 +857,7 @@
             </file>
             <file name="ceiling">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/ceiling16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/ceiling16.png"/>
                 <attr name="Class" stringvalue="Number"/>
                 <attr name="Method" stringvalue="ceiling"/>
                 <attr name="Function" stringvalue="ceiling"/>
@@ -877,7 +877,7 @@
             </file>
             <file name="round">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/round16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/round16.png"/>
                 <attr name="Class" stringvalue="Number"/>
                 <attr name="Method" stringvalue="round"/>
                 <attr name="Function" stringvalue="round"/>
@@ -897,7 +897,7 @@
             </file>
             <file name="number-literal">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/number-literal16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/number-literal16.png"/>
                 <attr name="Class" stringvalue="Number"/>
                 <attr name="Method" stringvalue="number-literal"/>
                 <attr name="InputNum" stringvalue="0"/>
@@ -922,7 +922,7 @@
             <attr name="position" intvalue="300"/>
             <file name="boolean">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/boolean16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/boolean16.png"/>
                 <attr name="Class" stringvalue="Boolean"/>
                 <attr name="Method" stringvalue="boolean"/>
                 <attr name="Function" stringvalue="boolean"/>
@@ -943,7 +943,7 @@
             </file>
             <file name="not">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/not16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/not16.png"/>
                 <attr name="Class" stringvalue="Boolean"/>
                 <attr name="Method" stringvalue="not"/>
                 <attr name="Function" stringvalue="not"/>
@@ -964,7 +964,7 @@
             </file>
             <file name="true">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/true16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/true16.png"/>
                 <attr name="Class" stringvalue="Boolean"/>
                 <attr name="Method" stringvalue="true"/>
                 <attr name="Function" stringvalue="true"/>
@@ -982,7 +982,7 @@
             </file>
             <file name="false">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/false16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/false16.png"/>
                 <attr name="Class" stringvalue="Boolean"/>
                 <attr name="Method" stringvalue="false"/>
                 <attr name="Function" stringvalue="false"/>
@@ -1000,7 +1000,7 @@
             </file>
             <file name="lang">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/lang16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/lang16.png"/>
                 <attr name="Class" stringvalue="Boolean"/>
                 <attr name="Method" stringvalue="lang"/>
                 <attr name="InputNum" stringvalue="1"/>
@@ -1021,7 +1021,7 @@
             </file>
             <file name="or">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/or16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/or16.png"/>
                 <attr name="Class" stringvalue="Boolean"/>
                 <attr name="Method" stringvalue="or"/>
                 <attr name="Operator" stringvalue="or"/>
@@ -1045,7 +1045,7 @@
             </file>
             <file name="and">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/and16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/and16.png"/>
                 <attr name="Class" stringvalue="Boolean"/>
                 <attr name="Method" stringvalue="and"/>
                 <attr name="Operator" stringvalue="and"/>
@@ -1077,7 +1077,7 @@
             <attr name="position" intvalue="500"/>
             <file name="last">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/last16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/last16.png"/>
                 <attr name="Class" stringvalue="Nodes"/>
                 <attr name="Method" stringvalue="last"/>
                 <attr name="Function" stringvalue="last"/>
@@ -1094,7 +1094,7 @@
             </file>
             <file name="position">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/position16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/position16.png"/>
                 <attr name="Class" stringvalue="Nodes"/>
                 <attr name="Method" stringvalue="position"/>
                 <attr name="Function" stringvalue="position"/>
@@ -1111,7 +1111,7 @@
             </file>
             <file name="count">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/count16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/count16.png"/>
                 <attr name="Class" stringvalue="Nodes"/>
                 <attr name="Method" stringvalue="count"/>
                 <attr name="Function" stringvalue="count"/>
@@ -1132,7 +1132,7 @@
             <file name="local-name">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
                 <!-- local_name is not present
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/local_name16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/local_name16.png"/>
                 -->
                 <attr name="Class" stringvalue="Nodes"/>
                 <attr name="Method" stringvalue="local-name"/>
@@ -1153,7 +1153,7 @@
             </file>
             <file name="namespace-uri">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/namespace-uri16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/namespace-uri16.png"/>
                 <attr name="Class" stringvalue="Nodes"/>
                 <attr name="Method" stringvalue="namespace-uri"/>
                 <attr name="Function" stringvalue="namespace-uri"/>
@@ -1173,7 +1173,7 @@
             </file>
             <file name="name">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/name16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/name16.png"/>
                 <attr name="Class" stringvalue="Nodes"/>
                 <attr name="Method" stringvalue="name"/>
                 <attr name="Function" stringvalue="name"/>
@@ -1193,7 +1193,7 @@
             </file>
             <file name="xpath_expression">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/xpath_expression16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/xpath_expression16.png"/>
                 <attr name="Class" stringvalue="Nodes"/>
                 <attr name="Method" stringvalue="xpath_expression"/>
                 <attr name="InputNum" stringvalue="0"/>
@@ -1218,7 +1218,7 @@
             <attr name="position" intvalue="100"/>
             <file name="current-dateTime">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/current-dateTime16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/current-dateTime16.png"/>
                 <attr name="Class" stringvalue="Datetime"/>
                 <attr name="Method" stringvalue="current-dateTime"/>
                 <attr name="Function" stringvalue="current-dateTime"/>
@@ -1236,7 +1236,7 @@
             </file>
             <file name="current-date">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/current-date16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/current-date16.png"/>
                 <attr name="Class" stringvalue="Datetime"/>
                 <attr name="Method" stringvalue="current-date"/>
                 <attr name="Function" stringvalue="current-date"/>
@@ -1254,7 +1254,7 @@
             </file>
             <file name="current-time">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/current-time16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/current-time16.png"/>
                 <attr name="Class" stringvalue="Datetime"/>
                 <attr name="Method" stringvalue="current-time"/>
                 <attr name="Function" stringvalue="current-time"/>
@@ -1272,7 +1272,7 @@
             </file>
             <file name="duration-literal">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/duration-literal16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/xslt/mapper/palette/icons/duration-literal16.png"/>
                 <attr name="Class" stringvalue="Datetime"/>
                 <attr name="Method" stringvalue="duration-literal"/>
                 <attr name="InputNum" stringvalue="0"/>

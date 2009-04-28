@@ -55,8 +55,8 @@
         <folder name="MIDP">
             <file name="GameDesign.java" url="integration/res/emptygame_java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.game.integration.res.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/vmd/game/integration/res/gamer_16.png"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:org/netbeans/modules/vmd/game/integration/res/emptygame.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/vmd/game/integration/res/gamer_16.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/game/integration/res/emptygame.html"/>
                 <attr name="template" boolvalue="true"/>
         		<attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
