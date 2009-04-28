@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ListModel;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JDialogOperator;
@@ -44,25 +45,25 @@ import org.netbeans.spi.editor.codegen.CodeGenerator;
  */
 public class GenerateCodeOperator {
                 
-    public static final String GENERATE_CONSTRUCTOR = "Constructor..."; //NOI18N
+    public static final String GENERATE_CONSTRUCTOR = Bundle.getString("org.netbeans.modules.java.editor.codegen.Bundle", "LBL_constructor"); //I18N
 
-    public static final String GENERATE_GETTER = "Getter..."; //NOI18N
+    public static final String GENERATE_GETTER = Bundle.getString("org.netbeans.modules.java.editor.codegen.Bundle", "LBL_getter"); //I18N
     
-    public static final String GENERATE_SETTER = "Setter..."; //NOI18N
+    public static final String GENERATE_SETTER = Bundle.getString("org.netbeans.modules.java.editor.codegen.Bundle", "LBL_setter"); //I18N
     
-    public static final String GENERATE_GETTER_SETTER = "Getter and Setter..."; //NOI18N
+    public static final String GENERATE_GETTER_SETTER = Bundle.getString("org.netbeans.modules.java.editor.codegen.Bundle", "LBL_getter_and_setter"); //I18N
     
-    public static final String GENERATE_EQUALS_HASHCODE = "equals() and hashCode()..."; //NOI18N
+    public static final String GENERATE_EQUALS_HASHCODE = Bundle.getString("org.netbeans.modules.java.editor.codegen.Bundle", "LBL_equals_and_hashcode"); //I18N
 
-    public static final String GENERATE_EQUALS = "equals()..."; //NOI18N
+    public static final String GENERATE_EQUALS = Bundle.getString("org.netbeans.modules.java.editor.codegen.Bundle", "LBL_equals"); //I18N
 
-    public static final String GENERATE_HASHCODE = "hashCode()..."; //NOI18N
+    public static final String GENERATE_HASHCODE = Bundle.getString("org.netbeans.modules.java.editor.codegen.Bundle", "LBL_hashcode"); //I18N
     
-    public static final String OVERRIDE_METHOD = "Override Method..."; //NOI18N
+    public static final String OVERRIDE_METHOD = Bundle.getString("org.netbeans.modules.java.editor.codegen.Bundle", "LBL_override_method"); //I18N
             
-    public static final String IMPLEMENT_METHOD = "Implement Method..."; //NOI18N
+    public static final String IMPLEMENT_METHOD = Bundle.getString("org.netbeans.modules.java.editor.codegen.Bundle", "LBL_implement_method"); //I18N
     
-    public static final String DELEGATE_METHOD = "Delegate Method..."; //NOI18N
+    public static final String DELEGATE_METHOD = Bundle.getString("org.netbeans.modules.java.editor.codegen.Bundle", "LBL_delegate_method"); //I18N
     /**
      * Opens requested code generation dialog
      * @param type Displayname of menu item

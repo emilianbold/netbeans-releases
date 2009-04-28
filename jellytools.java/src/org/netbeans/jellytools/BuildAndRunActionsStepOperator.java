@@ -77,7 +77,7 @@ public class BuildAndRunActionsStepOperator extends NewProjectWizardOperator {
     private JComboBoxOperator _cboRun;
     private JComboBoxOperator _cboGenerateJavadoc;
     private JComboBoxOperator _cboTest;
-    
+    //TODO: test this class
     
     
     /** Tries to find "Build:" JLabel in this dialog.
@@ -85,7 +85,8 @@ public class BuildAndRunActionsStepOperator extends NewProjectWizardOperator {
      */
     public JLabelOperator lblBuild() {
         if (_lblBuild==null) {
-            _lblBuild = new JLabelOperator(this, "Build:");//NOI18N
+            String buildProject = Bundle.getString("org.netbeans.modules.ant.freeform.ui.Bundle", "LBL_TargetMappingPanel_jLabel2");
+            _lblBuild = new JLabelOperator(this, buildProject);//I18N
         }
         return _lblBuild;
     }
@@ -95,7 +96,8 @@ public class BuildAndRunActionsStepOperator extends NewProjectWizardOperator {
      */
     public JLabelOperator lblClean() {
         if (_lblClean==null) {
-            _lblClean = new JLabelOperator(this, "Clean:");//NOI18N
+            String cleanProject = Bundle.getString("org.netbeans.modules.ant.freeform.ui.Bundle", "LBL_TargetMappingPanel_jLabel4");
+            _lblClean = new JLabelOperator(this, cleanProject);//I18N
         }
         return _lblClean;
     }
@@ -105,7 +107,8 @@ public class BuildAndRunActionsStepOperator extends NewProjectWizardOperator {
      */
     public JLabelOperator lblRun() {
         if (_lblRun==null) {
-            _lblRun = new JLabelOperator(this, "Run:");//NOI18N
+            String runProject = Bundle.getString("org.netbeans.modules.ant.freeform.ui.Bundle", "LBL_TargetMappingPanel_jLabel5");
+            _lblRun = new JLabelOperator(this, runProject);//I18N
         }
         return _lblRun;
     }
@@ -115,7 +118,8 @@ public class BuildAndRunActionsStepOperator extends NewProjectWizardOperator {
      */
     public JLabelOperator lblGenerateJavadoc() {
         if (_lblGenerateJavadoc==null) {
-            _lblGenerateJavadoc = new JLabelOperator(this, "Generate Javadoc:");//NOI18N
+            String generateJavadoc = Bundle.getString("org.netbeans.modules.ant.freeform.ui.Bundle", "LBL_TargetMappingPanel_jLabel6");
+            _lblGenerateJavadoc = new JLabelOperator(this, generateJavadoc);//I18N
         }
         return _lblGenerateJavadoc;
     }
@@ -125,7 +129,8 @@ public class BuildAndRunActionsStepOperator extends NewProjectWizardOperator {
      */
     public JLabelOperator lblTest() {
         if (_lblTest==null) {
-            _lblTest = new JLabelOperator(this, "Test:");//NOI18N
+            String testProject = Bundle.getString("org.netbeans.modules.ant.freeform.ui.Bundle", "LBL_TargetMappingPanel_jLabel7");
+            _lblTest = new JLabelOperator(this, testProject);//I18N
         }
         return _lblTest;
     }
