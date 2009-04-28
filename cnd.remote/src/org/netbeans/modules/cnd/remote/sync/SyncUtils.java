@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,52 +34,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.ui.wizard;
 
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+package org.netbeans.modules.cnd.remote.sync;
+
+import java.awt.Component;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
 
-/*package*/ final class CreateHostWizardPanel3 implements WizardDescriptor.Panel<WizardDescriptor> {
+/**
+ *
+ * @author Vladimir Kvashin
+ */
+public class SyncUtils {
+    
+    public static void arrangeComboBox(JComboBox cbSyncMode, ExecutionEnvironment execEnv) {
 
-    private CreateHostVisualPanel3 component;
-
-    public CreateHostVisualPanel3 getComponent() {
-        if (component == null) {
-            component = new CreateHostVisualPanel3();
+        List<RemoteSyncFactory> factories = new ArrayList<RemoteSyncFactory>();
+        for (RemoteSyncFactory factory : RemoteSyncFactory.getFactories()) {
+            if (factory.isApplicable(execEnv)) {
+                factories.add(factory);
+            }
         }
-        return component;
-    }
 
-    public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    public boolean isValid() {
-        return true;
-    }
-
-    public final void addChangeListener(ChangeListener l) {
-    }
-
-    public final void removeChangeListener(ChangeListener l) {
-    }
-
-    public void readSettings(WizardDescriptor settings) {
-        getComponent().init(
-            (ExecutionEnvironment)settings.getProperty(CreateHostWizardConstants.PROP_HOST),
-            (ToolsCacheManager)settings.getProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER)
-        );
-    }
-
-    public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(CreateHostWizardConstants.PROP_DISPLAY_NAME, getComponent().getHostDisplayName());
-        settings.putProperty(CreateHostWizardConstants.PROP_SYNC, getComponent().getRemoteSyncFactory());
+        cbSyncMode.setModel(new DefaultComboBoxModel(factories.toArray()));
+        cbSyncMode.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                RemoteSyncFactory factory = (RemoteSyncFactory) value;
+                label.setText(factory.getDisplayName());
+                label.setToolTipText(factory.getDescription());
+                return label;
+            }
+        });
     }
 }
-

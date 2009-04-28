@@ -93,8 +93,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         initComponents();
         initServerList(cacheManager.getServerUpdateCache());
         desc = null;
-        lbReason.setText(" "); // NOI18N - this keeps the dialog from resizing
-        tfReason.setVisible(false);
+        //lbReason.setText(" "); // NOI18N - this keeps the dialog from resizing
+        tfReason.setEnabled(false); // setVisible(false);
         pbarStatusPanel.setVisible(false);
         initListeners();
     }
@@ -240,7 +240,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             tfStatus.setText(record.getStateAsText());
             btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
             btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(record.getExecutionEnvironment()));
-
+            btProperties.setEnabled(record.isRemote());
             btPathMapper.setEnabled(buttonsEnabled && record.isRemote() && record.isOnline());
             if (!record.isOnline()) {
                 showReason(record.getReason());
@@ -257,12 +257,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private void showReason(String reason) {
         lbReason.setText(NbBundle.getMessage(EditServerListDialog.class, "LBL_Reason"));
         tfReason.setText(reason);
-        tfReason.setVisible(true);
+        tfReason.setEnabled(true); // setVisible(true);
     }
 
     private void hideReason() {
-        lbReason.setText(" "); // NOI18N
-        tfReason.setVisible(false);
+        //lbReason.setText(" "); // NOI18N
+        tfReason.setEnabled(false); // setVisible(false);
     }
 
     public void actionPerformed(ActionEvent evt) {
@@ -320,6 +320,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btRemoveServer = new javax.swing.JButton();
         btSetAsDefault = new javax.swing.JButton();
         btPathMapper = new javax.swing.JButton();
+        btProperties = new javax.swing.JButton();
         lbStatus = new javax.swing.JLabel();
         tfStatus = new javax.swing.JTextField();
         btRetry = new javax.swing.JButton();
@@ -353,7 +354,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.gridheight = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1000.0;
@@ -404,12 +405,26 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btPathMapper, gridBagConstraints);
 
+        btProperties.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "EditServerListDialog.btProperties.text")); // NOI18N
+        btProperties.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btPropertiesActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        add(btProperties, gridBagConstraints);
+
         lbStatus.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_Status").charAt(0));
         lbStatus.setLabelFor(tfStatus);
         lbStatus.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Status")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(lbStatus, gridBagConstraints);
@@ -418,7 +433,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfStatus.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1000.0;
@@ -435,7 +450,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 6, 0, 6);
         add(btRetry, gridBagConstraints);
@@ -445,7 +460,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         lbReason.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Reason")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(lbReason, gridBagConstraints);
@@ -454,7 +469,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfReason.setPreferredSize(new java.awt.Dimension(40, 21));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -476,9 +491,17 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         this.revalidateRecord(getSelectedRecord(), null, false);
     }//GEN-LAST:event_btRetryActionPerformed
 
+    private void btPropertiesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btPropertiesActionPerformed
+        RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
+        if (record.isRemote()) {
+            HostPropertiesDialog.invokeMe(record);
+        }
+    }//GEN-LAST:event_btPropertiesActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAddServer;
     private javax.swing.JButton btPathMapper;
+    private javax.swing.JButton btProperties;
     private javax.swing.JButton btRemoveServer;
     private javax.swing.JButton btRetry;
     private javax.swing.JButton btSetAsDefault;

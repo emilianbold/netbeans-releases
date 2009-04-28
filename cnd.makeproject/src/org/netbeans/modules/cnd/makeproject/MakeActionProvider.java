@@ -317,7 +317,7 @@ public class MakeActionProvider implements ActionProvider {
                 message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getDisplayName());
                 res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
                 if (res == JOptionPane.YES_OPTION) {
-                    ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), false, true);
+                    ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
                 }
             } else if (!record.isOnline()) {
                 message = MessageFormat.format(getString("ERR_NeedToConnectToRemoteHost"), record.getDisplayName());

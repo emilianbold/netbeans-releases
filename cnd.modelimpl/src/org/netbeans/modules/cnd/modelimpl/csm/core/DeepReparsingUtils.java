@@ -76,6 +76,7 @@ public final class DeepReparsingUtils {
     public static void reparseOnEdit(FileImpl fileImpl, ProjectBase project, boolean scheduleParsing) {
         Set<CsmFile> topParents = project.getGraph().getTopParentFiles(fileImpl);
         if (topParents.size() > 0) {
+            fileImpl.clearStateCache();
             Set<CsmFile> coherence = project.getGraph().getCoherenceFiles(fileImpl);
             for (CsmFile parent : coherence) {
                 if (!topParents.contains(parent)) {

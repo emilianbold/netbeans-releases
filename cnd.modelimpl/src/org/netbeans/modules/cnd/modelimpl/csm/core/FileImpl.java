@@ -551,7 +551,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
                 state = State.MODIFIED;
             }
-            clearStateCache();
             if (invalidateCache) {
                 synchronized (tokStreamLock) {
                     tsRef = null;
@@ -566,7 +565,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (reportParse || logState || TraceFlags.DEBUG) {
                 System.err.printf("#markMoreParseNeeded %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
             }
-            clearStateCache();
             switch (state) {
                 case BEING_PARSED:
                 case PARSED:

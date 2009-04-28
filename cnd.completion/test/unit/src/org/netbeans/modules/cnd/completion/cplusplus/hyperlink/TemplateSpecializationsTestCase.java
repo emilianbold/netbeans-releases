@@ -107,7 +107,7 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
-        protected Class getTestCaseDataClass() {
+        protected Class<?> getTestCaseDataClass() {
             return TemplateSpecializationsTestCase.class;
         }
 
