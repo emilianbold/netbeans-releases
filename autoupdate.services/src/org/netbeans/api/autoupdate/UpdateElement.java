@@ -140,7 +140,7 @@ public final class UpdateElement {
         UpdateUnitProvider retval = null;
         List<UpdateUnitProvider> providers = UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(false);
         for (UpdateUnitProvider updateUnitProvider : providers) {
-            if (updateUnitProvider.getDisplayName().equals(source)) {
+            if (source != null && source.equals(updateUnitProvider.getDisplayName())) {
                 retval = updateUnitProvider;
             }
         }
