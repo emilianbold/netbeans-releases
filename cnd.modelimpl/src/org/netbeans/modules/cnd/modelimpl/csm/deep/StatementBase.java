@@ -66,11 +66,11 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     private CsmUID<CsmScope> scopeUID;
     
     public StatementBase(AST ast, CsmFile file, CsmScope scope) {
-            super(ast, file);
-            this.ast = ast;
-	    if( scope != null ) {
-		setScope(scope);
-	    }
+        super(ast, file);
+        this.ast = ast;
+        if( scope != null ) {
+            setScope(scope);
+        }
     }
     
     public CsmScope getScope() {

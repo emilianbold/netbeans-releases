@@ -210,7 +210,10 @@ public class BindingPanel extends SectionInnerPanel {
                     (ConfigVersion) supportedConfigVersions.toArray()[supportedConfigVersions.size() - 1],
                     project);
             } else {
-                PolicyModelHelper.setConfigVersion(binding, ConfigVersion.CONFIG_1_0, project);
+                ConfigVersion cfgVersion = ConfigVersion.CONFIG_1_0;
+                PolicyModelHelper.setConfigVersion(binding, cfgVersion, project);
+                supportedConfigVersions.add(cfgVersion);
+                cfgVersionCombo.addItem(cfgVersion);
             }
         }
 
@@ -601,17 +604,8 @@ public class BindingPanel extends SectionInnerPanel {
                 }
 
                 if (trustStoreConfigRequired && gf) {
-                    if (ComboConstants.PROF_USERNAME.equals(secProfile) ||
-                        ComboConstants.PROF_MUTUALCERT.equals(secProfile) ||
-                        ComboConstants.PROF_ENDORSCERT.equals(secProfile) ||
-                        ComboConstants.PROF_SAMLSENDER.equals(secProfile) ||
-                        ComboConstants.PROF_SAMLHOLDER.equals(secProfile) ||
-                        ComboConstants.PROF_STSISSUED.equals(secProfile) ||
-                        ComboConstants.PROF_STSISSUEDCERT.equals(secProfile) ||
-                        ComboConstants.PROF_STSISSUEDSUPPORTING.equals(secProfile) ||
-                        ComboConstants.PROF_STSISSUEDENDORSE.equals(secProfile)
-                        ) {
-                            trustStoreConfigRequired = false;
+                    if (ComboConstants.PROF_USERNAME.equals(secProfile)) {
+                        trustStoreConfigRequired = false;
                     }
                 }
 

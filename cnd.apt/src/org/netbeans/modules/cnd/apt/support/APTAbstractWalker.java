@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.apt.support;
 
 import antlr.TokenStreamException;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
@@ -172,7 +171,9 @@ public abstract class APTAbstractWalker extends APTWalker {
     // implementation details
    
     private boolean eval(APT apt) {
-        APTUtils.LOG.log(Level.FINE, "eval condition for {0}", new Object[] {apt});// NOI18N
+        if (APTUtils.LOG.isLoggable(Level.FINE)) {
+            APTUtils.LOG.log(Level.FINE, "eval condition for {0}", new Object[] {apt});// NOI18N
+        }
         boolean res = false;
         try {
             res = APTConditionResolver.evaluate(apt, getMacroMap());

@@ -36,53 +36,72 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.tools.impl;
 
 import java.io.File;
 import java.text.ParseException;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 
 /**
  * An utility class that helps working with native prof_monitor and prof_agent
- * @author Vladimir Kvashin
+ * @author Alexey Vladykin
  */
-// package-local
-class NativeToolsUtil {
+/*package*/ class NativeToolsUtil {
 
-    private NativeToolsUtil() {}
-
-    public static String getLdPreloadName(String osname) {
-        if ("Mac_OS_X".equals(osname)) { // NOI18N
-            return "DYLD_INSERT_LIBRARIES"; // NOI18N
-        } else {
-            return "LD_PRELOAD"; // NOI18N
-        }
+    private NativeToolsUtil() {
     }
 
-    public static String getExecutable(String name) {
-        return getPlatformBinary(name, ""); // NOI18N
+    public static final String _64 = "_64"; // NOI18N
+
+    public static String getLdPathName(ExecutionEnvironment execEnv) {
+        HostInfo info = HostInfoUtils.getHostInfo(execEnv);
+        return info.getOSFamily() == HostInfo.OSFamily.MACOSX
+                ? "DYLD_LIBRARY_PATH" : "LD_LIBRARY_PATH"; // NOI18N
     }
 
-    public static String getSharedLibrary(String name) {
-        return getPlatformBinary(name, ".${soext}"); //NOI18N
+    public static String getLdPreloadName(ExecutionEnvironment execEnv) {
+        HostInfo info = HostInfoUtils.getHostInfo(execEnv);
+        return info.getOSFamily() == HostInfo.OSFamily.MACOSX
+                ? "DYLD_INSERT_LIBRARIES" : "LD_PRELOAD"; // NOI18N
     }
 
-    private static String getPlatformBinary(String name, String suffix) {
-        return "bin" + File.separator + name + "-${osname}-${platform}${_isa}" + suffix; //NOI18N
-    }
-
-    public static File locateFile(ExecutionEnvironment env, String relativePathWithMacros) {
-        MacroExpander mef = MacroExpanderFactory.getExpander(env);
+    public static Map<String, File> getCompatibleBinaries(ExecutionEnvironment execEnv, String name) {
+        MacroExpander mef = MacroExpanderFactory.getExpander(execEnv);
         try {
-            String relativePath = mef.expandPredefinedMacros(relativePathWithMacros);
-            return InstalledFileLocator.getDefault().locate(relativePath, null, false);
+            Map<String, File> binaries = new LinkedHashMap<String, File>();
+            String dirname = mef.expandPredefinedMacros("${osname}-${platform}${_isa}"); // NOI18N
+            String filename = mef.expandPredefinedMacros(name);
+            File primary = locateFile(dirname, filename);
+            if (primary != null) {
+                binaries.put(dirname, primary);
+            }
+            if (dirname.endsWith(_64)) {
+                dirname = dirname.substring(0, dirname.length() - _64.length());
+                File secondary = locateFile(dirname, filename);
+                if (secondary != null) {
+                    binaries.put(dirname, secondary);
+                }
+            }
+            return binaries;
         } catch (ParseException ex) {
-            return null;
+            Exceptions.printStackTrace(ex);
+            return Collections.emptyMap();
         }
+    }
+
+    private static File locateFile(String dirname, String filename) {
+        return InstalledFileLocator.getDefault().locate(
+                "tools" + File.separator + dirname + File.separator + // NOI18N
+                "bin" + File.separator + filename, null, false); // NOI18N
     }
 
 }

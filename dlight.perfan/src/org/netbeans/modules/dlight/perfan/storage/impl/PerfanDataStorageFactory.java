@@ -52,7 +52,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class)
 public final class PerfanDataStorageFactory implements DataStorageFactory<PerfanDataStorage>{
-  static final String ID = "PerfanDataStorage";
+  static final String ID = "PerfanDataStorage"; //NOI18N
   static final Collection<DataStorageType> supportedTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(ID));
 
   public Collection<DataStorageType> getStorageTypes() {

@@ -110,11 +110,11 @@ public final class NimbusEditorTabDisplayerUI extends BasicScrollingTabDisplayer
     }
     
     protected void paintBackground(Graphics g) {
-        Painter painter;
+        Painter painter = null;
         if (displayer.isActive()) {
             painter = (Painter) UIManager.get("TabbedPane:TabbedPaneTabArea[Enabled+MouseOver].backgroundPainter");
         }
-        else {
+        if (!displayer.isActive() || null == painter) {
             painter = (Painter) UIManager.get("TabbedPane:TabbedPaneTabArea[Enabled].backgroundPainter");
         }
 

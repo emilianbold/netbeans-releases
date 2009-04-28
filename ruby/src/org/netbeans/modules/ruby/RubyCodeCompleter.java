@@ -53,16 +53,16 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.jruby.nb.ast.ArgsNode;
-import org.jruby.nb.ast.ArgumentNode;
-import org.jruby.nb.ast.ClassNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.LocalAsgnNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.types.INameNode;
-import org.jruby.nb.lexer.yacc.ISourcePosition;
+import org.jrubyparser.SourcePosition;
+import org.jrubyparser.ast.ArgsNode;
+import org.jrubyparser.ast.ArgumentNode;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.LocalAsgnNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -1043,7 +1043,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
 
     private void completeModels(List<CompletionProposal> proposals, IndexedMethod target, CompletionRequest request, boolean isLastArg) {
-        Set<IndexedClass> clz = request.index.getSubClasses(request.prefix, "ActiveRecord::Base", request.kind);
+        Set<IndexedClass> clz = request.index.getSubClasses(request.prefix, RubyIndex.ACTIVE_RECORD_BASE, request.kind);
         
         String prefix = request.prefix;
         // I originally stripped ":" to make direct (INameNode)getName()
@@ -1614,7 +1614,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             Node node = AstUtilities.findBySignature(root, signature);
 
             if (node != null) {
-                ISourcePosition pos = node.getPosition();
+                SourcePosition pos = node.getPosition();
                 int startPos = LexUtilities.getLexerOffset(parserResult, pos.getStartOffset());
 
                 try {
@@ -1674,7 +1674,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     //        return Character.isLowerCase(s.charAt(1));
     //    }
     private boolean overlapsLine(Node node, int lineBegin, int lineEnd) {
-        ISourcePosition pos = node.getPosition();
+        SourcePosition pos = node.getPosition();
 
         //return (((pos.getStartOffset() <= lineEnd) && (pos.getEndOffset() >= lineBegin)));
         // Don't look to see if the line is within the target. See if the target is started on this line (where
@@ -1702,7 +1702,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     //    }
 
     static void addLocals(Node node, Map<String, Node> variables) {
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
         case LOCALASGNNODE: {
             String name = ((INameNode)node).getName();
 
@@ -1717,7 +1717,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             // However, I've gotta find the parameter nodes themselves too!
             ArgsNode an = (ArgsNode)node;
 
-            if (an.getRequiredArgsCount() > 0) {
+            if (an.getRequiredCount() > 0) {
                 List<Node> args = an.childNodes();
 
                 for (Node arg : args) {
@@ -1736,15 +1736,15 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             }
 
             // Rest args
-            if (an.getRestArgNode() != null) {
-                String name = an.getRestArgNode().getName();
-                variables.put(name, an.getRestArgNode());
+            if (an.getRest() != null) {
+                String name = an.getRest().getName();
+                variables.put(name, an.getRest());
             }
 
             // Block args
-            if (an.getBlockArgNode() != null) {
-                String name = an.getBlockArgNode().getName();
-                variables.put(name, an.getBlockArgNode());
+            if (an.getBlock() != null) {
+                String name = an.getBlock().getName();
+                variables.put(name, an.getBlock());
             }
             
             break;
@@ -1772,7 +1772,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             if (child.isInvisible()) {
                 continue;
             }
-            switch (child.nodeId) {
+            switch (child.getNodeType()) {
             case DEFNNODE:
             case DEFSNODE:
             case CLASSNODE:
@@ -1787,7 +1787,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
 
     static void addDynamic(Node node, Map<String, Node> variables) {
-        if (node.nodeId == NodeType.DASGNNODE) {
+        if (node.getNodeType() == NodeType.DASGNNODE) {
             String name = ((INameNode)node).getName();
 
             if (!variables.containsKey(name)) {
@@ -1836,7 +1836,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             if (child.isInvisible()) {
                 continue;
             }
-            switch (child.nodeId) {
+            switch (child.getNodeType()) {
             case ITERNODE:
             //case BLOCKNODE:
             case DEFNNODE:
@@ -1852,7 +1852,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
     }
 
     private void addConstants(Node node, Map<String, Node> constants) {
-        if (node.nodeId == NodeType.CONSTDECLNODE) {
+        if (node.getNodeType() == NodeType.CONSTDECLNODE) {
             constants.put(((INameNode)node).getName(), node);
         }
 

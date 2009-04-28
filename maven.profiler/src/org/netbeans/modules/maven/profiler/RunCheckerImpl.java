@@ -41,7 +41,6 @@ package org.netbeans.modules.maven.profiler;
 
 import java.io.File;
 import java.util.Properties;
-import java.util.Set;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
@@ -94,14 +93,14 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
                 if (value.contains(PROFILER_ARGS)) {
                     String agentArg = fixAgentArg(sessionProperties.getProperty("profiler.info.jvmargs.agent"));
                     value = value.replace(PROFILER_ARGS, sessionProperties.getProperty("profiler.info.jvmargs") // NOI18N
-                            + " " + agentArg.replace("\\", "/")); // NOI18N
-                    configProperties.setProperty(key, value);
+                            + " " + agentArg); // NOI18N
+                    configProperties.setProperty(key, value.trim());
                 }
                 if (value.contains(PROFILER_JAVA)) {
                     String profilerJava = sessionProperties.getProperty("profiler.info.jvm"); // NOI18N
                     value = value.replace(PROFILER_JAVA,
                             (profilerJava != null && new File(profilerJava).isFile()) ? profilerJava : "java"); // NOI18N
-                    configProperties.setProperty(key, value);
+                    configProperties.setProperty(key, value.trim());
                 }
             }
             // Set the properties back to config
@@ -124,6 +123,8 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     }
 
     private String fixAgentArg(String agentArg) {
+        agentArg = agentArg.replace("\\", "/");
+
         if (agentArg.indexOf(' ') != -1) { //NOI18N
             if (Utilities.isUnix()) {
                 // Profiler is installed in directory with space on Unix (Linux, Solaris, Mac OS X)
@@ -133,7 +134,7 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
             } else if (Utilities.isWindows()) {
                 // Profiler is installed in directory with space on Windows
                 // surround the whole -agentpath argument with quotes for NB source module
-                agentArg = "\"" + agentArg + "\""; //NOI18N
+                agentArg = "\\\"" + agentArg + "\\\""; //NOI18N
                 return agentArg; //NOI18N
             }
         }

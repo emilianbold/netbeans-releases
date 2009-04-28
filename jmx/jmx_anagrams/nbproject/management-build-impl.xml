@@ -161,7 +161,7 @@ is divided into following sections:
                     <jvmarg value="-Xdebug"/>
                     <jvmarg value="-Xnoagent"/>
                     <jvmarg value="-Djava.compiler=none"/>
-                    <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+                    <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
                     <jvmarg line="${management.jvmargs} ${run.jvmargs}"/>
                     <classpath>
                         <path path="@{classpath}"/>

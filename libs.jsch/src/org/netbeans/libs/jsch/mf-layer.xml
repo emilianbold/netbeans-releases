@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-lib-jsch-antlibrary.instance">
                 <attr name="instanceCreate" methodvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspath.url"/>
                 <attr name="instanceOf" stringvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspathProvider"/>
-                <attr name="url" urlvalue="nbinst://org.netbeans.libs.jsch/modules/ext/jsch-0.1.39.jar"/>
+                <attr name="url" urlvalue="nbinst://org.netbeans.libs.jsch/modules/ext/jsch-0.1.41.jar"/>
             </file>
         </folder>
     </folder>

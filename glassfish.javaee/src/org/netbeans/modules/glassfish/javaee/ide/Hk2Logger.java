@@ -48,6 +48,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
@@ -152,11 +154,12 @@ public class Hk2Logger {
     
     private static InputStream[] getInputStreamsFromFiles(File[] files) {
         InputStream[] inputStreams = new InputStream[files.length];
-        
+        int i = 0;
         try {
-            for(int i=0 ; i<files.length ; i++)
+            for(i=0 ; i<files.length ; i++)
                 inputStreams[i] = new FileInputStream(files[i]);
         } catch(FileNotFoundException ex) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, files[i].getAbsolutePath(), ex); // NOI18N
             return new InputStream[] {};
         }
         

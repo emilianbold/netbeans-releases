@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.jruby.util.ByteList;
 import org.jvyamlb.Composer;
@@ -72,6 +74,12 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class YamlParser extends Parser {
+
+    private static final Logger LOGGER = Logger.getLogger(YamlParser.class.getName());
+    /**
+     * The max length for files we will try to parse (to avoid OOMEs).
+     */
+    private static final int MAX_LENGTH = 512*1024;
 
     private YamlParserResult lastResult;
 
@@ -104,18 +112,25 @@ public class YamlParser extends Parser {
         }
     }
 
+    private boolean isTooLarge(String source) {
+        return source.length() > MAX_LENGTH;
+    }
+
+    private YamlParserResult resultForTooLargeFile(Snapshot snapshot) {
+        YamlParserResult result = new YamlParserResult(Collections.<Node>emptyList(), this, snapshot, false, null, null);
+        // FIXME this can violate contract of DefaultError (null fo)
+        DefaultError error = new DefaultError(null, NbBundle.getMessage(YamlParser.class, "TooLarge"), null,
+                snapshot.getSource().getFileObject(), 0, 0, Severity.WARNING);
+        result.addError(error);
+        return result;
+    }
+
     // for test package private
     YamlParserResult parse(String source, Snapshot snapshot) {
         try {
-            if (source.length() > 512*1024) {
-                YamlParserResult result = new YamlParserResult(Collections.<Node>emptyList(), this, snapshot, false, null, null);
-                // FIXME this can violate contract of DefaultError (null fo)
-                DefaultError error = new DefaultError(null, NbBundle.getMessage(YamlParser.class, "TooLarge"), null,
-                        snapshot.getSource().getFileObject(), 0, 0, Severity.WARNING);
-                result.addError(error);
-                return result;
+            if (isTooLarge(source)) {
+                return resultForTooLargeFile(snapshot);
             }
-            source.length();
             ByteList byteList = null;
             int[] byteToUtf8 = null;
             int[] utf8toByte = null;
@@ -214,8 +229,17 @@ public class YamlParser extends Parser {
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+
+        String source = asString(snapshot.getText());
+        if (isTooLarge(source)) {
+            LOGGER.log(Level.FINE,
+                    "Skipping {0}, too large to parse (length: {1})",
+                    new Object[]{snapshot.getSource().getFileObject(), source.length()});
+            lastResult = resultForTooLargeFile(snapshot);
+            return;
+        }
+
         try {
-            String source = asString(snapshot.getText());
 //                int caretOffset = reader.getCaretOffset(file);
 //                if (caretOffset != -1 && job.translatedSource != null) {
 //                    caretOffset = job.translatedSource.getAstOffset(caretOffset);

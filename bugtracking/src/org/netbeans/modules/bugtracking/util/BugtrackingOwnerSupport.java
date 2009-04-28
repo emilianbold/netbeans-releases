@@ -88,11 +88,9 @@ public class BugtrackingOwnerSupport {
     }
 
     public Repository getRepository(ContextType context) {
-        final OpenProjects projects = OpenProjects.getDefault();
-
         switch (context) {
             case MAIN_PROJECT_ONLY:
-                Project mainProject = projects.getMainProject();
+                Project mainProject = OpenProjects.getDefault().getMainProject();
                 if (mainProject != null) {
                     return getRepository(mainProject, false);
                 }
@@ -104,7 +102,7 @@ public class BugtrackingOwnerSupport {
                 }
                 break;
             case ALL_PROJECTS:
-                return getRepository(projects.getOpenProjects());
+                return getRepository(OpenProjects.getDefault().getOpenProjects());
             case SELECTED_FILE_AND_ALL_PROJECTS:
                 File contextFile = BugtrackingUtil.getLargerContext();
                 if (contextFile != null) {

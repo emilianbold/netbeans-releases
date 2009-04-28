@@ -95,16 +95,16 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
 
             final KenaiFeature feature = sourcesInfo.feature;
 
-            if (KenaiService.Names.SUBVERSION.equals(feature.getService())) { // XXX service or name
+            if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
 
                             if (passwdAuth != null) {
-                                Subversion.checkoutRepositoryFolder(feature.getLocation().toASCIIString(), sourcesInfo.relativePaths,
+                                Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
                                     new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
                             } else {
-                                Subversion.checkoutRepositoryFolder(feature.getLocation().toASCIIString(), sourcesInfo.relativePaths,
+                                Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
                                     new File(sourcesInfo.localFolderPath), true);
                             }
 
@@ -113,16 +113,16 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                         }
                     }
                 });
-            } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) { // XXX service or name
+            } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
 
                             if (passwdAuth != null) {
-                                Mercurial.cloneRepository(feature.getLocation().toASCIIString(), new File(sourcesInfo.localFolderPath),
+                                Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
                                     "", "", "", passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
                             } else {
-                                Mercurial.cloneRepository(feature.getLocation().toASCIIString(), new File(sourcesInfo.localFolderPath),
+                                Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
                                     "", "", "");
                             }
 

@@ -71,7 +71,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -153,13 +152,13 @@ public class ArchetypeWizardUtils {
     }
 
 
-    private static void runArchetype(File directory, NBVersionInfo vi, Archetype arch, Map<String, String> additional) throws IOException {
+    private static void runArchetype(File directory, ProjectInfo vi, Archetype arch, Map<String, String> additional) throws IOException {
         Properties props = new Properties();
 
-        props.setProperty("artifactId", vi.getArtifactId()); //NOI18N
-        props.setProperty("version", vi.getVersion()); //NOI18N
-        props.setProperty("groupId", vi.getGroupId()); //NOI18N
-        final String pack = vi.getPackaging();
+        props.setProperty("artifactId", vi.artifactId); //NOI18N
+        props.setProperty("version", vi.version); //NOI18N
+        props.setProperty("groupId", vi.groupId); //NOI18N
+        final String pack = vi.packageName;
         if (pack != null && pack.trim().length() > 0) {
             props.setProperty("package", pack); //NOI18N
         }
@@ -250,23 +249,21 @@ public class ArchetypeWizardUtils {
      * Instantiates archetype stored in given wizard descriptor, with progress UI notification.
      */
     public static Set<FileObject> instantiate (ProgressHandle handle, WizardDescriptor wiz) throws IOException {
-        NBVersionInfo vi = new NBVersionInfo(
-                null,
-                (String)wiz.getProperty("groupId"), //NOI18N
-                (String)wiz.getProperty("artifactId"), //NOI18N
-                (String)wiz.getProperty("version"), //NOI18N
-                null,
-                (String)wiz.getProperty("package"), //NOI18N
-                null, null, null);
+        ProjectInfo vi = new ProjectInfo();
+        vi.groupId = (String)wiz.getProperty("groupId"); //NOI18N
+        vi.artifactId = (String)wiz.getProperty("artifactId"); //NOI18N
+        vi.version = (String)wiz.getProperty("version"); //NOI18N
+        vi.packageName = (String)wiz.getProperty("package"); //NOI18N
+
         @SuppressWarnings("unchecked")
         Map<String, String> additional = (Map<String, String>)wiz.getProperty("additionalProps"); //NOI18N
 
         try {
-            NBVersionInfo ear_vi = (NBVersionInfo)wiz.getProperty("ear_versionInfo"); //NOI18N
+            ProjectInfo ear_vi = (ProjectInfo)wiz.getProperty("ear_versionInfo"); //NOI18N
             if (ear_vi != null) {
                 // enterprise application wizard, multiple archetypes to run
-                NBVersionInfo web_vi = (NBVersionInfo)wiz.getProperty("web_versionInfo"); //NOI18N
-                NBVersionInfo ejb_vi = (NBVersionInfo)wiz.getProperty("ejb_versionInfo"); //NOI18N
+                ProjectInfo web_vi = (ProjectInfo)wiz.getProperty("web_versionInfo"); //NOI18N
+                ProjectInfo ejb_vi = (ProjectInfo)wiz.getProperty("ejb_versionInfo"); //NOI18N
 
                 handle.start(8 + (web_vi != null ? 3 : 0) + (ejb_vi != null ? 3 : 0));
                 File rootFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi, //NOI18N
@@ -286,7 +283,7 @@ public class ArchetypeWizardUtils {
                 }
                 addEARDeps((File)wiz.getProperty("ear_projdir"), ejb_vi, web_vi, progressCounter);
                 updateProjectName(rootFile,
-                        NbBundle.getMessage(ArchetypeWizardUtils.class, "TXT_EAProjectName", vi.getArtifactId()));
+                        NbBundle.getMessage(ArchetypeWizardUtils.class, "TXT_EAProjectName", vi.artifactId));
                 return openProjects(handle, rootFile, progressCounter);
             } else {
                 // other wizards, just one archetype
@@ -300,7 +297,7 @@ public class ArchetypeWizardUtils {
         }
     }
 
-    private static File createFromArchetype (ProgressHandle handle, File projDir, NBVersionInfo vi,
+    private static File createFromArchetype (ProgressHandle handle, File projDir, ProjectInfo vi,
         Archetype arch, Map<String, String> additional, int progressCounter) throws IOException {
         handle.progress(++progressCounter);
 
@@ -370,7 +367,7 @@ public class ArchetypeWizardUtils {
         }
     }
 
-    private static void addEARDeps (File earDir, NBVersionInfo ejbVi, NBVersionInfo webVi, int progressCounter) {
+    private static void addEARDeps (File earDir, ProjectInfo ejbVi, ProjectInfo webVi, int progressCounter) {
         FileObject earDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(earDir));
         if (earDirFO == null) {
             return;
@@ -378,13 +375,13 @@ public class ArchetypeWizardUtils {
         //TODO this will save the file twice - suboptimal
         if (ejbVi != null) {
             // EAR ---> ejb
-            ModelUtils.addDependency(earDirFO.getFileObject("pom.xml"), ejbVi.getGroupId(), //NOI18N
-                    ejbVi.getArtifactId(), ejbVi.getVersion(), ejbVi.getType(), null, null, true);
+            ModelUtils.addDependency(earDirFO.getFileObject("pom.xml"), ejbVi.groupId, //NOI18N
+                    ejbVi.artifactId, ejbVi.version, "ejb", null, null, true); //NOI18N
         }
         if (webVi != null) {
             // EAR ---> war
-            ModelUtils.addDependency(earDirFO.getFileObject("pom.xml"), webVi.getGroupId(), //NOI18N
-                    webVi.getArtifactId(), webVi.getVersion(), webVi.getType(), null, null, false);
+            ModelUtils.addDependency(earDirFO.getFileObject("pom.xml"), webVi.groupId, //NOI18N
+                    webVi.artifactId, webVi.version, "war", null, null, false); //NOI18N
         }
         progressCounter++;
     }

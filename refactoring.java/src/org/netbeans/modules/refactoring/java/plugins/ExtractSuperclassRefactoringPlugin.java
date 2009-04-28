@@ -488,7 +488,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                     MethodTree methodTree = wc.getTrees().getTree(elm);
                     if (member.isMakeAbstract() && !elm.getModifiers().contains(Modifier.ABSTRACT)) {
                         methodTree = make.Method(
-                                makeAbstract(make, methodTree.getModifiers()),
+                                RetoucheUtils.makeAbstract(make, methodTree.getModifiers()),
                                 methodTree.getName(),
                                 methodTree.getReturnType(),
                                 methodTree.getTypeParameters(),
@@ -518,7 +518,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             Tree superClass = makeSuperclass(make, sourceTypeElm);
             
             ModifiersTree classModifiersTree = makeAbstract
-                    ? makeAbstract(make, classTree.getModifiers())
+                    ? RetoucheUtils.makeAbstract(make, classTree.getModifiers())
                     : classTree.getModifiers();
             classModifiersTree = genUtils.importFQNs(classModifiersTree);
             
@@ -548,16 +548,6 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                 }
             }
             throw new IllegalStateException("wrong template, cannot find the class in " + javac.getFileObject()); // NOI18N
-        }
-        
-        private static ModifiersTree makeAbstract(TreeMaker make, ModifiersTree oldMods) {
-            if (oldMods.getFlags().contains(Modifier.ABSTRACT)) {
-                return oldMods;
-            }
-            Set<Modifier> flags = new HashSet<Modifier>(oldMods.getFlags());
-            flags.add(Modifier.ABSTRACT);
-            flags.remove(Modifier.FINAL);
-            return make.Modifiers(flags, oldMods.getAnnotations());
         }
         
         private static Tree makeSuperclass(TreeMaker make, TypeElement clazz) {

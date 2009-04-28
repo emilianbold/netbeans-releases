@@ -61,18 +61,43 @@ public class DefaultError implements Error {
     private FileObject file;
     private int start;
     private int end;
+    private boolean lineError;
     private String key;
     private Severity severity;
     private Object[] parameters;
 
+    public static Error createDefaultError(@NullAllowed String key,
+            @NonNull String displayName,
+            @NullAllowed String description,
+            @NonNull FileObject file,
+            @NonNull int start,
+            @NonNull int end,
+            boolean lineError,
+            @NonNull Severity severity) {
+        return new DefaultError(key, displayName, description, file, start, end, lineError, severity);
+    }
+
     /** Creates a new instance of DefaultError */
     public DefaultError(
+            @NullAllowed String key,
+            @NonNull String displayName,
+            @NullAllowed String description,
+            @NonNull FileObject file,
+            @NonNull int start,
+            @NonNull int end,
+            @NonNull Severity severity) {
+        this(key, displayName, description, file, start, end, true, severity);
+    }
+    
+    /** Creates a new instance of DefaultError */
+    private DefaultError(
             @NullAllowed String key,
             @NonNull String displayName, 
             @NullAllowed String description,
             @NonNull FileObject file, 
             @NonNull int start, 
-            @NonNull int end, 
+            @NonNull int end,
+            boolean lineError,
             @NonNull Severity severity) {
         this.key = key;
         this.displayName = displayName;
@@ -80,6 +105,7 @@ public class DefaultError implements Error {
         this.file = file;
         this.start = start;
         this.end = end;
+        this.lineError = lineError;
         this.severity = severity;
     }
 
@@ -99,6 +125,10 @@ public class DefaultError implements Error {
     // TODO rename to getEndOffset
     public int getEndPosition() {
         return end;
+    }
+
+    public boolean isLineError() {
+        return lineError;
     }
 
     @Override

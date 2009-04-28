@@ -253,18 +253,20 @@ public class TreeLoader extends LazyTreeLoader {
         }.scan(env.toplevel);
         try {
             String binaryName = null;
+            String surl = null;
             if (clazz.classfile != null) {
                 binaryName = jfm.inferBinaryName(StandardLocation.PLATFORM_CLASS_PATH, clazz.classfile);
                 if (binaryName == null)
                     binaryName = jfm.inferBinaryName(StandardLocation.CLASS_PATH, clazz.classfile);
+                surl = clazz.classfile.toUri().toURL().toExternalForm();
             }
             else if (clazz.sourcefile != null) {
                 binaryName = jfm.inferBinaryName(StandardLocation.SOURCE_PATH, clazz.sourcefile);
+                surl = clazz.sourcefile.toUri().toURL().toExternalForm();
             }
-            if (binaryName == null) {
+            if (binaryName == null || surl == null) {
                 return;
             }
-            String surl = clazz.classfile.toUri().toURL().toExternalForm();
             int index = surl.lastIndexOf(FileObjects.convertPackage2Folder(binaryName));
             assert index > 0;
             File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));

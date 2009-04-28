@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,15 +40,18 @@
  */
 package org.netbeans.modules.mercurial.ui.push;
 
+import java.net.URISyntaxException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -58,6 +61,7 @@ import org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
@@ -68,7 +72,7 @@ import org.openide.util.HelpCtx;
  * 
  * @author John Rice
  */
-public class PushOtherAction extends ContextAction implements PropertyChangeListener {
+public class PushOtherAction extends ContextAction implements ChangeListener {
     
     private final VCSContext context;
     private Repository repository = null;
@@ -85,10 +89,10 @@ public class PushOtherAction extends ContextAction implements PropertyChangeList
         if (root == null) return;
 
         if (repository == null) {
-            int repositoryModeMask = Repository.FLAG_URL_EDITABLE | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
+            int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
             String title = org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Location");       // NOI18N
             repository = new Repository(repositoryModeMask, title, true);
-            repository.addPropertyChangeListener(this);
+            repository.addChangeListener(this);
         }
         pushButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(pushButton, org.openide.util.NbBundle.getMessage(PushOtherAction.class, "CTL_Push_Action_Push")); // NOI18N
@@ -107,31 +111,42 @@ public class PushOtherAction extends ContextAction implements PropertyChangeList
                                         "hg.push.dialog");
 
         if (option == pushButton) {
-            final String pushPath = repository.getSelectedRC().getUrl();
+            final HgURL pushPath;
+            try {
+                pushPath = repository.getUrl();
+            } catch (URISyntaxException ex) {
+                Mercurial.LOG.log(Level.SEVERE,
+                                  this.getClass().getName()
+                                          + ": Could not push because of invalid URI." //NOI18N
+                                          + repository.getUrlString());
+                Mercurial.LOG.log(Level.SEVERE,
+                                  this.getClass().getName()
+                                  + ": Invalid URI: "                   //NOI18N
+                                  + repository.getUrlString());
+                return;
+            }
+
             push(context, root, pushPath);
         }
     }
     
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(Repository.PROP_VALID)) {
-            pushButton.setEnabled(repository.isValid());
-        }
+    public void stateChanged(ChangeEvent evt) {
+        pushButton.setEnabled(repository.isValid());
     }
 
-    public static void push(final VCSContext ctx, final File root, final String pushPath) {
+    public static void push(final VCSContext ctx, final File root, final HgURL pushPath) {
         if (root == null || pushPath == null) return;
-        String repository = root.getAbsolutePath();
         final String fromPrjName = HgProjectUtils.getProjectName(root);
         final String toPrjName = NbBundle.getMessage(PushAction.class, "MSG_EXTERNAL_REPOSITORY"); // NOI18N
          
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() { 
-               PushAction.performPush(root, pushPath, fromPrjName, toPrjName, this.getLogger()); 
+               PushAction.performPush(root, pushPath, fromPrjName, toPrjName, this.getLogger(), false);
             } 
         };
 
-        support.start(rp, repository, 
+        support.start(rp, root,
                 org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
     }
     

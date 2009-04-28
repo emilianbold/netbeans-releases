@@ -85,7 +85,7 @@ public class WatchesActionsProvider implements NodeActionsProvider {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++) {
                     if (nodes[i] instanceof GdbWatchVariable) {
-                        ((GdbWatchVariable) nodes[i]).remove();
+                        ((GdbWatchVariable) nodes[i]).getWatch().remove();
                     }
                 }
             }

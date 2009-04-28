@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.util.List;
 import java.util.logging.Level;
 import javax.swing.*;
 
@@ -144,7 +145,21 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
     private static void scheduleTask(Runnable runnable) {          
         RequestProcessor.Task task = RequestProcessor.getDefault().create(runnable);        
         task.schedule(0);        
-    }        
+    }
+
+    /**
+     * Copies file' content to a temporary folder
+     * @param entry contains the file's content
+     * @param tempFolder target folder
+     * @throws java.io.IOException
+     */
+    private static void extractHistoryFile (StoreEntry entry, File tempFolder) throws IOException {
+        File file = entry.getFile();
+        File tmpHistoryFile = new File(tempFolder, file.getName());
+        tmpHistoryFile.deleteOnExit();
+        FileUtils.copy(entry.getStoreFileInputStream(), tmpHistoryFile);
+        Utils.associateEncoding(file, tmpHistoryFile);
+    }
     
     private class DiffPrepareTask implements Runnable {
         
@@ -156,19 +171,25 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
 
         public void run() {
             // XXX how to get the mimetype
-            
+
+            final File file = entry.getFile();
+            File tempFolder = Utils.getTempFolder();
+            final File tmpHistoryFile = new File(tempFolder, file.getName());
+            try {
+                extractHistoryFile(entry, tempFolder);
+                List<StoreEntry> siblings = entry.getSiblingEntries();
+                for (StoreEntry siblingEntry : siblings) {
+                    extractHistoryFile(siblingEntry, tempFolder);
+                }
+            } catch (IOException ioe) {
+                LocalHistory.LOG.log(Level.SEVERE, null, ioe);
+                return;
+            }
+
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {            
                     try {   
                         
-                        File file = entry.getFile();
-                        
-                        File tempFolder = Utils.getTempFolder();
-                        File tmpHistoryFile = new File(tempFolder, file.getName()); 
-                        tmpHistoryFile.deleteOnExit();
-                        FileUtils.copy(entry.getStoreFileInputStream(), tmpHistoryFile);
-                        Utils.associateEncoding(file, tmpHistoryFile);                                                
-                             
                         StreamSource ss1 = new LHStreamSource(tmpHistoryFile, entry.getFile().getName() + " " + StoreEntryNode.getFormatedDate(entry), entry.getMIMEType());
                         
                         String title;

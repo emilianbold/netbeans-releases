@@ -91,7 +91,7 @@ public class PresenceIndicator {
     public static synchronized PresenceIndicator getDefault() {
         if (instance == null) {
             instance = new PresenceIndicator();
-            if (Boolean.parseBoolean(System.getProperty(("kenai.chat.enabled"), "false"))) {
+            if (System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com")) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         KenaiConnection.getDefault();
@@ -108,7 +108,7 @@ public class PresenceIndicator {
         /*
         * TODO: delete this
         */
-        if (Boolean.parseBoolean(System.getProperty(("kenai.chat.enabled"), "false"))) {
+        if (System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com")) {
             helper = new MouseL();
             label.addMouseListener(helper);
         }
@@ -126,7 +126,7 @@ public class PresenceIndicator {
         @Override
         public void mouseClicked(MouseEvent event) {
             if (event.getClickCount() == 2) {
-                ChatTopComponent.openAction(ChatTopComponent.getDefault(), "", "", false).actionPerformed(new ActionEvent(event,event.getID(),"")); // NOI18N
+                ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(new ActionEvent(event,event.getID(),"")); // NOI18N
             }
         }
     }

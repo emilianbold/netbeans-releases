@@ -115,7 +115,7 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
             // if possible, highlight only single token
             int tokenStart = start + column - 1;
             int tokenEnd = tokenStart + tokenText.length();
-            if (0 <= tokenStart && tokenEnd <= text.length()
+            if (0 <= tokenStart && 0 <= tokenEnd && tokenEnd <= text.length()
                     && text.subSequence(tokenStart, tokenEnd).equals(tokenText)) {
                 start = tokenStart;
                 end = tokenEnd;

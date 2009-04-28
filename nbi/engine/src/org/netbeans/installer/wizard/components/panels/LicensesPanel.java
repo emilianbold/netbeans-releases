@@ -255,7 +255,8 @@ public class LicensesPanel extends WizardPanel {
             licensePane.setOpaque(true);
             licensePane.setBackground(Color.WHITE);
             licensePane.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
-            
+            licensePane.setFocusable(true);
+
             // licenseScrollPane ////////////////////////////////////////////////////
             licenseScrollPane = new NbiScrollPane(licensePane);
             

@@ -202,9 +202,7 @@ public abstract class TreeListNode {
     protected void childrenLoadingTimedout() {
     }
 
-    final void addListener( TreeListListener listener ) {
-        if( null != this.listener )
-            throw new IllegalStateException();
+    final void setListener( TreeListListener listener ) {
         this.listener = listener;
     }
 
@@ -215,8 +213,8 @@ public abstract class TreeListNode {
      * get disposed properly as well.
      */
     protected void dispose() {
-        this.listener = null;
         synchronized( LOCK ) {
+            this.listener = null;
             if( null != children ) {
                 for( TreeListNode node : children )
                     node.dispose();

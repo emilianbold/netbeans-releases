@@ -107,5 +107,5 @@ public interface ConfigurationAuxObject {
     /**
      * Clone itself to an identical (deep) copy.
      */
-    public Object clone();
+    public ConfigurationAuxObject clone(Configuration conf);
 }

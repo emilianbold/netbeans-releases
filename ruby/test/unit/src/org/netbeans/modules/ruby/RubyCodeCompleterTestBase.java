@@ -118,7 +118,7 @@ public abstract class RubyCodeCompleterTestBase extends RubyTestBase {
                 anchorOffsetHolder, null, QuerySupport.Kind.PREFIX);
 
         if (expectSuccess) {
-            assertTrue(ok);
+            assertTrue("Not a method call", ok);
         } else if (!ok) {
             return;
         }

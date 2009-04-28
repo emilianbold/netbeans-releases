@@ -100,6 +100,8 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
      * is created, it will create submenuitems for each available index.
      */
     private final class IndexMenu extends JMenu implements HelpCtx.Provider, DynamicMenuContent {
+
+        private static final int MAX_ITEMS = 20;
         
         private int itemHash = 0;
         
@@ -137,7 +139,15 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
 //        }
         
         public void getPopupMenu2() {
-            List[] data = IndexBuilder.getDefault().getIndices();
+            List[] data = IndexBuilder.getDefault().getIndices(false);
+            if (data == null) {
+                // do not block EDT in case inices are not computed yet
+                itemHash = 0;
+                removeAll();
+                add(new MoreReferencesMenuItem());
+                return;
+            }
+            
             int newHash = computeDataHash(data);
             if (newHash != itemHash) {
                 if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -151,9 +161,10 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
                 int size = names.size();
                 if (size != indices.size()) throw new IllegalStateException();
                 if (size > 0) {
-                    for (int i = 0; i < size; i++) {
-                        add(new IndexMenuItem((String)names.get(i), (FileObject)indices.get(i)));
+                    for (int i = 0; i < size && i < MAX_ITEMS; i++) {
+                        add(new IndexMenuItem((String) names.get(i), (FileObject) indices.get(i)));
                     }
+                    add(new MoreReferencesMenuItem());
                 } else {
                     JMenuItem dummy = new JMenuItem(NbBundle.getMessage(IndexOverviewAction.class, "CTL_no_indices_found"));
                     dummy.setEnabled(false);
@@ -209,6 +220,26 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
             return IndexOverviewAction.this.getHelpCtx();
         }
         
+    }
+
+    private static final class MoreReferencesMenuItem extends JMenuItem implements ActionListener {
+
+        public MoreReferencesMenuItem() {
+            Mnemonics.setLocalizedText(this, NbBundle.getMessage(IndexOverviewAction.class, "CTL_MORE_INDICES_MenuItem"));
+            addActionListener(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FileObject fsRef = ReferencesPanel.showInWindow();
+            URL u = null;
+            if (fsRef != null) {
+                u = JavadocURLMapper.findURL(fsRef);
+            }
+            if (u != null) {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(u);
+            }
+        }
+
     }
     
 }

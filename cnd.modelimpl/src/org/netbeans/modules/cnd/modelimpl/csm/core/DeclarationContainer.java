@@ -128,7 +128,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     public void removeDeclaration(CsmOffsetableDeclaration decl) {
         CharSequence uniqueName = CharSequenceKey.create(decl.getUniqueName());
-        CsmUID<CsmOffsetableDeclaration> anUid = RepositoryUtils.put(decl);
+        CsmUID<CsmOffsetableDeclaration> anUid = UIDCsmConverter.declarationToUID(decl);
         Object o = null;
         try {
             declarationsLock.writeLock().lock();

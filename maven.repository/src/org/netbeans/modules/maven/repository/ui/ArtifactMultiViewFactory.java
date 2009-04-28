@@ -47,6 +47,7 @@ import java.util.Properties;
 import javax.swing.Action;
 import javax.swing.JButton;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
@@ -54,6 +55,9 @@ import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
+import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
@@ -61,6 +65,7 @@ import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -127,6 +132,12 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
             public void run() {
                 MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
                 MavenProject mvnprj;
+                AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
+                            new ProgressContributor[] {
+                                AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
+                            null, null);
+                ProgressTransferListener.setAggregateHandle(hndl);
+                hndl.start();
                 try {
                     if (prj == null) {
                         List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
@@ -184,6 +195,9 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                         // oh well..
                         //NOPMD
                     }
+                } finally {
+                    hndl.finish();
+                    ProgressTransferListener.clearAggregateHandle();
                 }
             }
         });

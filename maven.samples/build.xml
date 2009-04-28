@@ -8,7 +8,7 @@
     <target name="zip-examples" depends="build-init">
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/maven/samples"/>
         <mkdir dir="${examples}"/>
-        <zip basedir="samples_src/Calculator"  destfile="${examples}/Calculator.zip"/>
-        <zip basedir="samples_src/CalculatorClient"  destfile="${examples}/CalculatorClient.zip"/>
+        <zip basedir="samples_src/MavenCalculator"  destfile="${examples}/MavenCalculator.zip"/>
+        <zip basedir="samples_src/MavenCalculatorClient"  destfile="${examples}/MavenCalculatorClient.zip"/>
     </target>
 </project>

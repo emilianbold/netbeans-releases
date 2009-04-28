@@ -23,7 +23,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class StackDataProviderImplFactory implements DataProviderFactory {
 
     private final Collection<DataStorageType> supportedStorageTypes = Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
-    private final Collection<DataModelScheme> providedSchemas = Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:stack"));
+    private final Collection<DataModelScheme> providedSchemas = Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:stack")); //NOI18N
 
     public DataProvider create() {
         return new StackDataProviderImpl();

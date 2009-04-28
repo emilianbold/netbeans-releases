@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,10 +53,14 @@ import org.openide.util.RequestProcessor;
 import java.io.File;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -90,7 +94,7 @@ public class FetchAction extends ContextAction {
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() { performFetch(root, this.getLogger()); } };
 
-        support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(FetchAction.class, "MSG_FETCH_PROGRESS")); // NOI18N
+        support.start(rp, root, org.openide.util.NbBundle.getMessage(FetchAction.class, "MSG_FETCH_PROGRESS")); // NOI18N
     }
 
     static void performFetch(final File root, OutputLogger logger) {
@@ -100,10 +104,24 @@ public class FetchAction extends ContextAction {
             
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, 
                     "MSG_FETCH_LAUNCH_INFO", root.getAbsolutePath())); // NOI18N
-            
+
+            final String pullSourceString = new HgConfigFiles(root).getDefaultPull(true);
+            // If the repository has no default pull path then inform user
+            if (pullSourceString == null) {
+                return;
+            }
+
+            HgURL pullSource;
+            try {
+                pullSource = new HgURL(pullSourceString);
+            } catch (URISyntaxException ex) {
+                Mercurial.LOG.log(Level.INFO, null, ex);
+                return;
+            }
+
             List<String> list;
-            list = HgCommand.doFetch(root, logger);
-            
+            list = HgCommand.doFetch(root, pullSource, logger);
+
             if (list != null && !list.isEmpty()) {
                 logger.output(HgUtils.replaceHttpPassword(list));
                 MergeAction.handleMergeOutput(root, list, false, logger);

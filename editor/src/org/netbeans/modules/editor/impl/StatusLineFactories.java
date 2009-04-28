@@ -45,15 +45,25 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.StatusBar;
+import org.netbeans.editor.Utilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.awt.StatusLineElementProvider;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -62,6 +72,9 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Miloslav Metelka
  */
 public final class StatusLineFactories {
+
+    // -J-Dorg.netbeans.modules.editor.impl.StatusLineFactories.level=FINE
+    private static final Logger LOG = Logger.getLogger(StatusLineFactories.class.getName());
 
     public static JLabel LINE_COLUMN_CELL = new StatusLineComponent(StatusLineComponent.Type.LINE_COLUMN);
 
@@ -82,12 +95,49 @@ public final class StatusLineFactories {
         StatusBar.setGlobalCell(StatusBar.CELL_MAIN, StatusLineFactories.MAIN_CELL);
         StatusBar.setGlobalCell(StatusBar.CELL_POSITION, StatusLineFactories.LINE_COLUMN_CELL);
         StatusBar.setGlobalCell(StatusBar.CELL_TYPING_MODE, StatusLineFactories.TYPING_MODE_CELL);
+        // Listen on EditorRegistry
+        EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                refreshStatusLine();
+            }
+        });
 
     }
 
-    public static void clearStatusLine() {
+    private static void clearStatusLine() {
         LINE_COLUMN_CELL.setText("");
         TYPING_MODE_CELL.setText("");
+    }
+
+    static void refreshStatusLine() {
+        LOG.fine("StatusLineFactories.refreshStatusLine()\n");
+        List<? extends JTextComponent> componentList = EditorRegistry.componentList();
+        for (JTextComponent component : componentList) {
+            boolean underMainWindow = (SwingUtilities.isDescendingFrom(component,
+                    WindowManager.getDefault().getMainWindow()));
+            EditorUI editorUI = Utilities.getEditorUI(component);
+            if (LOG.isLoggable(Level.FINE)) {
+                String componentDesc = component.toString();
+                Document doc = component.getDocument();
+                Object streamDesc;
+                if (doc != null && ((streamDesc = doc.getProperty(Document.StreamDescriptionProperty)) != null)) {
+                    componentDesc = streamDesc.toString();
+                }
+                LOG.fine("  underMainWindow=" + underMainWindow + // NOI18N
+                        ", text-component: " + componentDesc + "\n");
+            }
+            if (editorUI != null) {
+                StatusBar statusBar = editorUI.getStatusBar();
+                statusBar.setVisible(!underMainWindow);
+                if (underMainWindow) {
+                    statusBar.updateGlobal();
+                    LOG.fine("  end of refreshStatusLine() - found main window component\n\n"); // NOI18N
+                    return; // First non-docked one found and updated -> quit
+                }
+            }
+        }
+        clearStatusLine();
+        LOG.fine("  end of refreshStatusLine() - no components - status line cleared\n\n"); // NOI18N
     }
 
     static Component panelWithSeparator(JLabel cell) {

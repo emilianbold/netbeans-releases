@@ -51,6 +51,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorComponentEmptyContentProvider;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
@@ -68,13 +69,13 @@ final class DLightIndicatorsTopComponent extends TopComponent {
     private static DLightIndicatorsTopComponent instance;
     private DLightSession session;
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/dlight/core/ui/resources/indicators_small.png";
-    private static final String PREFERRED_ID = "DLightIndicatorsTopComponent";
+    static final String ICON_PATH = "org/netbeans/modules/dlight/core/ui/resources/indicators_small.png"; // NOI18N
+    private static final String PREFERRED_ID = "DLightIndicatorsTopComponent"; // NOI18N
     private final CardLayout cardLayout = new CardLayout();
     private JPanel cardsLayoutPanel;
     private JPanel panel1;
     private JPanel panel2;
-    private  boolean showFirstPanel = true;
+    private boolean showFirstPanel = true;
 
     private DLightIndicatorsTopComponent() {
         initComponents();
@@ -82,13 +83,14 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         setName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
         //setToolTipText(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "HINT_DLightIndicatorsTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-//        if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){
-//            if (WindowManager.getDefault().findMode("navigator") != null){
+//        if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){ // NOI18N
+//            if (WindowManager.getDefault().findMode("navigator") != null){ // NOI18N
 //                WindowManager.getDefault().findMode("navigator").dockInto(this);//NOI18N
 //            }
 //        }
     }
-    void initComponents(){
+
+    void initComponents() {
         cardsLayoutPanel = new JPanel(cardLayout);
         //create 2 panels
         panel1 = new JPanel();
@@ -96,19 +98,23 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         cardsLayoutPanel.add(panel1, "#1");//NOI18N
         cardsLayoutPanel.add(panel2, "#2");//NOI18N
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(cardsLayoutPanel) ;
+        add(cardsLayoutPanel);
 
     }
 
-    void setActive(){
+    void setActive() {
         cardLayout.show(cardsLayoutPanel, showFirstPanel ? "#1" : "#2");//NOI18N
         showFirstPanel = !showFirstPanel;
     }
-    JPanel getNextPanel(){
+
+    JPanel getNextPanel() {
         return (showFirstPanel ? panel1 : panel2);
     }
 
     public void setSession(DLightSession session) {
+        if (this.session != null && this.session != session){
+            DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
+        }
         this.session = session;
         List<Indicator> indicators = null;
         if (session != null) {
@@ -123,6 +129,7 @@ final class DLightIndicatorsTopComponent extends TopComponent {
 
         }
         Collections.sort(indicators, new Comparator<Indicator>() {
+
             public int compare(Indicator o1, Indicator o2) {
                 if (o1.getPosition() < o2.getPosition()) {
                     return -1;
@@ -165,7 +172,7 @@ final class DLightIndicatorsTopComponent extends TopComponent {
 //            add(scrollPane);
             componentToAdd = scrollPane;
         } else {
-            JLabel emptyLabel = new JLabel(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent"));
+            JLabel emptyLabel = new JLabel(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent")); // NOI18N
             emptyLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
             componentToAdd = emptyLabel;
 //            add(emptyLabel);
@@ -197,16 +204,20 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
-                "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");//NOI18N
             return getDefault();
         }
         if (win instanceof DLightIndicatorsTopComponent) {
             return (DLightIndicatorsTopComponent) win;
         }
         Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
-            "There seem to be multiple components with the '" + PREFERRED_ID +
-            "' ID. That is a potential source of errors and unexpected behavior.");
+            "There seem to be multiple components with the '" + PREFERRED_ID + //NOI18N
+            "' ID. That is a potential source of errors and unexpected behavior.");//NOI18N
         return getDefault();
+    }
+
+    public static synchronized DLightIndicatorsTopComponent newInstance() {
+        return new DLightIndicatorsTopComponent();
     }
 
     @Override
@@ -221,7 +232,14 @@ final class DLightIndicatorsTopComponent extends TopComponent {
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        if (session != null){
+            DLightManager.getDefault().closeSessionOnExit(session);
+        }
+        super.componentClosed();
+    }
+
+    DLightSession getSession(){
+        return session;
     }
 
     /** replaces this in object stream */

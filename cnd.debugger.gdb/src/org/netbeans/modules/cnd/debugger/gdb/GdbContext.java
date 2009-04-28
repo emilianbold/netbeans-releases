@@ -147,7 +147,7 @@ public class GdbContext implements PropertyChangeListener {
         if (!cache.containsKey(propertyName)) {
             Request request = requests.get(propertyName);
             if (request != null) {
-                requests.get(propertyName).run(/*true*/);
+                request.run(/*true*/);
             }
         }
     }
@@ -168,24 +168,22 @@ public class GdbContext implements PropertyChangeListener {
         return instance;
     }
     
-    public static GdbProxy getCurrentGdb() {
-        GdbDebugger debugger = GdbDebugger.getGdbDebugger();
-        if (debugger == null) {
-            return null;
-        }
-        return debugger.getGdbProxy();
-    }
-    
     /////// Request
     private static abstract class Request {
         public boolean run(/*boolean async*/) {
-            GdbProxy gdb = getCurrentGdb();
+            GdbDebugger debugger = GdbDebugger.getGdbDebugger();
+            if (debugger == null) {
+                return false;
+            }
+            GdbProxy gdb = debugger.getGdbProxy();
             if (gdb != null) {
 //                CommandBuffer cb = null;
 //                if (!async) {
 //                    cb = new CommandBuffer(gdb);
 //                }
-                request(/*cb,*/ gdb);
+                if (debugger.isStopped()) {
+                    request(/*cb,*/ gdb);
+                }
 //                if (cb != null) {
 //                    cb.waitForCompletion();
 //                }
