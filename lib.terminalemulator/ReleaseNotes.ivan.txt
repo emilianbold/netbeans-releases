@@ -1,3 +1,135 @@
+nobugid (Streams from StreamTerm)
+	While experimenting with IOExecution it becaame clear that there
+	would be some merit for StreamTerm to provide actual Streams the way
+	InputOutput does. To that end StreamTerm provides:
+		Reader getIn()
+		Writer getOut().
+
+	This simplifies the implemenatation of TerminalInputOutput. Or rather,
+	factors some of the implementation into TerminalInputOutput.
+
+nobugid (external hyperlink generation)
+	Terminal can now recognize externally generated hyperlinks
+	(per http://wiki.netbeans.org/TerminalEmulatorHyperlinking).
+	You can generate such hyperlinks using 
+		lib.terminalemulator/demosrc/terminal/examples/make_filter.awk
+	as follows:
+		make | awk -f make_filter.awk
+
+	In order to process such hyperlinks one has to call
+	Terminal.setHyperlinkListener which takes a new interface 
+	HyperlinkListener. This is a bit cleaner than the older way
+	of doing this as described in
+		http://wiki.netbeans.org/TerminalEmulatorHyperlinking?version=6
+
+	CommandmermDirectAction (aka Command with pty and direct access to
+	Terminals) sets up a hyperlink listener.
+
+nobugid (Experimentation with IOExecution)
+	Have a temporary IOExecution per Tomas Holy's original
+	proposal in terminal/ioprovider.
+
+	Moved Program/Command and Shell into it's own package inside
+	richexecution. Program used to be based on ProcessBuilder and
+	even returned it. Now it's a pure data object and 
+	PtyExecutor builds the ProcessBuilder on demand.
+
+	TerminalInputOutput now implements it.
+
+nobugid (more: track new I/O API's)
+	terminal/example module has these:
+	- IOFeaturesAction creates a Term base InputOutput to 
+	  demonstrate various IOProvider features:
+	  - IOPosition
+	  - IOColorLines
+	  - IOColors
+	  - IOTab (this uses sunsky.png)
+	They are basically implemented in TerminalInputOutput.
+
+nobugid (track new I/O API's)
+	TerminalIOProviderSupport.getIOProvider() now uses
+	IOProvider.get("Terminal") instead of it's own iteration through
+	lookup. The old code is relegated to getIOProviderClassic().
+
+	terminaIOProvider implements getName() which returns "terminal" so
+	IOProvider.get() can find it.
+
+	TerminalProvider.createTerminal() variation which takes an IOContainer.
+
+	ioprovider.TerminalInputOutput variation which takes an IOContainer
+	and calls TerminalProvider.createTerminal().
+	Commented out stubs implementing IO "features" (IOShuttle is
+	used there).
+
+	Terminal can now be contained in a TerminalContainer as well as an
+	IOContainer. It doesn't fully implement all IOContainer.CallBacks.
+	In particular "close" semantics are still undefined.
+	The following behave differently depending on where a Terminal
+	is embedded in:
+		select()
+		setTitle()
+		setActions()	can only be done at construction time with IO.
+		find()		not supported for IO.
+		closeWork()
+
+	TerminalContainer.reaped() -> removeTerminal().
+
+	select, activated and deactivated passed thorugh from TerminalContainer
+	to Terminal via callBacks. TermTopComponent overrides TC
+	componentActivated()/Deactivated() to support this.
+
+nobugid (prep for API review)
+	Started arch.xml for rich execution.
+	Command, PtyExecutor made final.
+	Platform, Util made pkg private.
+	TermExecutor made final and now delegates to PtyExecutor instead of
+	inheriting.
+
+nobugid (Font chooser -- pass1)
+	Users have long chafed at the limited choice of fonts, basically
+	"monospaced" in the output window both when it was based on Term
+	and afterwards. See, for example, IZ's 29604, 40033, 43165, 45174
+	55455, 87536. The main reason for this limitation is a bit
+	different for Term and output2.
+	Term is a _terminal_ based on rows and columns and in principle
+	only makes sense with fixed width fonts.
+	Fixed width fonts dramatically pseed up layout and rendering of text.
+	This is particularly important for output2 which has to deal with 
+	"unlimited" buffer sizes.
+
+	However, we need not restrict ourselves to "monospaced". A typical
+	system has a large palette of fonts and some of them are bound to
+	be fixed width. This project adds a font chooser to TermOptionsPanel
+	which allows the user to choose from among all the available fixed
+	width fonts.
+
+	However, we have a slight problem in that Swings fonts are not
+	explicitly characterized by whether they are fixed width or not.
+	So, we decide for ourselves by checking the widths of the first 256
+	characters and if they are all equal we consider that font to be 
+	fixed width.
+
+	A more forceful approach would be to render variable width fonts
+	in the fixed cells of a terminal. Presumably one can find the 
+	maximum width and use that as cell width. Rendering has to be 
+	done on a cell by cell basis and Term doesn't do that yet.
+	The font chooser has a checkbox though for enabling non-fixed-width
+	fonts in it's palette.
+
+	To satisfy all of this ...
+	- TermOptions now has a font property as opposed to just fontSize.
+	- Term has a property, fixedFont, which governs what kind of font it
+	  will accept. If it's set to false term behaves as before just
+	  using the given fonts style and size and applying it to monospaced.
+	  If it's set to true Term will accept any font assuming that the user
+	  passed it a fixed width font.
+
+	More works needs to be done:
+	- One should be able to independently set the font size.
+	- TermOptions' font property isn't properly saved and restored?
+	- Whether variable width fonts are allowed should be part of
+	  TermOptions.
+
 ================================================================================
 nobugid (Solaris work)
 	- lib.richexecution

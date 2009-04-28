@@ -44,7 +44,7 @@ package org.netbeans.lib.termsupport;
 import org.netbeans.lib.richexecution.PtyProcess;
 import org.netbeans.lib.richexecution.PtyExecutor;
 import org.netbeans.lib.richexecution.OS;
-import org.netbeans.lib.richexecution.Program;
+import org.netbeans.lib.richexecution.program.Program;
 import java.awt.Dimension;
 import java.util.Map;
 import org.netbeans.lib.terminalemulator.LineDiscipline;
@@ -58,15 +58,16 @@ import org.netbeans.lib.richexecution.Pty.Mode;
  * Execute a program connected to a Term.
  * @author ivan
  */
-public class TermExecutor extends PtyExecutor {
+public final class TermExecutor {
     private final static OS os = OS.get();
+    private final PtyExecutor delegate = new PtyExecutor();
     private Boolean lineDiscipline = null;
     private boolean debug = false;
 
     public TermExecutor() {
         switch (os) {
             case WINDOWS:
-		setMode(Mode.NONE);
+		delegate.setMode(Mode.NONE);
                 break;
 	    default:
 		break;
@@ -127,7 +128,6 @@ public class TermExecutor extends PtyExecutor {
 
     /**
      * Start this program running under the given Term.
-     * Analogous to {@link ProcessBuilder#start }.
      * @return The wrapper process.
      */
     public PtyProcess start(Program program, StreamTerm term) {
@@ -141,7 +141,7 @@ public class TermExecutor extends PtyExecutor {
         //
         switch (os) {
             case WINDOWS:
-                if (getMode() != Mode.NONE)
+                if (delegate.getMode() != Mode.NONE)
                     error("Can only use 'pipe' mode on windows");
                 break;
             case LINUX:
@@ -151,7 +151,7 @@ public class TermExecutor extends PtyExecutor {
         //
         // Create pty
         //
-        switch (getMode()) {
+        switch (delegate.getMode()) {
             case NONE:
                 break;
             case REGULAR:
@@ -188,7 +188,7 @@ public class TermExecutor extends PtyExecutor {
             if (lineDiscipline)
                 term.pushStream(new LineDiscipline());
         } else {
-            switch (getMode()) {
+            switch (delegate.getMode()) {
                 case NONE:
                 case RAW:
                     term.pushStream(new LineDiscipline());
@@ -201,7 +201,7 @@ public class TermExecutor extends PtyExecutor {
         //
         Map<String, String> env = program.environment();
         env.put("TERM", term.getEmulation());
-	PtyProcess ptyProcess = start(program, pty);
+	PtyProcess ptyProcess = delegate.start(program, pty);
 
         /* OLD
         if (pty == null) {
@@ -214,5 +214,13 @@ public class TermExecutor extends PtyExecutor {
 
         // TMP reaper = ptyProcess.getReaper();
         return ptyProcess;
+    }
+
+    public void setMode(Mode mode) {
+        delegate.setMode(mode);
+    }
+
+    public Mode getMode() {
+        return delegate.getMode();
     }
 }

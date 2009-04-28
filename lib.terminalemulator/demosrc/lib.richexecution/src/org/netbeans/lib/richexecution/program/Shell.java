@@ -38,30 +38,83 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.terminal;
 
-import org.netbeans.modules.terminal.api.Terminal;
-import org.netbeans.modules.terminal.api.TerminalProvider;
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.util.NbBundle;
-import org.netbeans.lib.richexecution.program.Program;
-import org.netbeans.lib.richexecution.program.Shell;
+package org.netbeans.lib.richexecution.program;
+
+import org.netbeans.lib.richexecution.OS;
+import org.netbeans.lib.richexecution.PtyExecutor;
 
 /**
- * Action which starts a shell under a Term component.
+ * Description of a shell to be started under a pty.
+ * <br>
+ * On unix ...
+ * <br>
+ * The shell defined by <code>$SHELL</code> is started.
+ * If <code>$SHELL</code> is empty <code>/bin/bash</code> is started.
+ * <br>
+ * On windows ...
+ * <br>
+ * <code>cmd.exe</code> is started.
+ * <p>
+ * Use {@link PtyExecutor} or subclasses thereof to run the program.
+ * @author ivan
  */
-public class ShellTermAction extends AbstractAction {
+public class Shell extends Program {
 
-    public ShellTermAction() {
-        super(NbBundle.getMessage(ShellTermAction.class, "CTL_ShellTermAction"));
-//        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(TermTopComponent.ICON_PATH, true)));
+    private final static OS os = OS.get();
+    private final String name;
+
+    private static void error(String fmt, Object...args) {
+        String msg = String.format(fmt, args);
+        throw new IllegalStateException(msg);
     }
 
-    public void actionPerformed(ActionEvent evt) {
-        TerminalProvider terminalProvider = TerminalProvider.getDefault();
-        Terminal terminal = terminalProvider.createTerminal("shell");
-        Program program = new Shell();
-        terminal.startProgram(program, false);
+
+    public Shell() {
+        String shell = System.getenv("SHELL");
+
+        if (shell == null)
+            shell = "/bin/bash";
+
+        switch (os) {
+            case WINDOWS:
+                add("cmd.exe");
+                add("/q");  // turn echo off
+                add("/a");  // use ANSI
+                name = "cmd.exe";
+                break;
+
+            case LINUX:
+//		add("/usr/bin/strace");
+//		add("-o");
+//		add("/tmp/rich-cmd.tr");
+                add(shell);
+                name = basename(shell);
+                break;
+            case SOLARIS:
+//		add("/usr/bin/truss");
+//		add("-o");
+//		add("/tmp/rich-cmd.tr");
+                add(shell);
+                name = basename(shell);
+                break;
+            case MACOS:
+                add(shell);
+                name = basename(shell);
+                break;
+            default:
+                error("Unsupported os '%s'", os);
+                name = "";
+                break;
+	}
+    }
+
+    /**
+     * Return the basename of the shell being run.
+     * @return the basename of the shell being run.
+     */
+    @Override
+    public String name() {
+        return name;
     }
 }
