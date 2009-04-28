@@ -457,7 +457,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                     .add(urlLabel)
                     .add(runAsLabel)
                     .add(indexFileLabel)
-                    .add(argsLabel, GroupLayout.PREFERRED_SIZE, 72, GroupLayout.PREFERRED_SIZE))
+                    .add(argsLabel))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
