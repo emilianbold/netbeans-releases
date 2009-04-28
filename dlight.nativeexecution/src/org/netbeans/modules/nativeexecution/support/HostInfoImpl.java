@@ -46,7 +46,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -124,6 +127,24 @@ public class HostInfoImpl implements HostInfo {
             pb.environment().put("PATH", "/bin:/usr/bin"); // NOI18N
 
             Process hostinfoProcess = pb.start();
+            // In case of some error goes to stderr, waitFor() will not exit
+            // until error stream is read/closed. (at least on Windows)
+            // So this case sould be handled.
+
+            // We safely can do this in the same thread (in this exact case)
+            List<String> errorLines = new ArrayList();
+            InputStream err = hostinfoProcess.getErrorStream();
+
+            if (err != null) {
+                BufferedReader errReader = new BufferedReader(new InputStreamReader(err));
+                while (true) {
+                    String line = errReader.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    errorLines.add(line);
+                }
+            }
 
             int result = hostinfoProcess.waitFor();
 
