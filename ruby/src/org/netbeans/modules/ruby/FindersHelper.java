@@ -46,10 +46,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.SymbolNode;
+import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.SymbolNode;
 
 /**
  * A helper class for generating signatures for various ActiveRecord
@@ -62,9 +62,17 @@ final class FindersHelper {
     private static final String ATTRIBUTE_SEPARATOR_BASE = "_and"; //NOI18N
     private static final String ATTRIBUTE_SEPARATOR = ATTRIBUTE_SEPARATOR_BASE + "_"; //NOI18N
     /**
-     * The name of the "find" method.
+     * The standard find method in AR:Base.
      */
-    private static final String STANDARD_FINDER = "find"; //NOI18N
+    private static final String FIND ="find"; //NOI18N
+    /**
+     * Alias for find :all in AR:Base.
+     */
+    private static final String ALL ="all"; //NOI18N
+    /**
+     * The names of the default find methods.
+     */
+    private static final String[] STANDARD_FINDERS = {ALL, FIND}; //NOI18N
     /**
      * The max amount of dynamic finders to compute.
      */
@@ -213,7 +221,12 @@ final class FindersHelper {
                 return true;
             }
         }
-        return name.equals(STANDARD_FINDER);
+        for (String each : STANDARD_FINDERS) {
+            if (name.equals(each)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -232,7 +245,7 @@ final class FindersHelper {
             }
         }
         // regular "find" (which is not a dynamic finder)
-        if (!foundMatching && method.equals(STANDARD_FINDER)) { // NOI18N
+        if (!foundMatching && method.equals(FIND)) { // NOI18N
             // Finder method that does both - gotta inspect it
             List<Node> nodes = new ArrayList<Node>();
             AstUtilities.addNodesByType(call, new NodeType[]{NodeType.SYMBOLNODE}, nodes);
@@ -246,6 +259,9 @@ final class FindersHelper {
             }
             multiple = foundAll;
             foundMatching = true;
+        } else if (!foundMatching && method.equals(ALL)) {
+            multiple = true;
+            foundMatching = true;
         } else if (!foundMatching) {
             // Not sure - probably some other locally defined finder method;
             // just default to the model name
@@ -253,7 +269,7 @@ final class FindersHelper {
         }
 
         if (multiple) {
-            return RubyType.create("Array<" + model.first() + ">"); // NOI18N
+            return RubyType.ARRAY;
         } else {
             return model;
         }

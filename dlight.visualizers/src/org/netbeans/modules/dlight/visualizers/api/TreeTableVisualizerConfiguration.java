@@ -63,6 +63,7 @@ public class TreeTableVisualizerConfiguration implements VisualizerConfiguration
     private Column treeColumn;
     private Column[] tableColumns;
     private boolean isPlainTable = false;
+    private ColumnsUIMapping columnsUIMapping;
     private NodeActionsProvider nodeActionsProvider;
 
 
@@ -135,22 +136,7 @@ public class TreeTableVisualizerConfiguration implements VisualizerConfiguration
     boolean isTableView() {
         return isPlainTable;
     }
-//
-//    /**
-//     *
-//     * @param treeColumn
-//     */
-//    protected void setTreeColumn(Column treeColumn) {
-//        this.treeColumn = treeColumn;
-//    }
-//
-//    /**
-//     * Sets tableColumns
-//     * @param tableColumns
-//     */
-//    void setTableColumns(Column[] tableColumns) {
-//        this.tableColumns = tableColumns;
-//    }
+
 
     Column[] getTableColumns() {
         return tableColumns;
@@ -166,6 +152,11 @@ public class TreeTableVisualizerConfiguration implements VisualizerConfiguration
 
     public void setNodeActionProvider(NodeActionsProvider nodeActionsProvider){
         this.nodeActionsProvider = nodeActionsProvider;
+    }
+
+
+    public final void setColumnsUIMapping(ColumnsUIMapping columnsUIMapping){
+        this.columnsUIMapping = columnsUIMapping;
     }
 
     public DataTableMetadata getMetadata() {
@@ -202,6 +193,13 @@ public class TreeTableVisualizerConfiguration implements VisualizerConfiguration
         public NodeActionsProvider getNodesActionProvider(TreeTableVisualizerConfiguration configuration) {
             return configuration.getNodeActionsProvider();
         }
+
+        @Override
+        public ColumnsUIMapping getColumnsUIMapping(TreeTableVisualizerConfiguration configuration) {
+           return configuration.columnsUIMapping;
+        }
+
+
     }
 
 }

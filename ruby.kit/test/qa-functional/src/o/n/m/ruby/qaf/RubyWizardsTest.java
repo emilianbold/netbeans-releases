@@ -63,7 +63,7 @@ public class RubyWizardsTest extends RubyTestCase {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(RubyWizardsTest.class).enableModules(".*").clusters("ruby")); //NOI18N
+                NbModuleSuite.createConfiguration(RubyWizardsTest.class).enableModules(".*").clusters(".*")); //NOI18N
     }
 
     /**

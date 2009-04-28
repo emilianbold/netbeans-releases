@@ -41,12 +41,12 @@ package org.netbeans.modules.nativeexecution;
 import java.io.CharArrayWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.util.Exceptions;
 
@@ -87,7 +87,7 @@ public class CopyTaskTest {
         CharArrayWriter err = new CharArrayWriter();
         Future<Integer> fresult = CommonTasksSupport.uploadFile(
                 srcFileName,
-                new ExecutionEnvironment(),
+                ExecutionEnvironmentFactory.getLocal(),
                 dstFileName, 0777, err);
 
         if (fresult == null) {

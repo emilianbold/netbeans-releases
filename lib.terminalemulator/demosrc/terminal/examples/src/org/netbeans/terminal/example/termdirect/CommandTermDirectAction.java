@@ -7,8 +7,9 @@ package org.netbeans.terminal.example.termdirect;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
-import org.netbeans.lib.richexecution.Command;
-import org.netbeans.lib.richexecution.Program;
+import org.netbeans.lib.richexecution.program.Command;
+import org.netbeans.lib.richexecution.program.Program;
+import org.netbeans.modules.terminal.api.HyperlinkListener;
 import org.netbeans.modules.terminal.api.Terminal;
 import org.netbeans.modules.terminal.api.TerminalProvider;
 
@@ -28,6 +29,15 @@ public final class CommandTermDirectAction implements ActionListener {
 
         TerminalProvider terminalProvider = TerminalProvider.getDefault();
         Terminal terminal = terminalProvider.createTerminal("command: " + cmd);
+
+        // need to be dtterm to demonstrate hyperlinks
+        terminal.term().setEmulation("dtterm");
+        terminal.setHyperlinkListener(new HyperlinkListener() {
+            public void action(String clientData) {
+                JOptionPane.showMessageDialog(null, clientData);
+            }
+        });
+
         Program program = new Command(cmd);
         boolean restartable = true;
         terminal.startProgram(program, restartable);

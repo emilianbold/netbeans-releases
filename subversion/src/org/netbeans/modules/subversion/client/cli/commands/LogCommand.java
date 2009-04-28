@@ -399,6 +399,14 @@ public class LogCommand extends SvnCommand {
         public ISVNLogMessage[] getChildMessages() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        public void addChild(ISVNLogMessage arg0) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean hasChildren() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }    
             
 }

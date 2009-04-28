@@ -44,6 +44,8 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -129,11 +131,21 @@ public class JaxWsClientCreator implements ClientCreator {
                 DialogDisplayer.getDefault().notify(desc);
             }
             if (wsdlFo != null) {
-                final boolean libraryAdded = MavenModelUtils.addJaxws21Library(project);
+                final boolean isJaxWsLibrary = MavenModelUtils.isJaxWs21Library(project);
                 final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
                 final String clientName = wsdlFo.getName();
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
+                        if (!isJaxWsLibrary) {
+                            try {
+                                MavenModelUtils.addJaxws21Library(project, model);
+                                MavenModelUtils.addJavadoc(project);
+                            } catch (Exception ex) {
+                                Logger.getLogger(
+                                    JaxWsClientCreator.class.getName()).log(
+                                        Level.INFO, "Cannot add Metro libbrary to pom file", ex); //NOI18N
+                            }
+                        }
                         org.netbeans.modules.maven.model.pom.Plugin plugin =
                                 WSUtils.isEJB(project) ?
                                     MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N

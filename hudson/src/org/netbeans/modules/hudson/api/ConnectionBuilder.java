@@ -267,7 +267,14 @@ public final class ConnectionBuilder {
             for (Map.Entry<String,String> header : requestHeaders.entrySet()) {
                 conn.setRequestProperty(header.getKey(), header.getValue());
             }
-            conn.connect();
+            try {
+                conn.connect();
+            } catch (IOException x) {
+                throw x;
+            } catch (Exception x) {
+                // JRE #6797318, etc.; various bugs in JRE networking code; see e.g. #163555
+                throw (IOException) new IOException("Connecting to " + curr + ": " + x.toString()).initCause(x);
+            }
             if (postData != null) {
                 OutputStream os = conn.getOutputStream();
                 try {

@@ -42,6 +42,8 @@
 package org.netbeans.modules.cnd.completion.csm;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -59,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
@@ -166,8 +169,10 @@ public class CsmDeclarationResolver {
                         context.setLastObject(decl);
                     }
                     innerDecl = innerDecl != null ? innerDecl : decl;
-                    // we can break loop, because list of declarations is sorted
-                    // by offset and we found already one of container declaration
+                }
+                if (CsmOffsetUtilities.isBeforeObject(decl, offset)) {
+                    // we can break loop, because list of declarations is sorted by offset
+                    // and we analyzed all which contain object
                     break;
                 }
             }
@@ -191,7 +196,21 @@ public class CsmDeclarationResolver {
         // by offset and we found already one of container declaration
         return innerDecl;
     }
-        
+
+    private static class OffsetableComparator<T extends CsmOffsetable> implements Comparator<T> {
+
+        public int compare(CsmOffsetable o1, CsmOffsetable o2) {
+            int diff = o1.getStartOffset() - o2.getStartOffset();
+            if (diff == 0) {
+                return o1.getEndOffset() - o2.getEndOffset();
+            } else {
+                return diff;
+            }
+        }
+    }
+
+    private static final Comparator<CsmOffsetable> OFFSETABLE_COMPARATOR = new OffsetableComparator<CsmOffsetable>();
+    
     // must check before call, that offset is inside outDecl
     private static CsmDeclaration findInnerDeclaration(CsmDeclaration outDecl, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(outDecl, offset)) : "must be in outDecl object!";
@@ -203,11 +222,12 @@ public class CsmDeclarationResolver {
             it = ((CsmNamespaceDefinition) outDecl).getDeclarations().iterator();
         } else if (CsmKindUtilities.isClass(outDecl)) {
             CsmClass cl  = (CsmClass)outDecl;
-            List<CsmDeclaration> list = new ArrayList<CsmDeclaration>();
+            List<CsmOffsetableDeclaration> list = new ArrayList<CsmOffsetableDeclaration>();
             list.addAll(cl.getMembers());
             if (!cl.getFriends().isEmpty()) {
                 // combine friends with members for search
                 list.addAll(cl.getFriends());
+                Collections.sort(list, OFFSETABLE_COMPARATOR);
             }
             it = list.iterator();
         } else if (CsmKindUtilities.isEnum(outDecl)) {

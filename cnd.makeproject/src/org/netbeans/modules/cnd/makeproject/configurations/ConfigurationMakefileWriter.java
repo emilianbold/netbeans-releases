@@ -518,10 +518,11 @@ public class ConfigurationMakefileWriter {
                 }
                 folders = IpeUtils.getDirName(target);
                 bw.write("\n"); // NOI18N
+                // See IZ #151465 for explanation why Makefile is listed as dependency.
                 if (additionalDep != null) {
-                    bw.write(target + ": " + file + " " + additionalDep + "\n"); // NOI18N
+                    bw.write(target + ": nbproject/Makefile-${CND_CONF}.mk " + file + " " + additionalDep + "\n"); // NOI18N
                 } else {
-                    bw.write(target + ": " + file + "\n"); // NOI18N
+                    bw.write(target + ": nbproject/Makefile-${CND_CONF}.mk " + file + "\n"); // NOI18N
                 }
                 if (folders != null) {
                     bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N

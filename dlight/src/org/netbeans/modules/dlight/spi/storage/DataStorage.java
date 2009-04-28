@@ -98,7 +98,13 @@ public abstract class DataStorage implements ServiceInfoDataStorage{
         return false;
     }
 
- 
+
+
+    /**
+     * Close storage
+     * @return <code>true</code> if succeeded, <code>false</code> otherwise
+     */
+    public abstract boolean shutdown();
 
     /**
      * Creates table on the in storage (whatever it means: table creatiion in data base or files creation or something else...)

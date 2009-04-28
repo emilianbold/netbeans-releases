@@ -41,7 +41,11 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <terminaldefinition xmlns="http://www.netbeans.org/ns/nativeexecution-terminal-definition/1">
-    <terminal id="gnome-terminal" platforms="solaris,linux"/>
+    <terminal id="gnome-terminal"/>
+    <validation>
+        <platforms>solaris,linux</platforms>
+    </validation>
+    <command stringvalue="gnome-terminal"/>
     <searchpaths>
         <path>/usr/bin</path>
         <path>/bin</path>
@@ -51,7 +55,6 @@ made subject to such option by the copyright holder.
         <path>/usr/X11/bin</path>
         <path>/usr/X11R6/bin</path>
     </searchpaths>
-    <command stringvalue="gnome-terminal"/>
     <arguments>
         <arg>--hide-menubar</arg>
         <arg>--disable-factory</arg>

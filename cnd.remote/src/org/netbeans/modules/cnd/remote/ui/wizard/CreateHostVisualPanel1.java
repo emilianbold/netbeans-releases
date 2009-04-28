@@ -46,9 +46,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
-public final class CreateHostVisualPanel1 extends JPanel {
+/*package*/ final class CreateHostVisualPanel1 extends JPanel {
 
     private final HostsListTableModel tableModel = new HostsListTableModel();
 

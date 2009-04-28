@@ -103,7 +103,7 @@ public class FastDeploy extends IncrementalDeployment {
                 contextRoot, dir.getAbsolutePath());
         final MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId, ModuleType.EAR.equals(module.getModuleType()));
         final MonitorProgressObject updateCRObject = new MonitorProgressObject(dm, moduleId, ModuleType.EAR.equals(module.getModuleType()));
-        progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,moduleId, dm.getServerInstance()));
+        progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,moduleId, dm.getServerInstance(), J2eeModule.WAR.equals(module.getModuleType())));
         MonitorProgressObject restartObject = new MonitorProgressObject(dm, moduleId, ModuleType.EAR.equals(module.getModuleType()));
 
         final GlassfishModule commonSupport = dm.getCommonServerSupport();
@@ -149,7 +149,7 @@ public class FastDeploy extends IncrementalDeployment {
                 CommandType.REDEPLOY, false);
         final MonitorProgressObject updateCRObject = new MonitorProgressObject(dm,
                 (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY, targetModuleID.getChildTargetModuleID().length > 0);
-        progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,(Hk2TargetModuleID) targetModuleID, dm.getServerInstance()));
+        progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,(Hk2TargetModuleID) targetModuleID, dm.getServerInstance(), ! (null == targetModuleID.getWebURL())));
         final GlassfishModule commonSupport = dm.getCommonServerSupport();
         boolean restart = false;
         try {

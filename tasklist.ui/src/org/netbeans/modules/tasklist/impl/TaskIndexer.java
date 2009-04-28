@@ -105,17 +105,19 @@ public class TaskIndexer extends CustomIndexer {
                 IndexDocument doc = null;
                 for( FileTaskScanner scanner : scanners ) {
                     List<? extends Task> tasks = scanner.scan(fo);
-                    if( null == tasks || tasks.isEmpty() )
+                    if( null == tasks )
                         continue;
                     if( scope.isInScope(fo) )
                         taskList.update(scanner, fo, new ArrayList<Task>(tasks), filter);
-                    if( null == doc ) {
-                        doc = is.createDocument(idx);
-                        is.addDocument(doc);
-                        doc.addPair(KEY_SCANNER, ScannerDescriptor.getType(scanner), true, true);
-                    }
-                    for( Task t : tasks ) {
-                        doc.addPair(KEY_TASK, encode(t), false, true);
+                    if( !tasks.isEmpty() ) {
+                        if( null == doc ) {
+                            doc = is.createDocument(idx);
+                            is.addDocument(doc);
+                            doc.addPair(KEY_SCANNER, ScannerDescriptor.getType(scanner), true, true);
+                        }
+                        for( Task t : tasks ) {
+                            doc.addPair(KEY_TASK, encode(t), false, true);
+                        }
                     }
                 }
             }

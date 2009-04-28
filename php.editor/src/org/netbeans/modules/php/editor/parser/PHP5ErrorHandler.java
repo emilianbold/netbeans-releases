@@ -40,6 +40,8 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -130,6 +132,11 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
                     current.left, current.right, Severity.ERROR, null);
             //TODO: context.getListener().error(error);
         }
+    }
+
+    public List<Error> displayFatalError(){
+        Error error = new FatalError();
+        return Arrays.asList(error);
     }
 
     public List<Error> displaySyntaxErrors(Program program) {
@@ -358,5 +365,19 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
             case ASTPHP5Symbols.T_DOLLAR_OPEN_CURLY_BRACES : text = "${"; break; //NOI18N
         }
         return text;
+    }
+
+    private class FatalError extends GSFPHPError{
+        FatalError(){
+            super(NbBundle.getMessage(PHP5ErrorHandler.class, "MSG_FatalError"),
+                context.getSnapshot().getSource().getFileObject(),
+                0, context.getSource().length(),
+                Severity.ERROR, null);
+        }
+
+        @Override
+        public boolean isLineError() {
+            return false;
+        }
     }
 }

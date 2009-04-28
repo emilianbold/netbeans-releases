@@ -35,32 +35,35 @@
  */
 
 
-var BUILD_DISPLAY_VERSION       = "{build.display.version}";
-var BUILD_DISPLAY_VERSION_SHORT = "{build.display.version.short}";
+var build_info = new Object;
 
-var ZIP_FILES_PREFIX            = "{nb.zip.files.prefix}";
-var BUNDLE_FILES_PREFIX         = "{nb.bundle.files.prefix}";
-var BOUNCER_PRODUCT_PREFIX      = "{nb.bundle.files.prefix}";
+build_info.BUILD_DISPLAY_VERSION       = "{build.display.version}";
+build_info.BUILD_DISPLAY_VERSION_SHORT = "{build.display.version.short}";
 
-var COMMUNITY_BUILD             = "{community.mlbuild}";
-var ADD_MORE_REDIRECT_VALUE     = "{enable.languages.redirect}";
-var MORE_LANGUAGES_REDIRECT_URL = "{alternative.languages.page.url}";
+build_info.ZIP_FILES_PREFIX            = "{nb.zip.files.prefix}";
+build_info.BUNDLE_FILES_PREFIX         = "{nb.bundle.files.prefix}";
+build_info.BOUNCER_PRODUCT_PREFIX      = "{nb.bundle.files.prefix}";
 
-var BUILD_LOCATION = "";
+build_info.COMMUNITY_BUILD             = "{community.mlbuild}";
+build_info.ADD_MORE_REDIRECT_VALUE     = "{enable.languages.redirect}";
+build_info.SHOW_COMMUNITY_LANGUAGES    = 0;
+build_info.MORE_LANGUAGES_REDIRECT_URL = "{alternative.languages.page.url}";
 
-var LOAD_OMNITURE_CODE = 0;
-var LOAD_GOOGLE_ANALYTICS_CODE = 0;
-var USE_BOUNCER = 0;
-var ADD_VERSION_INFO_TO_URL = 0;
+build_info.BUILD_LOCATION = "";
 
-var BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
+build_info.LOAD_OMNITURE_CODE          = 0;
+build_info.LOAD_GOOGLE_ANALYTICS_CODE  = 0;
+build_info.USE_BOUNCER                 = 0;
+build_info.ADD_VERSION_INFO_TO_URL     = 0;
 
-//var SOURCES_AND_BINARIES_URL = "javascript: open_zip_link()";
-var SOURCES_AND_BINARIES_URL = BUILD_LOCATION + "zip/";
+build_info.BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 
-function add_download_tabs() {
+build_info.USE_HTML_ZIP_LISTING = 0;
+
+build_info.add_download_tabs = function() {
 	add_download_tab("6.5.1", "http://www.netbeans.org/downloads");
 	add_download_tab("6.7M3", "http://bits.netbeans.org/netbeans/6.7/m3");
 	add_download_tab(DEVELOPMENT_TITLE /*,DEVELOPMENT_BUILDS_LINK*/);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }
+add_build_info(build_info);

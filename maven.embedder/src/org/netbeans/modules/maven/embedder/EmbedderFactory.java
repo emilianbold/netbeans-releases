@@ -53,7 +53,6 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.resolver.ResolutionListener;
 import org.apache.maven.embedder.Configuration;
 import org.apache.maven.embedder.ConfigurationValidationResult;
 import org.apache.maven.embedder.ContainerCustomizer;
@@ -72,7 +71,6 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.build.model.DefaultModelLineage;
 import org.apache.maven.project.build.model.ModelLineage;
 import org.apache.maven.project.build.model.ModelLineageBuilder;
-import org.apache.maven.wagon.events.TransferListener;
 import org.apache.maven.wagon.providers.ssh.knownhost.KnownHostsProvider;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
@@ -80,9 +78,7 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.DuplicateRealmException;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
-import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.component.repository.exception.ComponentRepositoryException;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
@@ -188,41 +184,25 @@ public final class EmbedderFactory {
             req.setConfigurationCustomizer(new ContainerCustomizer() {
 
                 public void customize(PlexusContainer plexusContainer) {
-                    try {
-                        ComponentDescriptor desc = plexusContainer.getComponentDescriptor(ArtifactFactory.ROLE);
-                        desc.setImplementation(NbArtifactFactory.class.getName()); //NOI18N
-                        
-                        desc = plexusContainer.getComponentDescriptor("org.apache.maven.extension.ExtensionManager");
-                        desc.setImplementation(NbExtensionManager.class.getName()); //NOI18N
+                    ComponentDescriptor desc = plexusContainer.getComponentDescriptor(ArtifactFactory.ROLE);
+                    desc.setImplementation(NbArtifactFactory.class.getName()); //NOI18N
 
-                        desc = plexusContainer.getComponentDescriptor(ResolutionListener.ROLE);
-                        if (desc == null) {
-                            desc = new ComponentDescriptor();
-                            desc.setRole(ResolutionListener.ROLE);
-                            plexusContainer.addComponentDescriptor(desc);
-                        }
-                        desc.setImplementation(MyResolutionListener.class.getName()); //NOI18N
+                    desc = plexusContainer.getComponentDescriptor("org.apache.maven.extension.ExtensionManager");
+                    desc.setImplementation(NbExtensionManager.class.getName()); //NOI18N
 
-                        desc = plexusContainer.getComponentDescriptor(ArtifactResolver.ROLE);
-                        ComponentRequirement requirement = new ComponentRequirement();
-                        requirement.setRole(ResolutionListener.ROLE);
-                        desc.addRequirement(requirement);
-                        desc.setImplementation(NbArtifactResolver.class.getName()); //NOI18N
+                    desc = plexusContainer.getComponentDescriptor(ArtifactResolver.ROLE);
+                    desc.setImplementation(NbArtifactResolver.class.getName()); //NOI18N
 
-                        desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
-                        desc.setImplementation(NbWagonManager.class.getName()); //NOI18N
-                        
-                        //MEVENIDE-634 
-                        desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
-                        desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
+                    desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
+                    desc.setImplementation(NbWagonManager.class.getName()); //NOI18N
 
-                        //MEVENIDE-634 
-                        desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "null"); //NOI18N
-                        desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
-                        
-                    } catch (ComponentRepositoryException ex) {
-                        ex.printStackTrace();
-                    }
+                    //MEVENIDE-634
+                    desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
+                    desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
+
+                    //MEVENIDE-634
+                    desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "null"); //NOI18N
+                    desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
                 }
             });
             MavenEmbedder embedder = null;
@@ -257,7 +237,7 @@ public final class EmbedderFactory {
 
     }
 
-    public static MavenEmbedder createOnlineEmbedder() {
+    /*public*/ static MavenEmbedder createOnlineEmbedder() {
         Configuration req = new DefaultConfiguration();
         req.setClassLoader(EmbedderFactory.class.getClassLoader());
         setLocalRepoPreference(req);
@@ -291,28 +271,13 @@ public final class EmbedderFactory {
         req.setConfigurationCustomizer(new ContainerCustomizer() {
 
             public void customize(PlexusContainer plexusContainer) {
-                try {
-                    ComponentDescriptor desc = new ComponentDescriptor();
-                    desc.setRole(TransferListener.class.getName());
-                    plexusContainer.addComponentDescriptor(desc);
-                    desc.setImplementation(ProgressTransferListener.class.getName()); //NOI18N
-
-                    desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
-                    ComponentRequirement requirement = new ComponentRequirement();
-                    requirement.setRole(TransferListener.class.getName());
-                    desc.addRequirement(requirement);
-                    
                     //MEVENIDE-634 
-                    desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
+                    ComponentDescriptor desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
                     desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
                     
                     //MEVENIDE-634 
                     desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "null"); //NOI18N
                     desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
-                    
-                } catch (ComponentRepositoryException ex) {
-                    ex.printStackTrace();
-                }
             }
         });
 
@@ -324,6 +289,7 @@ public final class EmbedderFactory {
                 //MEVENIDE-634 make all instances non-interactive
                 WagonManager wagonManager = (WagonManager) embedder.getPlexusContainer().lookup(WagonManager.ROLE);
                 wagonManager.setInteractive( false );
+                wagonManager.setDownloadMonitor(new ProgressTransferListener());
             } catch (ComponentLookupException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
@@ -437,20 +403,6 @@ public final class EmbedderFactory {
                 } catch (PlexusConfigurationException ex) {
                     ex.printStackTrace();
                 }
-                try {
-                    desc = new ComponentDescriptor();
-                    desc.setRole(TransferListener.class.getName());
-                    plexusContainer.addComponentDescriptor(desc);
-                    desc.setImplementation(ProgressTransferListener.class.getName()); //NOI18N
-                    desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
-                    ComponentRequirement requirement = new ComponentRequirement();
-                    requirement.setRole(TransferListener.class.getName());
-                    desc.addRequirement(requirement);
-                } catch (ComponentRepositoryException ex) {
-                    ex.printStackTrace();
-                }
-                
-
             }
         });
 
@@ -465,7 +417,7 @@ public final class EmbedderFactory {
 
     public static ArtifactRepository createRemoteRepository(MavenEmbedder embedder, String url, String id) {
         try {
-            ArtifactRepositoryFactory fact = (ArtifactRepositoryFactory) online.getPlexusContainer().lookup(ArtifactRepositoryFactory.ROLE);
+            ArtifactRepositoryFactory fact = (ArtifactRepositoryFactory) embedder.getPlexusContainer().lookup(ArtifactRepositoryFactory.ROLE);
             ArtifactRepositoryPolicy snapshotsPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
             ArtifactRepositoryPolicy releasesPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
             return fact.createArtifactRepository(id, url, ArtifactRepositoryFactory.DEFAULT_LAYOUT_ID, snapshotsPolicy, releasesPolicy);

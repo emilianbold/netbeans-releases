@@ -49,6 +49,8 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -128,7 +130,11 @@ public final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory 
                 }
                 if (! connected) {
                     String resource = url.getPath();
-                    if (resource.length() > 0 && resource.charAt(0) == '/') resource = resource.substring(1); // NOI18N
+                    if (resource.length() > 0 && resource.charAt(0) == '/') { // NOI18N
+                        resource = resource.substring(1);
+                    } else {
+                        Logger.getLogger(NbURLStreamHandlerFactory.class.getName()).log(Level.WARNING, "URL path should begin with a slash: " + url);
+                    }
                     ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
                     URL target;
                     URL t1 = loader.getResource(resource);

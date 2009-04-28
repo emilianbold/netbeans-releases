@@ -72,6 +72,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupport;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportEvent;
@@ -100,6 +101,7 @@ public class BuildArtifactMapperImpl {
     private static final Logger LOG = Logger.getLogger(BuildArtifactMapperImpl.class.getName());
     
     private static final String TAG_FILE_NAME = ".netbeans_automatic_build"; //NOI18N
+    private static final String SIG = "." + FileObjects.SIG; //NOI18N
 //    private static final Map<URL, File> source2Target = new HashMap<URL, File>();
     private static final Map<URL, Set<ArtifactsUpdated>> source2Listener = new HashMap<URL, Set<ArtifactsUpdated>>();
 
@@ -388,7 +390,10 @@ public class BuildArtifactMapperImpl {
             }
             
             for (File f : listed) {
-                copyRecursively(f, new File(target, f.getName()));
+                String name = f.getName();
+                if (name.endsWith(SIG))
+                    name = name.substring(0, name.length() - FileObjects.SIG.length()) + FileObjects.CLASS;
+                copyRecursively(f, new File(target, name));
             }
         } else {
             if (target.isDirectory()) {
@@ -442,6 +447,8 @@ public class BuildArtifactMapperImpl {
         if (!basedir.isAbsolute()) {
             throw new IllegalArgumentException("nonabsolute basedir passed to resolveFile: " + basedir); // NOI18N
         }
+        if (filename.endsWith(SIG))
+            filename = filename.substring(0, filename.length() - FileObjects.SIG.length()) + FileObjects.CLASS;
         File f;
         if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
             // Shortcut - simple relative path. Potentially faster.

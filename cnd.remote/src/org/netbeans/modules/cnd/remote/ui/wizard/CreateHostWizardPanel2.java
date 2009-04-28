@@ -45,7 +45,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
-public class CreateHostWizardPanel2 implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+/*package*/ final class CreateHostWizardPanel2 implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
 
     /**
      * The visual component that displays this panel. If you need to access the
@@ -92,18 +92,15 @@ public class CreateHostWizardPanel2 implements WizardDescriptor.Panel<WizardDesc
     // settings
     public void readSettings(WizardDescriptor settings) {
         getComponent().init(
-            (String)settings.getProperty(CreateHostWizardPanel1.PROP_HOSTNAME),
-            (Integer)settings.getProperty(CreateHostWizardPanel1.PROP_PORT),
-            (ToolsCacheManager)settings.getProperty(CreateHostWizardIterator.PROP_CACHE_MANAGER)
+            (String)settings.getProperty(CreateHostWizardConstants.PROP_HOSTNAME),
+            (Integer)settings.getProperty(CreateHostWizardConstants.PROP_PORT),
+            (ToolsCacheManager)settings.getProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER)
         );
     }
 
-    static final String PROP_HOST = "hostkey"; //NOI18N
-    static final String PROP_RUN_ON_FINISH = "run-on-finish"; //NOI18N
-
     public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(PROP_HOST, getComponent().getHost());
-        settings.putProperty(PROP_RUN_ON_FINISH, getComponent().getRunOnFinish());
+        settings.putProperty(CreateHostWizardConstants.PROP_HOST, getComponent().getHost());
+        settings.putProperty(CreateHostWizardConstants.PROP_RUN_ON_FINISH, getComponent().getRunOnFinish());
     }
 }
 

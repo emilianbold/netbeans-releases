@@ -8,57 +8,57 @@
             <file name="RestConnection.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RestConnection.template">
                 <attr name="position" intvalue="10"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="RestResponse.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RestResponse.template">
                 <attr name="position" intvalue="20"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="SaasService.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/SaasService.template">
                 <attr name="position" intvalue="30"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="ApiKeyAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/ApiKeyAuthenticator.template">
                 <attr name="position" intvalue="40"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="apikey.properties" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/apikey.properties">
                 <attr name="position" intvalue="50"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="HttpBasicAuthenticatorDesktop.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/HttpBasicAuthenticator.template">
                 <attr name="position" intvalue="60"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="httpbasic.properties" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/httpbasic.properties">
                 <attr name="position" intvalue="70"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="SessionKeyAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/SessionKeyAuthenticator.template">
                 <attr name="position" intvalue="80"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="sessionkey.properties" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/sessionkey.properties">
                 <attr name="position" intvalue="90"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="SignedUrlAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/SignedUrlAuthenticator.template">
                 <attr name="position" intvalue="100"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="signedurl.properties" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/signedurl.properties">
                 <attr name="position" intvalue="110"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
 
         </folder>

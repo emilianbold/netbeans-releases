@@ -105,10 +105,14 @@ public final class APTConditionResolver {
             APTExprParser parser = new APTExprParser(expandedTS, callback);
             long r = parser.expr();
 
-            if (APT_EXPR_TRACE) System.out.println("Value is "+r);// NOI18N
-            APTUtils.LOG.log(Level.FINE, 
+            if (APT_EXPR_TRACE) {
+                System.out.println("Value is " + r); // NOI18N
+            }
+            if (APTUtils.LOG.isLoggable(Level.FINE)) {
+                APTUtils.LOG.log(Level.FINE,
                         "stream {0} \n was expanded for condition resolving to \n {1} \n with result {2}", // NOI18N
                         new Object[] { expr, expandedTS, Long.valueOf(r) });
+            }
             res = (r==0)?false:true;
         } catch (NullPointerException ex) {
             APTUtils.LOG.log(Level.SEVERE, 

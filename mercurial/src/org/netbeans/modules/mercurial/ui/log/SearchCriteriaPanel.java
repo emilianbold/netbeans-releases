@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,7 +42,6 @@
 package org.netbeans.modules.mercurial.ui.log;
 
 import javax.swing.*;
-import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
@@ -56,22 +55,11 @@ import org.openide.util.NbBundle;
  */
 class SearchCriteriaPanel extends javax.swing.JPanel {
     
-    private final File[] roots;
-    private final String url;
-
     /** Creates new form SearchCriteriaPanel */
-    public SearchCriteriaPanel(File [] roots) {
-        this.roots = roots;
-        this.url = null;
+    public SearchCriteriaPanel() {
         initComponents();
     }
 
-    public SearchCriteriaPanel(String url) {
-        this.url = url;
-        this.roots = null;
-        initComponents();
-    }
-    
     public String getFrom() {
         String s = tfFrom.getText().trim();
         if(s.length() == 0) {

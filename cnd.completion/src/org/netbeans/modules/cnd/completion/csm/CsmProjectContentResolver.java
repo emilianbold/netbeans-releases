@@ -180,10 +180,6 @@ public final class CsmProjectContentResolver {
         return res;
     }
 
-    private CsmProject getProject() {
-        return this.project;
-    }
-
     public boolean isCaseSensitive() {
         return caseSensitive;
     }
@@ -206,14 +202,6 @@ public final class CsmProjectContentResolver {
 
     public void setSortNeeded(boolean sort) {
         this.sort = sort;
-    }
-
-    public CsmFile getFile() {
-        return file;
-    }
-
-    public void setFile(CsmFile file) {
-        this.file = file;
     }
 
     /** ================= help methods =======================================*/

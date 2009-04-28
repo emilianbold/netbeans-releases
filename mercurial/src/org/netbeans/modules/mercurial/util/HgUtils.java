@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -62,6 +62,7 @@ import java.util.HashSet;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.regex.Pattern;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -82,7 +83,11 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
@@ -121,6 +126,15 @@ public class HgUtils {
     private static final String FILENAME_HGIGNORE = ".hgignore"; // NOI18N
 
     private static HashMap<String, Set<Pattern>> ignorePatterns;
+
+
+    /**
+     * Timeout for remote repository check in seconds, after expires the repository will be considered valid.
+     */
+    public static final String HG_CHECK_REPOSITORY_TIMEOUT_SWITCH = "mercurial.checkRepositoryTimeout"; //NOI18N
+    public static final String HG_CHECK_REPOSITORY_DEFAULT_TIMEOUT = "5";
+    public static final int HG_CHECK_REPOSITORY_DEFAULT_ROUNDS = 50;
+    private static int repositoryValidityCheckRounds = 0;
 
     /**
      * addDaysToDate - add days (+days) or subtract (-days) from the given date
@@ -259,7 +273,19 @@ public class HgUtils {
                 NbBundle.getMessage(bundleLocation,title),
                 JOptionPane.WARNING_MESSAGE);
     }
-    
+
+    public static JComponent addContainerBorder(JComponent comp) {
+        final LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
+
+        JPanel panel = new JPanel();
+        panel.add(comp);
+        panel.setBorder(BorderFactory.createEmptyBorder(
+                layoutStyle.getContainerGap(comp, SwingConstants.NORTH, null),
+                layoutStyle.getContainerGap(comp, SwingConstants.WEST,  null),
+                layoutStyle.getContainerGap(comp, SwingConstants.SOUTH, null),
+                layoutStyle.getContainerGap(comp, SwingConstants.EAST,  null)));
+        return panel;
+    }
 
     /**
      * stripDoubleSlash - converts '\\' to '\' in path on Windows
@@ -1084,6 +1110,27 @@ itor tabs #66700).
             }
         }
         return false;
+    }
+
+    /**
+     * Returns a number of 100ms-lasting waiting loops in a repository validity check.
+     * If a sysprop defined in HgUtils.HG_CHECK_REPOSITORY_TIMEOUT_SWITCH is set, this returns a number count from HG_CHECK_REPOSITORY_TIMEOUT_SWITCH, otherwise it uses
+     * a defaut value HgUtils.HG_CHECK_REPOSITORY_DEFAULT_ROUNDS.
+     * @return number of rounds
+     */
+    public static int getNumberOfRoundsForRepositoryValidityCheck() {
+        if (repositoryValidityCheckRounds <= 0) {
+            try {
+                repositoryValidityCheckRounds = Integer.parseInt(System.getProperty(HG_CHECK_REPOSITORY_TIMEOUT_SWITCH, HG_CHECK_REPOSITORY_DEFAULT_TIMEOUT)) * 10; // number of 100ms lasting rounds
+            } catch (NumberFormatException ex) {
+                Mercurial.LOG.log(Level.INFO, "Parsing integer failed, default value will be used", ex);
+            }
+            if (repositoryValidityCheckRounds <= 0) {
+                Mercurial.LOG.fine("Using default value for number of rounds in repository validity check: " + HG_CHECK_REPOSITORY_DEFAULT_ROUNDS);
+                repositoryValidityCheckRounds = HG_CHECK_REPOSITORY_DEFAULT_ROUNDS;
+            }
+        }
+        return repositoryValidityCheckRounds;
     }
 
     /**

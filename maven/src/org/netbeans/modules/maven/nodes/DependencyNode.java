@@ -176,7 +176,7 @@ public class DependencyNode extends AbstractNode {
                     }
                 }
             };
-            NbMavenProject.addPropertyChangeListener(project, WeakListeners.propertyChange(listener, this));
+            NbMavenProject.addPropertyChangeListener(project, WeakListeners.propertyChange(listener, project.getProjectWatcher()));
             listener2 = new ChangeListener() {
                 public void stateChanged(ChangeEvent event) {
                     refreshNode();
