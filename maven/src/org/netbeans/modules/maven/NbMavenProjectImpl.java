@@ -619,8 +619,10 @@ public final class NbMavenProjectImpl implements Project {
                     return pathname.isDirectory();
                 }
             });
-            for (int i = 0; i < fils.length; i++) {
-                uris.add(fils[i].toURI());
+            if (fils != null) { //#163842 maybe if the dir was deleted right before listFiles()
+                for (int i = 0; i < fils.length; i++) {
+                    uris.add(fils[i].toURI());
+                }
             }
         }
         
