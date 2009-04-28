@@ -156,12 +156,24 @@ public class HistoryPanel extends javax.swing.JPanel {
         public String type;
         public String value;
         public String toString;
+        public String tooltip;
+        public String exprFormatted;
 
         Item(String expr, String type, String value, String toString) {
             this.expr = expr;
             this.type = type;
             this.value = value;
             this.toString = toString;
+            StringBuffer buf = new StringBuffer();
+            buf.append("<html>");
+            String text = expr.replaceAll ("&", "&amp;");
+            text = text.replaceAll ("<", "&lt;");
+            text = text.replaceAll (">", "&gt;");
+            text = text.replaceAll ("\n", "<br/>");
+            text = text.replaceAll ("\r", "");
+            buf.append(text);
+            buf.append("</html>");
+            this.tooltip = buf.toString();
         }
 
         Vector toVector() {
