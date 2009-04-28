@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import java.io.IOException;
@@ -77,6 +78,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
     private List<ValidationListener> validationListeners;
     private ValidationStatus validationStatus;
     private Future<Integer> procReaderTask;
+    private HostInfo hostInfo = null;
 
     public ProcDataProvider(ProcDataProviderConfiguration configuration) {
         validationListeners = new CopyOnWriteArrayList<ValidationListener>();
@@ -126,9 +128,16 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
 
     private ValidationStatus doValidation(DLightTarget target) {
         ExecutionEnvironment env = target.getExecEnv();
-        OSFamily osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
 
-        if (osFamily != OSFamily.LINUX && osFamily != OSFamily.SUNOS) {
+        try {
+            hostInfo = HostInfoUtils.getHostInfo(env);
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        OSFamily osFamily = hostInfo.getOSFamily();
+
+        if (hostInfo == null || osFamily != OSFamily.LINUX && osFamily != OSFamily.SUNOS) {
             return ValidationStatus.invalidStatus(getMessage("ValidationStatus.OSNotSupported")); // NOI18N
         }
 
@@ -185,7 +194,6 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
      */
     private synchronized void targetStarted(DLightTarget target) {
         ExecutionEnvironment env = target.getExecEnv();
-        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
         NativeProcessBuilder npb = new NativeProcessBuilder(env, hostInfo.getShell());
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.inputOutput(InputOutput.NULL);

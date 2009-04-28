@@ -84,6 +84,11 @@ public class Util {
             }
 
             HostInfo hostInfo = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+            
+            if (hostInfo == null) {
+                return null;
+            }
+
             String prefix = "_dlight_" + getBriefName(resourceFileName); // NOI18N
             String tmpDirBase = hostInfo.getTempDir();
 

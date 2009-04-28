@@ -39,10 +39,12 @@
 package org.netbeans.modules.dlight.tools.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -59,19 +61,30 @@ import org.openide.util.Exceptions;
 
     private NativeToolsUtil() {
     }
-
     public static final String _64 = "_64"; // NOI18N
 
     public static String getLdPathName(ExecutionEnvironment execEnv) {
-        HostInfo info = HostInfoUtils.getHostInfo(execEnv);
-        return info.getOSFamily() == HostInfo.OSFamily.MACOSX
-                ? "DYLD_LIBRARY_PATH" : "LD_LIBRARY_PATH"; // NOI18N
+        try {
+            HostInfo info = HostInfoUtils.getHostInfo(execEnv);
+            return info.getOSFamily() == HostInfo.OSFamily.MACOSX
+                    ? "DYLD_LIBRARY_PATH" : "LD_LIBRARY_PATH"; // NOI18N
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        return "LD_LIBRARY_PATH"; // NOI18N
     }
 
     public static String getLdPreloadName(ExecutionEnvironment execEnv) {
-        HostInfo info = HostInfoUtils.getHostInfo(execEnv);
-        return info.getOSFamily() == HostInfo.OSFamily.MACOSX
-                ? "DYLD_INSERT_LIBRARIES" : "LD_PRELOAD"; // NOI18N
+        try {
+            HostInfo info = HostInfoUtils.getHostInfo(execEnv);
+            return info.getOSFamily() == HostInfo.OSFamily.MACOSX
+                    ? "DYLD_INSERT_LIBRARIES" : "LD_PRELOAD"; // NOI18N
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        return "LD_PRELOAD"; // NOI18N
     }
 
     public static Map<String, File> getCompatibleBinaries(ExecutionEnvironment execEnv, String name) {
@@ -103,5 +116,4 @@ import org.openide.util.Exceptions;
                 "tools" + File.separator + dirname + File.separator + // NOI18N
                 "bin" + File.separator + filename, null, false); // NOI18N
     }
-
 }

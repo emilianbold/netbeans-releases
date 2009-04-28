@@ -46,6 +46,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -80,11 +81,22 @@ public class DerbyDataStorage extends SQLDataStorage implements StackDataStorage
 
 
     static {
-        HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
-        String tempDir = hi.getTempDir();
-        tmpDir = hi.getOSFamily() == HostInfo.OSFamily.WINDOWS
-                ? WindowsSupport.getInstance().convertoToWindowsPath(tempDir)
-                : tempDir;
+        String tempDir = null;
+        try {
+            HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+            tempDir = hi.getTempDir();
+            if (hi.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                tempDir = WindowsSupport.getInstance().convertoToWindowsPath(tempDir);
+            }
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        if (tempDir == null) {
+            tempDir = System.getProperty("java.io.tmpdir"); // NOI18N
+        }
+
+        tmpDir = tempDir;
 
         Util.deleteLocalDirectory(new File(tmpDir + "/derby_dlight")); // NOI18N
 
