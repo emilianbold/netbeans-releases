@@ -82,29 +82,31 @@ public class FormatPanel extends javax.swing.JPanel {
         beloveRadio = new javax.swing.JRadioButton();
         jButton1 = new javax.swing.JButton();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(jTextArea1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel1.text")); // NOI18N
 
         jTextArea1.setColumns(20);
-        jTextArea1.setFont(new java.awt.Font("Monospaced", 0, 13));
+        jTextArea1.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
         jTextArea1.setRows(5);
         jTextArea1.setToolTipText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jTextArea1.toolTipText")); // NOI18N
         jScrollPane1.setViewportView(jTextArea1);
+        jTextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jTextArea1.AccessibleContext.accessibleDescription")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel2.text")); // NOI18N
 
         buttonGroup1.add(aboveRadio);
-        aboveRadio.setText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.aboveRadio.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(aboveRadio, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.aboveRadio.text")); // NOI18N
 
         buttonGroup1.add(beloveRadio);
         beloveRadio.setSelected(true);
-        beloveRadio.setText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.beloveRadio.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(beloveRadio, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.beloveRadio.text")); // NOI18N
         beloveRadio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 beloveRadioActionPerformed(evt);
             }
         });
 
-        jButton1.setText(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jButton1.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -117,7 +119,7 @@ public class FormatPanel extends javax.swing.JPanel {
                         .add(jLabel1)
                         .addContainerGap(438, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(jLabel2)
@@ -125,7 +127,7 @@ public class FormatPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(beloveRadio)
                             .add(aboveRadio))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 85, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 169, Short.MAX_VALUE)
                         .add(jButton1)
                         .add(20, 20, 20))))
         );
@@ -147,6 +149,12 @@ public class FormatPanel extends javax.swing.JPanel {
                         .add(beloveRadio)))
                 .addContainerGap())
         );
+
+        aboveRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.aboveRadio.AccessibleContext.accessibleDescription")); // NOI18N
+        beloveRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.beloveRadio.AccessibleContext.accessibleDescription")); // NOI18N
+        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jButton1.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void beloveRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_beloveRadioActionPerformed

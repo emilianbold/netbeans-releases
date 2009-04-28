@@ -77,6 +77,7 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.KenaiSearchPanel.KenaiProjectSearchInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
@@ -370,18 +371,24 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         Object option = DialogDisplayer.getDefault().notify(dialogDesc);
 
         if (NotifyDescriptor.OK_OPTION.equals(option)) {
-            KenaiProject selProject[] = browsePanel.getSelectedProjects();
-            if (null != selProject && selProject.length > 0) {
-                try {
-                    KenaiFeature features[] = selProject[0].getFeatures(Type.SOURCE);
-                    for (KenaiFeature feature : features) {
-                        KenaiFeatureListItem item = new KenaiFeatureListItem(selProject[0], feature);
-                        comboModel.addElement(item);
-                        comboModel.setSelectedItem(item);
-                    }
-                } catch (KenaiException kenaiException) {
-                    Exceptions.printStackTrace(kenaiException);
+            KenaiProjectSearchInfo selProjectInfo = browsePanel.getSelectedProjectSearchInfo();
+            int modelSize = comboModel.getSize();
+            boolean inList = false;
+            KenaiFeatureListItem inListItem = null;
+            for (int i = 0; i < modelSize; i++) {
+                inListItem = (KenaiFeatureListItem) comboModel.getElementAt(i);
+                if (inListItem.project.getName().equals(selProjectInfo.kenaiProject.getName()) &&
+                    inListItem.feature.getName().equals(selProjectInfo.kenaiFeature.getName())) {
+                    inList = true;
+                    break;
                 }
+            }
+            if (selProjectInfo != null && !inList) {
+                KenaiFeatureListItem item = new KenaiFeatureListItem(selProjectInfo.kenaiProject, selProjectInfo.kenaiFeature);
+                comboModel.addElement(item);
+                comboModel.setSelectedItem(item);
+            } else if (inList && inListItem != null) {
+                comboModel.setSelectedItem(inListItem);
             }
         }
 
@@ -449,7 +456,6 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         private void addOpenedProjects() {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    Iterator<KenaiProject> myProjectsIter = null;
                     ProjectHandle[] openedProjects = Dashboard.getDefault().getOpenProjects();
                         for (ProjectHandle prjHandle : openedProjects) {
                             KenaiProject kProject = null;
@@ -492,7 +498,11 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         // listening for opened projects in dashboard
         public void propertyChange(PropertyChangeEvent evt) {
             if (Dashboard.PROP_OPENED_PROJECTS.equals(evt.getPropertyName())) {
-                removeAllElements();
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        removeAllElements();
+                    }
+                });
                 addOpenedProjects();
             }
         }
