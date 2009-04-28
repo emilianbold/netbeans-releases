@@ -52,10 +52,12 @@ import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 /**
@@ -67,6 +69,13 @@ abstract class CompileWorker {
     abstract ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends Indexable> files);
 
     CompileTuple createTuple(Context context, JavaParsingContext javaContext, Indexable indexable) {
+        File root = null;
+        if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
+            try {
+                File file = new File(indexable.getURL().toURI().getPath());
+                return new CompileTuple(FileObjects.fileFileObject(file, root, null), indexable);
+            } catch (Exception ex) {}
+        }
         FileObject fo = URLMapper.findFileObject(indexable.getURL());
         return fo != null ? new CompileTuple(SourceFileObject.create(fo, context.getRoot()), indexable) : null;
     }

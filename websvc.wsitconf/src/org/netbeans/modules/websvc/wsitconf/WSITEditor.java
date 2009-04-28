@@ -310,26 +310,30 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
     }
 
     public static FileObject getClientConfigFolder(Project p) {
+
+        FileObject folder = null;
+
         WsitProvider wsitProvider = p.getLookup().lookup(WsitProvider.class);
         if (wsitProvider != null) {
-            return wsitProvider.getConfigFilesFolder(true);
+            folder = wsitProvider.getConfigFilesFolder(true);
         }
 
-        // proceed with default folder (META-INF) if the provider is not found
-        FileObject folder = null;
-        Sources sources = ProjectUtils.getSources(p);
-        if (sources == null) return null;
-        SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);        
-        if ((sourceGroups != null) && (sourceGroups.length > 0)) {
-            folder = sourceGroups[0].getRootFolder();
-            if (folder != null) {
-                folder = folder.getFileObject("META-INF");
-            }
-            if ((folder == null) || (!folder.isValid())) {
-                try {
-                    folder = sourceGroups[0].getRootFolder().createFolder("META-INF");
-                } catch (IOException ex) {
-                    logger.log(Level.SEVERE, null, ex);
+        if (folder == null) {
+            // proceed with default folder (META-INF) if the provider is not found
+            Sources sources = ProjectUtils.getSources(p);
+            if (sources == null) return null;
+            SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if ((sourceGroups != null) && (sourceGroups.length > 0)) {
+                folder = sourceGroups[0].getRootFolder();
+                if (folder != null) {
+                    folder = folder.getFileObject("META-INF");
+                }
+                if ((folder == null) || (!folder.isValid())) {
+                    try {
+                        folder = sourceGroups[0].getRootFolder().createFolder("META-INF");
+                    } catch (IOException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         }

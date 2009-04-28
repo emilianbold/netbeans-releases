@@ -61,6 +61,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/netBeans/cpp/build"/>
         <delete dir="${basedir}/netBeans/javase/build"/>
         <delete dir="${basedir}/netBeans/javaee/build"/>     
+        <delete dir="${basedir}/netBeans/groovy/build"/>
         <delete dir="${basedir}/netBeans/php/build"/> 
         <delete dir="${basedir}/netBeans/webcommon/build"/>
         <delete dir="${basedir}/netBeans/ergonomics/build"/>
@@ -91,8 +92,9 @@ Microsystems, Inc. All Rights Reserved.
         <property name="clusters" value="cnd(cpp), dlight(cpp),
                                          apisupport(javase), profiler(javase), java(javase), harness(javase),
                                          ruby(ruby),                                       
+					 groovy(groovy),
                                          php(php), 
-                                         enterprise(javaee), identity(javaee), xml(javaee), groovy(javaee),
+                                         enterprise(javaee), identity(javaee), groovy(javaee),
                                          webcommon(webcommon),
                                          ergonomics(ergonomics),
                                          ide(baseide), nb6.0-etc(baseide), platform(baseide)"/>        
@@ -117,13 +119,32 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="sizeof.${module.name}=${size}${line.separator}" file="${basedir}/build/sizes.pro" append="true"/>                    
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="sh ${basedir}/pack200.sh ${basedir}/netBeans/${module.name}/build ${VerifyFile.class.name} ${VerifyFile.classpath}"/>
-        </exec>           
+            <arg value="sh ${basedir}/pack200.sh ${module.builddir} ${VerifyFile.class.name} ${VerifyFile.classpath}"/>
+        </exec>
+        <ant target="update-crc32-info-module"/>
     </target>
+
+    <target name="update-crc32-info-module" description="Update crc32 info in the update_tracking files for the module (Issue #159657)">
+        <echo message="Update crc32 info in module ${module.name}"/>
+        <property name="tmpDir" value="${module.builddir}/tmp"/>
+        <property name="nbDir" value="${module.builddir}/netbeans"/>
+        <mkdir dir="${tmpDir}"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="sh ${basedir}/commonfiles/unpack200_to_dir.sh ${nbDir} ${tmpDir}"/>
+        </exec>
+
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="sh ${basedir}/commonfiles/update_crc32.sh ${tmpDir} ${nbDir}"/>
+        </exec>
+    </target>
+
 
     <target name="build-pkg" depends="unzip-nb" description="Builds NB and packs packages" >                  
         <ant target="size-pack-module">
-            <property name="module.name" value="baseide"/>            
+            <property name="module.name" value="baseide"/>
+            <property name="module.builddir" value="${basedir}/netBeans/${module.name}/build"/>
         </ant>            
         <ant dir="${basedir}/netBeans/baseide"/>          
         <ant target="build-modules"/>       
@@ -134,6 +155,7 @@ Microsystems, Inc. All Rights Reserved.
                                         javaee(${javaee-title}),
                                         cpp(${cpp-title}),
                                         ruby(${ruby-title}),
+                                        groovy(${groovy-title}),
 					webcommon(${webcommon-title}),
                                         ergonomics(${ergonomics-title}),
                                         php(${php-title})"/>        
@@ -184,7 +206,7 @@ Microsystems, Inc. All Rights Reserved.
                   
         <property name="bundles" value="        (./build/*pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
-                                             -java(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/ergonomics.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
+                                             -java(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
                                              -ruby(./build/baseide.pkg ./build/webcommon.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
                                              -php(./build/baseide.pkg ./build/webcommon.pkg ./build/php.pkg)"/>        
@@ -411,6 +433,7 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>
+                <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
                 <!--<filter token="SIZE_SOA" value="${sizeof.soa}"/>-->
                 <filter token="SIZE_ERGONOMICS" value="${sizeof.ergonomics}"/>
                 <filter token="SIZE_GLASSFISH" value="${sizeof.glassfish}"/>

@@ -117,9 +117,9 @@ public class SvnHookImpl extends SvnHook {
 
             LOG.log(Level.FINER, " svn commit hook issue info '" + issueInfo + "'");     // NOI18N
             if(format.isAbove()) {
-                msg = issueInfo + "\n" + msg;
+                msg = issueInfo + "\n" + msg;                                   // NOI18N
             } else {
-                msg = msg + "\n" + issueInfo;
+                msg = msg + "\n" + issueInfo;                                   // NOI18N
             }
 
             context = new SvnHookContext(context.getFiles(), msg, context.getLogEntries());
@@ -153,7 +153,7 @@ public class SvnHookImpl extends SvnHook {
         }
         
         String msg = context.getMessage();
-        if(!panel.addCommentCheckBox.isSelected() || msg == null || msg.trim().equals("")) {
+        if(!panel.addCommentCheckBox.isSelected() || msg == null || msg.trim().equals("")) { // NOI18N
             msg = null;
         }
         if(panel.addRevisionCheckBox.isSelected()) {

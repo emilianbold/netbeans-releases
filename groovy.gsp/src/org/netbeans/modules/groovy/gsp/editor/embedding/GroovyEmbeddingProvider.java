@@ -191,12 +191,14 @@ public class GroovyEmbeddingProvider extends EmbeddingProvider {
                 if (trimmedText.startsWith("--") && trimmedText.endsWith("--")) { // NOI18N
                     int first = text.indexOf("--");
                     int last = text.lastIndexOf("--");
-                    embeddings.add(snapshot.create("/*", GroovyTokenId.GROOVY_MIME_TYPE));
-                    //buffer.append("/*");
-                    embeddings.add(snapshot.create(sourceStart + first + 2, last - (sourceStart + first + 2), GroovyTokenId.GROOVY_MIME_TYPE));
-                    //buffer.append(text.substring(first + 2, last));
-                    embeddings.add(snapshot.create("*/", GroovyTokenId.GROOVY_MIME_TYPE));
-                    //buffer.append("*/");
+                    if (first != last && (last - 2) > 0) {
+                        embeddings.add(snapshot.create("/*", GroovyTokenId.GROOVY_MIME_TYPE));
+                        //buffer.append("/*");
+                        embeddings.add(snapshot.create(sourceStart + first + 2, last - 2, GroovyTokenId.GROOVY_MIME_TYPE));
+                        //buffer.append(text.substring(first + 2, last));
+                        embeddings.add(snapshot.create("*/", GroovyTokenId.GROOVY_MIME_TYPE));
+                        //buffer.append("*/");
+                    }
                 } else {
                     embeddings.add(snapshot.create(sourceStart, text.length(), GroovyTokenId.GROOVY_MIME_TYPE));
                     //buffer.append(text);

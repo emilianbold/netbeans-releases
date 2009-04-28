@@ -122,7 +122,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
             LOG.log(Level.FINE, "errors = " + errors);
         }
         
-        for (Error/*Diagnostic*/ d : errors) {
+        for (Error d : errors) {
             if (isCanceled()) {
                 return null;
             }
@@ -166,7 +166,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
             }
             
             final String desc = d.getDisplayName();
-            final Position[] range = getLine(result, d, doc, position, endPosition);
+            final Position[] range = getLine(d, doc, position, endPosition);
             
             if (isCanceled()) {
                 return null;
@@ -190,7 +190,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
         return DataLoadersBridge.getDefault().getDocument(file);
     }
     
-    private Position[] getLine(ParserResult info, Error d, final Document doc, int startOffset, int endOffset) {
+    private Position[] getLine(Error d, final Document doc, int startOffset, int endOffset) {
         StyledDocument sdoc = (StyledDocument) doc;
         int lineNumber = NbDocument.findLineNumber(sdoc, startOffset);
         int lineOffset = NbDocument.findLineOffset(sdoc, lineNumber);
@@ -199,9 +199,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
             return new Position[2];
         }
         
-        boolean rangePrepared = false;
-        
-        if (!rangePrepared) {
+        if (d.isLineError()) {
             int column = 0;
             int length = text.length();
             

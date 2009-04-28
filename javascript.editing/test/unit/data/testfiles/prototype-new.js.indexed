@@ -81,6 +81,7 @@ Searchable Keys:
   base : cumulativescrolloffset;Element;cumulativeScrollOffset;|FUNCTION|;element;0;;;;
   base : currentlyexecuting;PeriodicalExecuter;currentlyExecuting;|PROPERTY|;;0;;;Boolean;
   base : decay;Ajax.PeriodicalUpdater;decay;|PROPERTY|;;0;;;Boolean;
+  base : defer;Function;defer;|PROPERTY|;;0;;;;
   base : del;trans;DEL;|PROPERTY|;;0;;;String;
   base : descendantof;Element;descendantOf;|FUNCTION|;element,ancestor;0;;;;
   base : descendants;Element;descendants;|FUNCTION|;element;0;;;;
@@ -233,6 +234,7 @@ Searchable Keys:
   base : makeclipping;Element;makeClipping;|FUNCTION|;element;0;;;;
   base : makepositioned;Element;makePositioned;|FUNCTION|;element;0;;;;
   base : match;Element;match;|FUNCTION|;element,selector;0;;;;
+  base : match;RegExp;match;|PROPERTY|;;0;;;;
   base : match;Selector;match;|FUNCTION|;element;0;;;;
   base : max;Enumerable;max;|FUNCTION|;iterator,context;0;;;;
   base : method;options;method;|PROPERTY|;;0;;;String;
@@ -260,6 +262,7 @@ Searchable Keys:
   base : p;trans;P;|PROPERTY|;;0;;;String;
   base : page;Position;page;|PROPERTY|;;0;;;;
   base : parameters;options;parameters;|PROPERTY|;;0;;;String;
+  base : parsequery;String;parseQuery;|PROPERTY|;;0;;;;
   base : partition;Enumerable;partition;|FUNCTION|;iterator,context;0;;;Array;
   base : pattern;Template;pattern;|PROPERTY|;;0;;;Boolean;
   base : periodicalexecuter;;PeriodicalExecuter;|DOCUMENTED|PROPERTY|;;0;1d62;;;
@@ -356,6 +359,7 @@ Searchable Keys:
   base : th;trans;TH;|PROPERTY|;;0;;;String;
   base : thead;trans;THEAD;|PROPERTY|;;0;;;String;
   base : these;Try;these;|FUNCTION|;;0;;;;
+  base : toarray;Array;toArray;|PROPERTY|;;0;;;;
   base : toarray;Enumerable;toArray;|FUNCTION|;;0;;;;
   base : toggle;;Toggle;|PROPERTY|;;0;;;;
   base : toggle;Element;toggle;|FUNCTION|;element;0;;;;
@@ -367,6 +371,7 @@ Searchable Keys:
   base : tostring;Element.ClassNames;toString;|FUNCTION|;;0;;;;
   base : tostring;Selector;toString;|FUNCTION|;;0;;;expression;
   base : tostring;value;toString;|FUNCTION|;;0;;;;
+  base : totemplatereplacements;Hash;toTemplateReplacements;|PROPERTY|;;0;;;;
   base : tr;trans;TR;|PROPERTY|;;0;;;String;
   base : transport;Ajax.Request;transport;|PROPERTY|;;0;;;;
   base : try;;Try;|PROPERTY|;;0;;;;
@@ -491,6 +496,7 @@ Searchable Keys:
   fqn : array.concat;;Array.concat;|FUNCTION|;;0;;;;
   fqn : array.indexof;;Array.indexOf;|FUNCTION|;item,i;0;;;;
   fqn : array.lastindexof;;Array.lastIndexOf;|FUNCTION|;item,i;0;;;;
+  fqn : array.toarray;;Array.toArray;|PROPERTY|;;0;;;;
   fqn : buttonmap.0;;buttonMap.0;|PROPERTY|;;0;;;Number;
   fqn : buttonmap.1;;buttonMap.1;|PROPERTY|;;0;;;Number;
   fqn : buttonmap.2;;buttonMap.2;|PROPERTY|;;0;;;Number;
@@ -671,10 +677,12 @@ Searchable Keys:
   fqn : form.reset;;Form.reset;|FUNCTION|;form;0;;;;
   fqn : form.serializeelements;;Form.serializeElements;|FUNCTION|;elements,options;0;;;;
   fqn : form;;Form;|PROPERTY|;;0;;;;
+  fqn : function.defer;;Function.defer;|PROPERTY|;;0;;;;
   fqn : getcacheforid;;getCacheForID;|FUNCTION|;id;0;;;;
   fqn : getdomeventname;;getDOMEventName;|FUNCTION|;eventName;0;;;;
   fqn : geteventid;;getEventID;|FUNCTION|;element;0;;;;
   fqn : getwrappersforeventname;;getWrappersForEventName;|FUNCTION|;id,eventName;0;;;;
+  fqn : hash.totemplatereplacements;;Hash.toTemplateReplacements;|PROPERTY|;;0;;;;
   fqn : hash;;Hash;|PROPERTY|;;0;;;;
   fqn : headers.accept;;headers.Accept;|PROPERTY|;;0;;;String;
   fqn : headers.x-prototype-version;;headers.X-Prototype-Version;|PROPERTY|;;0;;;Prototype.Version;
@@ -748,6 +756,7 @@ Searchable Keys:
   fqn : prototype.version;;Prototype.Version;|PROPERTY|;;0;;;String;
   fqn : prototype;;Prototype;|DOCUMENTED|PROPERTY|;;0;0;;;
   fqn : regexp.escape;;RegExp.escape;|FUNCTION|STATIC|;str;0;;;;
+  fqn : regexp.match;;RegExp.match;|PROPERTY|;;0;;;;
   fqn : selector.compilematcher;;Selector.compileMatcher;|FUNCTION|;;0;;;;
   fqn : selector.compilexpathmatcher;;Selector.compileXPathMatcher;|FUNCTION|;;0;;;void;
   fqn : selector.expression;;Selector.expression;|PROPERTY|;;0;;;;
@@ -760,6 +769,7 @@ Searchable Keys:
   fqn : selector.tostring;;Selector.toString;|FUNCTION|;;0;;;expression;
   fqn : selector;;Selector;|DOCUMENTED|PROPERTY|;;0;138de;;;
   fqn : string.gsub.preparereplacement;;String.gsub.prepareReplacement;|FUNCTION|;replacement;0;;;;
+  fqn : string.parsequery;;String.parseQuery;|PROPERTY|;;0;;;;
   fqn : stripalpha;;stripAlpha;|FUNCTION|;filter;0;;;;
   fqn : template.evaluate;;Template.evaluate;|FUNCTION|;object;0;;;;
   fqn : template.initialize;;Template.initialize;|CONSTRUCTOR|;template,pattern;0;;;Template;

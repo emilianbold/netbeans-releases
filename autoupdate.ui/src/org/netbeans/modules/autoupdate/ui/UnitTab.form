@@ -3,6 +3,7 @@
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -24,14 +25,15 @@
                       <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                       <Component id="tfSearch" min="-2" pref="114" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="spTab" alignment="0" pref="689" max="32767" attributes="0"/>
+                  <Component id="spTab" alignment="0" pref="712" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="bTabAction" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="lSelectionInfo" min="-2" max="-2" attributes="2"/>
                       <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                      <Component id="lWarning" pref="653" max="32767" attributes="0"/>
+                      <Component id="lWarning" pref="527" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="advView" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -48,12 +50,13 @@
                   <Component id="topButton" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="spTab" pref="46" max="32767" attributes="0"/>
+              <Component id="spTab" pref="41" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="2" max="-2" attributes="0">
                   <Component id="bTabAction" alignment="2" min="-2" max="-2" attributes="1"/>
                   <Component id="lSelectionInfo" linkSize="2" alignment="2" max="32767" attributes="1"/>
                   <Component id="lWarning" linkSize="2" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="advView" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
@@ -113,6 +116,19 @@
     <Component class="javax.swing.JLabel" name="lWarning">
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="advView">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/autoupdate/ui/Bundle.properties" key="UnitTab.advView.text" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="advViewItemStateChanged"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="advViewInit();"/>
       </AuxValues>
     </Component>
   </SubComponents>

@@ -127,6 +127,14 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
                 lbl = new JLabel("|"); //NOI18N
                 labels.add(lbl);
                 panel.add( lbl, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+            } else if (onlineCount == -2) {
+                btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_CreateChat", messaging.getMessageCount()), accessor.getCreateChatAction(project)); //NOI18N
+                buttons.add( btn );
+                panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+
+                lbl = new JLabel("|"); //NOI18N
+                labels.add(lbl);
+                panel.add( lbl, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
             }
 
             btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_OpenWiki"), ProjectAccessor.getDefault().getOpenWikiAction(project)); //NOI18N
@@ -159,6 +167,7 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
     @Override
     protected void dispose() {
         super.dispose();
-        messaging.removePropertyChangeListener(this);
+        if( null != messaging )
+            messaging.removePropertyChangeListener(this);
     }
 }

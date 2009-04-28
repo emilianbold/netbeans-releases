@@ -4,6 +4,6 @@
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="netbeans" depends="projectized-common.netbeans">
-        <chmod dir="${cluster}/bin" perm="ugo+rx" includes="prof_*"/>
+        <chmod dir="${cluster}/tools" perm="ugo+rx" includes="*/bin/prof_*"/>
     </target>
 </project>

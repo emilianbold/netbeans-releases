@@ -55,12 +55,12 @@ public final class DLightToolsTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
 
-    private static final String PREFERRED_ID = "DLightToolsTopComponent";
+    private static final String PREFERRED_ID = "DLightToolsTopComponent"; // NOI18N
 
     private DLightToolsTopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(DLightToolsTopComponent.class, "CTL_DLightToolsTopComponent"));
-        setToolTipText(NbBundle.getMessage(DLightToolsTopComponent.class, "HINT_DLightToolsTopComponent"));
+        setName(NbBundle.getMessage(DLightToolsTopComponent.class, "CTL_DLightToolsTopComponent")); // NOI18N
+        setToolTipText(NbBundle.getMessage(DLightToolsTopComponent.class, "HINT_DLightToolsTopComponent")); // NOI18N
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
         
     }
@@ -106,15 +106,15 @@ public final class DLightToolsTopComponent extends TopComponent {
     TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
     if (win == null) {
       Logger.getLogger(DLightToolsTopComponent.class.getName()).warning(
-              "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+              "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); // NOI18N
       return getDefault();
     }
     if (win instanceof DLightToolsTopComponent) {
       return (DLightToolsTopComponent) win;
     }
     Logger.getLogger(DLightToolsTopComponent.class.getName()).warning(
-            "There seem to be multiple components with the '" + PREFERRED_ID +
-            "' ID. That is a potential source of errors and unexpected behavior.");
+            "There seem to be multiple components with the '" + PREFERRED_ID + // NOI18N
+            "' ID. That is a potential source of errors and unexpected behavior."); // NOI18N
     return getDefault();
   }
 

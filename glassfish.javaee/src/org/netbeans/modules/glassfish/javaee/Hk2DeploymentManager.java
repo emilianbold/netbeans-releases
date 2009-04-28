@@ -131,7 +131,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
         MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId, false);
         MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId, false);
         GlassfishModule commonSupport = this.getCommonServerSupport();
-        deployProgress.addProgressListener(new UpdateContextRoot(returnProgress,moduleId, getServerInstance()));
+        // FIXME -- broken for remote deploy of web apps
+        deployProgress.addProgressListener(new UpdateContextRoot(returnProgress,moduleId, getServerInstance(), false));
 
         try {
             boolean restart = HttpMonitorHelper.synchronizeMonitor(
@@ -197,7 +198,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
         MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId, false);
         MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId, false);
         GlassfishModule commonSupport = this.getCommonServerSupport();
-        deployProgress.addProgressListener(new UpdateContextRoot(returnProgress,moduleId,getServerInstance()));
+        // FIXME -- broken for remote deploy of web apps
+        deployProgress.addProgressListener(new UpdateContextRoot(returnProgress,moduleId,getServerInstance(), false));
         try {
             boolean restart = HttpMonitorHelper.synchronizeMonitor(
                     commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),

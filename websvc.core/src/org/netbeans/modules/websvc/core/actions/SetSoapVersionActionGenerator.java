@@ -92,7 +92,9 @@ public class SetSoapVersionActionGenerator implements CodeGenerator {
             CompilationController controller = nodeLookup.lookup(CompilationController.class);
             if (controller != null) {
                 TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
-                return isJaxWsImplementationClass(classEl, controller);
+                if (classEl != null) {
+                    return isJaxWsImplementationClass(classEl, controller);
+                }
             }
             return false;
         }

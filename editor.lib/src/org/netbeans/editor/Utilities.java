@@ -49,7 +49,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.Action;
-import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
@@ -64,7 +63,6 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
 
 /**
 * Various useful editor functions. Some of the methods have
@@ -1434,25 +1432,4 @@ public class Utilities {
         return mimeType;
     }
     
-    /**
-     * Get popup menu item from action.
-     *
-     * @param action non-null action.
-     * @param target text component.
-     * @return popup menu item or null if there's no popup menu item for the action.
-     * @since 1.35
-     */
-    public static JMenuItem getPopupMenuItem(Action action, JTextComponent target) {
-        JMenuItem popupItem = null;
-        if (action instanceof BaseAction) {
-            popupItem = ((BaseAction)action).getPopupMenuItem(target);
-        }
-        if (popupItem == null) {
-            if (action instanceof Presenter.Popup) {
-                popupItem = ((Presenter.Popup)action).getPopupPresenter();
-            }
-        }
-        return popupItem;
-    }
-
 }

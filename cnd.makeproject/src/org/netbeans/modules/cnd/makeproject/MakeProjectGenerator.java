@@ -131,14 +131,18 @@ public class MakeProjectGenerator {
         if (confs == null) {
             confs = new MakeConfiguration[0];
         }
+
+        // work in a copy of confs
+        MakeConfiguration[] copyConfs = new MakeConfiguration[confs.length];
         for (int i = 0; i < confs.length; i++) {
-            confs[i].setBaseDir(projectNameFile.getPath());
-            RunProfile profile = (RunProfile) confs[i].getAuxObject(RunProfile.PROFILE_ID);
+            copyConfs[i] = (MakeConfiguration)confs[i].clone();
+            copyConfs[i].setBaseDir(projectNameFile.getPath());
+            RunProfile profile = (RunProfile) copyConfs[i].getAuxObject(RunProfile.PROFILE_ID);
             profile.setBuildFirst(false);
         }
 
         FileObject dirFO = createProjectDir(projectNameFile);
-        createProject(dirFO, projectName, makefileName, confs, null, null, true, null);
+        createProject(dirFO, projectName, makefileName, copyConfs, null, null, true, null);
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
 

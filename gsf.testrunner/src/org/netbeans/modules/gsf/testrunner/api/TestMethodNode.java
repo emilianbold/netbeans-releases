@@ -89,7 +89,11 @@ public class TestMethodNode extends AbstractNode {
         this.project = project;
 
         setDisplayName();
-        setShortDescription(TestsuiteNode.toTooltipText(testcase.getOutput()));
+
+        if (TestsuiteNode.DISPLAY_TOOLTIPS) {
+            setShortDescription(TestsuiteNode.toTooltipText(testcase.getOutput()));
+        }
+
     }
 
     /**

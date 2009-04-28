@@ -19,7 +19,7 @@ import org.openide.util.NbBundle;
 
     private static final Color GRAPH_COLOR = GraphConfig.COLOR_2;
     private static final GraphDescriptor DESCRIPTOR = new GraphDescriptor(
-            GRAPH_COLOR, NbBundle.getMessage(MemoryIndicatorPanel.class, "graph.description"), GraphDescriptor.Kind.ABS_SURFACE); // NOI18N
+            GRAPH_COLOR, NbBundle.getMessage(MemoryIndicatorPanel.class, "graph.description"), GraphDescriptor.Kind.LINE); // NOI18N
     private static final String MAX_HEAP_DETAIL_ID = "max-heap"; // NOI18N
     private static final int BINARY_ORDER = 1024;
     private static final int DECIMAL_ORDER = 1000;

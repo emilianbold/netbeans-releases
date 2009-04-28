@@ -220,11 +220,11 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
             
             // downloadSizeLabel ////////////////////////////////////////////////////
             downloadSizeLabel = new NbiLabel();
-            downloadSizeLabel.setFocusable(true);
+            //downloadSizeLabel.setFocusable(true);
             
             // requiredDiskSpaceLabel ///////////////////////////////////////////////
             requiredDiskSpaceLabel = new NbiLabel();
-            requiredDiskSpaceLabel.setFocusable(true);
+            //requiredDiskSpaceLabel.setFocusable(true);
             
             // spacer ///////////////////////////////////////////////////////////////
             spacer = new NbiPanel();

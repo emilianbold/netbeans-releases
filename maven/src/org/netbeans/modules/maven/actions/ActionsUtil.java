@@ -58,7 +58,7 @@ public class ActionsUtil {
     
     
     public static MavenProject readMavenProject(Artifact artifact, List<ArtifactRepository> remoteRepos) {
-
+        //TODO progress indication?
         MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
         try {
             MavenProjectBuilder bldr = (MavenProjectBuilder) embedder.getPlexusContainer().lookup(MavenProjectBuilder.ROLE);

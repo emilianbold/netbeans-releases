@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -62,6 +63,7 @@ import org.openide.util.NbBundle;
 public class ParserConfigurationPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
     private ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel;
+    private boolean first = true;
 
     public ParserConfigurationPanel(ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel) {
         initComponents();
@@ -88,6 +90,34 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         automaticButton.setEnabled(true);
         automaticButton.setSelected(true);
         togglePanel(false);
+        if (first) {
+            first = false;
+            @SuppressWarnings("unchecked")
+            ArrayList<FolderEntry> roots = (ArrayList) settings.getProperty("sourceFoldersList"); // NOI18N
+            if (roots != null) {
+                StringBuilder buf = new StringBuilder();
+                for(FolderEntry folder : roots){
+                    if (buf.length()>0) {
+                        buf.append(';');
+                    }
+                    File dir = folder.getFile();
+                    if (dir != null) {
+                        buf.append(dir.getAbsolutePath());
+                        if (dir.isDirectory()) {
+                            for (File sub : dir.listFiles()){
+                                if (sub.isDirectory()) {
+                                    if (sub.getName().toLowerCase().endsWith("include")) { // NOI18N
+                                        buf.append(';');
+                                        buf.append(sub.getAbsolutePath());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                includeTextField.setText(buf.toString());
+            }
+        }
     }
 
     void store(WizardDescriptor wizardDescriptor) {

@@ -57,7 +57,7 @@ public class ArtifactGraphNode {
     public static final int POTENTIAL_CONFLICT = 1;
     public static final int CONFLICT = 2;
 
-    private DependencyNode artifact;
+    private DependencyNode artifact, parentAfterFix;
     //for the layout
     double locX;
     double locY;
@@ -80,6 +80,20 @@ public class ArtifactGraphNode {
     
     DependencyNode getArtifact() {
         return artifact;
+    }
+
+    /** After changes in graph parent may change, so it's always better to
+     * call this method instead of getArtifact().getParent()
+     */
+    DependencyNode getArtifactParent() {
+        if (parentAfterFix != null) {
+            return parentAfterFix;
+        }
+        return getArtifact().getParent();
+    }
+
+    void setArtifactParent(DependencyNode newParent) {
+        parentAfterFix = newParent;
     }
     
     void setArtifact(DependencyNode ar) {

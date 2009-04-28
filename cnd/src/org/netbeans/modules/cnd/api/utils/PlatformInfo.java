@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
@@ -347,6 +347,6 @@ public final class PlatformInfo {
     }
 
     public static PlatformInfo localhost() {
-        return getDefault(ExecutionEnvironmentFactory.getLocalExecutionEnvironment());
+        return getDefault(ExecutionEnvironmentFactory.getLocal());
     }
 }

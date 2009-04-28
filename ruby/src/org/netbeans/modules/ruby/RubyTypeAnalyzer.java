@@ -42,9 +42,9 @@ package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.jruby.nb.ast.IfNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
+import org.jrubyparser.ast.IfNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 
 /**
  * Perform type analysis on a given AST tree, attempting to provide a type
@@ -75,6 +75,7 @@ public final class RubyTypeAnalyzer {
     private ContextKnowledge knowledge;
     private boolean analyzed;
     private boolean targetReached;
+    private static final String[] COMPARISON_OPERATORS = {"==", "==="}; //NOI18N
 
     /**
      * Creates a new instance of RubyTypeAnalyzer for a given position. The
@@ -118,7 +119,7 @@ public final class RubyTypeAnalyzer {
 
         // Algorithm: walk AST and look for assignments and such.
         // Attempt to compute the type of each expression and
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
             case LOCALASGNNODE:
             case INSTASGNNODE:
             case GLOBALASGNNODE:
@@ -146,7 +147,7 @@ public final class RubyTypeAnalyzer {
 //        }
         }
 
-        if (node.nodeId == NodeType.IFNODE) {
+        if (node.getNodeType() == NodeType.IFNODE) {
             analyzeIfNode((IfNode) node, typesForSymbols);
         } else {
             for (Node child : node.childNodes()) {
@@ -156,6 +157,15 @@ public final class RubyTypeAnalyzer {
                 analyze(child, typesForSymbols, override);
             }
         }
+    }
+
+    static boolean isTrueFalseCall(String methodName) {
+        for (String each : COMPARISON_OPERATORS) {
+            if (each.equals(methodName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void analyzeIfNode(final IfNode ifNode, final Map<String, RubyType> typesForSymbols) {

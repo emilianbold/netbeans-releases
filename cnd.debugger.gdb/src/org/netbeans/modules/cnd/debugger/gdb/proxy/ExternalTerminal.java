@@ -49,9 +49,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.CndModule;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -67,6 +71,8 @@ public class ExternalTerminal implements PropertyChangeListener {
     private File gdbHelperLog = null;
     private File gdbHelperScript = null;
     private final GdbDebugger debugger;
+
+    private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
 
     private static final int RETRY_LIMIT = 200;
 
@@ -96,13 +102,21 @@ public class ExternalTerminal implements PropertyChangeListener {
             }
         }
         
-        pb.start();
+        Process process = pb.start();
         
         int count = 0;
         String tty_line = null;
         String pid_line = null;
         try {
             while (count++ < RETRY_LIMIT) {
+                // first check for process termination
+                try {
+                    process.exitValue();
+                    // process already terminated - exit
+                    break;
+                } catch (IllegalThreadStateException e) {
+                    // do nothing
+                }
                 // TODO: it is not good to wait for the file to be filled with info this way
                 // need to find a better way to get pid later
                 BufferedReader fromTerm = new BufferedReader(new FileReader(gdbHelperLog));
@@ -119,23 +133,24 @@ public class ExternalTerminal implements PropertyChangeListener {
                 }
             }
             if (count >= RETRY_LIMIT) {
-                System.err.println("Retry limit reached for " + gdbHelperLog + ", giving up");
+                log.warning("Retry limit reached for " + gdbHelperLog + ", giving up");
             }
         } catch (IOException ioe) {
-            System.err.println("Failed to read external terminal helper");
+            log.warning("Failed to read external terminal helper");
         }
         tty = tty_line;
+        log.finest("ExternalTerminal: tty=" + tty);
         long pidTemp = 0;
         try {
             pidTemp = Long.valueOf(pid_line);
         } catch (Exception ex) {
-            System.err.println("Error parsing pid: " + pid_line);
+            log.warning("Error parsing pid: " + pid_line);
         }
         pid = pidTemp;
+        log.finest("ExternalTerminal: pid=" + pid);
     }
     
     private void initGdbHelpers() {
-        
         try {
             gdbHelperLog = File.createTempFile("gdb_helper_", ".log"); // NOI18N
             gdbHelperScript = File.createTempFile("gdb_helper_", ".sh"); // NOI18N
@@ -155,11 +170,7 @@ public class ExternalTerminal implements PropertyChangeListener {
             fw.close();
         } catch (IOException ioe) {
         }
-        ProcessBuilder pb = new ProcessBuilder("/bin/chmod", "755", gdbHelperScript.getAbsolutePath()); // NOI18N
-        try {
-            pb.start().waitFor();
-        } catch (Exception ex) {
-        }
+        CndModule.chmod755(Collections.singletonList(gdbHelperScript.getAbsolutePath()), log);
     }
     
     /**
@@ -195,12 +206,13 @@ public class ExternalTerminal implements PropertyChangeListener {
             if (state == GdbDebugger.State.EXITED) {
                 gdbHelperScript.delete();
                 gdbHelperLog.delete();
+                debugger.removePropertyChangeListener(this);
             }
 	} else if (ev.getPropertyName().equals(GdbDebugger.PROP_KILLTERM)) {
             if (pid == 0) {
-                System.err.println("Killing zero pid detected from log: " + gdbHelperLog);
+                log.warning("Killing zero pid detected from log: " + gdbHelperLog);
             }
-            debugger.kill(15, pid);
+            debugger.kill(Signal.TERM, pid);
         }
     }
 }

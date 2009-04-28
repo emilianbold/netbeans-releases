@@ -43,7 +43,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
@@ -101,24 +101,22 @@ public final class TimerTicker
         return Arrays.asList(tableMetadata);
     }
 
-    public void targetStateChanged(
-        DLightTarget source, State oldState, State newState) {
-
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case RUNNING:
-                targetStarted(source);
+                targetStarted(event.target);
                 return;
             case FAILED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case TERMINATED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case DONE:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case STOPPED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
         }
     }
@@ -146,6 +144,6 @@ public final class TimerTicker
 
     @Override
     public String getName() {
-        return "Timer";
+        return "Timer"; //NOI18N
     }
 }

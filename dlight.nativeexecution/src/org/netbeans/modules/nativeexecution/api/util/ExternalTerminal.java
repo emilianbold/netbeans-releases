@@ -38,24 +38,15 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.io.StringWriter;
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.ExternalTerminalAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.support.InputRedirectorFactory;
 import org.netbeans.modules.nativeexecution.support.TerminalProfile;
-import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.windows.InputOutput;
 
 /**
  * NativeProcessBuilder can create a process that is executed in an external
@@ -70,7 +61,7 @@ public final class ExternalTerminal {
             new ConcurrentHashMap<TermEnvPair, String>();
     private final TerminalProfile profile;
     private String title = null;
-    private String prompt = "Press [Enter] to close the terminal ..."; // NOI18N
+    private String prompt = loc("Terminal.DefaultPrompt.text"); // NOI18N
 
 
     static {
@@ -88,7 +79,7 @@ public final class ExternalTerminal {
     }
 
     public boolean isAvailable(ExecutionEnvironment executionEnvironment) {
-        return getExec(executionEnvironment) != null;
+        return getExecutable(executionEnvironment) != null;
     }
 
     /**
@@ -141,8 +132,7 @@ public final class ExternalTerminal {
                 t = sb.toString().trim();
             }
 
-
-            String exec = terminal.getExec(execEnv);
+            String exec = terminal.getExecutable(execEnv);
 
             if (exec == null) {
                 return Arrays.asList(args);
@@ -159,10 +149,7 @@ public final class ExternalTerminal {
                 }
 
                 if ("$shell".equals(arg)) { // NOI18N
-                    try {
-                        result.add(HostInfoUtils.getShell(execEnv));
-                    } catch (ConnectException ex) {
-                    }
+                    result.add(HostInfoUtils.getHostInfo(execEnv).getShell());
                     continue;
                 }
 
@@ -185,64 +172,26 @@ public final class ExternalTerminal {
         public String getTitle(ExternalTerminal terminal) {
             return terminal.title;
         }
+
+        @Override
+        public String getExecutable(ExternalTerminal terminal, ExecutionEnvironment execEnv) {
+            return terminal.getExecutable(execEnv);
+        }
     }
 
-    private String findPath(ExecutionEnvironment execEnv,
-            List<String> searchPaths, String command) {
-
-        if (execEnv.isLocal() && Utilities.isWindows()) {
-            return command;
-        }
-
-        StringBuilder cmd = new StringBuilder();
-
-        for (String s : searchPaths) {
-            cmd.append("/bin/ls " + s + "/" + command + " || "); // NOI18N
-        }
-
-        cmd.append("which " + command); // NOI18N
-
-        String shell = "/bin/sh"; // NOI18N
-
-        try {
-            shell = HostInfoUtils.getShell(execEnv);
-        } catch (ConnectException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, shell);
-        npb = npb.setArguments("-c", cmd.toString()); // NOI18N
-        StringWriter result = new StringWriter();
-
-        ExecutionDescriptor descriptor =
-                new ExecutionDescriptor().inputOutput(InputOutput.NULL).outLineBased(true).outProcessorFactory(new InputRedirectorFactory(result));
-        ExecutionService execService = ExecutionService.newService(
-                npb, descriptor, "Searching for " + command); // NOI18N
-
-        Future<Integer> res = execService.run();
-
-        try {
-            res.get();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        String r = result.toString().trim();
-        return ("".equals(r)) ? null : r; // NOI18N
-    }
-
-    private String getExec(ExecutionEnvironment execEnv) {
+    private String getExecutable(ExecutionEnvironment execEnv) {
         TermEnvPair key = new TermEnvPair(execEnv, profile.getCommand());
 
         String exec = execCache.get(key);
 
         if (exec == null) {
-            exec = findPath(execEnv,
-                    profile.getSearchPaths(),
-                    profile.getCommand());
-
+            if (execEnv.isLocal() && Utilities.isWindows()) {
+                exec = profile.getCommand();
+            } else {
+                exec = HostInfoUtils.searchFile(execEnv,
+                        profile.getSearchPaths(),
+                        profile.getCommand(), true);
+            }
             if (exec != null) {
                 String execPath = execCache.putIfAbsent(key, exec);
 
@@ -253,6 +202,10 @@ public final class ExternalTerminal {
         }
 
         return exec;
+    }
+
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(ExternalTerminal.class, key, params);
     }
 
     private static class TermEnvPair {

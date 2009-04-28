@@ -51,17 +51,17 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
-import org.netbeans.modules.nativeexecution.support.WindowsSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -69,52 +69,46 @@ import org.openide.util.Utilities;
 public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
-    private final static String dorunScript;
-    private final static boolean isWindows;
-    private final static boolean isMacOS;
+    private final static File dorunScript;
     private ExternalTerminal terminal;
     private InputStream processOutput;
     private InputStream processError;
     private File resultFile;
-
+    private final boolean isWindows;
+    private final boolean isMacOS;
 
     static {
-        isWindows = Utilities.isWindows();
-        isMacOS = Utilities.isMac();
-
-        String runScript = null;
         InstalledFileLocator fl = InstalledFileLocator.getDefault();
-        File file = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
-        if (file != null) {
-            runScript = file.toString();
+        dorunScript = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
 
-            if (!isWindows) {
-                try {
-                    new ProcessBuilder("/bin/chmod", "+x", runScript).start().waitFor(); // NOI18N
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } else {
-                runScript = runScript.replaceAll("\\\\", "/"); // NOI18N
-            }
+        if (dorunScript != null) {
+            CommonTasksSupport.chmod(ExecutionEnvironmentFactory.getLocal(),
+                    dorunScript.getAbsolutePath(), 0755, null);
+        } else {
+            log.severe("Unable to locate bin/nativeexecution/dorun.sh file!"); // NOI18N
         }
-
-        dorunScript = runScript;
     }
 
     public TerminalLocalNativeProcess(
             final NativeProcessInfo info, final ExternalTerminal terminal) {
         super(info);
         this.terminal = terminal;
-        this.processOutput = new ByteArrayInputStream(new byte[]{32});
+        this.processOutput = new ByteArrayInputStream(
+                (loc("TerminalLocalNativeProcess.ProcessStarted.text") + '\n').getBytes()); // NOI18N
+        
+        isWindows = hostInfo.getOSFamily() == OSFamily.WINDOWS;
+        isMacOS = hostInfo.getOSFamily() == OSFamily.MACOSX;
+
     }
 
     protected void create() throws Throwable {
         try {
             if (dorunScript == null) {
                 throw new IOException(loc("TerminalLocalNativeProcess.dorunNotFound.text")); // NOI18N
+            }
+
+            if (isWindows && hostInfo.getShell() == null) {
+                throw new IOException(loc("NativeProcess.shellNotFound.text")); // NOI18N
             }
 
             final String commandLine = info.getCommandLine();
@@ -152,7 +146,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             List<String> command = terminalInfo.wrapCommand(
                     info.getExecutionEnvironment(),
                     terminal,
-                    dorunScript,
+                    dorunScript.getAbsolutePath(),
                     "-w", workingDirectory, // NOI18N
                     "-e", envFileName, // NOI18N
                     "-p", pidFileName, // NOI18N
@@ -196,8 +190,10 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 if (isWindows) {
                     String path = env.get("PATH"); // NOI18N
                     env.put("PATH", WindowsSupport.getInstance().normalizeAllPaths(path)); // NOI18N
-                    env.put("PATH", "/bin:$PATH"); // NOI18N
                 }
+
+                // Always prepend /bin and /usr/bin to PATH
+                env.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
 
                 File envFile = new File(envFileName);
                 OutputStream fos = new FileOutputStream(envFile);
@@ -240,8 +236,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             List<String> command = new ArrayList<String>();
 
             if (isWindows) {
-                String shell = HostInfoUtils.getShell(new ExecutionEnvironment());
-                command.add(shell);
+                command.add(hostInfo.getShell());
                 command.add("-c"); // NOI18N
                 command.add("/bin/kill -" + signal + " " + getPID()); // NOI18N
             } else {
@@ -337,6 +332,27 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     private void waitPID(Process termProcess, File pidFile) throws IOException {
         while (!isInterrupted()) {
+            /**
+             * The following sleep appears after an attempt to support konsole
+             * KDE4. This was done to give some time for external process to
+             * write information about process' PID to the pidfile and not to
+             * get to termProcess.exitValue() too eraly...
+             * Currently there are no means on KDE4 to start konsole in
+             * 'not-background' mode.
+             * An attempt to use --nofork fails when start konsole from jvm
+             * (see http://www.nabble.com/Can%27t-use---nofork-for-KUniqueApplications-from-another-kde-process-td21047022.html)
+             * So termProcess exits immediately...
+             *
+             * Also this sleep is justifable because this doesn't make any sense
+             * to check for a pid file too often.
+             *
+             */
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                continue;
+            }
+
             if (pidFile.exists() && pidFile.length() > 0) {
                 InputStream pidIS = new FileInputStream(pidFile);
                 readPID(pidIS);
@@ -345,7 +361,19 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             }
 
             try {
-                termProcess.exitValue();
+                int result = termProcess.exitValue();
+
+                if (result != 0) {
+                    log.info(loc("TerminalLocalNativeProcess.terminalFailed.text")); // NOI18N
+                    BufferedReader br = new BufferedReader(new InputStreamReader(termProcess.getErrorStream()));
+                    String s = br.readLine();
+                    while (s != null) {
+                        log.info("- " + s); // NOI18N
+                        s = br.readLine();
+                    }
+
+                }
+
                 // No exception - means process is finished..
                 interrupt();
             } catch (IllegalThreadStateException ex) {

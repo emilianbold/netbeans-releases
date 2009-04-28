@@ -50,7 +50,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -63,9 +62,13 @@ import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -234,6 +237,10 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                 try {
                     RepositoryFile repositoryFile = getRepositoryFile();
                     SVNUrl repositoryUrl = repositoryFile.getRepositoryUrl();
+                    if (!importIntoExisting(client, repositoryFile.getFileUrl())) {
+                        invalidMsg = new AbstractStep.WizardMessage(NbBundle.getMessage(ImportStep.class, "MSG_TargetFolderExists"), true); //NOI18N
+                        return;
+                    }
                     try {
                         // if the user came back from the last step and changed the repository folder name,
                         // then this could be already a working copy ...    
@@ -298,6 +305,33 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                  }
              }
              file.delete();
+        }
+
+        /**
+         * Checks if the target folder already exists in the repository.
+         * If it does exist, user will be asked to confirm the import into the existing folder.
+         * @param client
+         * @param repositoryFileUrl
+         * @return true if the target does not exist or user wishes to import anyway.
+         */
+        private boolean importIntoExisting(SvnClient client, SVNUrl repositoryFileUrl) {
+            try {
+                ISVNInfo info = client.getInfo(repositoryFileUrl);
+                if (info != null) {
+                    // target folder exists, ask user for confirmation
+                    final boolean flags[] = {true};
+                    NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(ImportStep.class, "MSG_ImportIntoExisting", repositoryFileUrl.toString()), //NOI18N
+                            NbBundle.getMessage(ImportStep.class, "CTL_TargetFolderExists"), NotifyDescriptor.YES_NO_CANCEL_OPTION, //NOI18N
+                            NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
+                    if (DialogDisplayer.getDefault().notify(nd) != NotifyDescriptor.YES_OPTION) {
+                        flags[0] = false;
+                    }
+                    return flags[0];
+                }
+            } catch (SVNClientException ex) {
+                // ignore
+            }
+            return true;
         }
     };
 

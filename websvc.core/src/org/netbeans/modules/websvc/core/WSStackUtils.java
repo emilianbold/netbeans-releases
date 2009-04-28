@@ -61,6 +61,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxrpc.JaxRpc;
+import org.netbeans.modules.websvc.wsstack.jaxrpc.JaxRpcStackProvider;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.openide.filesystems.FileObject;
@@ -111,10 +113,9 @@ public class WSStackUtils {
     }
     
     public boolean isJsr109OldSupported() {
-        if(j2eePlatform != null && getServerType(project) == ServerType.GLASSFISH) {
-            return true;       
-//            WSStack wsStack = getWsStack(WSStack.STACK_JAX_RPC);
-//            return wsStack != null && wsStack.getSupportedTools().contains(WSStack.TOOL_WSCOMPILE);
+        if (j2eePlatform != null) {
+            WSStack<JaxRpc> wsStack = JaxRpcStackProvider.getJaxWsStack(j2eePlatform);
+            return wsStack != null && wsStack.isFeatureSupported(JaxRpc.Feature.JSR109_OLD);
         }
         return false;
     }

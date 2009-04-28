@@ -56,7 +56,7 @@ public class PartialCompletionException extends Exception {
 
     @Override
     public String getMessage() {
-        return "Failed to update: "+failedUpdates;
+        return org.openide.util.NbBundle.getMessage(PartialCompletionException.class, "MSG_FAILED_TO_UPDATE", new Object[] {failedUpdates} );
     }
 
 }
