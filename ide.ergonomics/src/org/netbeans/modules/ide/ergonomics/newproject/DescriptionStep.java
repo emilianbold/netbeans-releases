@@ -246,7 +246,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                 }
                 LOG.info("Forcing refresh"); // NOI18N
                 // force refresh for the filesystem
-                FoDFileSystem.getInstance().refresh();
+                FoDFileSystem.getInstance().refreshForce();
                 LOG.info("Done with refresh"); // NOI18N
 
                 FileObject fake = FileUtil.getConfigFile(templateResource);

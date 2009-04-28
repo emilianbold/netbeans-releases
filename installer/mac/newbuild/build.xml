@@ -61,6 +61,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/netBeans/cpp/build"/>
         <delete dir="${basedir}/netBeans/javase/build"/>
         <delete dir="${basedir}/netBeans/javaee/build"/>     
+        <delete dir="${basedir}/netBeans/groovy/build"/>
         <delete dir="${basedir}/netBeans/php/build"/> 
         <delete dir="${basedir}/netBeans/webcommon/build"/>
         <delete dir="${basedir}/netBeans/ergonomics/build"/>
@@ -91,6 +92,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="clusters" value="cnd(cpp), dlight(cpp),
                                          apisupport(javase), profiler(javase), java(javase), harness(javase),
                                          ruby(ruby),                                       
+					 groovy(groovy),
                                          php(php), 
                                          enterprise(javaee), identity(javaee), groovy(javaee),
                                          webcommon(webcommon),
@@ -153,6 +155,7 @@ Microsystems, Inc. All Rights Reserved.
                                         javaee(${javaee-title}),
                                         cpp(${cpp-title}),
                                         ruby(${ruby-title}),
+                                        groovy(${groovy-title}),
 					webcommon(${webcommon-title}),
                                         ergonomics(${ergonomics-title}),
                                         php(${php-title})"/>        
@@ -203,7 +206,7 @@ Microsystems, Inc. All Rights Reserved.
                   
         <property name="bundles" value="        (./build/*pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
-                                             -java(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/ergonomics.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
+                                             -java(./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
                                              -ruby(./build/baseide.pkg ./build/webcommon.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
                                              -php(./build/baseide.pkg ./build/webcommon.pkg ./build/php.pkg)"/>        
@@ -430,6 +433,7 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>
+                <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
                 <!--<filter token="SIZE_SOA" value="${sizeof.soa}"/>-->
                 <filter token="SIZE_ERGONOMICS" value="${sizeof.ergonomics}"/>
                 <filter token="SIZE_GLASSFISH" value="${sizeof.glassfish}"/>
