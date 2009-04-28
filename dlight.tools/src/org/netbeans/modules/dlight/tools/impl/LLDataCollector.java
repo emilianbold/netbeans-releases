@@ -333,7 +333,14 @@ public class LLDataCollector
                     getMessage("ValidationStatus.HostNotConnected"), // NOI18N
                     connectAction);
         }
-        OSFamily osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
+
+        OSFamily osFamily = OSFamily.UNKNOWN;
+
+        try {
+            osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
 
         if (osFamily != OSFamily.LINUX) {
             return ValidationStatus.invalidStatus(getMessage("ValidationStatus.ProfAgent.OSNotSupported")); // NOI18N

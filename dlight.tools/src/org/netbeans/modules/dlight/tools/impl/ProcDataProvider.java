@@ -81,7 +81,6 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
     private List<ValidationListener> validationListeners;
     private ValidationStatus validationStatus;
     private Future<Integer> procReaderTask;
-    private HostInfo hostInfo = null;
 
     public ProcDataProvider(ProcDataProviderConfiguration configuration) {
         validationListeners = new CopyOnWriteArrayList<ValidationListener>();
@@ -143,17 +142,15 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
                     connectAction);
         }
 
-        OSFamily osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
+        OSFamily osFamily = OSFamily.UNKNOWN;
 
+        try {
+            osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
 
-
-
-
-
-
-
-
-
+        if (osFamily != OSFamily.LINUX && osFamily != OSFamily.SUNOS) {
             return ValidationStatus.invalidStatus(getMessage("ValidationStatus.ProcReader.OSNotSupported")); // NOI18N
         }
 
@@ -210,6 +207,17 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
      */
     private synchronized void targetStarted(DLightTarget target) {
         ExecutionEnvironment env = target.getExecEnv();
+        HostInfo hostInfo = null;
+        try {
+            hostInfo = HostInfoUtils.getHostInfo(env);
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        if (hostInfo == null) {
+            return;
+        }
+
         NativeProcessBuilder npb = new NativeProcessBuilder(env, hostInfo.getShell());
         ExecutionDescriptor descr = new ExecutionDescriptor();
         descr = descr.inputOutput(InputOutput.NULL);
