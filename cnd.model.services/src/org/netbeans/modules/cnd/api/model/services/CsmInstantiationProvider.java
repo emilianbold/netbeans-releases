@@ -143,6 +143,11 @@ public abstract class CsmInstantiationProvider {
      */
     public abstract CharSequence getInstantiatedText(CsmType type);
 
+    /**
+     * returns signature of template parameters
+     */
+    public abstract CharSequence getTemplateSignature(CsmTemplate template);
+    
     //
     // Implementation of the default provider
     //
@@ -181,5 +186,11 @@ public abstract class CsmInstantiationProvider {
         public CharSequence getInstantiatedText(CsmType type) {
             return type.getText();
         }
+
+        @Override
+        public CharSequence getTemplateSignature(CsmTemplate template) {
+            return ""; // NOI18N
+        }
+
     }
 }
