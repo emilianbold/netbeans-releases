@@ -39,77 +39,42 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.richexecution;
+package org.netbeans.lib.richexecution.program;
+
+import org.netbeans.lib.richexecution.*;
+import java.util.StringTokenizer;
 
 /**
- * Description of a shell to be started under a pty.
- * <br>
- * On unix ...
- * <br>
- * The shell defined by <code>$SHELL</code> is started.
- * If <code>$SHELL</code> is empty <code>/bin/bash</code> is started.
- * <br>
- * On windows ...
- * <br>
- * <code>cmd.exe</code> is started.
+ * Description of a command to be run under a shell.
+ * <p>
+ * For example:
+ * <pre>
+ * Program printit = new Command("/bin/cat /etc/termcap");
+ * </pre>
  * <p>
  * Use {@link PtyExecutor} or subclasses thereof to run the program.
  * @author ivan
  */
-public class Shell extends Program {
-
-    private final static OS os = OS.get();
+public final class Command extends Shell {
     private final String name;
 
-    private static void error(String fmt, Object...args) {
-        String msg = String.format(fmt, args);
-        throw new IllegalStateException(msg);
-    }
+    public Command(String command) {
+        StringTokenizer st = new StringTokenizer(command);
+        String cmdName = st.nextToken();
+        name = basename(cmdName);
 
-
-    public Shell() {
-        String shell = System.getenv("SHELL");
-
-        if (shell == null)
-            shell = "/bin/bash";
-
-        switch (os) {
-            case WINDOWS:
-                add("cmd.exe");
-                add("/q");  // turn echo off
-                add("/a");  // use ANSI
-                name = "cmd.exe";
-                break;
-
-            case LINUX:
-//		add("/usr/bin/strace");
-//		add("-o");
-//		add("/tmp/rich-cmd.tr");
-                add(shell);
-                name = basename(shell);
-                break;
-            case SOLARIS:
-//		add("/usr/bin/truss");
-//		add("-o");
-//		add("/tmp/rich-cmd.tr");
-                add(shell);
-                name = basename(shell);
-                break;
-            case MACOS:
-                add(shell);
-                name = basename(shell);
-                break;
-            default:
-                error("Unsupported os '%s'", os);
-                name = "";
-                break;
-	}
+	if (OS.get() == OS.WINDOWS)
+	    add("/c");
+	else
+	    add("-c");
+        add(command);
     }
 
     /**
-     * Return the basename of the shell being run.
-     * @return the basename of the shell being run.
+     * Return basename of the first word of the command.
+     * @return basename of the first word of the command.
      */
+    @Override
     public String name() {
         return name;
     }

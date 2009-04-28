@@ -8,8 +8,8 @@ import org.netbeans.modules.terminal.api.*;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
-import org.netbeans.lib.richexecution.Command;
-import org.netbeans.lib.richexecution.Program;
+import org.netbeans.lib.richexecution.program.Command;
+import org.netbeans.lib.richexecution.program.Program;
 import org.openide.util.NbBundle;
 
 /**
@@ -33,6 +33,7 @@ public class CommandAction extends AbstractAction {
         String preferredID = "CommandTopComponent";
         Terminal terminal = terminalProvider.createTerminal("command", preferredID);
         Program program = new Command(cmd);
-        terminal.startProgram(program, true);
+        boolean restartable = true;
+        terminal.startProgram(program, restartable);
     }
 }

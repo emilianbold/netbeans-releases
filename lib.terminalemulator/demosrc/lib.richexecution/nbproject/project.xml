@@ -18,6 +18,7 @@
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.lib.richexecution</package>
+                <package>org.netbeans.lib.richexecution.program</package>
             </public-packages>
         </data>
     </configuration>
