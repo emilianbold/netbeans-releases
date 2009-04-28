@@ -289,6 +289,25 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
             int top2ID = getValidExpID(top2);
             int topID = getValidExpID(top);
             switch (topID) {
+                case GENERIC_TYPE:
+                {
+                    switch (top2ID) {
+                        case METHOD_OPEN:
+                            switch (tokenID) {
+                                case STAR:
+                                case AMP:
+                                case CONST:
+                                case IDENTIFIER:
+                                    popExp();
+                                    CsmCompletionExpression typeExpr = new CsmCompletionExpression(TYPE);
+                                    typeExpr.addParameter(top);
+                                    pushExp(typeExpr);
+                                    break;
+                            }
+                            break;
+                    }
+                }
+                break;
                 case VARIABLE:
                     boolean stop = false;
                     switch (top2ID) {
