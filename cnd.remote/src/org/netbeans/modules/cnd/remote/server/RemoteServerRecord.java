@@ -208,6 +208,10 @@ public class RemoteServerRecord implements ServerRecord {
         return (displayName != null && displayName.length() > 0) ? displayName : executionEnvironment.getDisplayName();
     }
 
+    /* package-local */ String getRawDisplayName() {
+        return displayName;
+    }
+
     @Override
     public String getServerDisplayName() {
         if (displayName == null || displayName.length() == 0) {
