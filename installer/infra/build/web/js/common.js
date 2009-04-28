@@ -311,7 +311,7 @@ function get_build_location(lang_id) {
 }
 
 function get_zip_files_prefix(lang_id) {
-    return get_build_info(isMainLanguage(lang_id)).ZIP_PREFIX;
+    return get_build_info(isMainLanguage(lang_id)).ZIP_FILES_PREFIX;
 }
 
 function get_bundles_files_prefix(lang_id) {
