@@ -73,6 +73,7 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -323,6 +324,11 @@ public class LLDataCollector
             return ValidationStatus.unknownStatus(
                     getMessage("ValidationStatus.HostNotConnected"), // NOI18N
                     connectAction);
+        }
+        OSFamily osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
+
+        if (osFamily != OSFamily.LINUX) {
+            return ValidationStatus.invalidStatus(getMessage("ValidationStatus.ProfAgent.OSNotSupported")); // NOI18N
         }
 
         Map<String, File> profAgentsLocal = locateProfAgents(env);
