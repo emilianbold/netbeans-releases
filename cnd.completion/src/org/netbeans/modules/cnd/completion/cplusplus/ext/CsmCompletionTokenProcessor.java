@@ -66,7 +66,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
      */
     private int bufferOffsetDelta;
     /** Stack of the expressions. */
-    private ArrayList<CsmCompletionExpression> expStack = new ArrayList<CsmCompletionExpression>();
+    private List<CsmCompletionExpression> expStack = new ArrayList<CsmCompletionExpression>();
     /** TokenID of the last found token except Syntax.EOT and Syntax.EOL */
     private CppTokenId lastValidTokenID;
     /** Text of the last found token except Syntax.EOT and Syntax.EOL */
@@ -100,7 +100,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
     }
 
     /** Get the expression stack from the bottom to top */
-    final List getStack() {
+    final List<CsmCompletionExpression> getStack() {
         return expStack;
     }
 
