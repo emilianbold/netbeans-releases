@@ -318,7 +318,7 @@ is divided into following sections:
             <sequential>
                 <java fork="true" classname="@{{classname}}" dir="${{work.dir}}" jvm="${{platform.java}}">
                     <jvmarg line="${{debug-args-line}}"/>
-                    <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
+                    <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
                     <jvmarg line="${{management.jvmargs}} ${{run.jvmargs}}"/>
                     <classpath>
                         <path path="@{{classpath}}"/>

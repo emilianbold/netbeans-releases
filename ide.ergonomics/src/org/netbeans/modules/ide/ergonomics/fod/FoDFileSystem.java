@@ -72,6 +72,7 @@ implements Runnable, ChangeListener, LookupListener {
     private RequestProcessor.Task refresh = RP.create(this, true);
     private Lookup.Result<ProjectFactory> factories;
     private Lookup.Result<?> ants;
+    private boolean forcedRefresh;
 
     public FoDFileSystem() {
         assert INSTANCE == null;
@@ -89,8 +90,13 @@ implements Runnable, ChangeListener, LookupListener {
         }
         return INSTANCE;
     }
-    
+
     public void refresh() {
+        refresh.schedule(0);
+        refresh.waitFinished();
+    }
+    public void refreshForce() {
+        forcedRefresh = true;
         refresh.schedule(0);
         refresh.waitFinished();
     }
@@ -131,8 +137,15 @@ implements Runnable, ChangeListener, LookupListener {
             LOG.fine("adding default layer"); // NOI18N
             delegate.add(0, getDefaultLayer());
         }
-        
-        LOG.fine("delegating to " + delegate.size() + " layers"); // NOI18N
+        if (forcedRefresh) {
+            forcedRefresh = false;
+            LOG.log(Level.INFO, "Forced refresh. Setting delegates to empty"); // NOI18N
+            setDelegates();
+            LOG.log(Level.INFO, "New delegates count: {0}", delegate.size()); // NOI18N
+            LOG.log(Level.INFO, "{0}", delegate); // NOI18N
+        }
+        LOG.log(Level.FINE, "delegating to {0} layers", delegate.size()); // NOI18N
+        LOG.log(Level.FINEST, "{0}", delegate); // NOI18N
         setDelegates(delegate.toArray(new FileSystem[0]));
         LOG.fine("done");
         FeatureManager.dumpModules();

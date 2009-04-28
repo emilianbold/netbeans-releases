@@ -142,8 +142,13 @@ public final class MacroExpanderFactory {
 
             synchronized (this) {
                 if (!initialized) {
-                    setupPredefined(HostInfoUtils.getHostInfo(execEnv));
-                    initialized = true;
+                    HostInfo hi = HostInfoUtils.getHostInfo(execEnv);
+                    if (hi != null) {
+                        setupPredefined(hi);
+                        initialized = true;
+                    }
+                    // Should we try to get host info next time?
+                    // (in case of failure)
                 }
             }
 
