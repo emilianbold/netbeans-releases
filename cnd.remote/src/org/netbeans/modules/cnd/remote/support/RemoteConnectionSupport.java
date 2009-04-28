@@ -82,7 +82,7 @@ public abstract class RemoteConnectionSupport {
         }
     }
 
-    private static String getMessage(IOException e) {
+    public static String getMessage(IOException e) {
         String result;
         String reason = e.getMessage();
         if (e instanceof UnknownHostException) {
