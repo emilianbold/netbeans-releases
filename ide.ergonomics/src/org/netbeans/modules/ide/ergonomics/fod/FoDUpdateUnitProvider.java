@@ -72,6 +72,8 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
 
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
         Map<String, UpdateItem> res = new HashMap<String, UpdateItem> ();
+        Collection<? extends ModuleInfo> all = Lookup.getDefault().lookupAll(ModuleInfo.class);
+        Set<ModuleInfo> processed = new HashSet<ModuleInfo>(all);
         FEATURES: for (FeatureInfo fi : FeatureManager.features()) {
             if (!fi.isPresent()) {
                 continue;
@@ -80,49 +82,65 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
             if (prefCnb == null) {
                 continue;
             }
-            Set<String> justKits = new HashSet<String>();
-            justKits.addAll(fi.getCodeNames());
-            String name = "fod." + prefCnb; // NOI18N
-            ModuleInfo preferred = null;
-            Collection<? extends ModuleInfo> allModules = Lookup.getDefault().lookupAll(ModuleInfo.class);
-            for (ModuleInfo mi : allModules) {
-                if (prefCnb.equals(mi.getCodeNameBase())) {
-                    preferred = mi;
-                }
-                if ("true".equals(mi.getAttribute("AutoUpdate-Show-In-Client"))) { // NOI18N
-                    continue;
-                }
-                justKits.remove(mi.getCodeNameBase());
-            }
-            if (preferred == null) {
-                FoDFileSystem.LOG.warning("For cluster " + fi.clusterName + " there is prefCnb " + prefCnb +
-                        " but the module is not found " + preferred + "\nList of modules is: ");
-                FeatureManager.dumpModules(Level.INFO, Level.INFO);
+            if (registerFeature(all, fi.getCodeNames(), prefCnb, res, processed)) {
                 continue;
             }
-            Object desc = preferred.getLocalizedAttribute("OpenIDE-Module-Long-Description"); // NOI18N
-            if (!(desc instanceof String)) {
-                desc = preferred.getLocalizedAttribute("OpenIDE-Module-Short-Description"); // NOI18N
-            }
-            if (!(desc instanceof String)) {
-                desc = preferred.getDisplayName();
-            }
-
-            UpdateItem feature = UpdateItem.createFeature(
-                name,
-                preferred.getSpecificationVersion().toString(),
-                justKits,
-                preferred.getDisplayName(),
-                (String)desc,
-                null
-            );
-            res.put(name, feature);
         }
         return res;
     }
     
     public boolean refresh (boolean force) throws IOException {
         return true;
+    }
+
+    private boolean registerFeature(
+        Collection<? extends ModuleInfo> allModules,
+        Set<String> codeNames, String prefCnb, Map<String, UpdateItem> res,
+        Set<ModuleInfo> processed
+    ) {
+        Set<String> justKits = new HashSet<String>();
+        justKits.addAll(codeNames);
+        String name = "fod." + prefCnb; // NOI18N
+        ModuleInfo preferred = null;
+        StringBuffer description = new StringBuffer();
+        for (ModuleInfo mi : allModules) {
+            processed.remove(mi);
+            if (prefCnb.equals(mi.getCodeNameBase())) {
+                preferred = mi;
+            }
+            if ("true".equals(mi.getAttribute("AutoUpdate-Show-In-Client"))) {
+                // NOI18N
+                if (justKits.contains(mi.getCodeNameBase())) {
+                    StringBuilder sb = new StringBuilder();
+                    Object desc = mi.getLocalizedAttribute("OpenIDE-Module-Long-Description"); // NOI18N
+                    if (!(desc instanceof String)) {
+                        desc = mi.getLocalizedAttribute("OpenIDE-Module-Short-Description"); // NOI18N
+                    }
+                    if (desc instanceof String) {
+                        sb.append("<h5>").append(mi.getDisplayName()).append("</h5>"); // NOI18N
+                        sb.append(desc);
+                        sb.append("\n"); // NOI18N
+                    }
+                    if (preferred == mi) {
+                        description.insert(0, sb);
+                    } else {
+                        description.append(sb);
+                    }
+                }
+                continue;
+            }
+            justKits.remove(mi.getCodeNameBase());
+        }
+        if (preferred == null) {
+            return true;
+        }
+        Object featureName = preferred.getLocalizedAttribute("OpenIDE-Module-Display-Category"); // NOI18N
+        if (!(name instanceof String)) {
+            featureName = preferred.getDisplayName();
+        }
+        UpdateItem feature = UpdateItem.createFeature(name, preferred.getSpecificationVersion().toString(), justKits, (String) featureName, description.toString(), null);
+        res.put(name, feature);
+        return false;
     }
 
 }
