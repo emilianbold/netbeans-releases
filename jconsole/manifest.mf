@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.jconsole/1
-OpenIDE-Module-Implementation-Version: 02
+OpenIDE-Module-Implementation-Version: 03
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/jmx/jconsole/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/jmx/jconsole/JConsoleModuleLayer.xml
 OpenIDE-Module-Java-Dependencies: Java > 1.5
