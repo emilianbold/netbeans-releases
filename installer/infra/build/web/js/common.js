@@ -307,7 +307,12 @@ function get_file_name(platform, option, language) {
 }
 
 function get_build_location(lang_id) {
-    return get_build_info(isMainLanguage(lang_id)).BUILD_LOCATION;
+    var mainLanguage = isMainLanguage(lang_id);
+    var location = get_build_info(mainLanguage).BUILD_LOCATION;
+    if(!mainLanguage && location == "") {
+       location = ADDITIONAL_PAGE_ARTIFACTS_LOCATION;
+    }
+    return location;
 }
 
 function get_zip_files_prefix(lang_id) {
