@@ -166,8 +166,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
             if (bp.getValidity() == Breakpoint.VALIDITY.INVALID) {
                 BreakpointImpl impl = breakpointToImpl.get(bp);
                 if (impl != null) {
-                    impl.setState(BreakpointImpl.BPSTATE_REVALIDATE);
-                    impl.update();
+                    impl.revalidate();
                 }
             }
         }
