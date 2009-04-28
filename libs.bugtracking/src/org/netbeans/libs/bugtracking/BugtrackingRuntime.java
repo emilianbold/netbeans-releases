@@ -69,11 +69,13 @@ public class BugtrackingRuntime {
     public static BugtrackingRuntime getInstance() {
         if(instance == null) {
             instance = new BugtrackingRuntime();
+            instance.init();
         }
         return instance;
     }
 
     public void init() {
+        initCacheStore();
         if(SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
@@ -88,7 +90,6 @@ public class BugtrackingRuntime {
     private void initIntern() {
         WebUtil.init();
 
-        initCacheStore();
         externalizationManager = new ExternalizationManager(cacheStore.getAbsolutePath());
 
         repositoryManager = new TaskRepositoryManager();
