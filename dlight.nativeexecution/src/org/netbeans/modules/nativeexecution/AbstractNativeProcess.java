@@ -44,6 +44,7 @@ import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.CancellationException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -78,7 +79,14 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         state = State.INITIAL;
         id = info.getCommandLine();
         stateLock = new String("StateLock: " + id); // NOI18N
-        hostInfo = HostInfoUtils.getHostInfo(info.getExecutionEnvironment());
+
+        HostInfo hinfo = null;
+        try {
+            hinfo = HostInfoUtils.getHostInfo(info.getExecutionEnvironment());
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+        hostInfo = hinfo;
 
         Collection<ChangeListener> ll = info.getListeners();
         listeners = (ll == null || ll.isEmpty()) ? null

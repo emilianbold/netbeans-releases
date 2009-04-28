@@ -51,14 +51,17 @@ public class HostInfoFetcher {
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final Map<ExecutionEnvironment, HostInfo> hostsInfo =
             new HashMap<ExecutionEnvironment, HostInfo>();
-
     private final ExecutionEnvironment execEnv;
 
     public HostInfoFetcher(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
     }
 
-    public HostInfo getInfo(boolean blocking) {
+    /**
+     * @param blocking
+     * @return
+     */
+    public HostInfo getInfo(boolean blocking) throws IOException, CancellationException {
         HostInfo info;
 
         synchronized (hostsInfo) {
@@ -70,23 +73,18 @@ public class HostInfoFetcher {
         }
 
         synchronized (this) {
-            try {
-                ConnectionManager mgr = ConnectionManager.getInstance();
+            ConnectionManager mgr = ConnectionManager.getInstance();
 
-                if (!mgr.isConnectedTo(execEnv)) {
-                    mgr.connectTo(execEnv);
-                }
-                
-                info = HostInfoImpl.getHostInfo(execEnv);
-                synchronized (hostsInfo) {
-                    hostsInfo.put(execEnv, info);
-                }
-            } catch (IOException ex) {
-                log.fine("IOException while connecting to " + execEnv + ": " + ex); // NOI18N
-            } catch (CancellationException ex) {
-                log.fine("Connection initiation cancelled by user."); // NOI18N
+            if (!mgr.isConnectedTo(execEnv)) {
+                mgr.connectTo(execEnv);
             }
 
+            info = HostInfoImpl.getHostInfo(execEnv);
+
+            synchronized (hostsInfo) {
+                hostsInfo.put(execEnv, info);
+            }
+            
             return info;
         }
     }
