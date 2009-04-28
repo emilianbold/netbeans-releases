@@ -40,6 +40,7 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Color;
 import java.util.List;
+import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JTextArea;
@@ -295,26 +296,33 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }
 
     private void selectRemoteConnection() {
-        String remoteConnection = getValue(PhpProjectProperties.REMOTE_CONNECTION);
+        selectRemoteConnection(null);
+    }
+
+    private void selectRemoteConnection(String remoteConnection) {
+        if (remoteConnection == null) {
+            remoteConnection = getValue(PhpProjectProperties.REMOTE_CONNECTION);
+        }
         // #141849 - can be null if one adds remote config for the first time for a project but already has some remote connection
         DefaultComboBoxModel model = (DefaultComboBoxModel) remoteConnectionComboBox.getModel();
         if (remoteConnection == null
-                && model.getIndexOf(NO_REMOTE_CONFIGURATION) >= 0) {
+                || NO_CONFIG.equals(remoteConnection)) {
+            if (model.getIndexOf(NO_REMOTE_CONFIGURATION) < 0) {
+                model.insertElementAt(NO_REMOTE_CONFIGURATION, 0);
+            }
             remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONFIGURATION);
             return;
         }
+
         int size = remoteConnectionComboBox.getModel().getSize();
         for (int i = 0; i < size; ++i) {
             RemoteConfiguration rc = (RemoteConfiguration) remoteConnectionComboBox.getItemAt(i);
-            if (remoteConnection == null
-                    || NO_CONFIG.equals(remoteConnection)
-                    || remoteConnection.equals(rc.getName())) {
-                // select existing or
-                // if no configuration formerly existed and now some were created => so select the first one
+            if (remoteConnection.equals(rc.getName())) {
                 remoteConnectionComboBox.setSelectedItem(rc);
                 return;
             }
         }
+
         // remote connection is missing (probably removed?)
         remoteConnectionComboBox.addItem(MISSING_REMOTE_CONFIGURATION);
         remoteConnectionComboBox.setSelectedItem(MISSING_REMOTE_CONFIGURATION);
@@ -588,7 +596,13 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private void manageRemoteConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageRemoteConnectionButtonActionPerformed
         if (RemoteConnections.get().openManager((RemoteConfiguration) remoteConnectionComboBox.getSelectedItem())) {
             populateRemoteConnectionComboBox();
-            selectRemoteConnection();
+            // # 162233
+            String selected = null;
+            ComboBoxModel model = remoteConnectionComboBox.getModel();
+            if (model.getSize() == 1) {
+                selected = ((RemoteConfiguration) model.getElementAt(0)).getName();
+            }
+            selectRemoteConnection(selected);
         }
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
