@@ -202,7 +202,7 @@ made subject to such option by the copyright holder.
         
         <folder name="Window">
             <folder name="Debug">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
 
                 <attr name="position" intvalue="1400"/>

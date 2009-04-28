@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
             <file name="VisualMIDlet.java" url="templates/emptyvisualmidlet_java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
                 <attr name="position" intvalue="400"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:org/netbeans/modules/vmd/midp/resources/templates/emptyvisualmidlet.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/midp/resources/templates/emptyvisualmidlet.html"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
@@ -83,7 +83,7 @@ made subject to such option by the copyright holder.
             <file name="VisualDesign.java" url="templates/emptyvisualdesign_java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
                 <attr name="position" intvalue="501"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:org/netbeans/modules/vmd/midp/resources/templates/emptyvisualdesign.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/midp/resources/templates/emptyvisualdesign.html"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
