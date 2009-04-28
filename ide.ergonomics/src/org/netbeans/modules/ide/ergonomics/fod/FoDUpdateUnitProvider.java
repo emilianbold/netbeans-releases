@@ -73,19 +73,30 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
         Map<String, UpdateItem> res = new HashMap<String, UpdateItem> ();
         Collection<? extends ModuleInfo> all = Lookup.getDefault().lookupAll(ModuleInfo.class);
-        Set<ModuleInfo> processed = new HashSet<ModuleInfo>(all);
+        Set<ModuleInfo> notYetProcessed = new HashSet<ModuleInfo>(all);
         FEATURES: for (FeatureInfo fi : FeatureManager.features()) {
             if (!fi.isPresent()) {
                 continue;
             }
-            String prefCnb = fi.getFeatureCodeNameBase();
-            if (prefCnb == null) {
-                continue;
-            }
-            if (registerFeature(all, fi.getCodeNames(), prefCnb, res, processed)) {
+            if (registerFeature(
+                all, fi.getCodeNames(),
+                fi.getFeatureCodeNameBase(), res, notYetProcessed
+            )) {
                 continue;
             }
         }
+        Set<String> rest = new HashSet<String>();
+        String restPilot = null;
+        for (ModuleInfo mi : notYetProcessed) {
+            if (showInAU(mi)) {
+                if (restPilot == null) {
+                    restPilot = mi.getCodeNameBase();
+                }
+                rest.add(mi.getCodeNameBase());
+            }
+        }
+        registerFeature(all, rest, restPilot, res, notYetProcessed);
+
         return res;
     }
     
@@ -104,13 +115,12 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
         ModuleInfo preferred = null;
         StringBuffer description = new StringBuffer();
         for (ModuleInfo mi : allModules) {
-            processed.remove(mi);
-            if (prefCnb.equals(mi.getCodeNameBase())) {
+            if (prefCnb != null && prefCnb.equals(mi.getCodeNameBase())) {
                 preferred = mi;
             }
-            if ("true".equals(mi.getAttribute("AutoUpdate-Show-In-Client"))) {
-                // NOI18N
-                if (justKits.contains(mi.getCodeNameBase())) {
+            if (justKits.contains(mi.getCodeNameBase())) {
+                processed.remove(mi);
+                if (showInAU(mi)) {
                     StringBuilder sb = new StringBuilder();
                     Object desc = mi.getLocalizedAttribute("OpenIDE-Module-Long-Description"); // NOI18N
                     if (!(desc instanceof String)) {
@@ -126,10 +136,10 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
                     } else {
                         description.append(sb);
                     }
+                    continue;
                 }
-                continue;
+                justKits.remove(mi.getCodeNameBase());
             }
-            justKits.remove(mi.getCodeNameBase());
         }
         if (preferred == null) {
             return true;
@@ -143,4 +153,7 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
         return false;
     }
 
+    private static boolean showInAU(ModuleInfo mi) {
+        return "true".equals(mi.getAttribute("AutoUpdate-Show-In-Client")); // NOI18N
+    }
 }
