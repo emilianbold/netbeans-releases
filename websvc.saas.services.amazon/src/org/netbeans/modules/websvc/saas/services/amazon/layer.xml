@@ -50,13 +50,13 @@
                   url="/org/netbeans/modules/websvc/saas/services/amazon/resources/j2ee/AmazonEC2Authenticator.template">
                 <attr name="position" intvalue="3810"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="AmazonEC2AuthenticatorDesktop.java" 
                   url="/org/netbeans/modules/websvc/saas/services/amazon/resources/java/AmazonEC2Authenticator.template">
                 <attr name="position" intvalue="3820"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             
             <!-- PHP templates -->
