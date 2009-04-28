@@ -100,7 +100,7 @@ public class RemoteServerList implements ServerListImplementation {
                 // 3) user@host:port|DisplayName|syncID
                 String displayName = null;
                 RemoteSyncFactory syncFactory = RemoteSyncFactory.getDefault();
-                final String[] arr = serverString.split("\\" + SERVER_RECORD_SEPARATOR); // NOI18N
+                final String[] arr = serverString.split("\\" + SERVER_RECORD_SEPARATOR);
                 CndUtils.assertTrue(arr.length > 0);
                 String hostKey = arr[0];
                 if (arr.length > 1) {
@@ -217,21 +217,15 @@ public class RemoteServerList implements ServerListImplementation {
             defaultIndex = items.size() - 1;
         }
         refresh();
-        storePreferences(record);
-        getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
-        return record;
-    }
 
-    public static void storePreferences(RemoteServerRecord record) {
-        String displayName = record.getRawDisplayName();
         // Register the new server
         // TODO: Save the state as well as name. On restart, only try connecting to
         // ONLINE hosts.
         String slist = getPreferences().get(REMOTE_SERVERS, null);
-        String hostKey = ExecutionEnvironmentFactory.toUniqueID(record.getExecutionEnvironment());
-        String preferencesKey = hostKey + SERVER_RECORD_SEPARATOR +
+        String hostKey = ExecutionEnvironmentFactory.toUniqueID(execEnv);
+        String preferencesKey = hostKey + SERVER_RECORD_SEPARATOR + 
                 ((displayName == null) ? "" : displayName) + SERVER_RECORD_SEPARATOR +
-                record.getSyncFactory().getID();
+                syncFactory.getID();
         if (slist == null) {
             getPreferences().put(REMOTE_SERVERS, preferencesKey);
         } else {
@@ -246,6 +240,8 @@ public class RemoteServerList implements ServerListImplementation {
             }
             getPreferences().put(REMOTE_SERVERS, sb.toString());
         }
+        getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
+        return record;
     }
 
     public synchronized void removeServer(ServerRecord record) {
@@ -330,7 +326,7 @@ public class RemoteServerList implements ServerListImplementation {
         pcs.firePropertyChange(property, null, n);
     }
     
-    private static Preferences getPreferences() {
+    private Preferences getPreferences() {
         return NbPreferences.forModule(RemoteServerList.class);
     }
     
