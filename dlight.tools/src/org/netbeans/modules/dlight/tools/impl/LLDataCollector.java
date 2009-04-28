@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.tools.impl;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.tools.*;
 import java.io.File;
-import java.io.StringWriter;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -268,8 +267,10 @@ public class LLDataCollector
             } else if (line.startsWith("sync:")) { // NOI18N
                 String[] fields = line.substring(6).split("\t"); // NOI18N
                 float syncCurr = Float.parseFloat(fields[0]);
-                int threads = Integer.parseInt(fields[1]);
-                row = new DataRow(LLDataCollectorConfiguration.SYNC_TABLE.getColumnNames(), Arrays.asList(Float.valueOf((syncCurr - syncPrev) * 100 / threads), Integer.valueOf(threads)));
+                if (0f < syncPrev) {
+                    int threads = Integer.parseInt(fields[1]);
+                    row = new DataRow(LLDataCollectorConfiguration.SYNC_TABLE.getColumnNames(), Arrays.asList(Float.valueOf((syncCurr - syncPrev) * 100 / threads), Integer.valueOf(threads)));
+                }
                 syncPrev = syncCurr;
             }
             if (row != null) {

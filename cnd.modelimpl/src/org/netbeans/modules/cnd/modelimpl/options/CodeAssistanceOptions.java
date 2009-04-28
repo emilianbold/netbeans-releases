@@ -62,7 +62,6 @@ public class CodeAssistanceOptions {
     private AuxiliaryConfiguration aux;
     private static final String CodeAssistanceData = "code-assistance-data"; //NOI18N
     private static final String CodeModelEnabled = "code-model-enabled"; //NOI18N
-    private static final String ParseOrphanEnabled = "parse-orphan-enabled"; //NOI18N
     private final String namespace;
     private final boolean shared;
 
@@ -87,15 +86,6 @@ public class CodeAssistanceOptions {
 
     public void setCodeAssistanceEnabled(Boolean enabled) {
         doSave(CodeModelEnabled, enabled.toString());
-    }
-
-    public Boolean getParseOrphanEnabled() {
-        String value = doLoad(ParseOrphanEnabled);
-        return str2bool(value);
-    }
-
-    public void setParseOrphanEnabled(Boolean enabled) {
-        doSave(ParseOrphanEnabled, enabled.toString());
     }
 
     // private methods

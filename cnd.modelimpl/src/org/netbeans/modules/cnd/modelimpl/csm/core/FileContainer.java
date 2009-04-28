@@ -921,14 +921,15 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         }
             
-        @SuppressWarnings("unchecked")
         public synchronized Collection<StatePair> getStatePairs() {
             if (data == null) {
                 return Collections.singleton(new StatePair(null, null));
             } else if(data instanceof StatePair) {
                 return Collections.singleton((StatePair) data);
             } else {
-                return new ArrayList<StatePair>((Collection<StatePair>) data);
+                @SuppressWarnings("unchecked")
+                Collection<StatePair> array = (Collection<StatePair>) data;
+                return new ArrayList<StatePair>(array);
             }
         }
         
