@@ -192,7 +192,7 @@ final class WadlPanel implements WizardDescriptor.FinishablePanel {
             if (tempWADLFile == null) {
                 
                 // Create a temporary file for storing our settings.
-                tempWADLFile = File.createTempFile(fileName + "RIT", ".wsdl"); // NOI18N
+                tempWADLFile = File.createTempFile(fileName + "RIT", ".wadl"); // NOI18N
                 populateFileFromTemplate(tempWADLFile);
                 tempWADLFile.deleteOnExit();
                 templateWizard.putProperty(
