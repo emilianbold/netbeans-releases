@@ -68,7 +68,7 @@ public class MonitorsUpdateService {
     private static Pattern lineStartsWithIntegerPattern = Pattern.compile("^ *([0-9]+).*$"); // NOI18N
     private static final Logger log = DLightLogger.getLogger(MonitorsUpdateService.class);
     private static final List<String> syncColNames = Collections.unmodifiableList(
-            Arrays.asList(SunStudioDCConfiguration.c_ulockSummary.getColumnName(), "threads"));//NOI18N
+            Arrays.asList(SunStudioDCConfiguration.c_ulockSummary.getColumnName(), SunStudioDCConfiguration.c_threadsCount.getColumnName()));//NOI18N
     private static final List<String> leaksColNames = Collections.unmodifiableList(
             Arrays.asList(SunStudioDCConfiguration.c_leakSize.getColumnName()));
     private final ErprintSession erprintSession;
