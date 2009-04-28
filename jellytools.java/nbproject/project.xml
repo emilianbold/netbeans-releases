@@ -33,7 +33,11 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.jellytools</package>
+                <package>org.netbeans.jellytools.actions</package>
+                <package>org.netbeans.jellytools.nodes</package>
+            </public-packages>
         </data>
     </configuration>
 </project>
