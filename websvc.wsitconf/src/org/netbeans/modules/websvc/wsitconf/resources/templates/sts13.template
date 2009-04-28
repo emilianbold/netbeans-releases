@@ -75,7 +75,7 @@ made subject to such option by the copyright holder.
 						</sp:ProtectionToken>
 						<sp:AlgorithmSuite>
 							<wsp:Policy>
-								<sp:Basic128/>
+								<sp:Basic128Sha256/>
 							</wsp:Policy>
 						</sp:AlgorithmSuite>
 						<sp:Layout>
