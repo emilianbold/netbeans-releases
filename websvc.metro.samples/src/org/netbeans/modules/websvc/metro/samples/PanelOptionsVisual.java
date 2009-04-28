@@ -119,7 +119,15 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
-        return serverInstanceComboBox.getItemCount() > 0;
+        if (serverInstanceComboBox.getItemCount() == 0) {
+            // Folder exists and is not empty
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(PanelOptionsVisual.class,"MSG_NoJsr109Server")); //NOI18N
+            return false;
+        } else {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+            return true;
+        }
     }
 
     void store(WizardDescriptor d) {
