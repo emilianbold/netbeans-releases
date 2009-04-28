@@ -45,16 +45,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 
 public class Util {
-
+    private static final Logger log = DLightLogger.getLogger(Util.class);
+    
     /**
      * Gets an absolute path of the module-installed file.
      * @param relpath path from install root, e.g. <samp>modules/ext/somelib.jar</samp>
@@ -106,7 +107,7 @@ public class Util {
             os.close();
             return result_file.getCanonicalPath();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            log.info("copyResource failed: " + ex.getMessage()); // NOI18N
         }
         return null;
 
