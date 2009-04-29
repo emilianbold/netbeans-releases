@@ -59,6 +59,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.plaf.TextUI;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.mercurial.HgModuleConfig;
@@ -70,6 +71,10 @@ import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 
 /**
@@ -502,8 +507,24 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
                 File file = VersionsCache.getInstance().getFileRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getRevision());
 
-                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                org.netbeans.modules.versioning.util.Utils.openFile(fo, drev.getLogInfoHeader().getLog().getRevision());
+                final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                final String revision = drev.getLogInfoHeader().getLog().getRevision();
+                EditorCookie ec = null;
+                OpenCookie oc = null;
+                try {
+                    DataObject dobj = DataObject.find(fo);
+                    ec = dobj.getCookie(EditorCookie.class);
+                    oc = dobj.getCookie(OpenCookie.class);
+                } catch (DataObjectNotFoundException ex) {
+                    Mercurial.LOG.log(Level.FINE, null, ex);
+                }
+                if (ec != null) {
+                    org.netbeans.modules.versioning.util.Utils.openFile(fo, revision);
+                } else if (oc != null) {
+                    oc.open();
+                } else {
+                    org.netbeans.modules.versioning.util.Utils.openFile(fo, revision);
+                }
             } catch (IOException ex) {
                 // Ignore if file not available in cache
             }
