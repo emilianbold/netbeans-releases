@@ -104,7 +104,7 @@ public class InstanceDialog extends DialogDescriptor {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    URL u = new URL(panel.getUrl());
+                    URL u = new URL(panel.getUrl() + "?checking=redirects"); // NOI18N
                     HttpURLConnection connection = new ConnectionBuilder().homeURL(u).url(u).httpConnection();
                     String sVersion = connection.getHeaderField("X-Hudson"); // NOI18N
                     connection.disconnect();
@@ -115,6 +115,10 @@ public class InstanceDialog extends DialogDescriptor {
                     HudsonVersion version = new HudsonVersionImpl(sVersion);
                     if (!Utilities.isSupportedVersion(version)) {
                         problem(NbBundle.getMessage(InstanceDialog.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
+                        return;
+                    }
+                    if (!"checking=redirects".equals(connection.getURL().getQuery())) { // NOI18N
+                        problem(NbBundle.getMessage(InstanceDialog.class, "MSG_incorrect_redirects"));
                         return;
                     }
                 } catch (IOException x) {
