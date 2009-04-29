@@ -375,6 +375,10 @@ public class GdbDebugger implements PropertyChangeListener {
                             //return; // since we've failed, a return here keeps us from sending more gdb commands
                         }
                     }
+                    // we need to switch to the first frame here
+                    // for anonymous breakpoints to be set correctly, see IZ 139388
+                    gdb.up_silently(1024);
+                    
                     setLoading();
                 }
                 gdb.data_list_register_names("");
@@ -1079,7 +1083,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     if (token == shareToken) {
                         shareTab = createShareTab(cb.getResponse());
                     }
-                } else if (pendingBreakpointMap.get(token) != null) {
+                } else if (pendingBreakpointMap.containsKey(token)) {
                     breakpointValidation(token, null);
                 }
             }
@@ -1263,6 +1267,8 @@ public class GdbDebugger implements PropertyChangeListener {
     /** Handle gdb responses starting with '&' */
     public void logStreamOutput(String msg) {
         if (msg.startsWith("&\"No source file named ")) {  // NOI18N
+            breakpointValidation(currentToken, msg.substring(2, msg.length() - 3));
+        } else if (msg.startsWith("&\"Function ") && msg.endsWith("not defined.\\n\"")) {  // NOI18N
             breakpointValidation(currentToken, msg.substring(2, msg.length() - 3));
         } else if (msg.startsWith("&\"info proc") || // NOI18N
                 msg.startsWith("&\"info threads") || // NOI18N

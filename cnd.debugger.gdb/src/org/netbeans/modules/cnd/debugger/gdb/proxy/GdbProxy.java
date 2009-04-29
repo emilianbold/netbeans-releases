@@ -587,7 +587,11 @@ public class GdbProxy {
      * Select a different frame frameNumber on the stack.
      */
     public void stack_select_frame(int frameNumber) {
-        engine.sendCommand("-stack-select-frame " + Integer.valueOf(frameNumber)); // NOI18N
+        engine.sendCommand("-stack-select-frame " + frameNumber); // NOI18N
+    }
+
+    public void up_silently(int number) {
+        engine.sendCommand("up-silently " + number); // NOI18N
     }
 
     /**

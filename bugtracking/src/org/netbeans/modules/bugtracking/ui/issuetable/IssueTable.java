@@ -57,6 +57,7 @@ import java.awt.event.KeyEvent;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.event.KeyListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -89,7 +90,7 @@ import org.openide.util.ImageUtilities;
 /**
  * @author Tomas Stupka
  */
-public class IssueTable implements MouseListener, AncestorListener {
+public class IssueTable implements MouseListener, AncestorListener, KeyListener {
 
     private NodeTableModel  tableModel;
     private JTable          table;
@@ -149,6 +150,7 @@ public class IssueTable implements MouseListener, AncestorListener {
         if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
         component.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
         table.addMouseListener(this);
+        table.addKeyListener(this);
         table.setDefaultRenderer(Node.Property.class, new CellRenderer());
         table.getTableHeader().setDefaultRenderer(new HeaderRenderer(table.getTableHeader().getDefaultRenderer()));
         table.addAncestorListener(this);
@@ -286,6 +288,31 @@ public class IssueTable implements MouseListener, AncestorListener {
     private static MessageFormat getFormat(String key) {
         String format = NbBundle.getMessage(IssueTable.class, key);
         return new MessageFormat(format);
+    }
+
+    public void keyTyped(KeyEvent e) {
+        if (e.getKeyChar() == '\n') {
+            int row = table.getSelectedRow();
+            if (row != -1) {
+                Action action = tableModel.getNodes()[row].getPreferredAction();
+                if (action.isEnabled()) {
+                    action.actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
+                }
+            }
+        }
+    }
+
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyChar() == '\n') {
+            int row = table.getSelectedRow();
+            if (row != -1) {
+                // Hack for bug 4486444
+                e.consume();
+            }
+        }
+    }
+
+    public void keyReleased(KeyEvent e) {
     }
     
     private class CellRenderer extends DefaultTableCellRenderer {

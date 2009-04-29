@@ -43,45 +43,33 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * A class that tracks states of the preprocessor conditionals within file
  * @author Vladimir Voskresenskky
  */
-public final class FilePreprocessorConditionState implements APTParseFileWalker.EvalCallback {
+public final class FilePreprocessorConditionState {
 
     /** a SORTED array of blocks [start-end] for which conditionals were evaluated to false */
-    private int[] offsets;
-
-    /** amount of dead blocks (*2)  in the data array  */
-    private int size;
+    private final int[] offsets;
 
     /** for debugging purposes */
     private final transient CharSequence fileName;
 
-    public FilePreprocessorConditionState(FileImpl file) {
-        this(file.getBuffer().getAbsolutePath());
-    }
-
-    // for internal use and tests
-    /*package*/FilePreprocessorConditionState(CharSequence fileName) {
-        offsets = new int[512];
+    // for builder only
+    private FilePreprocessorConditionState(CharSequence fileName, int[] offsets) {
+        this.offsets = offsets;
         this.fileName = fileName;
-    }
-
-    public FilePreprocessorConditionState(FilePreprocessorConditionState state2copy) {
-        offsets = new int[state2copy.size];
-        System.arraycopy(state2copy.offsets, 0, offsets, 0, offsets.length);
-        this.fileName = state2copy.fileName;
     }
     
     public FilePreprocessorConditionState(DataInput input) throws IOException {
-        size = input.readInt();
+        int size = input.readInt();
         if (size > 0) {
             offsets = new int[size];
             for (int i = 0; i < size; i++) {
@@ -94,59 +82,11 @@ public final class FilePreprocessorConditionState implements APTParseFileWalker.
     }
 
     public void write(DataOutput output) throws IOException {
+        int size = offsets.length;
         output.writeInt(size);
         if (size > 0) {
             for (int i = 0; i < size; i++) {
                 output.writeInt(offsets[i]);
-            }
-        }
-    }
-
-    /**
-     * Implements APTParseFileWalker.EvalCallback -
-     * adds offset of dead branch to offsets array
-     */
-    public void onEval(APT apt, boolean result) {
-        if (result) {
-            // if condition was evaluated as 'true' check if we
-            // need to mark siblings as dead blocks
-            APT start = apt.getNextSibling();
-            deadBlocks:
-            while (start != null) {
-                APT end = start.getNextSibling();
-                if (end != null) {
-                    switch (end.getType()) {
-                        case APT.Type.ELIF:
-                        case APT.Type.ELSE:
-                            addDeadBlock(start, end);
-                            // continue
-                            start = end;
-                            break;
-                        case APT.Type.ENDIF:
-                            addDeadBlock(start, end);
-                            // stop
-                            start = null;
-                            break;
-                        default:
-                            // stop
-                            start = null;
-                            break;
-                    }
-                } else {
-                    break;
-                }
-            }
-        } else {
-            // if condition was evaluated as 'false' mark it as dead block
-            APT end = apt.getNextSibling();
-            if (end != null) {
-                switch (end.getType()) {
-                    case APT.Type.ELIF:
-                    case APT.Type.ELSE:
-                    case APT.Type.ENDIF:
-                        addDeadBlock(apt, end);
-                        break;
-                }
             }
         }
     }
@@ -160,9 +100,6 @@ public final class FilePreprocessorConditionState implements APTParseFileWalker.
             return false;
         }
         final FilePreprocessorConditionState other = (FilePreprocessorConditionState) obj;
-        if (this.size != other.size) {
-            return false;
-        }
         if (!Arrays.equals(this.offsets, other.offsets)) {
             return false;
         }
@@ -171,9 +108,7 @@ public final class FilePreprocessorConditionState implements APTParseFileWalker.
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 67 * hash + this.size;
-        hash = 67 * hash + Arrays.hashCode(this.offsets);
+        int hash = 5 + Arrays.hashCode(this.offsets);
         return hash;
     }
 
@@ -188,7 +123,7 @@ public final class FilePreprocessorConditionState implements APTParseFileWalker.
         }
         StringBuilder sb = new StringBuilder();
         sb.append("[");//NOI18N
-        for (int i = 0; i < state.size; i+=2) {
+        for (int i = 0; i < state.offsets.length; i+=2) {
             if (i > 0) {
                 sb.append("][");//NOI18N
             }
@@ -201,11 +136,11 @@ public final class FilePreprocessorConditionState implements APTParseFileWalker.
     }
 
     public boolean isInActiveBlock(int startContext, int endContext) {
-        if (size == 0 || startContext == 0) {
+        if (offsets.length == 0 || startContext == 0) {
             return true;
         }
         // TODO: improve speed, if needed, offsets are ordered
-        for (int i = 0; i < size; i += 2) {
+        for (int i = 0; i < offsets.length; i += 2) {
             int start = offsets[i];
             int end = offsets[i + 1];
             if (start <= startContext && startContext <= end) {
@@ -227,20 +162,20 @@ public final class FilePreprocessorConditionState implements APTParseFileWalker.
         if (other == null) {
             return false;
         }
-        if (this.size == 0) {
-            // can replace only if not empty as well
-            return other.size > 0;
+        if (this.offsets.length == 0) {
+            // can replace all
+            return true;
         }
-        if (other.size == 0) {
-            // this not empty can not replace empty
+        if (other.offsets.length == 0) {
+            // this is not empty, so it can not replace empty
             return false;
         }
         // check if all my blocks are inactive in terms of other (but not equal to them)
-        for (int i = 0; i < size; i += 2) {
+        for (int i = 0; i < offsets.length; i += 2) {
             int start = offsets[i];
             int end = offsets[i + 1];
             boolean active = true;
-            for (int j = 0; j < other.size; j += 2) {
+            for (int j = 0; j < other.offsets.length; j += 2) {
                 int secondStart = other.offsets[j];
                 int secondEnd = other.offsets[j + 1];
                 if (secondStart <= start && end <= secondEnd) {
@@ -262,32 +197,126 @@ public final class FilePreprocessorConditionState implements APTParseFileWalker.
         }
         return true;
     }
-
-    /*package-local*/void trimSize() {
-        int[] newOffsets = new int[size];
-        System.arraycopy(this.offsets, 0, newOffsets, 0, size);
-        this.offsets = newOffsets;
-    }
-
-    private void addDeadBlock(APT startNode, APT endNode) {
-        if (startNode != null && endNode != null) {
-            int startDeadBlock = startNode.getEndOffset();
-            int endDeadBlock = endNode.getOffset() - 1;
-            addBlockImpl(startDeadBlock, endDeadBlock);
+    
+    public static final class Builder implements APTParseFileWalker.EvalCallback {
+        private final SortedSet<int[]> blocks = new TreeSet<int[]>(COMPARATOR);
+        private final CharSequence name;
+        public Builder(CharSequence name) {
+            this.name = name;
         }
-    }
 
-    /*package*/final void addBlockImpl(int startDeadBlock, int endDeadBlock) {
-        if (endDeadBlock > startDeadBlock) {
-            if (size == this.offsets.length) {
-                // expand
-                int[] newOffsets = new int[2 * (this.offsets.length + 1)];
-                System.arraycopy(this.offsets, 0, newOffsets, 0, size);
-                this.offsets = newOffsets;
+        /*package*/final Builder addBlockImpl(int startDeadBlock, int endDeadBlock) {
+            assert endDeadBlock >= startDeadBlock : "incorrect offsets " + startDeadBlock + " and " + endDeadBlock; // NOI18N
+            if (endDeadBlock > startDeadBlock) {
+                blocks.add(new int[] { startDeadBlock, endDeadBlock });
             }
-            this.offsets[size++] = startDeadBlock;
-            this.offsets[size++] = endDeadBlock;
+            return this;
         }
-    }
 
+        private void addDeadBlock(APT startNode, APT endNode) {
+            if (startNode != null && endNode != null) {
+                int startDeadBlock = startNode.getEndOffset();
+                int endDeadBlock = endNode.getOffset() - 1;
+                addBlockImpl(startDeadBlock, endDeadBlock);
+            }
+        }
+
+        /**
+         * Implements APTParseFileWalker.EvalCallback -
+         * adds offset of dead branch to offsets array
+         */
+        public void onEval(APT apt, boolean result) {
+            if (result) {
+                // if condition was evaluated as 'true' check if we
+                // need to mark siblings as dead blocks
+                APT start = apt.getNextSibling();
+                deadBlocks:
+                while (start != null) {
+                    APT end = start.getNextSibling();
+                    if (end != null) {
+                        switch (end.getType()) {
+                            case APT.Type.ELIF:
+                            case APT.Type.ELSE:
+                                addDeadBlock(start, end);
+                                // continue
+                                start = end;
+                                break;
+                            case APT.Type.ENDIF:
+                                addDeadBlock(start, end);
+                                // stop
+                                start = null;
+                                break;
+                            default:
+                                // stop
+                                start = null;
+                                break;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                // if condition was evaluated as 'false' mark it as dead block
+                APT end = apt.getNextSibling();
+                if (end != null) {
+                    switch (end.getType()) {
+                        case APT.Type.ELIF:
+                        case APT.Type.ELSE:
+                        case APT.Type.ENDIF:
+                            addDeadBlock(apt, end);
+                            break;
+                    }
+                }
+            }
+        }
+
+        public FilePreprocessorConditionState build() {
+            int[] offsets = new int[blocks.size()*2];
+            int index = 0;
+            for (int[] deadInterval : blocks) {
+                offsets[index++] = deadInterval[0];
+                offsets[index++] = deadInterval[1];
+            }
+            FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(this.name, offsets);
+            if (CndUtils.isDebugMode()) {
+                checkConsistency(pcState);
+            }
+            return pcState;
+        }
+
+        private void checkConsistency(FilePreprocessorConditionState pcState) {
+            // check consistency for ordering and absence of intersections
+            for (int i = 0; i < pcState.offsets.length; i++) {
+                if (i + 1 < pcState.offsets.length) {
+                    CndUtils.assertTrue(pcState.offsets[i] < pcState.offsets[i + 1], "inconsistent state " + pcState);  // NOI18N
+                }
+            }
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            if (name != null) {
+                sb.append(name);
+            }
+            sb.append("[");//NOI18N
+            int i = 0;
+            for (int[] deadInterval : blocks) {
+                if (i++ > 0) {
+                    sb.append("][");//NOI18N
+                }
+                sb.append(deadInterval[0]);
+                sb.append("-");//NOI18N
+                sb.append(deadInterval[1]);
+            }
+            sb.append("]");//NOI18N
+            return sb.toString();
+        }
+
+        private static final Comparator<int[]> COMPARATOR = new Comparator<int[]>() {
+            public int compare(int[] segment1, int[] segment2) {
+                return segment1[0] - segment2[0];
+            }
+        };
+    }
 }

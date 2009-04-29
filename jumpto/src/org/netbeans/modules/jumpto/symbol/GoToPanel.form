@@ -55,6 +55,10 @@
           </Border>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Symbol &amp;Name (prefix, camel case: &quot;AA&quot; or &quot;AbcAb&quot;, wildcards: &quot;?&quot; &quot;*&quot;, exact match: end with space):"/>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Symbol Name (prefix, camel case: &quot;AA&quot; or &quot;AbcAb&quot;, wildcards: &quot;?&quot; &quot;*&quot;, exact match: end with space)"/>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="nameFieldActionPerformed"/>
         <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="nameFieldKeyPressed"/>
@@ -70,12 +74,15 @@
     <Component class="javax.swing.JLabel" name="jLabelList">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="matchesScrollPane1"/>
+          <ComponentRef name="matchesList"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/jumpto/symbol/Bundle.properties" key="TXT_GoToSymbol_MatchesList_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="-1" gridY="-1" gridWidth="0" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="4" insetsRight="0" anchor="16" weightX="0.0" weightY="0.0"/>
@@ -121,6 +128,10 @@
                 </Property>
                 <Property name="visibleRowCount" type="int" value="15"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Symbols &amp;Found :"/>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Symbols Found"/>
+              </AccessibilityProperties>
               <Events>
                 <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="matchesListMouseReleased"/>
               </Events>
