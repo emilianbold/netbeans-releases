@@ -40,6 +40,9 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -93,6 +96,34 @@ public class LocalPathCell extends JPanel {
         localPathTextField = new JTextField();
         localPathBrowseButton = new JButton();
 
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return localPathTextField;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return localPathTextField;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return localPathBrowseButton;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  localPathTextField){
+                    return localPathBrowseButton;
+                }
+                return localPathTextField;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  localPathBrowseButton){
+                    return localPathTextField;
+                }
+                return localPathBrowseButton;//end getComponentBefore
+
+            }}
+        );
+
         localPathTextField.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
         localPathBrowseButton.setText(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathBrowseButton.text")); // NOI18N
@@ -100,6 +131,7 @@ public class LocalPathCell extends JPanel {
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -113,6 +145,13 @@ public class LocalPathCell extends JPanel {
                 .add(localPathTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .add(localPathBrowseButton))
         );
+
+        localPathTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathTextField.AccessibleContext.accessibleName")); // NOI18N
+        localPathTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        localPathBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        localPathBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 

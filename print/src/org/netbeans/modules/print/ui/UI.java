@@ -339,6 +339,10 @@ public final class UI {
         component.setPreferredSize(dimension);
     }
 
+    public static void setSize(JComponent component, int width, int height) {
+        setSize(component, new Dimension(width, height));
+    }
+
     public static int getInt(String value) {
         try {
             return Integer.parseInt(value);
@@ -646,11 +650,16 @@ public final class UI {
             show(false, true);
         }
 
+        protected final void setModal(boolean isModal) {
+            myIsModal = isModal;
+        }
+
         private void show(boolean inSwingThread, boolean isResizable) {
             if (myDialog == null) {
                 myDialog = DialogDisplayer.getDefault().createDialog(createDescriptor());
                 myDialog.addWindowListener(this);
                 myDialog.setResizable(isResizable);
+                myDialog.setModal(myIsModal);
 
                 if (isResizable) {
                     setCorner();
@@ -706,6 +715,7 @@ public final class UI {
             }
         }
 
+        private boolean myIsModal = true;
         private java.awt.Dialog myDialog;
     }
 

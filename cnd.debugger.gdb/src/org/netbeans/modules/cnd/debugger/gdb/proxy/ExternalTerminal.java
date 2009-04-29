@@ -85,8 +85,9 @@ public class ExternalTerminal implements PropertyChangeListener {
         this.debugger = debugger;
         debugger.addPropertyChangeListener(this);
         initGdbHelpers();
-        
-        ProcessBuilder pb = new ProcessBuilder(getTermOptions(termpath));
+
+        List<String> termOptions = getTermOptions(termpath);
+        ProcessBuilder pb = new ProcessBuilder(termOptions);
         
         // Set "DISPLAY" environment variable if not already set (Mac OSX only)
         if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
@@ -101,7 +102,7 @@ public class ExternalTerminal implements PropertyChangeListener {
                 map.put("DISPLAY", display); // NOI18N
             }
         }
-        
+
         Process process = pb.start();
         
         int count = 0;
@@ -111,9 +112,13 @@ public class ExternalTerminal implements PropertyChangeListener {
             while (count++ < RETRY_LIMIT) {
                 // first check for process termination
                 try {
-                    process.exitValue();
+                    int rc = process.exitValue();
                     // process already terminated - exit
-                    break;
+                    throw new IllegalStateException(NbBundle.getMessage(
+                            ExternalTerminal.class,
+                            "ERR_ExternalTerminalFailedMessageDetails", // NOI18N
+                            termOptions,
+                            rc));
                 } catch (IllegalThreadStateException e) {
                     // do nothing
                 }
