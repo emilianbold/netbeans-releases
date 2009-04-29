@@ -475,7 +475,10 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         APTToken fileToken = fileTS.token();
         StringBuilder expandedToken = new StringBuilder(""); // NOI18N
         if (fileToken.getOffset() < docTokenEndOffset) {
-            expandedToken.append(fileToken.getText());
+            // empty comment - expansion of empty macro
+            if (!APTUtils.isCommentToken(fileToken)) {
+                expandedToken.append(fileToken.getText());
+            }
             APTToken prevFileToken = fileToken;
             fileTS.moveNext();
             fileToken = fileTS.token();
