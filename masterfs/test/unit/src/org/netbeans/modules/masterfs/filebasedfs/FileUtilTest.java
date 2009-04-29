@@ -212,6 +212,7 @@ public class FileUtilTest extends NbTestCase {
         new FileOutputStream(fileF).close();
         FileUtil.refreshAll();
         assertEquals("Event not fired when file was modified.", 1, fcl.check(EventType.CHANGED));
+        assertEquals("Attribute change event not fired (see #129178).", 2, fcl.check(EventType.ATTRIBUTE_CHANGED));
         fileF.delete();
         dirF.delete();
         FileUtil.refreshAll();

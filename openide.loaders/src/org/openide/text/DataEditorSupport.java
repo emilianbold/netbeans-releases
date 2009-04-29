@@ -636,11 +636,15 @@ public class DataEditorSupport extends CloneableEditorSupport {
         /** Atomic action used to ignore fileChange event from FileObject.refresh */
         private transient FileSystem.AtomicAction action = null;
 
+        /** Holds read-only state of associated file object. */
+        private transient boolean canWrite;
+
         /** Constructor.
         * @param obj this support should be associated with
         */
         public Env (DataObject obj) {
             super (obj);
+            canWrite = getFileImpl().canWrite();
         }
         
         /** Getter for the file to work on.
@@ -841,18 +845,22 @@ public class DataEditorSupport extends CloneableEditorSupport {
         /** Called from EnvListener if read-only state is externally changed (#129178).
          * @param readOnly true if changed to read-only state, false if changed to read-write
          */
-        private void readOnlyChanged(boolean readOnly) {
-            if (readOnly && isModified()) {
-                // notify user if the object is modified and externally changed to read-only
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                        NbBundle.getMessage(DataObject.class,
-                        "MSG_FileReadOnlyChanging",
-                        new Object[]{getFileImpl().getNameExt()}),
-                        NotifyDescriptor.WARNING_MESSAGE));
+        private void readOnlyRefresh() {
+            boolean oldCanWrite = canWrite;
+            canWrite = getFileImpl().canWrite();
+            if (oldCanWrite != canWrite) {
+                if (!canWrite && isModified()) {
+                    // notify user if the object is modified and externally changed to read-only
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(
+                            NbBundle.getMessage(DataObject.class,
+                            "MSG_FileReadOnlyChanging",
+                            new Object[]{getFileImpl().getNameExt()}),
+                            NotifyDescriptor.WARNING_MESSAGE));
+                }
+                // event is consumed in CloneableEditorSupport
+                firePropertyChange("DataEditorSupport.read-only.changing", null, null);  //NOI18N
             }
-            // event is consumed in CloneableEditorSupport
-            firePropertyChange("DataEditorSupport.read-only.changing", null, readOnly);  //NOI18N
         }
 
         /** Called from the <code>EnvListener</code>.
@@ -1031,10 +1039,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
         @Override
         public void fileAttributeChanged(FileAttributeEvent fae) {
             // wait only for event from org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj.refreshImpl()
-            if ("DataEditorSupport.read-only.changing".equals(fae.getName())) {  //NOI18N
+            if ("DataEditorSupport.read-only.refresh".equals(fae.getName())) {  //NOI18N
                 Env myEnv = this.env.get();
                 if (myEnv != null) {
-                    myEnv.readOnlyChanged((Boolean) fae.getNewValue());
+                    myEnv.readOnlyRefresh();
                 }
             }
         }
