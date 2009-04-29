@@ -89,15 +89,15 @@ public final class DLightTool implements Validateable<DLightTarget> {
     }
 
     private DLightTool(DLightToolConfiguration configuration) {
-        DLightToolConfigurationAccessor toolConfAccessor =  DLightToolConfigurationAccessor.getDefault();
+        DLightToolConfigurationAccessor toolConfAccessor = DLightToolConfigurationAccessor.getDefault();
         this.toolName = toolConfAccessor.getToolName(configuration);
-        this.detailedToolName =toolConfAccessor.getDetailedToolName(configuration);
+        this.detailedToolName = toolConfAccessor.getDetailedToolName(configuration);
         this.iconPath = toolConfAccessor.getIconPath(configuration);
         dataCollectors = Collections.synchronizedList(new ArrayList<DataCollector<?>>());
-        indicators = Collections.synchronizedList(new ArrayList<Indicator<?>>());
+        indicators = new ArrayList<Indicator<?>>();
         this.configuration = configuration;
         indicatorDataProviders = Collections.synchronizedList(new ArrayList<IndicatorDataProvider<?>>());
-        List<DataCollectorConfiguration> configurations =toolConfAccessor.getDataCollectors(configuration);
+        List<DataCollectorConfiguration> configurations = toolConfAccessor.getDataCollectors(configuration);
         List<IndicatorDataProviderConfiguration> idpConfigurations = toolConfAccessor.getIndicatorDataProviders(configuration);
 
         for (DataCollectorConfiguration conf : configurations) {
@@ -168,15 +168,15 @@ public final class DLightTool implements Validateable<DLightTarget> {
         return toolName;
     }
 
-    public final String getDetailedName(){
+    public final String getDetailedName() {
         return detailedToolName;
     }
 
-    public final boolean hasIcon(){
+    public final boolean hasIcon() {
         return iconPath != null;
     }
 
-    public final String getIconPath(){
+    public final String getIconPath() {
         return iconPath;
     }
 
@@ -210,33 +210,23 @@ public final class DLightTool implements Validateable<DLightTarget> {
         return indicatorDataProviders;
     }
 
-    private void addIndicator(Indicator indicator) {
-        if (!indicators.contains(indicator)) {
-            indicators.add(indicator);
-        }
-    }
-
-    private void addAllIndicators(){
-        List<IndicatorConfiguration> indConfigurationsList = DLightToolConfigurationAccessor.getDefault().getIndicators(configuration);
-        for (IndicatorConfiguration indConfiguration : indConfigurationsList) {
-            Indicator indicator = IndicatorProvider.getInstance().createIndicator(toolName, indConfiguration);
-            if (indicator == null) {
-                log.info("Could not find Indicator for configuration with id:" + indConfiguration.getID() + " check if " + //NOI18N
-                        "IndicatorFactory is registered in Global Lookup with the same ID"); //NOI18N
-                continue;
-
-            }
-
-            addIndicator(indicator);
-        // Name is already set in IndicatorProvider.createIndicator()
-        // IndicatorAccessor.getDefault().setToolName(indicator, toolName);
-        }
-    }
-
     final List<Indicator<?>> getIndicators() {
-        synchronized(indicators){
-            if (indicators.size() == 0){
-                addAllIndicators();
+        synchronized (indicators) {
+            if (indicators.size() == 0) {
+                //Add All indicators
+                List<IndicatorConfiguration> indConfigurationsList = DLightToolConfigurationAccessor.getDefault().getIndicators(configuration);
+                for (IndicatorConfiguration indConfiguration : indConfigurationsList) {
+                    Indicator indicator = IndicatorProvider.getInstance().createIndicator(toolName, indConfiguration);
+                    if (indicator == null) {
+                        log.info("Could not find Indicator for configuration with id:" + indConfiguration.getID() + " check if " + //NOI18N
+                                "IndicatorFactory is registered in Global Lookup with the same ID"); //NOI18N
+                        continue;
+
+                    }
+                    if (!indicators.contains(indicator)) {
+                        indicators.add(indicator);
+                    }
+                }
             }
             return indicators;
         }
@@ -269,7 +259,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         notifyStatusChanged(oldStatus, newStatus);
 
         validationStatus = newStatus;
-        
+
         return newStatus;
     }
 
