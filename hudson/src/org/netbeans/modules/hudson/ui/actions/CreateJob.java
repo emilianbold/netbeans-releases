@@ -79,7 +79,7 @@ public class CreateJob extends AbstractAction {
 
     public CreateJob() {
         super(NbBundle.getMessage(CreateJob.class, "CTL_CreateJob"));
-        Collection<HudsonInstance> instances = HudsonManagerImpl.getDefault().getInstances();
+        Collection<? extends HudsonInstance> instances = HudsonManagerImpl.getDefault().getInstances();
         this.instance = instances.isEmpty() ? null : instances.iterator().next();
     }
 

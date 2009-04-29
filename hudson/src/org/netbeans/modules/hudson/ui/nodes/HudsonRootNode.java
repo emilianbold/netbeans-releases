@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.hudson.ui.nodes;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
@@ -51,101 +50,59 @@ import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.ui.actions.AddInstanceAction;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
- * Root node which is situated in the RuntimeTab
- *
- * @author Michal Mocnak
+ * Root node in Services tab.
  */
 public class HudsonRootNode extends AbstractNode {
-    
+
+    private static final String HUDSON_NODE_NAME = "hudson"; // NOI18N
     private static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/hudson.png"; // NOI18N
     
-    /** Init lock */
-    private static final Object LOCK_INIT = new Object();
-    
-    /** The only instance of the hudson nodes factory in the system */
-    private static HudsonRootNode defaultInstance;
-    
-    /**
-     * Creates a new instance of HudsonRootNode
-     */
+    @ServicesTabNodeRegistration(name=HUDSON_NODE_NAME, displayName="#LBL_HudsonNode", iconResource=ICON_BASE, position=488)
+    public static HudsonRootNode getDefault() {
+        return new HudsonRootNode();
+    }
+
     private HudsonRootNode() {
-        super(new RootNodeChildren());
-        setName("hudson"); // NOI18N
+        super(Children.create(new RootNodeChildren(), true));
+        setName(HUDSON_NODE_NAME);
         setDisplayName(NbBundle.getMessage(HudsonRootNode.class, "LBL_HudsonNode"));
         setIconBaseWithExtension(ICON_BASE);
     }
     
-    /**
-     * Creates default instance of HudsonRootNode
-     *
-     * @return default instance of HudsonRootNode
-     */
-    @ServicesTabNodeRegistration(
-        name="hudson",
-        displayName="org.netbeans.modules.hudson.ui.nodes.Bundle#LBL_HudsonNode",
-        iconResource="org/netbeans/modules/hudson/ui/resources/hudson.png",
-        position=488
-    )
-    public static HudsonRootNode getDefault() {
-        synchronized(LOCK_INIT) {
-            if (null == defaultInstance)
-                defaultInstance = new HudsonRootNode();
-            
-            return defaultInstance;
-        }
-    }
-    
-    @Override
-    public Action[] getActions(boolean context) {
+    public @Override Action[] getActions(boolean context) {
         return new Action[] {
             new AddInstanceAction(),
         };
     }
     
-    private static class RootNodeChildren extends Children.Keys<HudsonInstanceImpl> implements HudsonChangeListener {
+    private static class RootNodeChildren extends ChildFactory<HudsonInstanceImpl> implements HudsonChangeListener {
         
-        /**
-         * Creates a new instance of RootNodeChildren
-         */
         public RootNodeChildren() {
             HudsonManagerImpl.getDefault().addHudsonChangeListener(this);
         }
-        
-        protected Node[] createNodes(HudsonInstanceImpl instance) {
-            return new Node[] {new HudsonInstanceNode(instance)};
+
+        protected @Override Node createNodeForKey(HudsonInstanceImpl key) {
+            return new HudsonInstanceNode(key);
         }
         
-        @Override
-        protected void addNotify() {
-            super.addNotify();
-            refreshKeys();
+        protected boolean createKeys(List<HudsonInstanceImpl> toPopulate) {
+            toPopulate.addAll(HudsonManagerImpl.getDefault().getInstances());
+            Collections.sort(toPopulate);
+            return true;
         }
-        
-        @Override
-        protected void removeNotify() {
-            setKeys(Collections.<HudsonInstanceImpl>emptySet());
-            super.removeNotify();
-        }
-        
-        private void refreshKeys() {
-            List<HudsonInstanceImpl> l = Arrays.asList(HudsonManagerImpl.getDefault().
-                    getInstances().toArray(new HudsonInstanceImpl[] {}));
-            
-            // Sort repositories
-            Collections.sort(l);
-            
-            setKeys(l);
-        }
-        
+
         public void stateChanged() {}
         
         public void contentChanged() {
-            refreshKeys();
+            refresh(false);
         }
+
     }
+
 }
