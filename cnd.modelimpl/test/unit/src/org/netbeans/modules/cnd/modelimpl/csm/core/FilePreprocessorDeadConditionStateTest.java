@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.util.Arrays;
 import org.netbeans.modules.cnd.test.BaseTestCase;
 
 /**
@@ -53,42 +52,37 @@ public class FilePreprocessorDeadConditionStateTest extends BaseTestCase {
     }
 
     public void testDeadBlocksComparision() throws Exception {
-        FilePreprocessorConditionState state1 = new FilePreprocessorConditionState("state1");
-        state1.addBlockImpl(10, 20);
-        state1.addBlockImpl(30, 60);
-        state1.addBlockImpl(70, 80);
-        state1.trimSize();
+        FilePreprocessorConditionState.Builder stateBuilder1 = new FilePreprocessorConditionState.Builder("state1");
+        stateBuilder1.addBlockImpl(30, 60);
+        stateBuilder1.addBlockImpl(10, 20);
+        stateBuilder1.addBlockImpl(70, 80);
+        FilePreprocessorConditionState state1 = stateBuilder1.build();
 
-        FilePreprocessorConditionState state2 = new FilePreprocessorConditionState("state2");
-        state2.addBlockImpl(10, 20);
-        state2.addBlockImpl(70, 80);
-        state2.trimSize();
+        FilePreprocessorConditionState.Builder stateBuilder2 = new FilePreprocessorConditionState.Builder("state2");
+        stateBuilder2.addBlockImpl(10, 20);
+        stateBuilder2.addBlockImpl(70, 80);
+        FilePreprocessorConditionState state2 = stateBuilder2.build();
 
-        FilePreprocessorConditionState biggest = new FilePreprocessorConditionState("biggest");
-        biggest.addBlockImpl(5, 90);
-        biggest.trimSize();
+        FilePreprocessorConditionState biggest = new FilePreprocessorConditionState.Builder("biggest").addBlockImpl(5, 90).build();
 
-        FilePreprocessorConditionState state4 = new FilePreprocessorConditionState("state4");
-        state4.addBlockImpl(40, 50);
-        state4.trimSize();
+        FilePreprocessorConditionState state4 = new FilePreprocessorConditionState.Builder("state4").addBlockImpl(40, 50).build();
 
-        FilePreprocessorConditionState state5 = new FilePreprocessorConditionState("state5");
-        state5.addBlockImpl(10, 20);
-        state5.addBlockImpl(40, 50);
-        state5.trimSize();
+        FilePreprocessorConditionState state5 = new FilePreprocessorConditionState.Builder("state5").addBlockImpl(10, 20).addBlockImpl(40, 50).build();
 
-        FilePreprocessorConditionState state6 = new FilePreprocessorConditionState("state6");
-        state6.addBlockImpl(30, 40);
-        state6.addBlockImpl(50, 60);
-        state6.trimSize();
+        FilePreprocessorConditionState state6 = new FilePreprocessorConditionState.Builder("state6").addBlockImpl(30, 40).addBlockImpl(50, 60).build();
 
-        FilePreprocessorConditionState state7 = new FilePreprocessorConditionState("state7");
-        state7.addBlockImpl(50, 60);
-        state7.addBlockImpl(70, 80);
-        state7.trimSize();
+        FilePreprocessorConditionState state7 = new FilePreprocessorConditionState.Builder("state7").addBlockImpl(50, 60).addBlockImpl(70, 80).build();
 
-        FilePreprocessorConditionState empty = new FilePreprocessorConditionState("emtpy");
-        empty.trimSize();
+        FilePreprocessorConditionState empty = new FilePreprocessorConditionState.Builder("emtpy").build();
+
+        assertTrue("state can replace itself " + state1, state1.isBetterOrEqual(state1));
+        assertTrue("state can replace itself " + state2, state2.isBetterOrEqual(state2));
+        assertTrue("state can replace itself " + biggest, biggest.isBetterOrEqual(biggest));
+        assertTrue("state can replace itself " + state4, state4.isBetterOrEqual(state4));
+        assertTrue("state can replace itself " + state5, state5.isBetterOrEqual(state5));
+        assertTrue("state can replace itself " + state6, state6.isBetterOrEqual(state6));
+        assertTrue("state can replace itself " + state7, state7.isBetterOrEqual(state7));
+        assertTrue("state can replace itself " + empty, empty.isBetterOrEqual(empty));
 
         assertTrue("state1:"+state1 + " must replace " + biggest, state1.isBetterOrEqual(biggest));
         assertFalse("state1:"+state1 + " is not replaceable by " + biggest, biggest.isBetterOrEqual(state1));
