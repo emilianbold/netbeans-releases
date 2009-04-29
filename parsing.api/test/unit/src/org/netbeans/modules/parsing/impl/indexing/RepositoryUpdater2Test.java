@@ -62,6 +62,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.core.startup.TopLogging;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -422,7 +423,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
     } // End of FixedCustomIndexerFactory class
 
-
+    @RandomlyFails
     public void testClasspathDeps1() throws IOException, InterruptedException {
         FileUtil.setMIMEType("txt", "text/plain");
         final FileObject srcRoot1 = workDir.createFolder("src1");
