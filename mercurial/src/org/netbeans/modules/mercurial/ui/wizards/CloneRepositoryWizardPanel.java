@@ -284,6 +284,8 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
 
     public void prepareValidation() {
         errorMessage = null;
+        
+        repository.setEditable(false);
     }
 
     private void storeHistory() {
@@ -385,7 +387,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         }
 
         public void setEditable(boolean editable) {
-            //XXX PENDING: repository.setEditable(editable);
+            repository.setEditable(editable);
         }
 
         private void setupHttpsConnection(HttpURLConnection con) {
