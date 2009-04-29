@@ -180,7 +180,7 @@ public class Mercurial {
         }else if (Utilities.isWindows()) { // NOI18N
             String defaultPath = HgModuleConfig.getDefault().getExecutableBinaryPath ();
             if (defaultPath == null || defaultPath.length() == 0) {
-                String path = HgUtils.findInUserPath(HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE);
+                String path = HgUtils.findInUserPath(HgCommand.HG_WINDOWS_EXECUTABLES);
                 if (path != null && !path.equals("")) { // NOI18N
                     HgModuleConfig.getDefault().setExecutableBinaryPath (path); // NOI18N
                 }

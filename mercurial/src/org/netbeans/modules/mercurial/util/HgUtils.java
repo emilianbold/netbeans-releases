@@ -223,7 +223,7 @@ public class HgUtils {
      * @param name to check
      * @return String full path to name
      */
-    public static String findInUserPath(String name) {
+    public static String findInUserPath(String... names) {
         String pathEnv = System.getenv().get("PATH");// NOI18N
         // Work around issues on Windows fetching PATH
         if(pathEnv == null) pathEnv = System.getenv().get("Path");// NOI18N
@@ -233,10 +233,12 @@ public class HgUtils {
 
         String[] paths = pathEnv.split(pathSeparator);
         for (String path : paths) {
-            File f = new File(path, name);
-            // On Windows isFile will fail on hgk.cmd use !isDirectory
-            if (f.exists() && !f.isDirectory()) {
-                return path;
+            for (String name : names) {
+                File f = new File(path, name);
+                // On Windows isFile will fail on hgk.cmd use !isDirectory
+                if (f.exists() && !f.isDirectory()) {
+                    return path;
+                }
             }
         }
         return "";
