@@ -91,7 +91,8 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JLabelOperator lblContextPath() {
         if (_lblContextPath==null) {
-            _lblContextPath = new JLabelOperator(this, "Context Path:");
+            String contextPath = Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NWP1_ContextPath_Label");
+            _lblContextPath = new JLabelOperator(this, contextPath);
         }
         return _lblContextPath;
     }
@@ -101,7 +102,8 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JLabelOperator lblServer() {
         if (_lblServer==null) {
-            _lblServer = new JLabelOperator(this, "Server:");
+            String server = Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NWP1_Server");
+            _lblServer = new JLabelOperator(this, server);
         }
         return _lblServer;
     }
@@ -111,7 +113,8 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JLabelOperator lblJavaEEVersion() {
         if (_lblJavaEEVersion==null) {
-            _lblJavaEEVersion = new JLabelOperator(this, "Java EE Version:");
+            String javaEEVersion = Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NWP1_J2EESpecLevel_Label");
+            _lblJavaEEVersion = new JLabelOperator(this, javaEEVersion);
         }
         return _lblJavaEEVersion;
     }
@@ -126,6 +129,7 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
         return _txtContextPath;
     }
 
+    //TODO: remove this, the checkbox is probably no longer in the dialog!
     /** Tries to find "Copy Server JAR Files to Libraries Folder" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
@@ -151,7 +155,8 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JButtonOperator btAdd() {
         if (_btAdd==null) {
-            _btAdd = new JButtonOperator(this, "Add...");
+            String add = Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_AddServer");
+            _btAdd = new JButtonOperator(this, add);
         }
         return _btAdd;
     }
@@ -171,7 +176,8 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JLabelOperator lblAddToEnterpriseApplication() {
         if (_lblAddToEnterpriseApplication==null) {
-            _lblAddToEnterpriseApplication = new JLabelOperator(this, "Add to Enterprise Application:");
+            String addToEnterpriseApplication = Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NWP1_AddToEnterprise_Label");
+            _lblAddToEnterpriseApplication = new JLabelOperator(this, addToEnterpriseApplication);
         }
         return _lblAddToEnterpriseApplication;
     }
@@ -191,7 +197,8 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JLabelOperator lblSharingJARLicenseRemark() {
         if (_lblSharingJARLicenseRemark == null) {
-            _lblSharingJARLicenseRemark = new JLabelOperator(this, "<html>There may be legal considerations when sharing server JAR files. Be sure to check the license for your server to make sure you can distribute server JAR files to other developers.</html>");
+            String sharingJARLicenseRemark = Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "PanelSharability.licenseWarning.text");
+            _lblSharingJARLicenseRemark = new JLabelOperator(this, sharingJARLicenseRemark);
         }
         return _lblSharingJARLicenseRemark;
     }

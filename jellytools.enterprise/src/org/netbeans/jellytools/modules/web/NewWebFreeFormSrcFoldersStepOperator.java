@@ -47,6 +47,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.operators.*;
 
+//TODO: This dialog seems identical to the one in java freeform project wizard. Move to jellytools.java and rename?
 
 /** Class implementing all necessary methods for handling "New Web Application
  * with Existing Ant Script - Source Package Folder" wizard step.
