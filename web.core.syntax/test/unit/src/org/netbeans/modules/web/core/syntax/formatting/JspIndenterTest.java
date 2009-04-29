@@ -53,15 +53,18 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.core.GsfIndentTaskFactory;
+import org.netbeans.modules.csl.core.GsfParserFactory;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.html.editor.HtmlKit;
 import org.netbeans.modules.html.editor.NbReaderProvider;
+import org.netbeans.modules.html.editor.gsf.embedding.CssEmbeddingProvider;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.java.source.parsing.ClassParserFactory;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
+import org.netbeans.modules.javascript.editing.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.web.core.syntax.EmbeddingProviderImpl;
 import org.netbeans.modules.web.core.syntax.JspKit;
@@ -115,7 +118,8 @@ public class JspIndenterTest extends TestBase2 {
         ExpressionLanguageIndentTaskFactory elReformatFactory = new ExpressionLanguageIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-el"), elReformatFactory);
         GsfIndentTaskFactory jsFactory = new GsfIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/javascript"), jsFactory);
+        MockMimeLookup.setInstances(MimePath.parse("text/javascript"), jsFactory, new GsfParserFactory());
+        MockMimeLookup.setInstances(MimePath.EMPTY, new JsEmbeddingProvider.Factory(), new CssEmbeddingProvider.Factory());
     }
 
     @Override
@@ -209,6 +213,14 @@ public class JspIndenterTest extends TestBase2 {
 
     public void testFormattingCase010() throws Exception {
         reformatFileContents("testfilesformatting/case010.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingCase011() throws Exception {
+        reformatFileContents("testfilesformatting/case011.jsp",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingCase012() throws Exception {
+        reformatFileContents("testfilesformatting/case012.jsp",new IndentPrefs(4,4));
     }
 
     public void testFormattingIssue121102() throws Exception {

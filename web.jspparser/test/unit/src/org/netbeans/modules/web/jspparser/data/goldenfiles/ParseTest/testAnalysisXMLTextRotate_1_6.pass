@@ -78,8 +78,8 @@
       doctypePublic       : null
       hasJspRoot          : false
       prefixes:
-        jsp
         c
+        jsp
         xmlns
       includePrelude:
       includeCoda:
