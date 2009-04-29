@@ -73,7 +73,16 @@ public class BreakpointsNodeModel implements NodeModel {
         "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpoint"; // NOI18N
     public static final String DISABLED_LINE_CONDITIONAL_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/DisabledConditionalBreakpoint"; // NOI18N
-    
+    public static final String DISABLED_CURRENT_LINE_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpointHit"; // NOI18N
+    public static final String CURRENT_LINE_CONDITIONAL_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpointHit"; // NOI18N
+    public static final String CURRENT_LINE_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/BreakpointHit"; // NOI18N
+    public static final String CURRENT_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpointHit"; // NOI18N
+    public static final String DISABLED_CURRENT_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpointHit"; // NOI18N
 
     private Collection<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
 
@@ -164,7 +173,7 @@ public class BreakpointsNodeModel implements NodeModel {
                         "CTL_All_Functions_Breakpoint", className); // NOI18N
             } else {
                 return NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Function_Breakpoint", // NOI18N
-                        className, b.getFunctionName());
+                        b.getFunctionName());
             }
         } else if (o instanceof AddressBreakpoint) {
             return NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Address_Breakpoint", // NOI18N
@@ -175,31 +184,63 @@ public class BreakpointsNodeModel implements NodeModel {
     }
     
     public String getIconBase(Object o) throws UnknownTypeException {
+        boolean current = currentBreakpoint == o;
         boolean disabled = !((Breakpoint) o).isEnabled();
+        boolean invalid = ((Breakpoint) o).getValidity() == Breakpoint.VALIDITY.INVALID;
         if (o instanceof LineBreakpoint || o instanceof AddressBreakpoint) {
             String condition = ((GdbBreakpoint) o).getCondition();
             boolean conditional = condition != null && condition.trim().length() > 0;
-            if (disabled) {
-                if (conditional) {
-                    return DISABLED_LINE_CONDITIONAL_BREAKPOINT;
+            String iconBase;
+            if (current) {
+                if (disabled) {
+                    if (conditional) {
+                        iconBase = DISABLED_LINE_CONDITIONAL_BREAKPOINT;
+                    } else {
+                        iconBase = DISABLED_CURRENT_LINE_BREAKPOINT;
+                    }
                 } else {
-                    return DISABLED_LINE_BREAKPOINT;
+                    if (conditional) {
+                        iconBase = CURRENT_LINE_CONDITIONAL_BREAKPOINT;
+                    } else {
+                        iconBase = CURRENT_LINE_BREAKPOINT;
+                    }
+                }
+            } else if (disabled) {
+                if (conditional) {
+                    iconBase = DISABLED_LINE_CONDITIONAL_BREAKPOINT;
+                } else {
+                    iconBase = DISABLED_LINE_BREAKPOINT;
                 }
             } else {
                 if (conditional) {
-                    return LINE_CONDITIONAL_BREAKPOINT;
+                    iconBase = LINE_CONDITIONAL_BREAKPOINT;
                 } else {
-                    return LINE_BREAKPOINT;
+                    iconBase = LINE_BREAKPOINT;
                 }
             }
+            if (invalid && !disabled) {
+                iconBase += "_broken"; // NOI18N
+            }
+            return iconBase;
         } else if (o instanceof FunctionBreakpoint) {
-            if (disabled) {
-                return DISABLED_BREAKPOINT;
+            String iconBase;
+            if (current) {
+                if (disabled) {
+                    iconBase = DISABLED_CURRENT_BREAKPOINT;
+                } else {
+                    iconBase = CURRENT_BREAKPOINT;
+                }
+            } else if (disabled) {
+                iconBase = DISABLED_BREAKPOINT;
             } else {
-                return BREAKPOINT;
+                iconBase = BREAKPOINT;
+                if (invalid) {
+                    iconBase += "_broken"; // NOI18N
+                }
             }
+            return iconBase;
         } else {
-            throw new UnknownTypeException (o);
+            throw new UnknownTypeException(o);
         }
     }
 
@@ -251,12 +292,13 @@ public class BreakpointsNodeModel implements NodeModel {
     }
     
     public void setCurrentBreakpoint(GdbBreakpoint currentBreakpoint) {
-        if (this.currentBreakpoint != null) {
-            fireNodeChanged(this.currentBreakpoint);
-        }
+        GdbBreakpoint oldCurrentBreakpoint = this.currentBreakpoint;
         this.currentBreakpoint = currentBreakpoint;
+        if (oldCurrentBreakpoint != null) {
+            fireNodeChanged (oldCurrentBreakpoint);
+        }
         if (currentBreakpoint != null) {
-            fireNodeChanged(currentBreakpoint);
+            fireNodeChanged (currentBreakpoint);
         }
     }
 }
