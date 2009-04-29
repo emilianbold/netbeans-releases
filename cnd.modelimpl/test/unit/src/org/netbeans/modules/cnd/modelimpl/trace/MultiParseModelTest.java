@@ -53,8 +53,6 @@ public class MultiParseModelTest extends TraceModelTestBase {
     protected void setUp() throws Exception {
         System.setProperty("parser.report.errors", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-        System.setProperty("cnd.modelimpl.parser.threads", "1");
-        System.setProperty("cnd.cache.file.state", "false");
         super.setUp();
     }
 
