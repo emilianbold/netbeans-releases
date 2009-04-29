@@ -57,6 +57,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
@@ -83,9 +84,9 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
 
     public SourceHandleImpl(final ProjectHandle projectHandle, KenaiFeature ftr) {
         feature = ftr;
-        if ("mercurial".equals(feature.getService())) {
+        if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
             prefs= NbPreferences.forModule(Mercurial.class);
-        } else if ("subversion".equals(feature.getService())) {
+        } else if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
             prefs= NbPreferences.forModule(Subversion.class);
         }
         this.projectHandle = projectHandle;
@@ -101,8 +102,8 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     @Override
     public boolean isSupported() {
         // names of those services are values returned from Kenai WS API !!!
-        if ("subversion".equals(feature.getService()) ||
-            "mercurial".equals(feature.getService())) {
+        if (KenaiService.Names.SUBVERSION.equals(feature.getService()) ||
+            KenaiService.Names.MERCURIAL.equals(feature.getService())) {
             return true;
         }
         return false;
