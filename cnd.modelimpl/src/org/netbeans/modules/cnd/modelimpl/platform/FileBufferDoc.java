@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
  */
 public class FileBufferDoc extends AbstractFileBuffer {
 
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
     
     private final Document doc;
     private EventListenerList listeners = new EventListenerList();
