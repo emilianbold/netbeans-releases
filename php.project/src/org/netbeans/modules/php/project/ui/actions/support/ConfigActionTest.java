@@ -127,7 +127,10 @@ class ConfigActionTest extends ConfigAction {
         }
         PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
         if (phpUnit == null || !phpUnit.supportedVersionFound()) {
-            int[] version = phpUnit.getVersion();
+            int[] version = null;
+            if (phpUnit != null) {
+                version = phpUnit.getVersion();
+            }
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(version)),
                     NotifyDescriptor.WARNING_MESSAGE));
