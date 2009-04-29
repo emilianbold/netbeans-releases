@@ -340,7 +340,7 @@ public class BugzillaRepository extends Repository {
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
-        TaskRepository repository = new TaskRepository(name, url);
+        TaskRepository repository = new TaskRepository(Bugzilla.getInstance().getRepositoryConnector().getConnectorKind(), url);
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
         

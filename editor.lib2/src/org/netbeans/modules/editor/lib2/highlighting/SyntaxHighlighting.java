@@ -321,13 +321,20 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                     TokenSequence<?> embeddedSeq = seq.embedded();
                     while (embeddedSeq != null && embeddedSeq.moveNext()) {
                         sequences.add(sequences.size(), embeddedSeq);
-                        if (embeddedSeq.offset() > seq.offset()) {
+
+                        if (embeddedSeq.offset() + embeddedSeq.token().length() < startOffset) {
+                            embeddedSeq.move(startOffset);
+                            if (!embeddedSeq.moveNext()) {
+                                state = S_EMBEDDED_TAIL;
+                                break;
+                            }
+                        } else if (embeddedSeq.offset() > seq.offset()) {
                             state = S_EMBEDDED_HEAD;
                             break;
-                        } else {
-                            seq = embeddedSeq;
-                            embeddedSeq = seq.embedded();
                         }
+                        
+                        seq = embeddedSeq;
+                        embeddedSeq = seq.embedded();
                     }
                 } else if (state == S_DONE) {
                     attribsCache.clear();
@@ -344,6 +351,16 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                                 (System.currentTimeMillis() - logHelper.startTime) + " ms.\n");
                     }
                 }
+
+//                if (state != S_DONE) {
+//                    TokenSequence<?> seq = sequences.get(sequences.size() - 1);
+//                    LOG.fine("HSImpl@" + Integer.toHexString(System.identityHashCode(this)) + " <" + startOffset + ", " + endOffset + ">: " +
+//                        "state=" + state + ", positioned at <" + getStartOffset() + ", " + getEndOffset() + ">");
+//                } else {
+//                    LOG.fine("HSImpl@" + Integer.toHexString(System.identityHashCode(this)) + " <" + startOffset + ", " + endOffset + ">: " +
+//                        "S_DONE");
+//                }
+
                 return state != S_DONE;
             }
         }
@@ -353,17 +370,17 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                 switch (state) {
                     case S_NORMAL: {
                         TokenSequence<?> seq = sequences.get(sequences.size() - 1);
-                        return seq.offset();
+                        return Math.max(seq.offset(), startOffset);
                     }
                     case S_EMBEDDED_HEAD: {
                         TokenSequence<?> embeddingSeq = sequences.get(sequences.size() - 2);
-                        return embeddingSeq.offset();
+                        return Math.max(embeddingSeq.offset(), startOffset);
                     }
                     case S_EMBEDDED_TAIL: {
                         TokenSequence<?> seq = sequences.get(sequences.size() - 1);
                         seq.moveEnd();
                         if (seq.movePrevious()) {
-                            return seq.offset() + seq.token().length();
+                            return Math.max(seq.offset() + seq.token().length(), startOffset);
                         } else {
                             throw new IllegalStateException("Invalid state"); //NOI18N
                         }
@@ -382,21 +399,21 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                 switch (state) {
                     case S_NORMAL: {
                         TokenSequence<?> seq = sequences.get(sequences.size() - 1);
-                        return seq.offset() + seq.token().length();
+                        return Math.min(seq.offset() + seq.token().length(), endOffset);
                     }
                     case S_EMBEDDED_HEAD: {
                         TokenSequence<?> seq = sequences.get(sequences.size() - 1);
                         seq.moveStart();
                         if (seq.moveNext()) {
-                            return seq.offset();
+                            return Math.min(seq.offset(), endOffset);
                         } else {
                             TokenSequence<?> embeddingSeq = sequences.get(sequences.size() - 2);
-                            return embeddingSeq.offset() + embeddingSeq.token().length();
+                            return Math.min(embeddingSeq.offset() + embeddingSeq.token().length(), endOffset);
                         }
                     }
                     case S_EMBEDDED_TAIL:
                         TokenSequence<?> embeddingSeq = sequences.get(sequences.size() - 2);
-                        return embeddingSeq.offset() + embeddingSeq.token().length();
+                        return Math.min(embeddingSeq.offset() + embeddingSeq.token().length(), endOffset);
 
                     case S_DONE:
                         throw new NoSuchElementException();
@@ -554,8 +571,12 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         private int moveTheSequence() {
             TokenSequence<?> seq = sequences.get(sequences.size() - 1);
             
-            if (seq.moveNext() && seq.offset() < endOffset) {
-                return S_NORMAL;
+            if (seq.moveNext()) {
+                if (seq.offset() < endOffset) {
+                    return S_NORMAL;
+                } else {
+                    return S_DONE;
+                }
             } else {
                 if (sequences.size() > 1) {
                     TokenSequence<?> embeddingSeq = sequences.get(sequences.size() - 2);

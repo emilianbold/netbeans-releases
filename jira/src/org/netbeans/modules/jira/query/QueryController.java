@@ -207,9 +207,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(query.isSaved()) {
             setAsSaved();
         }
-        if(jiraFilter != null && jiraFilter instanceof FilterDefinition) {
-            postPopulate((FilterDefinition) jiraFilter);
-        }
+        postPopulate((FilterDefinition) jiraFilter);
     }
 
     @Override
@@ -346,10 +344,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             JiraCommand cmd = new JiraCommand() {
                 @Override
                 public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-                    JiraClient client = Jira.getInstance().getClient(repository.getTaskRepository());
-
                     // XXX repository configuration
-                    Project[] projects = client.getProjects(new NullProgressMonitor());
+                    Project[] projects = repository.getConfiguration().getProjects();
 
                     DefaultListModel model = new DefaultListModel();
                     for (Project project : projects) {
@@ -378,7 +374,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
 //                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
 //                    panel.changedToTextField.setText(CHANGED_NOW);
 //
-                      setFilterDefinition(filterDefinition);
+                    if(filterDefinition != null && filterDefinition instanceof FilterDefinition) {
+                        setFilterDefinition(filterDefinition);
+                    }
 //
 //                    panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
 //
