@@ -106,7 +106,11 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
 
             // increase progress (step 1)
             fireProgressListenerStep();
-            ElementHandle<TypeElement> eh = ElementHandle.create((TypeElement) treePathHandle.resolveElement(cc));
+            final Element el = treePathHandle.resolveElement(cc);
+            if (!(el instanceof TypeElement)) {
+                return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_InvalidSource", treePathHandle, el)); // NOI18N
+            }
+            ElementHandle<TypeElement> eh = ElementHandle.create((TypeElement) el);
             Set<FileObject> resources = cc.getClasspathInfo().getClassIndex().getResources(eh, EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE));
             if (resources.isEmpty()) {
                 return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDOwn_NoSubtype")); // NOI18N
@@ -114,7 +118,6 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
             // increase progress (step 2)
             fireProgressListenerStep();
             // #2 - check if there are any members to pull up
-            Element el = treePathHandle.resolveElement(cc);
             for (Element element : el.getEnclosedElements()) {
                 if (element.getKind() != ElementKind.CONSTRUCTOR) {
                     return null;

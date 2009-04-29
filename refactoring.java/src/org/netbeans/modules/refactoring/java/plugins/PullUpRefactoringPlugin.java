@@ -112,7 +112,11 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
 
             // increase progress (step 1)
             fireProgressListenerStep();
-            TypeElement e  = (TypeElement) treePathHandle.resolveElement(cc);
+            final Element elm = treePathHandle.resolveElement(cc);
+            if (!(elm instanceof TypeElement)) {
+                return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_InvalidSource", treePathHandle, elm)); // NOI18N
+            }
+            TypeElement e  = (TypeElement) elm;
             if (RetoucheUtils.getSuperTypes(e, cc, true).isEmpty()) {
                 return new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_NoSuperTypes")); // NOI18N
             }
