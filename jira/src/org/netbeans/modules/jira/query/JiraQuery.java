@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
@@ -58,6 +59,7 @@ import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -289,6 +291,14 @@ public class JiraQuery extends Query {
                 IssueCache cache = repository.getIssueCache();
                 issue = (NbJiraIssue) cache.setIssueData(id, taskData);
                 issues.add(issue.getID());
+                
+                try {
+                    // XXX dummy
+                    Jira.getInstance().storeTaskData(repository, taskData);
+                } catch (CoreException ex) {
+                    Jira.LOG.log(Level.SEVERE, null, ex); 
+                }
+
             } catch (IOException ex) {
                 Jira.LOG.log(Level.SEVERE, null, ex);
                 return;

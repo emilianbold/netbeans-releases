@@ -42,16 +42,22 @@ package org.netbeans.modules.jira;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.JiraClientFactory;
 import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
 import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
-import org.eclipse.mylyn.internal.jira.core.model.JiraAction;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
+import org.eclipse.mylyn.internal.tasks.core.TaskActivityManager;
+import org.eclipse.mylyn.internal.tasks.core.TaskList;
+import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
+import org.eclipse.mylyn.internal.tasks.core.TaskTask;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataStore;
+import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizationSession;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.RequestProcessor;
 
@@ -79,6 +85,7 @@ public class Jira {
         } catch (Exception ex) {
             throw new RuntimeException(ex); // XXX thisiscrap
         }
+        BugtrackingRuntime.getInstance().addRepositoryConnector(getRepositoryConnector());
     }
 
     public static Jira getInstance() {
@@ -86,6 +93,16 @@ public class Jira {
             instance = new Jira();
         }
         return instance;
+    }
+
+    public void storeTaskData(JiraRepository repository, TaskData data) throws CoreException {
+        BugtrackingRuntime.getInstance().getTaskDataManager().putUpdatedTaskData(
+                new TaskTask(
+                    getRepositoryConnector().getConnectorKind(),
+                    repository.getUrl(),
+                    data.getTaskId()),
+                    data,
+                    true);
     }
 
     /**
@@ -110,6 +127,10 @@ public class Jira {
         JiraConfig.getInstance().putRepository(repository.getDisplayName(), repository);
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().add(repository);
+            BugtrackingRuntime
+                    .getInstance()
+                    .getTaskRepositoryManager()
+                    .addRepository(repository.getTaskRepository());
         }
     }
 
@@ -117,6 +138,10 @@ public class Jira {
         JiraConfig.getInstance().removeRepository(repository.getDisplayName());
         synchronized(REPOSITORIES_LOCK) {
             getStoredRepositories().remove(repository);
+            BugtrackingRuntime
+                    .getInstance()
+                    .getTaskRepositoryManager()
+                    .addRepository(repository.getTaskRepository());
         }
     }
 
@@ -151,20 +176,13 @@ public class Jira {
         return jrc;
     }
 
-    public Project[] getProjects(TaskRepository repo) throws JiraException {
-        return getClient(repo).getProjects(new NullProgressMonitor());
-    }
-
-    public Resolution[] getResolutions(TaskRepository repo) throws JiraException {
-        return getClient(repo).getResolutions(new NullProgressMonitor());
-    }
-
-    public Project[] getProjects(JiraClient client) throws JiraException {
-        return client.getProjects(new NullProgressMonitor());
-    }
-
     public JiraClient getClient(TaskRepository repo) throws JiraException {
+        // XXX init repo connenction?
         return JiraClientFactory.getDefault().getJiraClient(repo);
+    }
+
+    public void removeClient(TaskRepository taskRepository) {
+        JiraClientFactory.getDefault().repositoryRemoved(taskRepository);
     }
 
 }
