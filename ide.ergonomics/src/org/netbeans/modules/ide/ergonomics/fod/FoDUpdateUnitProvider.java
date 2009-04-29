@@ -27,10 +27,14 @@
  */
 package org.netbeans.modules.ide.ergonomics.fod;
 
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -40,6 +44,7 @@ import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /** Feature On Demand Unit Provider.
@@ -80,22 +85,37 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
             }
             if (registerFeature(
                 all, fi.getCodeNames(),
-                fi.getFeatureCodeNameBase(), res, notYetProcessed
+                fi.getFeatureCodeNameBase(), null, res, notYetProcessed
             )) {
                 continue;
             }
         }
-        Set<String> rest = new HashSet<String>();
-        String restPilot = null;
+        Set<String> baseIDE = new HashSet<String>();
+        Set<String> extra = new HashSet<String>();
         for (ModuleInfo mi : notYetProcessed) {
             if (showInAU(mi)) {
-                if (restPilot == null) {
-                    restPilot = mi.getCodeNameBase();
+                if (isPlatformCluster(mi)) {
+                    continue;
                 }
-                rest.add(mi.getCodeNameBase());
+                if (isIDECluster(mi)) {
+                    baseIDE.add(mi.getCodeNameBase());
+                } else {
+                    extra.add(mi.getCodeNameBase());
+                }
             }
         }
-        registerFeature(all, rest, restPilot, res, notYetProcessed);
+        registerFeature(
+            all, baseIDE, "base.ide",
+            NbBundle.getMessage(FoDUpdateUnitProvider.class, "FeatureBaseIDE"),
+            res, notYetProcessed
+        );
+        if (!extra.isEmpty()) {
+            registerFeature(
+                all, extra, "user.installed",
+                NbBundle.getMessage(FoDUpdateUnitProvider.class, "FeatureUserInstalled"),
+                res, notYetProcessed
+            );
+        }
 
         return res;
     }
@@ -106,7 +126,7 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
 
     private boolean registerFeature(
         Collection<? extends ModuleInfo> allModules,
-        Set<String> codeNames, String prefCnb, Map<String, UpdateItem> res,
+        Set<String> codeNames, String prefCnb, String displayName, Map<String, UpdateItem> res,
         Set<ModuleInfo> processed
     ) {
         Set<String> justKits = new HashSet<String>();
@@ -141,19 +161,56 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
                 justKits.remove(mi.getCodeNameBase());
             }
         }
-        if (preferred == null) {
-            return true;
+        Object featureName = displayName;
+        String specVersion;
+        if (featureName == null) {
+            if (preferred == null) {
+                return true;
+            }
+            featureName = preferred.getLocalizedAttribute("OpenIDE-Module-Display-Category"); // NOI18N
+            if (!(name instanceof String)) {
+                featureName = preferred.getDisplayName();
+            }
+            specVersion = preferred.getSpecificationVersion().toString();
+        } else {
+            specVersion = "1.0";
         }
-        Object featureName = preferred.getLocalizedAttribute("OpenIDE-Module-Display-Category"); // NOI18N
-        if (!(name instanceof String)) {
-            featureName = preferred.getDisplayName();
-        }
-        UpdateItem feature = UpdateItem.createFeature(name, preferred.getSpecificationVersion().toString(), justKits, (String) featureName, description.toString(), null);
+        UpdateItem feature = UpdateItem.createFeature(name, specVersion, justKits, (String) featureName, description.toString(), null);
         res.put(name, feature);
         return false;
     }
 
     private static boolean showInAU(ModuleInfo mi) {
         return "true".equals(mi.getAttribute("AutoUpdate-Show-In-Client")); // NOI18N
+    }
+
+    private boolean isIDECluster(ModuleInfo mi) {
+        return isModuleFrom(mi, "ide"); // NOI18N
+    }
+    private boolean isPlatformCluster(ModuleInfo mi) {
+        if ("org.netbeans.modules.ide.branding.kit".equals(mi.getCodeName())) { // NOI18N
+            return true;
+        }
+        return isModuleFrom(mi, "platform"); // NOI18N
+    }
+
+    private static Method m;
+    private static boolean isModuleFrom(ModuleInfo mi, String prefix) {
+        File f;
+        try {
+            if (m == null) {
+                m = mi.getClass().getMethod("getJarFile"); // NOI18N
+                m.setAccessible(true);
+            }
+            f = (File)m.invoke(mi);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+        if (f.getParentFile().getName().equals("modules")) { // NOI18N
+            if (f.getParentFile().getParentFile().getName().startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

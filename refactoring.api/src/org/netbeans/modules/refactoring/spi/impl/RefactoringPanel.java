@@ -573,6 +573,10 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             // if no elements were returned, action was either cancelled or preview
             // was skipped -> finish
             if (tempSession == null) {
+                if (!parametersPanel.isCanceledDialog()) {
+                    // close tab in case the refactoring is bypassed but it has been open before
+                    close();
+                }
                 return;
             }
             
