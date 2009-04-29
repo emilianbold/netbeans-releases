@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,46 +34,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.cpu.impl;
+package org.netbeans.modules.dlight.impl;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
-import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 
 /**
  *
  * @author mt154047
  */
-public final class CpuIndicatorConfiguration extends IndicatorConfiguration {
+public class ServiceInfoDataStorageImpl implements ServiceInfoDataStorage {
 
-    /*package*/ static final String ID = "CpuIndicatorConfiguration_ID"; // NOI18N
-    private final Set<String> sysColumns;
+    private final Map<String, String> serviceInfoMap = new ConcurrentHashMap<String, String>();
 
-    public CpuIndicatorConfiguration(IndicatorMetadata metadata, Set<String> sysColumns, int position) {
-        super(metadata, position);
-        this.sysColumns = Collections.unmodifiableSet(new HashSet<String>(sysColumns));
+    public final Map<String, String> getInfo() {
+        return serviceInfoMap;
     }
 
-    @Override
-    public String getID() {
-        return ID;
+    public final String getValue(String name) {
+        return serviceInfoMap.get(name);
     }
 
-    private Set<String> getSysColumns() {
-        return sysColumns;
+    public final String put( String name, String value) {
+        return serviceInfoMap.put(name, value);
     }
 
-    private static class CpuIndicatorConfigurationAccessorImpl extends CpuIndicatorConfigurationAccessor {
-        public Set<String> getSysColumns(CpuIndicatorConfiguration conf) {
-            return conf.getSysColumns();
-        }
-    }
-
-    static {
-        CpuIndicatorConfigurationAccessor.setDefault(new CpuIndicatorConfigurationAccessorImpl());
+    public boolean shutdown() {
+        return true;
     }
 }

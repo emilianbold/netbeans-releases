@@ -55,6 +55,7 @@ import org.openide.util.NbBundle;
      * component from this class, just use getComponent().
      */
     private CreateHostVisualPanel2 component;
+    private ExecutionEnvironment lastValidatedHost;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -73,13 +74,15 @@ import org.openide.util.NbBundle;
 
     public void validate() throws WizardValidationException {
         ExecutionEnvironment host = component.getHost();
-        if (host == null) {
+        if (host == null || !host.equals(lastValidatedHost)) {
             component.validateHost();
         }
         component.enableControls(true);
         if (component.getHost() == null) {
             String errMsg = NbBundle.getMessage(getClass(), "MSG_Failure");
             throw new WizardValidationException(component, errMsg, errMsg);
+        } else {
+            lastValidatedHost = host;
         }
     }
 

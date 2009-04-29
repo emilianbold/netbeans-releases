@@ -771,9 +771,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     "\n while getting TS of file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
             return null;
         }
-        FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(apt.getPath());
-        outPcState.set(pcState);
-        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, pcState);
+        FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(apt.getPath());
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, pcBuilder);
+        outPcState.set(pcBuilder.build());
         if(filtered) {
             return walker.getFilteredTokenStream(getLanguageFilter(ppState));
         } else {

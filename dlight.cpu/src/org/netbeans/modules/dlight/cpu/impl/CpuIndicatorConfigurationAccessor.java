@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,46 +34,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.cpu.impl;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
-import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 
 /**
  *
- * @author mt154047
+ * @author Alexey Vladykin
  */
-public final class CpuIndicatorConfiguration extends IndicatorConfiguration {
+/*package*/ abstract class CpuIndicatorConfigurationAccessor {
 
-    /*package*/ static final String ID = "CpuIndicatorConfiguration_ID"; // NOI18N
-    private final Set<String> sysColumns;
+    private static volatile CpuIndicatorConfigurationAccessor DEFAULT;
 
-    public CpuIndicatorConfiguration(IndicatorMetadata metadata, Set<String> sysColumns, int position) {
-        super(metadata, position);
-        this.sysColumns = Collections.unmodifiableSet(new HashSet<String>(sysColumns));
-    }
-
-    @Override
-    public String getID() {
-        return ID;
-    }
-
-    private Set<String> getSysColumns() {
-        return sysColumns;
-    }
-
-    private static class CpuIndicatorConfigurationAccessorImpl extends CpuIndicatorConfigurationAccessor {
-        public Set<String> getSysColumns(CpuIndicatorConfiguration conf) {
-            return conf.getSysColumns();
+    public static CpuIndicatorConfigurationAccessor getDefault() {
+        CpuIndicatorConfigurationAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
         }
+        try {
+            Class.forName(CpuIndicatorConfiguration.class.getName(), true,
+                    CpuIndicatorConfiguration.class.getClassLoader());
+        } catch (Exception e) {
+        }
+        return DEFAULT;
     }
 
-    static {
-        CpuIndicatorConfigurationAccessor.setDefault(new CpuIndicatorConfigurationAccessorImpl());
+    public static void setDefault(CpuIndicatorConfigurationAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
     }
+
+    public abstract Set<String> getSysColumns(CpuIndicatorConfiguration conf);
 }
