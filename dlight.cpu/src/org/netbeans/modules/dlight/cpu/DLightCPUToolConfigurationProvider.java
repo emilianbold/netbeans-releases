@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.cpu;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.MissingResourceException;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
@@ -145,8 +146,10 @@ public final class DLightCPUToolConfigurationProvider
         resultColumns.add(ProcDataProviderConfiguration.SYS_TIME);
         IndicatorMetadata indicatorMetadata =
             new IndicatorMetadata(resultColumns);
-        CpuIndicatorConfiguration indicatorConfiguration =
-            new CpuIndicatorConfiguration(indicatorMetadata, INDICATOR_POSITION);
+        CpuIndicatorConfiguration indicatorConfiguration = new CpuIndicatorConfiguration(
+                indicatorMetadata,
+                new HashSet<String>(Arrays.asList(ProcDataProviderConfiguration.SYS_TIME.getColumnName())),
+                INDICATOR_POSITION);
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigDtrace);
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigSS);
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
