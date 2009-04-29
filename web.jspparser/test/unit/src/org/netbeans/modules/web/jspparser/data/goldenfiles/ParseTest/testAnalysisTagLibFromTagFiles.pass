@@ -7,6 +7,21 @@
         javax.servlet.jsp.*
       dependants:
       taglibsMap:
+        tag library: /TestTagLibrary
+            tlibversion : 1.0
+            jspversion  : 2.0
+            shortname   : ttl
+            urn         : /TestTagLibrary
+            info        : Test tag library.
+            uri         : /TestTagLibrary
+              tagfile path : /META-INF/tags/hTag.tag
+              tag name     : helloTag
+                  class    : org.apache.jsp.tag.meta.hTag_tag
+                  attribs  : []
+              tagfile path : /META-INF/tags/book.tag
+              tag name     : book
+                  class    : org.apache.jsp.tag.meta.book_tag
+                  attribs  : [title, author]
         tag library: http://java.sun.com/jstl/core
             tlibversion : 1.0
             jspversion  : 1.2
@@ -56,6 +71,21 @@
               tag name     : when
                   class    : org.apache.taglibs.standard.tag.el.core.WhenTag
                   attribs  : [test]
+        tag library: urn:jsptagdir:/WEB-INF/tags/
+            tlibversion : 1.0
+            jspversion  : 2.0
+            shortname   : tags
+            urn         : null
+            info        : null
+            uri         : null
+              tagfile path : /WEB-INF/tags/linklist.tag
+              tag name     : linklist
+                  class    : org.apache.jsp.tag.web.linklist_tag
+                  attribs  : [separator]
+              tagfile path : /WEB-INF/tags/othertag.tag
+              tag name     : othertag
+                  class    : org.apache.jsp.tag.web.othertag_tag
+                  attribs  : [separator]
         tag library: urn:jsptagdir:/WEB-INF/tags/myTags/
             tlibversion : 1.0
             jspversion  : 2.0
@@ -75,40 +105,10 @@
               tag name     : test
                   class    : org.apache.jsp.tag.web.myTags.test_tag
                   attribs  : [a]
-        tag library: /TestTagLibrary
-            tlibversion : 1.0
-            jspversion  : 2.0
-            shortname   : ttl
-            urn         : /TestTagLibrary
-            info        : Test tag library.
-            uri         : /TestTagLibrary
-              tagfile path : /META-INF/tags/hTag.tag
-              tag name     : helloTag
-                  class    : org.apache.jsp.tag.meta.hTag_tag
-                  attribs  : []
-              tagfile path : /META-INF/tags/book.tag
-              tag name     : book
-                  class    : org.apache.jsp.tag.meta.book_tag
-                  attribs  : [title, author]
-        tag library: urn:jsptagdir:/WEB-INF/tags/
-            tlibversion : 1.0
-            jspversion  : 2.0
-            shortname   : tags
-            urn         : null
-            info        : null
-            uri         : null
-              tagfile path : /WEB-INF/tags/linklist.tag
-              tag name     : linklist
-                  class    : org.apache.jsp.tag.web.linklist_tag
-                  attribs  : [separator]
-              tagfile path : /WEB-INF/tags/othertag.tag
-              tag name     : othertag
-                  class    : org.apache.jsp.tag.web.othertag_tag
-                  attribs  : [separator]
       prefixMapper:
-        myTags -> urn:jsptagdir:/WEB-INF/tags/myTags/
-        jarTags -> /TestTagLibrary
         c -> http://java.sun.com/jstl/core
+        jarTags -> /TestTagLibrary
+        myTags -> urn:jsptagdir:/WEB-INF/tags/myTags/
         tags -> urn:jsptagdir:/WEB-INF/tags/
       approxXmlPrefixMapper :
       language            : java
@@ -130,8 +130,8 @@
       doctypePublic       : null
       hasJspRoot          : true
       prefixes:
-        xmlns
         jsp
+        xmlns
       includePrelude:
       includeCoda:
       pluginDcls:
