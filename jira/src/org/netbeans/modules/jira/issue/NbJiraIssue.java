@@ -201,14 +201,12 @@ public class NbJiraIssue extends Issue {
 
 
     public String getID() {
-        if(taskData.isNew()) {
-            return null;
-        }
-        return taskData.getTaskId(); // XXX id or key ???
+//        return taskData.getTaskId(); // XXX id or key ???
+        return getID(taskData);
     }
 
     String getKey() {
-        return getFieldValue(IssueField.KEY);
+        return getID(taskData);
     }
 
     public String getSummary() {
@@ -410,7 +408,7 @@ public class NbJiraIssue extends Issue {
         if(taskData.isNew()) {
             return null;
         }
-        return taskData.getTaskId();
+        return getFieldValue(taskData, IssueField.KEY);
     }
 
     // XXX fields logic - 100% bugzilla overlap
@@ -421,6 +419,10 @@ public class NbJiraIssue extends Issue {
      * @return
      */
     String getFieldValue(IssueField f) {
+        return getFieldValue(taskData, f);
+    }
+
+    static String getFieldValue(TaskData taskData, IssueField f) {
         if(f.isSingleAttribute()) {
             TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
             if(a != null && a.getValues().size() > 1) {
@@ -441,7 +443,7 @@ public class NbJiraIssue extends Issue {
      * @param a
      * @return
      */
-    private String listValues(TaskAttribute a) {
+    private static String listValues(TaskAttribute a) {
         if(a == null) {
             return "";                                                          // NOI18N
         }

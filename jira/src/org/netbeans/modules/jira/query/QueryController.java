@@ -68,13 +68,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -643,8 +641,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onGotoIssue() {
-        final String id = panel.idTextField.getText().trim(); 
-        if(id == null || id.trim().equals("") ) {                               // NOI18N
+        final String key = panel.idTextField.getText().trim();
+        if(key == null || key.trim().equals("") ) {                               // NOI18N
             return;
         }
         final Task[] t = new Task[1];
@@ -656,12 +654,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 return true;
             }
         };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {id}), c); // NOI18N
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {key}), c); // NOI18N
         t[0] = Jira.getInstance().getRequestProcessor().create(new Runnable() {
             public void run() {
                 handle.start();
                 try {
-                    Issue issue = repository.getIssue(id.toUpperCase()); // XXX always uppercase?
+                    Issue issue = repository.getIssue(key.toUpperCase()); // XXX always uppercase?
                     if (issue != null) {
                         issue.open();
                     } else {
