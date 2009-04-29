@@ -119,8 +119,10 @@ public class BreakpointOutput extends LazyActionsManagerListener
             return;
         }
         GdbBreakpoint breakpoint = (GdbBreakpoint) event.getSource();
-        getBreakpointsNodeModel().setCurrentBreakpoint(breakpoint);
-        debugger.setCurrentBreakpoint(breakpoint);
+        if (breakpoint.getSuspend() != GdbBreakpoint.SUSPEND_NONE) {
+            getBreakpointsNodeModel().setCurrentBreakpoint(breakpoint);
+            debugger.setCurrentBreakpoint(breakpoint);
+        }
         synchronized (lock) {
             if (ioManager == null) {
                 lookupIOManager();
@@ -167,7 +169,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
     public void propertyChange(PropertyChangeEvent evt) {
         synchronized (lock) {
             if (debugger == null || !evt.getPropertyName().equals(GdbDebugger.PROP_STATE) ||
-                        debugger.getState() != GdbDebugger.State.RUNNING) {
+                        debugger.getState() == GdbDebugger.State.STOPPED) {
                 return;
             }
         }

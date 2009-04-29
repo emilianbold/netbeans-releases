@@ -56,7 +56,7 @@ public final class LLDataCollectorConfiguration
         CPU, MEM, SYNC
     }
 
-    public static final Column  threads_count = new DataTableMetadata.Column("threads", Integer.class);
+    public static final Column  threads_count = new DataTableMetadata.Column("threads", Integer.class); // NOI18N
 
     public static final DataTableMetadata CPU_TABLE = new DataTableMetadata(
             "lltool_cpu", Arrays.asList( // NOI18N

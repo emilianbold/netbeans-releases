@@ -40,28 +40,16 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
-import java.io.IOException;
-import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.CancellationException;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetReporter;
-import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.spi.remote.setup.support.TextComponentWriter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /*package*/ final class CreateHostVisualPanel2 extends JPanel {
 
@@ -231,110 +219,30 @@ import org.openide.util.NbBundle;
         return true;
     }
 
+    
     public void validateHost() {
         final String password = getPassword();
         final boolean rememberPassword = cbSavePassword.isSelected();
         final ExecutionEnvironment env = getExecutionEnvironment();
-        final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
-        final boolean alreadyOnline = record.isOnline();
-        if (alreadyOnline) {
-            String message = NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected1");
-            message = String.format(message, env.toString());
-            tpOutput.setText(message);
-        } else {
-            record.resetOfflineState(); // this is a do-over
-            tpOutput.setText("");
-        }
+
+        tpOutput.setText("");
+
         phandle = ProgressHandleFactory.createHandle(""); ////NOI18N
         pbarStatusPanel.removeAll();
         pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
         pbarStatusPanel.validate();
-        phandle.start();        
-        // move expensive operation out of EDT
+        phandle.start();
 
-        if (!alreadyOnline) {
-            addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgConnectingTo",
-                    env.getHost()));
-        }
         try {
-            if (password == null || password.length() == 0) {
-                ConnectionManager.getInstance().connectTo(env);
-            } else {
-                ConnectionManager.getInstance().connectTo(env, password.toCharArray(), rememberPassword);
+            HostValidatorImpl hostValidator = new HostValidatorImpl(cacheManager);
+            if (hostValidator.validate(env, password, rememberPassword, new TextComponentWriter(tpOutput))) {
+                hostFound = env;
+                runOnFinish = hostValidator.getRunOnFinish();
             }
-        } catch (IOException ex) {
-            addOuputTextInUiThread("\n" + RemoteCommandSupport.getMessage(ex)); //NOI18N
+        } finally {
             phandle.finish();
-            return;
-        } catch (CancellationException ex) {
-            phandle.finish();
-            return;
-        }
-        if (!alreadyOnline) {
-            record.init(null);
-        }
-        if (record.isOnline()) {
-            if (!alreadyOnline) {
-                addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
-            }
-            CompilerSetReporter.setWriter(new Writer() {
-
-                @Override
-                public void write(char[] cbuf, int off, int len) throws IOException {
-                    final String value = new String(cbuf, off, len);
-                    addOuputTextInUiThread(value);
-                }
-
-                @Override
-                public void flush() throws IOException {
-                }
-
-                @Override
-                public void close() throws IOException {
-                }
-            });
-            final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env);
-           csm.initialize(false, false);
-            runOnFinish = new Runnable() {
-                public void run() {
-                    csm.finishInitialization();
-                }
-            };
-            hostFound = csm.getExecutionEnvironment(); //TODO: no validations, pure cheat
             wizardListener.stateChanged(null);
-        } else {
-            addOuputTextInUiThread(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.ErrConn")
-                    + '\n' + record.getReason()); //NOI18N
-        }
-        phandle.finish();
-        CompilerSetReporter.setWriter(null);
-        // back to EDT to work with Swing
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                pbarStatusPanel.setVisible(false);
-                if (alreadyOnline) {
-                    addOuputTextInUiThread('\n' + NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected2"));
-                }
-            }
-        });
-    }
-
-    private void addOuputTextInUiThread(final String value) {
-        Runnable r = new Runnable() {
-                public void run() {
-                    tpOutput.setText(tpOutput.getText() + value);
-                }
-        };
-        if (SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            try {
-                SwingUtilities.invokeAndWait(r);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            pbarStatusPanel.setVisible(false);
         }
     }
 
