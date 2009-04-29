@@ -56,6 +56,7 @@ import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -96,7 +97,10 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
                 return precheckProblem;
             }
             if (!RetoucheUtils.isElementInOpenProject(treePathHandle.getFileObject())) {
-                return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+                return new Problem(true, NbBundle.getMessage(
+                        PushDownRefactoringPlugin.class,
+                        "ERR_ProjectNotOpened",
+                        FileUtil.getFileDisplayName(treePathHandle.getFileObject())));
             }
 
 

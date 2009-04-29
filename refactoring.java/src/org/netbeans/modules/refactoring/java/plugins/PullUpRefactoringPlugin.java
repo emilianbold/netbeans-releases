@@ -62,7 +62,7 @@ import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -103,7 +103,10 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 return problem;
             }
             if (!RetoucheUtils.isElementInOpenProject(treePathHandle.getFileObject())) {
-                return new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+                return new Problem(true, NbBundle.getMessage(
+                        PullUpRefactoringPlugin.class,
+                        "ERR_ProjectNotOpened",
+                        FileUtil.getFileDisplayName(treePathHandle.getFileObject())));
             }
 
 
