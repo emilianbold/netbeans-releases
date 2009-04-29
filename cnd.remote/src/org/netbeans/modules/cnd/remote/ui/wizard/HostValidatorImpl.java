@@ -78,7 +78,7 @@ public class HostValidatorImpl implements HostValidator {
         if (alreadyOnline) {
             String message = NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected1");
             message = String.format(message, env.toString());
-            writer.printf("%s", message);
+            writer.printf("%s", message); // NOI18N
         } else {
             record.resetOfflineState(); // this is a do-over
         }
