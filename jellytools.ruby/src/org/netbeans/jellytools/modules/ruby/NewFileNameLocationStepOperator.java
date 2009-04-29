@@ -61,7 +61,7 @@ public class NewFileNameLocationStepOperator extends org.netbeans.jellytools.New
         if (_lblObjectName == null) {
             final String nameLabel = Bundle.getString("org.netbeans.modules.properties.Bundle", "PROP_name");
            // final String nameAndLocationLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_JavaTargetChooserPanelGUI_Name");
-            final String nameAndLocationLabel = "Name and Location";
+            final String nameAndLocationLabel = Bundle.getString("org.netbeans.modules.ruby.rubyproject.templates.Bundle", "LBL_RubyTargetChooserPanelGUI_Name");
             _lblObjectName = new JLabelOperator(this, new JLabelOperator.JLabelFinder(new ComponentChooser() {
 
                 public boolean checkComponent(Component comp) {
