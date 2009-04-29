@@ -7,34 +7,6 @@
         javax.servlet.jsp.*
       dependants:
       taglibsMap:
-        tag library: urn:jsptagdir:/WEB-INF/tags/myTags/
-            tlibversion : 1.0
-            jspversion  : 2.0
-            shortname   : -myTags-
-            urn         : null
-            info        : null
-            uri         : null
-              tag name     : testx
-                  class    : org.apache.jsp.tag.web.myTags.testx_tagx
-                  attribs  : [a]
-              tag name     : first
-                  class    : org.apache.jsp.tag.web.myTags.first_tag
-                  attribs  : [title, author, price_info]
-              tag name     : test
-                  class    : org.apache.jsp.tag.web.myTags.test_tag
-                  attribs  : [a]
-              tagfile path : /WEB-INF/tags/myTags/testx.tagx
-              tag name     : testx
-                  class    : org.apache.jsp.tag.web.myTags.testx_tagx
-                  attribs  : [a]
-              tagfile path : /WEB-INF/tags/myTags/first.tag
-              tag name     : first
-                  class    : org.apache.jsp.tag.web.myTags.first_tag
-                  attribs  : [title, author, price_info]
-              tagfile path : /WEB-INF/tags/myTags/test.tag
-              tag name     : test
-                  class    : org.apache.jsp.tag.web.myTags.test_tag
-                  attribs  : [a]
         tag library: /TestTagLibrary
             tlibversion : 1.0
             jspversion  : 2.0
@@ -42,12 +14,6 @@
             urn         : /TestTagLibrary
             info        : Test tag library.
             uri         : /TestTagLibrary
-              tag name     : helloTag
-                  class    : org.apache.jsp.tag.meta.hTag_tag
-                  attribs  : []
-              tag name     : book
-                  class    : org.apache.jsp.tag.meta.book_tag
-                  attribs  : [title, author]
               tagfile path : /META-INF/tags/hTag.tag
               tag name     : helloTag
                   class    : org.apache.jsp.tag.meta.hTag_tag
@@ -56,23 +22,6 @@
               tag name     : book
                   class    : org.apache.jsp.tag.meta.book_tag
                   attribs  : [title, author]
-        tag library: urn:jsptagdir:/WEB-INF/tags/
-            tlibversion : 1.0
-            jspversion  : 2.0
-            shortname   : tags
-            urn         : null
-            info        : null
-            uri         : null
-              tag name     : linklist
-                  class    : org.apache.jsp.tag.web.linklist_tag
-                  attribs  : [separator]
-              tag name     : othertag
-                  class    : org.apache.jsp.tag.web.othertag_tag
-                  attribs  : [separator]
-              tagfile path : /WEB-INF/tags/linklist.tag
-              tag name     : linklist
-                  class    : org.apache.jsp.tag.web.linklist_tag
-                  attribs  : [separator]
         tag library: http://java.sun.com/jstl/core
             tlibversion : 1.0
             jspversion  : 1.2
@@ -122,11 +71,45 @@
               tag name     : when
                   class    : org.apache.taglibs.standard.tag.el.core.WhenTag
                   attribs  : [test]
+        tag library: urn:jsptagdir:/WEB-INF/tags/
+            tlibversion : 1.0
+            jspversion  : 2.0
+            shortname   : tags
+            urn         : null
+            info        : null
+            uri         : null
+              tagfile path : /WEB-INF/tags/linklist.tag
+              tag name     : linklist
+                  class    : org.apache.jsp.tag.web.linklist_tag
+                  attribs  : [separator]
+              tagfile path : /WEB-INF/tags/othertag.tag
+              tag name     : othertag
+                  class    : org.apache.jsp.tag.web.othertag_tag
+                  attribs  : [separator]
+        tag library: urn:jsptagdir:/WEB-INF/tags/myTags/
+            tlibversion : 1.0
+            jspversion  : 2.0
+            shortname   : -myTags-
+            urn         : null
+            info        : null
+            uri         : null
+              tagfile path : /WEB-INF/tags/myTags/testx.tagx
+              tag name     : testx
+                  class    : org.apache.jsp.tag.web.myTags.testx_tagx
+                  attribs  : [a]
+              tagfile path : /WEB-INF/tags/myTags/first.tag
+              tag name     : first
+                  class    : org.apache.jsp.tag.web.myTags.first_tag
+                  attribs  : [title, author, price_info]
+              tagfile path : /WEB-INF/tags/myTags/test.tag
+              tag name     : test
+                  class    : org.apache.jsp.tag.web.myTags.test_tag
+                  attribs  : [a]
       prefixMapper:
-        tags -> urn:jsptagdir:/WEB-INF/tags/
-        myTags -> urn:jsptagdir:/WEB-INF/tags/myTags/
         c -> http://java.sun.com/jstl/core
         jarTags -> /TestTagLibrary
+        myTags -> urn:jsptagdir:/WEB-INF/tags/myTags/
+        tags -> urn:jsptagdir:/WEB-INF/tags/
       approxXmlPrefixMapper :
       language            : java
       xtends              : org.apache.jasper.runtime.HttpJspBase
