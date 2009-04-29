@@ -68,8 +68,6 @@ public class FileObj extends BaseFileObj {
     static final long serialVersionUID = -1133540210876356809L;
     private long lastModified = -1;
     private boolean realLastModifiedCached;
-    /** Used only in refreshImpl. In other context it can be null. */
-    private Boolean readOnly = null;
 
 
     FileObj(final File file, final FileNaming name) {
@@ -264,13 +262,9 @@ public class FileObj extends BaseFileObj {
         if (fire && oldLastModified != -1 && lastModified != -1 && lastModified != 0 && isModified) {
             fireFileChangedEvent(expected);
         }
-        if (fire) {
-            Boolean oldReadOnly = readOnly;
-            readOnly = isReadOnly();
-            if (oldReadOnly != null && !readOnly.equals(oldReadOnly)) {
-                // #129178 - event consumed in org.openide.text.DataEditorSupport and used to change editor read-only state
-                fireFileAttributeChangedEvent("DataEditorSupport.read-only.changing", oldReadOnly, readOnly);  //NOI18N
-            }
+        if (fire && lastModified != 0) {
+            // #129178 - event consumed in org.openide.text.DataEditorSupport and used to change editor read-only state
+            fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
         }
     }
     
