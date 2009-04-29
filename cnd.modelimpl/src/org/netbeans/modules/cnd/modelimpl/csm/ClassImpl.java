@@ -884,7 +884,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUIDCollection(this.members, output, true);
         factory.writeUIDCollection(this.friends, output, true);
-        PersistentUtils.writeInheritances(this.inheritances, output);
+        Collection<CsmInheritance> baseClasses = getBaseClasses();
+        PersistentUtils.writeInheritances(baseClasses, output);
     }
 
     public ClassImpl(DataInput input) throws IOException {
@@ -895,7 +896,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.readUIDCollection(this.members, input);
         factory.readUIDCollection(this.friends, input);
-        PersistentUtils.readInheritances(this.inheritances, input);
+        Collection<CsmInheritance> baseClasses = new ArrayList<CsmInheritance>();
+        PersistentUtils.readInheritances(baseClasses, input);
+        synchronized (this.inheritances) {
+            this.inheritances.clear();
+            this.inheritances.addAll(baseClasses);
+        }
     }
     private static final int CLASS_KIND = 1;
     private static final int UNION_KIND = 2;
