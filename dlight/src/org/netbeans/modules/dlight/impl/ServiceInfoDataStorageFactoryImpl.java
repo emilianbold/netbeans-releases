@@ -37,28 +37,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.storage;
+package org.netbeans.modules.dlight.impl;
 
-import java.util.Map;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorageFactory;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * This interface is intended to keep service information about DLightSession
- * This SPI will be used to
+ *
+ * @author mt154047
  */
-public interface ServiceInfoDataStorage {
-    static final String EXECUTION_ENV_KEY = "service.storage.execution.env.key";//NOI18N
-    static final String HOST_NAME = "service.storage.hostname";//NOI18N
-    static final String USER_NAME = "service.storage.username";//NOI18N
-    static final String PORT = "service.storage.port";//NOI18N
-    
-    Map<String, String> getInfo();
-    String getValue(String name);
-    String put(String name, String value);
-    
-    /**
-     * Close storage
-     * @return <code>true</code> if succeeded, <code>false</code> otherwise
-     */
-    boolean shutdown();
+@ServiceProvider(service=org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorageFactory.class)
+public class ServiceInfoDataStorageFactoryImpl implements ServiceInfoDataStorageFactory<ServiceInfoDataStorageImpl>{
+
+    public ServiceInfoDataStorageImpl createStorage() {
+        return new ServiceInfoDataStorageImpl();
+    }
 
 }
