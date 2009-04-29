@@ -102,9 +102,6 @@ import org.openide.util.RequestProcessor;
  * TODO:
  * - all text from bundles
  * - all possible error states and messages
- * - check project name against AJAX API
- * - fix regexp
- * - check for isUnique(prjName)
  *
  * @author Milan Kubec
  */
