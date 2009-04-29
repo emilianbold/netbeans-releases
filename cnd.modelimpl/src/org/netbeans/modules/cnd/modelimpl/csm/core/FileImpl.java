@@ -83,6 +83,8 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
+import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -993,8 +995,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         //     token stream and save in cache
         AST ast = null;
         APTFile aptFull = null;
+        ChangedSegment changedSegment = null;
         try {
             aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
+            if (getBuffer() instanceof FileBufferDoc) {
+                changedSegment = ((FileBufferDoc)getBuffer()).getLastChangedSegment();
+            }
         } catch (FileNotFoundException ex) {
             APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found, probably removed", new Object[]{getBuffer().getFile().getAbsolutePath()});// NOI18N
         } catch (IOException ex) {
