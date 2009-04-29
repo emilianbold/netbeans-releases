@@ -60,7 +60,6 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
-import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
@@ -142,7 +141,8 @@ public final class DLightCPUToolConfigurationProvider
         toolConfiguration.addIndicatorDataProviderConfiguration(indicatorProviderConfiguration);
 
         List<Column> resultColumns = new ArrayList<Column>();
-        resultColumns.addAll(ProcDataProviderConfiguration.CPU_TABLE.getColumns());
+        resultColumns.add(ProcDataProviderConfiguration.USR_TIME);
+        resultColumns.add(ProcDataProviderConfiguration.SYS_TIME);
         IndicatorMetadata indicatorMetadata =
             new IndicatorMetadata(resultColumns);
         CpuIndicatorConfiguration indicatorConfiguration =
