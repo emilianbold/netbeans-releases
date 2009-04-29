@@ -102,7 +102,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
                 }
             }
             if (threads == null){
-                threads = "1";//MOI18N
+                threads = "1"; // NOI18N
             }
             if (locks != null && threads != null) {
                 lastThreads = Integer.parseInt(threads);
