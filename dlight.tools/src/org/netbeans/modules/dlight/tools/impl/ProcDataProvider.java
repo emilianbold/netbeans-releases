@@ -42,6 +42,7 @@ import java.util.concurrent.CancellationException;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -78,6 +79,12 @@ import org.openide.windows.InputOutput;
 public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConfiguration> {
 
     private static final String NAME = "ProcReader"; // NOI18N
+    private static final DataTableMetadata TABLE = new DataTableMetadata(
+            NAME, Arrays.asList(
+            ProcDataProviderConfiguration.SYS_TIME,
+            ProcDataProviderConfiguration.USR_TIME,
+            ProcDataProviderConfiguration.THREADS));
+
     private List<ValidationListener> validationListeners;
     private ValidationStatus validationStatus;
     private Future<Integer> procReaderTask;
@@ -89,7 +96,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
 
     @Override
     public Collection<DataTableMetadata> getDataTablesMetadata() {
-        return Collections.singletonList(ProcDataProviderConfiguration.CPU_TABLE);
+        return Collections.singletonList(TABLE);
     }
 
     @Override

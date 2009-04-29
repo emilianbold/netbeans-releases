@@ -41,11 +41,20 @@
 
 package org.netbeans.modules.jumpto.symbol;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -53,8 +62,12 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
@@ -69,6 +82,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.modules.jumpto.type.UiOptions;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
@@ -208,117 +222,120 @@ public class GoToPanel extends javax.swing.JPanel {
     @SuppressWarnings("deprecation")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
+        GridBagConstraints gridBagConstraints;
 
-        jLabelText = new javax.swing.JLabel();
-        nameField = new javax.swing.JTextField();
-        jLabelList = new javax.swing.JLabel();
-        listPanel = new javax.swing.JPanel();
-        matchesScrollPane1 = new javax.swing.JScrollPane();
-        matchesList = new javax.swing.JList();
-        jLabelWarning = new javax.swing.JLabel();
-        caseSensitive = new javax.swing.JCheckBox();
-        jLabelLocation = new javax.swing.JLabel();
-        jTextFieldLocation = new javax.swing.JTextField();
+        jLabelText = new JLabel();
+        nameField = new JTextField();
+        jLabelList = new JLabel();
+        listPanel = new JPanel();
+        matchesScrollPane1 = new JScrollPane();
+        matchesList = new JList();
+        jLabelWarning = new JLabel();
+        caseSensitive = new JCheckBox();
+        jLabelLocation = new JLabel();
+        jTextFieldLocation = new JTextField();
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         setFocusable(false);
         setNextFocusableComponent(nameField);
-        setLayout(new java.awt.GridBagLayout());
+        setLayout(new GridBagLayout());
 
         jLabelText.setLabelFor(nameField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelText, org.openide.util.NbBundle.getMessage(GoToPanel.class, "TXT_GoToSymbol_TypeName_Label")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        Mnemonics.setLocalizedText(jLabelText, NbBundle.getMessage(GoToPanel.class, "TXT_GoToSymbol_TypeName_Label"));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new Insets(0, 0, 4, 0);
         add(jLabelText, gridBagConstraints);
 
-        nameField.setFont(new java.awt.Font("Monospaced", 0, getFontSize()));
-        nameField.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        nameField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        nameField.setFont(new Font("Monospaced", 0, getFontSize()));
+        nameField.setBorder(BorderFactory.createEtchedBorder());
+        nameField.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 nameFieldActionPerformed(evt);
             }
         });
-        nameField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
+        nameField.addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent evt) {
                 nameFieldKeyPressed(evt);
             }
-            public void keyReleased(java.awt.event.KeyEvent evt) {
+            public void keyReleased(KeyEvent evt) {
                 nameFieldKeyReleased(evt);
             }
-            public void keyTyped(java.awt.event.KeyEvent evt) {
+            public void keyTyped(KeyEvent evt) {
                 nameFieldKeyTyped(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new Insets(0, 0, 8, 0);
         add(nameField, gridBagConstraints);
+        nameField.getAccessibleContext().setAccessibleName("Symbol &Name (prefix, camel case: \"AA\" or \"AbcAb\", wildcards: \"?\" \"*\", exact match: end with space):");
+        nameField.getAccessibleContext().setAccessibleDescription("Symbol Name (prefix, camel case: \"AA\" or \"AbcAb\", wildcards: \"?\" \"*\", exact match: end with space)");
 
-        jLabelList.setLabelFor(matchesScrollPane1);
-        jLabelList.setText(org.openide.util.NbBundle.getMessage(GoToPanel.class, "TXT_GoToSymbol_MatchesList_Label")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jLabelList.setLabelFor(matchesList);
+        Mnemonics.setLocalizedText(jLabelList, NbBundle.getMessage(GoToPanel.class, "TXT_GoToSymbol_MatchesList_Label"));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new Insets(0, 0, 4, 0);
         add(jLabelList, gridBagConstraints);
 
-        listPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        listPanel.setBorder(BorderFactory.createEtchedBorder());
         listPanel.setName("dataPanel"); // NOI18N
-        listPanel.setLayout(new java.awt.BorderLayout());
+        listPanel.setLayout(new BorderLayout());
 
         matchesScrollPane1.setBorder(null);
         matchesScrollPane1.setFocusable(false);
 
-        matchesList.setFont(new java.awt.Font("Monospaced", 0, getFontSize()));
+        matchesList.setFont(new Font("Monospaced", 0, getFontSize()));
         matchesList.setVisibleRowCount(15);
-        matchesList.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
+        matchesList.addMouseListener(new MouseAdapter() {
+            public void mouseReleased(MouseEvent evt) {
                 matchesListMouseReleased(evt);
             }
         });
         matchesScrollPane1.setViewportView(matchesList);
+        matchesList.getAccessibleContext().setAccessibleName("Symbols &Found :");
+        matchesList.getAccessibleContext().setAccessibleDescription("Symbols Found");
 
-        listPanel.add(matchesScrollPane1, java.awt.BorderLayout.CENTER);
+        listPanel.add(matchesScrollPane1, BorderLayout.CENTER);
 
         jLabelWarning.setFocusable(false);
-        listPanel.add(jLabelWarning, java.awt.BorderLayout.PAGE_END);
+        listPanel.add(jLabelWarning, BorderLayout.PAGE_END);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        gridBagConstraints.insets = new Insets(0, 0, 8, 0);
         add(listPanel, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(caseSensitive, org.openide.util.NbBundle.getMessage(GoToPanel.class, "CTL_CaseSensitive")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        Mnemonics.setLocalizedText(caseSensitive, NbBundle.getMessage(GoToPanel.class, "CTL_CaseSensitive"));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 0, 8, 0);
         add(caseSensitive, gridBagConstraints);
-        caseSensitive.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GoToPanel.class, "AD_CaseSensitive")); // NOI18N
 
-        jLabelLocation.setText(org.openide.util.NbBundle.getMessage(GoToPanel.class, "LBL_GoToSymbol_LocationJLabel")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        caseSensitive.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GoToPanel.class, "AD_CaseSensitive")); // NOI18N
+        jLabelLocation.setText(NbBundle.getMessage(GoToPanel.class, "LBL_GoToSymbol_LocationJLabel")); // NOI18N
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 0, 4, 0);
         add(jLabelLocation, gridBagConstraints);
 
         jTextFieldLocation.setEditable(false);
         jTextFieldLocation.setFocusable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         add(jTextFieldLocation, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -355,16 +372,16 @@ public class GoToPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox caseSensitive;
-    private javax.swing.JLabel jLabelList;
-    private javax.swing.JLabel jLabelLocation;
-    private javax.swing.JLabel jLabelText;
-    private javax.swing.JLabel jLabelWarning;
-    private javax.swing.JTextField jTextFieldLocation;
-    private javax.swing.JPanel listPanel;
-    private javax.swing.JList matchesList;
-    private javax.swing.JScrollPane matchesScrollPane1;
-    private javax.swing.JTextField nameField;
+    private JCheckBox caseSensitive;
+    private JLabel jLabelList;
+    private JLabel jLabelLocation;
+    private JLabel jLabelText;
+    private JLabel jLabelWarning;
+    private JTextField jTextFieldLocation;
+    private JPanel listPanel;
+    private JList matchesList;
+    private JScrollPane matchesScrollPane1;
+    private JTextField nameField;
     // End of variables declaration//GEN-END:variables
         
     

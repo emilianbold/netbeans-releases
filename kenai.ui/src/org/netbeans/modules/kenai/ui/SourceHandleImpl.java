@@ -57,14 +57,14 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.KenaiFeature;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.netbeans.modules.versioning.system.cvss.api.CVS;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
@@ -80,13 +80,31 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     private ProjectHandle projectHandle;
     private static final int MAX_PROJECTS = 5;
     private static final String RECENTPROJECTS_PREFIX = "recent.projects.";
+    private String externalScmType=SCM_TYPE_UNKNOWN;
+    public static final String SCM_TYPE_UNKNOWN = "unknown";//NOI18N
+    public static final String SCM_TYPE_CVS = "cvs";//NOI18N
+
+    public String getExternalScmType() {
+        return externalScmType;
+    }
 
     public SourceHandleImpl(final ProjectHandle projectHandle, KenaiFeature ftr) {
         feature = ftr;
-        if ("mercurial".equals(feature.getService())) {
+        if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
             prefs= NbPreferences.forModule(Mercurial.class);
-        } else if ("subversion".equals(feature.getService())) {
+        } else if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
             prefs= NbPreferences.forModule(Subversion.class);
+        } else if (KenaiService.Names.EXTERNAL_REPOSITORY.equals(feature.getService())) {
+            if (Subversion.isRepository(feature.getLocation())) {
+                externalScmType=KenaiService.Names.SUBVERSION;
+                return;
+            } else if (CVS.isRepository(feature.getLocation())) {
+                externalScmType=SCM_TYPE_CVS;
+                return;
+            } else if (Mercurial.isRepository(feature.getLocation())) {
+                externalScmType=KenaiService.Names.MERCURIAL;
+                return;
+            }
         }
         this.projectHandle = projectHandle;
         OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this , OpenProjects.getDefault()));
@@ -101,8 +119,9 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     @Override
     public boolean isSupported() {
         // names of those services are values returned from Kenai WS API !!!
-        if ("subversion".equals(feature.getService()) ||
-            "mercurial".equals(feature.getService())) {
+        if (KenaiService.Names.SUBVERSION.equals(feature.getService()) ||
+            KenaiService.Names.MERCURIAL.equals(feature.getService()) ||
+            KenaiService.Names.EXTERNAL_REPOSITORY.equals(feature.getService())) {
             return true;
         }
         return false;

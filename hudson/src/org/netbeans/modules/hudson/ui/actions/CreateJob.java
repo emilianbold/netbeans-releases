@@ -59,6 +59,7 @@ import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
+import org.netbeans.modules.hudson.ui.nodes.HudsonRootNode;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -79,7 +80,7 @@ public class CreateJob extends AbstractAction {
 
     public CreateJob() {
         super(NbBundle.getMessage(CreateJob.class, "CTL_CreateJob"));
-        Collection<HudsonInstance> instances = HudsonManagerImpl.getDefault().getInstances();
+        Collection<? extends HudsonInstance> instances = HudsonManagerImpl.getDefault().getInstances();
         this.instance = instances.isEmpty() ? null : instances.iterator().next();
     }
 
@@ -132,6 +133,7 @@ public class CreateJob extends AbstractAction {
             ProjectHudsonProvider.getDefault().recordAssociation(project,
                     new ProjectHudsonProvider.Association(instance.getUrl(), name));
             OpenProjects.getDefault().open(new Project[] {project}, false);
+            HudsonRootNode.select(instance.getUrl(), name);
         } catch (IOException x) {
             // XXX too harsh, should report at a low level and show message (unless this already has a localized message)
             Exceptions.printStackTrace(x);

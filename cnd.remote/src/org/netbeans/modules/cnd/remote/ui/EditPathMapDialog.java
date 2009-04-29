@@ -71,7 +71,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
@@ -203,7 +202,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 int row = tblPathMappings.getSelectedRow();
                 row = (row < 0) ? 0: row;
                 DefaultTableModel model = (DefaultTableModel) tblPathMappings.getModel();
-                model.insertRow(row, new Object[] {"", ""});
+                model.insertRow(row, new Object[] {"", ""}); // NOI18N
             }
         };
 

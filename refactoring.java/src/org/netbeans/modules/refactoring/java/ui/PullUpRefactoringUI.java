@@ -78,19 +78,27 @@ public class PullUpRefactoringUI implements RefactoringUI {
      */
     public PullUpRefactoringUI(TreePathHandle selectedElements, CompilationInfo info) {
         initialMembers = new HashSet();
-        initialMembers.add(MemberInfo.create(selectedElements.resolveElement(info),info));
-        // compute source type and members that should be pre-selected from the
-        // set of elements the action was invoked on
-        
-       // create an instance of pull up refactoring object
-        Element selected = selectedElements.resolveElement(info);
-        if (!(selected instanceof TypeElement))
-            selected = info.getElementUtilities().enclosingTypeElement(selected);
-        TreePath tp = info.getTrees().getPath(selected);
-        TreePathHandle sourceType = TreePathHandle.create(tp, info);
-        description = ElementHeaders.getHeader(tp, info, ElementHeaders.NAME);
-        refactoring = new PullUpRefactoring(sourceType);
-        refactoring.getContext().add(info.getClasspathInfo());
+        TreePathHandle selectedPath = PushDownRefactoringUI.resolveSelection(selectedElements, info);
+
+        if (selectedPath != null) {
+            Element selected = selectedPath.resolveElement(info);
+            initialMembers.add(MemberInfo.create(selected, info));
+            // compute source type and members that should be pre-selected from the
+            // set of elements the action was invoked on
+
+           // create an instance of pull up refactoring object
+            if (!(selected instanceof TypeElement))
+                selected = info.getElementUtilities().enclosingTypeElement(selected);
+            TreePath tp = info.getTrees().getPath(selected);
+            TreePathHandle sourceType = TreePathHandle.create(tp, info);
+            description = ElementHeaders.getHeader(tp, info, ElementHeaders.NAME);
+            refactoring = new PullUpRefactoring(sourceType);
+            refactoring.getContext().add(info.getClasspathInfo());
+        } else {
+            // put the unresolvable selection to refactoring,
+            // user notification is provided by PullUpRefactoringPlugin.preCheck
+            refactoring = new PullUpRefactoring(selectedElements);
+        }
         
     }
     

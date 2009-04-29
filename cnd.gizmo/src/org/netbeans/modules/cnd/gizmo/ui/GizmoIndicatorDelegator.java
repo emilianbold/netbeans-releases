@@ -10,6 +10,7 @@ import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.ui.spi.IndicatorComponentDelegator;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -50,11 +51,19 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
         if (storages != null) {
             for (DataStorage storage : storages) {
                 if (storage.getValue(GizmoServiceInfo.GIZMO_PROJECT_FOLDER) != null) {
-                    projectFolder = storage.getValue(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
-                    break;
+                    return storage.getValue(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
                 }
             }
         }
+        List<ServiceInfoDataStorage> serviceInfoStorages = session.getServiceInfoDataStorages();
+        if (serviceInfoStorages != null){
+            for (ServiceInfoDataStorage storage : serviceInfoStorages){
+                if (storage.getValue(GizmoServiceInfo.GIZMO_PROJECT_FOLDER) != null) {
+                    return storage.getValue(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
+                }
+            }
+        }
+
         return projectFolder;
     }
 

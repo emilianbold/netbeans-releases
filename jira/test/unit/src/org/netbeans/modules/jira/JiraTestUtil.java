@@ -71,6 +71,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
@@ -169,10 +170,14 @@ public class JiraTestUtil {
     }
 
     public static TestTaskDataCollector list(JiraRepositoryConnector rc, TaskRepository repository, FilterDefinition fd) {
+        return list(rc, repository, fd, null);
+    }
+
+    public static TestTaskDataCollector list(JiraRepositoryConnector rc, TaskRepository repository, FilterDefinition fd, ISynchronizationSession session) {
         final RepositoryQuery repositoryQuery = new RepositoryQuery(rc.getConnectorKind(), "query");
         JiraUtil.setQuery(repository, repositoryQuery, fd);
         TestTaskDataCollector tdc = new TestTaskDataCollector();
-        rc.performQuery(repository, repositoryQuery, tdc, null, JiraTestUtil.nullProgressMonitor);
+        rc.performQuery(repository, repositoryQuery, tdc, session, JiraTestUtil.nullProgressMonitor);
         return tdc;
     }
 

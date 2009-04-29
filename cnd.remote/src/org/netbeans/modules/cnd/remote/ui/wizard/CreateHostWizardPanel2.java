@@ -41,17 +41,21 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
-/*package*/ final class CreateHostWizardPanel2 implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+/*package*/ final class CreateHostWizardPanel2 implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor>, WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
 
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
     private CreateHostVisualPanel2 component;
+    private ExecutionEnvironment lastValidatedHost;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -64,12 +68,30 @@ import org.openide.util.HelpCtx;
         return component;
     }
 
+    public void prepareValidation() {
+        component.enableControls(false);
+    }
+
+    public void validate() throws WizardValidationException {
+        ExecutionEnvironment host = component.getHost();
+        if (host == null || !host.equals(lastValidatedHost)) {
+            component.validateHost();
+        }
+        component.enableControls(true);
+        if (component.getHost() == null) {
+            String errMsg = NbBundle.getMessage(getClass(), "MSG_Failure");
+            throw new WizardValidationException(component, errMsg, errMsg);
+        } else {
+            lastValidatedHost = host;
+        }
+    }
+
     public HelpCtx getHelp() {
         return HelpCtx.DEFAULT_HELP;
     }
 
     public boolean isValid() {
-        return component.getHost() != null;
+        return component.canValidateHost();
     }
 
     ////////////////////////////////////////////////////////////////////////////

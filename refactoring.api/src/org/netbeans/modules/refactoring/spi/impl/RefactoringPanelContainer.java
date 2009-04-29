@@ -188,6 +188,10 @@ public class RefactoringPanelContainer extends TopComponent {
     public static synchronized RefactoringPanelContainer getUsagesComponent() {
         if ( usages == null ) {
             usages = (RefactoringPanelContainer) WindowManager.getDefault().findTopComponent( "find-usages" ); //NOI18N
+            if (usages == null) {
+                // #156401: WindowManager.findTopComponent may fail
+                usages = createUsagesComponent();
+            }
         } 
         return usages;
     }
@@ -195,6 +199,10 @@ public class RefactoringPanelContainer extends TopComponent {
     public static synchronized RefactoringPanelContainer getRefactoringComponent() {
         if (refactorings == null) {
             refactorings = (RefactoringPanelContainer) WindowManager.getDefault().findTopComponent( "refactoring-preview" ); //NOI18N
+            if (refactorings == null) {
+                // #156401: WindowManager.findTopComponent may fail
+                refactorings = createRefactoringComponent();
+            }
         } 
         return refactorings;
     }

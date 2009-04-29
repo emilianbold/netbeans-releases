@@ -148,7 +148,10 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         }
         
         if (file==null || !RetoucheUtils.isElementInOpenProject(file)) {
-            preCheckProblem = new Problem(true, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+            preCheckProblem = new Problem(true, NbBundle.getMessage(
+                    RenameRefactoringPlugin.class,
+                    "ERR_ProjectNotOpened",
+                    FileUtil.getFileDisplayName(file)));
             return preCheckProblem;
         }
         

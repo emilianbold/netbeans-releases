@@ -348,6 +348,10 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         insertChar("//line comment^", '"', "//line comment\"^");
     }
 
+    public void testIssue162139() throws Exception {
+        insertChar("^\\", '"', "\"^\\");
+    }
+
 // XXX: ruby specific
 //    public void testDocs() throws Exception {
 //        insertBreak("=begin^\n", "=begin\n^\n=end\n");

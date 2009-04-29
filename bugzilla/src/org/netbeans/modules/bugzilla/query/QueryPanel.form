@@ -967,7 +967,7 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="tableFieldsPanel" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="noContentPanel" pref="106" max="32767" attributes="0"/>
+              <Component id="noContentPanel" pref="107" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -998,7 +998,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="tableHeaderPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Component id="tablePanel" pref="97" max="32767" attributes="0"/>
+                  <Component id="tablePanel" pref="98" max="32767" attributes="0"/>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -1096,31 +1096,27 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
+              <Component id="gotoPanel" alignment="0" max="32767" attributes="2"/>
+              <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="searchButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="saveChangesButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="cancelChangesButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="419" max="32767" attributes="0"/>
-                          <Component id="saveButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="webButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="urlToggleButton" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <Component id="criteriaPanel" alignment="0" max="32767" attributes="0"/>
-                  </Group>
+                  <Component id="searchButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <Component id="saveChangesButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <Component id="cancelChangesButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace pref="419" max="32767" attributes="0"/>
+                  <Component id="saveButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="webButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="urlToggleButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
-              <Component id="gotoPanel" alignment="0" max="32767" attributes="2"/>
+              <Component id="criteriaPanel" alignment="0" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -1187,40 +1183,35 @@
           </AuxValues>
         </Component>
         <Container class="javax.swing.JPanel" name="criteriaPanel">
-          <Properties>
-            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-              <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
-                <LineBorder>
-                  <Color PropertyName="color" blue="80" green="80" id="Button.disabledText" palette="3" red="80" type="palette"/>
-                </LineBorder>
-              </Border>
-            </Property>
-          </Properties>
 
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="byTextLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="byLastChangeLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="byTextContainer" alignment="0" pref="1003" max="32767" attributes="2"/>
-                  <Component id="byLastChangeContainer" alignment="0" pref="1003" max="32767" attributes="1"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="byDetailsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="byDetailsContainer" alignment="0" pref="1003" max="32767" attributes="1"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="byPeopleLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="byPeopleContainer" alignment="0" pref="1003" max="32767" attributes="1"/>
+                  <Component id="byLastChangeContainer" alignment="0" pref="1025" max="32767" attributes="1"/>
                   <Component id="urlPanel" alignment="0" max="32767" attributes="3"/>
+                  <Component id="byTextContainer" alignment="0" pref="1025" max="32767" attributes="2"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="byTextLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="898" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="byDetailsLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="870" max="32767" attributes="0"/>
+                  </Group>
+                  <Component id="byDetailsContainer" alignment="0" pref="1025" max="32767" attributes="1"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="byPeopleLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="920" max="32767" attributes="0"/>
+                  </Group>
+                  <Component id="byPeopleContainer" alignment="0" pref="1025" max="32767" attributes="1"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="byLastChangeLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="891" max="32767" attributes="0"/>
+                  </Group>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -1228,7 +1219,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="byTextLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                      <Component id="byTextContainer" max="32767" attributes="0"/>
+                      <Component id="byTextContainer" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                       <Component id="byDetailsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
@@ -1241,7 +1232,7 @@
                       <Component id="byLastChangeLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                       <Component id="byLastChangeContainer" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                       <Component id="urlPanel" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -1340,7 +1331,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="urlTextField" pref="929" max="32767" attributes="0"/>
+                          <Component id="urlTextField" pref="951" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>

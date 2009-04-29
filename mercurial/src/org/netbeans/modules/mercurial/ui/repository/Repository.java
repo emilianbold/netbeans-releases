@@ -451,6 +451,17 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         repositoryPanel.tunnelHelpLabel.setVisible(false);       
     }
 
+    public void setEditable(boolean editable) {
+        assert EventQueue.isDispatchThread();
+
+        repositoryPanel.urlComboBox.setEnabled(editable && isSet(FLAG_URL_ENABLED));
+        repositoryPanel.userTextField.setEnabled(editable && valid);
+        repositoryPanel.userPasswordField.setEnabled(editable && valid);
+        repositoryPanel.savePasswordCheckBox.setEnabled(editable && valid);
+        repositoryPanel.tunnelCommandTextField.setEnabled(editable && valid);
+        repositoryPanel.proxySettingsButton.setEnabled(editable && valid);
+    }
+
     private String getSVNTunnelTip(String urlString) {
         //String tunnelName = getTunnelName(urlString);
         //return MessageFormat.format(SSH_URL_HELP, tunnelName).trim();

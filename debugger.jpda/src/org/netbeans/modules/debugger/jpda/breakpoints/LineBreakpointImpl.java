@@ -46,7 +46,6 @@ import com.sun.jdi.InternalException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ReferenceType;
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.ClassNotPreparedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.event.BreakpointEvent;
@@ -55,6 +54,8 @@ import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -63,12 +64,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -83,7 +90,10 @@ import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.BreakpointRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -115,7 +125,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         setSourceRoot(sourcePath.getSourceRoot(breakpoint.getURL()));
         set ();
     }
-    
+
     private void updateLineNumber() {
         int line = getBreakpoint().getLineNumber();
         String url = getBreakpoint().getURL();
@@ -142,22 +152,12 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         updateLineNumber();
         String[] preferredSourceRoot = new String[] { null };
         String sourcePath = getDebugger().getEngineContext().getRelativePath(breakpoint.getURL(), '/', true);
-        String reason = null;
         if (sourcePath == null) {
-            reason = NbBundle.getMessage(LineBreakpointImpl.class,
-                                         "MSG_NoSourceRoot",
-                                         breakpoint.getURL());
-        } else if (!isEnabled(sourcePath, preferredSourceRoot)) {
-            reason = NbBundle.getMessage(LineBreakpointImpl.class,
-                                         "MSG_DifferentPrefferedSourceRoot",
-                                         preferredSourceRoot[0]);
-        }
-        if (reason != null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
-                    "Unable to submit line breakpoint to "+breakpoint.getURL()+
-                    " at line "+lineNumber+", reason: "+reason);
-            setValidity(Breakpoint.VALIDITY.INVALID, reason);
-            return;
+            String reason = NbBundle.getMessage(LineBreakpointImpl.class,
+                                                "MSG_NoSourceRoot",
+                                                breakpoint.getURL());
+            setInvalid(reason);
+            return ;
         }
         String className = breakpoint.getPreferredClassName();
         if (className == null) {
@@ -177,6 +177,30 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             setValidity(Breakpoint.VALIDITY.INVALID, NbBundle.getMessage(LineBreakpointImpl.class, "MSG_NoBPClass"));
             return ;
         }
+
+        boolean isInSources = false;
+        {
+            String srcRoot = getSourceRoot();
+            String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
+            for (int i = 0; i < sourceRoots.length; i++) {
+                if (srcRoot.equals(sourceRoots[i])) {
+                    isInSources = true;
+                }
+            }
+        }
+        // Test if className exists in project sources:
+        if (!isInSources && classExistsInSources(className, getDebugger().getEngineContext().getProjectSourceRoots())) {
+            logger.fine("LineBreakpoint "+breakpoint+" NOT submitted, URL "+breakpoint.getURL()+" not in sources, but class "+className+" exist in sources.");
+            return ;
+        }
+        if (isInSources && !isEnabled(sourcePath, preferredSourceRoot)) {
+            String reason = NbBundle.getMessage(LineBreakpointImpl.class,
+                                                "MSG_DifferentPrefferedSourceRoot",
+                                                preferredSourceRoot[0]);
+            setInvalid(reason);
+            logger.fine("LineBreakpoint "+breakpoint+" NOT submitted, because of '"+reason+"'.");
+            return ;
+        }
         logger.fine("LineBreakpoint "+breakpoint+" - setting request for "+className);
         setClassRequests (
             new String[] {
@@ -186,6 +210,106 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
         checkLoadedClasses (className, null);
+    }
+
+    private void setInvalid(String reason) {
+        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                "Unable to submit line breakpoint to "+getBreakpoint().getURL()+
+                " at line "+lineNumber+", reason: "+reason);
+        setValidity(Breakpoint.VALIDITY.INVALID, reason);
+    }
+
+    private static boolean classExistsInSources(final String className, String[] projectSourceRoots) {
+        /*
+        ClassIndexManager cim = ClassIndexManager.getDefault();
+        List<FileObject> sourcePaths = new ArrayList<FileObject>(projectSourceRoots.length);
+        for (String sr : projectSourceRoots) {
+            FileObject fo = getFileObject(sr);
+            if (fo != null) {
+                sourcePaths.add(fo);
+                ClassIndexImpl ci;
+                try {
+                    ci = cim.getUsagesQuery(fo.getURL());
+                    if (ci != null) {
+                        String sourceName = ci.getSourceName(className);
+                        if (sourceName != null) {
+                            return true;
+                        }
+                    }
+                } catch (FileStateInvalidException ex) {
+                    continue;
+                } catch (java.io.IOException ioex) {
+                    continue;
+                }
+            }
+        }
+        return false;
+         */
+        List<FileObject> sourcePaths = new ArrayList<FileObject>(projectSourceRoots.length);
+        for (String sr : projectSourceRoots) {
+            FileObject fo = getFileObject(sr);
+            if (fo != null) {
+                sourcePaths.add(fo);
+            }
+        }
+        ClassPath cp = ClassPathSupport.createClassPath(sourcePaths.toArray(new FileObject[0]));
+        ClassPathSupport.createClassPath(new FileObject[] {});
+        ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new FileObject[] {}),
+                                                    ClassPathSupport.createClassPath(new FileObject[] {}),
+                                                    cp);
+        //ClassIndex ci = cpInfo.getClassIndex();
+        JavaSource js = JavaSource.create(cpInfo);
+        final boolean[] found = new boolean[] { false };
+        try {
+            js.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController cc) throws Exception {
+                    TypeElement te = cc.getElements().getTypeElement(className);
+                    if (te != null) { // found
+                        found[0] = true;
+                    }
+                }
+            }, false);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return found[0];
+        /*
+        SourceUtils.getFile(null, null);
+        ClasspathInfo.create(null, null, cp);
+
+        cp = org.netbeans.modules.java.source.classpath.SourcePath.create(cp, true);
+        try {
+            ClassLoader cl = cp.getClassLoader(true);
+            FileObject fo = cp.findResource(className.replace('.', '/').concat(".class"));
+            Class c = cl.loadClass(className);
+            System.err.println("classExistsInSources("+className+"): fo = "+fo+", class = "+c);
+            return c != null;
+        } catch (ClassNotFoundException ex) {
+            return false;
+        }
+        */
+    }
+
+    /**
+     * Returns FileObject for given String.
+     */
+    private static FileObject getFileObject (String file) {
+        File f = new File (file);
+        FileObject fo = FileUtil.toFileObject (f);
+        String path = null;
+        if (fo == null && file.contains("!/")) {
+            int index = file.indexOf("!/");
+            f = new File(file.substring(0, index));
+            fo = FileUtil.toFileObject (f);
+            path = file.substring(index + "!/".length());
+        }
+        if (fo != null && FileUtil.isArchiveFile (fo)) {
+            fo = FileUtil.getArchiveRoot (fo);
+            if (path !=null) {
+                fo = fo.getFileObject(path);
+            }
+        }
+        return fo;
     }
 
     @Override

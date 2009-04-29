@@ -18,14 +18,17 @@
         <p><small><a href="#seealso">See Also</a></small></p>
 
         <h4>Setting Mercurial Global Options</h4>
-        Bring up the Mercurial Options Dialog:
-                
-                <ul>
-                    <li>Tools &gt; Options &gt; Miscellaneous &gt; Mercurial Tab from the 
-                        IDE's main menu.</li>
-                </ul>
         
-        <p>The following table describes the Mercurial global Options property that can be set.</p>
+        <p>Open the Mercurial Options window:</p>
+                
+        <ul>
+            <li>Choose Tools &gt; Options. The IDE's Options window opens.</li>
+            <li>Select the Miscellaneous &gt; Versioning tabs, then select
+                Mercurial under Versioning Systems.</li>
+        </ul>
+        
+        <p>The following table describes the Mercurial Global Options property that
+            can be set.</p>
         
         <table border="1" cellpadding="5">
             <tr>
@@ -48,15 +51,15 @@
             </tr>
             <tr>
                 <td><strong>Default Export Filename</strong></td>
-                <td>
-                 Set the export filename which is used when using Versioning &gt; Export Diff Patch... from the
-                 IDE's main menu when a Mercurial controlled project is selected. The following identifiers can used in the filename:
+                <td>Set the export filename which is used when using Team &gt; Export Diff
+                    Patch from the IDE's main menu when a Mercurial-versioned project is
+                    selected. The following identifiers can used in the filename:
+
                  <ul>
                     <li>%b: Project Directory name</li>
                     <li>%r: Current revision number being exported.</li>
                     <li>%h: Changeset ID that is being exported.</li>
-                </ul>
-                </td>
+                </ul></td>
             </tr>
             <tr>
                 <td><strong>Mercurial Status Labels</strong></td>
@@ -80,6 +83,15 @@
                 </td>
             </tr>                
         </table>
+
+        <p><strong>Notes:</strong></p>
+
+        <ul>
+            <li>Select the <strong>Automatically open Output window</strong> option to
+                set the Output window to display when versioning operations that involve
+                interaction with the repository take place (e.g., clone, fetch, pull, push).
+                This option is selected by default.</li>
+        </ul>
  
         <dl>
             <dt><a name="seealso">See Also</a></dt>

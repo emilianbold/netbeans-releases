@@ -33,12 +33,6 @@ public final class DLightIndicatorDelegator implements IndicatorComponentDelegat
 //        if (newSession.getState() != SessionState.CONFIGURATION)
         UIThread.invoke(new Runnable() {
             public void run() {
-                if (newSession != null){
-                    List<DataStorage> storages = newSession.getStorages();
-                    if (storages != null){
-                        
-                    }
-                }
                 DLightIndicatorsTopComponent.findInstance().setSession(newSession);
             }
         });

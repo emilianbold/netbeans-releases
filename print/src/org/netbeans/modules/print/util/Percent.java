@@ -330,7 +330,7 @@ public final class Percent extends JComboBox implements ActionListener {
     private double myCurrentValue;
     private static final int BOUND_1 = 1000;
     private static final int BOUND_2 = 2000;
-    private static final double FACTOR = 1.05;
+    private static final double FACTOR = 1.09;
     private static final double THRESHOLD = 0.2;
     private static final double SUBTRAHEND = 0.01;
     private static final double MIN_VALUE = 0.01;
