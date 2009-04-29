@@ -1388,6 +1388,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         private void scanBinaries (final DependenciesContext ctx) {
             assert ctx != null;
+            long complete = 0;
             for (URL binary : ctx.newBinariesToScan) {
                 if (isCancelled()) {
                     break;
@@ -1402,12 +1403,14 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     LOGGER.log(Level.WARNING, null, ioe);
                 } finally {
                     final long time = System.currentTimeMillis() - tmStart;
+                    complete += time;
                     if (PERF_TEST) {
                         reportRootScan(binary, time);
                     }
                     LOGGER.fine(String.format("Indexing of: %s took: %d ms", binary.toExternalForm(), time)); //NOI18N
                 }
             }
+            LOGGER.fine(String.format("Complete indexing of binary roots took: %d ms", complete)); //NOI18N
             TEST_LOGGER.log(Level.FINEST, "scanBinary", ctx.newBinariesToScan);       //NOI18N
         }
 
@@ -1455,6 +1458,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         private void scanSources  (final DependenciesContext ctx) {
             assert ctx != null;
+            long complete = 0;
             for (URL source : ctx.newRootsToScan) {
                 if (isCancelled()) {
                     break;
@@ -1469,12 +1473,14 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     LOGGER.log(Level.WARNING, null, ioe);
                 } finally {
                     final long time = System.currentTimeMillis() - tmStart;
+                    complete += time;
                     if (PERF_TEST) {
                         reportRootScan(source, time);
                     }
                     LOGGER.fine(String.format("Indexing of: %s took: %d ms", source.toExternalForm(), time)); //NOI18N
                 }
             }
+            LOGGER.fine(String.format("Complete indexing of source roots took: %d ms", complete)); //NOI18N
             TEST_LOGGER.log(Level.FINEST, "scanSources", ctx.newRootsToScan);         //NOI18N
         }
 

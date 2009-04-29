@@ -47,6 +47,8 @@ import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
@@ -69,6 +71,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -143,6 +146,8 @@ public class IssuePanel extends javax.swing.JPanel {
         layout.replace(dummyCommentsPanel, commentsPanel);
         layout.replace(dummyAttachmentsPanel, attachmentsPanel);
         attachmentsLabel.setLabelFor(attachmentsPanel);
+
+        issue163946Hack(scrollPane1);
     }
 
     void reloadFormInAWT(final boolean force) {
@@ -652,6 +657,23 @@ public class IssuePanel extends javax.swing.JPanel {
         if(issue != null) {
             issue.closed();
         }
+    }
+
+    private static void issue163946Hack(final JScrollPane scrollPane) {
+        MouseWheelListener listener = new MouseWheelListener() {
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (scrollPane.getVerticalScrollBar().isShowing()) {
+                    if (e.getSource() != scrollPane) {
+                        e.setSource(scrollPane);
+                        scrollPane.dispatchEvent(e);
+                    }
+                } else {
+                    scrollPane.getParent().dispatchEvent(e);
+                }
+            }
+        };
+        scrollPane.addMouseWheelListener(listener);
+        scrollPane.getViewport().getView().addMouseWheelListener(listener);
     }
 
     /** This method is called from within the constructor to

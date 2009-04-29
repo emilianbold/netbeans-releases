@@ -181,16 +181,26 @@ public class CompilerSetManager {
         }
 
         if (no_compilers) {
-            DialogDescriptor dialogDescriptor = new DialogDescriptor(
-                    new NoCompilersPanel(),
-                    getString("NO_COMPILERS_FOUND_TITLE"),
-                    true,
-                    new Object[]{DialogDescriptor.OK_OPTION},
-                    DialogDescriptor.OK_OPTION,
-                    DialogDescriptor.BOTTOM_ALIGN,
-                    null,
-                    null);
-            DialogDisplayer.getDefault().notify(dialogDescriptor);
+            // workaround to fix IZ#164028: Full IDE freeze when opening GizmoDemo project on Linux
+            // we postpone dialog displayer until EDT is free to process
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    RequestProcessor.getDefault().post(new NamedRunnable("Postponed No Compilers Found Notification") { // NOI18N
+                        public void runImpl() {
+                            DialogDescriptor dialogDescriptor = new DialogDescriptor(
+                                    new NoCompilersPanel(),
+                                    getString("NO_COMPILERS_FOUND_TITLE"),
+                                    true,
+                                    new Object[]{DialogDescriptor.OK_OPTION},
+                                    DialogDescriptor.OK_OPTION,
+                                    DialogDescriptor.BOTTOM_ALIGN,
+                                    null,
+                                    null);
+                            DialogDisplayer.getDefault().notify(dialogDescriptor);
+                        }
+                    });
+                }
+            });
         }
         return csm;
     }

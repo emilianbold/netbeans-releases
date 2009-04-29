@@ -1215,10 +1215,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
 
             // gather macro map from all includes
-            FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(csmFile/*, preprocHandler*/);
-            APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, pcState);
+            FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(csmFile.getAbsolutePath());
+            APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, pcBuilder);
             walker.visit();
-            pcState.trimSize();
+            FilePreprocessorConditionState pcState = pcBuilder.build();
             if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
                 csmFile.cacheVisitedState(newState, preprocHandler);
             }

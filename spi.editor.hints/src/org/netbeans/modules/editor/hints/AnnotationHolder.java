@@ -820,7 +820,10 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
             for (ErrorDescription ed : layersErrors) {
                 List<Position> lines = errors2Lines.remove(ed);
-                assert lines != null;
+                if (lines == null) { //#134282
+                    LOG.log(Level.WARNING, "Inconsistent error2Lines for layer {0}, file {1}.", new Object[] {layer, file.getPath()}); // NOI18N
+                    continue;
+                }
 
                 boolean first = true;
 

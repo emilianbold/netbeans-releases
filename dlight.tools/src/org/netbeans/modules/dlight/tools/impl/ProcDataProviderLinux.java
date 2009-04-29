@@ -47,7 +47,7 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
+import static org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration.*;
 
 /**
  * ProcDataProvider engine for Linux.
@@ -57,10 +57,12 @@ import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 public class ProcDataProviderLinux implements ProcDataProvider.Engine {
 
     private static final Set<Integer> USR_TIME_IDX = new HashSet<Integer>(Arrays.asList(
-            /* utime */ 12, /* cutime */ 14, /* guest_time */ 42, /* cguest_time */ 43));
+            /* utime */ 13, /* cutime */ 15, /* guest_time */ 42, /* cguest_time */ 43));
 
     private static final Set<Integer> SYS_TIME_IDX = new HashSet<Integer>(Arrays.asList(
-            /* stime */ 13, /* cstime */ 15, /* delayacct_blkio_ticks */ 41));
+            /* stime */ 14, /* cstime */ 16, /* delayacct_blkio_ticks */ 41));
+
+    private static final int THREADS_IDX = 19; /* num_threads */
 
     private final ProcDataProvider provider;
 
@@ -78,6 +80,7 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
 
     private class LinuxProcLineProcessor implements LineProcessor {
 
+        private int threads;
         private long prevTicks;
         private long currTicks;
         private long prevUsrTicks;
@@ -105,12 +108,14 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
                     prevSysTicks = currSysTicks;
                     long usrTicks = 0;
                     long sysTicks = 0;
-                    for (int i = 0; tokenizer.hasMoreTokens(); ++i) {
+                    for (int i = 1; tokenizer.hasMoreTokens(); ++i) {
                         String token = tokenizer.nextToken();
                         if (USR_TIME_IDX.contains(i)) {
                             usrTicks += Long.parseLong(token);
                         } else if (SYS_TIME_IDX.contains(i)) {
                             sysTicks += Long.parseLong(token);
+                        } else if (THREADS_IDX == i) {
+                            threads = Integer.parseInt(token);
                         }
                     }
                     currUsrTicks = usrTicks;
@@ -120,8 +125,12 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
                         float usrPercent = percent(currUsrTicks - prevUsrTicks, deltaTicks);
                         float sysPercent = percent(currSysTicks - prevSysTicks, deltaTicks);
                         DataRow row = new DataRow(
-                                ProcDataProviderConfiguration.CPU_TABLE.getColumnNames(),
-                                Arrays.asList(usrPercent, sysPercent));
+                                Arrays.asList(USR_TIME.getColumnName(),
+                                              SYS_TIME.getColumnName(),
+                                              THREADS.getColumnName()),
+                                Arrays.asList(usrPercent,
+                                              sysPercent,
+                                              threads));
                         provider.notifyIndicators(row);
                     }
                 }

@@ -63,6 +63,7 @@ import org.netbeans.modules.dlight.spi.impl.IndicatorRepairActionProviderAccesso
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -78,6 +79,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
     private List<ExecutionContext> contexts = new ArrayList<ExecutionContext>();
     private List<SessionStateListener> sessionStateListeners = null;
     private List<DataStorage> storages = null;
+    private List<ServiceInfoDataStorage> serviceInfoDataStorages = null;
     private List<DataCollector> collectors = null;
     private Map<String, Map<String, Visualizer>> visualizers = null;
     private SessionState state;
@@ -297,6 +299,10 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                     storages.clear();
                 }
 
+                if (serviceInfoDataStorages != null){
+                    serviceInfoDataStorages.clear();
+                }
+
                 if (collectors != null) {
                     collectors.clear();
                 }
@@ -416,35 +422,50 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             }
         }
 
+        if (collectors != null && collectors.size() > 0){
+            for (DataCollector toolCollector : collectors) {
+                DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(this, toolCollector);
+                if (toolCollector instanceof DLightTarget.ExecutionEnvVariablesProvider) {
+                    context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) toolCollector);
+                }
+                if (storage != null) {
+                    if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
+                        notAttachableDataCollector = toolCollector;
+                    }
+                    //init storage with the target values
+                    DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
+                    Map<String, String> info = targetInfo.getInfo();
+                    for (String key : info.keySet()) {
+                        storage.put(key, info.get(key));
+                    }
+                    toolCollector.init(storage, target);
+                    if (storages == null) {
+                        storages = new ArrayList<DataStorage>();
+                    }
+                    if (!storages.contains(storage)) {
+                        storages.add(storage);
+                    }
+                } else {
+                    // Cannot find storage for this collector!
+                    log.severe("Cannot find storage for collector " + toolCollector); // NOI18N
+                }
 
-        for (DataCollector toolCollector : collectors) {
-            DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(this, toolCollector);
-            if (toolCollector instanceof DLightTarget.ExecutionEnvVariablesProvider) {
-                context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) toolCollector);
+                target.addTargetListener(toolCollector);
             }
-            if (storage != null) {
-                if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
-                    notAttachableDataCollector = toolCollector;
-                }
-                //init storage with the target values
-                DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
-                Map<String, String> info = targetInfo.getInfo();
-                for (String key : info.keySet()) {
-                    storage.put(key, info.get(key));
-                }
-                toolCollector.init(storage, target);
-                if (storages == null) {
-                    storages = new ArrayList<DataStorage>();
-                }
-                if (!storages.contains(storage)) {
-                    storages.add(storage);
-                }
-            } else {
-                // Cannot find storage for this collector!
-                log.severe("Cannot find storage for collector " + toolCollector); // NOI18N
+        }else{
+            //should initialize at least ServiceInfoDataStorage For the Session
+            ServiceInfoDataStorage serviceInfoDataStorage = DataStorageManager.getInstance().getServiceInfoDataStorage(this);
+            DLightTarget.Info targetInfo = DLightTargetAccessor.getDefault().getDLightTargetInfo(target);
+            Map<String, String> info = targetInfo.getInfo();
+            for (String key : info.keySet()) {
+                serviceInfoDataStorage.put(key, info.get(key));
             }
-
-            target.addTargetListener(toolCollector);
+            if (serviceInfoDataStorages == null){
+                serviceInfoDataStorages = new ArrayList<ServiceInfoDataStorage>();
+            }
+            if (!serviceInfoDataStorages.contains(serviceInfoDataStorage)){
+                serviceInfoDataStorages.add(serviceInfoDataStorage);
+            }
         }
 
 
@@ -479,6 +500,11 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
      */
     public List<DataStorage> getStorages() {
         return (storages == null) ? Collections.<DataStorage>emptyList() : storages;
+    }
+
+    public List<ServiceInfoDataStorage> getServiceInfoDataStorages(){
+        //plus
+        return serviceInfoDataStorages == null ? Collections.<ServiceInfoDataStorage>emptyList() : serviceInfoDataStorages;
     }
 
     void close() {

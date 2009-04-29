@@ -40,24 +40,31 @@
 package org.netbeans.modules.jira.repository;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.model.Component;
+import org.eclipse.mylyn.internal.jira.core.model.Group;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
+import org.eclipse.mylyn.internal.jira.core.model.ServerInfo;
+import org.eclipse.mylyn.internal.jira.core.model.User;
 import org.eclipse.mylyn.internal.jira.core.model.Version;
-import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
-import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
+import org.eclipse.mylyn.internal.jira.core.service.JiraClientCache;
+import org.eclipse.mylyn.internal.jira.core.service.JiraClientData;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
-import org.eclipse.mylyn.internal.jira.core.service.JiraTunnel;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.commands.JiraCommand;
 
@@ -65,167 +72,221 @@ import org.netbeans.modules.jira.commands.JiraCommand;
  *
  * @author Tomas Stupka
  */
-public class JiraConfiguration {
+public class JiraConfiguration extends JiraClientCache {
 
-    private Project[] projects;
-    private Priority[] priorities;
-    private IssueType[] types;
-    private Resolution[] resolutions;
-    private JiraStatus[] statuses;
-
-    private JiraRepository repository;
     private JiraClient client;
-    private Map<String, Priority> prioritiesMap;
-    private Map<String, Project> projectsMap;
-    private Map<String, IssueType> typesMap;
-    private Map<String, Resolution> resolutionsMap;
-    private Map<String, JiraStatus> statusMap;
+    private JiraRepository repository;
+    private LazyData data;
+    private Set<String> loadedProjects = new HashSet<String>();
 
-    private final static Object INIT_LOCK = new Object();
+    private static final Object USER_LOCK = new Object();
+    private static final Object PROJECT_LOCK = new Object();
 
-    private JiraConfiguration(JiraRepository repository) {
+    private JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
+        super(jiraClient);
+        this.client = jiraClient;
         this.repository = repository;
+        data = new LazyData();
     }
 
     public static JiraConfiguration create(final JiraRepository repository) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
-        final JiraConfiguration configuration = new JiraConfiguration(repository);
-
+        final JiraConfiguration[] cache = new JiraConfiguration[1];
         JiraCommand cmd = new JiraCommand() {
             @Override
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+
                 JiraClient client = Jira.getInstance().getClient(repository.getTaskRepository());
-                configuration.client = client;
+
+                cache[0] = new JiraConfiguration(client, repository);
 
                 NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
 
-                configuration.projects = client.getProjects(nullProgressMonitor);
-                configuration.projectsMap = new HashMap<String, Project>(configuration.projects.length);
-                for (Project project : configuration.projects) {
-                    configuration.projectsMap.put(project.getId(), project);
+                cache[0].data.projects = client.getProjects(nullProgressMonitor);
+                cache[0].data.projectsById = new HashMap<String, Project>(cache[0].data.projects.length);
+                cache[0].data.projectsByKey = new HashMap<String, Project>(cache[0].data.projects.length);
+                for (Project project : cache[0].data.projects) {
+                    cache[0].data.projectsById.put(project.getId(), project);
+                    cache[0].data.projectsByKey.put(project.getKey(), project);
                 }
-                configuration.priorities = client.getPriorities(nullProgressMonitor);
-                configuration.prioritiesMap = new HashMap<String, Priority>(configuration.priorities.length);
-                for (Priority priority : configuration.priorities) {
-                    configuration.prioritiesMap.put(priority.getId(), priority);
+                cache[0].data.priorities = client.getPriorities(nullProgressMonitor);
+                cache[0].data.prioritiesById = new HashMap<String, Priority>(cache[0].data.priorities.length);
+                for (Priority priority : cache[0].data.priorities) {
+                    cache[0].data.prioritiesById.put(priority.getId(), priority);
                 }
-                configuration.resolutions = client.getResolutions(nullProgressMonitor);
-                configuration.resolutionsMap = new HashMap<String, Resolution>(configuration.resolutions.length);
-                for (Resolution resolution : configuration.resolutions) {
-                    configuration.resolutionsMap.put(resolution.getId(), resolution);
+                cache[0].data.resolutions = client.getResolutions(nullProgressMonitor);
+                cache[0].data.resolutionsById = new HashMap<String, Resolution>(cache[0].data.resolutions.length);
+                for (Resolution resolution : cache[0].data.resolutions) {
+                    cache[0].data.resolutionsById.put(resolution.getId(), resolution);
                 }
-                configuration.types = client.getIssueTypes(nullProgressMonitor);
-                configuration.typesMap = new HashMap<String, IssueType>(configuration.types.length);
-                for (IssueType type : configuration.types) {
-                    configuration.typesMap.put(type.getId(), type);
-                }                
-                configuration.statuses = client.getStatuses(nullProgressMonitor);
-                configuration.statusMap = new HashMap<String, JiraStatus>(configuration.statuses.length);
-                for (JiraStatus status : configuration.statuses) {
-                    configuration.statusMap.put(status.getId(), status);
+                cache[0].data.issueTypes = client.getIssueTypes(nullProgressMonitor);
+                cache[0].data.issueTypesById = new HashMap<String, IssueType>(cache[0].data.issueTypes.length);
+                for (IssueType type : cache[0].data.issueTypes) {
+                    cache[0].data.issueTypesById.put(type.getId(), type);
                 }
-
+                cache[0].data.statuses = client.getStatuses(nullProgressMonitor);
+                cache[0].data.statusesById = new HashMap<String, JiraStatus>(cache[0].data.statuses.length);
+                for (JiraStatus status : cache[0].data.statuses) {
+                    cache[0].data.statusesById.put(status.getId(), status);
+                }
                 // XXX what else do we need?
                 // XXX issue types by project
 
+                hackJiraCache(client);
+            }
+
+            private void hackJiraCache(JiraClient client) {
+                try {
+                    Field f = client.getClass().getDeclaredField("cache");      // NOI18N
+                    f.setAccessible(true);
+                    f.set(client, cache[0]);
+                } catch (IllegalArgumentException ex) {
+                    Jira.LOG.log(Level.SEVERE, null, ex);
+                } catch (IllegalAccessException ex) {
+                    Jira.LOG.log(Level.SEVERE, null, ex);
+                } catch (NoSuchFieldException ex) {
+                    Jira.LOG.log(Level.SEVERE, null, ex);
+                } catch (SecurityException ex) {
+                    Jira.LOG.log(Level.SEVERE, null, ex);
+                }
             }
         };
-        repository.getExecutor().execute(cmd);
+        repository.getExecutor().execute(cmd, true, false);
         if(!cmd.hasFailed()) {
-            configuration.initJiraCache();
-            return configuration;
+            return cache[0];
         }
         return null;
     }
+    @Override
+    public boolean hasDetails() {
+        return true; // always
+    }
 
+    @Override
+    public JiraClientData getData() {
+        if(data == null) {
+             data = new LazyData();
+        }
+        return data;
+    }
+
+    @Override
+    public IssueType getIssueTypeById(String id) {
+        return data.issueTypesById.get(id);
+    }
+
+    @Override
+    public IssueType[] getIssueTypes() {
+        return data.issueTypes;
+    }
+
+    @Override
     public Priority[] getPriorities() {
-        return priorities;
+        return data.priorities;
     }
 
-    public Project[] getProjects() {
-        return projects;
+    @Override
+    public Priority getPriorityById(String id) {
+        return data.prioritiesById.get(id);
     }
 
+    @Override
+    public Resolution getResolutionById(String id) {
+        return data.resolutionsById.get(id);
+    }
+
+    @Override
     public Resolution[] getResolutions() {
-        return resolutions;
+        return data.resolutions;
     }
 
-    public IssueType[] getTypes() {
-        return types;
+    @Override
+    public ServerInfo getServerInfo() {
+        return data.serverInfo;
     }
 
+    @Override
+    public ServerInfo getServerInfo(IProgressMonitor monitor) throws JiraException {
+        refreshServerInfo(monitor);
+        return data.serverInfo;
+    }
+
+    @Override
+    public JiraStatus getStatusById(String id) {
+        return data.statusesById.get(id);
+    }
+
+    @Override
     public JiraStatus[] getStatuses() {
-        return statuses;
+        return data.statuses;
     }
 
-    public Priority getPriority(String id) {
-        return prioritiesMap.get(id);
-    }
-
-    public Project getProject(String id) {
-        return projectsMap.get(id);
-    }
-
-    public Resolution getResolution(String id) {
-        return resolutionsMap.get(id);
-    }
-
-    public IssueType getType(String id) {
-        return typesMap.get(id);
-    }
-
-    public JiraStatus getStatus(String id) {
-        return statusMap.get(id);
-    }
-
-    public Component[] getComponents(String projectId) {
-        return getComponents(getProject(projectId));
-    }
-
-    public Component[] getComponents(final Project project) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-
-        synchronized(INIT_LOCK) {
-            Component[] components = project.getComponents();
-            if(components != null) {
-                return components;
-            }
-            initProject(project);
-        }
-
-        return project.getComponents();
-    }
-
-    public Version[] getVersions(String projectId) {
-        return getVersions(getProject(projectId));
-    }
-
-    public Version[] getVersions(final Project project) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-
-        synchronized(INIT_LOCK) {
-            Version[] versions = project.getVersions();
-            if(versions != null) {
-                return versions;
-            }
-            initProject(project);
-        }
-
-        return project.getVersions();
-    }
-
-    public void initilize(Project project) {
-        synchronized(INIT_LOCK) {
-            initProject(project);
+    @Override
+    public User getUser(String name) {
+        synchronized(USER_LOCK) {
+            return data.usersByName.get(name);
         }
     }
 
-    private void initJiraCache() {
-        JiraTunnel.init(client, types, statuses, priorities, resolutions);
+    @Override
+    public User putUser(String name, String fullName) {
+	User user = new User();
+        user.setName(name);
+        user.setFullName(fullName);
+        synchronized(USER_LOCK) {
+            data.usersByName.put(name, user);
+        }
+        return user;
+    }
+
+    @Override
+    public synchronized void refreshDetails(IProgressMonitor monitor) throws JiraException {
+        // ignore
+    }
+
+    @Override
+    public synchronized void refreshServerInfo(IProgressMonitor monitor) throws JiraException {
+        data.serverInfo = client.getServerInfo(monitor);
+    }
+
+    @Override
+    public void setData(JiraClientData data) {
+        this.data = (LazyData) data;
+    }
+
+    @Override
+    public Project getProjectById(String id) {
+        synchronized(PROJECT_LOCK) {
+            Project project = data.projectsById.get(id);
+            ensureProjectLoaded(project);
+            return project;
+        }
+    }
+
+    @Override
+    public Project getProjectByKey(String key) {
+        synchronized(PROJECT_LOCK) {
+            Project project = data.projectsByKey.get(key);
+            ensureProjectLoaded(project);
+            return project;
+        }
+    }
+
+    @Override
+    public Project[] getProjects() {
+        return data.projects;
+    }
+
+    public void ensureProjectLoaded(Project project) {
+        if (!loadedProjects.contains(project.getId())) {
+            initProject(project);
+            loadedProjects.add(project.getId());
+        }
     }
 
     private void initProject(final Project project) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         JiraCommand cmd = new JiraCommand() {
             @Override
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
@@ -235,17 +296,52 @@ public class JiraConfiguration {
                 Version[] versions = client.getVersions(project.getKey(), new NullProgressMonitor());
                 project.setVersions(versions);
 
-                patchJiraCache(project);
+                // XXX what else !!!
+
             }
         };
         repository.getExecutor().execute(cmd);
     }
 
-    private void patchJiraCache(Project project) throws JiraException {
-        JiraTunnel.patchProjects(
-                Jira.getInstance().getClient(repository.getTaskRepository()),
-                new Project[] {project});
+    public Component[] getComponents(String projectId) {
+        return getProjectById(projectId).getComponents();
     }
 
+    public Component[] getComponents(final Project project) {
+        synchronized(PROJECT_LOCK) {
+            ensureProjectLoaded(project);
+            return project.getComponents();
+        }
+    }
+
+    public Version[] getVersions(String projectId) {
+        return getProjectById(projectId).getVersions();
+    }
+
+    public Version[] getVersions(final Project project) {
+        synchronized(PROJECT_LOCK) {
+            ensureProjectLoaded(project);
+            return project.getVersions();
+        }
+    }
+
+    private class LazyData extends JiraClientData {
+	Group[] groups = new Group[0];
+	IssueType[] issueTypes = new IssueType[0];
+	Map<String, IssueType> issueTypesById = new HashMap<String, IssueType>();
+	Priority[] priorities = new Priority[0];
+	Map<String, Priority> prioritiesById = new HashMap<String, Priority>();
+	Project[] projects = new Project[0];
+	Map<String, Project> projectsById = new HashMap<String, Project>();
+	Map<String, Project> projectsByKey = new HashMap<String, Project>();
+	Resolution[] resolutions = new Resolution[0];
+	Map<String, Resolution> resolutionsById = new HashMap<String, Resolution>();
+	volatile ServerInfo serverInfo;
+	JiraStatus[] statuses = new JiraStatus[0];
+	Map<String, JiraStatus> statusesById = new HashMap<String, JiraStatus>();
+	User[] users = new User[0];
+	Map<String, User> usersByName = new HashMap<String, User>();
+	long lastUpdate;
+    }
 
 }
