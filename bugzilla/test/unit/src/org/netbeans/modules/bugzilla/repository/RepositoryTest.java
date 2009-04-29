@@ -116,7 +116,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
 
         // name & url
         populate(c, REPO_NAME, REPO_URL, "", "");
-        assertFalse(c.isValid());
+        assertTrue(c.isValid());
 
         // full house
         populate(c, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
