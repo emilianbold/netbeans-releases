@@ -47,7 +47,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 import java.util.EventListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -153,7 +152,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
                         changedSegment.reset(doc);
                         changedSegmentTaken = lastModified;
                         if (TRACE) {
-                            System.out.println("Take last changed segment: "+lastChangedSegment.toString());
+                            System.err.println("Take last changed segment: "+lastChangedSegment.toString());
                             new Exception().printStackTrace();
                         }
                     }
