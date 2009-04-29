@@ -38,9 +38,7 @@
  */
 package org.netbeans.modules.dlight.tools;
 
-import java.util.Arrays;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 
 /**
@@ -50,10 +48,9 @@ public class ProcDataProviderConfiguration implements IndicatorDataProviderConfi
 
     public static final String ID = "ProcDataProvider_ID"; // NOI18N
 
-    public static final DataTableMetadata CPU_TABLE = new DataTableMetadata(
-            "proc_cpu", Arrays.asList( // NOI18N
-            new Column("utime", Float.class), // NOI18N
-            new Column("stime", Float.class))); // NOI18N
+    public static final Column USR_TIME = new Column("utime", Float.class); // NOI18N
+    public static final Column SYS_TIME = new Column("stime", Float.class); // NOI18N
+    public static final Column THREADS = new Column("threads", Integer.class); // NOI18N
 
     public ProcDataProviderConfiguration() {
     }

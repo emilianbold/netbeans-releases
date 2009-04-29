@@ -221,22 +221,22 @@ public class NbJiraIssue extends Issue {
 
     IssueType getType() {
         String id = getFieldValue(IssueField.TYPE);
-        return repository.getConfiguration().getType(id);
+        return repository.getConfiguration().getIssueTypeById(id);
     }
 
     Priority getPriority() {
         String id = getFieldValue(IssueField.PRIORITY);
-        return repository.getConfiguration().getPriority(id);
+        return repository.getConfiguration().getPriorityById(id);
     }
 
     JiraStatus getStatus() {
         String id = getFieldValue(IssueField.STATUS);
-        return repository.getConfiguration().getStatus(id);
+        return repository.getConfiguration().getStatusById(id);
     }
 
     Resolution getResolution() {
         String id = getFieldValue(IssueField.RESOLUTION);
-        return repository.getConfiguration().getResolution(id);
+        return repository.getConfiguration().getResolutionById(id);
     }
 
     TaskRepository getTaskRepository() {

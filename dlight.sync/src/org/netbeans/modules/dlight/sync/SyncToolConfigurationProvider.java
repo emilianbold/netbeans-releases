@@ -61,6 +61,7 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
+import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
@@ -157,7 +158,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         indicatorColumns.addAll(LLDataCollectorConfiguration.SYNC_TABLE.getColumns());
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
         SyncIndicatorConfiguration indicatorConfiguration =
-            new SyncIndicatorConfiguration(indicatorMetadata, Arrays.asList(threadsColumn.getColumnName(), SunStudioDCConfiguration.c_threadsCount.getColumnName()), INDICATOR_POSITION);
+            new SyncIndicatorConfiguration(indicatorMetadata, Arrays.asList(threadsColumn.getColumnName(), 
+            ProcDataProviderConfiguration.THREADS.getColumnName(), LLDataCollectorConfiguration.threads_count.getColumnName()), INDICATOR_POSITION);
 
         indicatorConfiguration.addVisualizerConfiguration(getDetails(rawTableMetadata));
 

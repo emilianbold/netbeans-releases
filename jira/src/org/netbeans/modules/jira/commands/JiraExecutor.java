@@ -82,7 +82,16 @@ public class JiraExecutor {
     }
 
     public void execute(JiraCommand cmd, boolean handleExceptions) {
+        execute(cmd, handleExceptions, true);
+    }
+
+    public void execute(JiraCommand cmd, boolean handleExceptions, boolean ensureConfiguration) {
         try {
+
+            if(ensureConfiguration) {
+               repository.getConfiguration(); // XXX hack
+            }
+
             cmd.setFailed(true);
 
             cmd.execute();

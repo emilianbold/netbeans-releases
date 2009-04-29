@@ -99,7 +99,7 @@ public final class SunStudioDCConfiguration
             MemoryMetric.LeakBytesMetric.getMetricValueClass(),
             MemoryMetric.LeakBytesMetric.getMetricDisplayedName(), null);
     public static final Column c_ulockSummary = new Column("user_lock", Long.class, loc("SSDataCollector.ColumnName.user_lock"), null); // NOI18N
-    public static final Column c_threadsCount = new Column("threads", Long.class, loc("SSDataCollector.ColumnName.threads"), null); // NOI18N
+    public static final Column c_threadsCount = new Column("ss_threads", Long.class, loc("SSDataCollector.ColumnName.threads"), null); // NOI18N
 
 
     static {

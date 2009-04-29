@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.cpu;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.MissingResourceException;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
@@ -59,7 +60,6 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
-import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 import org.openide.util.NbBundle;
@@ -142,11 +142,14 @@ public final class DLightCPUToolConfigurationProvider
         toolConfiguration.addIndicatorDataProviderConfiguration(indicatorProviderConfiguration);
 
         List<Column> resultColumns = new ArrayList<Column>();
-        resultColumns.addAll(ProcDataProviderConfiguration.CPU_TABLE.getColumns());
+        resultColumns.add(ProcDataProviderConfiguration.USR_TIME);
+        resultColumns.add(ProcDataProviderConfiguration.SYS_TIME);
         IndicatorMetadata indicatorMetadata =
             new IndicatorMetadata(resultColumns);
-        CpuIndicatorConfiguration indicatorConfiguration =
-            new CpuIndicatorConfiguration(indicatorMetadata, INDICATOR_POSITION);
+        CpuIndicatorConfiguration indicatorConfiguration = new CpuIndicatorConfiguration(
+                indicatorMetadata,
+                new HashSet<String>(Arrays.asList(ProcDataProviderConfiguration.SYS_TIME.getColumnName())),
+                INDICATOR_POSITION);
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigDtrace);
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigSS);
         toolConfiguration.addIndicatorConfiguration(indicatorConfiguration);
