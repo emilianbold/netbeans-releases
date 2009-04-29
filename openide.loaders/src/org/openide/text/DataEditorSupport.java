@@ -644,7 +644,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         */
         public Env (DataObject obj) {
             super (obj);
-            canWrite = getFileImpl().canWrite();
+            canWrite = obj.getPrimaryFile().canWrite();
         }
         
         /** Getter for the file to work on.
