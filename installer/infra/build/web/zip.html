@@ -50,7 +50,7 @@
 	        var currentLocation = PAGE_ARTIFACTS_LOCATION;
 
 		function getPageArtifactsLocation(another) {
-	            return anotherLocation(another) ? ADDITIONAL_PAGE_ARTIFACTS_LOCATION : PAGE_ARTIFACTS_LOCATION;
+	            return anotherLocation(another) ? (ADDITIONAL_PAGE_ARTIFACTS_LOCATION !="" ? ADDITIONAL_PAGE_ARTIFACTS_LOCATION : get_build_info(true).ADDITIONAL_BUILD_LOCATION) : PAGE_ARTIFACTS_LOCATION;
 		}
 
 		function getJSLocation(another) {
@@ -63,15 +63,11 @@
                     return getPageArtifactsLocation(useAnotherLocation()) + "img/";
                 }
                 function anotherLocation(another) {
-                    if (another) {
-                        return (another == "true" || another == true);
-                    } else {
-	                return false;
-		    }
+                    return another ? (another == "true" || another == true) :  false;
                 }
 
 		function load_page_js(script_filename, another) {
-                    currentLocation = anotherLocation(another) ? ADDITIONAL_PAGE_ARTIFACTS_LOCATION : PAGE_ARTIFACTS_LOCATION;
+                    currentLocation = getPageArtifactsLocation(another);
                     var page_location = getJSLocation(another) + script_filename;
 		    document.write('<' + 'script ' + 'language="javascript" type="text/javascript" src="' + page_location + '"><' + '/' + 'script' + '>');
 		}
@@ -79,16 +75,17 @@
 
         <script src="http://www.netbeans.org/images/js/companion-projects.js" type="text/javascript"></script>
         <script type="text/javascript">load_page_js("common.js")</script>
-	<script type="text/javascript">load_languages_current()</script>
-	<script type="text/javascript">load_languages_additional()</script>
+        <script type="text/javascript">load_build_info(false)</script>
+        <script type="text/javascript">load_build_info(true)</script>
+	<script type="text/javascript">load_languages(false)</script>
+	<script type="text/javascript">load_languages(true)</script>
 	<script type="text/javascript">load_page_js_locale("common_strings",".js")</script>
         <script type="text/javascript">load_page_js_locale("download_strings",".js")</script>
         <script type="text/javascript">load_files_information("files.js")</script>
         <script type="text/javascript">load_page_js("download.js")</script>
-        <script type="text/javascript">load_page_js("build_info.js")</script>
         <script type="text/javascript">load_page_js_locale("components",".js")</script>
-        <script type="text/javascript">set_page_title(NETBEANS_DOWNLOAD_PAGE_TITLE.replace('{0}',get_build_info().BUILD_DISPLAY_VERSION))</script>
-        <script type="text/javascript">set_page_description(NETBEANS_DOWNLOAD_PAGE_DESCRIPTION.replace('{0}',get_build_info().BUILD_DISPLAY_VERSION))</script>
+        <script type="text/javascript">set_page_title(NETBEANS_DOWNLOAD_PAGE_TITLE.replace('{0}',get_build_info(true).BUILD_DISPLAY_VERSION))</script>
+        <script type="text/javascript">set_page_description(NETBEANS_DOWNLOAD_PAGE_DESCRIPTION.replace('{0}',get_build_info(true).BUILD_DISPLAY_VERSION))</script>
 
         <link rel="stylesheet" type="text/css" href="http://www.netbeans.org/netbeans.css" media="screen"/>
         <script type="text/javascript">load_page_css("download.css")</script>
@@ -149,9 +146,9 @@
                         <!-- Top header -->
                         <table class="top_header">
                               <tr>
-                                  <td class="title"><script type="text/javascript">message(NETBEANS_DOWNLOAD_HEADER.replace('{0}',get_build_info().BUILD_DISPLAY_VERSION))</script></td>
+                                  <td class="title"><script type="text/javascript">message(NETBEANS_DOWNLOAD_HEADER.replace('{0}',get_build_info(true).BUILD_DISPLAY_VERSION))</script></td>
                                   <td class="menu">
-                                      <script type="text/javascript">get_build_info().add_download_tabs()</script>
+                                      <script type="text/javascript">get_build_info(true).add_download_tabs()</script>
                                   </td>
                               </tr>
                         </table>
@@ -187,7 +184,7 @@
 						<div>
 	                        	    		<script type="text/javascript">
 								message(LEGAL_INFO_MESSAGE.
-								replace("{0}",get_build_info().BUILD_DISPLAY_VERSION_SHORT).
+								replace("{0}",get_build_info(true).BUILD_DISPLAY_VERSION_SHORT).
 								replace("{1}",CDDL_GPLV2_LINK).
 								replace("{2}",LICENSE_DETAILS_LINK).
 								replace("{3}",LICENSE_NOTES_LINK))
@@ -226,18 +223,18 @@
         </div>
 
 	<script type="text/javascript">
-		if(get_build_info().LOAD_OMNITURE_CODE==1) {
+		if(get_build_info(true).LOAD_OMNITURE_CODE==1) {
 			load_js(OMNITURE_CODE_JS);
 		}
 	</script>
 	<!-- Begin Google webtracking analytics -->
 	 <script type="text/javascript">
-	   if(get_build_info().LOAD_GOOGLE_ANALYTICS_CODE==1) {
-	 	load_js(GOOGLE_ANALYTICS_JS);
+	        if(get_build_info(true).LOAD_GOOGLE_ANALYTICS_CODE==1) {
+	 	        load_js(GOOGLE_ANALYTICS_JS);
 		}
 	</script>
 	<script type="text/javascript">
-		if(get_build_info().LOAD_GOOGLE_ANALYTICS_CODE==1) {
+	   if(get_build_info(true).LOAD_GOOGLE_ANALYTICS_CODE==1) {
 	 	var pageTracker = _gat._getTracker("UA-2149007-1");
 	 	pageTracker._setDomainName("netbeans.org");
 	 	pageTracker._initData();

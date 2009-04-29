@@ -1661,7 +1661,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 if (firstNonWhiteFwd != -1) {
                     char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
                     insert = chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N
-                             chr == ';' || chr == ']' || chr == '/' || chr == '.'; //NOI18N
+                             chr == ';' || chr == ']' || chr == '.'; //NOI18N
                 }
             }
             

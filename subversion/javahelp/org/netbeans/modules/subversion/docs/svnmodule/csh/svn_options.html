@@ -28,10 +28,12 @@
         <p>You can specify the following Subversion settings:</p>
             
         <ul>
-            <li><strong>Specify the SVN Home Folder</strong>. Enter the path to the Subversion 
-                executable home folder in the IDE. Click Browse to navigate to the folder on 
-                your system. Any changes made will take effect upon restarting the IDE></li>
-            <li><strong>Connection Settings</strong>. Click the Connection Settings button to
+            <li><strong>Specify the SVN executable File</strong>. Enter the path to the Subversion
+                executable file in the IDE. This should be the path up to, but not including,
+                the file. Click Browse to navigate to the folder on your system. If left blank,
+                the IDE searches for the executable in its default location. Any changes made
+                will take effect upon restarting the IDE.</li>
+            <li><strong>Connection Settings</strong>. Click the Manage Connection Settings button to
                 view previously saved repository URLs used in the IDE. From the Manage Connection
                 Settings dialog, you can change URL-specific settings, such as username and 
                 password. You can also remove previously saved URLs.</li>
@@ -58,6 +60,10 @@
             <li><strong>Variable content</strong>. You can specify rules defining how status 
                 labels should appear depending on the repository folder(s) which files belong 
                 to. To do so, click the Define {folder} button.</li>
+            <li><strong>Other: Automatically open Output window</strong>. Selecting this option
+                sets the Output window to display when versioning operations that involve 
+                interaction with the repository take place (e.g., commit, checkout). This
+                option is selected by default.</li>
         </ul>
     
         <dl>

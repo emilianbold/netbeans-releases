@@ -66,6 +66,9 @@ import javax.swing.text.StyledDocument;
 import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
 import org.eclipse.mylyn.internal.jira.core.model.Attachment;
 import org.eclipse.mylyn.internal.jira.core.model.Comment;
+import org.eclipse.mylyn.internal.jira.core.model.IssueType;
+import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
+import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -216,6 +219,26 @@ public class NbJiraIssue extends Issue {
         return getFieldValue(IssueField.DESCRIPTION);
     }
 
+    IssueType getType() {
+        String id = getFieldValue(IssueField.TYPE);
+        return repository.getConfiguration().getIssueTypeById(id);
+    }
+
+    Priority getPriority() {
+        String id = getFieldValue(IssueField.PRIORITY);
+        return repository.getConfiguration().getPriorityById(id);
+    }
+
+    JiraStatus getStatus() {
+        String id = getFieldValue(IssueField.STATUS);
+        return repository.getConfiguration().getStatusById(id);
+    }
+
+    Resolution getResolution() {
+        String id = getFieldValue(IssueField.RESOLUTION);
+        return repository.getConfiguration().getResolutionById(id);
+    }
+
     TaskRepository getTaskRepository() {
         return repository.getTaskRepository();
     }
@@ -265,24 +288,24 @@ public class NbJiraIssue extends Issue {
     }
 
     public void resolveFixed(String val) {
-        try {
-            Resolution[] res = Jira.getInstance().getResolutions(getTaskRepository());
-            Resolution resolution = null;
-            if(res != null) {
-                for (Resolution r : res) {
-                    // XXX HACK
-                    if(r.getName().equals("Fixed")) {
-                        resolution = r;
-                    }
-                }
-            }
-            if(resolution == null) {
-                Jira.LOG.severe("Can't close issue " + getKey() + " as 'Fixed'");
-            }
-            resolve(resolution, val);
-        } catch (JiraException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            Resolution[] res = Jira.getInstance().getResolutions(getTaskRepository());
+//            Resolution resolution = null;
+//            if(res != null) {
+//                for (Resolution r : res) {
+//                    // XXX HACK
+//                    if(r.getName().equals("Fixed")) {
+//                        resolution = r;
+//                    }
+//                }
+//            }
+//            if(resolution == null) {
+//                Jira.LOG.severe("Can't close issue " + getKey() + " as 'Fixed'");
+//            }
+//            resolve(resolution, val);
+//        } catch (JiraException ex) {
+//            Jira.LOG.log(Level.SEVERE, null, ex);
+//        }
     }
 
     @Override

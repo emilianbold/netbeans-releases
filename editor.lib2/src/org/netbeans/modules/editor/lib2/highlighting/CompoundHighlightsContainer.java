@@ -301,8 +301,8 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
                 final HighlightsSequence seq = layers[i].getHighlights(startOffset, endOffset);
                 final int layerIndex = i; //saving this so we can debug corrupt layers (aka the ones that need clipping)
                 final HighlightsContainer currentLayerObject = layers[i];
-                bag.addAllHighlights(new HighlightsSequence() {
 
+                bag.addAllHighlights(new HighlightsSequence() {
                     int start = -1, end = -1;
                     public boolean moveNext() {
                         boolean hasNext = seq.moveNext();
@@ -310,29 +310,55 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
                         // In practice I think it is, but I cannot afford to make that assumption now.
                         // So I have to check both boundaries, not only start and end offset separately.
                         boolean retry = hasNext;
-                        while(retry){
+                        while (retry) {
                             start = seq.getStartOffset();
                             end = seq.getEndOffset();
-                            assert start <=end : "Start should come before the end offset in the sequence"; //NOI18N
 
-                            if (start > endOffset || end < startOffset) {
-                                //this highlight is totally outside our rage, there is nothing we can clip, we must retry
-                                LOG.warning("Corrupt layer found (#" + layerIndex + ":" + currentLayerObject + "). Start offset " + start + " and end offset "+end+" are outside the range [" + startOffset + "," + endOffset+"], skipping."); //NOI18N
+                            if (start > end) {
+                                // this highlight is invalid
+                                if (LOG.isLoggable(Level.FINE)) {
+                                    LOG.log(Level.FINE, "Layer[" + layerIndex + "]=" + currentLayerObject //NOI18N
+                                        + " supplied invalid highlight " + dumpHighlight(seq, null) //NOI18N
+                                        + ", requested range <" + startOffset + ", " + endOffset + ">." //NOI18N
+                                        + " Highlight ignored."); //NOI18N
+                                }
+                                
                                 retry = hasNext = seq.moveNext();
-                            }else{
+                            } else if (start > endOffset || end < startOffset) {
+                                // this highlight is totally outside our rage, there is nothing we can clip, we must retry
+                                if (LOG.isLoggable(Level.FINE)) {
+                                    LOG.log(Level.FINE, "Layer[" + layerIndex + "]=" + currentLayerObject //NOI18N
+                                        + " supplied highlight " + dumpHighlight(seq, null) //NOI18N
+                                        + ", which is outside of the requested range <" + startOffset + ", " + endOffset + ">." //NOI18N
+                                        + " Highlight skipped."); //NOI18N
+                                }
+
+                                retry = hasNext = seq.moveNext();
+                            } else {
+                                // highlight appears ok
                                 retry = false;
                             }
                         }
-                        if(hasNext){
+
+                        if (hasNext) {
+                            // clip the highlight if neccessary
+                            boolean unclipped = false;
                             if (start < startOffset) {
-                                LOG.warning("Corrupt layer found (#" + layerIndex + ":" + currentLayerObject + "). Start offset " + start + " should be >=" + startOffset + ". Clipping..."); //NOI18N
                                 start = startOffset;
+                                unclipped = true;
                             }
                             if (end > endOffset) {
-                                LOG.warning("Corrupt layer found (#" + layerIndex + ":" + currentLayerObject + "). End offset " + end + " should be <=" + endOffset + ". Clipping..."); //NOI18N
                                 end = endOffset;
+                                unclipped = true;
+                            }
+                            if (unclipped && LOG.isLoggable(Level.FINE)) {
+                                LOG.log(Level.FINE, "Layer[" + layerIndex + "]=" + currentLayerObject //NOI18N
+                                    + " supplied unclipped highlight " + dumpHighlight(seq, null) //NOI18N
+                                    + ", requested range <" + startOffset + ", " + endOffset + ">." //NOI18N
+                                    + " Highlight clipped."); //NOI18N
                             }
                         }
+
                         return hasNext;
                     }
 
@@ -416,13 +442,9 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         sb.append("Highlights in " + layer + ": {\n"); //NOI18N
         
         for(HighlightsSequence seq = layer.getHighlights(startOffset, endOffset); seq.moveNext(); ) {
-            sb.append("  <"); //NOI18N
-            sb.append(seq.getStartOffset());
-            sb.append(", "); //NOI18N
-            sb.append(seq.getEndOffset());
-            sb.append(", "); //NOI18N
-            sb.append(seq.getAttributes().getAttribute(StyleConstants.NameAttribute));
-            sb.append(">\n"); //NOI18N
+            sb.append("  "); //NOI18N
+            dumpHighlight(seq, sb);
+            sb.append("\n"); //NOI18N
         }
         
         sb.append("} End of Highlights in " + layer); //NOI18N
@@ -431,6 +453,17 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         return sb.toString();
     }
 
+    private static StringBuilder dumpHighlight(HighlightsSequence seq, StringBuilder sb) {
+        sb.append("<"); //NOI18N
+        sb.append(seq.getStartOffset());
+        sb.append(", "); //NOI18N
+        sb.append(seq.getEndOffset());
+        sb.append(", "); //NOI18N
+        sb.append(seq.getAttributes().getAttribute(StyleConstants.NameAttribute));
+        sb.append(">"); //NOI18N
+        return sb;
+    }
+    
     private static final class LayerListener implements HighlightsChangeListener {
         
         private WeakReference<CompoundHighlightsContainer> ref;

@@ -150,12 +150,6 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                     return true;
                 }
             }
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Breakpoint "+getBreakpoint()+
-                            " NOT submitted because it's source root "+sourceRoot+
-                            " is not contained in debugger's source roots: "+
-                            java.util.Arrays.asList(sourceRoots));
-            }
             String[] projectSourceRoots = getDebugger().getEngineContext().getProjectSourceRoots();
             for (int i = 0; i < projectSourceRoots.length; i++) {
                 if (sourceRoot.equals(projectSourceRoots[i])) {
@@ -163,10 +157,20 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                                 NbBundle.getMessage(ClassBasedBreakpoint.class,
                                             "MSG_DisabledSourceRoot",
                                             sourceRoot));
-                    break;
+                    return false;
                 }
             }
+            // Breakpoint is not in debugger's source roots,
+            // though it still might get hit if the app loads additional classes...
+            return true;
+            /*if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Breakpoint "+getBreakpoint()+
+                            " NOT submitted because it's source root "+sourceRoot+
+                            " is not contained in debugger's source roots: "+
+                            java.util.Arrays.asList(sourceRoots));
+            }
             return false;
+             */
         }
     }
     
