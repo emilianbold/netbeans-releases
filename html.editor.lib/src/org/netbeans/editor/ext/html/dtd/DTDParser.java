@@ -1267,11 +1267,12 @@ class DTDParser extends Object {
             return name;
         }
         
-        /** Shorthand to resolving if content model of this Element is EMPTY */
+        /** Shorthand to resolving if content model of this Element is EMPTY.
+         * This also means the end tag is forbidden.
+         */
         public boolean isEmpty() {
-            if( optEnd && model.getContent() instanceof DTD.ContentLeaf ) return true;
-            //&& ((DTD.ContentLeaf)model.getContent()).getName().equals( "EMPTY" ) ) return true; 
-            return false;
+            return ( optEnd && model.getContent() instanceof DTD.ContentLeaf )
+            && ((DTD.ContentLeaf)model.getContent()).getElementName().equals( "EMPTY" );
         }
         
         /** Tells if this Element has optional Start Tag. */
@@ -1587,7 +1588,7 @@ class DTDParser extends Object {
         
         
         /** get the name of leaf Element */
-        public String getName() {
+        public String getElementName() {
             return elemName;
         }
         
@@ -1610,7 +1611,11 @@ class DTDParser extends Object {
         
         /** ContentLeaf can't be discarded as it hac no operation associated */
         public boolean isDiscardable() {
-            return false;
+            //#PCDATA can be discarded
+            //XXX this is mostly a workaround for SyntaxTree class which
+            //doesn't process text nodes
+            return getElementName().equals("#PCDATA");
+            //return false;
         }
         
         /** ContentLeaf is either reduced to EMPTY_CONTENT or doesn't
@@ -1622,7 +1627,9 @@ class DTDParser extends Object {
 
         public Set getPossibleElements() {
             Set s = new HashSet();
-            s.add( elem );
+            if(elem != null) {
+                s.add( elem );
+            }
             return s;
         }
     }

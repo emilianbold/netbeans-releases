@@ -39,20 +39,108 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class Util {
+public final class Util {
 
         //For unit tests
     public static Set<String> allMimeTypes;
 
-    static Set<String> getAllMimeTypes () {
+    public static Set<String> getAllMimeTypes () {
         return allMimeTypes != null ? allMimeTypes : EditorSettings.getDefault().getAllMimeTypes();
     }
 
+    public static boolean canBeParsed(String mimeType) {
+        if (mimeType == null || "content/unknown".equals(mimeType) || !Util.getAllMimeTypes().contains(mimeType)) { //NOI18N
+            return false;
+        }
+
+        int slashIdx = mimeType.indexOf('/'); //NOI18N
+        assert slashIdx != -1 : "Invalid mimetype: '" + mimeType + "'"; //NOI18N
+
+        String type = mimeType.substring(0, slashIdx);
+        if (type.equals("application")) { //NOI18N
+            if (!mimeType.equals("application/x-httpd-eruby") && !mimeType.equals("application/xml-dtd")) { //NOI18N
+                return false;
+            }
+        } else if (!type.equals("text")) { //NOI18N
+            return false;
+        }
+
+//            if (allLanguagesParsersCount == -1) {
+//                Collection<? extends ParserFactory> allLanguagesParsers = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(ParserFactory.class);
+//                allLanguagesParsersCount = allLanguagesParsers.size();
+//            }
+//            Collection<? extends ParserFactory> parsers = MimeLookup.getLookup(mimeType).lookupAll(ParserFactory.class);
+//            if (parsers.size() - allLanguagesParsersCount > 0) {
+//                return true;
+//            }
+//
+//            // Ideally we should check that there are EmbeddingProviders registered for the
+//            // mimeType, but let's assume that if there are TaskFactories they are either
+//            // ordinary scheduler tasks or EmbeddingProviders. The former would most likely
+//            // mean that there is also a Parser and would have been caught in the previous check.
+//            if (allLanguagesTasksCount == -1) {
+//                Collection<? extends TaskFactory> allLanguagesTasks = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(TaskFactory.class);
+//                allLanguagesTasksCount = allLanguagesTasks.size();
+//            }
+//            Collection<? extends TaskFactory> tasks = MimeLookup.getLookup(mimeType).lookupAll(TaskFactory.class);
+//            if (tasks.size() - allLanguagesTasksCount > 0) {
+//                return true;
+//            }
+
+        return true;
+    }
+
+    public static StackTraceElement findCaller(StackTraceElement[] elements, Class... classesToFilterOut) {
+        loop: for (StackTraceElement e : elements) {
+            if (e.getClassName().equals(Util.class.getName()) || e.getClassName().startsWith("java.lang.")) { //NOI18N
+                continue;
+            }
+
+            if (classesToFilterOut != null && classesToFilterOut.length > 0) {
+                for(Class c : classesToFilterOut) {
+                    if (e.getClassName().startsWith(c.getName())) {
+                        continue loop;
+                    }
+                }
+            } else {
+                if (e.getClassName().startsWith("org.netbeans.modules.parsing.")) { //NOI18N
+                    continue;
+                }
+            }
+
+            return e;
+        }
+        return null;
+    }
+
+    public static URL resolveUrl(URL root, String relativePath) throws MalformedURLException {
+        try {
+            if ("file".equals(root.getProtocol())) { //NOI18N
+                return new File(new File(root.toURI()), relativePath).toURI().toURL();
+            } else {
+                return new URL(root, relativePath);
+            }
+        } catch (URISyntaxException use) {
+            MalformedURLException mue = new MalformedURLException("Can't resolve URL: root=" + root + ", relativePath=" + relativePath); //NOI18N
+            mue.initCause(use);
+            throw mue;
+        }
+    }
+
+    private static final Logger LOG = Logger.getLogger(Util.class.getName());
+    
+    private Util() {
+    }
 }

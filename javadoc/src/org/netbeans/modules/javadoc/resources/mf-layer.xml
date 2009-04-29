@@ -115,10 +115,5 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    <folder name="WarmUp">
-        <file name="org-netbeans-modules-javadoc-JavadocMenuWarmup.instance">
-            <attr name="instanceCreate" newvalue="org.netbeans.modules.javadoc.search.JavadocMenuWarmup" />
-        </file>
-    </folder>
     
 </filesystem>

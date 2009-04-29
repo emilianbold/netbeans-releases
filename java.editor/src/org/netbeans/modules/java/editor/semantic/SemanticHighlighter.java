@@ -100,6 +100,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
@@ -111,6 +112,7 @@ import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -1068,7 +1070,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
                                 continue;
                             }
                             if (e.getKind() == ElementKind.METHOD) {
-                                method2Import.put(e.getSimpleName().toString(), tree);
+                                method2Import.put(e.getSimpleName().toString() + e.asType().toString(), tree);
                                 assign = true;
                                 continue;
                             }
@@ -1430,7 +1432,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
         
         private void typeUsed(Element decl, TreePath expr) {
             if (decl != null && (expr == null || expr.getLeaf().getKind() == Kind.IDENTIFIER || expr.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE)) {
-                ImportTree imp = decl.getKind() != ElementKind.METHOD ? element2Import.remove(decl) : method2Import.remove(decl.getSimpleName().toString());
+                ImportTree imp = decl.getKind() != ElementKind.METHOD ? element2Import.remove(decl) : method2Import.remove(decl.getSimpleName().toString() + decl.asType().toString());
 
                 if (imp != null) {
                     if (import2Highlight.remove(imp) == null && (decl.getKind().isClass() || decl.getKind().isInterface())) {

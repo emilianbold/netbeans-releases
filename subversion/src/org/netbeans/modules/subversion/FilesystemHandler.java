@@ -106,7 +106,6 @@ class FilesystemHandler extends VCSInterceptor {
         if (!SvnUtils.isPartOfSubversionMetadata(file)) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
-                ISVNStatus status = getStatus(client, file);
                 /**
                  * Copy a folder, it becames svn added/copied.
                  * Revert its parent and check 'Delete new files', the folder becomes unversioned.
@@ -210,6 +209,10 @@ class FilesystemHandler extends VCSInterceptor {
         ISVNStatus status = getStatus(client, file);
         if (!SVNStatusKind.MISSING.equals(status.getTextStatus())) {
             Subversion.LOG.fine(" shallRemove: skipping delete due to correct metadata");
+            retval = false;
+        } else if ("false".equals(System.getProperty("org.netbeans.modules.subversion.deleteMissingFiles", "true"))) { //NOI18N
+            // prevents automatic svn remove for those who dislike such behavior
+            Subversion.LOG.log(Level.FINE, "File {0} deleted externally, metadata not repaired (org.netbeans.modules.subversion.deleteMissingFiles=false)", new String[] {file.getAbsolutePath()}); //NOI18N
             retval = false;
         } else if (Utilities.isMac() || Utilities.isWindows()) {
             String existingFilename = FileUtils.getExistingFilenameInParent(file);

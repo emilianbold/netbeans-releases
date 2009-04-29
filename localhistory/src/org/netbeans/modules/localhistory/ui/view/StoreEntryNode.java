@@ -86,6 +86,10 @@ public class StoreEntryNode extends AbstractNode implements Comparable {
         assert childrenEntries != null && childrenEntries.size() > 0;
         
         if(childrenEntries.size() > 1) {
+            // set siblings for every entry
+            for (StoreEntry entry : childrenEntries) {
+                entry.setSiblings(childrenEntries);
+            }
             return new StoreEntryNode(childrenEntries);
         } else {
             return new StoreEntryNode(childrenEntries, Lookups.fixed(new Object [] { childrenEntries.get(0) }));

@@ -90,7 +90,6 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.MacroDialogSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.editor.codegen.NbGenerateCodeAction;
 import org.netbeans.modules.editor.impl.ActionsList;
 import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.EditorActionsProvider;
@@ -99,7 +98,6 @@ import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
 import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
-import org.netbeans.modules.editor.impl.actions.NavigationHistoryLastEditAction;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.openide.awt.Mnemonics;
@@ -196,6 +194,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                                        new SearchBar.IncrementalSearchBackwardAction(),
                                        new ToggleToolbarAction(),
                                        new NbToggleLineNumbersAction(),
+                                       new NbGenerateGoToPopupAction(),
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
@@ -589,7 +588,8 @@ public class NbEditorKit extends ExtKit implements Callable {
         }
     }
 
-    @EditorActionRegistration(name = generateGoToPopupAction)
+    // Annotation registration disabled due to overriding in GSF kit
+//    @EditorActionRegistration(name = generateGoToPopupAction)
     public static class NbGenerateGoToPopupAction extends BaseAction {
 
         public NbGenerateGoToPopupAction() {
@@ -666,10 +666,11 @@ public class NbEditorKit extends ExtKit implements Callable {
                 if (itemText == null) {
                     itemText = (String) a.getValue("menuText");
                     if (itemText == null) {
-                        itemText = (String) a.getValue(Action.SHORT_DESCRIPTION);
-                        if (itemText == null) {
-                            itemText = actionName;
-                        }
+                        // Do not try to get Action.SHORT_DESCRIPTION property
+                        // since for system actions it would contain action's description
+                        // inappropriate for the popup menu (actionName is a localized text
+                        // suitable for popup menu for system actions).
+                        itemText = actionName;
                     }
                 }
             }
@@ -757,12 +758,17 @@ public class NbEditorKit extends ExtKit implements Callable {
     private static final class LayerSubFolderMenu extends JMenu {
 
         private static String getLocalizedName(FileObject f) {
-            try {
-                return f.getFileSystem().getStatus().annotateName(
-                    f.getNameExt(),
-                    Collections.singleton(f));
-            } catch (FileStateInvalidException e) {
-                return f.getNameExt();
+            Object displayName = f.getAttribute("displayName"); //NOI18N
+            if (displayName instanceof String) {
+                return (String) displayName;
+            } else {
+                try {
+                    return f.getFileSystem().getStatus().annotateName(
+                        f.getNameExt(),
+                        Collections.singleton(f));
+                } catch (FileStateInvalidException e) {
+                    return f.getNameExt();
+                }
             }
         }
         
@@ -828,8 +834,13 @@ public class NbEditorKit extends ExtKit implements Callable {
             if (a instanceof BaseAction) {
                 itemText = ((BaseAction)a).getPopupMenuText(target);
             } else {
-                Object value = a.getValue(BaseAction.POPUP_MENU_TEXT);
-                itemText = (value instanceof String) ? (String)value : actionName;
+                itemText = (String) a.getValue("popupText");
+                if (itemText == null) {
+                    itemText = (String) a.getValue("menuText");
+                    if (itemText == null) {
+                        itemText = actionName;
+                    }
+                }
             }
             return itemText;
         }
@@ -860,6 +871,7 @@ public class NbEditorKit extends ExtKit implements Callable {
 
             if (item == null) {
                 Lookup contextLookup = getContextLookup(target);
+                Action nonContextAction = action;
                 action = translateContextLookupAction(contextLookup, action);
                 item = createLocalizedMenuItem(action);
                 String actionName = (String) action.getValue(Action.NAME);
@@ -868,7 +880,13 @@ public class NbEditorKit extends ExtKit implements Callable {
                     item.setText(itemText);
                     Mnemonics.setLocalizedText(item, itemText);
                 }
-                addAcceleretors(action, item, target);
+                // Search for shortcut by using original non-context action.
+                // Since JTextComponent.DefaultKeymap.getKeyStrokesForAction(Action a)
+                // uses == for comparison when searching for shortcut then
+                // there would be no match for ContextAwareAction that would produce
+                // a fresh action's instance. Thus it's better to use original action
+                // when searching for an accelerator.
+                addAcceleretors(nonContextAction, item, target);
                 item.setEnabled(action.isEnabled());
                 Object helpID = action.getValue ("helpID"); // NOI18N
                 if (helpID != null && (helpID instanceof String)) {

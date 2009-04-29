@@ -77,6 +77,7 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.hints.FieldForUnusedParam;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateInnerClassFix;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateOuterClassFix;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -101,7 +102,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     public Set<String> getCodes() {
-        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.resolve.location.args", "compiler.err.cant.apply.symbol", "compiler.err.cant.resolve")); // NOI18N
+        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.resolve.location.args", "compiler.err.cant.apply.symbol", "compiler.err.cant.resolve", "compiler.err.cant.resolve.args")); // NOI18N
     }
 
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
@@ -328,7 +329,7 @@ public final class CreateElement implements ErrorRule<Void> {
 
             TypeElement clazzTarget = (TypeElement) clazz;
 
-            result.addAll(prepareCreateMethodFix(info, newClass, getAccessModifiers(info, source, clazzTarget), clazzTarget, "<init>", nct.getArguments(), null));
+            result.addAll(prepareCreateMethodFix(info, newClass, getAccessModifiers(info, source, clazzTarget), clazzTarget, "<init>", nct.getArguments(), null)); //NOI18N
         }
 
         //field like or class (type):
@@ -378,7 +379,12 @@ public final class CreateElement implements ErrorRule<Void> {
                     if (target.getKind() == ElementKind.ENUM) {
                         result.add(new CreateEnumConstant(info, simpleName, modifiers, target, type, targetFile));
                     } else {
-                        result.add(new CreateFieldFix(info, simpleName, modifiers, target, type, targetFile));
+                        if (firstMethod != null && info.getTrees().getElement(firstMethod).getKind() == ElementKind.CONSTRUCTOR && ErrorFixesFakeHint.isCreateFinalFieldsForCtor()) {
+                            modifiers.add(Modifier.FINAL);
+                        }
+                        if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_FINAL_FIELD_CTOR)) {
+                            result.add(new CreateFieldFix(info, simpleName, modifiers, target, type, targetFile));
+                        }
                     }
                 }
             }

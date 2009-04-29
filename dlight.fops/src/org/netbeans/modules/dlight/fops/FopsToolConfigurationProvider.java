@@ -50,6 +50,7 @@ import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -72,25 +73,25 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
     }
 
     public DLightToolConfiguration create() {
-        final String toolName = "Read/Wrire Monitor Tool";
+        final String toolName = getMessage("Tool.Name"); // NOI18N
         final DLightToolConfiguration toolConfiguration =
                 new DLightToolConfiguration(toolName);
 
         /* DTrace tool - FOPS */
 
         List<Column> fopsColumns = Arrays.asList(
-                new Column("kind", Integer.class, "Kind", null),
-                new Column("cpu", Integer.class, "CPU", null),
-                new Column("thread", Integer.class, "Thread", null),
-                new Column("timestamp", Long.class, "Timestamp", null),
-                new Column("operation", Integer.class, "Operation Type", null),
-                new Column("fname", String.class, "File name", null),
-                new Column("args", String.class, "File arguments", null),
-                new Column("stkIndx", Long.class, "Stack Index", null));
+                new Column("kind", Integer.class, getMessage("Column.Kind"), null), // NOI18N
+                new Column("cpu", Integer.class, getMessage("Column.CPU"), null), // NOI18N
+                new Column("thread", Integer.class, getMessage("Column.Thread"), null), // NOI18N
+                new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
+                new Column("operation", Integer.class, getMessage("Column.OpType"), null), // NOI18N
+                new Column("fname", String.class, getMessage("Column.Filename"), null), // NOI18N
+                new Column("args", String.class, getMessage("Column.Arguments"), null), // NOI18N
+                new Column("stkIndx", Long.class, getMessage("Column.StackIdx"), null)); // NOI18N
 
 
         final DataTableMetadata dtraceFopsMetadata =
-                new DataTableMetadata("fops", fopsColumns);
+                new DataTableMetadata("fops", fopsColumns); // NOI18N
 
         final String script = Util.copyResource(
                 FopsToolConfigurationProvider.class,
@@ -112,12 +113,16 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         ClockIndicatorConfiguration clockIndicator =
                 new ClockIndicatorConfiguration(indicatorMetadata);
 
-        clockIndicator.setVisualizerConfiguration(
+        clockIndicator.addVisualizerConfiguration(
                 new TableVisualizerConfiguration(dtraceFopsMetadata));
 
         toolConfiguration.addIndicatorConfiguration(clockIndicator);
 
         return toolConfiguration;
+    }
+
+    private static String getMessage(String name) {
+        return NbBundle.getMessage(FopsToolConfigurationProvider.class, name);
     }
 
 //  class MyCLIOParser implements CLIOParser {

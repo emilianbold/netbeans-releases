@@ -43,8 +43,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 
 /**
@@ -77,6 +75,9 @@ final class IndicatorTickerService {
 
         synchronized (listenersLock) {
             ll = listeners.toArray(new TickerListener[0]);
+            if (ll.length == 0){
+                return;
+            }
         }
 
         final CountDownLatch doneFlag = new CountDownLatch(ll.length);
@@ -128,7 +129,15 @@ final class IndicatorTickerService {
     void unsubscribe(TickerListener l) {
         synchronized (listenersLock) {
             listeners.remove(l);
-
+            //stop of there are no any listeners
+            if (listeners.isEmpty()){
+                synchronized(lock){
+                    if (started){
+                        tickerService.cancel(true);
+                        started = false;
+                    }
+                }
+            }
         }
     }
 

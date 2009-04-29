@@ -54,6 +54,7 @@ import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.openide.util.NbBundle;
 
 /**
  * Thread usage indicator
@@ -63,6 +64,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
     private SyncIndicatorPanel panel;
     private final Set<String> acceptedColumnNames;
+    private final List<String> acceptedThreadsCountColumnNames;
     private int lastLocks;
     private int lastThreads;
 
@@ -72,6 +74,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
         for (Column column : getMetadataColumns()) {
             acceptedColumnNames.add(column.getColumnName());
         }
+        this.acceptedThreadsCountColumnNames = configuration.getThreadColumnNames();
     }
 
     @Override
@@ -86,14 +89,35 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
     }
 
     public void updated(List<DataRow> rows) {
+
         for (DataRow row : rows) {
-            String locks = row.getStringValue("locks"); // NOI18N
-            String threads = row.getStringValue("threads"); // NOI18N
+            String locks = null;
+            String threads = null;
+            for (String column : row.getColumnNames()) {
+                if (acceptedThreadsCountColumnNames.contains(column)){
+                    threads = row.getStringValue(column);
+                }else if (acceptedColumnNames.contains(column)) {
+                    String value = row.getStringValue(column); //TODO: change to Long
+                    locks = row.getStringValue(column);
+                }
+            }
+            if (threads == null){
+                threads = "1";//MOI18N
+            }
             if (locks != null && threads != null) {
-                lastLocks = (int) Float.parseFloat(locks);
                 lastThreads = Integer.parseInt(threads);
+                lastLocks = Math.round(lastThreads * Float.parseFloat(locks) / 100);
             }
         }
+//        for (DataRow row : rows) {
+//            String locks = row.getStringValue("locks"); // NOI18N
+//            //INCORRECT!! NEVER DO THIS AGAIN!!!
+//            String threads = row.getStringValue("threads"); // NOI18N
+//            if (locks != null && threads != null) {
+//                lastThreads = Integer.parseInt(threads);
+//                lastLocks = Math.round(lastThreads * Float.parseFloat(locks) / 100);
+//            }
+//        }
     }
 
     @Override
@@ -104,7 +128,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
     @Override
     protected void repairNeeded(boolean needed) {
         if (needed) {
-            final RepairPanel repairPanel = new RepairPanel(new ActionListener() {
+            final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus(), new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     final Future<Boolean> result = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {
@@ -126,9 +150,10 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
                 }
             });
         } else {
-            final JLabel label = new JLabel(getRepairActionProvider().isValid()?
-                "<html><center>Will show data on the next run</center></html>" ://NOI18N
-                "<html><center>Invalid</center></html>");//NOI18N
+            final JLabel label = new JLabel(
+                    "<html><center>" // NOI18N
+                    + getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()) // NOI18N
+                    + "</center></html>"); // NOI18N
             label.setForeground(GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {
                 public void run() {
@@ -136,5 +161,9 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
                 }
             });
         }
+    }
+
+    private static String getMessage(String name) {
+        return NbBundle.getMessage(SyncIndicator.class, name);
     }
 }

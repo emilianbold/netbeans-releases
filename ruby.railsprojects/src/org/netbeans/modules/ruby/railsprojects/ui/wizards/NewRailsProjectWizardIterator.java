@@ -84,9 +84,9 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
     /** Wizard descriptor name for including support for WAR deployment */
     static final String WAR_SUPPORT = "warSupport"; //NOI18N
     /** Wizard descriptor name for the target Rails server */
-    static final String SERVER_INSTANCE = "serverInstance"; //NOI18N
+    public static final String SERVER_INSTANCE = "serverInstance"; //NOI18N
     /** Wizard descriptor name for the Ruby platform */
-    static final String PLATFORM = "platform"; //NOI18N
+    public static final String PLATFORM = "platform"; //NOI18N
     /** Wizard descriptor name for the Rails version */
     static final String RAILS_VERSION = "rails.version"; //NOI18N
     

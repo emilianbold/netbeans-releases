@@ -437,21 +437,16 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             newBlocks.add(toAdd);
             return;
         }
-        for (ForeignLanguageBlock b : newBlocks) {
+        ForeignLanguageBlock b = newBlocks.get(newBlocks.size()-1);
+        // because blocks are sorted toAdd should never be bigger then already existing one:
+        assert !(toAdd.startLine < b.startLine && toAdd.endLine > b.endLine) : "blocks: "+newBlocks+" toAdd:"+toAdd;
 
-            // because blocks are sorted toAdd should never be bigger then already existing one:
-            assert !(toAdd.startLine < b.startLine && toAdd.endLine > b.endLine) : "blocks: "+newBlocks+" toAdd:"+toAdd;
-
-            if (toAdd.startLine >= b.startLine && toAdd.endLine <= b.endLine) {
-                // already there
-                break;
-            } else if (toAdd.startLine >= b.startLine && toAdd.startLine <= b.endLine) {
-                b.endLine = toAdd.endLine;
-                break;
-            } else {
-                newBlocks.add(toAdd);
-                break;
-            }
+        if (toAdd.startLine >= b.startLine && toAdd.endLine <= b.endLine) {
+            // already there
+        } else if (toAdd.startLine >= b.startLine && toAdd.startLine <= b.endLine) {
+            b.endLine = toAdd.endLine;
+        } else {
+            newBlocks.add(toAdd);
         }
     }
 
@@ -462,14 +457,14 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             for (IndentCommand ic : l.lineIndent) {
                 if (ic.getType() == IndentCommand.Type.BLOCK_START) {
                     assert start == -1 : ""+l;
-                    start = Utilities.getLineOffset(getDocument(), ic.getLineOffset());
+                    start = l.index;
                 } else if (ic.getType() == IndentCommand.Type.BLOCK_END) {
                     if (start == -1) {
                         // perhaps file is being editted and BLOCK_START is simply missing
                         // (you can simulate this by writing "<html> </style>"):
                         // do nothing
                     } else {
-                        int end = Utilities.getLineOffset(getDocument(), ic.getLineOffset());
+                        int end = l.index;
                         // ignore blocks which do not have 1 and more lines in them
                         if (end-start > 1) {
                             blocks.add(new ForeignLanguageBlock(start, end));
@@ -495,7 +490,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             assert l != null : ""+b;
             l.foreignLanguageBlockStart = true;
             l = findLineByLineIndex(all, b.endLine);
-            assert l != null : ""+b;
+            assert l != null : "fb="+b+" lines="+all;
             l.foreignLanguageBlockEnd = true;
         }
     }
@@ -552,9 +547,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 List<IndentCommand> kept = new ArrayList<IndentCommand>();
                 boolean keepRemoving = true;
                 for (IndentCommand ic : l.lineIndent) {
-                    // if this indent was created from a continue command then do not move it
-                    // and leave it on line for which it was generated:
-                    if (keepRemoving && ic.getType() == IndentCommand.Type.INDENT && !ic.wasContinue()) {
+                    if (keepRemoving && ic.getType() == IndentCommand.Type.INDENT) {
                         removed.add(ic);
                     } else {
                         kept.add(ic);
@@ -1316,6 +1309,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     private static int getCalulatedIndexOfPreviousIndent(List<IndentCommand> indentations, int shift) {
         int balance = 1;
         int i = indentations.size();
+        if (i == 0) {
+            return -1;
+        }
         do {
             i--;
             if (indentations.get(i).getType() == IndentCommand.Type.RETURN) {
@@ -1336,7 +1332,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 i = 0 - shift;
             }
         }
-        assert i+shift >= 0 : "i="+i+" shift="+shift+" commands="+indentations;
+        if (i+shift < 0) {
+            return -1;
+        }
         return i+shift;
     }
 
@@ -1390,11 +1388,12 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     // command NO_CHANGE from line 01. That one is going to be
                     // used as base for indentation of line 04
                     int index = getCalulatedIndexOfPreviousIndent(allCommands, -1);
-
-                    // use indentation of found command and override any indent
-                    // calculated so far
-                    indentation = allCommands.get(index).getCalculatedIndentation();
-                    thisLineIndent = 0;
+                    if (index != -1) {
+                        // use indentation of found command and override any indent
+                        // calculated so far
+                        indentation = allCommands.get(index).getCalculatedIndentation();
+                        thisLineIndent = 0;
+                    }
                     break;
 
                 case DO_NOT_INDENT_THIS_LINE:
@@ -1591,11 +1590,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             suggestedIndentsForOtherLines.put(i, nextLineIndent);
         }
 
-        // generate line indents for lines within a block:
-        indentedLines = generateBlockIndentsForForeignLanguage(indentedLines, suggestedIndentsForOtherLines);
-
         // set line indent for preserved lines:
         updateIndentationForPreservedLines(indentedLines, context.isIndent() ? lineStart : -1);
+
+        // generate line indents for lines within a block:
+        indentedLines = generateBlockIndentsForForeignLanguage(indentedLines, suggestedIndentsForOtherLines);
 
        // DEBUG info:
         if (DEBUG) {
@@ -1635,9 +1634,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         List<Line> indents = new ArrayList<Line>();
         List<Line> linesInBlock = new ArrayList<Line>();
         int lastStart = -1;
+        Line lastStartLine = null;
         for (Line line : indentedLines) {
             if (line.foreignLanguageBlockStart) {
                 lastStart = line.index;
+                lastStartLine = line;
             }
             if (line.foreignLanguageBlockEnd) {
                 if (lastStart == -1) {
@@ -1657,12 +1658,13 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                             line2 = generateBasicLine(i);//new Line();
                             line2.indentThisLine = true;
                             line2.preserveThisLineIndent = true;
+                            line2.indentation = calculatePreservedLineIndentation(lastStartLine, line2.offset);
                         } else {
-                            assert !line2.indentThisLine : "there is a block of foreign " +
-                                    "language which actually contains formattable lines. " +
-                                    "this case is not handled yet! foreign lang block: " +lastStart+"-"+end+
-                                    " linesInBlock="+linesInBlock;
-                            line2.preserveThisLineIndent = true;
+                            if (!line2.indentThisLine) {
+                                line2.preserveThisLineIndent = true;
+                                line2.indentThisLine = true;
+                                line2.indentation = calculatePreservedLineIndentation(lastStartLine, line2.offset);
+                            }
                         }
                         if (!line2.emptyLine) {
                             indents.add(line2);
@@ -1715,11 +1717,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
             if (line.preserveThisLineIndent) {
                 if (lineBeforePreserveIndent != null) {
-                    int originalFirstLineIndent = IndentUtils.lineIndent(getDocument(), lineBeforePreserveIndent.offset);
-                    int originalCurrentLineIndent = IndentUtils.lineIndent(getDocument(), line.offset);
                     // do not alter indentation of 'lineToBeIndented'
                     if (lineToBeIndented == -1 || line.index != lineToBeIndented) {
-                        line.indentation = lineBeforePreserveIndent.indentation + (originalCurrentLineIndent-originalFirstLineIndent);
+                        line.indentation = calculatePreservedLineIndentation(lineBeforePreserveIndent, line.offset);
                     }
                 } else {
                     assert false : "lineBeforePreserveIndent was not found: "+indentedLines;
@@ -1729,6 +1729,13 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
         }
     }
+
+    private int calculatePreservedLineIndentation(Line lineBeforePreserveIndent, int lineOffset) throws BadLocationException {
+        int originalFirstLineIndent = IndentUtils.lineIndent(getDocument(), lineBeforePreserveIndent.offset);
+        int originalCurrentLineIndent = IndentUtils.lineIndent(getDocument(), lineOffset);
+        return lineBeforePreserveIndent.indentation + (originalCurrentLineIndent-originalFirstLineIndent);
+    }
+
 
     private void modifyDocument(List<Line> indentedLines, int lineStart, int lineEnd) throws BadLocationException {
         // iterate through lines backwards and ignore all lines with line.indentThisLine == false

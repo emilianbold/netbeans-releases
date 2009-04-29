@@ -1228,6 +1228,10 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
     public static CharSequence getInstantiatedText(CsmType type) {
         if (type instanceof Type) {
             return ((Type)type).getInstantiatedText();
+        } else if (false && type.isInstantiation() && type.getClassifier() != null) {
+            StringBuilder sb = new StringBuilder(type.getClassifier().getQualifiedName());
+            sb.append(Instantiation.getInstantiationCanonicalText(type.getInstantiationParams()));
+            return sb;
         } else {
             return type.getText();
         }

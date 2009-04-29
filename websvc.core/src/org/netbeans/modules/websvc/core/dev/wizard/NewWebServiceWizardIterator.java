@@ -51,7 +51,9 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.support.ServiceCreator;
 import org.netbeans.modules.websvc.core.CreatorProvider;
 
@@ -114,9 +116,10 @@ public class NewWebServiceWizardIterator implements TemplateWizard.Iterator /*, 
 //convert Java class not implemented for 5.5 release
 //        ((WebServiceTypePanel) bottomPanel.getComponent()).addItemListener(this);
         WizardDescriptor.Panel firstPanel; //special case: use Java Chooser
-        if (sourceGroups.length == 0)
+        if (sourceGroups.length == 0) {
+            sourceGroups = ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
             firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel));
-        else
+        } else
             firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, bottomPanel, true));
 
         JComponent comp = (JComponent) firstPanel.getComponent();

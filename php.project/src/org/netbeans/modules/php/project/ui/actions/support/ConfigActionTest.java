@@ -304,8 +304,8 @@ class ConfigActionTest extends ConfigAction {
             try {
                 PhpUnitCoverageLogParser.parse(new BufferedReader(new FileReader(PhpUnit.COVERAGE_LOG)), coverage);
             } catch (FileNotFoundException ex) {
-                LOGGER.warning(String.format("In order to show code coverage, file %s must exist."
-                        + "Report this issue please in http://www.netbeans.org/issues/.", PhpUnit.COVERAGE_LOG));
+                LOGGER.info(String.format("File %s not found. If there are no errors in PHPUnit output (verify in Output window), "
+                        + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.COVERAGE_LOG));
                 return;
             }
             coverageProvider.setCoverage(coverage);

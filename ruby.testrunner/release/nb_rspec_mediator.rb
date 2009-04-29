@@ -63,7 +63,7 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
     prepare
     success = true
     if @options.line_number != nil
-      @spec_parser = NbSpecParser.new
+      @spec_parser = NbSpecParser.create(@options)
       @spec_parser.spec_name_for(@options.files[0], @options.line_number)
     end
     overall_start_time = Time.now
@@ -123,15 +123,21 @@ class Reporter < Spec::Runner::Reporter
     super
   end
 
-  def failure(example, error)
+  def example_failed(example, error)
+    report_failure(example, error)
+    super
+  end
+
+  alias_method :failure, :example_failed
+
+  private
+
+  def report_failure(example, error)
     backtrace_tweaker.tweak_backtrace(error)
     error_msg = error.message != nil ? error.message : ""
     puts "%RSPEC_TEST_FAILED% file=#{location(example)} description=#{description(example)} time=#{elapsed_time} message=#{error_msg.to_s.gsub($/, " ")} location=#{error.backtrace[0]}"
-    super
   end
-  alias_method :example_failed, :failure
 
-  private
   def example_passed(example)
     puts "%RSPEC_TEST_FINISHED% file=#{location(example)} description=#{description(example)} time=#{elapsed_time}"
     super
@@ -166,18 +172,30 @@ class Reporter < Spec::Runner::Reporter
 
   def location(example)
     location = ''
-    # 'implementation_backtrace' is deprecated in > 1.1.11, replaced with 'backtrace'
-    backtrace = example.respond_to?(:backtrace, false) ? example.backtrace : example.implementation_backtrace
+    backtrace = backtrace(example)
     if (backtrace != nil)
       location = backtrace[0] unless backtrace.length == 0
     end
     location
   end
 
+  def backtrace(example)
+    # 'implementation_backtrace' is deprecated in > 1.1.11, replaced with 'backtrace' which in turn
+    # is deprecated in 1.2 and replaced with 'location'
+    if (example.respond_to?(:location))
+      return example.location
+    elsif (example.respond_to?(:backtrace))
+      return example.backtrace
+    elsif (example.respond_to?(:implementation_backtrace))
+      return example.implementation_backtrace
+    end
+    nil
+  end
+
   # returns the description for the given example
   # see IZ156839 - in edge rspec the given example is a string
   def description(example)
-    example.respond_to?(:description, false) ? example.description : example
+    example.respond_to?(:description) ? example.description : example
   end
 
 end
@@ -186,11 +204,25 @@ class NbSpecParser < Spec::Runner::SpecParser
 
   attr_reader :example_group_description, :example_description
 
+  def self.create(options)
+    # not possible to check arity for init, hence this method
+    # rspec 1.2 requires options, older versions don't
+    begin
+      return NbSpecParser.new(options)
+    rescue ArgumentError
+      return NbSpecParser.new
+    end
+  end
+
   def spec_name_for(file, line_number)
     best_match.clear
     file = File.expand_path(file)
     safe_get_options.example_groups.each do |example_group|
-      consider_example_groups_for_best_match example_group, file, line_number
+      if self.respond_to?(:consider_example_group_for_best_match)
+        consider_example_group_for_best_match example_group, file, line_number
+      else
+        consider_example_groups_for_best_match example_group, file, line_number
+      end
       example_group.examples.each do |example|
         consider_example_for_best_match example, example_group, file, line_number
       end

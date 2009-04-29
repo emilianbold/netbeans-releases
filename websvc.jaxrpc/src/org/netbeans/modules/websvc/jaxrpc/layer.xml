@@ -133,4 +133,23 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="J2EE">
+        <folder name="DeploymentPlugins">
+            <folder name="J2EE">
+                <folder name="Lookup">
+                    <file name="org.netbeans.modules.websvc.jaxrpc.wsstack.glassfish.GlassFishV2LookupProvider.instance"/>
+                </folder>
+            </folder>
+            <folder name="gfv3"><!-- V3 Prelude -->
+                <folder name="Lookup">
+                    <file name="org.netbeans.modules.websvc.jaxrpc.wsstack.glassfish.GlassFishV3LookupProvider.instance"/>
+                </folder>
+            </folder>
+            <folder name="gfv3ee6"><!-- V3 EA (and potentially FCS) -->
+                <folder name="Lookup">
+                    <file name="org.netbeans.modules.websvc.jaxrpc.wsstack.glassfish.GlassFishV3LookupProvider.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

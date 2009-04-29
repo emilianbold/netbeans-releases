@@ -73,22 +73,25 @@ public class PlatformConfiguration extends IntConfiguration implements PropertyC
 
     @Override
     public String getName() {
-        return dhconf.isOnline() ? super.getName() : "";
+        return dhconf.isConfigured() ? super.getName() : "";
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        dhconf = (DevelopmentHostConfiguration) evt.getNewValue();
-        ExecutionEnvironment execEnv = dhconf.getExecutionEnvironment();
-        int platform = CompilerSetManager.getDefault(execEnv).getPlatform();
-        if (platform == -1) {
-            // TODO: CompilerSet is not reliable about platform; it must be.
-            platform = PlatformTypes.PLATFORM_NONE;
+        Object newValue = evt.getNewValue();
+        if (newValue instanceof DevelopmentHostConfiguration) {
+            dhconf = (DevelopmentHostConfiguration) evt.getNewValue();
+            ExecutionEnvironment execEnv = dhconf.getExecutionEnvironment();
+            int platform = CompilerSetManager.getDefault(execEnv).getPlatform();
+            if (platform == -1) {
+                // TODO: CompilerSet is not reliable about platform; it must be.
+                platform = PlatformTypes.PLATFORM_NONE;
+            }
+            setValue(platform);
         }
-        setValue(platform);
     }
 
-    public boolean isDevHostOnline() {
-        return dhconf.isOnline();
+    public boolean isConfigured() {
+        return dhconf.isConfigured();
     }
 
     // Clone and Assign

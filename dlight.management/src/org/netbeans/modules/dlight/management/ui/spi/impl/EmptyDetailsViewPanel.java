@@ -84,6 +84,7 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         this.targetToValidateWith = targetToValidateWith;
         this.currentTool = tool;
         List<DataCollector<?>> collectors = configuration.getConfigurationOptions(false).getCollectors(currentTool);
+        List<DataCollector<?>> toRepairList = new ArrayList<DataCollector<?>>();
         panelsList = new ArrayList<JPanel>();
         //get the first one
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -91,7 +92,21 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         repairPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         repairPanel.setLayout(new BoxLayout(repairPanel, BoxLayout.Y_AXIS));
         for (final DataCollector c : collectors) {
-            if (!c.getValidationStatus().isKnown()) {
+            if (c.getValidationStatus() == ValidationStatus.initialStatus()) {
+                c.addValidationListener(this);
+                //validate one more time
+                states.put(c, c.getValidationStatus());
+                JPanel p = new JPanel();
+                p.setBorder(new EmptyBorder(10, 10, 10, 10));
+                p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+                JLabel label = new JLabel(NbBundle.getMessage(EmptyDetailsViewPanel.class, "Validating"));
+                label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+                p.add(label);
+                repairPanel.add(p);
+                panelsList.add(p);
+                panels.put(c, panelsList.indexOf(p));
+                repair(c);
+            } else if (!c.getValidationStatus().isKnown()) {
                 c.addValidationListener(this);
                 //validate one more time
                 states.put(c, c.getValidationStatus());
@@ -114,6 +129,7 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
                 repairPanel.add(p);
                 panelsList.add(p);
                 panels.put(c, panelsList.indexOf(p));
+
             } else {
                 ValidationStatus status = c.getValidationStatus();
                 JPanel p = new JPanel();
@@ -122,22 +138,33 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
                 if (!status.isKnown()) {
                     p.add(new JLabel(status.getReason()));
                 } else if (status.isValid()) {
-                    p.add(new JLabel("Will show details on the next run"));//NOI18N
+                    String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");
+                    if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
+                        message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");
+                    }
+                    p.add(new JLabel(message));//NOI18N
+
                 } else if (status.isInvalid()) {
                     p.add(new JLabel(status.getReason()));
 
                 }
-                JLabel label = new JLabel(c.getValidationStatus().getReason());
-                label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-                p.add(label);
+//                JLabel label = new JLabel(c.getValidationStatus().getReason());
+//                label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+//                p.add(label);
                 repairPanel.add(p);
                 panelsList.add(p);
                 panels.put(c, panelsList.indexOf(p));
             }
+
         }
         repairPanel.setAlignmentX(CENTER_ALIGNMENT);
         repairPanel.setAlignmentY(CENTER_ALIGNMENT);
         this.add(repairPanel);
+        if (!toRepairList.isEmpty()) {
+            for (DataCollector c : toRepairList) {
+                repair(c);
+            }
+        }
     }
 
     private void repair(final DataCollector<?> c) {
@@ -170,7 +197,11 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
             return;
         }
         if (status.isValid()) {
-            p.add(new JLabel("Will show details on the next run"));//NOI18N
+            String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");
+            if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
+                message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");
+            }
+            p.add(new JLabel(message));//NOI18N
             repaint();
             return;
         }
@@ -192,7 +223,11 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
             if (!status.isKnown()) {
                 p.add(new JLabel(status.getReason()));
             } else if (status.isValid()) {
-                p.add(new JLabel("Will show details on the next run"));//NOI18N
+                String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");
+                if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
+                    message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");
+                }
+                p.add(new JLabel(message));//NOI18N
             } else if (status.isInvalid()) {
                 p.add(new JLabel(status.getReason()));
             }

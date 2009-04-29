@@ -48,7 +48,7 @@ import org.junit.Test;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
@@ -87,7 +87,7 @@ public class MonitorsUpdateServiceTest {
     public void testStart() {
         MonitorsUpdateService service = new MonitorsUpdateService(
                 new Collector(),
-                new ExecutionEnvironment(),
+                ExecutionEnvironmentFactory.getLocal(),
                 "/shared/dp/sstrunk/intel-S2/",
                 "/var/tmp/dlightExperiment_20.er/",
                 collectedInfo);

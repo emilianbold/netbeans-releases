@@ -155,7 +155,7 @@ public final class DocUtils {
     
     public static boolean isIdentifierPart(Document doc, char ch) {
         // TODO: make this configurable
-        return AcceptorFactory.LETTER_DIGIT.accept(ch);
+        return AcceptorFactory.UNICODE_IDENTIFIER.accept(ch);
     }
     
     public static boolean isWhitespace(char ch) {

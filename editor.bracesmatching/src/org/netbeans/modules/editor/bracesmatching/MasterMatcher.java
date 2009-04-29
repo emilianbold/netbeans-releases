@@ -582,12 +582,11 @@ public final class MasterMatcher {
                     // Find matching areas
                     matches = matcher[0].findMatches();
                 }
-            } catch (BadLocationException ble) {
-                // since we are not running under document lock (see #131284) there can be exceptions
-                LOG.log(Level.FINE, null, ble);
-                return;
-                
-            } catch (Exception e) {
+            } catch (ThreadDeath td) {
+                throw td;
+
+            } catch (Throwable e) {
+                // catch everything including assertions and other Errors (#159491)
                 for(Throwable t = e; t != null; t = t.getCause()) {
                     if (t instanceof InterruptedException) {
                         // We were interrupted, no results

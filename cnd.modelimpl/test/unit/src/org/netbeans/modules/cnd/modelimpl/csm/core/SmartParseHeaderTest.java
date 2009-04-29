@@ -58,6 +58,7 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
         System.setProperty("cnd.smart.parse", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         System.setProperty("cnd.modelimpl.parser.threads", "1");
+        System.setProperty("cnd.cache.file.state","false");
         ParseStatistics.getInstance().setEnabled(true);
         super.setUp();
     }
@@ -86,8 +87,10 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
             String headerToCheck, int expectedParseCount, boolean reparse) 
             throws Exception {
         performTest(filesToParse, goldensNameBase);
-        assertParseCount(headerToCheck, expectedParseCount);
-        if (reparse) {
+        if (!reparse) {
+            // check current parse count
+            assertParseCount(headerToCheck, expectedParseCount);
+        } else {
             ParseStatistics.getInstance().clear();
             ProjectBase project = getProject();
             //for (FileImpl fileImpl : project.getAllFileImpls()) {
@@ -118,7 +121,7 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
     }
 
     public void testSimple_1e() throws Exception {
-        performTrivialTest("smart_headers_simple_1e.cc", "smart_headers_simple_1.h", 3, false);
+        performTrivialTest("smart_headers_simple_1e.cc", "smart_headers_simple_1.h", 4, false);
     }
 
     public void testSimple_1f() throws Exception {
@@ -142,7 +145,7 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
     }
 
     public void testSimpleReparse_1e() throws Exception {
-        performTrivialTest("smart_headers_simple_1e.cc", "smart_headers_simple_1.h", 3, true);
+        performTrivialTest("smart_headers_simple_1e.cc", "smart_headers_simple_1.h", 4, true);
     }
 
     public void testSimpleReparse_1f() throws Exception {
@@ -158,7 +161,7 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
                 "smart_headers_simple_1e.cc",
                 "smart_headers_simple_1f.cc"
             }, 
-            "smart_headers_simple_1_multy", "smart_headers_simple_1.h", 4, false);
+            "smart_headers_simple_1_multy", "smart_headers_simple_1.h", 6, false);
     }
 
     public void testSimpleReparse_1_multy() throws Exception {
@@ -170,7 +173,7 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
                 "smart_headers_simple_1e.cc",
                 "smart_headers_simple_1f.cc"
             }, 
-            "smart_headers_simple_1_multy", "smart_headers_simple_1.h", 4, true);
+            "smart_headers_simple_1_multy", "smart_headers_simple_1.h", 5, true);
     }
 
     public void testMixed_1() throws Exception {
@@ -205,7 +208,7 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
 	}
 	
         @Override
-	protected Class getTestCaseDataClass() {
+	protected Class<?> getTestCaseDataClass() {
 	    return SmartParseHeaderTest.class;
 	}
 	

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -59,9 +59,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dimension;
-import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
 
@@ -73,7 +71,6 @@ import org.netbeans.modules.mercurial.ui.diff.Setup;
 class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, ActionListener, DiffSetupSource, DocumentListener {
 
     private final File[]                roots;
-    private final String                repositoryUrl;
     private final SearchCriteriaPanel   criteria;
     
     private Divider                 divider;
@@ -97,7 +94,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         this.bOutSearch = false;
         this.bIncomingSearch = false;
         this.roots = roots;
-        this.repositoryUrl = null;
         this.criteria = criteria;
         this.diffViewFactory = new SearchHistoryTopComponent.DiffResultsViewFactory();
         criteriaVisible = true;
@@ -107,19 +103,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         refreshComponents(true);
     }
     
-    public SearchHistoryPanel(String repositoryUrl, File localRoot, SearchCriteriaPanel criteria) {
-        this.bOutSearch = false;
-        this.bIncomingSearch = false;
-        this.repositoryUrl = repositoryUrl;
-        this.roots = new File[] { localRoot };
-        this.criteria = criteria;
-        criteriaVisible = true;
-        explorerManager = new ExplorerManager ();
-        initComponents();
-        setupComponents();
-        refreshComponents(true);
-    }
-
     /**
      * Sets the factory creating the appropriate DiffResultsView to display.
      * @param fac factory creating the appropriate DiffResultsView to display. If null then a default factory will be created.
@@ -324,18 +307,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         summaryView = null;
         diffView = null;
         refreshComponents(true);
-    }
-
-    public String getRepositoryUrl() {
-        return repositoryUrl;
-    }
-
-    public String getSearchRepositoryRootUrl() throws HgException {
-        if (repositoryUrl != null) return repositoryUrl;
-        
-        File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-       
-        return root != null? root.toString(): null;
     }
 
     public File[] getRoots() {

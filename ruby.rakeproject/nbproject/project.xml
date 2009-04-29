@@ -111,6 +111,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.ruby</friend>
                 <friend>org.netbeans.modules.ruby.javaint</friend>
                 <friend>org.netbeans.modules.ruby.kit</friend>
                 <friend>org.netbeans.modules.ruby.merbproject</friend>

@@ -188,6 +188,10 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                 this.recurseIncludes = other.recurseIncludes;
             }
         }
+
+        int getIncludeStackDepth() {
+            return inclStack == null ? 0 : inclStack.size();
+        }
         
         private void restoreTo(APTIncludeHandlerImpl handler) {
             handler.userIncludePaths = this.userIncludePaths;

@@ -100,8 +100,14 @@ public class JsRenameHandler implements InstantRenamer {
             
             return canRename;
         }
-        
-        AstPath path = new AstPath(jspr.getRootNode(), astOffset);
+
+        Node root = jspr.getRootNode();
+        if(root == null) {
+            //unparsable source
+            return false;
+        }
+
+        AstPath path = new AstPath(root, astOffset);
         Node closest = path.leaf();
 
         switch (closest.getType()) {

@@ -142,6 +142,16 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         File ir = new File(installRoot);
         ensureExecutable(ir);
         File domainDir = new File(domainsDir, domainName);
+        String canonicalPath = null;
+        try {
+            canonicalPath = domainDir.getCanonicalPath();
+        } catch (IOException ioe) {
+            Logger.getLogger("glassfish").log(Level.INFO, domainDir.getAbsolutePath(), ioe); // NOI18N
+        }
+        if (null != canonicalPath && !canonicalPath.equals(domainDir.getAbsolutePath())) {
+            setDomainLocation(canonicalPath);
+            domainDir = new File(domainsDir, domainName);
+        }
         if (!domainDir.exists() && AddServerLocationPanel.canCreate(domainDir)) {
             // Need to create a domain right here!
             Map<String, String> ip = new HashMap<String, String>();
@@ -299,7 +309,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     }
 
     String getInstallRootProperty() {
-        return gip.getInstallRootProperty(); // "org.glassfish.v3.installRoot"; // NOI18N throw new UnsupportedOperationException("Not yet implemented");
+        return gip.getInstallRootProperty();
     }
 
     String getNameOfBits() {

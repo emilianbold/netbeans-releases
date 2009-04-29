@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.io.StringWriter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -49,12 +50,15 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.util.Exceptions;
 
 public final class PerfanDataStorage extends DataStorage {
 
     private final Map<String, String> serviceInfoMap = new ConcurrentHashMap<String, String>();
     private ErprintSession er_print;
+    private String experimentDirectory = null;
+    private ExecutionEnvironment env;
 
     public PerfanDataStorage() {
         super();
@@ -67,6 +71,21 @@ public final class PerfanDataStorage extends DataStorage {
     public final String getValue(String name) {
         return serviceInfoMap.get(name);
     }
+
+    @Override
+    public boolean shutdown() {
+        if (er_print != null){
+            er_print.close();
+        }
+        if (experimentDirectory != null){
+            StringWriter writer = new StringWriter();
+            CommonTasksSupport.rmDir(env, experimentDirectory, true, writer);
+            return writer.toString().trim().equals("");
+        }
+        return true;
+    }
+
+    
 
     public final String put(String name, String value) {
         return serviceInfoMap.put(name, value);
@@ -158,9 +177,6 @@ public final class PerfanDataStorage extends DataStorage {
         return PerfanDataStorageFactory.supportedTypes;
     }
 
-    public void shutdown() {
-        er_print.close();
-    }
 
     @Override
     protected boolean createTablesImpl(List<DataTableMetadata> tableMetadatas) {

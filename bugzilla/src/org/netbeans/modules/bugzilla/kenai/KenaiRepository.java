@@ -184,7 +184,7 @@ public class KenaiRepository extends BugzillaRepository {
         if(pa != null) {
             return pa.getUserName();
         }
-        return "";
+        return "";                                                              // NOI18N
     }
 
     private static String getKenaiPassword() {
@@ -192,7 +192,7 @@ public class KenaiRepository extends BugzillaRepository {
         if(pa != null) {
             return new String(pa.getPassword());
         }
-        return "";
+        return "";                                                              // NOI18N
     }
 
 }

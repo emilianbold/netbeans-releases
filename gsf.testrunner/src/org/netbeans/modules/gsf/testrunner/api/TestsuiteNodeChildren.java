@@ -41,12 +41,14 @@
 
 package org.netbeans.modules.gsf.testrunner.api;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.gsf.testrunner.api.Report;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -78,6 +80,7 @@ final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
     
     /**
      */
+    @Override
     protected void addNotify() {
         super.addNotify();
         
@@ -89,6 +92,7 @@ final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
     
     /**
      */
+    @Override
     protected void removeNotify() {
         super.removeNotify();
         

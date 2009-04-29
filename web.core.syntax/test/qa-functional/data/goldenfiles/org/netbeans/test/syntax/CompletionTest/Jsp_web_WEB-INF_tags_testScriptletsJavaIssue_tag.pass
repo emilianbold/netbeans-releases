@@ -81,7 +81,7 @@ void wait (long timeout , int nanos )
 End cursor position = 833
 [<% org.test.TestBean t = new org.test.TestBean(); t.|, void setName (String name, <% org.test.TestBean t = new org.test.TestBean(); t.setName(name), 1054]
 boolean equals (Object obj )
-Class <?> getClass ()
+Class  getClass ()
 Integer getId ()
 String getName ()
 int hashCode ()

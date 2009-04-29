@@ -43,6 +43,7 @@ package org.netbeans.modules.welcome.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -60,13 +61,11 @@ import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.Constants;
 import java.awt.Image;
 import java.awt.Insets;
-import java.awt.Rectangle;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
-import javax.swing.Scrollable;
 import javax.swing.border.Border;
 import org.netbeans.modules.welcome.WelcomeOptions;
 import org.netbeans.modules.welcome.content.Utils;
@@ -76,7 +75,7 @@ import org.openide.util.ImageUtilities;
  *
  * @author S. Aubrecht
  */
-class TabbedPane extends JPanel implements Constants, Scrollable {
+class TabbedPane extends JPanel implements Constants {// , Scrollable {
 
     private JComponent leftTab;
     private JComponent rightTab;
@@ -158,36 +157,18 @@ class TabbedPane extends JPanel implements Constants, Scrollable {
     @Override
     public Dimension getPreferredSize() {
         Dimension d = super.getPreferredSize();
-        if( null != getParent() && getParent().getHeight() > 0 && getParent().getHeight() > d.height )
-            d.height = getParent().getHeight();
-        if( null != getParent() && getParent().getWidth() > 0 ) {
-            if( d.width > getParent().getWidth() ) {
-                d.width = Math.max(getParent().getWidth(), START_PAGE_MIN_WIDTH+(int)(((FONT_SIZE-11)/11.0)*START_PAGE_MIN_WIDTH));
-            } else if( d.width < getParent().getWidth() ) {
-                d.width = getParent().getWidth();
+        if( null != getParent() && null != getParent().getParent() ) {
+            Component scroll = getParent().getParent();
+            if( scroll.getWidth() > 0 ) {
+                if( d.width > scroll.getWidth() ) {
+                    d.width = Math.max(scroll.getWidth(), START_PAGE_MIN_WIDTH+(int)(((FONT_SIZE-11)/11.0)*START_PAGE_MIN_WIDTH));
+                } else if( d.width < scroll.getWidth() ) {
+                    d.width = scroll.getWidth();
+                }
             }
         }
+        d.width = Math.min( d.width, 1000 );
         return d;
-    }
-
-    public Dimension getPreferredScrollableViewportSize() {
-        return getPreferredSize();
-    }
-
-    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return Constants.FONT_SIZE;
-    }
-
-    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return 30*getScrollableUnitIncrement(visibleRect, orientation, direction);
-    }
-
-    public boolean getScrollableTracksViewportWidth() {
-        return false;
-    }
-
-    public boolean getScrollableTracksViewportHeight() {
-        return false;
     }
     
     private static class TabButton extends JLabel {

@@ -240,16 +240,6 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
-    public static boolean needParseOrphan(final Object platformProject) {
-        if (!CndUtils.isStandalone()) {
-            Project project = ModelImpl.findProjectByNativeProject(getNativeProject(platformProject));
-            if (project != null) {
-                return new CodeAssistanceOptions(project, true).getParseOrphanEnabled();
-            }
-        }
-        return true;
-    }
-
     public static void trace(NativeFileItem nativeFile) {
         try {
             Diagnostic.trace("  native file item" + nativeFile.getFile().getAbsolutePath()); // NOI18N

@@ -80,9 +80,9 @@ public class AddServerInstanceWizardTest {
                     FileObject fo = FileUtil.getConfigFile("Servers/Actions");
                     assertNotNull("Folder for actions precreated", fo);
                     a = new CntAction();
+                    a.putValue("wizardMessage", "Ahoj");
                     FileObject afo = fo.createData("A2.instance");
                     afo.setAttribute("instanceCreate", a);
-                    afo.setAttribute("wizardMessage", "Ahoj");
                     afo.setAttribute("position", 309);
                     b = new CntAction();
                     FileObject bfo = fo.createData("A3.instance");
