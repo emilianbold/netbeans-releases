@@ -84,7 +84,7 @@ import javax.swing.JTextField;
  * </ol>
  * 
  */
-public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator {
+public class NewJavaProjectNameLocationStepOperator extends NewProjectWizardOperator {
     
     /** Components operators. */
     //Java Class Library

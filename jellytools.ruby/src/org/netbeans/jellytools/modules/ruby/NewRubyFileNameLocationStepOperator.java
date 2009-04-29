@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,81 +31,81 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.jellytools;
+package org.netbeans.jellytools.modules.ruby;
 
-import java.awt.Component;
 import java.awt.Component;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
 import javax.swing.JTextField;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+
+//TODO: write a test for this class
 
 /**
- * Handle "Name And Location" panel of the New File wizard.
- * Components on the panel differs according to type of Object selected.
- * This one contains only basic components.<br>
- * Usage:
- * <pre>
- *      NewFileWizardOperator wop = NewFileWizardOperator.invoke();
- *      wop.selectCategory("Java Classes");
- *      wop.selectFileType("Java Class");
- *      wop.next();
- *      NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
- *      op.selectLocation("Source Packages");
- *      op.selectPackage("org.netbeans.jellytools");
- * </pre>
  *
- * @author tb115823, Jiri.Skrivanek@sun.com
+ * @author Ivan Sidorkin <ivansidorkin@netbeans.org>
  */
-public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
-    
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+public class NewRubyFileNameLocationStepOperator extends NewFileWizardOperator {
+
     /** Components operators. */
     private JLabelOperator      _lblObjectName;
     private JTextFieldOperator  _txtObjectName;
     private JLabelOperator      _lblProject;
-    private JTextFieldOperator  _txtProject;
-    private JLabelOperator      _lblCreatedFile;
-    private JTextFieldOperator  _txtCreatedFile;
-    private JLabelOperator      _lblPackage;
-    private JComboBoxOperator   _cboPackage;
+    private JTextFieldOperator  _txtProject;    
     private JLabelOperator      _lblLocation;
     private JComboBoxOperator   _cboLocation;
-    
-    /** Waits for wizard with New title.  */
-    public NewFileNameLocationStepOperator() {
+    private JLabelOperator      _lblFolder;
+    private JTextFieldOperator  _txtFolder;
+    private JButtonOperator     _btnBrowse;
+    private JLabelOperator      _lblCreatedFile;
+    private JTextFieldOperator  _txtCreatedFile;    
+
+
+     /** Waits for wizard with New title.  */
+    public NewRubyFileNameLocationStepOperator() {
         super();
     }
-    
+
     /** Waits for wizard with given title.
      * @param title title of wizard
      */
-    public NewFileNameLocationStepOperator(String title) {
+    public NewRubyFileNameLocationStepOperator(String title) {
         super(title);
     }
-    
+
     /** Returns operator for first label with "Name"
      * @return JLabelOperator
-     */
+     */    
     public JLabelOperator lblObjectName() {
-        if(_lblObjectName == null) {
+        if (_lblObjectName == null) {
             final String nameLabel = Bundle.getString("org.netbeans.modules.properties.Bundle", "PROP_name");
-            final String nameAndLocationLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_JavaTargetChooserPanelGUI_Name");
+           // final String nameAndLocationLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_JavaTargetChooserPanelGUI_Name");
+            final String nameAndLocationLabel = Bundle.getString("org.netbeans.modules.ruby.rubyproject.templates.Bundle", "LBL_RubyTargetChooserPanelGUI_Name");
             _lblObjectName = new JLabelOperator(this, new JLabelOperator.JLabelFinder(new ComponentChooser() {
+
                 public boolean checkComponent(Component comp) {
-                    JLabel jLabel = (JLabel)comp;
+                    JLabel jLabel = (JLabel) comp;
                     String text = jLabel.getText();
-                    if(text == null || nameAndLocationLabel.equals(text)) {
+                    if (text == null || nameAndLocationLabel.equals(text)) {
                         return false;
-                    } else if(text.indexOf(nameLabel) > -1 && (jLabel.getLabelFor() == null || jLabel.getLabelFor() instanceof JTextField)) {
+                    } else if (text.indexOf(nameLabel) > -1 && (jLabel.getLabelFor() == null || jLabel.getLabelFor() instanceof JTextField)) {
                         return true;
                     }
                     return false;
                 }
+
                 public String getDescription() {
                     return "JLabel containing Name and associated with text field";
                 }
@@ -119,8 +113,7 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         }
         return _lblObjectName;
     }
-    
-    
+
     /** Returns operator of text field bind to lblObjectName
      * @return JTextOperator
      */
@@ -134,19 +127,20 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         }
         return _txtObjectName;
     }
-    
+
     /** Returns operator for first label with "Project"
      * @return JLabelOperator
      */
+    @Override
     public JLabelOperator lblProject() {
         if(_lblProject == null) {
-            _lblProject = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle",
-                    "LBL_TemplateChooserPanelGUI_jLabel1"));
+            _lblProject = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.templates.Bundle",
+                    "LBL_RubyTargetChooserPanelGUI_jLabel5"));
         }
         return _lblProject;
     }
-    
-    
+
+
     /** Returns operator of text field bind to lblProject
      * @return JTextOperator
      */
@@ -160,17 +154,18 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         }
         return _txtProject;
     }
-    
+
     /** Returns operator for label with "Created File:"
      * @return JLabelOperator
      */
     public JLabelOperator lblCreatedFile() {
         if(_lblCreatedFile == null) {
-            _lblCreatedFile = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle","LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
+            _lblCreatedFile = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.templates.Bundle",
+                    "LBL_RubyTargetChooserPanelGUI_CreatedFile_Label"));
         }
         return _lblCreatedFile;
     }
-    
+
     /** Returns operator of text field bind to lblCreatedFile
      * @return JTextOperator
      */
@@ -184,18 +179,18 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         }
         return _txtCreatedFile;
     }
-    
+
     /** Returns operator of label "Location:"
      * @return JLabelOperator
      */
     public JLabelOperator lblLocation() {
         if(_lblLocation == null) {
-            _lblLocation = new JLabelOperator(this,
-                    Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_JavaTargetChooserPanelGUI_jLabel1"));
+            _lblLocation = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.templates.Bundle",
+                    "LBL_RubyTargetChooserPanelGUI_jLabel1"));
         }
         return _lblLocation;
     }
-    
+
     /** Returns operator for combo box Location:
      * @return JComboBoxOperator
      */
@@ -205,68 +200,78 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         }
         return _cboLocation;
     }
-    
-    /** Returns operator of label "Package:"
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblPackage() {
-        if(_lblPackage == null) {
-            _lblPackage = new JLabelOperator(this,
-                    Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_JavaTargetChooserPanelGUI_jLabel2"));
-        }
-        return _lblPackage;
-    }
-    
-    /** returns operator for combo box Package:
+
+     /** Returns operator for the Browse... button
      * @return JComboBoxOperator
      */
-    public JComboBoxOperator cboPackage() {
-        if ( _cboPackage==null ) {
-            _cboPackage = new JComboBoxOperator((JComboBox)lblPackage().getLabelFor());
+    public JButtonOperator btnBrowse()
+    {
+        if(_btnBrowse == null) {
+            _btnBrowse = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.templates.Bundle",
+                    "LBL_RubyTargetChooserPanelGUI_Browse"));
         }
-        return _cboPackage;
+        return _btnBrowse;
     }
-    
-    /** Selects given package in combo box Package.
-     * @param packageName name of package to be selected
+
+    /** Returns operator of label "Folder:"
+     * @return JLabelOperator
      */
-    public void selectPackage(String packageName) {
-        new EventTool().waitNoEvent(500);
-        cboPackage().selectItem(packageName);
+    public JLabelOperator lblFolder() {
+        if(_lblFolder == null) {
+            _lblFolder = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.templates.Bundle",
+                    "LBL_RubyTargetChooserPanelGUI_Folder"));
+        }
+        return _lblFolder;
     }
-    
+
+    /** returns operator for combo box Folder:
+     * @return JComboBoxOperator
+     */
+    public JTextFieldOperator txtFolder() {
+        if ( _txtFolder==null ) {
+            _txtFolder = new JTextFieldOperator((JTextField)lblFolder().getLabelFor());
+        }
+        return _txtFolder;
+    }
+
+    /** Pushes the Browse... button
+     */
+    public void browseFolder() {
+        btnBrowse().press();
+    }
+
     /** Type given package in combo box Package.
      * @param packageName name of package
      */
-    public void setPackage(String packageName) {
+    public void setFolder(String packageName) {
         new EventTool().waitNoEvent(500);
-        cboPackage().clearText();
-        cboPackage().typeText(packageName);
+        txtFolder().clearText();
+        txtFolder().typeText(packageName);
     }
-    
+
     /** Sets given object name in the text field.
      * @param objectName name of object
      */
     public void setObjectName(String objectName) {
         txtObjectName().setText(objectName);
     }
-    
-    /** Selects Source Packages in combo box Location:.
+
+    /** Selects Source Files in combo box Location:.
      * Cannot set location directly by string because combo box has a model
      * with objects and not visible strings.
      */
-    public void selectSourcePackagesLocation() {
+    public void selectSourceFilesLocation() {
         cboLocation().selectItem(0);
     }
-    
-    /** Selects Test Packages in combo box Location:
+
+    /** Selects Test Files in combo box Location:
      * Cannot set location directly by string because combo box has a model
      * with objects and not visible strings.
      */
-    public void selectTestPackagesLocation() {
+    public void selectTestFilesLocation() {
         cboLocation().selectItem(1);
     }
-    
+
     /** Performs verification by accessing all sub-components */
     public void verify() {
         lblObjectName();
@@ -274,6 +279,7 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         lblCreatedFile();
         txtCreatedFile();
         cboLocation();
-        cboPackage();
+        lblFolder();
+        txtFolder();
     }
 }

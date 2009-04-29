@@ -65,7 +65,7 @@ public class NewJavaFileWizardOperator extends NewFileWizardOperator
         nfwo.selectCategory(category);
         nfwo.selectFileType(fileType);
         nfwo.next();
-        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.setObjectName(name);
         if(packageName != null && !"".equals(packageName)) {
             nfnlso.setPackage(packageName);
