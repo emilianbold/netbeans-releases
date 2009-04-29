@@ -115,7 +115,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         break;
                     }
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
-                        inheritances.add(new InheritanceImpl(token, getContainingFile(), ClassImpl.this));
+                        addInheritance(new InheritanceImpl(token, getContainingFile(), ClassImpl.this));
                         break;
                     // class / struct / union
                     case CPPTokenTypes.LITERAL_class:
@@ -754,7 +754,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
 
     public List<CsmInheritance> getBaseClasses() {
-        return inheritances;
+        synchronized (inheritances) {
+            return new ArrayList<CsmInheritance>(inheritances);
+        }
     }
 
     public boolean isTemplate() {
@@ -787,6 +789,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         synchronized (members) {
 //            members.add(uid);
             UIDUtilities.insertIntoSortedUIDList(uid, members);
+        }
+    }
+
+    private void addInheritance(CsmInheritance inheritance) {
+        synchronized (inheritances) {
+            if (!inheritances.contains(inheritance)) {
+                inheritances.add(inheritance);
+            }
         }
     }
 
