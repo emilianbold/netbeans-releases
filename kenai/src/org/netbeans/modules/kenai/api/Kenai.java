@@ -303,7 +303,8 @@ public final class Kenai {
         ProjectData prj = impl.createProject(name, displayName, description, licenses, tags);
         final KenaiProject result = KenaiProject.get(prj);
         synchronized(this) {
-            myProjects.add(result);
+            if (myProjects!=null)
+                myProjects.add(result);
         }
         return result;
     }

@@ -39,6 +39,10 @@
 
 package org.netbeans.modules.jira.issue;
 
+import org.eclipse.mylyn.internal.jira.core.model.IssueType;
+import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
+import org.eclipse.mylyn.internal.jira.core.model.Priority;
+import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueNode.SeenProperty;
@@ -62,7 +66,7 @@ public class JiraIssueNode extends IssueNode {
     @Override
     protected Property<?>[] getProperties() {
         return new Property<?>[] {
-            new IDProperty(),
+            new KeyProperty(),
             new TypeProperty(),
             new PriorityProperty(),
             new StatusProperty(),
@@ -79,7 +83,7 @@ public class JiraIssueNode extends IssueNode {
     }
 
     private Integer getTypeSortKey(String type) {
-        // XXX
+        // XXX sorting !!!
 //        BugzillaConfiguration bc = getNbJiraIssue().getRepository().getConfiguration();
 //        if(bc == null) {
 //            return null;
@@ -118,8 +122,8 @@ public class JiraIssueNode extends IssueNode {
         return 1;
     }
 
-    private class IDProperty extends IssueNode.IssueProperty<String> {
-        public IDProperty() {
+    private class KeyProperty extends IssueNode.IssueProperty<String> {
+        public KeyProperty() {
             super(NbJiraIssue.LABEL_NAME_ID,
                   String.class,
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_ID_Title"), // NOI18N
@@ -145,7 +149,8 @@ public class JiraIssueNode extends IssueNode {
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Type_Desc")); // NOI18N
         }
         public String getValue() {
-            return getNbJiraIssue().getFieldValue(IssueField.TYPE);
+            IssueType type = getNbJiraIssue().getType();
+            return type != null ? type.getName() : "";                          // NOI18N
         }
         @Override
         public Object getValue(String attributeName) {
@@ -165,7 +170,8 @@ public class JiraIssueNode extends IssueNode {
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Priority_Desc")); // NOI18N
         }
         public String getValue() {
-            return getNbJiraIssue().getFieldValue(IssueField.PRIORITY);
+            Priority priority = getNbJiraIssue().getPriority();
+            return priority != null ? priority.getName() : "";                  // NOI18N
         }
         @Override
         public Object getValue(String attributeName) {
@@ -185,7 +191,8 @@ public class JiraIssueNode extends IssueNode {
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Status_Desc")); // NOI18N
         }
         public String getValue() {
-            return getNbJiraIssue().getFieldValue(IssueField.STATUS);
+            JiraStatus status = getNbJiraIssue().getStatus();
+            return status != null ? status.getName() : "";                      // NOI18N
         }
         @Override
         public int compareTo(IssueProperty p) {
@@ -204,7 +211,8 @@ public class JiraIssueNode extends IssueNode {
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
         }
         public String getValue() {
-            return getNbJiraIssue().getFieldValue(IssueField.RESOLUTION);
+            Resolution resolution = getNbJiraIssue().getResolution();
+            return resolution != null ? resolution.getName() : "";              // NOI18N
         }
         @Override
         public Object getValue(String attributeName) {
