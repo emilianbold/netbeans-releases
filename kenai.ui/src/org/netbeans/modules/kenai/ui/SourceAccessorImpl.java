@@ -104,7 +104,7 @@ public class SourceAccessorImpl extends SourceAccessor {
         for (KenaiFeature feature : features) {
             SourceHandle srcHandle = new SourceHandleImpl(prjHandle, feature);
             handlesList.add(srcHandle);
-            handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getId(), feature));
+            handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getId(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
         }
 
         return handlesList.isEmpty() ? Collections.EMPTY_LIST : handlesList;
@@ -212,10 +212,12 @@ public class SourceAccessorImpl extends SourceAccessor {
 
         public String projectName;
         public KenaiFeature feature;
+        public String externalScmType;
 
-        public ProjectAndFeature(String name, KenaiFeature ftr) {
+        public ProjectAndFeature(String name, KenaiFeature ftr, String externalScmType) {
             projectName = name;
             feature = ftr;
+            this.externalScmType=externalScmType;
         }
     }
 
