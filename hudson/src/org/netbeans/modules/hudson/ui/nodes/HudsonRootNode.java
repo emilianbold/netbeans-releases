@@ -43,17 +43,23 @@ package org.netbeans.modules.hudson.ui.nodes;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.ui.actions.AddInstanceAction;
+import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeOp;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  * Root node in Services tab.
@@ -62,6 +68,7 @@ public class HudsonRootNode extends AbstractNode {
 
     private static final String HUDSON_NODE_NAME = "hudson"; // NOI18N
     private static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/hudson.png"; // NOI18N
+    private static final Logger LOG = Logger.getLogger(HudsonRootNode.class.getName());
     
     @ServicesTabNodeRegistration(name=HUDSON_NODE_NAME, displayName="#LBL_HudsonNode", iconResource=ICON_BASE, position=488)
     public static HudsonRootNode getDefault() {
@@ -103,6 +110,42 @@ public class HudsonRootNode extends AbstractNode {
             refresh(false);
         }
 
+    }
+
+    /**
+     * Try to select a node somewhere beneath the root node.
+     * @param path a path as in {@link NodeOp#findPath(Node, String[])}
+     */
+    public static void select(final String... path) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                for (TopComponent tab : TopComponent.getRegistry().getOpened()) {
+                    if (!tab.getClass().getName().equals("org.netbeans.core.ide.ServicesTab")) { // NOI18N
+                        continue;
+                    }
+                    tab.requestActive();
+                    if (!(tab instanceof ExplorerManager.Provider)) {
+                        LOG.fine("ServicesTab not an ExplorerManager.Provider");
+                        return;
+                    }
+                    ExplorerManager mgr = ((ExplorerManager.Provider) tab).getExplorerManager();
+                    Node root = mgr.getRootContext();
+                    Node hudson = NodeOp.findChild(root, HUDSON_NODE_NAME);
+                    if (hudson == null) {
+                        LOG.fine("ServicesTab does not contain " + HUDSON_NODE_NAME);
+                        return;
+                    }
+                    try {
+                        Node selected = NodeOp.findPath(hudson, path);
+                        mgr.setSelectedNodes(new Node[] {selected});
+                    } catch (Exception x) {
+                        LOG.log(Level.FINE, "Could not select path", x);
+                    }
+                    return;
+                }
+                LOG.fine("No ServicesTab found open");
+            }
+        });
     }
 
 }
