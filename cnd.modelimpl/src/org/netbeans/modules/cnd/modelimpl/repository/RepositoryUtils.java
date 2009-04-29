@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
@@ -244,8 +245,29 @@ public final class RepositoryUtils {
 
     public static void startup() {
         repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
-        repository.unregisterRepositoryListener(RepositoryListenerImpl.instance());
-        repository.registerRepositoryListener(RepositoryListenerImpl.instance());
+        repository.unregisterRepositoryListener(getRepositoryListenerProxy());
+        repository.registerRepositoryListener(getRepositoryListenerProxy());
+    }
+
+    private static RepositoryListener myRepositoryListener;
+    private static synchronized RepositoryListener getRepositoryListenerProxy(){
+        if (myRepositoryListener == null) {
+            myRepositoryListener = new RepositoryListener() {
+                private RepositoryListener parent = RepositoryListenerImpl.instance();
+                public boolean unitOpened(String unitName) {
+                    return parent.unitOpened(unitName);
+                }
+
+                public void unitClosed(String unitName) {
+                    parent.unitClosed(unitName);
+                }
+
+                public void anExceptionHappened(String unitName, RepositoryException exc) {
+                    parent.unitOpened(unitName);
+                }
+            };
+        }
+        return myRepositoryListener;
     }
 
     public static void shutdown() {
