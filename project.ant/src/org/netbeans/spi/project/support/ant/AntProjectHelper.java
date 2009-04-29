@@ -841,7 +841,7 @@ public final class AntProjectHelper {
         }
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            change(fe);
+            // ignore
         }
     }
     
