@@ -48,6 +48,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContext;
 
 import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
+import org.openide.ErrorManager;
 
 
 /**
@@ -74,6 +75,10 @@ public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
     }
     
     public String getShortDescription() {
+        if (type.endsWith("_broken")) { // NOI18N
+            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString
+                ("TOOLTIP_BREAKPOINT_BROKEN"); // NOI18N
+        }
         if (EditorContext.BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
             return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString
                     ("TOOLTIP_BREAKPOINT"); // NOI18N
@@ -111,7 +116,8 @@ public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
             return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
                     ("TOOLTIP_DISABLED_CONDITIONAL_ADDRESS_BREAKPOINT"); // NOI18N
         }
-        return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_ANNOTATION"); // NOI18N
+        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Unknown breakpoint type '" + type + "'.")); // NOI18N
+        return null;
     }
 
     @Override

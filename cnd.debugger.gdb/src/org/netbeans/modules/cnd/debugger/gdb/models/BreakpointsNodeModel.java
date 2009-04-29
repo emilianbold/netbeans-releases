@@ -173,7 +173,7 @@ public class BreakpointsNodeModel implements NodeModel {
                         "CTL_All_Functions_Breakpoint", className); // NOI18N
             } else {
                 return NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Function_Breakpoint", // NOI18N
-                        className, b.getFunctionName());
+                        b.getFunctionName());
             }
         } else if (o instanceof AddressBreakpoint) {
             return NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Address_Breakpoint", // NOI18N

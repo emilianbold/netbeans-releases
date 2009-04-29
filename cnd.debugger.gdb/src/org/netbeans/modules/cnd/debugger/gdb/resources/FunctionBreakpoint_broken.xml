@@ -43,12 +43,12 @@ made subject to such option by the copyright holder.
 
 <!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
 <type
-    name='DisabledFunctionBreakpoint'
-    description_key='HINT_DISABLED_FUNCTION_BREAKPOINT'
+    name='FunctionBreakpoint_broken'
+    description_key='HINT_FUNCTION_BREAKPOINT'
     localizing_bundle='org.netbeans.modules.cnd.debugger.gdb.resources.Bundle'
     visible='true' 
-    glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpoint.gif'
-    highlight='0xDCDCD8' 
+    glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint_broken.gif'
+    highlight='0xDCDCD8'
     type='line'
     actions='BreakpointActions'
 />
