@@ -51,6 +51,8 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -60,8 +62,10 @@ import org.netbeans.modules.bugtracking.util.IssueFinder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * 
@@ -85,40 +89,57 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
         return getIssueSpan(doc, offset, type);
     }
 
-    public void performClickAction(Document doc, int offset, HyperlinkType type) {
+    public void performClickAction(final Document doc, final int offset, final HyperlinkType type) {
         final String issueId = getIssueId(doc, offset, type);
         if(issueId == null) return;
 
-        DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-        File file = null;
-        if (dobj != null) {
-            FileObject fileObject = dobj.getPrimaryFile();
-            if(fileObject != null) {
-                file = FileUtil.toFile(fileObject);
+        final Task[] t = new Task[1];
+        Cancellable c = new Cancellable() {
+            public boolean cancel() {
+                if(t[0] != null) {
+                    return t[0].cancel();
+                }
+                return true;
             }
-        }
-        if(file == null) return;
-        
-        final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
-        if(repo == null) return;
-
-        BugtrackingOwnerSupport.getInstance().setLooseAssociation(file, repo);
-
+        };
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(EditorHyperlinkProviderImpl.class, "MSG_Opening", new Object[] {issueId}), c); // NOI18N
         class IssueDisplayer implements Runnable {
             private Issue issue = null;
             public void run() {
-                if (issue == null) {
-                    issue = repo.getIssue(issueId);
-                    if (issue != null) {
-                        EventQueue.invokeLater(this);
+                try {
+                    
+
+                    DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+                    File file = null;
+                    if (dobj != null) {
+                        FileObject fileObject = dobj.getPrimaryFile();
+                        if(fileObject != null) {
+                            file = FileUtil.toFile(fileObject);
+                        }
                     }
-                } else {
-                    assert EventQueue.isDispatchThread();
-                    issue.open();
+                    if(file == null) return;
+
+                    final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
+                    if(repo == null) return;
+
+                    BugtrackingOwnerSupport.getInstance().setLooseAssociation(file, repo);
+
+                    if (issue == null) {
+                        issue = repo.getIssue(issueId);
+                        if (issue != null) {
+                            EventQueue.invokeLater(this);
+                        }
+                    } else {
+                        assert EventQueue.isDispatchThread();
+                        issue.open();
+                    }
+                } finally {
+                    handle.finish();
                 }
             }
         }
-        RequestProcessor.getDefault().post(new IssueDisplayer());
+        handle.start();
+        t[0] = RequestProcessor.getDefault().post(new IssueDisplayer());
     }
 
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
