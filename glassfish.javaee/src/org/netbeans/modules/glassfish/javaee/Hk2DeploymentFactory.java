@@ -44,6 +44,7 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -84,7 +85,8 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
             // FIXME -- these strings should come from some constant place
             String v3Root = System.getProperty("org.glassfish.v3ee6.installRoot");
             if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures")) ||
-                (null != v3Root && v3Root.trim().length() > 0) ) {
+                (null != v3Root && v3Root.trim().length() > 0) ||
+                null != FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features")) {
                 // pick up v3 Prelude and v3 instances and treat themn like Prelude
                 allowed = new String[] { "deployer:gfv3:" };
             } else {
@@ -105,7 +107,8 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         // FIXME -- these strings should come from some constant place
         String v3Root = System.getProperty("org.glassfish.v3ee6.installRoot");
         if ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures")) ||
-            (null != v3Root && v3Root.trim().length() > 0) ) {
+            (null != v3Root && v3Root.trim().length() > 0) ||
+                null != FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features")) {
             if (ee6Instance == null) {
                 ee6Instance = new Hk2DeploymentFactory(new String[]
                     { "deployer:gfv3ee6:" }, "0.2",

@@ -155,6 +155,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         indicatorColumns.add(locksColumn);
         indicatorColumns.add(threadsColumn);
         indicatorColumns.add(SunStudioDCConfiguration.c_ulockSummary);
+        indicatorColumns.add(ProcDataProviderConfiguration.THREADS);
         indicatorColumns.addAll(LLDataCollectorConfiguration.SYNC_TABLE.getColumns());
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
         SyncIndicatorConfiguration indicatorConfiguration =
@@ -198,6 +199,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         lockIndicatorDataProviders.add(lockConf);
 
         lockIndicatorDataProviders.add(new SunStudioDCConfiguration(CollectedInfo.SYNCSUMMARY));
+        lockIndicatorDataProviders.add(new ProcDataProviderConfiguration());
 
         lockIndicatorDataProviders.add(new LLDataCollectorConfiguration(
             LLDataCollectorConfiguration.CollectedData.SYNC));

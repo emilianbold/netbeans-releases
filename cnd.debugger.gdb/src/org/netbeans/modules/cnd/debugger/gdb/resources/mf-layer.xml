@@ -228,6 +228,7 @@ made subject to such option by the copyright holder.
         
         <folder name="AnnotationTypes">
             <file name="FunctionBreakpoint.xml" url="FunctionBreakpoint.xml"/>
+            <file name="FunctionBreakpoint_broken.xml" url="FunctionBreakpoint_broken.xml"/>
             <file name="DisabledFunctionBreakpoint.xml" url="DisabledFunctionBreakpoint.xml"/>
             <file name="CondFuncBreakpoint.xml" url="CondFuncBreakpoint.xml"/>
             <file name="DisabledCondFuncBreakpoint.xml" url="DisabledCondFuncBreakpoint.xml"/>

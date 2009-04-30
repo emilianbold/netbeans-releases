@@ -112,7 +112,6 @@ public class FileUtilTest extends NbTestCase {
     /** Tests FileChangeListener on File.
      * @see FileUtil#addFileChangeListener(org.openide.filesystems.FileChangeListener, java.io.File)
      */
-    @RandomlyFails // NB-Core-Build #2538
     public void testAddFileChangeListener() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();
@@ -212,6 +211,7 @@ public class FileUtilTest extends NbTestCase {
         new FileOutputStream(fileF).close();
         FileUtil.refreshAll();
         assertEquals("Event not fired when file was modified.", 1, fcl.check(EventType.CHANGED));
+        assertEquals("Attribute change event not fired (see #129178).", 2, fcl.check(EventType.ATTRIBUTE_CHANGED));
         fileF.delete();
         dirF.delete();
         FileUtil.refreshAll();

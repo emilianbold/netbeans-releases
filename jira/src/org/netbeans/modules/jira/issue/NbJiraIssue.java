@@ -530,7 +530,6 @@ public class NbJiraIssue extends Issue {
 
     private class Controller extends BugtrackingController implements ActionListener, MouseMotionListener, MouseInputListener {
         private IssuePanel panel = new IssuePanel();
-        private CommentPanel addCommentPanel = new CommentPanel();
         private ResolvePanel resolvePanel = new ResolvePanel();
         private StyledDocument doc;
         private DefaultListModel attachmentsModel;
