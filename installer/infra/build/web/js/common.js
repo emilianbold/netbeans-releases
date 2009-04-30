@@ -412,7 +412,11 @@ function add_language(id, name, suffix, webpagename) {
     var index = LANGUAGES.length;
     for(var i=0;i<index;i++) {
        if(LANGUAGES[i].id == id) {
-           return;
+           if(id == "en" && isCommunityBuild()) {
+               index = i;
+           } else {
+               return;
+           }
        }
     }
     LANGUAGES[index] = new Object;
