@@ -215,7 +215,7 @@ public final class LibraryManager {
         }
         set.add(baseProject);
         baseProject.ensureFilesCreated();
-        FileImpl file = baseProject.getFile(searchFor);
+        FileImpl file = baseProject.getFile(searchFor, true);
         if (file != null) {
             return baseProject;
         }

@@ -215,14 +215,21 @@ public class WindowsNativeUtils extends NativeUtils {
     
     // constructor //////////////////////////////////////////////////////////////////
     WindowsNativeUtils() {
+        String libraryPath;
         if (SystemUtils.isCurrentJava64Bit()) {
             if(System.getProperty("os.arch").equals("ia64")) {
-                loadNativeLibrary(LIBRARY_PATH_IA64);
+                libraryPath = LIBRARY_PATH_IA64;
             } else {
-                loadNativeLibrary(LIBRARY_PATH_X64);
+                libraryPath = LIBRARY_PATH_X64;
             }
         } else {
-            loadNativeLibrary(LIBRARY_PATH_X86);
+            libraryPath = LIBRARY_PATH_X86;
+        }
+        try {
+            loadNativeLibrary(libraryPath);
+        } catch (NativeException e) {
+            // can`t live without the native library
+            ErrorManager.notifyCritical("Cannot load native library which is stricly necessary to work correctly.",e);
         }
         //initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_WINDOWS);
         initializeForbiddenFiles();

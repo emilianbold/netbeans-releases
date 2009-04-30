@@ -29,7 +29,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="textHostDisplayName" pref="404" max="32767" attributes="0"/>
+              <Component id="textHostDisplayName" pref="442" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
@@ -56,12 +56,12 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="cbSyncMode" pref="386" max="32767" attributes="0"/>
-                  <Component id="cbDefaultToolchain" alignment="0" pref="386" max="32767" attributes="0"/>
+                  <Component id="cbSyncMode" pref="424" max="32767" attributes="0"/>
+                  <Component id="cbDefaultToolchain" alignment="0" pref="424" max="32767" attributes="0"/>
               </Group>
           </Group>
-          <Component id="jScrollPane1" alignment="0" pref="496" max="32767" attributes="0"/>
-          <Component id="jSeparator1" alignment="0" pref="496" max="32767" attributes="0"/>
+          <Component id="jScrollPane1" alignment="0" pref="534" max="32767" attributes="0"/>
+          <Component id="jSeparator1" alignment="0" pref="534" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

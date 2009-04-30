@@ -110,11 +110,12 @@ function checkChoiceUpgradeAction() {
         <line choice="netbeans">
             <line choice="baseide"></line>
             <line choice="javase"></line>
-            <line choice="webcommon"></line>
             <line choice="javaee"></line>
             <line choice="cpp"></line>
             <line choice="ruby"></line>
+            <line choice="groovy"></line>
             <line choice="php"></line>
+            <line choice="webcommon"></line>
             <line choice="ergonomics"></line>
         </line>
         <line choice="glassfish"></line>
