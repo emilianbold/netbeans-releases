@@ -52,7 +52,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.*;
@@ -170,7 +169,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return new Function((CsmFunction)template, type);
         } else {
             if (CndUtils.isDebugMode()) {
-                CndUtils.assertTrue(false, "Unknown class " + template.getClass() + " for template instantiation:" + template, Level.INFO); // NOI18N
+                CndUtils.assertTrueInConsole(false, "Unknown class " + template.getClass() + " for template instantiation:" + template); // NOI18N
             }
         }
         return template;
@@ -183,7 +182,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return new Function((CsmFunction)template, mapping);
         } else {
             if (CndUtils.isDebugMode()) {
-                CndUtils.assertTrue(false, "Unknown class " + template.getClass() + " for template instantiation:" + template, Level.INFO); // NOI18N
+                CndUtils.assertTrueInConsole(false, "Unknown class " + template.getClass() + " for template instantiation:" + template); // NOI18N
             }
         }
         return template;
@@ -862,7 +861,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                 this.originalType = origType;
                 this.instantiatedType = newType;
             } else {
-                CndUtils.assertTrue(false, "Infinite recursion in file " + getContainingFile() + " type " + this.toString(), Level.INFO); //NOI18N
+                CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + getContainingFile() + " type " + this.toString()); //NOI18N
                 this.originalType = origType;
                 this.instantiatedType = origType;
             }
