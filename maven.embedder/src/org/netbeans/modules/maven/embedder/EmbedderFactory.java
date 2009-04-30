@@ -190,6 +190,9 @@ public final class EmbedderFactory {
                     desc = plexusContainer.getComponentDescriptor("org.apache.maven.extension.ExtensionManager");
                     desc.setImplementation(NbExtensionManager.class.getName()); //NOI18N
 
+                    desc = plexusContainer.getComponentDescriptor("org.apache.maven.workspace.MavenWorkspaceStore");
+                    desc.setImplementation(NbMavenWorkspaceStore.class.getName()); //NOI18N
+
                     desc = plexusContainer.getComponentDescriptor(ArtifactResolver.ROLE);
                     desc.setImplementation(NbArtifactResolver.class.getName()); //NOI18N
 
