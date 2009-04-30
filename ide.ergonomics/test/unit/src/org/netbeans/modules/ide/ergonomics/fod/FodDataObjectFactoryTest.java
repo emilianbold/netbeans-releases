@@ -107,7 +107,7 @@ public class FodDataObjectFactoryTest extends NbTestCase {
         for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             boolean disable = false;
             if (
-                info.getCodeNameBase().equals("org.netbeans.modules.autoupdate.ui")
+                info.getCodeNameBase().equals("org.netbeans.modules.subversion")
             ) {
                 disable = true;
                 au = info;
