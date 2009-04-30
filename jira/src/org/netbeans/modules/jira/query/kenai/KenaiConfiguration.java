@@ -37,32 +37,36 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.commands;
+package org.netbeans.modules.jira.query.kenai;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
+import java.util.ArrayList;
+import org.eclipse.mylyn.internal.jira.core.model.Project;
+import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
+import org.netbeans.modules.jira.repository.JiraConfiguration;
+import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class ValidateCommand extends JiraCommand {
+public class KenaiConfiguration extends JiraConfiguration {
 
-    private final TaskRepository taskRepository;
-
-    public ValidateCommand(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    // XXX share for kenai. the same for bugzilla
+    // XXX setup only with one project. no need to initialize all projects on the repository for kenai
+    public KenaiConfiguration(JiraClient jiraClient, JiraRepository repository) {
+        super(jiraClient, repository);
+    }
+        
+    void setProducts(String product) {
+        // XXX check if product exists
+        ArrayList<String> l = new ArrayList<String>();
+        l.add(product);
+//        this.products = Collections.unmodifiableList(l);
     }
 
     @Override
-    public void execute() throws CoreException {
-        throw new UnsupportedOperationException();
-//        try {
-//            JiraClient client = Jira.getInstance().getRepositoryConnector().getClientManager().getClient(taskRepository, new NullProgressMonitor());
-//            client.validate(new NullProgressMonitor());
-//        } catch (IOException ex) {
-//            Jira.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
-//        }
+    public Project[] getProjects() {
+        return super.getProjects();
     }
 
 }

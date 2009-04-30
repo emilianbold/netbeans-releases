@@ -55,6 +55,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import hidden.org.codehaus.plexus.util.IOUtil;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.embedder.MavenEmbedder;
 
 /**
  *
@@ -77,21 +78,21 @@ public final class RepositoryUtil {
 
     private static Artifact createArtifact(NBVersionInfo info, String classifier) {
         Artifact art;
-
+        MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
         if (info.getClassifier() != null || classifier != null) {
-            art = EmbedderFactory.getOnlineEmbedder().createArtifactWithClassifier(info.getGroupId(),
+            art = online.createArtifactWithClassifier(info.getGroupId(),
                     info.getArtifactId(),
                     info.getVersion(),
                     info.getType(),
                     classifier == null ? info.getClassifier() : classifier);
         } else {
-            art = EmbedderFactory.getOnlineEmbedder().createArtifact(info.getGroupId(),
+            art = online.createArtifact(info.getGroupId(),
                     info.getArtifactId(),
                     info.getVersion(),
                     null,
                     info.getType());
         }
-        ArtifactRepository repo = EmbedderFactory.getOnlineEmbedder().getLocalRepository();
+        ArtifactRepository repo = online.getLocalRepository();
         String localPath = repo.pathOf(art);
         art.setFile(new File(repo.getBasedir(), localPath));
 
@@ -149,14 +150,15 @@ public final class RepositoryUtil {
             // puts anything in the local repository, thus not resolving dependencies.
             //mkleint: this is somewhat strange thing to do for indexing remote repositories
             // via the maven-repo-utils CLI tool..
-            ArtifactFactory artifactFactory = (ArtifactFactory) EmbedderFactory.getOnlineEmbedder().getPlexusContainer().lookup(ArtifactFactory.class);
+            MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+            ArtifactFactory artifactFactory = (ArtifactFactory) online.getPlexusContainer().lookup(ArtifactFactory.class);
             Artifact projectArtifact = artifactFactory.createProjectArtifact(
                     grId,
                     artId,
                     ver,
                     null);
 
-            MavenProjectBuilder builder = (MavenProjectBuilder) EmbedderFactory.getOnlineEmbedder().getPlexusContainer().lookup(MavenProjectBuilder.class);
+            MavenProjectBuilder builder = (MavenProjectBuilder) online.getPlexusContainer().lookup(MavenProjectBuilder.class);
             mavenProject = builder.buildFromRepository(projectArtifact, new ArrayList(), repository);
 
         } catch (InvalidProjectModelException ex) {
