@@ -40,6 +40,7 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.HashMap;
 import org.netbeans.api.project.Project;
@@ -55,7 +56,7 @@ import org.openide.filesystems.FileStateInvalidException;
 public class RecentProjectsCache {
 
     private static RecentProjectsCache instance;
-    private HashMap<URL, NbProjectHandleImpl> map = new HashMap<URL, NbProjectHandleImpl>();
+    private HashMap<URL,WeakReference<NbProjectHandleImpl>> map = new HashMap<URL, WeakReference<NbProjectHandleImpl>>();
 
     public static synchronized RecentProjectsCache getDefault() {
         if (instance==null) {
@@ -65,19 +66,20 @@ public class RecentProjectsCache {
     }
 
     public synchronized NbProjectHandleImpl getProjectHandle(URL url) throws FileStateInvalidException, IOException {
-        NbProjectHandleImpl handle = map.get(url);
-        if (handle==null) {
+        WeakReference<NbProjectHandleImpl> ref = map.get(url);
+        NbProjectHandleImpl handle = null;
+        if (ref==null || ((handle=ref.get())==null)) {
             for (Project p: OpenProjects.getDefault().getOpenProjects()) {
                 if (p.getProjectDirectory().getURL().equals(url)) {
                     handle = new NbProjectHandleImpl(p);
-                    map.put(url, handle);
+                    map.put(url, new WeakReference<NbProjectHandleImpl>(handle));
                     break;
                 }
             }
             for (UnloadedProjectInformation i : RecentProjects.getDefault().getRecentProjectInformation()) {
                 if (i.getURL().equals(url)) {
                     handle = new NbProjectHandleImpl(i);
-                    map.put(url, handle);
+                    map.put(url, new WeakReference<NbProjectHandleImpl>(handle));
                     break;
                 }
 
@@ -87,13 +89,13 @@ public class RecentProjectsCache {
     }
 
     public synchronized NbProjectHandleImpl getProjectHandle(Project p) throws IOException  {
-        NbProjectHandleImpl nbph = map.get(p.getProjectDirectory().getURL());
-        if (nbph!=null) {
-            return nbph;
+        WeakReference<NbProjectHandleImpl> nbph = map.get(p.getProjectDirectory().getURL());
+        if (nbph!=null && nbph.get()!=null) {
+            return nbph.get();
         }
-        nbph  = new NbProjectHandleImpl(p);
-        map.put(p.getProjectDirectory().getURL(), nbph);
-        return nbph;
+        NbProjectHandleImpl res  = new NbProjectHandleImpl(p);
+        map.put(p.getProjectDirectory().getURL(), new WeakReference(res));
+        return res;
     }
 
 }
