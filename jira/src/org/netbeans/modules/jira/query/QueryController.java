@@ -641,8 +641,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onGotoIssue() {
-        final String id = panel.idTextField.getText().trim(); 
-        if(id == null || id.trim().equals("") ) {                               // NOI18N
+        final String key = panel.idTextField.getText().trim();
+        if(key == null || key.trim().equals("") ) {                               // NOI18N
             return;
         }
         final Task[] t = new Task[1];
@@ -654,12 +654,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 return true;
             }
         };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {id}), c); // NOI18N
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {key}), c); // NOI18N
         t[0] = Jira.getInstance().getRequestProcessor().create(new Runnable() {
             public void run() {
                 handle.start();
                 try {
-                    Issue issue = repository.getIssue(id.toUpperCase()); // XXX always uppercase?
+                    Issue issue = repository.getIssue(key.toUpperCase()); // XXX always uppercase?
                     if (issue != null) {
                         issue.open();
                     } else {
@@ -952,10 +952,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    enableFields(true);
                     panel.setQueryRunning(false);
                     panel.setLastRefresh(getLastRefresh());
                     panel.showNoContentPanel(false);                    
+                    enableFields(true);
                 }
             });
         }

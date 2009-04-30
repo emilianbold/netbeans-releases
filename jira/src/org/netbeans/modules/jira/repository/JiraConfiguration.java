@@ -82,7 +82,8 @@ public class JiraConfiguration extends JiraClientCache {
     private static final Object USER_LOCK = new Object();
     private static final Object PROJECT_LOCK = new Object();
 
-    private JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
+    // XXX might be we want it private
+    protected JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
         super(jiraClient);
         this.client = jiraClient;
         this.repository = repository;
@@ -91,6 +92,8 @@ public class JiraConfiguration extends JiraClientCache {
 
     public static JiraConfiguration create(final JiraRepository repository) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+
+        // XXX need logging incl. consumed time
 
         final JiraConfiguration[] cache = new JiraConfiguration[1];
         JiraCommand cmd = new JiraCommand() {
