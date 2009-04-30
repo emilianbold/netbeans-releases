@@ -280,6 +280,11 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         // We make sure that hyperlink does not link to iz150915_1.cc.
     }
 
+    public void testIZ159242() throws Exception {
+        // IZ#159242 : Unresolved using of variable from unnamed namespace
+        performTest("iz159242.cc", 33, 7, "iz159242.cc", 19, 9);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
