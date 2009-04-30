@@ -144,6 +144,17 @@ public class UnixNativeUtils extends NativeUtils {
     public UnixNativeUtils() {
         initializeForbiddenFiles();
     }
+
+
+    protected void loadLibrary(String path) {
+        try {
+            loadNativeLibrary(path);
+        } catch (NativeException e) {
+            //ok, not loaded, we`ll use Java`s implementation
+            LogManager.log("Could not load native library due to some reasons, " + //NOI18N
+                    "falling back to the Java implementation", e); //NOI18N
+        }
+    }
     
     @Override
     protected Platform getPlatform() {

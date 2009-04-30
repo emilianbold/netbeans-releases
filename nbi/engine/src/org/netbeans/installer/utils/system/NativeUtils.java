@@ -224,39 +224,32 @@ public abstract class NativeUtils {
     public abstract List<File> getFileSystemRoots() throws IOException;
     
     // protected ////////////////////////////////////////////////////////////////////
-    protected void loadNativeLibrary(String path) {
+    protected void loadNativeLibrary(String path) throws NativeException {
         LogManager.logIndent("loading jni library");
         LogManager.log("library resource path: " + path);
         try {
             if (path != null) {
                 final File tempDir = SystemUtils.getTempDirectory();
                 if(!tempDir.exists() && !tempDir.mkdirs()) {
-                    ErrorManager.notifyCritical(
-                            "Cannot create temporary directory " + tempDir.getAbsolutePath());
-                    return;
+                    throw new NativeException("Cannot create temporary directory " + tempDir.getAbsolutePath());
                 }
                 File file = null;
                 try {
                     file = FileUtils.createTempFile(tempDir);
                 } catch (IOException e) {
-                    ErrorManager.notifyCritical(
-                            "Cannot create temporary file for native library at " + tempDir.getAbsolutePath(), e);
-                    return;
+                    throw new NativeException("Cannot create temporary file for native library at " + tempDir.getAbsolutePath(), e);
                 }
 
                 InputStream input = getClass().getClassLoader().getResourceAsStream(path);
                 if (input == null) {
-                    ErrorManager.notifyCritical("Cannot find native library at resource " + path);//NOI18N
-                    return;
+                    throw new NativeException("Cannot find native library at resource " + path);//NOI18N
                 }
                 try {
                     LogManager.log("library file path: " + file.getAbsolutePath());
                     FileUtils.writeFile(file, input);
                 } catch (IOException e) {
-                    ErrorManager.notifyCritical(
-                            "Cannot write native library (" + path + ") to temporary file " + file.getAbsolutePath(), e);
                     file.delete();
-                    return;
+                    throw new NativeException("Cannot write native library (" + path + ") to temporary file " + file.getAbsolutePath(), e);
                 } finally {
                     try {
                         input.close();
@@ -274,11 +267,11 @@ public abstract class NativeUtils {
                     final String message = e.getMessage();
                     //special handling for #163022
                     if (message != null && message.contains("failed to map segment from shared object")) {
-                        ErrorManager.notifyCritical("Could not load library from temporary directory which is located on the filesystem mounted with \"noexec\" option:\n" +
+                        throw new NativeException("Could not load library from temporary directory which is located on the filesystem mounted with \"noexec\" option:\n" +
                                 tempDir.getAbsolutePath() + 
-                                "\n\nTry to use other temporary directory.");
+                                "\n\nTry to use other temporary directory.", e);
                     } else {
-                        ErrorManager.notifyCritical("Cannot load native library from path: " + path, e);
+                        throw new NativeException("Cannot load native library from path: " + path, e);
                     }
                 }
             }
