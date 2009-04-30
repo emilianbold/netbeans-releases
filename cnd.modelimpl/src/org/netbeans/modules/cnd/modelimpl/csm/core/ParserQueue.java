@@ -612,12 +612,7 @@ public final class ParserQueue {
         ProjectData data;
         boolean lastFileInProject;
         synchronized (lock) {
-            data = getProjectData(project, true);
-            for (Object file : data.filesInQueue) {
-                Entry e = findEntry((FileImpl) file);
-                queue.remove(e);
-            }
-            data.filesInQueue.clear();
+            data = _clean(project);
             lastFileInProject = data.filesBeingParsed.isEmpty();
             if (lastFileInProject) {
                 removeProjectData(project);
@@ -636,17 +631,20 @@ public final class ParserQueue {
      * Used for recreate project query after error recovery.
      */
     public void clean(ProjectBase project) {
-        ProjectData data;
         synchronized (lock) {
-            data = getProjectData(project, true);
-            for (Object file : data.filesInQueue) {
-                Entry e = findEntry((FileImpl) file);
-                queue.remove(e);
-            }
-            data.filesInQueue.clear();
+            _clean(project);
         }
     }
 
+    private ProjectData _clean(ProjectBase project) {
+        ProjectData data = getProjectData(project, true);
+        for (Object file : data.filesInQueue) {
+            Entry e = findEntry((FileImpl) file);
+            queue.remove(e);
+        }
+        data.filesInQueue.clear();
+        return data;
+    }
     /**
      * Determines whether any files of the given project are now being parsed
      * @return true if any files of the project are being parsed, otherwise false

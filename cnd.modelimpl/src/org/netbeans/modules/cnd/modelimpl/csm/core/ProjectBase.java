@@ -695,7 +695,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0){
                 System.err.println("Clean index for project \""+getUniqueName()+"\" because index was corrupted (was "+RepositoryUtils.getRepositoryErrorCount(this)+" errors)."); // NOI18N
                 validator = null;
-                setStatus(Status.Initial);
                 reopenUnit();
             }
 
@@ -707,11 +706,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             projectRoots.addSources(headers);
             projectRoots.addSources(excluded);
             createProjectFilesIfNeed(sources, true, removedFiles, validator);
-            createProjectFilesIfNeed(headers, false, removedFiles, validator);
+            if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) == 0){
+                createProjectFilesIfNeed(headers, false, removedFiles, validator);
+            }
             if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0){
                 System.err.println("Clean index for project \""+getUniqueName()+"\" because index was corrupted (was "+RepositoryUtils.getRepositoryErrorCount(this)+" errors)."); // NOI18N
                 validator = null;
-                setStatus(Status.Initial);
                 reopenUnit();
                 createProjectFilesIfNeed(sources, true, removedFiles, validator);
                 createProjectFilesIfNeed(headers, false, removedFiles, validator);
@@ -730,7 +730,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     // so, when we visit headers, they should not be reparsed if already were parsed
     }
 
-    private void reopenUnit(){
+    private void reopenUnit() {
+        setStatus(Status.Initial);
         ParserQueue.instance().clean(this);
         RepositoryUtils.closeUnit(this.getUniqueName().toString(), null, true);
         RepositoryUtils.openUnit(this);
