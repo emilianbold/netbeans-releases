@@ -58,10 +58,12 @@ import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -426,6 +428,12 @@ public class PhpProject implements Project {
             final CopySupport copySupport = getCopySupport();
             if (copySupport != null) {
                 copySupport.projectOpened(PhpProject.this);
+            }
+
+            // #164073 - for the first time, let's do it not in AWT thread
+            PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+            if (phpUnit != null) {
+                phpUnit.supportedVersionFound();
             }
         }
 
