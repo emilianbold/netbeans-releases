@@ -3293,6 +3293,14 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             return "" + null;
         }
         ObjectReference ov = (ObjectReference) v;
+        if (ov instanceof ArrayReference) {
+            return "#" + ov.uniqueID() +
+                " " + ov.type().name() +
+                "(length=" + ((ArrayReference) ov).length() + ")";
+        }
+        if (ov instanceof StringReference) {
+            return ((StringReference) ov).value();
+        }
         // Call toString() method:
         List<? extends TypeMirror> typeArguments = Collections.emptyList();
         Method method;
