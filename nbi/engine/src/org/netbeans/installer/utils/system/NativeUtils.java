@@ -227,40 +227,60 @@ public abstract class NativeUtils {
     protected void loadNativeLibrary(String path) {
         LogManager.logIndent("loading jni library");
         LogManager.log("library resource path: " + path);
-        
-        if (path != null) {
-            InputStream input = null;
-            
-            try {
-                final File file = FileUtils.createTempFile();
-                
-                LogManager.log("library file path: " + file.getAbsolutePath());
-                
-                input = getClass().getClassLoader().getResourceAsStream(path);
-                FileUtils.writeFile(file, input);
-                
-                System.load(file.getAbsolutePath());
-                nativeLibraryLoaded = true;
-                addDeleteOnExitFile(file);
-            } catch (IOException e) {
-                ErrorManager.notifyCritical(
-                        "Cannot load native library from path: " + path, e);
-            } catch (UnsatisfiedLinkError e) {
-                ErrorManager.notifyCritical(
-                        "Cannot load native library from path: " + path, e);
-            } finally {
-                if (input != null) {
+        try {
+            if (path != null) {
+                final File tempDir = SystemUtils.getTempDirectory();
+                File file = null;
+                try {
+                    file = FileUtils.createTempFile(tempDir);
+                } catch (IOException e) {
+                    ErrorManager.notifyCritical(
+                            "Cannot create temporary file for native library at " + tempDir.getAbsolutePath(), e);
+                    return;
+                }
+
+                InputStream input = getClass().getClassLoader().getResourceAsStream(path);
+                if (input == null) {
+                    ErrorManager.notifyCritical("Cannot find native library at resource " + path);//NOI18N
+                    return;
+                }
+                try {
+                    LogManager.log("library file path: " + file.getAbsolutePath());
+                    FileUtils.writeFile(file, input);
+                } catch (IOException e) {
+                    ErrorManager.notifyCritical(
+                            "Cannot write native library (" + path + ") to temporary file " + file.getAbsolutePath(), e);
+                    file.delete();
+                    return;
+                } finally {
                     try {
                         input.close();
                     } catch (IOException e) {
-                        ErrorManager.notifyDebug("Failed to close the input " +
-                                "stream to the cached jni library", e);
+                        //ignore
                     }
                 }
+                try {
+                    System.load(file.getAbsolutePath());
+                    LogManager.log("... successfully loaded the library");
+                    nativeLibraryLoaded = true;
+                    addDeleteOnExitFile(file);
+                } catch (UnsatisfiedLinkError e) {
+                    LogManager.log("... failed loading the library", e);
+                    final String message = e.getMessage();
+                    //special handling for #163022
+                    if (message != null && message.contains("failed to map segment from shared object")) {
+                        UnsatisfiedLinkError ex = new UnsatisfiedLinkError("Could not load file from temporary directory (" + tempDir.getAbsolutePath() +
+                                ") which is mounted with \"noexec\" option.\n  Try to use other temporary directory.");
+                        ex.initCause(e);
+                        e = ex;
+                    }
+                    ErrorManager.notifyCritical("Cannot load native library from path: " + path, e);
+                }
             }
+        } finally {
+            LogManager.unindent();
         }
-        
-        LogManager.logUnindent("... successfully loaded the library");
+
     }
     
     protected void initializeForbiddenFiles(String ... filepaths) {
