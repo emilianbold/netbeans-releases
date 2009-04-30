@@ -462,7 +462,7 @@ public class JiraRepository extends Repository {
 
     private RequestProcessor getRefreshProcessor() {
         if(refreshProcessor == null) {
-            refreshProcessor = new RequestProcessor("Bugzilla refresh - " + name); // NOI18N
+            refreshProcessor = new RequestProcessor("Jira refresh - " + name); // NOI18N
         }
         return refreshProcessor;
     }

@@ -125,7 +125,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private final Map<String, QueryParameter> parameters;
     
-    private RequestProcessor rp = new RequestProcessor("Bugzilla query", 1, true);  // NOI18N
+    private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
     private Task task;
 
     private final JiraRepository repository;
@@ -577,7 +577,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 panel.savePanel,
                 NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),    // NOI18N
                 NbBundle.getMessage(QueryController.class, "LBL_Save"),         // NOI18N
-                new HelpCtx("org.netbeans.modules.bugzilla.query.savePanel")))  // NOI18N
+                new HelpCtx("org.netbeans.modules.jira.query.savePanel")))  // NOI18N
         {
             name = panel.queryNameTextField.getText();
             if(name == null || name.trim().equals("")) { // NOI18N
