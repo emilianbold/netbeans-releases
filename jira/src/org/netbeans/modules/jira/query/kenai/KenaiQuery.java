@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,55 +34,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira;
+package org.netbeans.modules.jira.query.kenai;
 
-import org.netbeans.modules.bugtracking.spi.KenaiSupport;
+import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.query.JiraQuery;
+import org.netbeans.modules.jira.query.QueryController;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.jira.query.kenai.KenaiSupportImpl;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
-public class JiraConnector extends BugtrackingConnector {
+public class KenaiQuery extends JiraQuery {
+    private String product;
+    private boolean predefinedQuery = false;
 
-    private KenaiSupport kenaiSupport;
-
-    public String getDisplayName() {
-        return getConnectorName();
-    }
-
-    public String getTooltip() {
-        return "Jira Issue Tracking System";
-    }
-
-    @Override
-    public Repository createRepository() {
-        return new JiraRepository();
-    }
-
-    @Override
-    public Repository[] getRepositories() {
-        return Jira.getInstance().getRepositories();
-    }
-
-    public static String getConnectorName() {
-        return NbBundle.getMessage(JiraConnector.class, "LBL_ConnectorName");           // NOI18N
-    }
-
-    @Override
-    public KenaiSupport getKenaiSupport() {
-        if(kenaiSupport == null) {
-            kenaiSupport = new KenaiSupportImpl();
+    public KenaiQuery(String name, JiraRepository repository, JiraFilter jf, boolean saved, boolean predefined) {
+        super(name, repository, jf, saved);
+        this.predefinedQuery = predefined;
+        controller = createControler(repository, this, jf);
+        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
+        if(autoRefresh) {
+            getRepository().scheduleForRefresh(this);
         }
-        return kenaiSupport;
+    }
+
+    @Override
+    protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
+        KenaiQueryController c = new KenaiQueryController(r, q, jiraFilter, product, predefinedQuery);
+        return c;
+    }
+
+    @Override
+    protected void logQueryEvent(int count, boolean autoRefresh) {
+        BugtrackingUtil.logQueryEvent(
+            JiraConnector.getConnectorName(),
+            getDisplayName(),
+            count,
+            true,
+            autoRefresh);
     }
 
 }

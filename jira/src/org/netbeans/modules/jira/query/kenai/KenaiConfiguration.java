@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,55 +34,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira;
+package org.netbeans.modules.jira.query.kenai;
 
-import org.netbeans.modules.bugtracking.spi.KenaiSupport;
+import java.util.ArrayList;
+import org.eclipse.mylyn.internal.jira.core.model.Project;
+import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
+import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.jira.query.kenai.KenaiSupportImpl;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
-public class JiraConnector extends BugtrackingConnector {
+public class KenaiConfiguration extends JiraConfiguration {
 
-    private KenaiSupport kenaiSupport;
-
-    public String getDisplayName() {
-        return getConnectorName();
+    // XXX share for kenai. the same for bugzilla
+    // XXX setup only with one project. no need to initialize all projects on the repository for kenai
+    public KenaiConfiguration(JiraClient jiraClient, JiraRepository repository) {
+        super(jiraClient, repository);
     }
-
-    public String getTooltip() {
-        return "Jira Issue Tracking System";
-    }
-
-    @Override
-    public Repository createRepository() {
-        return new JiraRepository();
+        
+    void setProducts(String product) {
+        // XXX check if product exists
+        ArrayList<String> l = new ArrayList<String>();
+        l.add(product);
+//        this.products = Collections.unmodifiableList(l);
     }
 
     @Override
-    public Repository[] getRepositories() {
-        return Jira.getInstance().getRepositories();
-    }
-
-    public static String getConnectorName() {
-        return NbBundle.getMessage(JiraConnector.class, "LBL_ConnectorName");           // NOI18N
-    }
-
-    @Override
-    public KenaiSupport getKenaiSupport() {
-        if(kenaiSupport == null) {
-            kenaiSupport = new KenaiSupportImpl();
-        }
-        return kenaiSupport;
+    public Project[] getProjects() {
+        return super.getProjects();
     }
 
 }
