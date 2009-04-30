@@ -135,9 +135,7 @@ public class JiraIssueNode extends IssueNode {
         @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
-            Integer i1 = Integer.parseInt(getIssue().getID());
-            Integer i2 = Integer.parseInt(p.getIssue().getID());
-            return i1.compareTo(i2);
+            return getIssue().getID().compareTo(p.getIssue().getID());
         }
     }
 
