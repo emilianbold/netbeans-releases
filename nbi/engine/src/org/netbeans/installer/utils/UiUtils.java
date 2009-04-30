@@ -261,7 +261,8 @@ public final class UiUtils {
                                         ResourceUtils.getString(UiUtils.class, 
                                         RESOURCE_FAILED_TO_INIT_UI), e);
                             }
-                            if (SystemUtils.isWindows()) {
+
+                            if (System.getProperty("os.name").startsWith("Windows")) {
                                 // workaround for the issue with further using JFileChooser
                                 // in case of missing system icons
                                 // Java Issue :
