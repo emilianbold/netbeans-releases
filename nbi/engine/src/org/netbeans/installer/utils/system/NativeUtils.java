@@ -274,12 +274,12 @@ public abstract class NativeUtils {
                     final String message = e.getMessage();
                     //special handling for #163022
                     if (message != null && message.contains("failed to map segment from shared object")) {
-                        UnsatisfiedLinkError ex = new UnsatisfiedLinkError("Could not load file from temporary directory (" + tempDir.getAbsolutePath() +
-                                ") which is mounted with \"noexec\" option.\n  Try to use other temporary directory.");
-                        ex.initCause(e);
-                        e = ex;
+                        ErrorManager.notifyCritical("Could not load library from temporary directory which is located on the filesystem mounted with \"noexec\" option:\n" +
+                                tempDir.getAbsolutePath() + 
+                                "\n\nTry to use other temporary directory.");
+                    } else {
+                        ErrorManager.notifyCritical("Cannot load native library from path: " + path, e);
                     }
-                    ErrorManager.notifyCritical("Cannot load native library from path: " + path, e);
                 }
             }
         } finally {
