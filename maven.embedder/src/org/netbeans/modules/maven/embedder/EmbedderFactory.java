@@ -233,10 +233,11 @@ public final class EmbedderFactory {
     }
 
     public synchronized static MavenEmbedder getOnlineEmbedder() {
-        if (online == null) {
-            online = createOnlineEmbedder();
-        }
-        return online;
+        return createOnlineEmbedder();
+//        if (online == null) {
+//            online = createOnlineEmbedder();
+//        }
+//        return online;
 
     }
 
