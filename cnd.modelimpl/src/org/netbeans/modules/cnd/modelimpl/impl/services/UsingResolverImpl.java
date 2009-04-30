@@ -187,9 +187,11 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
      */
     public Collection<CsmNamespace> findVisibleNamespaces(CsmNamespace namespace, CsmProject startPrj) {
         List<CsmNamespace> res = new ArrayList<CsmNamespace>();
-        for (CsmNamespace ns : namespace.getNestedNamespaces()) {
-            if(ns.getName().length() == 0) {
-                res.add(ns);
+        if (!namespace.isGlobal()) {
+            for (CsmNamespace ns : namespace.getNestedNamespaces()) {
+                if (ns.getName().length() == 0) {
+                    res.add(ns);
+                }
             }
         }
         res.addAll(extractNamespaces(findUsingDirectives(namespace), startPrj));
