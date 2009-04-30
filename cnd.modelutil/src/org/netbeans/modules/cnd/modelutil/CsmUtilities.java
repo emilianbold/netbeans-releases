@@ -414,6 +414,8 @@ public class CsmUtilities {
                 return files.toArray(new CsmFile[files.size()]);
             } catch (BufferUnderflowException ex) {
                 // FIXUP: IZ#148840
+            } catch (AssertionError ex) {
+                ex.printStackTrace();
             } catch (IllegalStateException ex) {
                 // dobj can be invalid
             }

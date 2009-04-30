@@ -632,6 +632,22 @@ public final class ParserQueue {
     }
 
     /**
+     * Clean query without any notifications.
+     * Used for recreate project query after error recovery.
+     */
+    public void clean(ProjectBase project) {
+        ProjectData data;
+        synchronized (lock) {
+            data = getProjectData(project, true);
+            for (Object file : data.filesInQueue) {
+                Entry e = findEntry((FileImpl) file);
+                queue.remove(e);
+            }
+            data.filesInQueue.clear();
+        }
+    }
+
+    /**
      * Determines whether any files of the given project are now being parsed
      * @return true if any files of the project are being parsed, otherwise false
      */
