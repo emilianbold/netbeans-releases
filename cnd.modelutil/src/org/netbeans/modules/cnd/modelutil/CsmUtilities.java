@@ -414,6 +414,8 @@ public class CsmUtilities {
                 return files.toArray(new CsmFile[files.size()]);
             } catch (BufferUnderflowException ex) {
                 // FIXUP: IZ#148840
+            } catch (AssertionError ex) {
+                ex.printStackTrace();
             } catch (IllegalStateException ex) {
                 // dobj can be invalid
             }
@@ -462,7 +464,11 @@ public class CsmUtilities {
         if (csmFile != null) {
             try {
                 try {
-                    fo = FileUtil.toFileObject(new File(csmFile.getAbsolutePath().toString()).getCanonicalFile());
+                    File file = new File(csmFile.getAbsolutePath().toString());
+                    fo = FileUtil.toFileObject(file);
+                    if (fo == null) {
+                        fo = FileUtil.toFileObject(file.getCanonicalFile());
+                    }
                 } catch (IOException e) {
                     fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(csmFile.getAbsolutePath().toString())));
                 }

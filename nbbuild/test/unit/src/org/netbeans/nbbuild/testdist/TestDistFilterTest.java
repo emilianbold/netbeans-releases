@@ -68,21 +68,12 @@ public class TestDistFilterTest extends NbTestCase {
         filter.setProject(prj);
         filter.setTesttype("unit");
         
-        filter.setTestListProperty("list.prop");
-        filter.execute();
-        assertProperty(prj,"list.prop",new String[]{});
-        
         createModule(ORG_OPENIDE_UNIT);
         
         filter.setTestListProperty("list.prop1");
         filter.execute();
         assertProperty(prj,"list.prop1",new String[]{ORG_OPENIDE_UNIT});
         
-        createModule(ORG_OPENIDE_FS); 
-        filter.setTestListProperty("list.prop2");
-        filter.execute();
-        assertProperty(prj,"list.prop2",new String[]{ORG_OPENIDE_UNIT});
- 
         filter.setTestListProperty("list.prop3");
         createModule(ORG_OPENIDE_LOADERS); 
         filter.execute();
@@ -93,32 +84,10 @@ public class TestDistFilterTest extends NbTestCase {
         filter.execute();
         assertProperty(prj,"list.prop4",new String[]{ORG_OPENIDE_UNIT,ORG_OPENIDE_LOADERS});
 
-        filter.setTestListProperty("list.prop5");
-        createModule(ORG_OPENIDE_LOADERS);
-        filter.execute();
-        assertProperty(prj,"list.prop5",new String[]{ORG_OPENIDE_UNIT});
-   
-        filter.setTestListProperty("list.prop6");
-        filter.execute();
-        assertProperty(prj,"list.prop6",new String[]{ORG_OPENIDE_UNIT,ORG_OPENIDE_FS});
-
         filter.setTestListProperty("list.prop7");
         filter.setTesttype("qa-functional");
         filter.execute();
         assertProperty(prj,"list.prop7",new String[]{ORG_OPENIDE_FS_QA});        
-   }
-    
-   public void testAllTestTypes() throws Exception {
-        TestDistFilter filter = new TestDistFilter();
-        filter.setTestDistDir(getWorkDir());
-        Project prj = getProject();
-        filter.setProject(prj);
-        filter.setTesttype("all");
-        createModule(ORG_OPENIDE_UNIT);
-        createModule(ORG_OPENIDE_FS_QA);
-        filter.setTestListProperty("list.prop");
-        filter.execute();
-        assertProperty(prj,"list.prop",new String[]{ORG_OPENIDE_UNIT,ORG_OPENIDE_FS_QA});
    }
    
     public void testRequiredModules() throws IOException {
@@ -166,9 +135,12 @@ public class TestDistFilterTest extends NbTestCase {
         
     }
    
-    private void createModule(String path) throws IOException {
+    private File createModule(String path) throws IOException {
         File dir = new File(getWorkDir(),path);
         dir.mkdirs();
+        File jar = new File(dir, "tests.jar");
+        jar.createNewFile();
+        return dir;
     }
 
     private Project getProject() throws IOException {
@@ -201,7 +173,7 @@ public class TestDistFilterTest extends NbTestCase {
     }
 
     private void createModule(String path, String runcp) throws IOException {
-        File dir = new File(getWorkDir(),path);
+        File dir = createModule(path);
         File props = new File(dir,"test.properties");
         PrintStream ps = new PrintStream(props);
         try { 

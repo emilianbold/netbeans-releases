@@ -110,12 +110,11 @@ public class Installer implements FinishHandler {
     private Installer(String[] arguments) {
         LogManager.logEntry("initializing the installer engine"); // NOI18N
         
-        initializeErrorHandler();        
+        initializeErrorHandler();
+        dumpSystemInfo();
         initializePlatform();
         
         instance = this;
-        
-        dumpSystemInfo();        
         parseArguments(arguments);
         loadEngineProperties();
         initializeLocalDirectory();
@@ -188,6 +187,7 @@ public class Installer implements FinishHandler {
      * @see #finish()
      */
     public void criticalExit() {
+        LogManager.stop();
         // exit immediately, as the system is apparently in a crashed state
         exitImmediately(CRITICAL_ERRORCODE);
     }

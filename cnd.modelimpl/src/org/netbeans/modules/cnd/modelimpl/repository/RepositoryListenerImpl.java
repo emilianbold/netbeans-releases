@@ -233,7 +233,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
                 if (TRACE_PROJECT && TRACE_PROJECT_NAME.equals(unitName)) {
                     trace("Watched project %s is implicitely closing\n", unitName); // NOI18N
                 }
-                RepositoryUtils.closeUnit(unitName, null); // null means the list of required units stays unchanged
+                RepositoryUtils.closeUnit(unitName, null, !TraceFlags.PERSISTENT_REPOSITORY); // null means the list of required units stays unchanged
             }
         }, "Closing implicitly opened project"); // NOI18N
     }

@@ -40,7 +40,6 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -56,6 +55,11 @@ import org.openide.util.NbBundle;
      */
     private CreateHostVisualPanel2 component;
     private ExecutionEnvironment lastValidatedHost;
+    private final CreateHostData data;
+
+    public CreateHostWizardPanel2(CreateHostData data) {
+        this.data = data;
+    }
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -63,7 +67,7 @@ import org.openide.util.NbBundle;
     // create only those which really need to be visible.
     public CreateHostVisualPanel2 getComponent() {
         if (component == null) {
-            component = new CreateHostVisualPanel2(this);
+            component = new CreateHostVisualPanel2(data, this);
         }
         return component;
     }
@@ -113,16 +117,11 @@ import org.openide.util.NbBundle;
     ////////////////////////////////////////////////////////////////////////////
     // settings
     public void readSettings(WizardDescriptor settings) {
-        getComponent().init(
-            (String)settings.getProperty(CreateHostWizardConstants.PROP_HOSTNAME),
-            (Integer)settings.getProperty(CreateHostWizardConstants.PROP_PORT),
-            (ToolsCacheManager)settings.getProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER)
-        );
+        getComponent().init();
     }
 
     public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(CreateHostWizardConstants.PROP_HOST, getComponent().getHost());
-        settings.putProperty(CreateHostWizardConstants.PROP_RUN_ON_FINISH, getComponent().getRunOnFinish());
+        data.setExecutionEnvironment(getComponent().getHost());
+        data.setRunOnFinish(getComponent().getRunOnFinish());
     }
 }
-

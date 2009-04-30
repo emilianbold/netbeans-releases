@@ -108,8 +108,8 @@ function checkChoiceUpgradeAction() {
     <choices-outline>
         <line choice="netbeans">
             <line choice="baseide"></line>          
-            <line choice="webcommon"></line>          
             <line choice="ruby"></line>           
+            <line choice="webcommon"></line>
         </line>            
         <line choice="glassfish-v3"></line>
     </choices-outline>

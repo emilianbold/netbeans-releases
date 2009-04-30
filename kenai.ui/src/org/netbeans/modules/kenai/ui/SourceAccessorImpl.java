@@ -127,10 +127,13 @@ public class SourceAccessorImpl extends SourceAccessor {
 
             public void actionPerformed(ActionEvent e) {
                 Project project = ((NbProjectHandleImpl) prj).getProject();
-                if (project!=null)
+                if (project == null) {
+                    ((NbProjectHandleImpl) prj).remove();
+                } else {
                     OpenProjects.getDefault().open(new Project[]{project}, false);
-                WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive();
-                selectProject(project);
+                    WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive();
+                    selectProject(project);
+                }
             }
 
             private void selectProject(final Project p) {

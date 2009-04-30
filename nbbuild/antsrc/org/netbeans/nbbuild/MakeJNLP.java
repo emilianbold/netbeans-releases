@@ -195,22 +195,22 @@ public class MakeJNLP extends Task {
       this.processJarVersions = b;
     }
     
-    private HashMap<String, String> jarVersions;
+    private Map<String, String> jarVersions;
     /**
      * Explicit definition of jar file versions (for jars without versions specified
      * in manifest file)
      * @param jarVersions
      */
-    public void setJarVersions(HashMap<String, String> jarVersions) {
+    public void setJarVersions(Map<String, String> jarVersions) {
       this.jarVersions = jarVersions;
     }
     
-    private HashSet<String> nativeLibraries;
-    public void setNativeLibraries(HashSet<String> libs) {
+    private Set<String> nativeLibraries;
+    public void setNativeLibraries(Set<String> libs) {
       this.nativeLibraries = libs;
     }
 
-    private HashSet<File> jarDirectories;
+    private Set<File> jarDirectories;
     
     /**
      * Signs or copies the given files according to the signJars variable value.
@@ -368,7 +368,7 @@ public class MakeJNLP extends Task {
                         File t = new File(new File(targetFile, dashcnb), name);
 
                         signOrCopy(n, t);
-                        writeJNLP.write(constructJarHref(n, dashcnb));
+                        writeJNLP.write(constructJarHref(n, dashcnb, name));
                     }
 
                     writeJNLP.write("  </resources>\n");
@@ -397,6 +397,7 @@ public class MakeJNLP extends Task {
         File clusterRoot = f.getParentFile();
         String moduleDirPrefix = "";
         File updateTracking;
+        log("Verifying extensions for: " + codebasename + ", cluster root: " + clusterRoot + ", verify: " + verify, Project.MSG_DEBUG);
         for(;;) {
             updateTracking = new File(clusterRoot, "update_tracking");
             if (updateTracking.isDirectory()) {
@@ -412,12 +413,12 @@ public class MakeJNLP extends Task {
                 throw new BuildException("Cannot find update_tracking directory for module " + f);
             }
         }
-        
+
         File ut = new File(updateTracking, dashcnb + ".xml");
         if (!ut.exists()) {
             throw new BuildException("The file " + ut + " for module " + codebasename + " cannot be found");
         }
-        
+
         Map<String,String> fileToOwningModule = new HashMap<String,String>();
         try {
             ModuleSelector.readUpdateTracking(getProject(), ut.toString(), fileToOwningModule);
@@ -554,9 +555,7 @@ public class MakeJNLP extends Task {
                 writeJNLP.write("  </information>\n");
                 writeJNLP.write(permissions +"\n");
                 writeJNLP.write("  <resources>\n");
-                
-                fileWriter.write(constructJarHref(t, dashcnb));
-                
+                writeJNLP.write(constructJarHref(t, dashcnb));
                 writeJNLP.write("  </resources>\n");
                 writeJNLP.write("  <component-desc/>\n");
                 writeJNLP.write("</jnlp>\n");
@@ -690,56 +689,69 @@ public class MakeJNLP extends Task {
      * @throws IOException
      */
     private String constructJarHref(File f, String dashcnb) throws IOException {
-      JarFile extJar = new JarFile(f);
-      String version = getJarVersion(extJar);
-      String tag = "jar";
-      if (nativeLibraries!= null && nativeLibraries.contains(f.getName())) {
-        tag = "nativelib";
-      }
-      String jarHref = "";
-      if (processJarVersions && version != null) {
-        jarHref = "    <"+tag+" href='" + dashcnb + '/' + f.getName() + "' version='"+version+"' size='"+f.length()+"'/>\n";
-      } else {
-        jarHref = "    <"+tag+" href='" + dashcnb + '/' + f.getName() + "'/>\n";
-      }
-      return jarHref;
+        return constructJarHref(f, dashcnb, f.getName());
     }
-    
-    private void generateVersionXMLFiles() throws IOException {
-      FileSet fs = new FileSet();
-      fs.setIncludes("**/*.jar");
-      for (File directory : jarDirectories) {
-        fs.setDir(directory);
-        DirectoryScanner scan = fs.getDirectoryScanner(getProject());
-        StringWriter writeVersionXML = new StringWriter();
-        writeVersionXML.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        writeVersionXML.append("<jnlp-versions>\n");
-        for (String jarName : scan.getIncludedFiles()) {
-          File jar = new File(scan.getBasedir(), jarName);
-          JarFile jarFile = new JarFile(jar);
-          String version = getJarVersion(jarFile);
-          if (version != null) {
-            writeVersionXML.append("    <resource>\n        <pattern>\n            <name>");
-            writeVersionXML.append(jar.getName());
-            writeVersionXML.append("</name>\n            <version-id>");
-            writeVersionXML.append(version);
-            writeVersionXML.append("</version-id>\n        </pattern>\n        <file>");
-            writeVersionXML.append(jar.getName());
-            writeVersionXML.append("</file>\n    </resource>\n");
-          } else {
-            writeVersionXML.append("    <!-- No version found for ");
-            writeVersionXML.append(jar.getName());
-            writeVersionXML.append(" -->\n");
-          }
+
+    /**
+     * Constructs jar or nativelib tag for jars using custom name
+     * @param f
+     * @param dashcnb
+     * @return
+     * @throws IOException
+     */
+    private String constructJarHref(File f, String dashcnb, String name) throws IOException {
+        String tag = "jar";
+        if (nativeLibraries != null && nativeLibraries.contains(name)) {
+            tag = "nativelib";
         }
-        writeVersionXML.append("</jnlp-versions>\n");
-        writeVersionXML.close();
-        
-        File versionXML = new File(directory, "version.xml");
-        FileWriter w = new FileWriter(versionXML);
-        w.write(writeVersionXML.toString());
-        w.close();
-      }
+        if (processJarVersions) {
+            if (!f.exists()) {
+                throw new BuildException("JAR file " + f + " does not exist, cannot extract required versioning info.");
+            }
+            JarFile extJar = new JarFile(f);
+            String version = getJarVersion(extJar);
+            if (version != null) {
+                return "    <" + tag + " href='" + dashcnb + '/' + name + "' version='" + version + "' size='" + f.length() + "'/>\n";
+            }
+        }
+        return "    <" + tag + " href='" + dashcnb + '/' + name + "'/>\n";
     }
-    
+
+    private void generateVersionXMLFiles() throws IOException {
+        FileSet fs = new FileSet();
+        fs.setIncludes("**/*.jar");
+        for (File directory : jarDirectories) {
+            fs.setDir(directory);
+            DirectoryScanner scan = fs.getDirectoryScanner(getProject());
+            StringWriter writeVersionXML = new StringWriter();
+            writeVersionXML.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+            writeVersionXML.append("<jnlp-versions>\n");
+            for (String jarName : scan.getIncludedFiles()) {
+                File jar = new File(scan.getBasedir(), jarName);
+                JarFile jarFile = new JarFile(jar);
+                String version = getJarVersion(jarFile);
+                if (version != null) {
+                    writeVersionXML.append("    <resource>\n        <pattern>\n            <name>");
+                    writeVersionXML.append(jar.getName());
+                    writeVersionXML.append("</name>\n            <version-id>");
+                    writeVersionXML.append(version);
+                    writeVersionXML.append("</version-id>\n        </pattern>\n        <file>");
+                    writeVersionXML.append(jar.getName());
+                    writeVersionXML.append("</file>\n    </resource>\n");
+                } else {
+                    writeVersionXML.append("    <!-- No version found for ");
+                    writeVersionXML.append(jar.getName());
+                    writeVersionXML.append(" -->\n");
+                }
+            }
+            writeVersionXML.append("</jnlp-versions>\n");
+            writeVersionXML.close();
+
+            File versionXML = new File(directory, "version.xml");
+            FileWriter w = new FileWriter(versionXML);
+            w.write(writeVersionXML.toString());
+            w.close();
+        }
+    }
+
 }
