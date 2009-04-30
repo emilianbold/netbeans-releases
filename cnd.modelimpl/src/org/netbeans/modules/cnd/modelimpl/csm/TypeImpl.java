@@ -50,7 +50,6 @@ import java.util.*;
 import antlr.collections.AST;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
@@ -103,7 +102,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         boolean _const = isTypeDefAST(ast) ? initIsConst(ast.getFirstChild()) : initIsConst(ast);
         setFlags(FLAGS_CONST, _const);
         if (classifier == null) {
-            CndUtils.assertTrueInConsole(false, "why null classifier?", Level.INFO);
+            CndUtils.assertTrueInConsole(false, "why null classifier?");
             this._setClassifier(initClassifier(ast));
             this.classifierText = initClassifierText(ast);
         } else {

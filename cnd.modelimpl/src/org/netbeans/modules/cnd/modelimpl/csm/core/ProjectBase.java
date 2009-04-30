@@ -52,7 +52,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -1202,7 +1201,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     traceIncludeStates("comparison 1 " + comparisonResult, csmFile, newState, null, newStateFound.get(), null, statesToKeep); // NOI18N
                 }
                 if (comparisonResult == ComparisonResult.BETTER) {
-                    CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty 1", Level.INFO); // NOI18N
+                    CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty 1"); // NOI18N
                     entry.setPendingReparse(true); // #148608 Instable test regressions on CLucene
                     // some of the old states are worse than the new one; we'll deinitely parse
                     existsInEntryOnPhaseAExit = true;
@@ -1281,7 +1280,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
                 if (comparisonResult == ComparisonResult.BETTER) {
                     clean = true;
-                    CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty 2", Level.INFO); // NOI18N
+                    CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty 2"); // NOI18N
                     if (TRACE_FILE && FileImpl.traceFile(file)) {
                         traceIncludeStates("best state", csmFile, newState, pcState, clean, statesToParse, statesToKeep); // NOI18N
                     }
@@ -1293,7 +1292,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     }
                     switch (comparisonResult) {
                         case BETTER:
-                            CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty 3", Level.INFO); // NOI18N
+                            CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty 3"); // NOI18N
                             clean = true;
                             break;
                         case SAME:
@@ -1479,7 +1478,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         if (result == ComparisonResult.BETTER) {
-            CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty ", Level.INFO); // NOI18N
+            CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty "); // NOI18N
         }
         return result;
     }
@@ -2712,7 +2711,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     return;
                 }
                 FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(file);
-                CndUtils.assertTrueInConsole(impl != null, "no deref file for " + file, Level.INFO); // NOI18N
+                CndUtils.assertTrueInConsole(impl != null, "no deref file for " + file); // NOI18N
                 // situation is possible for standalone files which were already replaced
                 // by real files
                 if (impl == null) {

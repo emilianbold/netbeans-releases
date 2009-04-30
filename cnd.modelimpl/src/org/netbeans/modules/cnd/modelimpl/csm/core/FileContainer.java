@@ -77,7 +77,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Storage for files and states. Class was extracted from ProjectBase.
@@ -299,7 +298,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 	//trace(canonicFiles, "Wrote in write()");
     }
 
-    private static boolean checked = false;
     public static CharSequence getFileKey(File file, boolean sharedText) {
         if (CndUtils.isDebugMode()) {
             String path = file.getAbsolutePath();
