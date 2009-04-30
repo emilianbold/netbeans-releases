@@ -142,7 +142,7 @@ public class SearchForJavaAction extends WizardAction {
     
     private void getJavaLocationsInfo(List <File> locations, Progress progress) {
         for (int i = 0; i < locations.size(); i++) {
-            final File javaHome = locations.get(i).getAbsoluteFile();
+            File javaHome = locations.get(i).getAbsoluteFile();
             
             progress.setDetail(StringUtils.format(CHECKING, javaHome));
             
@@ -152,7 +152,16 @@ public class SearchForJavaAction extends WizardAction {
             
             // check whether it is a java installation - the result will be null if
             // it is not
-            final JavaInfo javaInfo = JavaUtils.getInfo(javaHome);
+            JavaInfo javaInfo = JavaUtils.getInfo(javaHome);
+
+            if(javaInfo == null) {
+                final File jreHome = new File(javaHome, "jre");
+                LogManager.logIndent("investigating java home candidate: " + jreHome);
+                javaInfo = JavaUtils.getInfo(jreHome);
+                if(javaInfo!=null) {
+                    javaHome = jreHome;
+                }
+            }
             
             if (javaInfo != null) {
                 LogManager.logUnindent(
