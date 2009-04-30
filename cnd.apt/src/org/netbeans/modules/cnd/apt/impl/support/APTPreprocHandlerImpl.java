@@ -114,7 +114,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     }
     
     public final static class StateImpl implements State {
-        private final APTMacroMap.State macroState;
+        /*package*/ final APTMacroMap.State macroState;
         /*package*/ final APTIncludeHandler.State inclState;
         private final byte attributes;
         
@@ -264,7 +264,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             this.attributes = input.readByte();
             this.inclState = APTSerializeUtils.readIncludeState(input);
             this.macroState = APTSerializeUtils.readMacroMapState(input);
-        }        
+        }
     }    
     
     ////////////////////////////////////////////////////////////////////////////

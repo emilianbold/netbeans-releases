@@ -62,9 +62,12 @@ public class APTTokenStreamBuilder {
 //        return buildTokenStream(path, stream);
 //    }
     
-    public static TokenStream buildTokenStream(CharSequence text) {
-        Reader reader = new StringReader(text.toString());
-        return  buildTokenStream(text, reader);
+    public static TokenStream buildTokenStream(String text) {
+        char[] buf = new char[text.length()];
+        text.getChars(0, text.length(), buf, 0);
+        APTLexer lexer = new APTLexer(buf);
+        lexer.init(text, 0);
+        return lexer;
     }  
     
     public static TokenStream buildLightTokenStream(CharSequence name, Reader in) {

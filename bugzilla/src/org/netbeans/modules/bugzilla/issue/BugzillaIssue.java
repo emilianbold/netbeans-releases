@@ -41,6 +41,7 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.text.ParseException;
@@ -55,15 +56,16 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaTaskAttachmentHandler;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.AbstractTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
@@ -82,6 +84,7 @@ import org.openide.util.NbBundle;
  */
 public class BugzillaIssue extends Issue {
 
+    public static final String RESOLVE_FIXED = "FIXED";                         // NOI18N
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
 
@@ -91,12 +94,12 @@ public class BugzillaIssue extends Issue {
     private IssueController controller;
     private IssueNode node;
 
-    static final String LABEL_NAME_ID           = "bugzilla.issue.id"; // NOI18N
-    static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity"; // NOI18N
-    static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority"; // NOI18N
-    static final String LABEL_NAME_STATUS       = "bugzilla.issue.status"; // NOI18N
-    static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution"; // NOI18N
-    static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary"; // NOI18N
+    static final String LABEL_NAME_ID           = "bugzilla.issue.id";          // NOI18N
+    static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity";    // NOI18N
+    static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority";    // NOI18N
+    static final String LABEL_NAME_STATUS       = "bugzilla.issue.status";      // NOI18N
+    static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution";  // NOI18N
+    static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary";     // NOI18N
 
     /**
      * Issue wasn't seen yet
@@ -184,8 +187,8 @@ public class BugzillaIssue extends Issue {
     }
 
     void opened() {
-        String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh");
-        if(refresh != null && refresh.equals("true")) {
+        String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh"); // NOI18N
+        if(refresh != null && refresh.equals("true")) {                                      // NOI18N
             return;
         }
         repository.scheduleForRefresh(getID());
@@ -290,7 +293,7 @@ public class BugzillaIssue extends Issue {
         }
         int status = repository.getIssueCache().getStatus(getID());
         if(status == Issue.ISSUE_STATUS_NEW) {
-            return "New";
+            return NbBundle.getMessage(BugzillaIssue.class, "LBL_NEW_STATUS");
         } else if(status == Issue.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             Map<String, String> seenAtributes = getSeenAttributes();
@@ -312,20 +315,20 @@ public class BugzillaIssue extends Issue {
                 for (IssueField changedField : changedFields) {
                     switch(changedField) {
                         case SUMMARY :
-                            ret = "Summary changed";
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_SUMMARY_CHANGED_STATUS");
                             break;
                         case CC :
-                            ret = "CC field changed";
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CC_FIELD_CHANGED_STATUS");
                             break;
                         case KEYWORDS :
-                            ret ="Keywords changed";
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_KEYWORDS_CHANGED_STATUS");
                             break;
                         case DEPENDS_ON :
                         case BLOCKS :
-                            ret ="Dependence changed";
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS");
                             break;
                         default :
-                            ret = changedField.name() + " changed to " + getFieldValue(changedField);
+                            ret = changedField.name() +  NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO") + getFieldValue(changedField);
                     }
                 }
                 return ret;
@@ -334,47 +337,47 @@ public class BugzillaIssue extends Issue {
                 for (IssueField changedField : changedFields) {
                     switch(changedField) {
                         case SUMMARY :
-                            ret = changedCount + " changes, incl. summary";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SUMMARY");
                             break;
                         case PRIORITY :
-                            ret = changedCount + " changes, incl. priority";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRIORITY");
                             break;
                         case SEVERITY :
-                            ret = changedCount + " changes, incl. severity";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SEVERITY");
                             break;
                         case PRODUCT :
-                            ret = changedCount + " changes, incl. product";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRODUCT");
                             break;
                         case COMPONENT :
-                            ret = changedCount + " changes, incl. component";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_COMPONENT");
                             break;
                         case PLATFORM :
-                            ret = changedCount + " changes, incl. platform";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PLATFORM");
                             break;
                         case VERSION :
-                            ret = changedCount + " changes, incl. version";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_VERSION");
                             break;
                         case MILESTONE :
-                            ret = changedCount + " changes, incl. milestone";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_MILESTONE");
                             break;
                         case KEYWORDS :
-                            ret = changedCount + " changes, incl. keywords";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_KEYWORDS");
                             break;
                         case URL :
-                            ret = changedCount + " changes, incl. url";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_URL");
                             break;
                         case ASSIGNED_TO :
-                            ret = changedCount + " changes, incl. Assignee";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_ASSIGNEE");
                             break;
                         case QA_CONTACT :
-                            ret = changedCount + " changes, incl. qa contact";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_QA_CONTACT");
                             break;
                         case DEPENDS_ON :
                         case BLOCKS :
-                            ret = changedCount + " changes, inclusive dependence";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCLUSIVE_DEPENDENCE");
                             break;
                         default :
-                            ret = changedCount + " changes";
+                            ret = changedCount + NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES");
                     }
                     return ret;
                 }
@@ -388,16 +391,11 @@ public class BugzillaIssue extends Issue {
      * @param taskData
      * @return id or null
      */
-    public static String getID(TaskData taskData) {
-        try {
-            if(taskData.isNew()) {
-                return null;
-                }
-            return Integer.toString(BugzillaRepositoryConnector.getBugId(taskData.getTaskId()));
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+    public static String getID(TaskData taskData) {        
+        if(taskData.isNew()) {
+            return null;
         }
-        return "";
+        return taskData.getTaskId();
     }
 
     TaskRepository getTaskRepository() {
@@ -610,21 +608,28 @@ public class BugzillaIssue extends Issue {
                 contentType = FileTaskAttachmentSource.getContentTypeFromFilename(file.getName());
             }
         }
-        attachmentSource.setContentType(contentType);
-        final BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
+        attachmentSource.setContentType(contentType);        
+
+        final TaskAttribute attAttribute = new TaskAttribute(data.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
+        TaskAttributeMapper mapper = attAttribute.getTaskData().getAttributeMapper();
+        TaskAttribute a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION);
+        a.setValue(desc);
+        a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_IS_PATCH);
+        mapper.setBooleanValue(a, patch);
+        a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_CONTENT_TYPE);
+        a.setValue(contentType);
 
         BugzillaCommand cmd = new BugzillaCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
                 refresh();
-                Bugzilla.getInstance().getClient(repository).postAttachment(
-                                getID(),
-                                comment,
-                                desc,
-                                attachmentSource.getContentType(),
-                                patch,
-                                source,
-                                new NullProgressMonitor());
+                Bugzilla.getInstance().getClient(repository)
+                        .postAttachment(
+                            getID(),
+                            comment,
+                            attachmentSource,
+                            attAttribute,
+                            new NullProgressMonitor());
                 refresh(); // XXX to much refresh - is there no other way?
             }
         };
@@ -653,7 +658,7 @@ public class BugzillaIssue extends Issue {
 
         // resolved attrs
         if(close) {
-            resolve("FIXED"); // XXX constant?
+            resolve(RESOLVE_FIXED); // XXX constant?
         }
         if(comment != null) {
             addComment(comment);

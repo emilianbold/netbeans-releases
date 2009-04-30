@@ -57,12 +57,14 @@ import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.spi.autoupdate.CustomInstaller;
 import org.netbeans.spi.autoupdate.CustomUninstaller;
 import org.openide.LifecycleManager;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 
 /**
  * @author Jiri Rechtacek, Radek Matous
@@ -551,11 +553,13 @@ public abstract class OperationSupportImpl {
     }
     
     private static class ForCustomInstall extends OperationSupportImpl {
+        private Collection<UpdateElement> affectedModules = null;
+
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             boolean success = false;
-            try {
-
+            boolean started = false;
+            try {                
                 List<? extends OperationInfo> infos = container.listAll ();
                 List<NativeComponentUpdateElementImpl> customElements = new ArrayList<NativeComponentUpdateElementImpl> ();
                 for (OperationInfo operationInfo : infos) {
@@ -564,21 +568,38 @@ public abstract class OperationSupportImpl {
                     customElements.add ((NativeComponentUpdateElementImpl) impl);
                 }
                 assert customElements != null : "Some elements with custom installer found.";
+                if(progress!=null) {
+                    progress.start(customElements.size());
+                }
+                started = true;
+                int index = 0;
+                affectedModules = new HashSet<UpdateElement> ();
                 for (NativeComponentUpdateElementImpl impl : customElements) {
+                    if(progress!=null) {
+                        progress.progress(NbBundle.getMessage(OperationSupportImpl.class, "OperationSupportImpl_Custom_Install", impl.getDisplayName()), ++index);
+                    }
                     CustomInstaller installer = impl.getInstallInfo ().getCustomInstaller ();
                     assert installer != null : "CustomInstaller must found for " + impl.getUpdateElement ();
+                    ProgressHandle handle = ProgressHandleFactory.createHandle("Installing " + impl.getDisplayName());
+                    //handle.start();
                     success = installer.install (impl.getCodeName (),
                             impl.getSpecificationVersion () == null ? null : impl.getSpecificationVersion ().toString (),
-                            progress);
+                            handle);
+                    try {
+                        handle.finish();
+                    } catch (IllegalStateException e) {
+                        LOGGER.log(Level.FINE, "Can`t stop progress handle, likely was not started ", e);
+                    }
                     if (success) {
                         UpdateUnitImpl unitImpl = Trampoline.API.impl (impl.getUpdateUnit ());
                         unitImpl.setInstalled (impl.getUpdateElement ());
+                        affectedModules.add(impl.getUpdateElement());
                     } else {
                         throw new OperationException (OperationException.ERROR_TYPE.INSTALL, impl.getDisplayName ());
                     }
                 }
             } finally {
-                if (progress != null) {
+                if (progress != null && started) {
                     progress.finish ();
                 }
             }
@@ -591,19 +612,40 @@ public abstract class OperationSupportImpl {
         }
 
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
-            throw new UnsupportedOperationException ("Not supported yet.");
+            createRestartMarker();
+            LifecycleManager.getDefault ().exit ();
+            // if exit&restart fails => use restart later as fallback
+            doRestartLater (restarter);
         }
 
         public void doRestartLater (Restarter restarter) {
-            throw new UnsupportedOperationException ("Not supported yet.");
+            // shedule module for restart
+            createRestartMarker();
+            if(affectedModules!=null) {
+            for (UpdateElement el : affectedModules) {
+                UpdateUnitFactory.getDefault().scheduleForRestart (el);
+            }
+            }
         }
-
+        private void createRestartMarker() {
+            try {
+                File targetUserdir = new File(System.getProperty("netbeans.user")); // NOI18N
+                File restartFile = new File(targetUserdir, "var/restart");//NOI18N
+                if(!restartFile.exists()) {
+                    restartFile.createNewFile();
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Can`t create restart file marker", ex);
+            }
+        }
     }
 
     private static class ForCustomUninstall extends OperationSupportImpl {
+        private Collection<UpdateElement> affectedModules = null;
         public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             boolean success = false;
+            boolean started = false;
             try {
 
                 List<? extends OperationInfo> infos = container.listAll ();
@@ -614,21 +656,29 @@ public abstract class OperationSupportImpl {
                     customElements.add ((NativeComponentUpdateElementImpl) impl);
                 }
                 assert customElements != null : "Some elements with custom installer found.";
+                progress.start(customElements.size());
+                started = true;
+                int index = 0;
+                affectedModules = new HashSet<UpdateElement> ();
                 for (NativeComponentUpdateElementImpl impl : customElements) {
+                    progress.progress(NbBundle.getMessage(OperationSupportImpl.class, "OperationSupportImpl_Custom_Uninstall", impl.getDisplayName()), ++index);
                     CustomUninstaller uninstaller = impl.getNativeItem ().getUpdateItemDeploymentImpl ().getCustomUninstaller ();
                     assert uninstaller != null : "CustomInstaller must found for " + impl.getUpdateElement ();
+                    ProgressHandle handle = ProgressHandleFactory.createHandle("Installing " + impl.getDisplayName());
                     success = uninstaller.uninstall (impl.getCodeName (),
                             impl.getSpecificationVersion () == null ? null : impl.getSpecificationVersion ().toString (),
-                            progress);
+                            handle);
+                    handle.finish();
                     if (success) {
                         UpdateUnitImpl unitImpl = Trampoline.API.impl (impl.getUpdateUnit ());
                         unitImpl.setAsUninstalled ();
+                        affectedModules.add(impl.getUpdateElement());
                     } else {
                         throw new OperationException (OperationException.ERROR_TYPE.UNINSTALL, impl.getDisplayName ());
                     }
                 }
             } finally {
-                if (progress != null) {
+                if (progress != null && started) {
                     progress.finish ();
                 }
             }
@@ -641,12 +691,32 @@ public abstract class OperationSupportImpl {
         }
 
         public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
-            throw new UnsupportedOperationException ("Not supported yet.");
+            createRestartMarker();
+            LifecycleManager.getDefault ().exit ();
+            // if exit&restart fails => use restart later as fallback
+            doRestartLater (restarter);
         }
 
         public void doRestartLater (Restarter restarter) {
-            throw new UnsupportedOperationException ("Not supported yet.");
+            // shedule module for restart
+            createRestartMarker();
+            if(affectedModules!=null) {
+            for (UpdateElement el : affectedModules) {
+                UpdateUnitFactory.getDefault().scheduleForRestart (el);
+            }
+            }
         }
+        private void createRestartMarker() {
+            try {
+                File targetUserdir = new File(System.getProperty("netbeans.user")); // NOI18N
+                File restartFile = new File(targetUserdir, "var/restart");//NOI18N
+                if(!restartFile.exists()) {
+                    restartFile.createNewFile();
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Can`t create restart file marker", ex);
+            }
 
+        }
     }
 }

@@ -142,7 +142,6 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
         rightPanel.add(dropDownButton, gridBagConstraints);
-
         final Document[] documentPtr = new Document[] { null };
         ActionListener contextUpdated = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -290,17 +289,15 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 }
                 JPDADebugger lastDebugger = debuggerRef.get();
                 if (lastDebugger != null && debugger != lastDebugger) {
-                    lastDebugger.removePropertyChangeListener(
-                            JPDADebugger.PROP_CURRENT_THREAD,
-                            CodeEvaluator.this);
+                    lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_CURRENT_THREAD, CodeEvaluator.this);
+                    lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, CodeEvaluator.this);
                     debuggerRef = new WeakReference(null);
                     displayResult(null);
                 }
                 if (debugger != null) {
                     debuggerRef = new WeakReference(debugger);
-                    debugger.addPropertyChangeListener(
-                            JPDADebugger.PROP_CURRENT_THREAD,
-                            CodeEvaluator.this);
+                    debugger.addPropertyChangeListener(JPDADebugger.PROP_CURRENT_THREAD, CodeEvaluator.this);
+                    debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, CodeEvaluator.this);
                 } else {
                     historyPanel.clearHistory();
                 }
@@ -312,7 +309,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private void computeEvaluationButtonState() {
         JPDADebugger debugger = debuggerRef.get();
         boolean isEnabled = debugger != null && debugger.getCurrentThread() != null &&
-                codePane.getDocument().getLength() > 0 &&
+                debugger.getState() == JPDADebugger.STATE_STOPPED && codePane.getDocument().getLength() > 0 &&
                 editorScrollPane.getViewport().getView() == codePane;
         evaluateButton.setEnabled(isEnabled);
     }
@@ -529,10 +526,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
             if (debuggerRef.get() != null) {
                 evaluate();
             }
-        } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            e.consume();
-            close();
         }
+//        } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+//            e.consume();
+//            close();
+//        }
     }
 
     public void keyReleased(KeyEvent e) {
@@ -565,17 +563,42 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     // PropertyChangeListener on current thread .................................
 
-    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                synchronized (this) {
-                    JPDADebugger debugger = debuggerRef.get();
-                    if (debugger != null) {
-                        computeEvaluationButtonState();
+    public void propertyChange(PropertyChangeEvent event) {
+        if (JPDADebugger.PROP_CURRENT_THREAD.equals(event.getPropertyName())) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    synchronized (this) {
+                        JPDADebugger debugger = debuggerRef.get();
+                        if (debugger != null) {
+                            computeEvaluationButtonState();
+                            WatchPanel.setupContext(codePane, null);
+                        }
                     }
                 }
-            }
-        });
+            });
+        } else if (JPDADebugger.PROP_STATE.equals(event.getPropertyName())) {
+            synchronized (this) {
+                JPDADebugger debugger = debuggerRef.get();
+                if (debugger != null && debugger.getState() != JPDADebugger.STATE_STOPPED) {
+                    if (result != null) {
+                        historyPanel.addItem(lastEvaluationRecord.expr, lastEvaluationRecord.type,
+                            lastEvaluationRecord.value, lastEvaluationRecord.toString);
+                        lastEvaluationRecord = null;
+                        result = null;
+                        fireResultChange();
+                    } // if
+                } // if
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        JPDADebugger debugger = debuggerRef.get();
+                        if (debugger != null && debugger.getState() == JPDADebugger.STATE_STOPPED) {
+                            WatchPanel.setupContext(codePane, null);
+                        }
+                        computeEvaluationButtonState();
+                    }
+                });
+            } // synchronized
+        }
     }
 
     // ..........................................................................

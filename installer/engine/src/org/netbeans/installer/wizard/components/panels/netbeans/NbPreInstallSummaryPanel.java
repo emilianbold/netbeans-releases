@@ -591,7 +591,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             
             // installationSizeValue ////////////////////////////////////////////////
             installationSizeValue = new NbiLabel();
-            installationSizeValue.setFocusable(true);
+            //installationSizeValue.setFocusable(true);
             
             // installationSizeLabel ////////////////////////////////////////////////
             installationSizeLabel = new NbiLabel();
@@ -599,7 +599,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             
             // downloadSizeValue ////////////////////////////////////////////////////
             downloadSizeValue = new NbiLabel();
-            downloadSizeValue.setFocusable(true);
+            //downloadSizeValue.setFocusable(true);
             
             // downloadSizeLabel ////////////////////////////////////////////////////
             downloadSizeLabel = new NbiLabel();

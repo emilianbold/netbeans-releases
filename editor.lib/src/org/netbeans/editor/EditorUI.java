@@ -1560,7 +1560,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         }
     }
 
-    int textLimitWidth() {
+    protected int textLimitWidth() {
         int ret = textLimitWidth;
         Object textLimitLine = component == null ? null : component.getClientProperty("TextLimitLine"); //NOI18N
         if (textLimitLine instanceof Integer) {

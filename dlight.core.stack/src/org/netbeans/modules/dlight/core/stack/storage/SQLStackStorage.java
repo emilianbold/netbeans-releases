@@ -69,7 +69,6 @@ import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.DemanglingFunctionNameService;
 import org.netbeans.modules.dlight.spi.DemanglingFunctionNameServiceFactory;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -87,6 +86,7 @@ public final class SQLStackStorage {
     private int funcIdSequence;
     private int nodeIdSequence;
     private final ExecutorThread executor;
+    private boolean isRunning =  true;
     private final DemanglingFunctionNameService demanglingService;
 
     public SQLStackStorage(SQLDataStorage sqlStorage) throws SQLException, IOException {
@@ -108,13 +108,20 @@ public final class SQLStackStorage {
     }
 
     private void initTables() throws SQLException, IOException {
-        InputStream is = SQLStackStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resource/schema.sql");
+        InputStream is = SQLStackStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resource/schema.sql"); //NOI18N
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
             sqlStorage.execute(reader);
         } finally {
             reader.close();
         }
+    }
+
+    public boolean shutdown(){
+       isRunning = false;
+       funcCache.clear();
+       nodeCache.clear();
+       return true;
     }
 
     public int putStack(List<CharSequence> stack, long sampleDuration) {
@@ -140,8 +147,8 @@ public final class SQLStackStorage {
     public List<Long> getPeriodicStacks(long startTime, long endTime, long interval) throws SQLException {
         List<Long> result = new ArrayList<Long>();
         PreparedStatement ps = sqlStorage.prepareStatement(
-            "SELECT time_stamp FROM CallStack " +
-            "WHERE ? <= time_stamp AND time_stamp < ? ORDER BY time_stamp");
+            "SELECT time_stamp FROM CallStack " + //NOI18N
+            "WHERE ? <= time_stamp AND time_stamp < ? ORDER BY time_stamp"); //NOI18N
         ps.setMaxRows(1);
         for (long time1 = startTime; time1 < endTime; time1 += interval) {
             long time2 = Math.min(time1 + interval, endTime);
@@ -192,8 +199,8 @@ public final class SQLStackStorage {
         try {
             List<FunctionCall> result = new ArrayList<FunctionCall>();
             PreparedStatement select = sqlStorage.prepareStatement(
-                "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " +
-                "FROM Func ORDER BY " + metric.getMetricID() + " DESC");
+                "SELECT func_id, func_name, func_full_name,  time_incl, time_excl " + //NOI18N
+                "FROM Func ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
             select.setMaxRows(limit);
             ResultSet rs = select.executeQuery();
             while (rs.next()) {
@@ -205,9 +212,9 @@ public final class SQLStackStorage {
                     try {
                         func_name = demanglingService.demangle(func_name).get();
                     } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
+//                        Exceptions.printStackTrace(ex);
                     } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
+  //                      Exceptions.printStackTrace(ex);
                     }
                 }
                 result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), func_name, rs.getString(3)), metrics));
@@ -254,16 +261,16 @@ public final class SQLStackStorage {
                     try {
                         func_name = demanglingService.demangle(func_name).get();
                     } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
+//                        Exceptions.printStackTrace(ex);
                     } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
+//                        Exceptions.printStackTrace(ex);
                     }
                 }
                 result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(functionUniqueID), func_name, func_name), offesetColumnName != null ? rs.getLong(offesetColumnName): -1, metricValues));
             }
             rs.close();
             return result;
-        } catch (SQLException ex) {
+        } catch (SQLException ex) {            
         }
         return Collections.emptyList();
     }
@@ -344,21 +351,21 @@ public final class SQLStackStorage {
 
     private PreparedStatement prepareCallersSelect(FunctionCall[] path) throws SQLException {
         StringBuilder buf = new StringBuilder();
-        buf.append(" SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N ");
-        buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id ");
-        buf.append(" INNER JOIN Node N1 ON N.node_id = N1.caller_id ");
+        buf.append(" SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N "); //NOI18N
+        buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id "); //NOI18N
+        buf.append(" INNER JOIN Node N1 ON N.node_id = N1.caller_id "); //NOI18N
         for (int i = 1; i < path.length; ++i) {
-            buf.append(" INNER JOIN Node AS N").append(i + 1);
-            buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id ");
+            buf.append(" INNER JOIN Node AS N").append(i + 1); //NOI18N
+            buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id "); //NOI18N
         }
-        buf.append(" WHERE ");
+        buf.append(" WHERE "); //NOI18N
         for (int i = 1; i <= path.length; ++i) {
             if (1 < i) {
-                buf.append("AND ");
+                buf.append("AND "); //NOI18N
             }
-            buf.append("N").append(i).append(".func_id = ? ");
+            buf.append("N").append(i).append(".func_id = ? "); //NOI18N
         }
-        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name");
+        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name"); //NOI18N
         PreparedStatement select = sqlStorage.prepareStatement(buf.toString());
         for (int i = 0; i < path.length; ++i) {
             select.setInt(i + 1, ((FunctionImpl) path[i].getFunction()).getId());
@@ -368,20 +375,20 @@ public final class SQLStackStorage {
 
     private PreparedStatement prepareCalleesSelect(FunctionCall[] path) throws SQLException {
         StringBuilder buf = new StringBuilder();
-        buf.append("SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N1 ");
+        buf.append("SELECT F.func_id, F.func_name, F.func_full_name, SUM(N.time_incl), SUM(N.time_excl) FROM Node AS N1 "); //NOI18N
         for (int i = 1; i < path.length; ++i) {
-            buf.append(" INNER JOIN Node AS N").append(i + 1);
-            buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id ");
+            buf.append(" INNER JOIN Node AS N").append(i + 1); //NOI18N
+            buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id "); //NOI18N
         }
-        buf.append(" INNER JOIN Node N ON N").append(path.length).append(".node_id = N.caller_id ");
-        buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id WHERE ");
+        buf.append(" INNER JOIN Node N ON N").append(path.length).append(".node_id = N.caller_id "); //NOI18N
+        buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id WHERE "); //NOI18N
         for (int i = 1; i <= path.length; ++i) {
             if (1 < i) {
-                buf.append(" AND ");
+                buf.append(" AND "); //NOI18N
             }
-            buf.append(" N").append(i).append(".func_id = ? ");
+            buf.append(" N").append(i).append(".func_id = ? "); //NOI18N
         }
-        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name");
+        buf.append(" GROUP BY F.func_id, F.func_name, F.func_full_name"); //NOI18N
         PreparedStatement select = sqlStorage.prepareStatement(buf.toString());
         for (int i = 0; i < path.length; ++i) {
             select.setInt(i + 1, ((FunctionImpl) path[i].getFunction()).getId());
@@ -466,7 +473,7 @@ public final class SQLStackStorage {
 
         @Override
         public String getDisplayedName() {
-            return getFunction().getName() + (hasOffset() ?  ("+0x" + getOffset()) : "");
+            return getFunction().getName() + (hasOffset() ?  ("+0x" + getOffset()) : ""); //NOI18N
         }
 
 
@@ -500,8 +507,8 @@ public final class SQLStackStorage {
         @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
-            buf.append("FunctionCall{ function=").append(getFunction());
-            buf.append(", metrics=").append(metrics).append(" }");
+            buf.append("FunctionCall{ function=").append(getFunction()); //NOI18N
+            buf.append(", metrics=").append(metrics).append(" }"); //NOI18N
             return buf.toString();
         }
     }
@@ -536,7 +543,7 @@ public final class SQLStackStorage {
         @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
-            buf.append(funcOrNode ? "func" : "node"); // NO18N
+            buf.append(funcOrNode ? "func" : "node"); // NOI18N
             buf.append(" id=").append(objId); // NOI18N
             buf.append(": time_incl+=").append(cpuTimeInclusive); // NOI18N
             buf.append(", time_excl+=").append(cpuTimeExclusive); // NOI18N
@@ -574,7 +581,7 @@ public final class SQLStackStorage {
                 Map<Integer, UpdateMetrics> funcMetrics = new HashMap<Integer, UpdateMetrics>();
                 Map<Integer, UpdateMetrics> nodeMetrics = new HashMap<Integer, UpdateMetrics>();
                 List<Object> cmds = new LinkedList<Object>();
-                while (true) {
+                while (isRunning) {
                     // Taking commands from queue and executing them should be one atomic action.
                     synchronized (this) {
                         queue.drainTo(cmds, MAX_COMMANDS);
@@ -582,6 +589,9 @@ public final class SQLStackStorage {
                         // first pass: collect metrics
                         Iterator<Object> cmdIterator = cmds.iterator();
                         while (cmdIterator.hasNext()) {
+                            if (!isRunning){
+                                return;
+                            }
                             Object cmd = cmdIterator.next();
                             if (cmd instanceof UpdateMetrics) {
                                 UpdateMetrics updateMetricsCmd = (UpdateMetrics) cmd;
@@ -599,12 +609,15 @@ public final class SQLStackStorage {
                         // second pass: execute inserts
                         cmdIterator = cmds.iterator();
                         while (cmdIterator.hasNext()) {
+                            if (!isRunning){
+                                return;
+                            }
                             Object cmd = cmdIterator.next();
                             try {
                                 if (cmd instanceof AddFunction) {
                                     AddFunction addFunctionCmd = (AddFunction) cmd;
                                     //demagle here
-                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Func (func_id, func_full_name, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)");
+                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Func (func_id, func_full_name, func_name, time_incl, time_excl) VALUES (?, ?, ?, ?, ?)"); //NOI18N
                                     stmt.setInt(1, addFunctionCmd.id);
                                     stmt.setString(2, addFunctionCmd.name.toString());
 //                                    if (demanglingService == null) {
@@ -628,7 +641,7 @@ public final class SQLStackStorage {
                                     stmt.executeUpdate();
                                 } else if (cmd instanceof AddNode) {
                                     AddNode addNodeCmd = (AddNode) cmd;
-                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Node (node_id, caller_id, func_id, offset, time_incl, time_excl) VALUES (?, ?, ?, ?, ?, ?)");
+                                    PreparedStatement stmt = sqlStorage.prepareStatement("INSERT INTO Node (node_id, caller_id, func_id, offset, time_incl, time_excl) VALUES (?, ?, ?, ?, ?, ?)"); //NOI18N
                                     stmt.setInt(1, addNodeCmd.id);
                                     stmt.setInt(2, addNodeCmd.callerId);
                                     stmt.setInt(3, addNodeCmd.funcId);
@@ -652,7 +665,7 @@ public final class SQLStackStorage {
                         // third pass: execute updates
                         for (UpdateMetrics cmd : funcMetrics.values()) {
                             try {
-                                PreparedStatement stmt = sqlStorage.prepareStatement("UPDATE Func SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE func_id = ?");
+                                PreparedStatement stmt = sqlStorage.prepareStatement("UPDATE Func SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE func_id = ?"); //NOI18N
                                 stmt.setLong(1, cmd.cpuTimeInclusive);
                                 stmt.setLong(2, cmd.cpuTimeExclusive);
                                 stmt.setInt(3, cmd.objId);
@@ -665,7 +678,7 @@ public final class SQLStackStorage {
 
                         for (UpdateMetrics cmd : nodeMetrics.values()) {
                             try {
-                                PreparedStatement stmt = sqlStorage.prepareStatement("UPDATE Node SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE node_id = ?");
+                                PreparedStatement stmt = sqlStorage.prepareStatement("UPDATE Node SET time_incl = time_incl + ?, time_excl = time_excl + ? WHERE node_id = ?"); //NOI18N
                                 stmt.setLong(1, cmd.cpuTimeInclusive);
                                 stmt.setLong(2, cmd.cpuTimeExclusive);
                                 stmt.setInt(3, cmd.objId);

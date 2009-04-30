@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -51,8 +52,16 @@ public interface ServerRecord {
     
     public String getUserName();
 
-    /** TODO: deprcate and remove */
-    public String getName();
+    public String getDisplayName();
+
+    /**
+     * Gets display name of this record server.
+     * In the case display name is user-defined,
+     * it returns this name; otherwise
+     * it returns getExecutionEnvironment().getHost();
+     * @return
+     */
+    public String getServerDisplayName();
 
     public ExecutionEnvironment getExecutionEnvironment();
 
@@ -65,4 +74,6 @@ public interface ServerRecord {
     public boolean isDeleted();
     
     public void validate(boolean force);
+
+    public RemoteSyncFactory getSyncFactory();
 }

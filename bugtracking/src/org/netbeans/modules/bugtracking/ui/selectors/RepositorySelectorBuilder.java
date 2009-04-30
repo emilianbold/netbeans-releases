@@ -277,6 +277,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         }
         itemSelected(combo.getSelectedItem());
         combo.addItemListener(this);
+        combo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RepositorySelectorBuilder.class, "RepositorySelectorBuilder.combo.accessibleDescription")); // NOI18N
 
         if (label != null) {
             bindLabelToCombo();
@@ -303,6 +304,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         initializeCardsPanel();
 
         if ((label == null) && (combo == null)) {
+            addInsetsToPanel(cardsPanel);
             return cardsPanel;
         }
 
@@ -337,6 +339,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
                                                      VERTICAL)));
         panel.add(upperPanel, BorderLayout.NORTH);
         panel.add(cardsPanel, BorderLayout.CENTER);
+        panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RepositorySelectorBuilder.class, "RepositorySelector.accessibleDescription")); // NOI18N
 
         addInsetsToPanel(panel);
 
@@ -377,7 +380,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         }
         private HelpCtx getHelpFor(Repository repository) {
             return (repository != null)
-                   ? repository.getController().getHelpContext()
+                   ? repository.getController().getHelpCtx()
                    : null;
         }
 

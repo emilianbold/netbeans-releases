@@ -61,7 +61,7 @@ public final class DataStorageType {
 
   DataStorageType(String id) {
     if (id == null) {
-      throw new IllegalArgumentException("DataStorageType can be created only with NON NULL id");
+      throw new IllegalArgumentException("DataStorageType can be created only with NON NULL id"); // NOI18N
     }
     this.id = id;
   }

@@ -107,13 +107,16 @@ public class HudsonInstanceNode extends AbstractNode {
         
         this.instance = instance;
         
-        // Add change listener into instance
         instance.addHudsonChangeListener(new HudsonChangeListener() {
             public void stateChanged() {
                 refreshState();
             }
-            
             public void contentChanged() {
+                refreshContent();
+            }
+        });
+        instance.prefs().addPreferenceChangeListener(new PreferenceChangeListener() {
+            public void preferenceChange(PreferenceChangeEvent evt) {
                 refreshContent();
             }
         });
@@ -126,14 +129,16 @@ public class HudsonInstanceNode extends AbstractNode {
     @Override
     public String getHtmlDisplayName() {
         boolean pers = instance.isPersisted();
+        String selectedView = instance.prefs().get(SELECTED_VIEW, null);
         return (run ? "<b>" : "") + (warn ? "<font color=\"#A40000\">" : "") + // NOI18N
                 instance.getName() + (warn ? "</font>" : "") + (run ? "</b>" : "") + // NOI18N
+                (selectedView != null ? " <font color='!controlShadow'>[" + selectedView + "]</font>" : "") + // NOI18N
                 (alive ? (version ? "" : " <font color=\"#A40000\">" + // NOI18N
-                NbBundle.getMessage(HudsonInstanceNode.class, "MSG_WrongVersion",
-                HudsonVersion.SUPPORTED_VERSION) + "</font>") : " <font color=\"#A40000\">" + // NOI18N
+                    NbBundle.getMessage(HudsonInstanceNode.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION) + "</font>") :
+                    " <font color=\"#A40000\">" + // NOI18N
                 NbBundle.getMessage(HudsonInstanceNode.class, "MSG_Disconnected") + "</font>") +
                 (!pers ? " <font color='!controlShadow'>" + // NOI18N
-                NbBundle.getMessage(HudsonInstanceNode.class, "HudsonInstanceNode.from_open_project") + "</font>" : "");
+                    NbBundle.getMessage(HudsonInstanceNode.class, "HudsonInstanceNode.from_open_project") + "</font>" : "");
     }
     
     @Override

@@ -68,21 +68,25 @@ final class LazyNode extends FilterNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        switchToOriginal();
-        return super.getActions(context);
+        return switchToOriginal().getActions(context);
     }
 
-
-    final void switchToOriginal() {
-        Node n;
+    final Node switchToOriginal() {
+        final Node[] n = new Node[]{null};
         synchronized (this) {
             if (map == null) {
-                return;
+                return getOriginal();
             }
-            n = (Node)map.get("original"); // NOI18N
+            n[0] = (Node)map.get("original"); // NOI18N
             map = null;
         }
-        changeOriginal(n, true);
+        Children.MUTEX.postWriteRequest(new Runnable() {
+
+            public void run() {
+                changeOriginal(n[0], true);
+            }
+        });
+        return n[0];
     }
 
     private static final class ChFactory extends ChildFactory<Object> {

@@ -49,6 +49,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,12 +58,13 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.KenaiFeature;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.netbeans.modules.versioning.system.cvss.api.CVS;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -80,13 +82,31 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     private ProjectHandle projectHandle;
     private static final int MAX_PROJECTS = 5;
     private static final String RECENTPROJECTS_PREFIX = "recent.projects.";
+    private String externalScmType=SCM_TYPE_UNKNOWN;
+    public static final String SCM_TYPE_UNKNOWN = "unknown";//NOI18N
+    public static final String SCM_TYPE_CVS = "cvs";//NOI18N
+
+    public String getExternalScmType() {
+        return externalScmType;
+    }
 
     public SourceHandleImpl(final ProjectHandle projectHandle, KenaiFeature ftr) {
         feature = ftr;
-        if ("mercurial".equals(feature.getService())) {
+        if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
             prefs= NbPreferences.forModule(Mercurial.class);
-        } else if ("subversion".equals(feature.getService())) {
+        } else if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
             prefs= NbPreferences.forModule(Subversion.class);
+        } else if (KenaiService.Names.EXTERNAL_REPOSITORY.equals(feature.getService())) {
+            if (Subversion.isRepository(feature.getLocation())) {
+                externalScmType=KenaiService.Names.SUBVERSION;
+                return;
+            } else if (CVS.isRepository(feature.getLocation())) {
+                externalScmType=SCM_TYPE_CVS;
+                return;
+            } else if (Mercurial.isRepository(feature.getLocation())) {
+                externalScmType=KenaiService.Names.MERCURIAL;
+                return;
+            }
         }
         this.projectHandle = projectHandle;
         OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this , OpenProjects.getDefault()));
@@ -101,8 +121,9 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     @Override
     public boolean isSupported() {
         // names of those services are values returned from Kenai WS API !!!
-        if ("subversion".equals(feature.getService()) ||
-            "mercurial".equals(feature.getService())) {
+        if (KenaiService.Names.SUBVERSION.equals(feature.getService()) ||
+            KenaiService.Names.MERCURIAL.equals(feature.getService()) ||
+            KenaiService.Names.EXTERNAL_REPOSITORY.equals(feature.getService())) {
             return true;
         }
         return false;
@@ -117,27 +138,27 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     @Override
     public File getWorkingDirectory() {
         if (prefs==null)
-            return null;
+            return guessWorkdir();
         try {
-            String uriString = prefs.get("working.dir." + feature.getLocation().toString(), null);
+            String uriString = prefs.get("working.dir." + feature.getLocation(), null);
             if (uriString!=null) {
                 URI uri = new URI(uriString);
                 return new File(uri);
             } else {
-                return null;
+                return guessWorkdir();
             }
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
-            return null;
+            return guessWorkdir();
         }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         List<Project> newProjects = getNewProjects((Project[])evt.getOldValue(), (Project[])evt.getNewValue());
-        addToRecentProjects(newProjects);
+        addToRecentProjects(newProjects, true);
     }
 
-    private void addToRecentProjects(List<Project> newProjects) {
+    private void addToRecentProjects(List<Project> newProjects, boolean fireChanges) {
         for (Project prj : newProjects) {
             try {
                 if (isUnder(prj.getProjectDirectory())) {
@@ -148,7 +169,8 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
                         recent.remove(MAX_PROJECTS);
                     }
                     storeRecent();
-                    projectHandle.firePropertyChange(ProjectHandle.PROP_SOURCE_LIST, null, null);
+                    if (fireChanges)
+                        projectHandle.firePropertyChange(ProjectHandle.PROP_SOURCE_LIST, null, null);
                 }
             } catch (IOException ex) {
                 Logger.getLogger(SourceHandleImpl.class.getName()).fine("Project not found for " + prj);
@@ -168,12 +190,19 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         return result;
     }
 
+    private File guessWorkdir() {
+        if (recent.isEmpty()) {
+            return null;
+        }
+        return FileUtil.toFile(((NbProjectHandleImpl) recent.iterator().next()).getProject().getProjectDirectory().getParent());
+    }
+
     private void initRecent() {
         if (prefs==null) {
             //external repository not supported
             return;
         }
-        List<String> roots = getStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation().toString());
+        List<String> roots = getStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation());
         for (String root:roots) {
             try {
                 NbProjectHandleImpl nbH = RecentProjectsCache.getDefault().getProjectHandle(new URL(root));
@@ -183,6 +212,17 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
                 Logger.getLogger(SourceHandleImpl.class.getName()).fine("Project not found for " + root);
             }
         }
+        int count = recent.size();
+        List list = new LinkedList();
+        final Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+        for (int i=0;count<MAX_PROJECTS && i<openProjects.length;i++) {
+            if (isUnder(openProjects[i].getProjectDirectory())) {
+                list.add(openProjects[i]);
+                count++;
+            }
+        }
+        
+        addToRecentProjects(list, false);
     }
 
     private boolean isUnder(FileObject projectDirectory) {
@@ -190,7 +230,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         if (remoteLocation==null || remoteLocation.length()==0) {
             return false;
         }
-        if (feature.getLocation().toASCIIString().equals(remoteLocation))
+        if (feature.getLocation().equals(remoteLocation))
             return true;
         return false;
     }
@@ -201,7 +241,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
             value.add(((NbProjectHandleImpl) nbp).url.toString());
         }
         if (prefs!=null)
-            putStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation().toString(), value);
+            putStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation(), value);
     }
 
 

@@ -848,6 +848,9 @@ abstract class EntrySupport {
                 LOGGER.finer("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
             }
             synchronized (LOCK) {
+                if (this.array != null && this.array.get() == chArr && ((ChArrRef) this.array).isWeak() == weak) {
+                    return;
+                }
                 this.array = new ChArrRef(chArr, weak);
             }
             if (LOG_ENABLED) {
@@ -858,6 +861,7 @@ abstract class EntrySupport {
         /** Finalized.
          */
         final void finalizedChildrenArray(Reference caller) {
+            assert caller.get() == null : "Should be null";
             // usually in removeNotify setKeys is called => better require write access
             try {
                 Children.PR.enterWriteAccess();
@@ -961,15 +965,18 @@ abstract class EntrySupport {
         private class ChArrRef extends WeakReference<ChildrenArray> implements Runnable {
             private final ChildrenArray chArr;
 
-            public ChArrRef(ChildrenArray referent, boolean lazy) {
+            public ChArrRef(ChildrenArray referent, boolean weak) {
                 super(referent, Utilities.activeReferenceQueue());
-                this.chArr = lazy ? null : referent;
-                referent.pointedBy(this);
+                this.chArr = weak ? null : referent;
             }
 
             @Override
             public ChildrenArray get() {
                 return chArr != null ? chArr : super.get();
+            }
+
+            boolean isWeak() {
+                return chArr == null;
             }
 
             public void run() {

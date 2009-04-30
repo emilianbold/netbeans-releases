@@ -77,7 +77,7 @@ public class DefaultTreeTableNode implements TreeTableNode{
   }
 
   public String getValue() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
   }
 
 }

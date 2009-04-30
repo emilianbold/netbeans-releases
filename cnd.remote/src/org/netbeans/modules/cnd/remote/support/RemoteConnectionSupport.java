@@ -68,57 +68,21 @@ public abstract class RemoteConnectionSupport {
         log.finest("RCS<Init>: Starting " + getClass().getName() + " on " + executionEnvironment);
 
         if (!ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
-            RemoteUserInfo ui = RemoteUserInfo.getUserInfo(executionEnvironment, false);
-            boolean retry = false;
-            do {
-                try {
-                    String passwd = ui.getPassword();
-                    if (passwd == null || passwd.length() == 0) {
-                        ConnectionManager.getInstance().connectTo(env);
-                    } else {
-//                        try {
-                            ConnectionManager.getInstance().connectTo(env, passwd.toCharArray(), false);
-//                        } catch (ConnectException ex) {
-//                            if ((ex instanceof  ConnectException) &&  ex.getMessage().equals("Auth fail")) { // NOI18N
-//                                ConnectionManager.getInstance().connectTo(env);
-//                            } else {
-//                                throw ex;
-//                            }
-//                        }
-                    }
-                } catch (IOException ex) {
-                    log.warning("RCS<Init>: Got " + ex.getClass().getSimpleName() + " [" + ex.getMessage() + "]");
-                    log.log(Level.FINE, "Caused by:", ex);
-//                    String msg = ex.getMessage();
-//                    if ((ex instanceof  ConnectException) &&  msg.equals("Auth fail")) { // NOI18N
-//                        JButton btRetry = new JButton(NbBundle.getMessage(RemoteConnectionSupport.class, "BTN_Retry"));
-//                        NotifyDescriptor d = new NotifyDescriptor(
-//                                NbBundle.getMessage(RemoteConnectionSupport.class, "MSG_AuthFailedRetry"),
-//                                NbBundle.getMessage(RemoteConnectionSupport.class, "TITLE_AuthFailedRetryDialog"),
-//                                NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
-//                                new Object[] { btRetry, NotifyDescriptor.CANCEL_OPTION}, btRetry);
-//                        if (DialogDisplayer.getDefault().notify(d) == btRetry) {
-//                             retry = true;
-//                        } else {
-//                            failed = true;
-//                            failureReason = getMessage(ex);
-//                        }
-//                    } else {
-                        failed = true;
-                        failureReason = getMessage(ex);
-//                    }
-
-                } catch (CancellationException ex) {
-                    cancelled = true;
-                }
-            } while (retry);
+            try {
+                ConnectionManager.getInstance().connectTo(executionEnvironment);
+            } catch (IOException ex) {
+                log.warning("RCS<Init>: Got " + ex.getClass().getSimpleName() + " [" + ex.getMessage() + "]");
+                log.log(Level.FINE, "Caused by:", ex);
+            } catch (CancellationException ex) {
+                cancelled = true;
+            }
             if (!ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
                 log.fine("RCS<Init>: Connection failed on " + executionEnvironment);
             }
         }
     }
 
-    private static String getMessage(IOException e) {
+    public static String getMessage(IOException e) {
         String result;
         String reason = e.getMessage();
         if (e instanceof UnknownHostException) {

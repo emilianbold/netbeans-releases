@@ -290,7 +290,6 @@ public class PropertyUtilsTest extends NbTestCase {
         assertEquals("still have 2 defs", 2, gpp.getProperties().size());
         l.assertNoEvents();
         PropertyUtils.putGlobalProperties(p);
-        /* XXX failing: #137757
         l.assertEvent();
         assertEquals("now have 3 defs", 3, gpp.getProperties().size());
         assertEquals("right val", "val3", gpp.getProperties().get("key3"));
@@ -307,7 +306,6 @@ public class PropertyUtilsTest extends NbTestCase {
         l.msg("got a change from the Filesystems API").assertEvent();
         assertEquals("still have 3 defs", 3, gpp.getProperties().size());
         assertEquals("right val for key1", "val1a", gpp.getProperties().get("key1"));
-         */
         // XXX changes made on disk are not picked up... bad test, or something else?
         /*
         Thread.sleep(1000);
@@ -375,7 +373,6 @@ public class PropertyUtilsTest extends NbTestCase {
                 }
             }
         });
-        /* XXX failing: #137757
         l.msg("got a change when file was created").assertEvent();
         assertEquals("one key", Collections.singletonMap("a", "aval"), pp.getProperties());
         FileLock lock = testProperties[0].lock();
@@ -400,7 +397,6 @@ public class PropertyUtilsTest extends NbTestCase {
         testProperties[0].delete();
         l.msg("got a change when file was deleted").assertEvent();
         assertEquals("no defs again (file deleted)", Collections.emptyMap(), pp.getProperties());
-         */
     }
     
     public void testSequentialEvaluatorBasic() throws Exception {

@@ -55,7 +55,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,20 +86,22 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     implements ActionListener, PropertyChangeListener {
 
     private RequestProcessor.Task updateSubprojectsTask;
+    private RequestProcessor.Task displayNameTask;
     private RequestProcessor RP;
+    private RequestProcessor RP2;
     
     ModelUpdater modelUpdater;  //#101227 -> non-private
     private Boolean tempSetAsMain;
 
     private Map<Project,Set<? extends Project>> subprojectsCache = new HashMap<Project,Set<? extends Project>>(); // #59098
-
     /** Creates new form ProjectChooserAccessory */
     public ProjectChooserAccessory( JFileChooser chooser, boolean isOpenSubprojects, boolean isOpenAsMain ) {
         initComponents();
 
         modelUpdater = new ModelUpdater();
         //#98080
-        RP = new RequestProcessor(ModelUpdater.class.getName(), 1);
+        RP = new RequestProcessor(ModelUpdater.class.getName(), 1, true);
+        RP2 = new RequestProcessor(ModelUpdater.class.getName(), 1, true);
         updateSubprojectsTask = RP.create(modelUpdater);
         updateSubprojectsTask.setPriority( Thread.MIN_PRIORITY );
 
@@ -233,7 +234,12 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
             // #87119: do not block EQ loading projects
             jTextFieldProjectName.setText(NbBundle.getMessage(ProjectChooserAccessory.class, "MSG_PrjChooser_WaitMessage"));
-            RequestProcessor.getDefault().post(new Runnable() {
+
+            if (displayNameTask != null) {
+                displayNameTask.cancel();
+            }
+
+            displayNameTask = RP2.post(new Runnable() {
                 public void run() {
 
             final List<Project> projects = new ArrayList<Project>( projectDirs.length );
@@ -241,6 +247,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             final List<String> projectNames = new ArrayList<String>(projectDirs.length);
             for (File dir : projectDirs) {
                 if (dir != null) {
+                    if (Thread.interrupted()) {
+                        return;
+                    }
                     Project project = getProject(FileUtil.normalizeFile(dir));
                     if ( project != null ) {
                         projects.add( project );
@@ -248,7 +257,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     }
                 }
             }
-
+            if (Thread.interrupted()) {
+                return;
+            }
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
 
@@ -337,7 +348,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                         }
                     });
                 }
-            });
+            }, 100, Thread.MIN_PRIORITY);
         }
         else if ( JFileChooser.DIRECTORY_CHANGED_PROPERTY.equals( e.getPropertyName() ) ) {
             // Selection lost => disable accessory
@@ -526,9 +537,18 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         if (modelUpdater != null) { // #101286 - might be already null
             modelUpdater.cancel();
         }
+        if (updateSubprojectsTask != null) {
+            updateSubprojectsTask.cancel();
+        }
+
+        if (displayNameTask != null) {
+            displayNameTask.cancel();
+        }
+
         modelUpdater = null;
         subprojectsCache = null;
         updateSubprojectsTask = null;
+        displayNameTask = null;
     }
 
     // Aditional innerclasses for the file chooser -----------------------------
@@ -672,12 +692,16 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
                 List<Project> subprojects = new ArrayList<Project>(currentProjects.size() * 5);
                 for (Project p : currentProjects) {
-                    if (cancel) return;
+                    if (cancel) {
+                        return;
+                    }
                     addSubprojects(p, subprojects, cache); // Find the projects recursively
                 }
 
-                if (cancel) return;
-		List<String> subprojectNames = new ArrayList<String>(subprojects.size());
+                if (cancel) {
+                    return;
+                }
+                List<String> subprojectNames = new ArrayList<String>(subprojects.size());
                 if ( !subprojects.isEmpty() ) {
                     String pattern = NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_SubprojectName_Format" ); // NOI18N
                     File pDir = currentProjects.size() == 1 ?
@@ -686,7 +710,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
                     // Replace projects in the list with formated names
                     for (Project p : subprojects) {
-                        if (cancel) return;
+                        if (cancel) {
+                            return;
+                        }
                         FileObject spDir = p.getProjectDirectory();
 
                         // Try to compute relative path
@@ -709,7 +735,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     // Sort the list
                     Collections.sort( subprojectNames, Collator.getInstance() );
                 }
-                if ( currentProjects != projects ||cancel) {
+                if (currentProjects != projects || cancel) {
                     return;
                 }
                 DefaultListModel listModel = new DefaultListModel();
@@ -718,7 +744,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     listModel.addElement(displayName);
                 }
                 subprojectsToSet = listModel;
-                if (cancel) return;
+                if (cancel) {
+                    return;
+                }
                 SwingUtilities.invokeLater( this );
                 return;
             }
@@ -745,12 +773,16 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         /** Gets all subprojects recursively
          */
         void addSubprojects(Project p, List<Project> result, Map<Project,Set<? extends Project>> cache) {
-            if (cancel) return;
+            if (cancel) {
+                return;
+            }
             Set<? extends Project> subprojects = cache.get(p);
             if (subprojects == null) {
                 SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
                 if (spp != null) {
-                    if (cancel) return;
+                    if (cancel) {
+                        return;
+                    }
                     subprojects = spp.getSubprojects();
                 } else {
                     subprojects = Collections.emptySet();
@@ -758,7 +790,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 cache.put(p, subprojects);
             }
             for (Project sp : subprojects) {
-                if (cancel) return;
+                if (cancel) {
+                    return;
+                }
                 if ( !result.contains( sp ) ) {
                     result.add( sp );
 

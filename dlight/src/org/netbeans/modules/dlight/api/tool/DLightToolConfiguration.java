@@ -20,6 +20,7 @@ import org.netbeans.modules.dlight.api.impl.DLightToolConfigurationAccessor;
 public final class DLightToolConfiguration {
 
     private final String toolName;
+    private final String detailedToolName;
     private final List<DataCollectorConfiguration> dataCollectors;
     private final List<IndicatorDataProviderConfiguration> indicatorDataProvidersConfiguration;
     private final List<IndicatorConfiguration> indicators;
@@ -33,8 +34,19 @@ public final class DLightToolConfiguration {
      * Creates new D-Light Tool configuration using the name <code>toolName</code>
      * @param toolName tool name configuration will be created for
      */
-    public DLightToolConfiguration(String toolName) {
+    public DLightToolConfiguration(String toolName)  {
+        this(toolName,  toolName);
+
+    }
+
+    /**
+     * Creates new D-Light Tool configuration using the name <code>toolName</code>
+     * @param toolName tool name configuration will be created for
+     * @param detailedToolName  detailed tool name
+     */
+    public DLightToolConfiguration(String toolName, String detailedToolName)  {
         this.toolName = toolName;
+        this.detailedToolName = detailedToolName;
         dataCollectors = Collections.synchronizedList(new ArrayList<DataCollectorConfiguration>());
         indicators = Collections.synchronizedList(new ArrayList<IndicatorConfiguration>());
         indicatorDataProvidersConfiguration = Collections.synchronizedList(new ArrayList<IndicatorDataProviderConfiguration>());
@@ -88,6 +100,10 @@ public final class DLightToolConfiguration {
         return toolName;
     }
 
+    String getDetailedToolName() {
+        return detailedToolName;
+    }
+
     private static final class DLightToolConfigurationAccessorIml extends DLightToolConfigurationAccessor {
 
         @Override
@@ -109,6 +125,12 @@ public final class DLightToolConfiguration {
         public String getToolName(DLightToolConfiguration conf) {
             return conf.getToolName();
         }
+
+        @Override
+        public String getDetailedToolName(DLightToolConfiguration conf) {
+            return conf.getDetailedToolName();
+        }
+
 
         @Override
         public String getIconPath(DLightToolConfiguration conf) {

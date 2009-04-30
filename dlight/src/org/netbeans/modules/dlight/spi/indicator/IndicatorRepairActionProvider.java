@@ -56,6 +56,7 @@ import org.netbeans.modules.dlight.spi.impl.IndicatorRepairActionProviderAccesso
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -69,7 +70,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
     private ValidationStatus currentStatus;
     private final List<IndicatorDataProvider<?>> toReValidate;
     private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
-    private final Object listenersLock = new String("IndicatorRepairActionProvider.Listeners");
+    private final Object listenersLock = new String("IndicatorRepairActionProvider.Listeners"); // NOI18N
 
 
     static {
@@ -86,7 +87,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         List<IndicatorDataProvider<?>> providers = configuration.getConfigurationOptions(false).getIndicatorDataProviders(currentTool);
         toReValidate = new ArrayList<IndicatorDataProvider<?>>();
         for (IndicatorDataProvider idp : providers) {
-            if (!idp.getValidationStatus().isKnown()) {
+            if (!idp.getValidationStatus().isKnown() || (idp.getValidationStatus().isKnown() && idp.getValidationStatus().isInvalid())) {
                 idp.addValidationListener(this);
                 toReValidate.add(idp);
                 currentStatus = idp.getValidationStatus();
@@ -119,6 +120,18 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         }
     }
 
+    public final String getMessage(ValidationStatus status) {
+        if (status.isValid()) {
+            String message=  NbBundle.getMessage(IndicatorRepairActionProvider.class, "NextRun");
+            if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
+                message =  NbBundle.getMessage(IndicatorRepairActionProvider.class, "DataCollectorDisabled");
+            }
+            return message;
+
+        }
+        return status.getReason();
+    }
+
     public boolean isValid() {
         return currentStatus.isValid();
     }
@@ -129,6 +142,10 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
 
     public String getReason() {
         return currentStatus.getReason();
+    }
+
+    public final ValidationStatus getValidationStatus() {
+        return currentStatus;
     }
 
     public Future<Boolean> asyncRepair() {
@@ -165,7 +182,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
                 }
                 return true;
             }
-        }, "IndicatorRepairActionProvider asyncRepair");
+        }, "IndicatorRepairActionProvider asyncRepair"); //NOI18N
         return task;
 
     }
@@ -185,5 +202,4 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
             return new IndicatorRepairActionProvider(configuration, tool, targetToRepairFor);
         }
     }
-
 }

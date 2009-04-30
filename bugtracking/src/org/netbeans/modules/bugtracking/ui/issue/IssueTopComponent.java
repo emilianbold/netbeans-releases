@@ -452,4 +452,13 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         return false;
     }
 
+    @Override
+    public boolean requestFocusInWindow() {
+        if (issue == null) {
+            return repositoryComboBox.requestFocusInWindow();
+        } else {
+            return issue.getController().getComponent().requestFocusInWindow();
+        }
+    }
+
 }

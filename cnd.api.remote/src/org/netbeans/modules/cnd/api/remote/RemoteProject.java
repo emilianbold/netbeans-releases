@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+
 /**
  *
  *
@@ -46,6 +48,6 @@ package org.netbeans.modules.cnd.api.remote;
  */
 public interface RemoteProject {
 
-    String getDevelopmentHost();
+    ExecutionEnvironment getDevelopmentHost();
 
 }

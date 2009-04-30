@@ -79,7 +79,7 @@ public final class PhpUnit extends PhpProgram {
     public static final File COVERAGE_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-coverage.xml"); // NOI18N
 
     static final String AT_I18N = NbBundle.getMessage(UnitTestRunner.class, "LBL_At").replace("{0}", ""); // NOI18N
-    public static final Pattern LINE_PATTERN = Pattern.compile("(?:" + AT_I18N + ")?(.+):(\\d+)"); // NOI18N
+    public static final Pattern LINE_PATTERN = Pattern.compile("(?:" + AT_I18N + ")?(?:.+\\(\\) )?(.+):(\\d+)"); // NOI18N
 
     static int[] version = null;
 

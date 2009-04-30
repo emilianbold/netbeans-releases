@@ -690,8 +690,8 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private final class HistoryTableModel extends DefaultTableModel implements ActionListener, DocumentListener {
         List<String> sqlList;
         List<String> dateList;
-        int sortCol = 0;
-        boolean sortAsc = true;
+        int sortCol = 1;
+        boolean sortAsc = false;
             
         @Override
         public int getRowCount() {
@@ -791,12 +791,8 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             int length;
             int maxLength;
             for (SQLHistory sqlHistory : sqlHistoryList) {
-                if (url.equals(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem"))) {
-                    length = sqlHistory.getSql().trim().length();
-                    maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
-                    sqlList.add(sqlHistory.getSql().trim().substring(0, maxLength));
-                    dateList.add(DateFormat.getInstance().format(sqlHistory.getDate()));
-                } else if (url.equals(sqlHistory.getUrl())) {
+                if (url.equals(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem")) ||
+                      url.equals(sqlHistory.getUrl())) {
                     length = sqlHistory.getSql().trim().length();
                     maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
                     sqlList.add(sqlHistory.getSql().trim().substring(0, maxLength));
@@ -828,48 +824,15 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
 
         public void insertUpdate(DocumentEvent evt) {
-            List<String> currentSQLList = view.getSQLList(view.getCurrentSQLHistoryList());
-
-            // Read the contents
-            try {
-                String matchText = read(evt.getDocument());
-                Object[][] localData = new Object[currentSQLList.size()][2];
-                int row = 0;
-                int length;
-                int maxLength;
-                Iterator dateIterator = dateList.iterator();
-                for (String sql : currentSQLList) {
-                    if (sql.trim().toLowerCase().indexOf(matchText.toLowerCase()) != -1) {
-                        length = sql.trim().length();
-                        maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
-                        localData[row][0] = sql.trim().substring(0, maxLength);
-                        localData[row][1] = dateIterator.next();
-                        row++;
+            processUpdate(evt);
                     } 
-                }
-
-                // Adjust size of data for the table
-                if (row > 0) {
-                    data = new Object[row][2];
-                    for (int i = 0; i < row; i++) {
-                        data[i][0] = localData[i][0];
-                        data[i][1] = localData[i][1];
-                    }
-                } else {
-                    data = new Object[0][0];
-                    insertSQLButton.setEnabled(false);
-                }
-                // Refresh the table
-                sqlHistoryTable.revalidate();
-            } catch (InterruptedException e) {
-                Exceptions.printStackTrace(e);
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
 
         public void removeUpdate(DocumentEvent evt) {
-            List<String> currentSQLList = view.getSQLList(view.getCurrentSQLHistoryList());
+            processUpdate(evt);
+                    }
+
+        private void processUpdate(DocumentEvent evt) {
+            List<String> currentSQLList = view.getSQLList(sortData());
 
              // Read the contents
             try {
@@ -1103,8 +1066,8 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             if (!(sql1 instanceof SQLHistory) || !(sql2 instanceof SQLHistory)) {
                 return result;
             }
-            SQLHistory sqlHistory1 = (SQLHistory) sql1;
-            SQLHistory sqlHistory2 = (SQLHistory) sql2;
+            SQLHistory sqlHistory1 = sql1;
+            SQLHistory sqlHistory2 = sql2;
 
             switch (sortCol) {
                 case 0: // SQL

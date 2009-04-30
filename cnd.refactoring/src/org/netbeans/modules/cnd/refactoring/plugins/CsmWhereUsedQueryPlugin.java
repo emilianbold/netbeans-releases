@@ -44,6 +44,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -72,6 +74,7 @@ import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Actual implementation of Find Usages query search for C/C++
@@ -232,25 +235,47 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                                                             final Collection<CsmObject> csmObjects,            
                                                             final Collection<CsmFile> files) {
         assert isFindUsages() : "must be find usages mode";
-        CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
-        Collection<RefactoringElementImplementation> elements = new LinkedHashSet<RefactoringElementImplementation>(1024);
+        final CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
+        final Collection<RefactoringElementImplementation> elements = new ConcurrentLinkedQueue<RefactoringElementImplementation>();
         //Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
-        Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
-        CsmObject[] objs = csmObjects.toArray(new CsmObject[csmObjects.size()]);
-        Interrupter interrupter = new Interrupter(){
+        final Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
+        final CsmObject[] objs = csmObjects.toArray(new CsmObject[csmObjects.size()]);
+        final Interrupter interrupter = new Interrupter(){
             public boolean cancelled() {
                 return isCancelled();
             }
         };
-        for (CsmFile file : files) {
-            if (isCancelled()) {
-                break;
-            }
-            Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds, interrupter);
-            for (CsmReference csmReference : refs) {
-                elements.add(CsmRefactoringElementImpl.create(csmReference, true));
-            }      
-            fireProgressListenerStep();
+        RequestProcessor rp = new RequestProcessor("FindUsagesQuery", Runtime.getRuntime().availableProcessors() + 1); // NOI18N
+        final CountDownLatch waitFinished = new CountDownLatch(files.size());
+        for (final CsmFile file : files) {
+            Runnable task = new Runnable() {
+                public void run() {
+                    try {
+                        if (!isCancelled()) {
+                            String oldName = Thread.currentThread().getName();
+                            try {
+                                Thread.currentThread().setName("FindUsagesQuery: Analyzing " + file.getAbsolutePath()); //NOI18N
+                                Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds, interrupter);
+                                for (CsmReference csmReference : refs) {
+                                    elements.add(CsmRefactoringElementImpl.create(csmReference, true));
+                                }
+                            } finally {
+                                Thread.currentThread().setName(oldName);
+                            }
+                            synchronized (CsmWhereUsedQueryPlugin.this) {
+                                fireProgressListenerStep();
+                            }
+                        }
+                    } finally {
+                        waitFinished.countDown();
+                    }
+                }
+            };
+            rp.post(task);
+        }
+        try {
+            waitFinished.await();
+        } catch (InterruptedException ex) {
         }
         return elements;
     }

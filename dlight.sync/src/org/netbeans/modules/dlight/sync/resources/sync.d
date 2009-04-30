@@ -113,6 +113,24 @@ plockstat$1:::rw-release
 	blocker_threads[arg0] = 0;
 }
 
+pid$1:libc:pthread_barrier_wait:entry
+{
+	self->barrier_wait_start = timestamp;
+}
+
+pid$1:libc:pthread_barrier_wait:return
+/ self->barrier_wait_start /
+{
+	this->time = timestamp - self->barrier_wait_start;
+	self->thread_wait_time += this->time;
+	this->thread_duration = timestamp - (self->thread_start ? self->thread_start : dtrace_start_timestamp);
+#if ! QUIET
+	printf("%d %d %d %d %d %d %d\n", timestamp, tid, arg0, 0, this->time, self->thread_wait_time, this->thread_duration);
+	printf("%d %d %d", cpu, tid, timestamp);
+	ustack();
+	printf("\n");
+#endif
+}
 
 proc:::lwp-start
 /pid == $1/

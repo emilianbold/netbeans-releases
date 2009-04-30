@@ -44,6 +44,9 @@ import java.text.MessageFormat;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -76,16 +79,15 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    // TODO if using org.openide.dialogs >= 7.8, can use WizardDescriptor.PROP_*:
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); //NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                     // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps); //NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); //NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); //NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); //NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
                 }
             }
         }
@@ -129,25 +131,30 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     public void removeChangeListener(ChangeListener l) {
     }
 
-    static final String PROP_CACHE_MANAGER = "cachemanager"; //NOI18N
-
-    public static ExecutionEnvironment invokeMe(ToolsCacheManager cacheManager) {
+    public static ServerRecord invokeMe(ToolsCacheManager cacheManager) {
         WizardDescriptor.Iterator<WizardDescriptor> iterator = new CreateHostWizardIterator();
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); //NOI18N
         wizardDescriptor.setTitle(getString("CreateNewHostWizardTitle"));
-        wizardDescriptor.putProperty(PROP_CACHE_MANAGER, cacheManager);
+        wizardDescriptor.putProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER, cacheManager);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
-            Runnable r = (Runnable) wizardDescriptor.getProperty(CreateHostWizardPanel2.PROP_RUN_ON_FINISH);
+            Runnable r = (Runnable) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_RUN_ON_FINISH);
             CndUtils.assertFalse(r == null);
             if (r != null) {
                 r.run();
             }
-            return (ExecutionEnvironment)wizardDescriptor.getProperty(CreateHostWizardPanel2.PROP_HOST);
+            ExecutionEnvironment execEnv = (ExecutionEnvironment)wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_HOST);
+            String displayName = (String) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_DISPLAY_NAME);
+            if (displayName == null) {
+                displayName = execEnv.getDisplayName();
+            }
+            final RemoteSyncFactory syncFactory = (RemoteSyncFactory) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_SYNC);
+            final ServerRecord record = ServerList.addServer(execEnv, displayName, syncFactory, false, false);
+            return record;
         } else {
             return null;
         }

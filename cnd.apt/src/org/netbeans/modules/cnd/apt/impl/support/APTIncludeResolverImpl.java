@@ -84,24 +84,24 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     ////////////////////////////////////////////////////////////////////////////
     // implementation details    
         
-    private ResolvedPath resolveFilePath(String file, boolean system, boolean includeNext) {
+    private ResolvedPath resolveFilePath(String includedFile, boolean system, boolean includeNext) {
         ResolvedPath result = null;
-        if (file != null && (file.length() > 0)) {  
-            result = APTIncludeUtils.resolveAbsFilePath(file);
+        if (includedFile != null && (includedFile.length() > 0)) {
+            result = APTIncludeUtils.resolveAbsFilePath(includedFile);
             if (result == null && !system && !includeNext) {
                 // for <system> "current dir" has lowest priority
                 // for #include_next should start from another dir
-                result = APTIncludeUtils.resolveFilePath(file, baseFile);
+                result = APTIncludeUtils.resolveFilePath(includedFile, baseFile);
             }
             if ( result == null) {
                 int startOffset = includeNext ? baseFileIncludeDirIndex+1 : 0;
                 PathsCollectionIterator paths = 
                         new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
-                result = APTIncludeUtils.resolveFilePath(paths, file, startOffset);
+                result = APTIncludeUtils.resolveFilePath(paths, includedFile, startOffset);
             }
             if ( result == null && system && !includeNext) {
                 // <system> was skipped above, check now, but not for #include_next
-                result = APTIncludeUtils.resolveFilePath(file, baseFile);
+                result = APTIncludeUtils.resolveFilePath(includedFile, baseFile);
             }
         }
         return result;

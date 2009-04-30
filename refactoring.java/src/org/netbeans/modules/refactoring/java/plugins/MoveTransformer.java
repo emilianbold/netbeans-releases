@@ -66,10 +66,11 @@ public class MoveTransformer extends RefactoringVisitor {
 
     private FileObject originalFolder;
     private MoveRefactoringPlugin move;
-    private Set<Element> elementsToImport = new HashSet<Element>();
+    private Set<Element> elementsToImport;
+    private Set<ImportTree> importToRemove;
     private boolean isThisFileMoving;
     private boolean isThisFileReferencingOldPackage = false;
-    private Set<Element> elementsAlreadyImported = new HashSet<Element>();
+    private Set<Element> elementsAlreadyImported;
     private Problem problem;
     private boolean moveToDefaulPackageProblem = false;
     private String originalPackage;
@@ -94,6 +95,7 @@ public class MoveTransformer extends RefactoringVisitor {
         elementsToImport = new HashSet<Element>();
         isThisFileReferencingOldPackage = false;
         elementsAlreadyImported = new HashSet<Element>();
+        importToRemove = new HashSet<ImportTree>();
     }
     
     @Override
@@ -104,24 +106,10 @@ public class MoveTransformer extends RefactoringVisitor {
                 if (isElementMoving(el)) {
                     elementsAlreadyImported.add(el);
                     String newPackageName = getTargetPackageName(el);
-                    String cuPackageName = RetoucheUtils.getPackageName(workingCopy.getCompilationUnit());
                     
-                    if (!"".equals(newPackageName)) {
-                        if (cuPackageName.equals(newPackageName)) { //remove newly created import from same package
-                            List<? extends ImportTree> imports = new ArrayList<ImportTree>(workingCopy.getCompilationUnit().getImports());
-                            ImportTree toRemove = null;
-                            for (ImportTree importTree : imports) {
-                                if (importTree.getQualifiedIdentifier().equals(node)) {
-                                    toRemove = importTree;
-                                }
-                            }
-                            imports.remove(toRemove);
-                            Tree nju = make.CompilationUnit(workingCopy.getCompilationUnit().getPackageName(), imports, workingCopy.getCompilationUnit().getTypeDecls(), workingCopy.getCompilationUnit().getSourceFile());
-                            rewrite(workingCopy.getCompilationUnit(), nju);
-                        } else {
-                            Tree nju = make.MemberSelect(make.Identifier(newPackageName), el);
-                            rewrite(node, nju);
-                        }
+                    if (!"".equals(newPackageName)) { //
+                        Tree nju = make.MemberSelect(make.Identifier(newPackageName), el);
+                        rewrite(node, nju);
                     } else {
                         if (!moveToDefaulPackageProblem) {
                             problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_MovingClassToDefaultPackage"));
@@ -283,18 +271,28 @@ public class MoveTransformer extends RefactoringVisitor {
             return result;
         }
         CompilationUnitTree cut = node;
+        List<? extends ImportTree> imports = cut.getImports();
+        if (!importToRemove.isEmpty()) {
+            List<ImportTree> temp = new ArrayList<ImportTree>(imports);
+            temp.removeAll(importToRemove);
+            imports = temp;
+        }
         if (isThisFileMoving) {
             // change package statement if old and new package exist, i.e.
             // neither old nor new package is default
             String newPckg = move.getTargetPackageName(workingCopy.getFileObject());
             if (node.getPackageName() != null && !"".equals(newPckg)) {
-                rewrite(node.getPackageName(), make.Identifier(newPckg));
+                if (importToRemove.isEmpty()) {
+                    rewrite(node.getPackageName(), make.Identifier(newPckg));
+                } else {
+                    cut = make.CompilationUnit(make.Identifier(newPckg), imports, node.getTypeDecls(), node.getSourceFile());
+                }
             } else {
                 // in order to handle default package, we have to rewrite whole
                 // compilation unit:
                 cut = make.CompilationUnit(
                         "".equals(newPckg) ? null : make.Identifier(newPckg),
-                        node.getImports(),
+                        imports,
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
@@ -312,6 +310,8 @@ public class MoveTransformer extends RefactoringVisitor {
                 }
                       
             }
+        } else if (!importToRemove.isEmpty()) {
+            cut = make.CompilationUnit(node.getPackageName(), imports, node.getTypeDecls(), node.getSourceFile());
         }
 
         for (Element el:elementsToImport) {
@@ -337,6 +337,27 @@ public class MoveTransformer extends RefactoringVisitor {
         }
         CompilationUnitTree nju = make.insertCompUnitImport(node, 0, make.Import(make.Identifier(imp), false));
         return nju;
+    }
+
+    @Override
+    public Tree visitImport(ImportTree node, Element p) {
+        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            final Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), node.getQualifiedIdentifier()));
+            if (el != null) {
+                if (isElementMoving(el)) {
+                    String newPackageName = getTargetPackageName(el);
+
+                    if (!"".equals(newPackageName)) {
+                        String cuPackageName = RetoucheUtils.getPackageName(workingCopy.getCompilationUnit());
+                        if (cuPackageName.equals(newPackageName)) { //remove newly created import from same package
+                            importToRemove.add(node);
+                            return node;
+                        }
+                    }
+                }
+            }
+        }
+        return super.visitImport(node, p);
     }
     
 }
