@@ -235,7 +235,7 @@ public abstract class NativeUtils {
                     file = FileUtils.createTempFile(tempDir);
                 } catch (IOException e) {
                     ErrorManager.notifyCritical(
-                            "Cannot create temporary file for native library at " + file.getAbsolutePath(), e);
+                            "Cannot create temporary file for native library at " + tempDir.getAbsolutePath(), e);
                     return;
                 }
 
