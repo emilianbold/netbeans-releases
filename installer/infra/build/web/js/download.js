@@ -692,7 +692,8 @@ function open_zip_link() {
     var language_select = document.getElementById("language_select");
     var language = language_select.options[language_select.selectedIndex].value;
 
-    var zip_url = getPageArtifactsLocation(!isMainLanguage(language)) + ZIP_PAGE;
+    //var zip_url = getPageArtifactsLocation(!isMainLanguage(language)) + ZIP_PAGE;
+    var zip_url = ZIP_PAGE;
 
     if(overriden_language!=DEFAULT_LANGUAGE) {
         zip_url += "?" + PAGELANG_SEP + overriden_language;
