@@ -325,7 +325,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
 
         private CsmFile getTargetFile() {
             CsmFile current = UIDCsmConverter.UIDtoFile(mi.targetFile);
-            if (current != null && mi.includePath != null) {
+            if (current == null && mi.includePath != null) {
                 File searchFile = new File(mi.includePath.toString());
                 ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(searchFile.getAbsolutePath());
                 if (targetPrj == null) {
@@ -333,7 +333,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                     targetPrj = ((ProjectBase) current.getProject()).findFileProject(searchFile.getAbsolutePath());
                 }
                 if (targetPrj != null) {
-                    current = targetPrj.getFile(searchFile);
+                    current = targetPrj.getFile(searchFile, false);
                     // if file belongs to project, it should be not null
                     // but info could be obsolete
                 }
@@ -367,7 +367,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
             if (out == null) {
                 ProjectBase targetPrj = ((ProjectBase) csmFile.getProject()).findFileProject(path);
                 if (targetPrj != null) {
-                    out = targetPrj.getFile(new File(path.toString()));
+                    out = targetPrj.getFile(new File(path.toString()), false);
                     // if file belongs to project, it should be not null
                     // but info could be obsolete
                 }

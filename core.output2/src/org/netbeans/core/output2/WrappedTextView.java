@@ -341,7 +341,8 @@ public class WrappedTextView extends View {
 
     private void underline(Graphics g, Segment seg, int charpos, int lenToDraw, int currLogicalLine, int y) {
         int underlineStart = margin();
-        int underlineEnd = underlineStart + g.getFontMetrics().charsWidth(seg.array, charpos, lenToDraw);
+        FontMetrics fm = g.getFontMetrics();
+        int underlineEnd = underlineStart + fm.charsWidth(seg.array, charpos, lenToDraw);
         if (currLogicalLine == 0) {
             //#47263 - start hyperlink underline at first
             //non-whitespace character
@@ -355,7 +356,8 @@ public class WrappedTextView extends View {
         } else {
             underlineStart = margin();
         }
-        g.drawLine (underlineStart, y+1, underlineEnd, y+1);
+        int underlineShift = (int) fm.getDescent() - 1;
+        g.drawLine (underlineStart, y + underlineShift, underlineEnd, y + underlineShift);
     }
 
     /**

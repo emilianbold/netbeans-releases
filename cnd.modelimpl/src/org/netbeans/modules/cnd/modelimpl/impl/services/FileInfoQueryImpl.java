@@ -316,7 +316,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 ProjectBase startProject = ProjectBase.getStartProject(startEntry);
                 if (startProject != null) {
                     CharSequence path = startEntry.getStartFile();
-                    CsmFile startFile = startProject.getFile(new File(path.toString()));
+                    CsmFile startFile = startProject.getFile(new File(path.toString()), false);
                     if (startFile != null) {
                         addBackup = false;
                     }
@@ -343,7 +343,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
             ProjectBase startProject = ProjectBase.getStartProject(startEntry);
             if (startProject != null) {
-                CsmFile startFile = startProject.getFile(new File(startEntry.getStartFile().toString()));
+                CsmFile startFile = startProject.getFile(new File(startEntry.getStartFile().toString()), false);
                 if (startFile != null) {
                     List<CsmInclude> res = new ArrayList<CsmInclude>();
                     for(APTIncludeHandler.IncludeInfo info : reverseInclStack){

@@ -25,18 +25,18 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="textHostname" pref="320" max="32767" attributes="0"/>
-              <EmptySpace pref="26" max="32767" attributes="0"/>
+              <Component id="textHostname" pref="339" max="32767" attributes="0"/>
+              <EmptySpace pref="45" max="32767" attributes="0"/>
               <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
               <Component id="textPort" min="-2" pref="46" max="-2" attributes="0"/>
           </Group>
           <Group type="102" attributes="0">
               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="364" max="32767" attributes="0"/>
+              <EmptySpace pref="402" max="32767" attributes="0"/>
           </Group>
-          <Component id="jScrollPane2" alignment="0" pref="496" max="32767" attributes="0"/>
-          <Component id="pbarStatusPanel" alignment="0" pref="496" max="32767" attributes="0"/>
+          <Component id="jScrollPane2" alignment="0" pref="534" max="32767" attributes="0"/>
+          <Component id="pbarStatusPanel" alignment="0" pref="534" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

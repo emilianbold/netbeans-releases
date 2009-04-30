@@ -134,7 +134,12 @@ public class ConfigurationDescriptorProvider {
                             // return null;
                         }
                         try {
-                            projectDescriptor = reader.read(relativeOffset);
+                            ConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
+                            if (projectDescriptor == null) {
+                                projectDescriptor = newDescriptor;
+                            } else {
+                                projectDescriptor.assign(newDescriptor);
+                            }
                         } catch (java.io.IOException x) {
                             x.printStackTrace();
                             // most likely open failed
@@ -353,7 +358,7 @@ public class ConfigurationDescriptorProvider {
         }
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            resetConfiguration();
+            // Don't reset configuration on file attribute change.
         }
 
     }

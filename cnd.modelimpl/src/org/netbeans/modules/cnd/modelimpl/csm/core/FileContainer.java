@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
+import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -170,8 +171,8 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 	put();
     }
     
-    public FileImpl getFile(File file) {
-        MyFile f = getMyFile(file, false);
+    public FileImpl getFile(File file, boolean treatSymlinkAsSeparateFile) {
+        MyFile f = getMyFile(file, treatSymlinkAsSeparateFile, false);
         if (f == null) {
             return null;
         }
@@ -189,13 +190,13 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
      * e.g., when creating new file, when invalidating state of a *source* (not a header) file, etc
      */
     public void putPreprocState(File file, APTPreprocHandler.State state) {
-        MyFile f = getMyFile(file, true);
+        MyFile f = getMyFile(file, false, true);
         f.setState(state, null);
         put();
     }
 
     public void invalidatePreprocState(File file) {
-        MyFile f = getMyFile(file, false);
+        MyFile f = getMyFile(file, false, false);
         if (f == null){
             return;
         }
@@ -210,7 +211,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     
     //@Deprecated
     public APTPreprocHandler.State getPreprocState(File file) {
-        MyFile f = getMyFile(file, false);
+        MyFile f = getMyFile(file, false, false);
         if (f == null){
             return null;
         }
@@ -218,7 +219,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
     
     public Collection<APTPreprocHandler.State> getPreprocStates(File file) {
-        MyFile f = getMyFile(file, false);
+        MyFile f = getMyFile(file, false, false);
         if (f == null){
             return Collections.<APTPreprocHandler.State>emptyList();
         }
@@ -226,7 +227,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
 
     public Collection<StatePair> getStatePairs(File file) {
-        MyFile f = getMyFile(file, false);
+        MyFile f = getMyFile(file, false, false);
         if (f == null) {
             return Collections.<StatePair>emptyList();
         }
@@ -234,11 +235,11 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
 
     public Entry getEntry(File file) {
-        return getMyFile(file, false);
+        return getMyFile(file, false, false);
     }
 
     public Object getLock(File file) {
-        MyFile f = getMyFile(file, false);
+        MyFile f = getMyFile(file, false, false);
         return f == null ? lock : f.getLock();
     }
     
@@ -296,8 +297,12 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         writeStringToStringsArrMap(aStream, canonicFiles);
 	//trace(canonicFiles, "Wrote in write()");
     }
-    
+
     public static CharSequence getFileKey(File file, boolean sharedText) {
+        if (CndUtils.isDebugMode()) {
+            String path = file.getAbsolutePath();
+            CndUtils.assertTrueInConsole(APTIncludeUtils.normalize(path).equals(path), "File not normalized " + file); // NOI18N
+        }
         String key = null;
         if (TraceFlags.USE_CANONICAL_PATH) {
             try {
@@ -326,16 +331,16 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return null;
     }
     
-    private MyFile getMyFile(File file, boolean sharedText) {
+    private MyFile getMyFile(File file, boolean treatSymlinkAsSeparateFile, boolean sharedText) {
         CharSequence path = getFileKey(file, sharedText);
         MyFile f = myFiles.get(path);
-        if (f == null) {
+        if (f == null && (!treatSymlinkAsSeparateFile || !TraceFlags.SYMLINK_AS_OWN_FILE)) {
             // check alternative expecting that 'path' is canonical path
             CharSequence path2 = getAlternativeFileKey(path);
             f = (path2 == null) ? null : myFiles.get(path2);
             if (f != null) {
-                if (TraceFlags.TRACE_CANONICAL_FIND_FILE) {
-                    System.err.println("alternative for " + path + " is " + path2);
+                if (true || TraceFlags.TRACE_CANONICAL_FIND_FILE) {
+                    CndUtils.assertTrueInConsole(false, "alternative for " + path + " is " + path2); // NOI18N
                 }
             }
         }

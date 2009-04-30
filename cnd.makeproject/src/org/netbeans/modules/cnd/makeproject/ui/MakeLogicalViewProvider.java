@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
@@ -138,7 +139,7 @@ import org.openidex.search.SearchInfo;
  */
 public class MakeLogicalViewProvider implements LogicalViewProvider {
 
-    private final Project project;
+    private final MakeProject project;
     private final SubprojectProvider spp;
     private static final Boolean ASYNC_ROOT_NODE = Boolean.getBoolean("cnd.async.root");// NOI18N
     private static final Logger log = Logger.getLogger("cnd.async.root");// NOI18N
@@ -149,7 +150,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     static StandardNodeAction renameAction = null;
     static StandardNodeAction deleteAction = null;
 
-    public MakeLogicalViewProvider(Project project, SubprojectProvider spp) {
+    public MakeLogicalViewProvider(MakeProject project, SubprojectProvider spp) {
         this.project = project;
         assert project != null;
         this.spp = spp;
@@ -456,11 +457,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     private String getShortDescription() {
         String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
-
-        MakeConfigurationDescriptor mkd = getMakeConfigurationDescriptor();
-        MakeConfiguration conf = (MakeConfiguration) mkd.getConfs().getActive();
-        final DevelopmentHostConfiguration devHost = conf.getDevelopmentHost();
-        if (devHost.isLocalhost()) {
+        DevelopmentHostConfiguration devHost = project.getDevelopmentHostConfiguration();
+        if (devHost == null || devHost.isLocalhost()) {
             return NbBundle.getMessage(MakeLogicalViewProvider.class,
                     "HINT_project_root_node", prjDirDispName); // NOI18N
         } else {
