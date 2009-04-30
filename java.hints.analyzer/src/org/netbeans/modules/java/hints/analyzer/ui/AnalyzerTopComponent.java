@@ -52,8 +52,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.java.hints.analyzer.Analyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.explorer.ExplorerManager;
@@ -62,7 +60,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 //import org.openide.util.Utilities;
@@ -260,41 +257,29 @@ private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_refreshButtonActionPerformed
 
 private void fixButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixButtonActionPerformed
-    final ProgressHandle handle = ProgressHandleFactory.createHandle("Fix Selected Javadoc Errors");
-    final List<FixDescription> fixs = new LinkedList<FixDescription>();
+    List<FixDescription> fixes = new LinkedList<FixDescription>();
 
-    handle.start(100);
     for (FixDescription fd : this.fixes) {
         if (fd.isSelected()) {
-            fixs.add(fd);
+            fixes.add(fd);
         }
     }
 
-    final int fixesInc = 100 / fixs.size();
-
-    RequestProcessor.getDefault().post(new Runnable() {
-        public void run() {
-            int procentCompleted = 0;
-            for (FixDescription f : fixs) {
-                try {
-                    f.implement();
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                procentCompleted += fixesInc;
-                handle.progress(procentCompleted);
-            }
-            handle.finish();
+    for (FixDescription f : fixes) {
+        try {
+            f.implement();
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
-    });
+    }
 }//GEN-LAST:event_fixButtonActionPerformed
 
 private void previousErrorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previousErrorActionPerformed
-    prevAction.actionPerformed(null);
+prevAction.actionPerformed(null);
 }//GEN-LAST:event_previousErrorActionPerformed
 
 private void nextErrorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextErrorActionPerformed
-    nextAction.actionPerformed(null);
+nextAction.actionPerformed(null);
 }//GEN-LAST:event_nextErrorActionPerformed
 
 private void goOverFixedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goOverFixedActionPerformed
