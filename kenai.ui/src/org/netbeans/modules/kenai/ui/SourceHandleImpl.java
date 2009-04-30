@@ -158,11 +158,17 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         addToRecentProjects(newProjects, true);
     }
 
+    void remove(NbProjectHandleImpl aThis) {
+        recent.remove(aThis);
+        storeRecent();
+        projectHandle.firePropertyChange(ProjectHandle.PROP_SOURCE_LIST, null, null);
+    }
+
     private void addToRecentProjects(List<Project> newProjects, boolean fireChanges) {
         for (Project prj : newProjects) {
             try {
                 if (isUnder(prj.getProjectDirectory())) {
-                    NbProjectHandleImpl nbHandle = RecentProjectsCache.getDefault().getProjectHandle(prj);
+                    NbProjectHandleImpl nbHandle = RecentProjectsCache.getDefault().getProjectHandle(prj, this);
                     recent.remove(nbHandle);
                     recent.add(0, nbHandle);
                     if (recent.size()>MAX_PROJECTS) {
@@ -194,7 +200,11 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         if (recent.isEmpty()) {
             return null;
         }
-        return FileUtil.toFile(((NbProjectHandleImpl) recent.iterator().next()).getProject().getProjectDirectory().getParent());
+        try {
+            return FileUtil.toFile(((NbProjectHandleImpl) recent.iterator().next()).getProject().getProjectDirectory().getParent());
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     private void initRecent() {
@@ -205,7 +215,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         List<String> roots = getStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation());
         for (String root:roots) {
             try {
-                NbProjectHandleImpl nbH = RecentProjectsCache.getDefault().getProjectHandle(new URL(root));
+                NbProjectHandleImpl nbH = RecentProjectsCache.getDefault().getProjectHandle(new URL(root), this);
                 if (nbH!=null)
                     recent.add(nbH);
             } catch (IOException ex) {
