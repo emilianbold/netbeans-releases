@@ -103,7 +103,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         boolean _const = isTypeDefAST(ast) ? initIsConst(ast.getFirstChild()) : initIsConst(ast);
         setFlags(FLAGS_CONST, _const);
         if (classifier == null) {
-            CndUtils.assertTrue(false, "why null classifier?", Level.INFO);
+            CndUtils.assertTrueInConsole(false, "why null classifier?", Level.INFO);
             this._setClassifier(initClassifier(ast));
             this.classifierText = initClassifierText(ast);
         } else {

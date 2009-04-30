@@ -170,7 +170,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return new Function((CsmFunction)template, type);
         } else {
             if (CndUtils.isDebugMode()) {
-                CndUtils.assertTrue(false, "Unknown class " + template.getClass() + " for template instantiation:" + template, Level.INFO); // NOI18N
+                CndUtils.assertTrueInConsole(false, "Unknown class " + template.getClass() + " for template instantiation:" + template, Level.INFO); // NOI18N
             }
         }
         return template;
@@ -183,7 +183,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             return new Function((CsmFunction)template, mapping);
         } else {
             if (CndUtils.isDebugMode()) {
-                CndUtils.assertTrue(false, "Unknown class " + template.getClass() + " for template instantiation:" + template, Level.INFO); // NOI18N
+                CndUtils.assertTrueInConsole(false, "Unknown class " + template.getClass() + " for template instantiation:" + template, Level.INFO); // NOI18N
             }
         }
         return template;
@@ -862,7 +862,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                 this.originalType = origType;
                 this.instantiatedType = newType;
             } else {
-                CndUtils.assertTrue(false, "Infinite recursion in file " + getContainingFile() + " type " + this.toString(), Level.INFO); //NOI18N
+                CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + getContainingFile() + " type " + this.toString(), Level.INFO); //NOI18N
                 this.originalType = origType;
                 this.instantiatedType = origType;
             }

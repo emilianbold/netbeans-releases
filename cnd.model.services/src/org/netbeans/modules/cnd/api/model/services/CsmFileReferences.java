@@ -212,7 +212,7 @@ public abstract class CsmFileReferences {
    private static boolean hasTemplateBasedAncestors(CsmType type, int level) {
        if( type != null) {
            if (level == 0) {
-               CndUtils.assertTrue(false, "Infinite recursion in file " + type.getContainingFile() + " class " + type, Level.INFO); //NOI18N
+               CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + type.getContainingFile() + " class " + type, Level.INFO); //NOI18N
                return false;
            }
            CsmClassifier cls = type.getClassifier();
@@ -226,7 +226,7 @@ public abstract class CsmFileReferences {
    private static boolean hasTemplateBasedAncestors(CsmClass cls, int level) {
        if (cls != null) {
            if (level == 0) {
-               CndUtils.assertTrue(false, "Infinite recursion in file " + cls.getContainingFile() + " class " + cls, Level.INFO); //NOI18N
+               CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + cls.getContainingFile() + " class " + cls, Level.INFO); //NOI18N
                return false;
            }
            if (isActualInstantiation(cls)) {

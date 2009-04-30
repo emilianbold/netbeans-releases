@@ -657,7 +657,7 @@ abstract public class CsmCompletionQuery {
                     }
                 } else {
                     System.err.printf("circular pointer delegation detected:%s, line %d/n", type.getContainingFile().getAbsolutePath(), type.getStartPosition().getLine());//NOI18N
-                    CndUtils.assertTrue(false, "Infinite recursion in file " + type.getContainingFile() + " class " + type, Level.INFO); //NOI18N
+                    CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + type.getContainingFile() + " class " + type, Level.INFO); //NOI18N
                 }
             }
         }
