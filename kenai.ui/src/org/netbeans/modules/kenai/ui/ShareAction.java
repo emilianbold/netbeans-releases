@@ -111,7 +111,7 @@ public final class ShareAction extends CookieAction {
     }
 
     private static void showDashboard(Set<CreatedProjectInfo> projects) {
-        final KenaiTopComponent kenaiTc = KenaiTopComponent.getDefault();
+        final KenaiTopComponent kenaiTc = KenaiTopComponent.findInstance();
         kenaiTc.open();
         kenaiTc.requestActive();
         DashboardImpl.getInstance().selectAndExpand(projects.iterator().next().project);
