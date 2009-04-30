@@ -595,7 +595,8 @@ public final class MakeProject implements Project, AntProjectListener {
         this.sourceEncoding = sourceEncoding;
     }
 
-    private MakeConfiguration getActiveConfiguration() {
+    /** NPE-safe method for getting active configuration */
+    public MakeConfiguration getActiveConfiguration() {
         if (projectDescriptorProvider.gotDescriptor()) {
             MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
             if (projectDescriptor != null) {
@@ -945,12 +946,19 @@ public final class MakeProject implements Project, AntProjectListener {
         }
     }
 
-    private DevelopmentHostConfiguration getDevelopmentHostConfiguration() {
+    /** NPE-safe method for getting active DevelopmentHostConfiguration */
+    public DevelopmentHostConfiguration getDevelopmentHostConfiguration() {
         MakeConfiguration conf = getActiveConfiguration();
         if (conf != null) {
             return conf.getDevelopmentHost();
         }
         return null;
+    }
+
+    /** NPE-safe method for getting active ExecutionEnvironment */
+    public ExecutionEnvironment getDevelopmentHostExecutionEnvironment() {
+        DevelopmentHostConfiguration dc = getDevelopmentHostConfiguration();
+        return (dc == null) ? null : dc.getExecutionEnvironment();
     }
 
     class RemoteProjectImpl implements RemoteProject {
