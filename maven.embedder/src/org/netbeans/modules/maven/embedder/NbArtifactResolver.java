@@ -81,8 +81,7 @@ public class NbArtifactResolver extends DefaultArtifactResolver {
     public void resolve(Artifact artifact, List list, ArtifactRepository artifactRepository) throws ArtifactResolutionException, ArtifactNotFoundException {
 //        artifact.setResolved(true);
         //MEVENIDE-422 
-        if (artifact.getScope() == null && "pom".equals(artifact.getType())) {
-            //the condition is meant to mean.. "if we look for parent pom", not sure it's close enough..
+        if (isParentPomArtifact(artifact)) {
             try {
                 letArtifactGo(artifact);
                 super.resolve(artifact, list, artifactRepository);
@@ -105,8 +104,7 @@ public class NbArtifactResolver extends DefaultArtifactResolver {
     
     @Override
     public void resolveAlways(Artifact artifact, List list, ArtifactRepository artifactRepository) throws ArtifactResolutionException, ArtifactNotFoundException {
-        if (artifact.getScope() == null && "pom".equals(artifact.getType())) {
-            //the condition is meant to mean.. "if we look for parent pom", not sure it's close enough..
+        if (isParentPomArtifact(artifact)) {
             try {
                 letArtifactGo(artifact);
                 super.resolveAlways(artifact, list, artifactRepository);
@@ -174,6 +172,11 @@ public class NbArtifactResolver extends DefaultArtifactResolver {
                 ex.printStackTrace();
             }
         }
+    }
+
+    static boolean isParentPomArtifact(Artifact artifact) {
+        //the condition is meant to mean.. "if we look for parent pom", not sure it's close enough..
+        return artifact.getScope() == null && "pom".equals(artifact.getType()); //NOI18N
     }
     
 }
