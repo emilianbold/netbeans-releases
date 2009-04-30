@@ -109,6 +109,8 @@ public class MethodWidget extends WadlComponentWidget {
         }
 
         initUI();
+        if(ExpanderWidget.isExpanded(this, false))
+            setExpanded(true);
     }
     
     public String getId() {

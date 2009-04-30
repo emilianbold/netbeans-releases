@@ -789,17 +789,30 @@ public class Annotations implements DocumentListener {
         
         // add checkbox for enabling/disabling of line numbers
         Action action = kit.getActionByName(BaseKit.toggleLineNumbersAction);
-        JMenuItem popupItem = Utilities.getPopupMenuItem(action, null);
+        JMenuItem popupItem = getPopupMenuItem(action);
         assert (popupItem != null);
         pm.add(popupItem);
         
         action = kit.getActionByName(ExtKit.toggleToolbarAction);
         if (action != null){
-            popupItem = Utilities.getPopupMenuItem(action, null);
+            popupItem = getPopupMenuItem(action);
             assert (popupItem != null);
             pm.add(popupItem);
         }
         menuInitialized = true;
+    }
+
+    private static JMenuItem getPopupMenuItem(Action action) {
+        JMenuItem popupItem = null;
+        if (action instanceof BaseAction) {
+            popupItem = ((BaseAction) action).getPopupMenuItem(null);
+        }
+        if (popupItem == null) {
+            if (action instanceof Presenter.Popup) {
+                popupItem = ((Presenter.Popup) action).getPopupPresenter();
+            }
+        }
+        return popupItem;
     }
 
     private static class DelayedMenu extends JMenu{

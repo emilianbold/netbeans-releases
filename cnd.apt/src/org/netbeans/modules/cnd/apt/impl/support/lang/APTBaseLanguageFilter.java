@@ -130,7 +130,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
      * A wrapper token that changes original token type
      * and delegates the rest of the methods to original token.
      */
-    private static class FilterToken implements APTToken {
+    public static final class FilterToken implements APTToken {
 
         private final APTToken origToken;
         private int type;
@@ -138,6 +138,10 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
         public FilterToken(APTToken origToken, int type) {
             this.origToken = origToken;
             this.type = type;
+        }
+
+        public APTToken getOriginalToken() {
+            return origToken;
         }
 
         public int getOffset() {

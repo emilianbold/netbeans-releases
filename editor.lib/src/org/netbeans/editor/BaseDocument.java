@@ -984,7 +984,12 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (notifyMod) {
                 STATUS.set (null);
             }
-            throw new BadLocationException(vetoExceptionText, offset);
+            BadLocationException ble = new BadLocationException(vetoExceptionText, offset);
+            PropertyVetoException veto = notifyModifyStatus.veto;
+            if (veto != null) {
+                ble.initCause(veto);
+            }
+            throw ble;
         }
         return notifyMod;
     }
@@ -1816,14 +1821,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      * a document modification or atomic lock started.
      */
     private void notifyModify(NotifyModifyStatus notifyModifyStatus) {
-        notifyModifyStatus.setModificationVetoed(false);
+        notifyModifyStatus.setModificationVetoed(false, null);
         VetoableChangeListener bml = notifyModifyStatus.getBeforeModificationListener();
         if (bml != null) {
             try {
                 bml.vetoableChange(new PropertyChangeEvent(this, "modified", null, Boolean.TRUE)); // NOI18N
             } catch (PropertyVetoException ex) {
                 // Modification is prohibited
-                notifyModifyStatus.setModificationVetoed(true);
+                notifyModifyStatus.setModificationVetoed(true, ex);
             }
         }
     }
@@ -1841,7 +1846,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             } catch (PropertyVetoException e) {
                 // ignore
             }
-            notifyModifyStatus.setModificationVetoed(false);
+            notifyModifyStatus.setModificationVetoed(false, null);
         }
     }
 
@@ -2416,6 +2421,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
          * so the unallowed modification can't be notified earlier.
          */
         private boolean modificationVetoed;
+        private PropertyVetoException veto;
 
         NotifyModifyStatus(BaseDocument document) {
             beforeModificationListener = (VetoableChangeListener)document.getProperty(BEFORE_MODIFICATION_LISTENER);
@@ -2425,8 +2431,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             return modificationVetoed;
         }
 
-        public void setModificationVetoed(boolean modificationVetoed) {
+        public void setModificationVetoed(boolean modificationVetoed, PropertyVetoException veto) {
             this.modificationVetoed = modificationVetoed;
+            this.veto = veto;
         }
 
         public VetoableChangeListener getBeforeModificationListener() {

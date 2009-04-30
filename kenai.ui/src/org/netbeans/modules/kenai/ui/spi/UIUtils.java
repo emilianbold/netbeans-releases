@@ -186,7 +186,11 @@ public final class UIUtils {
                                     if (loginPanel.getUsername().contains("@")) //NOI18N
                                         throw new KenaiException(NbBundle.getMessage(LoginPanel.class, "ERR_InvalidUsername"));
                                     Kenai.getDefault().login(loginPanel.getUsername(), loginPanel.getPassword());
-                                    loginPanel.getRootPane().getParent().setVisible(false);
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        public void run() {
+                                            loginPanel.getRootPane().getParent().setVisible(false);
+                                        }
+                                    });
                                 } catch (final KenaiException ex) {
                                     SwingUtilities.invokeLater(new Runnable() {
 

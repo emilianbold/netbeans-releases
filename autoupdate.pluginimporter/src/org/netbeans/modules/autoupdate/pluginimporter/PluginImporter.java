@@ -139,6 +139,8 @@ public class PluginImporter {
                     }
                 }
                 installed.add (unit.getInstalled ());
+            } else if (unit.isPending()) {
+                LOG.log(Level.INFO, "Plugin " + unit.getCodeName() + " is not installed but is in pending state - i.e. will be installed upon restart, skipping");
             } else {
                 assert ! unit.getAvailableUpdates ().isEmpty () : "If " + unit + " isn't installed thus has available updates.";
                 UpdateElement el = unit.getAvailableUpdates ().get (0);

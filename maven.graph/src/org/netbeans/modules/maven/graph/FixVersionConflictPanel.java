@@ -104,11 +104,13 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
         res.isExclude = excludeCheck.isSelected();
         if (res.isExclude) {
             res.exclusionTargets = new HashSet<Artifact>();
+            res.conflictParents = new HashSet<DependencyNode>();
             ListModel lm = excludesList.getModel();
             for (int i = 0; i < lm.getSize(); i++) {
                 ExclTargetEntry entry = (ExclTargetEntry) lm.getElementAt(i);
                 if (entry.isSelected) {
                     res.exclusionTargets.add(entry.artif);
+                    res.conflictParents.addAll(eTargets.getConflictParents(entry.artif));
                 }
             }
         }
@@ -170,6 +172,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
         boolean isExclude = false;
         ArtifactVersion version2Set = null;
         Set<Artifact> exclusionTargets = null;
+        Set<DependencyNode> conflictParents = null;
     }
 
     /** Checks the circumstances of version conflict and offers solution.
@@ -513,6 +516,10 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
         // artifact that target currently define by its dependencies
         Map<Artifact, Set<ArtifactVersion>> targets2Versions;
 
+        // mapping; target artifact for exclusion -> related set of parents of conflicting
+        // artifact in dependency graph
+        Map<Artifact, Set<DependencyNode>> targets2ConfPar;
+
         ArtifactGraphNode conflictNode;
         ArtifactVersion usedVersion, newestVersion;
 
@@ -527,23 +534,39 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
 
         private void initialize () {
             targets2Versions = new HashMap<Artifact, Set<ArtifactVersion>>();
+            targets2ConfPar = new HashMap<Artifact, Set<DependencyNode>>();
             DependencyNode curDn = null;
             DependencyNode parent = null;
-            for (DependencyNode dn : conflictNode.getDuplicatesOrConflicts()) {
-                if (dn.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                    curDn = dn;
-                    parent = curDn.getParent();
-                    while (parent.getParent() != null) {
-                        parent = parent.getParent();
-                        curDn = curDn.getParent();
-                    }
-                    Set<ArtifactVersion> versions = targets2Versions.get(curDn.getArtifact());
-                    if (versions == null) {
-                        versions = new HashSet<ArtifactVersion>();
-                        targets2Versions.put(curDn.getArtifact(), versions);
-                    }
-                    versions.add(new DefaultArtifactVersion(dn.getArtifact().getVersion()));
+
+            List<DependencyNode> allDNs = new ArrayList<DependencyNode>(
+                    conflictNode.getDuplicatesOrConflicts());
+            
+            // prevent conflictNode itself to be included in exclusion targets
+            if (conflictNode.getPrimaryLevel() > 1) {
+                allDNs.add(conflictNode.getArtifact());
+            }
+
+            for (DependencyNode dn : allDNs) {
+                curDn = dn;
+                parent = curDn.getParent();
+                while (parent.getParent() != null) {
+                    parent = parent.getParent();
+                    curDn = curDn.getParent();
                 }
+                
+                Set<DependencyNode> confPar = targets2ConfPar.get(curDn.getArtifact());
+                if (confPar == null) {
+                    confPar = new HashSet<DependencyNode>();
+                    targets2ConfPar.put(curDn.getArtifact(), confPar);
+                }
+                confPar.add(dn.getParent());
+
+                Set<ArtifactVersion> versions = targets2Versions.get(curDn.getArtifact());
+                if (versions == null) {
+                    versions = new HashSet<ArtifactVersion>();
+                    targets2Versions.put(curDn.getArtifact(), versions);
+                }
+                versions.add(new DefaultArtifactVersion(dn.getArtifact().getVersion()));
             }
         }
 
@@ -577,13 +600,16 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
 
         public boolean isNonConflicting (Artifact art) {
             Set<ArtifactVersion> versions = targets2Versions.get(art);
-            ArtifactVersion ver;
             if (versions != null && versions.size() == 1) {
                 if (newestVersion.equals(versions.iterator().next())) {
                     return true;
                 }
             }
             return false;
+        }
+
+        public Set<DependencyNode> getConflictParents (Artifact art) {
+            return targets2ConfPar.get(art);
         }
 
     } // ExclusionTargets

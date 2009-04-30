@@ -54,6 +54,7 @@ import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.openide.util.NbBundle;
 
 /**
  * Memory usage indicator
@@ -101,7 +102,7 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
     @Override
     protected void repairNeeded(boolean needed) {
         if (needed) {
-            final RepairPanel repairPanel = new RepairPanel(new ActionListener() {
+            final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus(), new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     final Future<Boolean> result = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {
@@ -123,9 +124,10 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
                 }
             });
         } else {
-            final JLabel label = new JLabel(getRepairActionProvider().isValid()?
-                "<html><center>Will show data on the next run</center></html>" :
-                "<html><center>Invalid</center></html>");
+            final JLabel label = new JLabel(
+                    "<html><center>" // NOI18N
+                    + getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()) // NOI18N
+                    + "</center></html>"); // NOI18N
             label.setForeground(GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {
                 public void run() {
@@ -133,5 +135,9 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
                 }
             });
         }
+    }
+
+    private static String getMessage(String name) {
+        return NbBundle.getMessage(MemoryIndicator.class, name);
     }
 }

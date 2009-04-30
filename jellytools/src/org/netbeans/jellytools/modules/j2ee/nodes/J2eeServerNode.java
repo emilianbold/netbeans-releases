@@ -202,8 +202,13 @@ public class J2eeServerNode extends Node {
         waitServerState(STATE_STOPPED);
     }
     
+    public int getServerState(){
+        final org.openide.nodes.Node ideNode = (org.openide.nodes.Node) getOpenideNode();
+        return getServerState(ideNode);
+    }
+
     //// PRIVATE METHODS ////
-    
+
     private static int getServerState(org.openide.nodes.Node n) {
         try {
             Object server = n.getCookie(classServerInstance());

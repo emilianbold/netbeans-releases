@@ -120,7 +120,7 @@ public class MavenWSITEditor implements WSEditor, UndoManagerHolder {
                     return new ServiceTopComponent(node, jaxWsService, wsdlModel, getUndoManager());
                 }
             } catch(Exception e){
-                logger.log(Level.SEVERE, null, e);
+                logger.log(Level.INFO, null, e);
             }
         }
         return new ErrorTopComponent(NbBundle.getMessage(MavenWSITEditor.class, "TXT_WSIT_NotSupported"));

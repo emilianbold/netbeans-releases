@@ -23,6 +23,7 @@ implements ProjectFactory, Project, ProjectInformation, SubprojectProvider {
 
     static Set<FileObject> recognize = new HashSet<FileObject>();
     static Set<Project> subprojects = new HashSet<Project>();
+    static IOException ex;
     int closed;
     int opened;
     int listenerCount;
@@ -41,6 +42,11 @@ implements ProjectFactory, Project, ProjectInformation, SubprojectProvider {
     }
 
     public Project loadProject(FileObject pd, ProjectState state) throws IOException {
+        IOException e = ex;
+        if (e != null) {
+            ex = null;
+            throw e;
+        }
         return isProject(pd) ? new TestFactory(pd) : null;
     }
 

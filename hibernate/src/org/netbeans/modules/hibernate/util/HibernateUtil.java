@@ -62,6 +62,7 @@ import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
@@ -450,20 +451,30 @@ public class HibernateUtil {
     public static List<FileObject> getAllHibernateReverseEnggFileObjects(Project project) {
         List<FileObject> reverseEnggFiles = new ArrayList<FileObject>();
         Sources projectSources = ProjectUtils.getSources(project);
-        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        // src/main/resources does not need to exist
+        SourceGroup resourcesSourceGroup = SourceGroupModifier.createSourceGroup(project, JavaProjectConstants.SOURCES_TYPE_RESOURCES, JavaProjectConstants.SOURCES_HINT_MAIN);
+        if (resourcesSourceGroup != null) {
+            addFileObjects(reverseEnggFiles, new SourceGroup[] {resourcesSourceGroup}, HibernateRevengDataLoader.REQUIRED_MIME);
+        }
+        if (reverseEnggFiles.isEmpty()) {
+            // possible fallback
+            addFileObjects(reverseEnggFiles, projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA), HibernateRevengDataLoader.REQUIRED_MIME);
+        }
 
-        for (SourceGroup sourceGroup : javaSourceGroup) {
+        return reverseEnggFiles;
+    }
+
+    private static void addFileObjects(List<FileObject> files, SourceGroup[] sourceGroups, String mimeType) {
+        for (SourceGroup sourceGroup : sourceGroups) {
             FileObject root = sourceGroup.getRootFolder();
             Enumeration<? extends FileObject> enumeration = root.getChildren(true);
             while (enumeration.hasMoreElements()) {
                 FileObject fo = enumeration.nextElement();
-                if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateRevengDataLoader.REQUIRED_MIME)) {
-                    reverseEnggFiles.add(fo);
+                if (mimeType.equals(FileUtil.getMIMEType(fo, mimeType))) {
+                    files.add(fo);
                 }
             }
         }
-        return reverseEnggFiles;
     }
 
     /**

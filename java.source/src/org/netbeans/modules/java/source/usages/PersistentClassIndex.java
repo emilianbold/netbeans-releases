@@ -74,14 +74,15 @@ public class PersistentClassIndex extends ClassIndexImpl {
     private final boolean isSource;
     private WeakReference<JavaSource> dirty;
     private static final Logger LOGGER = Logger.getLogger(PersistentClassIndex.class.getName());
-    private static IndexFactory indexFactory;
+    private static IndexFactory indexFactory = LuceneIndexFactory.getInstance();
     
     /** Creates a new instance of ClassesAndMembersUQ */
     private PersistentClassIndex(final URL root, final File cacheRoot, final boolean source) 
 	    throws IOException, IllegalArgumentException {
         assert root != null;
         this.root = root;
-        this.index = (indexFactory == null ? LuceneIndex.create (cacheRoot) : indexFactory.create(cacheRoot));
+        assert indexFactory != null;
+        this.index = indexFactory.create(cacheRoot);
         this.isSource = source;
     }
     
@@ -187,7 +188,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
     //Unit test methods
     public static void setIndexFactory (final IndexFactory factory) {
-        indexFactory = factory;
+        indexFactory = (factory == null ? LuceneIndexFactory.getInstance() : factory);
     }
     
     //Protected methods --------------------------------------------------------

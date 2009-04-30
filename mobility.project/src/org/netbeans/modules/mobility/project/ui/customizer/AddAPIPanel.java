@@ -154,25 +154,41 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
     }
     
     private static String[] loadPermissions() {
+        List<FileObject> allPermissionsFos = new ArrayList<FileObject>();
+        final List<String> perms = new ArrayList<String>();
+
+        final FileObject xml = FileUtil.getConfigFile("Buildsystem/ApplicationDescriptor/Permissions"); // NOI18N
+        if (xml != null){
+            FileObject[] entries = xml.getChildren();
+            allPermissionsFos.addAll(Arrays.asList(entries));
+        }
+        //need to preserve for compatibility!
         final FileObject fo = FileUtil.getConfigFile("j2me/permissions.txt"); // NOI18N
         if (fo != null) {
+            allPermissionsFos.add(fo);
+        }
+
+        for (FileObject fileObject : allPermissionsFos) {
             InputStream is = null;
             try {
-                is = fo.getInputStream();
+                is = fileObject.getInputStream();
                 final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                 try {
                     String s;
-                    final List<String> l = new ArrayList<String>();
-                    while ((s = reader.readLine()) != null)
-                        l.add(s);
-                    return l.toArray(new String[l.size()]);
+                    while ((s = reader.readLine()) != null){
+                        s = s.trim();
+                        if (!perms.contains(s) && s.length() != 0){
+                            perms.add(s);
+                        }
+                    }
                 } finally {
                     reader.close();
                 }
             } catch (IOException e) {
+                e.printStackTrace();
             }
         }
-        return availableDefaultPermissions;
+        return perms.size() != 0 ? perms.toArray(new String[perms.size()]) : availableDefaultPermissions;
     }
     
     public String getAPIName() {

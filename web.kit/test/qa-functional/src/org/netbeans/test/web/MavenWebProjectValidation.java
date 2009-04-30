@@ -40,6 +40,8 @@
 package org.netbeans.test.web;
 
 import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JTextField;
@@ -52,11 +54,13 @@ import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.DialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.filesystems.FileUtil;
@@ -91,7 +95,7 @@ public class MavenWebProjectValidation extends WebProjectValidation {
               "testNewSegment", "testNewDocument",
               "testJSPNavigator", "testHTMLNavigator",
               "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
-               /*"testJSPNavigator", "testHTMLNavigator" */);
+               );
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
@@ -117,6 +121,27 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         mavenWebAppWizardOperator.finish();
 
         // wait for project creation
+        sleep(5000);
+        Window wnd = DialogOperator.findWindow(new ComponentChooser() {
+
+            public boolean checkComponent(Component comp) {
+                if (comp instanceof Dialog){
+                    Dialog jd = (Dialog) comp;
+                    String title = jd.getTitle();
+                    if ((title != null) && title.contains("Message")){
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            public String getDescription() {
+                return "No Maven installed message";
+            }
+        });
+        if (wnd != null){
+            new WindowOperator(wnd).close();
+        }
         sleep(5000);
         ProjectSupport.waitScanFinished();
         verifyWebPagesNode("index.jsp");

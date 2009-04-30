@@ -39,9 +39,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -52,6 +55,7 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -199,45 +203,56 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         return false;
     }
 
+    private final ConcurrentMap<CsmFile, String> macroUsagesLocks = new ConcurrentHashMap<CsmFile, String>();
+    
     public List<CsmReference> getMacroUsages(CsmFile file) {
         List<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
-            List<CsmReference> res = fileImpl.getLastMacroUsages();
-            if (res != null) {
-                return res;
-            }
+            String lock = new String("getMacroUsages lock for " + file.getAbsolutePath()); // NOI18N
+            String prevLock = macroUsagesLocks.putIfAbsent(fileImpl, lock);
+            lock = prevLock != null ? prevLock : lock;
             try {
-                long lastParsedTime = fileImpl.getLastParsedTime();
-                APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
-                if (apt != null) {
-                    Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
-                    if (handlers.isEmpty()) {
-                        DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
-                        return Collections.<CsmReference>emptyList();                    
-                    } else if (handlers.size() == 1) {
-                        APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handlers.iterator().next());
-                        walker.getTokenStream();
-                        out = walker.getCollectedData();
-                    } else {
-                        Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
-                        TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
-                        for (APTPreprocHandler handler : handlers) {
-                            APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler);
-                            walker.getTokenStream();
-                            result.addAll(walker.getCollectedData());
+                synchronized (lock) {
+                    List<CsmReference> res = fileImpl.getLastMacroUsages();
+                    if (res != null) {
+                        return res;
+                    }
+                    try {
+                        long lastParsedTime = fileImpl.getLastParsedTime();
+                        APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
+                        if (apt != null) {
+                            Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
+                            if (handlers.isEmpty()) {
+                                DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
+                                return Collections.<CsmReference>emptyList();
+                            } else if (handlers.size() == 1) {
+                                APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handlers.iterator().next());
+                                walker.getTokenStream();
+                                out = walker.getCollectedData();
+                            } else {
+                                Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
+                                TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
+                                for (APTPreprocHandler handler : handlers) {
+                                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler);
+                                    walker.getTokenStream();
+                                    result.addAll(walker.getCollectedData());
+                                }
+                                out = new ArrayList<CsmReference>(result);
+                            }
                         }
-                        out = new ArrayList<CsmReference>(result);
+                        if (lastParsedTime == fileImpl.getLastParsedTime()) {
+                            fileImpl.setLastMacroUsages(out);
+                        }
+                    } catch (FileNotFoundException ex) {
+                        // file could be removed
+                    } catch (IOException ex) {
+                        System.err.println("skip marking macros\nreason:" + ex.getMessage()); //NOI18N
+                        DiagnosticExceptoins.register(ex);
                     }
                 }
-                if (lastParsedTime == fileImpl.getLastParsedTime()) {
-                    fileImpl.setLastMacroUsages(out);
-                }
-            } catch (FileNotFoundException ex) {
-                // file could be removed
-            } catch (IOException ex) {
-                System.err.println("skip marking macros\nreason:" + ex.getMessage()); //NOI18N
-		DiagnosticExceptoins.register(ex);
+            } finally {
+                macroUsagesLocks.remove(fileImpl, lock);
             }
         }
         return out;
@@ -249,7 +264,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             try {
                 APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
 
-                GuardBlockWalker guardWalker = new GuardBlockWalker(apt, fileImpl.getPreprocHandler());
+                GuardBlockWalker guardWalker = new GuardBlockWalker(apt);
                 TokenStream ts = guardWalker.getTokenStream();
                 try {
                     Token token = ts.nextToken();
@@ -289,8 +304,35 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
 
     @Override
+    public Collection<CsmCompilationUnit> getCompilationUnits(CsmFile file, int contextOffset) {
+        CsmCompilationUnit backup = CsmCompilationUnit.createCompilationUnit(file.getProject(), file.getAbsolutePath(), file);
+        Collection<CsmCompilationUnit> out = new ArrayList<CsmCompilationUnit>(1);
+        boolean addBackup = true;
+        if (file instanceof FileImpl) {
+            FileImpl impl = (FileImpl) file;
+            Collection<State> states = ((ProjectBase) impl.getProject()).getPreprocStates(impl);
+            for (State state : states) {
+                StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
+                ProjectBase startProject = ProjectBase.getStartProject(startEntry);
+                if (startProject != null) {
+                    CharSequence path = startEntry.getStartFile();
+                    CsmFile startFile = startProject.getFile(new File(path.toString()));
+                    if (startFile != null) {
+                        addBackup = false;
+                    }
+                    CsmCompilationUnit cu = CsmCompilationUnit.createCompilationUnit(startProject, path, startFile);
+                    out.add(cu);
+                }
+            }
+        }
+        if (addBackup) {
+            out.add(backup);
+        }
+        return out;
+    }
+
+    @Override
     public List<CsmInclude> getIncludeStack(CsmFile file) {
-        // TODO implement me
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
             APTPreprocHandler.State state = ((ProjectBase)impl.getProject()).getPreprocState(impl);

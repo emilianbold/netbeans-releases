@@ -642,8 +642,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 } else {
                     Object[] wChildren = treeModel.getChildren(parent, from, to);
                     Object[] union = new Object[children.length + wChildren.length];
-                    System.arraycopy(children, 0, union, 0, children.length);
-                    System.arraycopy(wChildren, 0, union, children.length, wChildren.length);
+                    System.arraycopy(wChildren, 0, union, 0, wChildren.length);
+                    System.arraycopy(children, 0, union, wChildren.length, children.length);
                     children = union;
                 }
                 return children;

@@ -175,7 +175,7 @@ public class SvnClientExceptionHandler {
     }
        
     public boolean handleKenaiAuthorisation(SvnKenaiSupport support, String url) {
-        PasswordAuthentication pa = support.getPasswordAuthentication(url, true);
+        PasswordAuthentication pa = support.getPasswordAuthentication(true);
         if(pa == null) {
             return false;
         }
@@ -587,7 +587,7 @@ public class SvnClientExceptionHandler {
         return message.indexOf("operation canceled") > -1;
     }
 
-    private static boolean isAuthentication(String msg) {   
+    public static boolean isAuthentication(String msg) {
         msg = msg.toLowerCase();       
         return msg.indexOf("authentication error from server: username not found") > - 1 || // NOI18N
                msg.indexOf("authorization failed") > - 1 ||                                 // NOI18N
@@ -597,7 +597,7 @@ public class SvnClientExceptionHandler {
                msg.indexOf("can't get username or password") > - 1;                         // NOI18N
     }
 
-    private static boolean isNoCertificate(String msg) {
+    public static boolean isNoCertificate(String msg) {
         msg = msg.toLowerCase();       
         return msg.indexOf("server certificate verification failed") > -1;                  // NOI18N
     }

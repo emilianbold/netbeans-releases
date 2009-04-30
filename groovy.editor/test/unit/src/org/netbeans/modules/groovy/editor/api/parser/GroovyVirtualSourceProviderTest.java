@@ -148,4 +148,118 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
                 "}\n", charSequence);
     }
 
+    public void testImports() throws IOException {
+        copyStringToFileObject(testFO,
+            "import javax.swing.JPanel\n" +
+            "class MyTest extends JPanel {\n"+
+            "    JPanel getPanel() {\n" +
+            "        return null;\n" +
+            "    }\n" +
+            "}");
+
+        List<ClassNode> classNodes = GroovyVirtualSourceProvider.getClassNodes(FileUtil.toFile(testFO));
+        assertEquals(classNodes.size(), 1);
+
+        GroovyVirtualSourceProvider.JavaStubGenerator generator = new GroovyVirtualSourceProvider.JavaStubGenerator();
+        CharSequence charSequence = generator.generateClass(classNodes.get(0));
+        assertEquals("import groovy.util.*;\n" +
+                "import java.util.*;\n" +
+                "import java.io.*;\n" +
+                "import java.lang.*;\n" +
+                "import javax.swing.*;\n" +
+                "import groovy.lang.*;\n" +
+                "import java.net.*;\n" +
+                "\n" +
+                "public class MyTest\n" +
+                "  extends javax.swing.JPanel  implements\n" +
+                "    groovy.lang.GroovyObject {\n" +
+                "public javax.swing.JPanel getPanel() { return (javax.swing.JPanel)null;}\n" +
+                "}\n", charSequence);
+    }
+
+    public void testMultipleClasses() throws IOException {
+        copyStringToFileObject(testFO,
+                "class PostService {\n" +
+                "    boolean transactional = true\n" +
+                "    def serviceMethod() throws PostException {\n" +
+                "        throw new PostException();\n" +
+                "    }\n" +
+                "}\n" +
+                "\n" +
+                "class PostException extends Exception {\n" +
+                "    public PostException() {\n" +
+                "        super();\n" +
+                "    }\n" +
+                "}");
+        List<ClassNode> classNodes = GroovyVirtualSourceProvider.getClassNodes(FileUtil.toFile(testFO));
+        assertEquals(classNodes.size(), 2);
+
+        GroovyVirtualSourceProvider.JavaStubGenerator generator = new GroovyVirtualSourceProvider.JavaStubGenerator();
+        CharSequence charSequence = generator.generateClass(classNodes.get(0));
+        assertEquals("import groovy.util.*;\n"+
+                "import java.util.*;\n" +
+                "import java.io.*;\n" +
+                "import java.lang.*;\n" +
+                "import groovy.lang.*;\n" +
+                "import java.net.*;\n" +
+                "\n" +
+                "public class PostService\n" +
+                "  extends java.lang.Object  implements\n" +
+                "    groovy.lang.GroovyObject {\n" +
+                "public java.lang.Object serviceMethod() throws PostException { return null;}\n" +
+                "public boolean getTransactional() { return (boolean)false;}\n" +
+                "public void setTransactional(boolean value) { }\n" +
+                "}\n", charSequence);
+
+        charSequence = generator.generateClass(classNodes.get(1));
+        assertEquals("import groovy.util.*;\n" +
+                "import java.util.*;\n" +
+                "import java.io.*;\n" +
+                "import java.lang.*;\n" +
+                "import groovy.lang.*;\n" +
+                "import java.net.*;\n" +
+                "\n" +
+                "public class PostException\n" +
+                "  extends java.lang.Exception  implements\n" +
+                "    groovy.lang.GroovyObject {\n" +
+                "public PostException() {\n" +
+                "super ();\n" +
+                "}\n" +
+                "}\n", charSequence);
+    }
+
+    public void testThrowsClause() throws IOException {
+        copyStringToFileObject(testFO,
+            "class MyTest {\n"+
+            "    void test1() throws RuntimeException {\n" +
+            "        return null;\n" +
+            "    }\n" +
+            "    void test2() throws Exception {\n" +
+            "        return null;\n" +
+            "    }\n" +
+            "    def test3() throws RuntimeException {\n" +
+            "        return null;\n" +
+            "    }\n" +
+            "}");
+
+        List<ClassNode> classNodes = GroovyVirtualSourceProvider.getClassNodes(FileUtil.toFile(testFO));
+        assertEquals(classNodes.size(), 1);
+
+        GroovyVirtualSourceProvider.JavaStubGenerator generator = new GroovyVirtualSourceProvider.JavaStubGenerator();
+        CharSequence charSequence = generator.generateClass(classNodes.get(0));
+        assertEquals("import groovy.util.*;\n" +
+                "import java.util.*;\n" +
+                "import java.io.*;\n" +
+                "import java.lang.*;\n" +
+                "import groovy.lang.*;\n" +
+                "import java.net.*;\n" +
+                "\n" +
+                "public class MyTest\n" +
+                "  extends java.lang.Object  implements\n" +
+                "    groovy.lang.GroovyObject {\n" +
+                "public void test1() throws java.lang.RuntimeException { }\n" +
+                "public void test2() throws java.lang.Exception { }\n" +
+                "public java.lang.Object test3() throws java.lang.RuntimeException { return null;}\n" +
+                "}\n", charSequence);
+    }
 }

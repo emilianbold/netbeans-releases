@@ -105,7 +105,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
         // start from the end offset to properly calculate braces balance and
         // find correfct formatting start (consider case of a rule defined
         // within a media rule):
-        ts.move(endOffset);
+        ts.move(endOffset, false);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
             return LexUtilities.getTokenSequenceStartOffset(ts);

@@ -131,7 +131,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
         return true;
     }
 
-    protected void setCancellableDelegate(Cancellable cancellable) {
+    public void setCancellableDelegate(Cancellable cancellable) {
         this.delegate = cancellable;
     }
 

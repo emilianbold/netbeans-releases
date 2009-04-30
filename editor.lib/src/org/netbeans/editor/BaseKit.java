@@ -834,6 +834,7 @@ public class BaseKit extends DefaultEditorKit {
     */
     protected Action[] createActions() {
         return new Action[] {
+                   // new DefaultKeyTypedAction() - overriden in ExtKit
                    insertBreakActionDef,
                    insertTabActionDef,
                    deletePrevCharActionDef,
@@ -848,6 +849,12 @@ public class BaseKit extends DefaultEditorKit {
                    undoActionDef,
                    redoActionDef,
                    new ActionFactory.ToggleLineNumbersAction(),
+                   new NextWordAction(nextWordAction),
+                   new NextWordAction(selectionNextWordAction),
+                   new PreviousWordAction(previousWordAction),
+                   new PreviousWordAction(selectionPreviousWordAction),
+                   new ActionFactory.RemoveWordNextAction(),
+                   new ActionFactory.RemoveWordPreviousAction(),
 
                    // Self test actions
                    //      new EditorDebug.SelfTestAction(),
@@ -956,7 +963,7 @@ public class BaseKit extends DefaultEditorKit {
 
 
     /** Default typed action */
-    @EditorActionRegistration(name = defaultKeyTypedAction)
+//    @EditorActionRegistration(name = defaultKeyTypedAction)
     public static class DefaultKeyTypedAction extends LocalBaseAction {
 
         static final long serialVersionUID =3069164318144463899L;
@@ -2291,16 +2298,21 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
-    @EditorActionRegistrations({
-        @EditorActionRegistration(name = nextWordAction),
-        @EditorActionRegistration(name = selectionNextWordAction)
-    })
+    // Disabled annotations due to overriding by camel-case actions in GSF (no concrete mimetype)
+//    @EditorActionRegistrations({
+//        @EditorActionRegistration(name = nextWordAction),
+//        @EditorActionRegistration(name = selectionNextWordAction)
+//    })
     public static class NextWordAction extends LocalBaseAction {
 
         static final long serialVersionUID =-5909906947175434032L;
 
-        public NextWordAction() {
-            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
+//        public NextWordAction() {
+//            this(null);
+//        }
+
+        NextWordAction(String name) {
+            super(name, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
         }
 
@@ -2332,16 +2344,21 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
-    @EditorActionRegistrations({
-        @EditorActionRegistration(name = previousWordAction),
-        @EditorActionRegistration(name = selectionPreviousWordAction)
-    })
+    // Disabled annotations due to overriding by camel-case actions in GSF (no concrete mimetype)
+//    @EditorActionRegistrations({
+//        @EditorActionRegistration(name = previousWordAction),
+//        @EditorActionRegistration(name = selectionPreviousWordAction)
+//    })
     public static class PreviousWordAction extends LocalBaseAction {
 
         static final long serialVersionUID =-5465143382669785799L;
 
-        public PreviousWordAction() {
-            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
+//        public PreviousWordAction() {
+//            this(null);
+//        }
+
+        PreviousWordAction(String name) {
+            super(name, MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
         }
 
@@ -2374,7 +2391,7 @@ public class BaseKit extends DefaultEditorKit {
 
     @EditorActionRegistrations({
         @EditorActionRegistration(name = beginWordAction),
-        @EditorActionRegistration(name = selectionBeginAction)
+        @EditorActionRegistration(name = selectionBeginWordAction)
     })
     public static class BeginWordAction extends LocalBaseAction {
 
@@ -2390,7 +2407,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int dot = Utilities.getWordStart(target, caret.getDot());
-                    boolean select = selectionBeginAction.equals(getValue(Action.NAME));
+                    boolean select = selectionBeginWordAction.equals(getValue(Action.NAME));
                     if (select) {
                         caret.moveDot(dot);
                     } else {

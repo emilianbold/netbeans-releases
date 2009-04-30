@@ -68,7 +68,8 @@ public class APTCommentsFilter implements TokenStream, APTTokenStream {
             }
             return next;
         } catch (TokenStreamException ex) {
-            APTUtils.LOG.log(Level.SEVERE, null, ex);
+            // IZ#163088 : unexpected char
+            APTUtils.LOG.log(Level.SEVERE, ex.getMessage());
             return APTUtils.EOF_TOKEN;
         }
     }    

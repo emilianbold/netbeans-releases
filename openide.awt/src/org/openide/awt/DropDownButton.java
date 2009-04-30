@@ -174,14 +174,12 @@ class DropDownButton extends JButton {
                     // If inside the button let the button's mouse listener
                     // deal with the state. The popup menu will be hidden and
                     // we should not show it again.
-                    if ( !mouseInButton ) {
-                        if( getModel() instanceof Model ) {
-                            ((Model)getModel())._release();
-                        }
-                        JPopupMenu menu = getPopupMenu();
-                        if( null != menu ) {
-                            menu.removePopupMenuListener( this );
-                        }
+                    if( getModel() instanceof Model ) {
+                        ((Model)getModel())._release();
+                    }
+                    JPopupMenu menu = getPopupMenu();
+                    if( null != menu ) {
+                        menu.removePopupMenuListener( this );
                     }
                 }
 

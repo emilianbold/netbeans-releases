@@ -43,17 +43,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Content;
 import org.netbeans.editor.ext.html.dtd.DTD.ContentModel;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Tomasz.Slota@Sun.COM, mfukala@netbeans.org
  */
 public class AstNode {
 
@@ -69,7 +71,7 @@ public class AstNode {
     private Map<String, Object> attributes = null;
     private Content content = null;
     private ContentModel contentModel = null;
-    private List<String> errorMessages = null;
+    private Collection<Description> descriptions = null;
 
     AstNode(String name, NodeType nodeType, int startOffset, int endOffset, ContentModel contentModel) {
         this(name, nodeType, startOffset, endOffset);
@@ -128,6 +130,16 @@ public class AstNode {
 //    }
 
     boolean isResolved() {
+        if(content == null) {
+            return false;
+        }
+        //CDATA
+        if(content instanceof DTD.ContentLeaf) {
+            if( "CDATA".equals(((DTD.ContentLeaf)content).getElementName()) ) {
+                return true;
+            }
+        }
+
         //#PCDATA hack
         if(content.getPossibleElements().size() == 1) {
             if(content.getPossibleElements().iterator().next() == null) {
@@ -147,15 +159,40 @@ public class AstNode {
         }
     }
 
-    public synchronized void addErrorMessage(String message) {
-        if(errorMessages == null) {
-            errorMessages = new ArrayList<String>(2);
-        }
-        errorMessages.add(message);
+    Collection<Element> getAllPossibleElements() {
+        Collection<Element> col = new ArrayList<Element>();
+        col.addAll((Collection<Element>)content.getPossibleElements());
+        col.addAll(contentModel.getIncludes());
+        col.removeAll(contentModel.getExcludes());
+        return col;
     }
 
-    public List<String> getErrorMessages() {
-        return errorMessages == null ? Collections.<String>emptyList() : errorMessages;
+    public synchronized void addDescriptionToNode(String message, int type) {
+        addDescription(Description.create(message, type, startOffset(), endOffset()));
+    }
+
+    public synchronized void addDescriptionsToNode(Collection<String> messages, int type) {
+        for(String msg : messages) {
+            addDescriptionToNode(msg, type);
+        }
+    }
+
+    public synchronized void addDescription(Description message) {
+        if(descriptions == null) {
+            descriptions = new ArrayList<Description>(2);
+        }
+        descriptions.add(message);
+    }
+
+    public synchronized void addDescriptions(Collection<Description> messages) {
+        if(descriptions == null) {
+            descriptions = new HashSet<Description>(2);
+        }
+        descriptions.addAll(messages);
+    }
+
+    public Collection<Description> getDescriptions() {
+        return descriptions == null ? Collections.<Description>emptyList() : descriptions;
     }
 
     public String name() {
@@ -251,4 +288,44 @@ public class AstNode {
     void setEndOffset(int endOffset){
         this.endOffset = endOffset;
     }
+
+    public static final class Description {
+
+        public static final int INFORMATION = 0;
+        public static final int WARNING = 1;
+        public static final int ERROR = 2;
+
+        private String text;
+        private int from, to;
+        private int type;
+
+        public static Description create(String text, int type, int from, int to) {
+            return new Description(text, type, from, to);
+        }
+
+        private Description(String text, int type, int from, int to) {
+            this.text = text;
+            this.type = type;
+            this.from = from;
+            this.to = to;
+        }
+
+        public int getType() {
+            return type;
+        }
+
+        public int getFrom() {
+            return from;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public int getTo() {
+            return to;
+        }
+        
+    }
+
 }

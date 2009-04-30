@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -160,7 +160,7 @@ public class AnnotateAction extends ContextAction {
                             "MSG_ANNOTATE_DONE")); // NOI18N
                 }
             };
-            support.start(rp, repository.getAbsolutePath(), NbBundle.getMessage(AnnotateAction.class, "MSG_Annotation_Progress")); // NOI18N
+            support.start(rp, repository, NbBundle.getMessage(AnnotateAction.class, "MSG_Annotation_Progress")); // NOI18N
         }
     }
 
@@ -181,7 +181,7 @@ public class AnnotateAction extends ContextAction {
         HgLogMessage [] logs;
         Set<File> setFile = new HashSet<File>();
         setFile.add(file);
-        logs = HgCommand.getLogMessagesNoFileInfo(repository.getAbsolutePath(), setFile, -1, progress.getLogger());
+        logs = HgCommand.getLogMessagesNoFileInfo(repository, setFile, -1, progress.getLogger());
         if (progress.isCanceled()) {
             return;
         }

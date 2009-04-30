@@ -155,7 +155,8 @@ final class HardStringWizardPanel extends JPanel implements ListSelectionListene
         if (mimeType != null) {
             preview.setContentType(mimeType);
         }
-        sourceComboActionPerformed(null);
+        if (!nonEmptySources.isEmpty())
+            sourceComboActionPerformed(null);
     }
     
     /** Adds additional init of components. */

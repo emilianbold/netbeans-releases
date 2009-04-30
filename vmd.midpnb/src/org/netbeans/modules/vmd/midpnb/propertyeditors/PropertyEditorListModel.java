@@ -293,7 +293,12 @@ public final class PropertyEditorListModel extends PropertyEditorUserCode
                 component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
 
                     public void run() {
-                        List<PropertyValue> array = component.get().readProperty(SVGListCD.PROP_ELEMENTS).getArray();
+                        PropertyValue arrayValue = component.get().readProperty(SVGListCD.PROP_ELEMENTS);
+                        if (arrayValue == PropertyValue.createNull()) {
+                            setValue(arrayValue);
+                            return;
+                        }
+                        List<PropertyValue> array = arrayValue.getArray();
                         for (PropertyValue value : array) {
                             DesignComponent child = value.getComponent();
                             if (child.getType() != SVGListElementEventSourceCD.TYPEID) {

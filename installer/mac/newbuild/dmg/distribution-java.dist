@@ -109,8 +109,9 @@ function checkChoiceUpgradeAction() {
         <line choice="netbeans">
             <line choice="baseide"></line>
             <line choice="javase"></line>
-            <line choice="webcommon"></line>
             <line choice="javaee"></line>
+            <line choice="groovy"></line>
+            <line choice="webcommon"></line>
             <line choice="ergonomics"></line>
         </line>
         <line choice="glassfish"></line>
@@ -142,6 +143,10 @@ function checkChoiceUpgradeAction() {
     <choice id="javaee" title="javaee-title" description="javaee-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javaee.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
         <pkg-ref id="ident.pkg.javaee"></pkg-ref>
     </choice>
+    <choice id="groovy" title="groovy-title" description="groovy-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.groovy.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
+        <pkg-ref id="ident.pkg.groovy"></pkg-ref>
+    </choice>
+
     <choice id="ergonomics" title="ergonomics-title" description="ergonomics-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.ergonomics.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.ergonomics"></pkg-ref>
     </choice>
@@ -153,6 +158,7 @@ function checkChoiceUpgradeAction() {
     <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.webcommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBCOMMON@" auth="Root" onConclusion="None">file:./Contents/Packages/webcommon.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.groovy" version="0.0.0.0.1" installKBytes="@SIZE_GROOVY@" auth="Root" onConclusion="None">file:./Contents/Packages/groovy.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.ergonomics" version="0.0.0.0.1" installKBytes="@SIZE_ERGONOMICS@" auth="Root" onConclusion="None">file:./Contents/Packages/ergonomics.pkg</pkg-ref>
  
 </installer-gui-script>

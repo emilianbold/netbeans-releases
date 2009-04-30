@@ -40,30 +40,33 @@
  */
 package org.netbeans.modules.ruby;
 
-import org.jruby.nb.common.IRubyWarnings.ID;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.RootNode;
-import org.jruby.nb.common.IRubyWarnings;
-import org.jruby.nb.lexer.yacc.ISourcePosition;
-import org.jruby.nb.lexer.yacc.LexerSource;
-import org.jruby.nb.lexer.yacc.SyntaxException;
-import org.jruby.nb.parser.DefaultRubyParser;
-import org.jruby.nb.parser.ParserConfiguration;
-import org.jruby.nb.parser.RubyParserResult;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.RootNode;
+import org.jrubyparser.IRubyWarnings;
+import org.jrubyparser.IRubyWarnings.ID;
+import org.jrubyparser.SourcePosition;
+import org.jrubyparser.lexer.LexerSource;
+import org.jrubyparser.lexer.SyntaxException;
+import org.jrubyparser.parser.ParserConfiguration;
+import org.jrubyparser.parser.ParserResult;
+import org.jrubyparser.parser.Ruby18Parser;
+import org.jrubyparser.parser.Ruby19Parser;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -72,6 +75,7 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.RubyElement;
+import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -471,9 +475,7 @@ public final class RubyParser extends Parser {
             }
         }
 
-        //Reader content = new StringReader(source);
-
-        RubyParserResult result = null;
+        ParserResult result = null;
 
         final boolean ignoreErrors = sanitizedSource;
 
@@ -484,7 +486,7 @@ public final class RubyParser extends Parser {
                         return false;
                     }
 
-                    public void warn(ID id, ISourcePosition position, String message, Object... data) {
+                    public void warn(ID id, SourcePosition position, String message, Object... data) {
                         if (!ignoreErrors) {
                             notifyError(context, id, Severity.WARNING, message, position.getStartOffset(),
                                 sanitizing, data);
@@ -513,7 +515,7 @@ public final class RubyParser extends Parser {
                         }
                     }
 
-                    public void warning(ID id, ISourcePosition position, String message, Object... data) {
+                    public void warning(ID id, SourcePosition position, String message, Object... data) {
                         if (!ignoreErrors) {
                             notifyError(context, id, Severity.WARNING, message, position.getStartOffset(),
                                 sanitizing, data);
@@ -530,7 +532,7 @@ public final class RubyParser extends Parser {
                 };
 
             //warnings.setFile(file);
-            DefaultRubyParser parser = new DefaultRubyParser();
+            org.jrubyparser.parser.RubyParser parser = getParserFor(context);
             parser.setWarnings(warnings);
 
             if (sanitizing == Sanitize.NONE) {
@@ -544,41 +546,23 @@ public final class RubyParser extends Parser {
                 fileName = fo.getNameExt();
             }
 
-            ParserConfiguration configuration = new ParserConfiguration(0, true, false, true);
-            InputStream is;
+            ParserConfiguration configuration = new ParserConfiguration();
             
-            // As of JRuby 1.1, JRuby processes the input byte by byte. Unfortunately, the byte
-            // offsets are the ones used for node offsets - which don't correspond to the character
-            // offsets I need when for example UTF8 encoding the bytes. This breaks semantic
-            // highlighting offsets etc.
-            // For that reason, I'm just truncating the bytes down to 255 now (using ? in place of
-            // other unicode chars). This doesn't affect the parser since the symbols aren't
-            // unicode safe anyway. See issue #129985 for more.
-            //
-            //try {
-                //LexerSource lexerSource = new LexerSource(fileName, content, 0, true);
-                // This doesn't work -- so use lame StringBufferInputStream approach instead for now
-                //ByteList byteList = ByteList.create(source);
-                //LexerSource lexerSource = ByteListLexerSource.getSource(fileName, byteList, null, configuration);
-                //byte[] bytes = source.getBytes("UTF8");
-                //is = new ByteArrayInputStream(bytes);
-            //} catch (UnsupportedEncodingException ex) {
-            //    Exceptions.printStackTrace(ex);
-            //    is = new StringBufferInputStream(source);
-            //}
             final String data = source;
             final int length = data.length();
-            is = new InputStream() {
+
+            Reader r = new Reader() {
+
                 int offset = 0;
-                
+
                 @Override
                 public int read() throws IOException {
                     if (offset == length) {
                         return -1;
                     }
-                    
+
                     int c = data.charAt(offset++);
-                    
+
                     // Truncate values at c. This is wrong, but if I process
                     // bytes properly UTF8 encoded, then all my source offsets on nodes
                     // end up wrong! Unicode chars cannot show up in symbols anyway,
@@ -586,13 +570,23 @@ public final class RubyParser extends Parser {
                     if (c > 255) {
                         c = '?';
                     }
-                    
+
                     return c;
                 }
-                
+
+                @Override
+                public int read(char[] cbuf, int off, int len) throws IOException {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public void close() throws IOException {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
             };
-            
-            LexerSource lexerSource = LexerSource.getSource(fileName, is, null, configuration);
+
+            LexerSource lexerSource = LexerSource.getSource(fileName, r, configuration);
             result = parser.parse(configuration, lexerSource);
         } catch (SyntaxException e) {
             int offset = e.getPosition().getStartOffset();
@@ -607,6 +601,7 @@ public final class RubyParser extends Parser {
             }
 
             if (!ignoreErrors) {
+                //XXX: jruby-parser
                 notifyError(context, ID.SYNTAX_ERROR, Severity.ERROR, e.getMessage(),
                    offset, sanitizing, new Object[] { e.getPid(), e });
             }
@@ -635,15 +630,66 @@ public final class RubyParser extends Parser {
             return sanitize(context, sanitizing);
         }
     }
-    
+
+
+    /**
+     * Gets the parser for the given context. If the context is owned by 
+     * a project that uses Ruby 1.9 or JRuby with 1.9 turned on, this method 
+     * will return a 1.9 compatible parser; otherwise a 1.8 compatible parser. 
+     * 
+     * @param context
+     * @return
+     */
+    private static org.jrubyparser.parser.RubyParser getParserFor(Context context) {
+        // currently there is no way to specify a source level for the project 
+        // using a UI. instead the source version is determined by the platform the project
+        // uses, or in case JRuby that can support both 1.8 and 1.9 we check for the 
+        // specified compat level
+        FileObject fo = context.snapshot.getSource().getFileObject();
+        if (fo == null) {
+            return new Ruby18Parser();
+        }
+        Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner == null) {
+            return new Ruby18Parser();
+        }
+        RubyPlatform platform = RubyPlatform.platformFor(owner);
+        if (platform == null) {
+            return new Ruby18Parser();
+        }
+        if (platform.isJRuby()) {
+            return getParserForJRuby(owner);
+        }
+        String version = platform.getVersion();
+        if (version == null) {
+            return new Ruby18Parser();
+        }
+        if (version.startsWith("1.9")) { //NOI18N
+            return new Ruby19Parser();
+        }
+        return new Ruby18Parser();
+    }
+
+    private static org.jrubyparser.parser.RubyParser getParserForJRuby(Project project) {
+        PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
+        if (evaluator != null) {
+            // specified in SharedRubyProjectProperties, but don't want add a dep to it.
+            String jvmArgs = evaluator.getProperty("jvm.args"); //NOI18N
+            if (jvmArgs != null) {
+                return jvmArgs.contains("jruby.compat.version=RUBY1_9") ? new Ruby19Parser() : new Ruby18Parser();
+            }
+        }
+        return new Ruby18Parser();
+    }
+
     protected RubyParseResult createParseResult(Snapshot snapshots, Node rootNode) {
         return new RubyParseResult(this, snapshots, rootNode);
     }
     
-    public static RubyElement resolveHandle(ParserResult info, ElementHandle handle) {
+    public static RubyElement resolveHandle(org.netbeans.modules.csl.spi.ParserResult info, ElementHandle handle) {
         if (handle instanceof AstElement) {
             AstElement element = (AstElement)handle;
-            ParserResult oldInfo = element.getInfo();
+            org.netbeans.modules.csl.spi.ParserResult oldInfo = element.getInfo();
             if (oldInfo == info) {
                 return element;
             }
@@ -833,6 +879,10 @@ public final class RubyParser extends Parser {
 
         public String getDescription() {
             return null;
+        }
+
+        public boolean isLineError() {
+            return true;
         }
     }    
 }

@@ -41,6 +41,7 @@
 
 package org.netbeans.editor.ext;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.*;
@@ -65,6 +66,9 @@ import org.netbeans.editor.DialogSupport;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.Utilities;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
@@ -225,6 +229,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
     public @Override void windowActivated(WindowEvent evt) {
         findPerformed = false;
         createFindPanel();
+        findPanel.blockOneLineSelection=false;
         findPanel.initBlockSearch();
         updateCaretPosition();
     }
@@ -396,6 +401,8 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
         
         private int blockSearchStartPos = 0;
         private int blockSearchEndPos = 0;
+        private boolean blockOneLineSelection = false;
+
 
         FindPanel() {
             objToProps.put(findWhat, EditorFindSupport.FIND_WHAT);
@@ -433,6 +440,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
             regExp.setSelected(getBooleanProperty(regExp));
             bwdSearch.setSelected(getBooleanProperty(bwdSearch));
             wrapSearch.setSelected(getBooleanProperty(wrapSearch));
+            updateFindDialogUI();
 
             findWhat.getEditor().getEditorComponent().addKeyListener(this);
             findWhat.addActionListener(this);
@@ -488,6 +496,62 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
             replaceWithLabel.setVisible(v);
         }
 
+        /**
+         * update dialog view based on search and replace texts
+         */
+        private void updateFindDialogUI()
+        {
+            boolean wrongFindPattern=false;
+            boolean wrongReplacePattern=false;
+            String what=findWhat.getEditor().getItem().toString();
+            String toWhat=replaceWith.getEditor().getItem().toString();
+            if(what==null || what.length()==0)wrongFindPattern=true;
+            if(toWhat==null)wrongReplacePattern=true;
+            if(regExp.isSelected())
+            {
+                Pattern searchPattern=null;
+                int numGroups=0;
+                if(!wrongFindPattern)
+                {
+                    try
+                    {
+                        searchPattern=Pattern.compile(what);
+                        numGroups=searchPattern.matcher("").groupCount();
+                    }
+                    catch(PatternSyntaxException ex)
+                    {
+                        wrongFindPattern=true;
+                    }
+                }
+                if(!wrongReplacePattern)
+                {
+                    //the obly problemmatic part of replacement is references to initial pattern
+                    //emulate replacement below to find any problems
+                    String pseudoText="0123456789";//NOI18N
+                    String pseudoWhat="";//NOI18N
+                    for(int i=0;i<numGroups;i++)
+                    {
+                        pseudoWhat+="("+i+")";//NOI18N
+                    }
+                    Pattern pseudoP=Pattern.compile(pseudoWhat);
+                    try
+                    {
+                        pseudoP.matcher(pseudoText).replaceFirst(toWhat);
+                    }
+                    catch(Exception ex)
+                    {
+                        //got probem with group reference, either not a number after $ or not existent group
+                        wrongReplacePattern=true;
+                    }
+                }
+            }
+            findButtons[0].setEnabled(!wrongFindPattern);//find button
+            findButtons[1].setEnabled(!wrongReplacePattern && !wrongFindPattern);//replace button
+            findButtons[2].setEnabled(!wrongReplacePattern && !wrongFindPattern);//replace all button
+            findWhat.getEditor().getEditorComponent().setForeground(wrongFindPattern ? Color.RED : Color.BLACK);
+            replaceWith.getEditor().getEditorComponent().setForeground(wrongReplacePattern ? Color.RED : Color.BLACK);
+        }
+
         public void resetBlockSearch(){
             blockSearch.setSelected(false);
             blockSearch.setEnabled(false);
@@ -506,18 +570,21 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
             int startSelection = 0;
             int endSelection = 0;
             boolean blockSearchVisible = false;
-            
+            boolean blockSearchEnabled = false;
+            boolean blockOneLine = false;
             if (c != null) {
                 startSelection = c.getSelectionStart();
                 endSelection = c.getSelectionEnd();
-                
+                if (startSelection<endSelection) blockSearchEnabled = true;
                 Document doc = c.getDocument();
                 if (doc instanceof BaseDocument){
                     BaseDocument bdoc = (BaseDocument) doc;
                     try{
                         int startLine = Utilities.getLineOffset(bdoc, startSelection);
                         int endLine = Utilities.getLineOffset(bdoc, endSelection);
-                        if (endLine > startLine) {
+                        if (endLine == startLine && startSelection < endSelection)
+                            blockOneLine = true;
+                        if (endLine > startLine || blockOneLineSelection) {
                             blockSearchVisible = true;
                         }
                     } catch (BadLocationException ble){
@@ -533,15 +600,16 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
                         int n = selText.indexOf( '\n' );
                         if (n >= 0 ) selText = selText.substring(0, n);
                         findWhat.getEditor().setItem(selText);
-                        changeFindWhat(true);
+//                        changeFindWhat(true);
                     }
                 }
             
                 blockSearchStartPos = blockSearchVisible ? startSelection : 0;
                 blockSearchEndPos = blockSearchVisible ? endSelection : 0;
+                blockOneLineSelection = blockOneLine;
                 
                 try{
-                    blockSearch.setEnabled(blockSearchVisible);
+                    blockSearch.setEnabled(blockSearchEnabled);
                     blockSearch.setSelected(blockSearchVisible);
                     findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.valueOf(blockSearchVisible));
                     findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, new Integer(blockSearchStartPos));
@@ -676,6 +744,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
             SwingUtilities.invokeLater(
                 new Runnable() {
                     public void run() {
+                        updateFindDialogUI();
                         changeFindWhat(performIncSearch);
                         changeReplaceWith();
                     }
@@ -725,6 +794,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
                 boolean value = !val.booleanValue();
                 incSearch.setEnabled(value);
                 wholeWords.setEnabled(value);
+                updateFindDialogUI();
             }
             if (evt.getItem() == blockSearch){
                 boolean value = val.booleanValue();

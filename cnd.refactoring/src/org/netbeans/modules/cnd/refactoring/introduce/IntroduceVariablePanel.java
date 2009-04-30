@@ -32,9 +32,9 @@ import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 /**
  * based on org.netbeans.modules.java.hints.introduce.IntroduceVariablePanel
@@ -111,7 +111,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
                 if (null == text || text.length() == 0) {
                     return ""; // NOI18N
                 }
-                if (!Utilities.isJavaIdentifier(text)) {
+                if (!CndLexerUtilities.isCppIdentifier(text)) {
                     return getDefaultErrorMessage(text);
                 }
                 return null;

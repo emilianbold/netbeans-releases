@@ -40,7 +40,12 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.String;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.List;
@@ -49,9 +54,11 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -78,6 +85,7 @@ public class StorageTest extends NbTestCase {
             throw new RuntimeException(e);
         }
         System.setProperty("netbeans.user", System.getProperty("nbjunit.workdir", "/tmp/"));
+        emptyStorage();
     }
 
     public void testStorage() throws MalformedURLException, CoreException, IOException {
@@ -139,6 +147,104 @@ public class StorageTest extends NbTestCase {
         issues = storage.readQuery(url, qName);
         assertEquals(2, issues.size());
 
+    }
+
+    public void testArchivedStorage() throws MalformedURLException, CoreException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        IssueStorage storage = IssueStorage.getInstance();
+        long ts = System.currentTimeMillis();
+        String id1 = "id1";
+        String id2 = "id2";
+
+        String url = "http://test/bugzilla";
+        String qName = "SomeQuery";
+
+        storage.storeArchivedQueryIssues(url, qName, new String[] {id1, id2});
+        Map<String, Long> read = storage.readArchivedQueryIssues(url, qName);
+
+        assertEquals(2, read.size());
+        assertTrue(ts <= read.get(id1));
+        assertTrue(ts <= read.get(id2));
+        
+        // wait a sec and set TTL so that the archived issues shuld be cleaned up
+        try {
+            Thread.currentThread().sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        Field f = BugtrackingConfig.class.getDeclaredField("DEFAULT_ARCHIVED_TTL");
+        f.setAccessible(true);
+        f.set(BugtrackingConfig.getInstance(), new Long(0)); // zero time to live
+
+        read = storage.readArchivedQueryIssues(url, qName);
+        assertEquals(0, read.size());
+        
+    }
+
+    public void testCleanup() throws MalformedURLException, CoreException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        IssueStorage storage = IssueStorage.getInstance();
+        long ts = System.currentTimeMillis();
+        Map<String, String> attr = new HashMap<String, String>();
+        String id1 = "id1";
+        String id2 = "id2";
+
+        String url = "http://test/bugzilla";
+        String qName = "SomeQuery";
+
+        Issue i1 = new DummyIssue(id1, attr);
+        Issue i2 = new DummyIssue(id2, attr);
+        IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr, -1, false);
+        IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr, -1, false);
+
+        storage.storeIssue(url, ie1);
+        storage.storeIssue(url, ie2);
+
+        // store query
+        storage.storeQuery(url, qName, new String[] {id1, id2});
+        List<String> stored = storage.readQuery(url, qName);
+
+        assertEquals(2, stored.size());
+        File folder = getNameSpaceFolder(url);
+        File[] issueFiles = folder.listFiles(new FilenameFilter() { public boolean accept(File dir, String name) {return name.endsWith(".i");}});
+        assertEquals(2, issueFiles.length); // issues are there
+
+        // cleanup, yet issues are living in a stored query
+        storage.cleanup();
+        issueFiles = folder.listFiles(new FilenameFilter() { public boolean accept(File dir, String name) {return name.endsWith(".i");}});
+        assertEquals(2, issueFiles.length); // issues are still there
+
+        // cleanup, yet issues are living in archive
+        storage.storeQuery(url, qName, new String[] {});
+        storage.storeArchivedQueryIssues(url, qName, new String[] {id1, id2});
+        storage.cleanup();
+        issueFiles = folder.listFiles(new FilenameFilter() { public boolean accept(File dir, String name) {return name.endsWith(".i");}});
+        assertEquals(2, issueFiles.length); // issues are still there
+
+        // cleanup, issues aren't in a query or archived
+        storage.storeQuery(url, qName, new String[] {});
+        storage.storeArchivedQueryIssues(url, qName, new String[] {});
+        storage.cleanup();
+        issueFiles = folder.listFiles(new FilenameFilter() { public boolean accept(File dir, String name) {return name.endsWith(".i");}});
+        assertEquals(0, issueFiles.length); // issues are still there
+    }
+
+
+    private void emptyStorage() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        File f = getStorageRootFile();
+        BugtrackingUtil.deleteRecursively(f);
+    }
+
+    private File getStorageRootFile() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException  {
+        IssueStorage storage = IssueStorage.getInstance();
+        Method m = storage.getClass().getDeclaredMethod("getStorageRootFile");
+        m.setAccessible(true);
+        return (File) m.invoke(storage, new Object[0]);
+    }
+
+    private File getNameSpaceFolder(String url) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException  {
+        IssueStorage storage = IssueStorage.getInstance();
+        Method m = storage.getClass().getDeclaredMethod("getNameSpaceFolder", String.class);
+        m.setAccessible(true);
+        return (File) m.invoke(storage, new Object[] {url});
     }
 
     private void assertAttribute(Map<String, String> attrs, String attr, String value) {

@@ -43,6 +43,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.AutarkicRemoteTestCase;
+import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
 import org.netbeans.modules.cnd.remote.support.TransportTestCase;
 import org.netbeans.modules.cnd.test.BaseTestSuite;
 
@@ -52,12 +53,18 @@ import org.netbeans.modules.cnd.test.BaseTestSuite;
  */
 public class RemoteDevelopmentTest extends BaseTestSuite {
 
+//    static {
+//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
+//        System.setProperty("cnd.remote.logger.level", "0");
+//        System.setProperty("nativeexecution.support.logger.level", "0");
+//    }
+
     public RemoteDevelopmentTest() {
         super("Remote Development"); // NOI18N
-
         addTestSuite(MappingsTestCase.class);
         addTestSuite(AutarkicRemoteTestCase.class);
         addTestSuite(TransportTestCase.class);
+        addTestSuite(ServerListTestCase.class);
     }
 
     public static Test suite() {
