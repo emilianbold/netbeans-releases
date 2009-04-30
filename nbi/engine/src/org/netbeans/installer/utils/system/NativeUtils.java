@@ -230,6 +230,11 @@ public abstract class NativeUtils {
         try {
             if (path != null) {
                 final File tempDir = SystemUtils.getTempDirectory();
+                if(!tempDir.exists() && !tempDir.mkdirs()) {
+                    ErrorManager.notifyCritical(
+                            "Cannot create temporary directory " + tempDir.getAbsolutePath());
+                    return;
+                }
                 File file = null;
                 try {
                     file = FileUtils.createTempFile(tempDir);

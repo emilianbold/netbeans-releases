@@ -66,7 +66,7 @@ import static javax.swing.JOptionPane.YES_NO_CANCEL_OPTION;
 import static javax.swing.JOptionPane.YES_OPTION;
 import static javax.swing.JOptionPane.NO_OPTION;
 import static javax.swing.JOptionPane.CANCEL_OPTION;
-import static org.netbeans.installer.utils.SystemUtils.getCurrentPlatform;
+
 
 /**
  *
@@ -445,7 +445,7 @@ public final class UiUtils {
                     // if the current platform is Linux and the desktop manager is
                     // KDE, then we should try to use the GTK look and feel
                     try {
-                        if (getCurrentPlatform().isCompatibleWith(Platform.LINUX) &&
+                        if (System.getProperty("os.name").contains("Linux") &&
                                 (System.getenv("KDE_FULL_SESSION") != null)) {
                             // check whether the GTK look and feel class is
                             // available -- we'll get CNFE if it is not and it will
