@@ -1761,10 +1761,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private FileAndHandler createOrFindFileImpl(final FileBuffer buf, final NativeFileItem nativeFile, FileImpl.FileType fileType) {
         APTPreprocHandler preprocHandler = null;
         File file = buf.getFile();
-        FileImpl impl = getFile(file, false);
+        FileImpl impl = getFile(file, true);
         if (impl == null) {
             synchronized (fileContainerLock) {
-                impl = getFile(file, false);
+                impl = getFile(file, true);
                 if (impl == null) {
                     preprocHandler = createPreprocHandler(nativeFile);
                     assert preprocHandler != null;
