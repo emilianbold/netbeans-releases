@@ -59,7 +59,6 @@ import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.openide.util.Exceptions;
 
 /**
  *

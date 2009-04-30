@@ -270,11 +270,11 @@ public class DataEditorSupportTest extends NbTestCase {
             // simulate external change
             fileObject.setReadOnly(true);
             // simulate event normally fired from FileObj.refreshImpl()
-            fileObject.setAttribute("DataEditorSupport.read-only.changing", Boolean.TRUE);
+            fileObject.setAttribute("DataEditorSupport.read-only.refresh", Boolean.TRUE);
             waitEQ();
             assertTrue("Display name should contain r/o.", ed.getDisplayName().contains("r/o"));
             fileObject.setReadOnly(false);
-            fileObject.setAttribute("DataEditorSupport.read-only.changing", Boolean.FALSE);
+            fileObject.setAttribute("DataEditorSupport.read-only.refresh", Boolean.FALSE);
             waitEQ();
             assertFalse("Display name should not contain r/o.", ed.getDisplayName().contains("r/o"));
         }

@@ -382,7 +382,7 @@ function set_page_title(title) {
     document.title = title;
     var titleElement = document.getElementsByTagName("title");
     if(titleElement.length == 1) {
-        titleElement[0].innerHTML = title;       
+        titleElement[0].text = title;       
     } else {
         document.write('<title>' + title + '</title>');
     }

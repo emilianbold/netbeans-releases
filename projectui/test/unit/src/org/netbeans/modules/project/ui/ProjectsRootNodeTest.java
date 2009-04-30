@@ -297,7 +297,7 @@ public class ProjectsRootNodeTest extends NbTestCase {
                 new AbstractNode(Children.LEAF, Lookups.singleton(prj)) {
                     public @Override String getDisplayName() {return "Prj";}
                     public @Override String getHtmlDisplayName() {return "Prj";}
-                }, false, false);
+                }, false, true);
         final AtomicInteger nameChanges = new AtomicInteger();
         final AtomicInteger iconChanges = new AtomicInteger();
         node.addNodeListener(new NodeAdapter() {
