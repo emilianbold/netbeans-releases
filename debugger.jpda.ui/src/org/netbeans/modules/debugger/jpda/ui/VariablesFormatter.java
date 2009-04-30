@@ -310,10 +310,10 @@ public class VariablesFormatter implements Cloneable {
         mapEntry.setIncludeSubTypes(true);
         mapEntry.setUseChildrenVariables(true);
         Map childrenMap = new LinkedHashMap();
-        childrenMap.put("key", "key");
-        childrenMap.put("value", "value");
+        childrenMap.put("key", "getKey()");
+        childrenMap.put("value", "getValue()");
         mapEntry.setChildrenVariables(childrenMap);
-        mapEntry.setValueFormatCode("key+\" => \"+value");
+        mapEntry.setValueFormatCode("getKey()+\" => \"+getValue()");
         mapEntry.isDefault = true;
 
         return new VariablesFormatter[] { collection, map, mapEntry };
