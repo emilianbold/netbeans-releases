@@ -64,6 +64,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.webui.designtime</friend>
                 <friend>org.netbeans.modules.visualweb.woodstock.webui.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.dataconnectivity.designtime</friend>
+                <friend>org.icefaces.netbeans.modules.visualweb.frameworks</friend>
                 <package>com.sun.rave.designtime.ext</package>
                 <package>com.sun.rave.designtime.ext.componentgroup</package>
                 <package>com.sun.rave.designtime.ext.componentgroup.impl</package>

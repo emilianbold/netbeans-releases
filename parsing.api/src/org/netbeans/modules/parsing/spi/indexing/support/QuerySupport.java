@@ -40,6 +40,7 @@
 package org.netbeans.modules.parsing.spi.indexing.support;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +66,7 @@ import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
 import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -218,7 +220,7 @@ public final class QuerySupport {
             final Kind kind,
             final String... fieldsToLoad
     ) throws IOException {
-        // check if there are stale indicies
+        // check if there are stale indices
         for (Map.Entry<URL, IndexImpl> ie : indexes.entrySet()) {
             final IndexImpl index = ie.getValue();
             final Collection<? extends String> staleFiles = index.getStaleFiles();
@@ -231,7 +233,11 @@ public final class QuerySupport {
                 final URL root = ie.getKey();
                 LinkedList<URL> list = new LinkedList<URL>();
                 for(String staleFile : staleFiles) {
-                    list.add(new URL(root, staleFile));
+                    try {
+                        list.add(Util.resolveUrl(root, staleFile));
+                    } catch (MalformedURLException ex) {
+                        LOG.log(Level.WARNING, null, ex);
+                    }
                 }
 
                 IndexingManager.getDefault().refreshIndexAndWait(root, list);

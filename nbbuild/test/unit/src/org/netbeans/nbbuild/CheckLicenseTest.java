@@ -354,9 +354,6 @@ public class CheckLicenseTest extends NbTestCase {
                 fail("There should be more than five lines: " + content);
             }
             for (int i = 0; i < lines.length; i++) {
-                if (lines[i].length() == 0) {
-                    fail("There is an empty line: " + content);
-                }
                 if (lines[i].indexOf("-->") >= 0) {
                     break;
                 }

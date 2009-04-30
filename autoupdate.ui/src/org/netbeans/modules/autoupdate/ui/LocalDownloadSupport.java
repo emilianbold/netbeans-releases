@@ -143,7 +143,10 @@ public class LocalDownloadSupport {
     private void addUpdateUnits (File... newFiles) {
         Collection<UpdateUnit> alreadyInstalled = new HashSet<UpdateUnit> ();
         for (File nbm : newFiles) {
-            UpdateUnit u = createUpdateUnitFromNBM (nbm, false);
+            UpdateUnit u = null;
+            if(NBM_FILE_FILTER.accept(nbm)) {
+                u = createUpdateUnitFromNBM (nbm, false);
+            }
             if (u != null) {
                 if (u.getAvailableUpdates () == null || u.getAvailableUpdates ().isEmpty ()) {
                     // already installed

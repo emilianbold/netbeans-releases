@@ -90,6 +90,10 @@ public class PanelConfigureProjectVisual extends JPanel {
     boolean needWarSupport() {
         return optionsPanel.needWarSupport();
     }
+
+    Object getServer() {
+        return optionsPanel.getServer();
+    }
     
     boolean valid( WizardDescriptor wizardDescriptor ) {
         

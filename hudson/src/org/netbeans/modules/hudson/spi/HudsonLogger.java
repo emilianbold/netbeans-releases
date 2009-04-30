@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
@@ -97,20 +98,32 @@ public interface HudsonLogger {
                 DataObject d = DataObject.find(f);
                 if (row == -1) {
                     if (force) {
+                        Runnable r;
                         final EditorCookie c = d.getLookup().lookup(EditorCookie.class);
-                        if (c == null) {
-                            LOG.fine("no EditorCookie found for " + f);
-                            return;
-                        }
-                        EventQueue.invokeLater(new Runnable() {
-                            public void run() {
-                                try {
-                                    c.openDocument();
-                                } catch (IOException x) {
-                                    LOG.log(Level.INFO, null, x);
+                        if (c != null) {
+                            r = new Runnable() {
+                                public void run() {
+                                    try {
+                                        c.openDocument();
+                                    } catch (IOException x) {
+                                        LOG.log(Level.INFO, null, x);
+                                    }
                                 }
+                            };
+                        } else {
+                            LOG.fine("no EditorCookie found for " + f);
+                            final OpenCookie o = d.getLookup().lookup(OpenCookie.class);
+                            if (o == null) {
+                                LOG.fine("no OpenCookie found for " + f);
+                                return;
                             }
-                        });
+                            r = new Runnable() {
+                                public void run() {
+                                    o.open();
+                                }
+                            };
+                        }
+                        EventQueue.invokeLater(r);
                     }
                     return;
                 }

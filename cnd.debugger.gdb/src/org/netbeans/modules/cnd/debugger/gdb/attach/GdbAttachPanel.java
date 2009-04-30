@@ -46,6 +46,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -80,16 +81,8 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         procList = new ProcessList();
         controller = new GdbAttachController();
         initComponents();
-        filterField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                filterTextChanged();
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                filterTextChanged();
-            }
-
-            public void changedUpdate(DocumentEvent e) {
+        filterField.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
+            public void documentChanged(DocumentEvent e) {
                 filterTextChanged();
             }
         });
@@ -116,13 +109,17 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         }
         
         // Fill the Projects combo box
+        fillProjectsCombo(projectCB);
+    }
+
+    public static void fillProjectsCombo(JComboBox comboBox) {
         Project main = OpenProjects.getDefault().getMainProject();
         for (Project proj : OpenProjects.getDefault().getOpenProjects()) {
             ProjectInformation pinfo = ProjectUtils.getInformation(proj);
-            PItem pi = new PItem(pinfo);
-            projectCB.addItem(pi);
+            ProjectCBItem pi = new ProjectCBItem(pinfo);
+            comboBox.addItem(pi);
             if (main != null && proj == main) {
-                projectCB.setSelectedItem(pi);
+                comboBox.setSelectedItem(pi);
             }
         }
     }
@@ -268,11 +265,11 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         return null;
     }
     
-    static class PItem {
+    public static class ProjectCBItem {
         
         private ProjectInformation pinfo;
         
-        public PItem(ProjectInformation pinfo) {
+        public ProjectCBItem(ProjectInformation pinfo) {
             this.pinfo = pinfo;
         }
         
@@ -308,10 +305,10 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
             int row = processTable.getSelectedRow();
             if (row >= 0) {
                 String pid = processModel.getValueAt(row, 1).toString();
-                PItem pi = (PItem) projectCB.getSelectedItem();
+                ProjectCBItem pi = (ProjectCBItem) projectCB.getSelectedItem();
                 if (pi != null) {
                     try {
-                        GdbDebugger.attach(pid, pi.getProjectInformation());
+                        GdbDebugger.attach(Long.valueOf(pid), pi.getProjectInformation());
                     } catch (DebuggerStartException dse) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage(GdbAttachPanel.class,
@@ -437,5 +434,21 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     private javax.swing.JComboBox projectCB;
     private javax.swing.JLabel projectLabel;
     // End of variables declaration//GEN-END:variables
-    
+
+    public static abstract class AnyChangeDocumentListener implements DocumentListener {
+        public abstract void documentChanged(DocumentEvent e);
+
+        public void changedUpdate(DocumentEvent e) {
+            documentChanged(e);
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            documentChanged(e);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            documentChanged(e);
+        }
+
+    }
 }

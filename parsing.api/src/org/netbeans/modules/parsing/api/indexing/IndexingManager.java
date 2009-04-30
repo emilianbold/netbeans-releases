@@ -43,6 +43,7 @@ import java.net.URL;
 import java.util.Collection;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -88,7 +89,7 @@ public final class IndexingManager {
      *   be reindexed.
      */
     public void refreshIndex(URL root, Collection<? extends URL> files) {
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false);
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, false);
     }
 
     /**
@@ -106,24 +107,51 @@ public final class IndexingManager {
      *   be reindexed.
      */
     public void refreshIndexAndWait(URL root, Collection<? extends URL> files) {
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, true);
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, true);
     }
 
     /**
-     * Schedules a new job for refreshing all indicies created by the given indexer.
+     * Schedules a new job for refreshing all indices created by the given indexer.
      * This method only works for <code>CustomIndexer</code>s. It is not possible to
-     * refresh indicies created by <code>EmbeddedIndexer</code>s or <code>BinaryIndexer</code>s.
+     * refresh indices created by <code>EmbeddedIndexer</code>s or <code>BinaryIndexer</code>s.
      *
      * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
      * very expensive operation and the more files you ask to reindex the longer the
      * job will take.
      *
-     * @param indexerName The name of the indexer, which indicies should be refreshed
+     * @param indexerName The name of the indexer, which indices should be refreshed.
+     *   Can be <code>null</code> in which case all indices created by <b>all</b>
+     *   indexers will be refreshed (ie. all types of indexers will used,
+     *   not just <code>CustomIndexers</code>).
      *
      * @since 1.8
      */
-    public void refreshAllIndicies(String indexerName) {
-        RepositoryUpdater.getDefault().addIndexingJob(indexerName);
+    public void refreshAllIndices(String indexerName) {
+        if (indexerName != null) {
+            RepositoryUpdater.getDefault().addIndexingJob(indexerName);
+        } else {
+            RepositoryUpdater.getDefault().refreshAll();
+        }
+    }
+
+    /**
+     * Schedules a new job that will reindex all known roots thay lie under the
+     * <code>folders</code>.
+     * 
+     * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
+     * very expensive operation and the more files you ask to reindex the longer the
+     * job will take.
+     *
+     * @param folders The list of folders that may contain some of previously
+     *   indexed roots. Can be <code>null</code> in which case all indices for
+     *   all roots will be refreshed.
+     *
+     * @since 1.11
+     */
+    public void refreshAllIndices(FileObject... folders) {
+        // XXX: we should actually implement a special job for this and not just
+        // refresh everything
+        RepositoryUpdater.getDefault().refreshAll();
     }
 
     // -----------------------------------------------------------------------

@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.libs.jsch/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/jsch/Bundle.properties
-OpenIDE-Module-Implementation-Version: 0139
+OpenIDE-Module-Implementation-Version: 0141
 OpenIDE-Module-Layer: org/netbeans/libs/jsch/mf-layer.xml
 

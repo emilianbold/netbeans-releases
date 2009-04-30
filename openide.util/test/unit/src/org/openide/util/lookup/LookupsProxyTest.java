@@ -42,11 +42,12 @@
 package org.openide.util.lookup;
 
 import java.io.Serializable;
-import org.openide.util.*;
 
 import java.util.*;
-import junit.framework.*;
 import org.netbeans.junit.*;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /** Runs all NbLookupTest tests on ProxyLookup and adds few additional.
  */

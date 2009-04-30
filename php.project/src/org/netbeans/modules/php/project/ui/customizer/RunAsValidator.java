@@ -46,7 +46,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Helper class for validating {@link RunAsLocalWeb}, {@link RunAsRemoteWeb} and {@link RunAsScript}.
@@ -116,18 +119,31 @@ public final class RunAsValidator {
      * Validate given parameters and return an error message or <code>null</code> if everything is OK.
      * @param parentDirectory parent directory of the indexFile.
      * @param indexFile file name or even relative file path (to webRoot) to validate, can be <code>null</code>.
-     *                  <b>If it is <code>null</code> then no error message is returned.</b>
+     *                  <b>File separator can be only "/". If it is <code>null</code> then no error message is returned.</b>
      * @param arguments arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
     public static String validateIndexFile(File parentDirectory, String indexFile, String arguments) {
         assert parentDirectory != null;
         if (indexFile != null) {
-            if (indexFile.trim().length() == 0) {
+            if (!PhpProjectUtils.hasText(indexFile)) {
                 return NbBundle.getMessage(RunAsValidator.class, "MSG_NoIndexFile");
             }
-            File index = new File(parentDirectory, indexFile.replace('/', File.separatorChar)); // NOI18N
-            if (!index.isFile()) {
+            indexFile = indexFile.trim();
+            boolean error = false;
+            if (indexFile.startsWith("/") // NOI18N
+                    || indexFile.startsWith("\\")) { // NOI18N
+                error = true;
+            } else if (Utilities.isWindows() && indexFile.contains(File.separator)) {
+                error = true;
+            } else {
+                File index = new File(parentDirectory, indexFile.replace('/', File.separatorChar)); // NOI18N
+                if (!index.isFile()
+                        || !index.equals(FileUtil.normalizeFile(index))) {
+                    error = true;
+                }
+            }
+            if (error) {
                 return NbBundle.getMessage(RunAsValidator.class, "MSG_IndexFileInvalid");
             }
         }

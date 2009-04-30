@@ -40,9 +40,10 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.awt.Dialog;
-import org.netbeans.modules.cnd.api.compilers.ServerListDisplayer;
-import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
+import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
+import org.netbeans.modules.cnd.ui.options.ServerListDisplayerEx;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -53,11 +54,23 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Vladimir Kvashin
  */
 @ServiceProvider(service = ServerListDisplayer.class)
-public class RemoteServerListDisplayer implements ServerListDisplayer {
+public class RemoteServerListDisplayer extends ServerListDisplayerEx {
 
-    public boolean showServerListDialog(ToolsCacheManager cacheManager) {
+    @Override
+    protected boolean showServerListDialogImpl() {
+        ToolsCacheManager cacheManager = new ToolsCacheManager();
+        if (showServerListDialog(cacheManager)) {
+            cacheManager.applyChanges();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    protected boolean showServerListDialogImpl(ToolsCacheManager cacheManager) {
         EditServerListDialog dlg = new EditServerListDialog(cacheManager);
-        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(RemoteServerList.class, "TITLE_EditServerList"), true,
+        DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(getClass(), "TITLE_EditServerList"), true,
                     DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
         dlg.setDialogDescriptor(dd);
         dd.addPropertyChangeListener(dlg);

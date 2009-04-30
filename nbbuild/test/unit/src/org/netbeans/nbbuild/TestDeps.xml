@@ -88,7 +88,7 @@ made subject to such option by the copyright holder.
         <echo message="unittestfolder  : ${unit.dist.folder}" />
         <echo message="unittestruntimeclasspath : ${unit.runtime.cp}" />
         <echo message="unit.compile.cp           : ${unit.compile.cp}" />
-        <fail message="{unit.dist.folder}" unless="ok-unit-dist-folder" />
+        <fail message="${unit.dist.folder}" unless="ok-unit-dist-folder" />
         <fail message="{ok-unittestcompileclasspath}" unless="ok-unittestcompileclasspath"/> 
         <fail message="{ok-unittestruntimeclasspath}" unless="ok-unittestruntimeclasspath"/> 
         

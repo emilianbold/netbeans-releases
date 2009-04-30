@@ -45,17 +45,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jruby.nb.ast.ArgsNode;
-import org.jruby.nb.ast.ArgumentNode;
-import org.jruby.nb.ast.BlockArgNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.LocalAsgnNode;
-import org.jruby.nb.ast.LocalVarNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.types.INameNode;
-import org.jruby.nb.lexer.yacc.ISourcePosition;
+import org.jrubyparser.ast.ArgsNode;
+import org.jrubyparser.ast.ArgumentNode;
+import org.jrubyparser.ast.BlockArgNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.LocalAsgnNode;
+import org.jrubyparser.ast.LocalVarNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.SourcePosition;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -124,13 +124,13 @@ public class RubyRenameHandler implements InstantRenamer {
             return false;
         }
 
-        if (closest.nodeId == NodeType.LOCALVARNODE || closest.nodeId == NodeType.LOCALASGNNODE ||
-                closest.nodeId == NodeType.DVARNODE || closest.nodeId == NodeType.DASGNNODE ||
-                closest.nodeId == NodeType.BLOCKARGNODE) {
+        if (closest.getNodeType() == NodeType.LOCALVARNODE || closest.getNodeType() == NodeType.LOCALASGNNODE ||
+                closest.getNodeType() == NodeType.DVARNODE || closest.getNodeType() == NodeType.DASGNNODE ||
+                closest.getNodeType() == NodeType.BLOCKARGNODE) {
             return true;
         }
 
-        if (closest.nodeId == NodeType.ARGUMENTNODE) {
+        if (closest.getNodeType() == NodeType.ARGUMENTNODE) {
             Node parent = path.leafParent();
 
             if (parent != null) {
@@ -143,7 +143,7 @@ public class RubyRenameHandler implements InstantRenamer {
 
         //explanationRetValue[0] = NbBundle.getMessage(RubyRenameHandler.class, "NoRename");
         //return false;
-        switch (closest.nodeId) {
+        switch (closest.getNodeType()) {
         case INSTASGNNODE:
         case INSTVARNODE:
         case CLASSVARDECLNODE:
@@ -203,7 +203,7 @@ public class RubyRenameHandler implements InstantRenamer {
                 // Use parent, possibly Grand Parent if we have a newline node in the way
                 method = path.leafParent();
 
-                if (method.nodeId == NodeType.NEWLINENODE) {
+                if (method.getNodeType() == NodeType.NEWLINENODE) {
                     method = path.leafGrandParent();
                 }
 
@@ -213,14 +213,14 @@ public class RubyRenameHandler implements InstantRenamer {
             }
 
             addLocals(info, method, name, regions);
-        } else if (closest.nodeId == NodeType.DVARNODE || closest.nodeId == NodeType.DASGNNODE) {
+        } else if (closest.getNodeType() == NodeType.DVARNODE || closest.getNodeType() == NodeType.DASGNNODE) {
             // A dynamic variable read or assignment
             String name = ((INameNode)closest).getName();
             List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
             for (Node block : applicableBlocks) {
                 addDynamicVars(info, block, name, regions);
             }
-        } else if (closest.nodeId == NodeType.ARGUMENTNODE || closest.nodeId == NodeType.BLOCKARGNODE) {
+        } else if (closest.getNodeType() == NodeType.ARGUMENTNODE || closest.getNodeType() == NodeType.BLOCKARGNODE) {
             // A method name (if under a DefnNode or DefsNode) or a parameter (if indirectly under an ArgsNode)
             String name = ((INameNode)closest).getName();
 
@@ -240,7 +240,7 @@ public class RubyRenameHandler implements InstantRenamer {
                         // Use parent, possibly Grand Parent if we have a newline node in the way
                         method = path.leafParent();
 
-                        if (method.nodeId == NodeType.NEWLINENODE) {
+                        if (method.getNodeType() == NodeType.NEWLINENODE) {
                             method = path.leafGrandParent();
                         }
 
@@ -258,7 +258,7 @@ public class RubyRenameHandler implements InstantRenamer {
     }
 
     private void addLocals(ParserResult info, Node node, String name, Set<OffsetRange> ranges) {
-        if (node.nodeId == NodeType.LOCALVARNODE) {
+        if (node.getNodeType() == NodeType.LOCALVARNODE) {
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
                 range = LexUtilities.getLexerOffsets(info, range);
@@ -266,7 +266,7 @@ public class RubyRenameHandler implements InstantRenamer {
                     ranges.add(range);
                 }
             }
-        } else if (node.nodeId == NodeType.LOCALASGNNODE) {
+        } else if (node.getNodeType() == NodeType.LOCALASGNNODE) {
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
                 // Adjust end offset to only include the left hand size
@@ -276,10 +276,10 @@ public class RubyRenameHandler implements InstantRenamer {
                     ranges.add(range);
                 }
             }
-        } else if (node.nodeId == NodeType.ARGSNODE) {
+        } else if (node.getNodeType() == NodeType.ARGSNODE) {
             ArgsNode an = (ArgsNode)node;
 
-            if (an.getRequiredArgsCount() > 0) {
+            if (an.getRequiredCount() > 0) {
                 List<Node> args = an.childNodes();
 
                 for (Node arg : args) {
@@ -287,7 +287,7 @@ public class RubyRenameHandler implements InstantRenamer {
                         List<Node> args2 = arg.childNodes();
 
                         for (Node arg2 : args2) {
-                            if (arg2.nodeId == NodeType.ARGUMENTNODE) {
+                            if (arg2.getNodeType() == NodeType.ARGUMENTNODE) {
                                 if (((ArgumentNode)arg2).getName().equals(name)) {
                                     OffsetRange range = AstUtilities.getRange(arg2);
                                     range = LexUtilities.getLexerOffsets(info, range);
@@ -295,7 +295,7 @@ public class RubyRenameHandler implements InstantRenamer {
                                         ranges.add(range);
                                     }
                                 }
-                            } else if (arg2.nodeId == NodeType.LOCALASGNNODE) {
+                            } else if (arg2.getNodeType() == NodeType.LOCALASGNNODE) {
                                 if (((LocalAsgnNode)arg2).getName().equals(name)) {
                                     OffsetRange range = AstUtilities.getRange(arg2);
                                     // Adjust end offset to only include the left hand size
@@ -312,11 +312,11 @@ public class RubyRenameHandler implements InstantRenamer {
             }
 
             // Rest args
-            if (an.getRestArgNode() != null) {
-                ArgumentNode bn = an.getRestArgNode();
+            if (an.getRest() != null) {
+                ArgumentNode bn = an.getRest();
 
                 if (bn.getName().equals(name)) {
-                    ISourcePosition pos = bn.getPosition();
+                    SourcePosition pos = bn.getPosition();
 
                     // +1: Skip "*" and "&" prefix
                     OffsetRange range =
@@ -328,11 +328,11 @@ public class RubyRenameHandler implements InstantRenamer {
                 }
             }
 
-            if (an.getBlockArgNode() != null) {
-                BlockArgNode bn = an.getBlockArgNode();
+            if (an.getBlock() != null) {
+                BlockArgNode bn = an.getBlock();
 
                 if (bn.getName().equals(name)) {
-                    ISourcePosition pos = bn.getPosition();
+                    SourcePosition pos = bn.getPosition();
 
                     // +1: Skip "*" and "&" prefix
                     OffsetRange range =
@@ -367,7 +367,7 @@ public class RubyRenameHandler implements InstantRenamer {
     // Make sure the "isUsed" detection is smarter too.
     
     private void addDynamicVars(ParserResult info, Node node, String name, Set<OffsetRange> ranges) {
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
         case DVARNODE:
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
@@ -397,7 +397,7 @@ public class RubyRenameHandler implements InstantRenamer {
             if (child.isInvisible()) {
                 continue;
             }
-            switch (child.nodeId) {
+            switch (child.getNodeType()) {
             case ITERNODE:
             //case BLOCKNODE:
             case DEFNNODE:

@@ -42,6 +42,7 @@ package org.netbeans.modules.mercurial.api;
 import java.awt.EventQueue;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,7 +51,10 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.log.SearchHistoryAction;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
+import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbPreferences;
 
 /**
@@ -108,13 +112,42 @@ public class Mercurial {
             throws MalformedURLException {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
 
+        if (repositoryUrl == null) {
+            throw new IllegalArgumentException("repository URL is null"); //NOI18N
+        }
+
+        // use repository url as default
+        if (pullUrl == null || pullUrl.length() == 0) {
+            pullUrl = repositoryUrl;
+        }
+        if (pushUrl == null || pushUrl.length() == 0) {
+            pushUrl = pullUrl;
+        }
+
+        HgURL hgUrl, pullPath, pushPath;
+        try {
+            hgUrl = new HgURL(repositoryUrl, username, password);
+        } catch (URISyntaxException ex) {
+            throw new MalformedURLException(ex.getMessage());
+        }
+        try {
+            pullPath = new HgURL(pullUrl);
+        } catch (URISyntaxException ex) {
+            throw new MalformedURLException("Invalid pull URL: " + ex.getMessage());
+        }
+        try {
+            pushPath = new HgURL(pushUrl);
+        } catch (URISyntaxException ex) {
+            throw new MalformedURLException("Invalid push URL: " + ex.getMessage());
+        }
+
         File cloneFile = new File(targetDir, cloneName);
-        CloneAction.performClone(repositoryUrl,
-                                 cloneFile.getAbsolutePath(),
+        CloneAction.performClone(hgUrl,
+                                 cloneFile,
                                  true,
                                  null,
-                                 pullUrl,
-                                 pushUrl).waitFinished();
+                                 pullPath,
+                                 pushPath).waitFinished();
 
         try {
             storeWorkingDir(new URL(repositoryUrl), targetDir.toURI().toURL());
@@ -122,7 +155,7 @@ public class Mercurial {
             Logger.getLogger(Mercurial.class.getName()).log(Level.FINE, "Cannot store mercurial workdir preferences", e);
         }
     }
-    
+
     private static final String WORKINGDIR_KEY_PREFIX = "working.dir."; //NOI18N
 
     /**
@@ -181,9 +214,49 @@ public class Mercurial {
      * @throws java.net.MalformedURLException
      */
     public static void addRecentUrl(String url) throws MalformedURLException {
-        new URL(url); // check url format
-
-        RepositoryConnection rc = new RepositoryConnection(url);
+        RepositoryConnection rc;
+        try {
+            rc = new RepositoryConnection(url);
+        } catch (URISyntaxException ex) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(
+                    Level.INFO,
+                    "Could not add URL to the list of recent URLs:",    //NOI18N
+                    ex);
+            return;
+        }
         HgModuleConfig.getDefault().insertRecentUrl(rc);
+    }
+
+    /**
+     * Tries to resolve the given URL and determine if the URL represents a mercurial repository.
+     * Should not be called inside AWT, this accesses network.
+     * @param url repository URL
+     * @return true if given url denotes an existing mercurial repository
+     */
+    public static boolean isRepository (final String url) {
+        boolean retval = false;
+        HgURL hgUrl = null;
+        try {
+            hgUrl = new HgURL(url);
+        } catch (URISyntaxException ex) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.FINE, "Invalid mercurial url " + url, ex);
+        }
+
+        if (hgUrl != null) {
+            retval = HgCommand.checkRemoteRepository(hgUrl.toHgCommandUrlString());
+        }
+
+        return retval;
+    }
+
+    /**
+     * Opens standard clone wizard
+     * @param url repository url to checkout
+     * @throws java.net.MalformedURLException in case the url is invalid
+     */
+    public static void openCloneWizard (final String url) throws MalformedURLException {
+        addRecentUrl(url);
+        CloneWizardAction wiz = CloneWizardAction.getInstance();
+        wiz.performAction();
     }
 }

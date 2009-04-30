@@ -352,7 +352,6 @@ public final class OptionsChooserPanel extends JPanel {
         FileChooserBuilder fileChooserBuilder = new FileChooserBuilder(OptionsChooserPanel.class);
         fileChooserBuilder.setDefaultWorkingDirectory(new File(System.getProperty("user.home")));  //NOI18N
         fileChooserBuilder.setFileFilter(new FileNameExtensionFilter("*.zip", "zip"));  //NOI18N
-        fileChooserBuilder.setFileHiding(true);
         String approveText = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.chooser.approve");
         fileChooserBuilder.setApproveText(approveText);
         if (panelType == PanelType.IMPORT) {

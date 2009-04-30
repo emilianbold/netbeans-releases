@@ -47,6 +47,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -90,7 +91,7 @@ public class HttpMonitorHelper {
     private static final String MONITOR_FILTER_PATTERN = "/*"; //NOI18N
     private static final String MONITOR_INTERNALPORT_PARAM_NAME = "netbeans.monitor.ide"; //NOI18N
     
-    public static boolean synchronizeMonitor(String domainLoc, String domainName, boolean monitorFlag, String... others) throws IOException, SAXException {
+    public static boolean synchronizeMonitor(String domainLoc, String domainName, boolean monitorFlag, String... others)  throws FileNotFoundException, IOException, SAXException {
         boolean monitorModuleAvailable = isMonitorEnabled();
         boolean shouldInstall = monitorModuleAvailable && monitorFlag;
         // find the web.xml file
@@ -142,7 +143,7 @@ public class HttpMonitorHelper {
         return null;
     }
     
-    private static boolean addMonitorJars(String domainLoc, String domainName, String... others) throws IOException {
+    private static boolean addMonitorJars(String domainLoc, String domainName, String... others) throws FileNotFoundException, IOException {
         String loc = domainLoc+"/"+domainName;
         File instDir = new File(loc);
         boolean retVal = copyFromIDEInstToDir("modules/ext/org-netbeans-modules-web-httpmonitor.jar"  , instDir, "lib/org-netbeans-modules-web-httpmonitor.jar");  // NOI18N  
@@ -238,7 +239,7 @@ public class HttpMonitorHelper {
         return InstalledFileLocator.getDefault().locate(instRelPath, null, false);
     }
     
-    private static boolean copyFromIDEInstToDir(String sourceRelPath, File copyTo, String targetRelPath) throws IOException {
+    private static boolean copyFromIDEInstToDir(String sourceRelPath, File copyTo, String targetRelPath) throws FileNotFoundException, IOException {
         File targetFile = findFileUnderBase(copyTo, targetRelPath);
         File sourceFile = findInstallationFile(sourceRelPath);
         if (sourceFile != null && sourceFile.exists()) {
@@ -254,7 +255,7 @@ public class HttpMonitorHelper {
         return false;
     }
     
-    private static void copy(File file1, File file2) throws IOException {
+    private static void copy(File file1, File file2)  throws FileNotFoundException, IOException {
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
         try {

@@ -306,7 +306,9 @@ public abstract class CsmFileTaskFactory {
             pr.task = WORKER.post(new CsmSafeRunnable(getRunnable(pr.runner, phase), fo), delay);
         }
     }
-    
+
+    // processors below should have FileTaskFactory in their names, because name is checked
+    // to suppress warnings in org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml
     private static RequestProcessor WORKER = new RequestProcessor("CsmFileTaskFactory", 1); //NOI18N
     private static RequestProcessor HIGH_PRIORITY_WORKER = new RequestProcessor("CsmHighPriorityFileTaskFactory", 1); //NOI18N
     private static RequestProcessor DECISION_WORKER = new RequestProcessor("CsmDecisionFileTaskFactory", 1); //NOI18N

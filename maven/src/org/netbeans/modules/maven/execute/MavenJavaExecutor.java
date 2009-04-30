@@ -177,6 +177,7 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
 
             MavenEmbedder embedder;
             ProgressTransferListener.setAggregateHandle(handle);
+            req.setTransferListener(new ProgressTransferListener());
             out = new JavaOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig);
             IOBridge.pushSystemInOutErr(out);
             

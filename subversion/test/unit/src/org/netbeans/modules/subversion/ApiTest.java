@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
@@ -218,4 +219,28 @@ public class ApiTest extends NbTestCase {
 
     }
 
+    public void testValidateUrl () {
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("blablabla"));
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("http://"));
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("file://"));
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("file:///"));
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("svn://"));
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("svn+ssh://"));
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("file:///home/nowhere"));
+        assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository(TestUtilities.formatFileURL(repoDir)));
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("http://www.google.com/"));
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("https://www.google.com/"));
+
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("http://subclipse.tigris.org/svn"));
+        assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository("http://subclipse.tigris.org/svn/subclipse/trunk/svnClientAdapter"));
+
+        assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository("svn://peterp.czech.sun.com:9630"));
+        assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository("svn+ssh://peterp.czech.sun.com/usr/svnrepo"));
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("https://peterp.czech.sun.com:440/svnsecure"));
+    }
+
+    public void testOpenCheckoutWizard () throws MalformedURLException {
+        SvnModuleConfig.getDefault().getPreferences().put(CheckoutStep.CHECKOUT_DIRECTORY, getWorkDirPath());
+        org.netbeans.modules.subversion.api.Subversion.openCheckoutWizard("https://kenai.com/svn/motorbikediary~source-code-repository");
+    }
 }

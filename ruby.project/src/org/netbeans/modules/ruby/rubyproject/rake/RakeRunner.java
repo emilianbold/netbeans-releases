@@ -241,6 +241,15 @@ public final class RakeRunner {
                 charsetName = evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING);
             }
         }
+        // refresh file system after the task has finished as it may have
+        // created/deleted files
+        descriptor.postBuild(new Runnable() {
+
+            public void run() {
+                FileUtil.refreshFor(FileUtil.toFile(project.getProjectDirectory()));
+            }
+        });
+
         RubyProcessCreator processCreator = new RubyProcessCreator(descriptor, charsetName);
         return ExecutionService.newService(processCreator, descriptor.toExecutionDescriptor(), displayName);
     }

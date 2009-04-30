@@ -79,8 +79,13 @@ public final class UIDProviderIml implements UIDProvider {
             if (debugMode && !((obj instanceof CsmNamespace) || (obj instanceof CsmProject))) {
                 Object object = uid.getObject();
                 if (object == null) {
+                    // this could happen in clients delayed threads
                     if (checkNull) {
-                        new Exception("no deref object for uid[" + uid + "] of " + obj).printStackTrace(); // NOI18N
+                        String prefix = "no deref object for uid["; // NOI18N
+                        if (Thread.currentThread().getName().contains("FileTaskFactory")) { // NOI18N
+                            prefix = "it's OK to have invalidated object with uid["; // NOI18N
+                        }
+                        new Exception(prefix + uid + "] of " + obj).printStackTrace(System.err); // NOI18N
                     }
                 } else {
                     // commented because method isAssignableFrom() is too expensive

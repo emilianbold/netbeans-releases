@@ -65,7 +65,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientAdapterFactory;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
-import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
+//import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
 
 /**
  *
@@ -87,7 +87,7 @@ public abstract class AbstractCLITest extends AbstractSvnTest {
         if(getName().startsWith("testCheckout") ) {
             cleanUpRepo(new String[] {CI_FOLDER});
         }        
-        CmdLineClientAdapterFactory.setup();
+        //CmdLineClientAdapterFactory.setup();
     }
     
     @Override
@@ -234,10 +234,10 @@ public abstract class AbstractCLITest extends AbstractSvnTest {
         return c;
     }
     
-    protected ISVNClientAdapter getReferenceClient() throws Exception {        
-        ISVNClientAdapter c = SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);        
+    protected ISVNClientAdapter getReferenceClient() throws Exception {
+        ISVNClientAdapter c = null;//SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
         fileNotifyListener = new FileNotifyListener();
-        c.addNotifyListener(fileNotifyListener);        
+        c.addNotifyListener(fileNotifyListener);
         return c;
     }
 
@@ -324,17 +324,17 @@ public abstract class AbstractCLITest extends AbstractSvnTest {
     }
     
     protected void assertProperty(File file, String prop, String val) throws Exception {
-        ISVNClientAdapter c = getReferenceClient();
+        ISVNClientAdapter c = null;//getReferenceClient();
         ISVNProperty p = c.propertyGet(file, prop);
-        assertEquals(val, new String(p.getData()));        
+        assertEquals(val, new String(p.getData()));
     }
-    
+
     protected void assertProperty(File file, String prop, byte[] data) throws Exception {
-        ISVNClientAdapter c = getReferenceClient();
+        ISVNClientAdapter c = null;//getReferenceClient();
         ISVNProperty p = c.propertyGet(file, prop);
         for (int i = 0; i < data.length; i++) {
-            assertEquals(data[i], p.getData()[i]);                    
-        }        
+            assertEquals(data[i], p.getData()[i]);
+        }
     }
 
     protected void assertInfo(File file, SVNUrl url) throws SVNClientException {

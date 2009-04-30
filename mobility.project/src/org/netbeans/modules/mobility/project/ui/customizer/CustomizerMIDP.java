@@ -345,8 +345,8 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
             }
             //enable/disable profile radio boxes
             c = jPanelProfile.getComponents();
+            reset = c.length>0; //fix for 157499
             for (int i=0; i<c.length; i++) {
-                reset = true; //fix for 157499
                 if (c[i] instanceof JRadioButton) {
                     final JRadioButton rb = (JRadioButton)c[i];
                     vps.register(rb, DefaultPropertiesDescriptor.PLATFORM_PROFILE, useDefault);
@@ -355,7 +355,9 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
                     } else {
                         rb.setEnabled(false);
                     }
-                    if (rb.isSelected()) reset = false; //fix for 157499, we need to reset if profile is non sense to default
+                    if (rb.isSelected()) {
+                        reset = false; //fix for 157499, we need to reset if profile is non sense to default
+                    } 
                 }
             }
             //correct selection of profile to default if necessary
@@ -366,7 +368,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
             final Set<String> optValues = getOptionalValues();
             jPanelOptional.setVisible(false);
             jPanelOptional.removeAll();
-            for (final JCheckBox cb : removeDuplicateOptProfiles(optProfiles, profNames) ) {
+            for (final JCheckBox cb : removeDuplicateOptProfiles(optProfiles) ) {
                 final String APIname = cb.getActionCommand();
                 final boolean selected = (reset ? defaultOpts : optValues).contains(APIname);
                 jPanelOptional.add(cb, new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
@@ -386,59 +388,75 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
      * Fix for IZ#142571 - Misleading optional packages in project properties
      */
     private  java.util.List<JCheckBox> removeDuplicateOptProfiles(
-            Map<String,J2MEPlatform.J2MEProfile> profiles , Set<String> profileNames)
+            Map<String,J2MEPlatform.J2MEProfile> profiles )
     {
 
         java.util.List<JCheckBox> result = new ArrayList<JCheckBox>( optional.size());
         for ( JCheckBox checkBox : optional ){
-            if (profileNames.contains( checkBox.getActionCommand())) {
-                result.add( checkBox );
-            }
-        }
-
-        Map<String,JCheckBox> checkBoxes = new HashMap<String, JCheckBox>();
-        Map<String,JCheckBox> name2checkBoxes = new HashMap<String, JCheckBox>();
-        Set<String> duplicateNames =  new HashSet<String>();
-        for ( JCheckBox option: result){
-            checkBoxes.put( option.getActionCommand(), option);
-            if( name2checkBoxes.containsKey( option.getText() )){
-                duplicateNames.add( option.getText());
-            }
-            else {
-                name2checkBoxes.put( option.getText(), option);
+            if (profiles.get( checkBox.getActionCommand())!= null) {
+                JCheckBox box = new JCheckBox( checkBox.getText() );
+                box.setToolTipText( checkBox.getToolTipText() );
+                box.setActionCommand(checkBox.getActionCommand());
+                box.addActionListener(this);
+                result.add( box );
             }
         }
 
         java.util.Collection<J2MEPlatform.J2MEProfile> values = profiles.values();
-        Map<String,J2MEPlatform.J2MEProfile> classpaths =
-                new HashMap<String,J2MEPlatform.J2MEProfile>();
-        Set<J2MEPlatform.J2MEProfile> duplicateClassPaths =
-                new HashSet<J2MEPlatform.J2MEProfile>();
+        Map<String,java.util.List<J2MEPlatform.J2MEProfile>> classpaths =
+                new HashMap<String,java.util.List<J2MEPlatform.J2MEProfile>>();
         for ( J2MEPlatform.J2MEProfile profile : values){
             String classpath = profile.getClassPath();
-            if ( classpaths.containsKey( classpath)){
-                duplicateClassPaths.add( profile);
+            java.util.List<J2MEPlatform.J2MEProfile> list = classpaths.get(
+                    classpath);
+            if ( list == null ){
+                list = new java.util.LinkedList<J2MEPlatform.J2MEProfile>();
+                classpaths.put( classpath, list );
             }
-            else {
-                classpaths.put( classpath, profile );
-            }
+            list.add(  profile );
         }
 
-        for ( J2MEPlatform.J2MEProfile profile : duplicateClassPaths){
-            J2MEPlatform.J2MEProfile pair = classpaths.get( profile.getClassPath() );
+        java.util.List<JCheckBox> res = new ArrayList<JCheckBox>( result.size());
+        Map<String,JCheckBox> classPath2checkBox = new HashMap<String,JCheckBox>( );
+        StringBuilder textBuilder = new StringBuilder();
+        StringBuilder tooltipBuilder = new StringBuilder();
+        for ( JCheckBox option: result){
+            String command = option.getActionCommand();
+            J2MEPlatform.J2MEProfile profile = profiles.get( command );
+            String classPath = profile.getClassPath();
+            java.util.List<J2MEPlatform.J2MEProfile> list = classpaths.get( classPath );
+            if ( list.size() > 1 ){
+                JCheckBox checkBox = classPath2checkBox.get( classPath );
+                if ( checkBox == null ){
+                    classPath2checkBox.put( classPath, option );
+                    res.add( option );
+                }
+                else {
+                    String text = checkBox.getText();
+                    String tooltip = checkBox.getToolTipText();
+                    textBuilder.setLength(0);
+                    tooltipBuilder.setLength(0);
 
-            JCheckBox checkBox = checkBoxes.get( profile.toString() );
-            JCheckBox pairCheckBox = checkBoxes.get( pair.toString() );
-            if ( duplicateNames.contains(pairCheckBox.getText() )){
-                result.remove( pairCheckBox);
-                classpaths.put(profile.getClassPath(), profile  );
+                    if ( !text.contains( option.getText() )){
+                        textBuilder.append(text);
+                        textBuilder.append(", ");
+                        textBuilder.append(option.getText());
+                        checkBox.setText(textBuilder.toString());
+                    }
+
+                    if ( !tooltip.contains( option.getToolTipText() )){
+                        tooltipBuilder.append(tooltip);
+                        tooltipBuilder.append(", ");
+                        tooltipBuilder.append(option.getToolTipText());
+                        checkBox.setToolTipText( tooltipBuilder.toString());
+                    }
+                }
             }
             else {
-                result.remove( checkBox);
+                res.add( option );
             }
         }
-
-        return result;
+        return res;
     }
         
     private Set<String> getOptionalValues() {

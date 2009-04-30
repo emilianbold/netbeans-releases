@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.php.project.ui.options;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -56,6 +59,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -85,7 +89,7 @@ public class SearchPanel extends JPanel {
         this.strings = strings;
         this.detector = detector;
 
-        detectedFilesLabel.setText(strings.listTitle);
+        Mnemonics.setLocalizedText(detectedFilesLabel, strings.listTitle);
         messageLabel.setText(NbBundle.getMessage(SearchPanel.class, "LBL_PleaseWait", strings.pleaseWaitPart));
     }
 
@@ -183,8 +187,31 @@ public class SearchPanel extends JPanel {
         messageLabel = new JLabel();
         progressBar = new JProgressBar();
 
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return foundItemsList;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return foundItemsList;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return foundItemsList;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                return foundItemsList;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                return foundItemsList;//end getComponentBefore
+
+            }}
+        );
+
         detectedFilesLabel.setLabelFor(foundItemsList);
-        detectedFilesLabel.setText("title"); // NOI18N
+
+        Mnemonics.setLocalizedText(detectedFilesLabel, "title");
 
         foundItemsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         foundItemsList.setEnabled(false);
@@ -193,8 +220,8 @@ public class SearchPanel extends JPanel {
         foundItemsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.phpInterpretersList.AccessibleContext.accessibleName")); // NOI18N
         foundItemsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.phpInterpretersList.AccessibleContext.accessibleDescription")); // NOI18N
         messageLabel.setLabelFor(progressBar);
-        messageLabel.setText("please wait..."); // NOI18N
 
+        Mnemonics.setLocalizedText(messageLabel, "please wait..."); // NOI18N
         progressBar.setString(" "); // NOI18N
         progressBar.setStringPainted(true);
 

@@ -70,7 +70,7 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
     public CustomizerNode createProfileNode() {
         return new GizmoOptionsCustomizerNode(
                 "Profile", // NOI18N
-                getString("ProfilNodeTxt"),
+                getString("ProfileNodeTxt"),
                 null);
     }
 
@@ -107,7 +107,8 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
         set.setName("Indicators"); // NOI18N
         set.setDisplayName(getString("IndicatorsName"));//NOI18B
         for (String name : gizmoOptions.getNames()){
-            set.put(new BooleanNodeProp(gizmoOptions.getByName(name), true, name, name, name)); // NOI18N
+            set.put(new BooleanNodeProp(gizmoOptions.getConfigurationByName(name),
+                    true, name, name, gizmoOptions.getDescriptionByName(name)));
         }
 //        set.put(new BooleanNodeProp(gizmoOptions.getCpu(), true, GizmoOptionsImpl.CPU_PROP, getString("cpu_txt"), getString("cpu_help"))); // NOI18N
 //        set.put(new BooleanNodeProp(gizmoOptions.getMemory(), true, GizmoOptionsImpl.MEMORY_PROP, getString("memory_txt"), getString("memory_help"))); // NOI18N

@@ -61,6 +61,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
     private CCCCompiler compiler;
     private ParserSettingsPanel parserSettingsPanel;
 
+    private boolean settingsReseted = false;
+
     /** Creates new form PredefinedPanel */
     public PredefinedPanel(CCCCompiler compiler, ParserSettingsPanel parserSettingsPanel) {
         initComponents();
@@ -93,7 +95,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
     }
 
     public boolean save() {
-        boolean wasChanges = false;
+        boolean wasChanges = settingsReseted;
+        settingsReseted = false;
         Vector<String> includes = includesPanel.getListData();
         wasChanges |= compiler.setSystemIncludeDirectories(includes);
         Vector<String> definitions = definitionsPanel.getListData();
@@ -106,6 +109,10 @@ public class PredefinedPanel extends javax.swing.JPanel {
             System.err.println("update for PredefinedPanel " + compiler.getName());
         }
         updatePanels();
+    }
+
+    public void updateCompiler(CCCCompiler compiler) {
+        this.compiler = compiler;
     }
 
     /** This method is called from within the constructor to
@@ -178,6 +185,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
             repaint();
             //parserSettingsPanel.fireFilesPropertiesChanged();
             parserSettingsPanel.setModified(true);
+            settingsReseted = true;
         }
     }//GEN-LAST:event_resetButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -398,7 +406,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
     }
 
     boolean isChanged() {
-        boolean isChanged = false;
+        boolean isChanged = settingsReseted;
         if (this.includesPanel != null) {
             isChanged |= this.includesPanel.isChanged();
         }

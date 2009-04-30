@@ -225,6 +225,14 @@ public class CsmKindUtilities {
         }          
     }
 
+    public static boolean isTryCatchStatement(CsmObject obj) {
+        if (isStatement(obj)) {
+            return ((CsmStatement)obj).getKind() == CsmStatement.Kind.TRY_CATCH;
+        } else {
+            return false;
+        }
+    }
+    
     public static boolean isGotoStatement(CsmObject obj) {
         return (obj instanceof CsmGotoStatement);
     }

@@ -60,13 +60,13 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavaSourceSupportAccessor;
 import org.netbeans.modules.java.source.parsing.JavacParser;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.cookies.EditorCookie;
@@ -187,13 +187,15 @@ public final class ModificationResult {
             throw new IllegalStateException ("Calling commit on already committed Modificationesult."); //NOI18N
         }
         try {
+            IndexingController.getDefault().enterProtectedMode();
             try {
-                RepositoryUpdater.getDefault().lockRU();
+//                RepositoryUpdater.getDefault().lockRU();
                 for (Map.Entry<FileObject, List<Difference>> me : diffs.entrySet()) {
                     commit(me.getKey(), me.getValue(), null);
                 }
             } finally {
-                RepositoryUpdater.getDefault().unlockRU();
+//                RepositoryUpdater.getDefault().unlockRU();
+                IndexingController.getDefault().exitProtectedMode(null);
                 Set<FileObject> alreadyRefreshed = new HashSet<FileObject>();
                 if (this.sources != null) {
                     if (sources.size() == 1) // moved from JavaSourceAccessor.revalidate(Java Source)

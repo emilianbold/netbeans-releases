@@ -11,29 +11,28 @@
 |org.netbeans.modules.cnd.kit|C/C++|C/C++|cnd
 |org.netbeans.modules.timers|Timers API|Developing NetBeans|apisupport
 |org.netbeans.modules.groovy.kit|Groovy and Grails|Groovy|groovy
-|org.netbeans.modules.ant.kit|Ant|Java|java
-|org.netbeans.modules.form.kit|GUI Builder|Java|java
-|org.netbeans.modules.hibernate|Hibernate|Java|java
-|org.netbeans.modules.java.kit|Java|Java|java
-|org.netbeans.modules.debugger.jpda.ui|Java Debugger|Java|java
-|org.netbeans.modules.j2ee.persistence.kit|Java Persistence|Java|java
-|org.netbeans.modules.profiler|Java Profiler|Java|profiler
-|org.netbeans.modules.maven.kit|Maven|Java|java
-|org.netbeans.modules.apisupport.kit|NetBeans Plugin Development|Java|apisupport
-|org.netbeans.modules.spring.beans|Spring Beans|Java|java
-|org.netbeans.modules.hibernateweb|Hibernate Web|Java Web and EE|enterprise
-|org.netbeans.modules.identity.kit|Identity|Java Web and EE|identity
-|org.netbeans.modules.j2ee.kit|Java EE|Java Web and EE|enterprise
+|org.netbeans.modules.mobility.kit|Mobility|Java ME|mobility
+|org.netbeans.modules.mobility.end2end.kit|Mobility End to End|Java ME|mobility
+|org.netbeans.modules.ant.kit|Ant|Java SE|java
+|org.netbeans.modules.form.kit|GUI Builder|Java SE|java
+|org.netbeans.modules.hibernate|Hibernate|Java SE|java
+|org.netbeans.modules.java.kit|Java|Java SE|java
+|org.netbeans.modules.debugger.jpda.ui|Java Debugger|Java SE|java
+|org.netbeans.modules.j2ee.persistence.kit|Java Persistence|Java SE|java
+|org.netbeans.modules.profiler|Java Profiler|Java SE|profiler
+|org.netbeans.modules.maven.kit|Maven|Java SE|java
+|org.netbeans.modules.apisupport.kit|NetBeans Plugin Development|Java SE|apisupport
+|org.netbeans.modules.spring.beans|Spring Beans|Java SE|java
+|org.netbeans.modules.j2ee.kit|EJB and EAR|Java Web and EE|enterprise
+|org.netbeans.modules.identity.kit|Identity Management|Java Web and EE|identity
 |org.netbeans.modules.web.kit|Java Web Applications|Java Web and EE|enterprise
 |org.netbeans.modules.web.jsf.kit|JSF|Java Web and EE|enterprise
 |org.netbeans.modules.websvc.restkit|RESTful Web Services|Java Web and EE|enterprise
 |org.netbeans.modules.websvc.kit|SOAP Web Services|Java Web and EE|enterprise
 |org.netbeans.modules.spring.webmvc|Spring Web MVC|Java Web and EE|enterprise
 |org.netbeans.modules.web.struts|Struts|Java Web and EE|enterprise
-|org.netbeans.modules.mobility.kit|Mobility|Mobility|mobility
-|org.netbeans.modules.mobility.end2end.kit|Mobility End to End|Mobility|mobility
 |org.netbeans.modules.php.kit|PHP|PHP|php
 |org.netbeans.modules.core.kit|RCP Platform|RCP Platform|platform
 |org.netbeans.modules.ruby.kit|Ruby and Rails|Ruby|ruby
-|org.netbeans.modules.websvc.saas.kit|SaaS Services|Web Applications|websvccommon
-|org.netbeans.modules.web.client.tools.kit|Web Client Tools|Web Applications|webcommon
+|org.netbeans.modules.web.client.tools.kit|JavaScript Debugger|Web Applications|webcommon
+|org.netbeans.modules.websvc.saas.kit|Software as a Service|Web Applications|websvccommon

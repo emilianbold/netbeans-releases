@@ -54,7 +54,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.Utils;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
@@ -131,7 +131,7 @@ public class SourcesNodeFactory implements NodeFactory {
             // parse SG
             // update SG listeners
             // XXX check if this is necessary
-            final SourceGroup[] sourceGroups = Utils.getSourceGroups(project);
+            final SourceGroup[] sourceGroups = PhpProjectUtils.getSourceGroups(project);
             final SourceGroup[] groups = new SourceGroup[sourceGroups.length];
             System.arraycopy(sourceGroups, 0, groups, 0, sourceGroups.length);
 

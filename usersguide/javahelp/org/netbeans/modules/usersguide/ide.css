@@ -25,14 +25,14 @@
  * 
  */
 
-body  {font-size: small;
+body  {font-size: medium;
 	font-family: SansSerif, Arial, Helvetica, sans-serif;
 	margin-left: 5;
 	margin-right: 5;
 	color: Black;
 	background-color: White}
 
-p  {font-size: small;
+p  {font-size: medium;
      margin-top: 5;
      margin-bottom: 5}
 
@@ -52,7 +52,7 @@ h3 { font-size: medium;
      margin-top: 10;
      margin-bottom: 5}
 
-h4 { font-size: small;
+h4 { font-size: medium;
      font-weight: bold;
      margin-top: 10;
      margin-bottom: 5}

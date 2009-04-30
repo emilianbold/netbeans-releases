@@ -106,7 +106,7 @@ public class FriendTestCase extends CompletionBaseTestCase {
     
     public static class Failed extends CompletionBaseTestCase {
         @Override
-        protected Class getTestCaseDataClass() {
+        protected Class<?> getTestCaseDataClass() {
             return FriendTestCase.class;
         }
         

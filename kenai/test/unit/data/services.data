@@ -64,3 +64,9 @@ description:Git source code repository
 type:scm
 display_name:Git
 }
+{
+name:instant_messenger
+description:Chat room for project collaboration
+type:instant_messenger
+display_name:Project chat room
+}

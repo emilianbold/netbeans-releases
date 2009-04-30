@@ -43,20 +43,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.openide.util.Exceptions;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class DeletedIndexable implements IndexableImpl {
+public final class DeletedIndexable implements IndexableImpl {
+
+    private static final Logger LOG = Logger.getLogger(DeletedIndexable.class.getName());
 
     private final URL root;
     private final String relativePath;
 
     public DeletedIndexable (final URL root, final String relativePath) {
-        assert root != null;
-        assert relativePath != null;
+        assert root != null : "root must not be null"; //NOI18N
+        assert relativePath != null : "relativePath must not be null"; //NOI18N
         this.root = root;
         this.relativePath = relativePath;
     }
@@ -66,7 +69,7 @@ public class DeletedIndexable implements IndexableImpl {
     }
 
     public String getName() {
-        int index = this.relativePath.lastIndexOf('/');
+        int index = this.relativePath.lastIndexOf('/'); //NOI18N
         return index == -1 ? relativePath : relativePath.substring(index+1);
     }
 
@@ -76,15 +79,20 @@ public class DeletedIndexable implements IndexableImpl {
 
     public URL getURL() {
         try {
-            return new URL(root.toString() + relativePath);
+            return Util.resolveUrl(root, relativePath);
         } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.WARNING, null, ex);
             return null;
         }
     }
 
     public InputStream openInputStream() throws IOException {
         throw new IOException();
+    }
+
+    @Override
+    public String toString() {
+        return "DeletedIndexable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + getURL() + "]"; //NOI18N
     }
 
 }

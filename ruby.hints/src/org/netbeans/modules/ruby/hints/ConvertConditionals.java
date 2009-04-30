@@ -44,9 +44,9 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
-import org.jruby.nb.ast.IfNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
+import org.jrubyparser.ast.IfNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -106,19 +106,19 @@ public class ConvertConditionals extends RubyAstRule {
         }
 
         // Can't convert if !x/elseif blocks
-        if (ifNode.getElseBody() != null && ifNode.getElseBody().nodeId == NodeType.IFNODE) {
+        if (ifNode.getElseBody() != null && ifNode.getElseBody().getNodeType() == NodeType.IFNODE) {
             return;
         }
         
         int start = ifNode.getPosition().getStartOffset();
-        if (body != null && (
+        if (!RubyHints.isNullOrInvisible(body) && (
                 // Can't convert blocks with multiple statements
-                body.nodeId == NodeType.BLOCKNODE ||
+                body.getNodeType() == NodeType.BLOCKNODE ||
                 // Already a statement modifier?
                 body.getPosition().getStartOffset() <= start)) {
             return;
-        } else if (elseNode != null && (
-                elseNode.nodeId == NodeType.BLOCKNODE ||
+        } else if (!RubyHints.isNullOrInvisible(elseNode) && (
+                elseNode.getNodeType() == NodeType.BLOCKNODE ||
                 elseNode.getPosition().getStartOffset() <= start)) {
             return;
         }

@@ -343,7 +343,7 @@ public class StructureAnalyzer implements StructureScanner {
                     int start = range.getStart();
                     // Start the fold at the END of the line behind last non-whitespace, remove curly brace, if any
                     start = Utilities.getRowLastNonWhite(doc, start);
-                    if (doc.getChars(start, 1)[0] != '{') {
+                    if (start >= 0 && doc.getChars(start, 1)[0] != '{') {
                         start++;
                     }
                     int end = range.getEnd();
