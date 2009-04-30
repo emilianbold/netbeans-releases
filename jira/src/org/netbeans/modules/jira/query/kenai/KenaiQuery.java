@@ -52,12 +52,13 @@ import org.netbeans.modules.jira.repository.JiraRepository;
  * @author Tomas Stupka
  */
 public class KenaiQuery extends JiraQuery {
-    private String product;
     private boolean predefinedQuery = false;
+    private String project;
 
-    public KenaiQuery(String name, JiraRepository repository, JiraFilter jf, boolean saved, boolean predefined) {
+    public KenaiQuery(String name, JiraRepository repository, JiraFilter jf, String project, boolean saved, boolean predefined) {
         super(name, repository, jf, saved);
         this.predefinedQuery = predefined;
+        this.project = project;
         controller = createControler(repository, this, jf);
         boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
         if(autoRefresh) {
@@ -67,7 +68,7 @@ public class KenaiQuery extends JiraQuery {
 
     @Override
     protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
-        KenaiQueryController c = new KenaiQueryController(r, q, jiraFilter, product, predefinedQuery);
+        KenaiQueryController c = new KenaiQueryController(r, q, jiraFilter, project, predefinedQuery);
         return c;
     }
 
@@ -79,6 +80,11 @@ public class KenaiQuery extends JiraQuery {
             count,
             true,
             autoRefresh);
+    }
+
+    @Override
+    protected String getStoredQueryName() {
+        return super.getStoredQueryName() + "-" + project;
     }
 
 }
