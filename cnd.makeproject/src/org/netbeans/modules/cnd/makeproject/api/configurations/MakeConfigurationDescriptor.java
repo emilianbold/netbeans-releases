@@ -62,6 +62,8 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
+import org.netbeans.modules.cnd.api.utils.CndFolderVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -1049,8 +1051,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             return;
         }
         for (int i = 0; i < files.length; i++) {
-            if (!VisibilityQuery.getDefault().isVisible(files[i]) ||
-                    files[i].getName().equals("nbproject")) { // NOI18N
+            if (!VisibilityQuery.getDefault().isVisible(files[i])) {
+                continue;
+            }
+            if (files[i].isFile() && !CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
+                continue;
+            }
+            if (files[i].isDirectory() && !CndFolderVisibilityQuery.getDefault().isVisible(files[i])) {
                 continue;
             }
             if (files[i].isDirectory()) {
