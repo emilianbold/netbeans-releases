@@ -91,6 +91,7 @@ public class TraceFlags {
     public static final boolean TRACE_MODEL_STATE = Boolean.getBoolean("cnd.modelimpl.installer.trace"); // NOI18N
 
     public static final boolean USE_CANONICAL_PATH = DebugUtils.getBoolean("cnd.modelimpl.use.canonical.path", false); // NOI18N
+    public static final boolean SYMLINK_AS_OWN_FILE = DebugUtils.getBoolean("cnd.modelimpl.symlink.as.file", true); // NOI18N
     
     public static final boolean CHECK_MEMORY = DebugUtils.getBoolean("cnd.check.memory", false); // NOI18N
     

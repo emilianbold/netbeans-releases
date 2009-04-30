@@ -42,15 +42,17 @@ made subject to such option by the copyright holder.
 <project name="Test Recursive Dependecies" basedir="." default="all" >
     <target name="recursive-deps" >
         <property name="netbeans.dest.dir" location="${netbeans.dest.dir.work}"/>
-        <propertyfile file="${netbeans.dest.dir}/moduleCluster.properties"/>
+        <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
         <property name="xtest.home" value="any"/>
         <property name="xtest.testtype" value="testtype"/>
         <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <parseprojectxml projectfile="${project.file}" project="${nb_all}/java/" modulerunclasspathproperty="cp"/>
         <fail message="${cp}">
-            <not>
-                <contains string="${cp}" substring="org-openide-util.jar"/>
-            </not>
+            <condition>
+                <not>
+                    <contains string="${cp}" substring="org-openide-util.jar"/>
+                </not>
+            </condition>
         </fail>
     </target>
 </project>

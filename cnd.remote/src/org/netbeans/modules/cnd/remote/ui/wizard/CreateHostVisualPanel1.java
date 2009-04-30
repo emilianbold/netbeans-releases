@@ -51,8 +51,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 /*package*/ final class CreateHostVisualPanel1 extends JPanel {
 
     private final HostsListTableModel tableModel = new HostsListTableModel();
+    private final CreateHostData data;
 
-    public CreateHostVisualPanel1(final ChangeListener listener) {
+    public CreateHostVisualPanel1(CreateHostData data, final ChangeListener listener) {
+        this.data = data;
         initComponents();
         textPort.setText(Integer.toString(ExecutionEnvironmentFactory.DEFAULT_PORT));
         textHostname.getDocument().addDocumentListener(new DocumentListener() {
@@ -89,10 +91,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
         });
     }
 
-    void init(Integer port) {
-        if (port != null) {
-            textPort.setText(port.toString());
-        }
+    void init() {
+        textPort.setText(Integer.toString(data.getPort()));
     }
 
     @Override

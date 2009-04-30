@@ -101,7 +101,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
             }
         }
         try {
-            csmFile = inclFileOwner.getFile(new File(inclPath.toString()));
+            csmFile = inclFileOwner.getFile(new File(inclPath.toString()), false);
             if( csmFile == null ) {
 		// this might happen if the file has been just deleted from project
 		return null;
