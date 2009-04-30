@@ -1,10 +1,8 @@
 A
-A
 B
 C
 In_Macro
 globInt int
-c() void
 checkZero() void
 globFoo() void
 main(int argc, char** argv) int
