@@ -47,10 +47,10 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.jruby.nb.ast.ClassNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.lexer.yacc.ISourcePosition;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.SourcePosition;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Hint;
@@ -288,13 +288,13 @@ public class IntroduceHint extends RubySelectionRule {
             if (child.isInvisible()) {
                 continue;
             }
-            if (child.nodeId == NodeType.NEWLINENODE || child.nodeId == NodeType.HASHNODE) {
+            if (child.getNodeType() == NodeType.NEWLINENODE || child.getNodeType() == NodeType.HASHNODE) {
                 // Newlines and hasnodes have incorrect offsets, so always search their children
                 // instead of applying below search pruning logic
                 findApplicableNodes(child, start, end, result, depth+1);
             } else {
                 boolean add = false;
-                ISourcePosition pos = child.getPosition();
+                SourcePosition pos = child.getPosition();
                 if (pos.getStartOffset() >= start && pos.getEndOffset() <= end) {
                     add = true;
                 } else 

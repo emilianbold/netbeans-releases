@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.platform;
 
+import com.sun.org.apache.bcel.internal.classfile.SourceFile;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -62,24 +63,30 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
  * @author Vladimir Kvashin
  */
 public class FileBufferDoc extends AbstractFileBuffer {
+
+    private static final boolean TRACE = false;
     
-    private Document doc;
+    private final Document doc;
     private EventListenerList listeners = new EventListenerList();
     private DocumentListener docListener;
     private long lastModified;
+    private final ChangedSegment changedSegment;
+    private ChangedSegment lastChangedSegment;
+    private long changedSegmentTaken;
     
     public FileBufferDoc(File file, Document doc) {
         super(file);
         this.doc = doc;
-	resetLastModified();
+        changedSegment = new ChangedSegment(doc);
+        resetLastModified();
     }
     
     private void resetLastModified() {
-	this.lastModified = System.currentTimeMillis();
+        lastModified = System.currentTimeMillis();
     }
     
     private void fireDocumentChanged() {
-	resetLastModified();
+        resetLastModified();
         EventListener[] list = listeners.getListeners(ChangeListener.class);
         if( list.length > 0 ) {
             ChangeEvent ev = new ChangeEvent(this);
@@ -93,13 +100,16 @@ public class FileBufferDoc extends AbstractFileBuffer {
 
     @Override
     public void addChangeListener(ChangeListener listener) {
-        if (listeners.getListenerCount() == 0)
-        {
+        if (listeners.getListenerCount() == 0) {
             docListener = new DocumentListener() {
                 public void insertUpdate(DocumentEvent e) {
+                    changedSegment.addSegment(e.getOffset(), e.getLength());
+                    assert changedSegment.endUnchangedEnd == doc.getLength();
                     fireDocumentChanged();
                 }
                 public void removeUpdate(DocumentEvent e) {
+                    changedSegment.removeSegment(e.getOffset(), e.getLength());
+                    assert changedSegment.endUnchangedEnd == doc.getLength();
                     fireDocumentChanged();
                 }
                 public void changedUpdate(DocumentEvent e) {
@@ -115,8 +125,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
     @Override
     public void removeChangeListener(ChangeListener listener) {
         listeners.remove(ChangeListener.class, listener);
-        if (listeners.getListenerCount() == 0)
-        {
+        if (listeners.getListenerCount() == 0) {
             doc.removeDocumentListener(docListener);
             docListener = null;
         }
@@ -132,21 +141,36 @@ public class FileBufferDoc extends AbstractFileBuffer {
     }
 
     public InputStream getInputStream() throws IOException {
-        
-        try { 
-            String text = doc.getText(0, doc.getLength());
-            return new ByteArrayInputStream(text.getBytes());
+        final Object[] res = new Object[]{null, null};
+        SourceFile sf;
+        doc.render(new Runnable() {
+            public void run() {
+                try {
+                    res[0] = doc.getText(0, doc.getLength());
+                    if (lastChangedSegment == null || changedSegmentTaken != lastModified) {
+                        lastChangedSegment = new ChangedSegment(changedSegment);
+                        changedSegment.reset(doc);
+                        changedSegmentTaken = lastModified;
+                        if (TRACE) {
+                            System.err.println("Take last changed segment: "+lastChangedSegment.toString());
+                            new Exception().printStackTrace();
+                        }
+                    }
+                } catch( BadLocationException e ) {
+                    res[1] = convert(e);
+                }
+            }
+        });
+        if (res[1] != null) {
+            throw (IOException)res[1];
         }
-        catch( BadLocationException e ) {
-            throw convert(e);
-        }
+        return new ByteArrayInputStream(((String)res[0]).getBytes());
     }
     
     public String getText() throws IOException {
         try {
             return doc.getText(0, doc.getLength());
-        }
-        catch( BadLocationException e ) {
+        } catch( BadLocationException e ) {
             //e.printStackTrace(System.err);
             throw convert(e);
         }
@@ -155,8 +179,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
     public String getText(int start, int end) throws IOException {
         try {
             return doc.getText(start, end - start);
-        }
-        catch( BadLocationException e ) {
+        } catch( BadLocationException e ) {
             //e.printStackTrace(System.err);
             throw convert(e);
         }
@@ -171,7 +194,117 @@ public class FileBufferDoc extends AbstractFileBuffer {
     }
 
     public long lastModified() {
-	return lastModified;
+        return lastModified;
+    }
+
+    public ChangedSegment getLastChangedSegment(){
+        return lastChangedSegment;
     }
     
+    public static final class ChangedSegment {
+        private int begUnchangedEnd;
+        private int endUnchangedStart = -1;
+        private int endUnchangedEnd = -1 ;
+
+        /**
+         *  returns [start ofset, end offset) of unchanged segment in the beginning of the document
+         */
+        public int[] begUnchanged(){
+            return new int[]{0, begUnchangedEnd};
+        }
+
+        /**
+         *  returns [start ofset, end offset) of unchanged segment in the end of the document
+         */
+        public int[] endUnchanged(){
+            return new int[]{endUnchangedStart, endUnchangedEnd};
+        }
+
+        private ChangedSegment(ChangedSegment parent){
+            begUnchangedEnd = parent.begUnchangedEnd;
+            endUnchangedStart = parent.endUnchangedStart;
+            endUnchangedEnd = parent.endUnchangedEnd;
+        }
+        
+        private ChangedSegment(Document doc){
+            begUnchangedEnd = doc.getLength();
+        }
+
+        private void reset(Document doc){
+            begUnchangedEnd = doc.getLength();
+            endUnchangedStart = -1;
+            endUnchangedEnd = -1 ;
+        }
+
+        private void addSegment(int start, int length){
+            if (TRACE) {
+                System.out.println("insert at offset="+start+" length="+length); // NOI18N
+            }
+            if (endUnchangedStart == -1) {
+                endUnchangedStart = start + length;
+                endUnchangedEnd = begUnchangedEnd+length;
+                begUnchangedEnd = start;
+            } else {
+                if (begUnchangedEnd <= start) {
+                    if (endUnchangedStart >= start) {
+                        endUnchangedStart += length;
+                        endUnchangedEnd += length;
+                    } else {
+                        endUnchangedStart = start + length;
+                        endUnchangedEnd += length;
+                    }
+                } else {
+                    begUnchangedEnd = start;
+                    endUnchangedStart += length;
+                    endUnchangedEnd += length;
+                }
+            }
+            if (TRACE) {
+                System.out.println(toString());
+            }
+        }
+
+        private void removeSegment(int start, int length){
+            if (TRACE) {
+                System.out.println("remove at offset="+start+" length="+length); // NOI18N
+            }
+            if (endUnchangedStart == -1) {
+                endUnchangedStart = start;
+                endUnchangedEnd = begUnchangedEnd-length;
+                begUnchangedEnd = start;
+            } else {
+                if (begUnchangedEnd <= start) {
+                    if (endUnchangedStart >= start) {
+                        endUnchangedStart -= length;
+                        if (endUnchangedStart < start) {
+                            endUnchangedStart = start;
+                        }
+                        endUnchangedEnd -= length;
+                    } else {
+                        endUnchangedStart = start + length;
+                        endUnchangedEnd -= length;
+                    }
+                } else {
+                    begUnchangedEnd = start;
+                    endUnchangedStart -= length;
+                    if (endUnchangedStart < start) {
+                        endUnchangedStart = start;
+                    }
+                    endUnchangedEnd -= length;
+                }
+            }
+            if (TRACE) {
+                System.out.println(toString());
+            }
+        }
+
+        @Override
+        public String toString() {
+            if (endUnchangedStart == -1) {
+                return "No changes"; // NOI18N
+            } else {
+                return "Start unchanged=[0,"+begUnchangedEnd+") End unhanged=["+endUnchangedStart+","+endUnchangedEnd+")"; // NOI18N
+            }
+        }
+    }
 }

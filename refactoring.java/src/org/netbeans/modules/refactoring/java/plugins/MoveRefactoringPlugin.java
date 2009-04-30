@@ -108,7 +108,10 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         Problem preCheckProblem = null;
         for (FileObject file:filesToMove) {
             if (!RetoucheUtils.isElementInOpenProject(file)) {
-                preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(MoveRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+                preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(
+                        MoveRefactoringPlugin.class,
+                        "ERR_ProjectNotOpened",
+                        FileUtil.getFileDisplayName(file)));
             }
         }
         return preCheckProblem;

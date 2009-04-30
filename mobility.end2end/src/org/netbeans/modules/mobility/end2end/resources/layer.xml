@@ -54,9 +54,9 @@ made subject to such option by the copyright holder.
         <folder name="MIDP">
             <file name="E2EWebApplication.wsclient" url="templates/MIDP/E2EWebApplication_wsclient.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.end2end.ui.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.end2end.ui.wizard.GenericServiceIterator.singleton"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:org/netbeans/modules/mobility/end2end/resources/descriptions/MIDP/E2EWebApplication_wsclient.html"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/end2end/resources/descriptions/MIDP/E2EWebApplication_wsclient.html"/>
                 <attr name="position" intvalue="800"/>
                 <attr boolvalue="true" name="template"/>
                 <attr name="MIDP" boolvalue="true"/>

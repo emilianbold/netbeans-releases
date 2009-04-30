@@ -109,7 +109,7 @@ public class CssCompletionTest extends TestBase {
     }
 
     public void testAtRules() throws ParseException {
-        checkCC("|", AT_RULES);
+        checkCC("|", AT_RULES, Match.CONTAINS);
         checkCC("@|", AT_RULES);
         checkCC("@pa|", new String[]{"@page"}, Match.CONTAINS);
     }
@@ -157,6 +157,20 @@ public class CssCompletionTest extends TestBase {
 
     public void testIssue160870() throws ParseException {
         checkCC("h1 { display : | }", arr("block"), Match.CONTAINS);
+    }
+
+    public void testHtmlSelectorsCompletion() throws ParseException {
+        checkCC("|", arr("html"), Match.CONTAINS);
+        checkCC("ht| ", arr("html"), Match.EXACT);
+        checkCC("html | ", arr("body"), Match.CONTAINS);
+        checkCC("html bo| ", arr("body"), Match.EXACT);
+        checkCC("html, bo| ", arr("body"), Match.EXACT);
+        checkCC("html > bo| ", arr("body"), Match.EXACT);
+        checkCC("html tit| { }", arr("title"), Match.CONTAINS);
+    }
+
+    public void testSystemColors() throws ParseException {
+        checkCC("div { color: | }", arr("menu", "window"), Match.CONTAINS);
     }
 
     //--- utility methods ---

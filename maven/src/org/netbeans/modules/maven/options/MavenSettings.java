@@ -69,6 +69,7 @@ public class MavenSettings  {
     public static final String PROP_BINARY_DOWNLOAD = "binaryDownload"; //NOI18N
     public static final String PROP_LAST_ARCHETYPE_GROUPID = "lastArchetypeGroupId"; //NOI18N
     public static final String PROP_CUSTOM_LOCAL_REPOSITORY = "localRepository"; //NOI18N
+    public static final String PROP_SKIP_TESTS = "skipTests"; //NOI18N
 
     
     private static final MavenSettings INSTANCE = new MavenSettings();
@@ -203,10 +204,18 @@ public class MavenSettings  {
       getPreferences().putBoolean(PROP_SHOW_RUN_DIALOG, b);
     }
 
+    public boolean isSkipTests() {
+        return getPreferences().getBoolean(PROP_SKIP_TESTS, false);
+    }
+
+    public void setSkipTests(boolean skipped) {
+        getPreferences().putBoolean(PROP_SKIP_TESTS, skipped);
+    }
+
     public static enum DownloadStrategy {
-        EVERY_OPEN,
+        NEVER,
         FIRST_OPEN,
-        NEVER
+        EVERY_OPEN
     }
 
     public DownloadStrategy getSourceDownloadStrategy() {
@@ -215,6 +224,14 @@ public class MavenSettings  {
             return DownloadStrategy.valueOf(val);
         } catch (IllegalArgumentException ex) {
             return DownloadStrategy.NEVER;
+        }
+    }
+
+    public void setSourceDownloadStrategy(DownloadStrategy ds) {
+        if (ds != null) {
+            getPreferences().put(PROP_SOURCE_DOWNLOAD, ds.name());
+        } else {
+            getPreferences().remove(PROP_SOURCE_DOWNLOAD);
         }
     }
 
@@ -227,6 +244,14 @@ public class MavenSettings  {
         }
     }
 
+    public void setJavadocDownloadStrategy(DownloadStrategy ds) {
+        if (ds != null) {
+            getPreferences().put(PROP_JAVADOC_DOWNLOAD, ds.name());
+        } else {
+            getPreferences().remove(PROP_JAVADOC_DOWNLOAD);
+        }
+    }
+
     public DownloadStrategy getBinaryDownloadStrategy() {
         String val = getPreferences().get(PROP_BINARY_DOWNLOAD, DownloadStrategy.NEVER.name());
         try {
@@ -236,6 +261,14 @@ public class MavenSettings  {
         }
     }
     
+    public void setBinaryDownloadStrategy(DownloadStrategy ds) {
+        if (ds != null) {
+            getPreferences().put(PROP_BINARY_DOWNLOAD, ds.name());
+        } else {
+            getPreferences().remove(PROP_BINARY_DOWNLOAD);
+        }
+    }
+
     private static Boolean cachedMaven = null;
     
     public static boolean canFindExternalMaven() {

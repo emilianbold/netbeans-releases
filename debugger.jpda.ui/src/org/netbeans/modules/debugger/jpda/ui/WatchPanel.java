@@ -47,21 +47,18 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.text.EditorKit;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 
 import org.netbeans.api.editor.DialogBinding;
-import org.netbeans.api.java.source.JavaSource;
 
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -75,8 +72,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import javax.naming.event.EventDirContext;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
@@ -164,7 +159,7 @@ public class WatchPanel {
                 c.url = url;
                 c.line = context.getCurrentLineNumber();
                 if (c.line == -1) {
-                    c.line = 0;
+                    c.line = 1;
                 }
                 return c;
             } else {
@@ -174,7 +169,7 @@ public class WatchPanel {
                     c.url = url;
                     c.line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
                     if (c.line == -1) {
-                        c.line = 0;
+                        c.line = 1;
                     }
                     return c;
                 } else {
@@ -213,7 +208,7 @@ public class WatchPanel {
             return;
         }
         try {
-            int offset = NbDocument.findLineOffset(doc, line);
+            int offset = NbDocument.findLineOffset(doc, line - 1);
             //editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
             //System.err.println("WatchPanel.setupContext("+file+", "+line+", "+offset+")");
             DialogBinding.bindComponentToFile(file, offset, 0, editorPane);

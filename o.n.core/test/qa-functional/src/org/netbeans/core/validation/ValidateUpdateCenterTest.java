@@ -143,7 +143,7 @@ public class ValidateUpdateCenterTest extends NbTestCase {
         permittedDisabledAutoloads.add("org.netbeans.modules.server");
         // still under development
         permittedDisabledAutoloads.add("org.netbeans.modules.spi.actions");
-        // currently in gsf cluster, probably belongs in webcommon?
+        // needed in IDE cluster because of issue #162414
         permittedDisabledAutoloads.add("org.netbeans.modules.web.client.tools.api");
         SortedMap<String,SortedSet<String>> problems = ConsistencyVerifier.findInconsistencies(manifests, permittedDisabledAutoloads);
         if (!problems.isEmpty()) {

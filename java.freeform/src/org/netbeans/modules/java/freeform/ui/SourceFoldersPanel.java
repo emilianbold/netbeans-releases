@@ -869,7 +869,9 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
         updateSourceLevelCombo(model.getSourceLevel());
         updateEncodingCombo();
         updateButtons();
-        updateModel(findPossibleSourceRoots());
+        if (isWizard) {
+            updateModel(findPossibleSourceRoots());
+        }
         sourceFoldersModel.fireTableDataChanged();
     }
 

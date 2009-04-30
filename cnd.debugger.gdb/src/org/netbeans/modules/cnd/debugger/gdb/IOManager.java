@@ -87,7 +87,9 @@ public class IOManager {
     
     public IOManager(String title) {
         debuggerIO = IOProvider.getDefault().getIO(title, true);
-        debuggerIO.setFocusTaken(false);
+        debuggerIO.select();
+        // IZ162493: no need to switch each time into Ouput window
+//        io.setFocusTaken(true);
         debuggerOut = debuggerIO.getOut();
     }
     

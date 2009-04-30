@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -64,20 +66,18 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 public class BreakpointsEngineListener extends LazyActionsManagerListener 
 		implements PropertyChangeListener, DebuggerManagerListener {
     
-    private GdbDebugger         debugger;
-    //private Session             session;
-    //private BreakpointsReader   breakpointsReader;
-    private HashMap<Breakpoint, BreakpointImpl> breakpointToImpl = new HashMap<Breakpoint, BreakpointImpl>();
+    private final GdbDebugger         debugger;
+    private final Map<Breakpoint, BreakpointImpl> breakpointToImpl = new HashMap<Breakpoint, BreakpointImpl>();
+
+    private static final Logger log = Logger.getLogger("gdb.breakpoints.logger"); // NOI18N
 
     public BreakpointsEngineListener(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
-        //session = (Session) lookupProvider.lookupFirst(null, Session.class);
         debugger.addPropertyChangeListener(this);
-        //breakpointsReader = PersistenceManager.findBreakpointsReader();
     }
     
     protected void destroy() {
-        debugger.removePropertyChangeListener(GdbDebugger.PROP_STATE, this);
+        debugger.removePropertyChangeListener(this);
         DebuggerManager.getDebuggerManager().removeDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
         removeBreakpointImpls();
     }
@@ -125,13 +125,18 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
         if (breakpointToImpl.containsKey(b)) {
 	    return;
 	}
+        BreakpointImpl impl = null;
         if (b instanceof LineBreakpoint) {
-            breakpointToImpl.put(b, new LineBreakpointImpl((LineBreakpoint) b, debugger));
+            impl = new LineBreakpointImpl((LineBreakpoint) b, debugger);
         } else if (b instanceof FunctionBreakpoint) {
-            breakpointToImpl.put(b, new FunctionBreakpointImpl((FunctionBreakpoint) b, debugger));
+            impl = new FunctionBreakpointImpl((FunctionBreakpoint) b, debugger);
         } else if (b instanceof AddressBreakpoint) {
-            breakpointToImpl.put(b, new AddressBreakpointImpl((AddressBreakpoint) b, debugger));
+            impl = new AddressBreakpointImpl((AddressBreakpoint) b, debugger);
         }
+        if (impl != null) {
+            breakpointToImpl.put(b, impl);
+        }
+        log.finer("BreakpointsEngineListener: created impl " + impl + " for " + b);
     }
     
     private void removeBreakpointImpls() {
@@ -143,10 +148,10 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     }
 
     private void removeBreakpointImpl(Breakpoint b) {
-        BreakpointImpl impl = breakpointToImpl.get(b);
+        BreakpointImpl impl = breakpointToImpl.remove(b);
         if (impl != null) {
             impl.remove();
-            breakpointToImpl.remove(b);
+            log.finer("BreakpointsEngineListener: removed impl " + impl + " for " + b);
 	}
     }
     
@@ -161,8 +166,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
             if (bp.getValidity() == Breakpoint.VALIDITY.INVALID) {
                 BreakpointImpl impl = breakpointToImpl.get(bp);
                 if (impl != null) {
-                    impl.setState(BreakpointImpl.BPSTATE_REVALIDATE);
-                    impl.update();
+                    impl.revalidate();
                 }
             }
         }

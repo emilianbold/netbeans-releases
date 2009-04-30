@@ -99,11 +99,12 @@ public class ContentSection extends JPanel implements Constants {
         g.setColor( Utils.getColor( COLOR_SECTION_HEADER ) );
         switch( location ) {
         case SwingConstants.NORTH_EAST:
-            g.drawLine( 0, height, width-13, height );
+            g.drawLine( 0, height-1, width-25, height-1 );
             g.drawLine( 0, 25, 0, height );
             break;
         case SwingConstants.NORTH_WEST:
-            g.drawLine( 13, height, width, height );
+            g.drawLine( 25, height, width, height );
+            g.drawLine( 25, height-1, width, height-1 );
             break;
         case SwingConstants.SOUTH_EAST:
             g.drawLine( 0, 0, 0, height-25 );

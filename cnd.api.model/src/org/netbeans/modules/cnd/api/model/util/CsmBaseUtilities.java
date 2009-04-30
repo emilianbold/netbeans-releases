@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
@@ -340,4 +341,7 @@ public class CsmBaseUtilities {
         return CsmClassifierResolver.getDefault().getOriginalClassifier(orig, contextFile);
     }
 
+    public static CsmClassifier getClassifier(CsmType type, CsmFile contextFile, boolean resolveTypeChain) {
+        return CsmClassifierResolver.getDefault().getTypeClassifier(type, contextFile, 0, resolveTypeChain);
+    }
 }

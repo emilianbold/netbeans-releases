@@ -152,14 +152,6 @@ made subject to such option by the copyright holder.
                 </folder>
              </folder>
 
-            <folder name="sh">
-                <!-- Prevent languages.sh from creating data objects for shell files. See also Loaders/text/sh. -->
-                <attr name="createDataObject" boolvalue="false"/>
-            </folder>
-            <folder name="bat">
-                <!-- Prevent languages.bat from creating data objects for batch files. See also Loaders/text/bat. -->
-                <attr name="createDataObject" boolvalue="false"/>
-            </folder>
         </folder>
     </folder>
     
@@ -352,8 +344,9 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CndClassWizardIterator"/>
                 <attr name="templateCategory" stringvalue="cpp-types"/>
             </file>
+
             <file name="class.h" url="templates/cpp/class-h.template">
-                <attr name="position" intvalue="10"/>
+                <attr name="position" intvalue="410"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="hidden"/>
             </file>
@@ -871,7 +864,6 @@ made subject to such option by the copyright holder.
             </folder> <!-- x-make -->
             
             <folder name="sh">
-                <!-- We want our own ShellDataObjects for shell files. See also Editors/text/sh. -->
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-ShellDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
@@ -950,13 +942,82 @@ made subject to such option by the copyright holder.
                 </folder> <!-- Actions -->
             </folder> <!-- x-shell -->
             <folder name="bat">
-                <!-- We want our own ShellDataObjects for batch files. See also Editors/text/bat. -->
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-cnd-loaders-ShellDataLoader.instance">
+                    <file name="org-netbeans-modules-cnd-loaders-BatDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
+                <folder name="Actions">
+                    <file name="OpenAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="Separator1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="FileSystemAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="Separator2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="CutAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="CopyAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="PasteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="Separator3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="DeleteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="RenameAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="Separator4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="SaveAsTemplateAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    <file name="Separator5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="ShellRunAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.ShellRunAction"/>
+                        <attr name="position" intvalue="1750"/>
+                    </file>
+                    <file name="Separator6.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1775"/>
+                    </file>
+                    <file name="ToolsAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>
+                    <file name="PropertiesAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                        <attr name="position" intvalue="1900"/>
+                    </file>
+                </folder> <!-- Actions -->
             </folder>
             <folder name="x-fortran">
                 <folder name="Factories">

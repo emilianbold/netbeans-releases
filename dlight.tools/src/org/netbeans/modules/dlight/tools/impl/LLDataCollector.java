@@ -38,6 +38,9 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.tools.*;
 import java.io.File;
 import java.net.ConnectException;
@@ -46,9 +49,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
@@ -57,7 +62,6 @@ import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.ExecutionEnvVariablesProvider;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -71,12 +75,12 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -129,22 +133,25 @@ public class LLDataCollector
         this.target = target;
         ExecutionEnvironment env = target.getExecEnv();
         if (!env.isLocal()) {
-            try {
-                File agentLibraryLocal = locateAgentLibrary(env);
-                if (agentLibraryLocal != null) {
-                    CommonTasksSupport.uploadFile(
-                            agentLibraryLocal.getAbsolutePath(), env,
-                            getRemotePath(env, agentLibraryLocal), 644, null).get();
-                }
-                File monitorExecutableLocal = locateMonitorExecutable(env);
-                CommonTasksSupport.uploadFile(
-                        monitorExecutableLocal.getAbsolutePath(), env,
-                        getRemotePath(env, agentLibraryLocal), 755, null).get();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
+            for (Map.Entry<String, File> entry : locateProfAgents(env).entrySet()) {
+                upload(env, entry.getValue(), getRemoteDir(env, entry.getValue(), entry.getKey()), 0644);
             }
+            for (Map.Entry<String, File> entry : locateProfMonitors(env).entrySet()) {
+                upload(env, entry.getValue(), getRemoteDir(env, entry.getValue(), entry.getKey()), 0755);
+                break; // one monitor is enough
+            }
+        }
+    }
+
+    private void upload(ExecutionEnvironment execEnv, File localFile, String remoteDir, int mode) {
+        try {
+            CommonTasksSupport.mkDir(execEnv, remoteDir, null).get();
+            CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv,
+                    remoteDir + "/" + localFile.getName(), mode, null).get(); // NOI18N
+        } catch (InterruptedException ex) {
+            DLightLogger.instance.log(Level.WARNING, null, ex);
+        } catch (ExecutionException ex) {
+            DLightLogger.instance.log(Level.WARNING, null, ex);
         }
     }
 
@@ -164,33 +171,52 @@ public class LLDataCollector
 
     public Map<String, String> getExecutionEnv(DLightTarget target) throws ConnectException {
         ExecutionEnvironment env = target.getExecEnv();
-        String ldPreloadName = NativeToolsUtil.getLdPreloadName(HostInfoUtils.getOS(env));
-        File agentLibraryLocal = locateAgentLibrary(env);
-        if (agentLibraryLocal != null) {
-            return Collections.singletonMap(ldPreloadName, getRemotePath(env, agentLibraryLocal));
+        Map<String, File> agentLibrariesLocal = locateProfAgents(env);
+        if (!agentLibrariesLocal.isEmpty()) {
+            Map<String, String> vars = new HashMap<String, String>();
+            StringBuilder paths = new StringBuilder();
+            String agentFilename = null;
+            for (Map.Entry<String, File> entry : agentLibrariesLocal.entrySet()) {
+                if (agentFilename == null) {
+                    agentFilename = entry.getValue().getName();
+                }
+                if (0 < paths.length()) {
+                    paths.append(':'); // NOI18N
+                }
+                paths.append(getRemoteDir(env, entry.getValue(), entry.getKey()));
+            }
+            vars.put(NativeToolsUtil.getLdPathName(env), paths.toString());
+            vars.put(NativeToolsUtil.getLdPreloadName(env), agentFilename);
+            return vars;
         } else {
             return Collections.emptyMap();
         }
     }
 
-    private String getRemotePath(ExecutionEnvironment env, File localPath) {
+    private String getRemoteDir(ExecutionEnvironment env, File localFile, String dirname) {
         if (env.isLocal()) {
-            return localPath.getAbsolutePath();
+            return localFile.getParentFile().getAbsolutePath();
         } else {
-            return "/tmp/" + localPath.getName(); // NOI18N
+            String tmpDir;
+            try {
+                tmpDir = HostInfoUtils.getHostInfo(env).getTempDir();
+            } catch (Throwable ex) {
+                tmpDir = "/var/tmp"; // NOI18N
+            }
+            return tmpDir + "/tools/" + dirname; // NOI18N
         }
     }
 
-    private File locateAgentLibrary(ExecutionEnvironment env) {
-        return NativeToolsUtil.locateFile(env, NativeToolsUtil.getSharedLibrary("prof_agent")); // NOI18N
+    private Map<String, File> locateProfAgents(ExecutionEnvironment env) {
+        return NativeToolsUtil.getCompatibleBinaries(env, "prof_agent.${soext}"); // NOI18N
     }
 
-    private File locateMonitorExecutable(ExecutionEnvironment env) {
-        return NativeToolsUtil.locateFile(env, NativeToolsUtil.getExecutable("prof_monitor")); // NOI18N
+    private Map<String, File> locateProfMonitors(ExecutionEnvironment env) {
+        return NativeToolsUtil.getCompatibleBinaries(env, "prof_monitor"); // NOI18N
     }
 
-    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case RUNNING:
                 startMonitor();
                 break;
@@ -200,7 +226,16 @@ public class LLDataCollector
     private void startMonitor() {
         AttachableTarget at = (AttachableTarget) target;
         ExecutionEnvironment env = target.getExecEnv();
-        NativeProcessBuilder npb = new NativeProcessBuilder(env, getRemotePath(env, locateMonitorExecutable(env)));
+        NativeProcessBuilder npb = null;
+        for (Map.Entry<String, File> entry : locateProfMonitors(env).entrySet()) {
+            npb = new NativeProcessBuilder(env,
+                    getRemoteDir(env, entry.getValue(), entry.getKey()) + "/" + entry.getValue().getName()); // NOI18N
+            break;
+        }
+        if (npb == null) {
+            DLightLogger.instance.severe("Failed to find prof_monitor"); // NOI18N
+            return;
+        }
         StringBuilder flags = new StringBuilder("-"); // NOI18N
         if (collectedData.contains(LLDataCollectorConfiguration.CollectedData.CPU)) {
             flags.append('c'); // NOI18N
@@ -241,8 +276,10 @@ public class LLDataCollector
             } else if (line.startsWith("sync:")) { // NOI18N
                 String[] fields = line.substring(6).split("\t"); // NOI18N
                 float syncCurr = Float.parseFloat(fields[0]);
-                int threads = Integer.parseInt(fields[1]);
-                row = new DataRow(LLDataCollectorConfiguration.SYNC_TABLE.getColumnNames(), Arrays.asList(Float.valueOf((syncCurr - syncPrev) * 100 / threads), Integer.valueOf(threads)));
+                if (0f < syncPrev) {
+                    int threads = Integer.parseInt(fields[1]);
+                    row = new DataRow(LLDataCollectorConfiguration.SYNC_TABLE.getColumnNames(), Arrays.asList(Float.valueOf((syncCurr - syncPrev) * 100 / threads), Integer.valueOf(threads)));
+                }
                 syncPrev = syncCurr;
             }
             if (row != null) {
@@ -297,13 +334,25 @@ public class LLDataCollector
                     connectAction);
         }
 
-        File agentLibraryLocal = locateAgentLibrary(env);
-        if (agentLibraryLocal == null || !agentLibraryLocal.exists()) {
+        OSFamily osFamily = OSFamily.UNKNOWN;
+
+        try {
+            osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        if (osFamily != OSFamily.LINUX) {
+            return ValidationStatus.invalidStatus(getMessage("ValidationStatus.ProfAgent.OSNotSupported")); // NOI18N
+        }
+
+        Map<String, File> profAgentsLocal = locateProfAgents(env);
+        if (profAgentsLocal.isEmpty()) {
             return ValidationStatus.invalidStatus(getMessage("ValidationStatus.AgentNotFound")); // NOI18N
         }
 
-        File monitorExecutableLocal = locateMonitorExecutable(env);
-        if (monitorExecutableLocal == null || !monitorExecutableLocal.exists()) {
+        Map<String, File> profMonitorsLocal = locateProfMonitors(env);
+        if (profMonitorsLocal.isEmpty()) {
             return ValidationStatus.invalidStatus(getMessage("ValidationStatus.MonitorNotFound")); // NOI18N
         }
 

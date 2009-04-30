@@ -44,11 +44,9 @@ package org.netbeans.nbbuild;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.PrintStream;
 import java.util.Properties;
-import junit.framework.*;
 import org.netbeans.junit.*;
 
 /**
@@ -101,9 +99,9 @@ public class ShorterPathsTest extends NbTestCase {
       props.load(propsIs);
       propsIs.close();
       assertEquals("extra.test.libs.dir","${extra.test.libs.dir}/extlib.jar",props.getProperty("extra.test.libs"));
-      assertEquals("test.unit.run.cp","${nb.root.test.dir}/module.jar",props.getProperty("test.run.cp"));
-      assertEquals("test-unit-sys-prop.prop1","value1",props.getProperty("test-unit-sys-prop.prop1"));
-      assertEquals("test-unit-sys-prop.prop2","${nb.root.test.dir}/module.jar",props.getProperty("test-unit-sys-prop.prop2"));
+      assertEquals("test.run.cp", "${nb.root.test.dir}/module.jar", props.getProperty("test.run.cp"));
+      assertEquals("test-sys-prop.prop1", "value1", props.getProperty("test-sys-prop.prop1"));
+      assertEquals("test-sys-prop.prop2", "${nb.root.test.dir}/module.jar", props.getProperty("test-sys-prop.prop2"));
       assertNull(props.getProperty("test-unit-sys-prop.xtest.data"));       
       assertEquals("props.size()",4,props.size());
       

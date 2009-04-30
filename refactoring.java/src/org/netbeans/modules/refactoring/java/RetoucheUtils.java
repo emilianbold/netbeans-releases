@@ -45,6 +45,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.Color;
@@ -71,6 +72,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -1040,5 +1042,21 @@ public class RetoucheUtils {
         }
         // return a copy of the unit with changed imports section
         return make.CompilationUnit(cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
+    }
+
+    /**
+     * transforms passed modifiers to abstract form
+     * @param make a tree maker
+     * @param oldMods modifiers of method or class
+     * @return the abstract form of ModifiersTree
+     */
+    public static ModifiersTree makeAbstract(TreeMaker make, ModifiersTree oldMods) {
+        if (oldMods.getFlags().contains(Modifier.ABSTRACT)) {
+            return oldMods;
+        }
+        Set<Modifier> flags = new HashSet<Modifier>(oldMods.getFlags());
+        flags.add(Modifier.ABSTRACT);
+        flags.remove(Modifier.FINAL);
+        return make.Modifiers(flags, oldMods.getAnnotations());
     }
 }

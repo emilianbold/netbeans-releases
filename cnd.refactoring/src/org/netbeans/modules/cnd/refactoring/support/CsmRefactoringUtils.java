@@ -148,7 +148,8 @@ public final class CsmRefactoringUtils {
             Collection<CsmProject> all = CsmModelAccessor.getModel().projects();
             out = new HashSet<CsmProject>(all);
             Collection<CsmProject> prjs = getContextCsmProjects(origObject);
-            for (CsmProject prj : prjs) {
+            out.addAll(prjs);
+            for (CsmProject prj : out) {
                 if (prj != null && prj.isArtificial()) {
                     // add all libraries as well
                     Set<CsmProject> libs = new HashSet<CsmProject>();

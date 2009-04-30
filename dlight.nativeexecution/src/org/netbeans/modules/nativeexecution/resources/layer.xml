@@ -5,7 +5,8 @@
       <folder name="ExtTerminalSupport">
           <file name="gnome-terminal" url="terminalsupport/gnome-terminal.xml"/>
           <file name="xterm" url="terminalsupport/xterm.xml"/>
-          <file name="konsole" url="terminalsupport/kde-konsole.xml"/>
+          <file name="konsole_v1" url="terminalsupport/kde-konsole-1.x.xml"/>
+          <file name="konsole_v2" url="terminalsupport/kde-konsole-2.x.xml"/>
           <file name="cmd.exe" url="terminalsupport/win-cmd.xml"/>
       </folder>
   </folder>

@@ -39,7 +39,10 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Color;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.util.List;
+import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JTextArea;
@@ -295,29 +298,38 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }
 
     private void selectRemoteConnection() {
-        String remoteConnection = getValue(PhpProjectProperties.REMOTE_CONNECTION);
+        selectRemoteConnection(null);
+    }
+
+    private void selectRemoteConnection(String remoteConnection) {
+        if (remoteConnection == null) {
+            remoteConnection = getValue(PhpProjectProperties.REMOTE_CONNECTION);
+        }
         // #141849 - can be null if one adds remote config for the first time for a project but already has some remote connection
         DefaultComboBoxModel model = (DefaultComboBoxModel) remoteConnectionComboBox.getModel();
         if (remoteConnection == null
-                && model.getIndexOf(NO_REMOTE_CONFIGURATION) != -1) {
+                || NO_CONFIG.equals(remoteConnection)) {
+            if (model.getIndexOf(NO_REMOTE_CONFIGURATION) < 0) {
+                model.insertElementAt(NO_REMOTE_CONFIGURATION, 0);
+            }
             remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONFIGURATION);
             return;
         }
+
         int size = remoteConnectionComboBox.getModel().getSize();
         for (int i = 0; i < size; ++i) {
             RemoteConfiguration rc = (RemoteConfiguration) remoteConnectionComboBox.getItemAt(i);
-            if (remoteConnection == null
-                    || NO_CONFIG.equals(remoteConnection)
-                    || remoteConnection.equals(rc.getName())) {
-                // select existing or
-                // if no configuration formerly existed and now some were created => so select the first one
+            if (remoteConnection.equals(rc.getName())) {
                 remoteConnectionComboBox.setSelectedItem(rc);
                 return;
             }
         }
+
         // remote connection is missing (probably removed?)
         remoteConnectionComboBox.addItem(MISSING_REMOTE_CONFIGURATION);
         remoteConnectionComboBox.setSelectedItem(MISSING_REMOTE_CONFIGURATION);
+        // # 162230
+        model.removeElement(NO_REMOTE_CONFIGURATION);
     }
 
     void updateRemoteConnectionHint() {
@@ -364,7 +376,99 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadDirectlyLabel = new JLabel();
         advancedButton = new JButton();
 
-        setFocusTraversalPolicy(null);
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return urlHintLabel;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return urlHintLabel;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return advancedButton;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  urlHintLabel){
+                    return remoteConnectionComboBox;
+                }
+                if(aComponent ==  runAsComboBox){
+                    return urlTextField;
+                }
+                if(aComponent ==  remoteConnectionComboBox){
+                    return manageRemoteConnectionButton;
+                }
+                if(aComponent ==  manageRemoteConnectionButton){
+                    return uploadDirectoryTextField;
+                }
+                if(aComponent ==  uploadDirectoryTextField){
+                    return uploadFilesComboBox;
+                }
+                if(aComponent ==  indexFileTextField){
+                    return indexFileBrowseButton;
+                }
+                if(aComponent ==  urlTextField){
+                    return indexFileTextField;
+                }
+                if(aComponent ==  uploadDirectlyCheckBox){
+                    return advancedButton;
+                }
+                if(aComponent ==  preservePermissionsCheckBox){
+                    return uploadDirectlyCheckBox;
+                }
+                if(aComponent ==  uploadFilesComboBox){
+                    return preservePermissionsCheckBox;
+                }
+                if(aComponent ==  indexFileBrowseButton){
+                    return argsTextField;
+                }
+                if(aComponent ==  argsTextField){
+                    return urlHintLabel;
+                }
+                return urlHintLabel;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  remoteConnectionComboBox){
+                    return urlHintLabel;
+                }
+                if(aComponent ==  urlTextField){
+                    return runAsComboBox;
+                }
+                if(aComponent ==  manageRemoteConnectionButton){
+                    return remoteConnectionComboBox;
+                }
+                if(aComponent ==  uploadDirectoryTextField){
+                    return manageRemoteConnectionButton;
+                }
+                if(aComponent ==  uploadFilesComboBox){
+                    return uploadDirectoryTextField;
+                }
+                if(aComponent ==  indexFileBrowseButton){
+                    return indexFileTextField;
+                }
+                if(aComponent ==  indexFileTextField){
+                    return urlTextField;
+                }
+                if(aComponent ==  advancedButton){
+                    return uploadDirectlyCheckBox;
+                }
+                if(aComponent ==  uploadDirectlyCheckBox){
+                    return preservePermissionsCheckBox;
+                }
+                if(aComponent ==  preservePermissionsCheckBox){
+                    return uploadFilesComboBox;
+                }
+                if(aComponent ==  argsTextField){
+                    return indexFileBrowseButton;
+                }
+                if(aComponent ==  urlHintLabel){
+                    return argsTextField;
+                }
+                return advancedButton;//end getComponentBefore
+
+            }}
+        );
 
         runAsLabel.setLabelFor(runAsComboBox);
 
@@ -374,8 +478,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ProjectUrl")); // NOI18N
         indexFileLabel.setLabelFor(indexFileTextField);
 
-        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile")); // NOI18N
-        indexFileTextField.setEditable(false);
+        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile"));
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Browse"));
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -448,7 +551,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                     .add(urlLabel)
                     .add(runAsLabel)
                     .add(indexFileLabel)
-                    .add(argsLabel, GroupLayout.PREFERRED_SIZE, 72, GroupLayout.PREFERRED_SIZE))
+                    .add(argsLabel))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -580,6 +683,12 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadFilesComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesComboBox.AccessibleContext.accessibleDescription")); // NOI18N
         uploadFilesHintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesHintLabel.AccessibleContext.accessibleName")); // NOI18N
         uploadFilesHintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesHintLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        preservePermissionsCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        preservePermissionsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        uploadDirectlyCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        uploadDirectlyLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        advancedButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.AccessibleContext.accessibleName")); // NOI18N
+        advancedButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.AccessibleContext.accessibleDescription")); // NOI18N
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -587,7 +696,13 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private void manageRemoteConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageRemoteConnectionButtonActionPerformed
         if (RemoteConnections.get().openManager((RemoteConfiguration) remoteConnectionComboBox.getSelectedItem())) {
             populateRemoteConnectionComboBox();
-            selectRemoteConnection();
+            // # 162233
+            String selected = null;
+            ComboBoxModel model = remoteConnectionComboBox.getModel();
+            if (model.getSize() == 1) {
+                selected = ((RemoteConfiguration) model.getElementAt(0)).getName();
+            }
+            selectRemoteConnection(selected);
         }
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 

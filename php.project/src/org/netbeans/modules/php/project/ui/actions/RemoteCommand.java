@@ -54,6 +54,8 @@ import org.netbeans.modules.php.project.connections.TransferInfo;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -300,5 +302,18 @@ public abstract class RemoteCommand extends Command {
             }
         }
         return max;
+    }
+
+    // # 161620
+    protected final boolean sourcesFilesOnly(FileObject sources, FileObject[] selectedFiles) {
+        for (FileObject file : selectedFiles) {
+            if (!FileUtil.isParentOf(sources, file) && !sources.equals(file)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(RemoteCommand.class, "MSG_TransferSourcesOnly"),
+                        NotifyDescriptor.ERROR_MESSAGE));
+                return false;
+            }
+        }
+        return true;
     }
 }

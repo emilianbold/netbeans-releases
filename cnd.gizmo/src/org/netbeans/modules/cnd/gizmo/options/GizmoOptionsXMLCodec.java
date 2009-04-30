@@ -120,7 +120,7 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
             xes.element(PROFILE_ON_RUN_ELEMENT, "" + gizmoOptions.getProfileOnRun().getValue()); // NOI18N
         }
         for (String toolName : gizmoOptions.getNames()) {
-            BooleanConfiguration conf = gizmoOptions.getByName(toolName);
+            BooleanConfiguration conf = gizmoOptions.getConfigurationByName(toolName);
             if (conf.getModified()) {
                 AttrValuePair[] attributes = new AttrValuePair[2];
                 attributes[0] = new AttrValuePair(TOOL_NAME_ATTRIBUTE, toolName);
@@ -128,15 +128,6 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
                 xes.element(TOOL_ELEMENT, attributes);
             }
         }
-//        if (gizmoOptions.getCpu().getModified()) {
-//            xes.element(CPU_ELEMENT, "" + gizmoOptions.getCpu().getValue()); // NOI18N
-//        }
-//        if (gizmoOptions.getMemory().getModified()) {
-//            xes.element(MEMORY_ELEMENT, "" + gizmoOptions.getMemory().getValue()); // NOI18N
-//        }
-//        if (gizmoOptions.getSynchronization().getModified()) {
-//            xes.element(SYNCHRONIZATION_ELEMENT, "" + gizmoOptions.getSynchronization().getValue()); // NOI18N
-//        }
         if (gizmoOptions.getDataProvider().getModified()) {
             xes.element(DATA_PROVIDER_ELEMENT, "" + gizmoOptions.getDataProvider().getValue()); // NOI18N
         }

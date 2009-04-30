@@ -42,59 +42,47 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.modules.cnd.apt.structure.APT;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * A class that tracks states of the preprocessor conditionals within file
- * @author Vladimir Kvashin
+ * @author Vladimir Voskresenskky
  */
-public final class FilePreprocessorConditionState
-        implements APTParseFileWalker.EvalCallback {
+public final class FilePreprocessorConditionState {
 
-    /** a SORTED array of offsets for which conditionals were evaluated to true */
-    private int[] offsets;
-
-    /** amount of states in the data array  */
-    private int size;
+    /** a SORTED array of blocks [start-end] for which conditionals were evaluated to false */
+    private final int[] offsets;
 
     /** for debugging purposes */
-    private transient CharSequence fileName;
+    private final transient CharSequence fileName;
 
-    private static final int MIN_SIZE = 16;
-
-    //private boolean isCpp;
-
-    public FilePreprocessorConditionState(FileImpl file/*, APTPreprocHandler preprocHandler*/) {
-        offsets = new int[MIN_SIZE];
-        fileName = file.getBuffer().getAbsolutePath();
-        //this.isCpp = preprocHandler.getMacroMap().isDefined("__cplusplus");
-    }
-
-    public FilePreprocessorConditionState(FilePreprocessorConditionState state2copy) {
-        offsets = new int[state2copy.size];
-        System.arraycopy(state2copy.offsets, 0, offsets, 0, offsets.length);
-        this.fileName = state2copy.fileName;
+    // for builder only
+    private FilePreprocessorConditionState(CharSequence fileName, int[] offsets) {
+        this.offsets = offsets;
+        this.fileName = fileName;
     }
     
     public FilePreprocessorConditionState(DataInput input) throws IOException {
-        size = input.readInt();
+        int size = input.readInt();
         if (size > 0) {
-            offsets = new int[Math.max(size, MIN_SIZE)];
+            offsets = new int[size];
             for (int i = 0; i < size; i++) {
                 offsets[i] = input.readInt();
             }
         } else {
-            offsets = new int[MIN_SIZE];
+            offsets = new int[0];
         }
         fileName = null;
     }
 
     public void write(DataOutput output) throws IOException {
+        int size = offsets.length;
         output.writeInt(size);
         if (size > 0) {
             for (int i = 0; i < size; i++) {
@@ -103,188 +91,29 @@ public final class FilePreprocessorConditionState
         }
     }
 
-    public void clear() {
-        size = 0;
-    }
-
-    /**
-     * Implements APTParseFileWalker.EvalCallback -
-     * adds offset of active branch to offsets array
-     */
-    public void onEval(APT apt, boolean result) {
-        boolean proceed = false;
-        int offset = -1;
-        if (result) {
-            proceed = true;
-            offset = apt.getOffset();
-        } else {
-            APT  sibling = apt.getNextSibling();
-            if (sibling != null && sibling.getType() == APT.Type.ELSE) {
-                proceed = true;
-                offset = sibling.getOffset();
-            }
-        }
-        if (proceed) {
-            assert offset >= 0;
-            addOffset(offset);
-        }
-    }
-
-    private boolean addOffset(int offset) {
-        if (size == 0) {
-            offsets[0] = offset;
-            size = 1;
-        } else {
-            int last = size - 1;
-            if (offsets[last] < offset) {
-                insert(last + 1, offset);
-            } else {
-                for (int i = last - 1; i > 0; i--) {
-                    if (offset > offsets[i]) {
-                        insert(i + 1, offset);
-                        return true;
-                    }
-                }
-                insert(0, offset);
-            }
-        }
-        return false;
-    }
-
-    private void insert(int index, int value) {
-        if (index > size) {
-            throw new IllegalArgumentException("Index: " + index + " shouldn't be greater than " + size); //NOI18N
-        }
-        // ensure the array is capable of storing a new value
-        if (size >= offsets.length) {
-            int newSize = (size * 3)/2 + 1;
-            int[] newData = new int[newSize];
-            System.arraycopy(offsets, 0, newData, 0, offsets.length);
-            offsets = newData;
-        }
-        // store the value
-        if (index < size) { // inserting
-            System.arraycopy(offsets, index, offsets, index+1, offsets.length-index+1);
-        }
-        offsets[index] = value;
-        size++;
-    }
-
-    public final boolean isBetter(FilePreprocessorConditionState other) {
-        int result = compareToImpl(other);
-        if (TraceFlags.TRACE_PC_STATE || TraceFlags.TRACE_PC_STATE_COMPARISION) {
-            traceComparison(other, result);
-        }
-        return result > 0;
-    }
-    
-    public final boolean isEqual(FilePreprocessorConditionState other) {
-        if (this == other) {
-            return true;
-        }
-        // we assume that the array is ordered
-        if (this.size == other.size) {
-            for (int i = 0; i < size; i++) {
-                if (this.offsets[i] != other.offsets[i]) {
-                    return false;
-                }
-            }
-            return true;
-        } else {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
             return false;
         }
-    }
-
-    public final boolean isSubset(Collection<FilePreprocessorConditionState> others) {
-        SortedSet<Integer> sorted = new TreeSet<Integer>();
-        for (FilePreprocessorConditionState state : others) {
-            if (state == null) {
-                return false;
-            }
-            for (int i = 0; i < state.size; i++) {
-                sorted.add(state.offsets[i]);
-            }
+        if (getClass() != obj.getClass()) {
+            return false;
         }
-        int[] arr = new int[sorted.size()];
-        int pos = 0;
-        for (int offset : sorted) {
-            arr[pos++] = offset;
+        final FilePreprocessorConditionState other = (FilePreprocessorConditionState) obj;
+        if (!Arrays.equals(this.offsets, other.offsets)) {
+            return false;
         }
-        return isSubset(arr, arr.length);
+        return true;
     }
 
-    public final boolean isSubset(FilePreprocessorConditionState other) {
-        return (other == null) ? false : isSubset(other.offsets, other.size);
-    }
-
-    public final boolean isSubset(int[] otherOffsets, int otherSize) {
-        // we assume that the array is ordered
-        if (this.size <= otherSize) {
-            int thisPos = 0;
-            int otherPos = 0;
-            outer:
-            while (thisPos < size && otherPos < otherSize) {
-                // on each iteration we assume
-                // that all on the left of the current position
-                // this is a subset of other
-                if (this.offsets[thisPos] == otherOffsets[otherPos]) {
-                    thisPos++;
-                    otherPos++;
-                    continue;
-                } else if (this.offsets[thisPos] < otherOffsets[otherPos]) {
-                    return false;
-                } else { // this.offsets[thisPos] > other.offsets[thisPos]
-                    while (++otherPos < otherSize) {
-                        if (this.offsets[thisPos] == otherOffsets[otherPos]) {
-                            thisPos++;
-                            otherPos++;
-                            continue outer;
-                        }
-                    }
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private void traceComparison(FilePreprocessorConditionState other, int result) {
-        System.err.printf("compareTo (%s): %s %s %s \n", fileName, toStringBrief(this),
-                (result < 0) ? "<" : ((result > 0) ? ">" : "="), // NOI18N
-                toStringBrief(other)); //NOI18N
-    }
-
-    private int compareToImpl(FilePreprocessorConditionState other) {
-        if (other == this) {
-            return 0;
-        } else if (other == null) {
-            return (size > 0) ? 1 : 0; // null and empty are the same
-        } else {
-            if (this.size != other.size) {
-                // longer is the array, more branches were active
-                return this.size - other.size;
-            } else {
-                // for now we don't care if counts are equal;
-                // the code below is witten just for the sake of stability
-                for (int i = 0; i < size; i++) {
-                    if (this.offsets[i] != other.offsets[i]) {
-                        return other.offsets[i] - this.offsets[i];
-                    }
-                }
-                return 0;
-            }
-        }
+    @Override
+    public int hashCode() {
+        int hash = 5 + Arrays.hashCode(this.offsets);
+        return hash;
     }
 
     @Override
     public String toString() {
-//        StringBuilder sb = new StringBuilder(); // "FilePreprocessorConditionState "
-//        sb.append(fileName);
-//        sb.append(' ');
-//        sb.append(toStringBrief(this));
-//        sb.append(" size=" + size); //NOI18N
-//        return sb.toString();
         return toStringBrief(this);
     }
 
@@ -292,15 +121,202 @@ public final class FilePreprocessorConditionState
         if (state == null) {
             return "null"; // NOI18N
         }
-        StringBuilder sb = new StringBuilder(/*state.isCpp ? "c++ " : "c   "*/); // NOI18N
-        sb.append("["); // NOI18N
-        for (int i = 0; i < state.size; i++) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");//NOI18N
+        for (int i = 0; i < state.offsets.length; i+=2) {
             if (i > 0) {
-                sb.append(", "); //NOI18N
+                sb.append("][");//NOI18N
             }
             sb.append(state.offsets[i]);
+            sb.append("-");//NOI18N
+            sb.append(state.offsets[i+1]);
         }
-        sb.append("]"); //NOI18N
+        sb.append("]");//NOI18N
         return sb.toString();
+    }
+
+    public boolean isInActiveBlock(int startContext, int endContext) {
+        if (offsets.length == 0 || startContext == 0) {
+            return true;
+        }
+        // TODO: improve speed, if needed, offsets are ordered
+        for (int i = 0; i < offsets.length; i += 2) {
+            int start = offsets[i];
+            int end = offsets[i + 1];
+            if (start <= startContext && startContext <= end) {
+                return false;
+            }
+            if (start <= endContext && endContext <= end) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * check if this state can be used to replace another (it is better or equal to another)
+     * @param other
+     * @return
+     */
+    public final boolean isBetterOrEqual(FilePreprocessorConditionState other) {
+        if (other == null) {
+            return false;
+        }
+        if (this.offsets.length == 0) {
+            // can replace all
+            return true;
+        }
+        if (other.offsets.length == 0) {
+            // this is not empty, so it can not replace empty
+            return false;
+        }
+        // check if all my blocks are inactive in terms of other (but not equal to them)
+        for (int i = 0; i < offsets.length; i += 2) {
+            int start = offsets[i];
+            int end = offsets[i + 1];
+            boolean active = true;
+            for (int j = 0; j < other.offsets.length; j += 2) {
+                int secondStart = other.offsets[j];
+                int secondEnd = other.offsets[j + 1];
+                if (secondStart <= start && end <= secondEnd) {
+                    // not in active
+                    active = false;
+                } else if (start < secondStart && secondEnd < end) {
+                    // our dead block is bigger
+                    return false;
+                }
+                if (!active || (end < secondStart)) {
+                    // we can stop, because blocks are sorted
+                    break;
+                }
+            }
+            // our block is active => we can't be the best
+            if (active) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public static final class Builder implements APTParseFileWalker.EvalCallback {
+        private final SortedSet<int[]> blocks = new TreeSet<int[]>(COMPARATOR);
+        private final CharSequence name;
+        public Builder(CharSequence name) {
+            this.name = name;
+        }
+
+        /*package*/final Builder addBlockImpl(int startDeadBlock, int endDeadBlock) {
+            assert endDeadBlock >= startDeadBlock : "incorrect offsets " + startDeadBlock + " and " + endDeadBlock; // NOI18N
+            if (endDeadBlock > startDeadBlock) {
+                blocks.add(new int[] { startDeadBlock, endDeadBlock });
+            }
+            return this;
+        }
+
+        private void addDeadBlock(APT startNode, APT endNode) {
+            if (startNode != null && endNode != null) {
+                int startDeadBlock = startNode.getEndOffset();
+                int endDeadBlock = endNode.getOffset() - 1;
+                addBlockImpl(startDeadBlock, endDeadBlock);
+            }
+        }
+
+        /**
+         * Implements APTParseFileWalker.EvalCallback -
+         * adds offset of dead branch to offsets array
+         */
+        public void onEval(APT apt, boolean result) {
+            if (result) {
+                // if condition was evaluated as 'true' check if we
+                // need to mark siblings as dead blocks
+                APT start = apt.getNextSibling();
+                deadBlocks:
+                while (start != null) {
+                    APT end = start.getNextSibling();
+                    if (end != null) {
+                        switch (end.getType()) {
+                            case APT.Type.ELIF:
+                            case APT.Type.ELSE:
+                                addDeadBlock(start, end);
+                                // continue
+                                start = end;
+                                break;
+                            case APT.Type.ENDIF:
+                                addDeadBlock(start, end);
+                                // stop
+                                start = null;
+                                break;
+                            default:
+                                // stop
+                                start = null;
+                                break;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                // if condition was evaluated as 'false' mark it as dead block
+                APT end = apt.getNextSibling();
+                if (end != null) {
+                    switch (end.getType()) {
+                        case APT.Type.ELIF:
+                        case APT.Type.ELSE:
+                        case APT.Type.ENDIF:
+                            addDeadBlock(apt, end);
+                            break;
+                    }
+                }
+            }
+        }
+
+        public FilePreprocessorConditionState build() {
+            int[] offsets = new int[blocks.size()*2];
+            int index = 0;
+            for (int[] deadInterval : blocks) {
+                offsets[index++] = deadInterval[0];
+                offsets[index++] = deadInterval[1];
+            }
+            FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(this.name, offsets);
+            if (CndUtils.isDebugMode()) {
+                checkConsistency(pcState);
+            }
+            return pcState;
+        }
+
+        private void checkConsistency(FilePreprocessorConditionState pcState) {
+            // check consistency for ordering and absence of intersections
+            for (int i = 0; i < pcState.offsets.length; i++) {
+                if (i + 1 < pcState.offsets.length) {
+                    CndUtils.assertTrue(pcState.offsets[i] < pcState.offsets[i + 1], "inconsistent state " + pcState);  // NOI18N
+                }
+            }
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            if (name != null) {
+                sb.append(name);
+            }
+            sb.append("[");//NOI18N
+            int i = 0;
+            for (int[] deadInterval : blocks) {
+                if (i++ > 0) {
+                    sb.append("][");//NOI18N
+                }
+                sb.append(deadInterval[0]);
+                sb.append("-");//NOI18N
+                sb.append(deadInterval[1]);
+            }
+            sb.append("]");//NOI18N
+            return sb.toString();
+        }
+
+        private static final Comparator<int[]> COMPARATOR = new Comparator<int[]>() {
+            public int compare(int[] segment1, int[] segment2) {
+                return segment1[0] - segment2[0];
+            }
+        };
     }
 }

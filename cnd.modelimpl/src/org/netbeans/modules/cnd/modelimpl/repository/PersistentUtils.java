@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterTypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyTryCatchStatementImpl;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
@@ -617,6 +618,9 @@ public class PersistentUtils {
         if (body instanceof LazyCompoundStatementImpl) {
             output.writeInt(LAZY_COMPOUND_STATEMENT_IMPL);
             ((LazyCompoundStatementImpl) body).write(output);
+        } else if (body instanceof LazyTryCatchStatementImpl) {
+            output.writeInt(LAZY_TRY_CATCH_STATEMENT_IMPL);
+            ((LazyTryCatchStatementImpl) body).write(output);
         } else if (body instanceof EmptyCompoundStatementImpl) {
             output.writeInt(EMPTY_COMPOUND_STATEMENT_IMPL);
             ((EmptyCompoundStatementImpl) body).write(output);
@@ -634,6 +638,9 @@ public class PersistentUtils {
         switch (handler) {
             case LAZY_COMPOUND_STATEMENT_IMPL:
                 body = new LazyCompoundStatementImpl(input);
+                break;
+            case LAZY_TRY_CATCH_STATEMENT_IMPL:
+                body = new LazyTryCatchStatementImpl(input);
                 break;
             case EMPTY_COMPOUND_STATEMENT_IMPL:
                 body = new EmptyCompoundStatementImpl(input);
@@ -707,7 +714,8 @@ public class PersistentUtils {
 
     // compound statements
     private static final int LAZY_COMPOUND_STATEMENT_IMPL = PREPROC_STATE_STATE_IMPL + 1;
-    private static final int EMPTY_COMPOUND_STATEMENT_IMPL = LAZY_COMPOUND_STATEMENT_IMPL + 1;
+    private static final int LAZY_TRY_CATCH_STATEMENT_IMPL = LAZY_COMPOUND_STATEMENT_IMPL + 1;
+    private static final int EMPTY_COMPOUND_STATEMENT_IMPL = LAZY_TRY_CATCH_STATEMENT_IMPL + 1;
     private static final int COMPOUND_STATEMENT_IMPL = EMPTY_COMPOUND_STATEMENT_IMPL + 1;
 
     // param lists

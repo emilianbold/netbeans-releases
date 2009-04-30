@@ -148,7 +148,7 @@ public class LayerIndex extends Task {
                         String layer = mf.getMainAttributes().getValue("OpenIDE-Module-Layer");
                         if (layer != null) {
                             if (resources != null) {
-                                ZipResource res = new LayerResource(jar, layer, cnb + ".xml");
+                                ZipResource res = new LayerResource(jar, layer, layer.replaceFirst("/[^/]+$", "").replace('/', '.') + ".xml");
                                 resources.add(res);
                             } else {
                                 parse(jf.getInputStream(jf.getEntry(layer)), files, labels, positions, cnb, jf);

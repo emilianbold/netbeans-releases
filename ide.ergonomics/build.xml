@@ -163,6 +163,7 @@
             basedir="${proxytmp}/layers/"
             destdir="${proxytmp}/extracted/" style="${ergonomicsdir}/project-wizard.xsl"
             useimplicitfileset="true" extension=".fragment"
+            filenameparameter="filename"
         >
             <xmlcatalog refid="xml.fs.catalog"/>
             <param name="cluster.name" expression="${cluster.name}"/>
@@ -218,7 +219,6 @@
                 value="&lt;BODY &gt;&lt;em&gt;This feature is not yet enabled. Press Next to activate it.&lt;/em&gt;&lt;p&gt;"
              />
              <include name="*.html"/>
-             <exclude name="*_*"/>
          </replace>
     </target>
 

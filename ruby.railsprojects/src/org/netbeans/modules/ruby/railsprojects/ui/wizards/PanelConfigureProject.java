@@ -53,6 +53,7 @@ import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.railsprojects.server.RailsServerUiUtils;
 
 /**
  * Panel just asking for basic info.
@@ -146,6 +147,10 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
             return false;
         }
         if (component.needWarSupport() && !gemManager.isGemInstalled("warbler")) {//NOI18N
+            return false;
+        }
+
+        if (!RailsServerUiUtils.isValidServer(component.getServer())) {
             return false;
         }
 

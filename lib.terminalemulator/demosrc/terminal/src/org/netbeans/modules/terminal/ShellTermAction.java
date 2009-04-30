@@ -45,8 +45,8 @@ import org.netbeans.modules.terminal.api.TerminalProvider;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.openide.util.NbBundle;
-import org.netbeans.lib.richexecution.Program;
-import org.netbeans.lib.richexecution.Shell;
+import org.netbeans.lib.richexecution.program.Program;
+import org.netbeans.lib.richexecution.program.Shell;
 
 /**
  * Action which starts a shell under a Term component.

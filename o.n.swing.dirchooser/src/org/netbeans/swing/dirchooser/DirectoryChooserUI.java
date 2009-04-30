@@ -904,6 +904,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 DirectoryNode node;
                 ArrayList<File> list = new ArrayList<File>();
                 int cannotDelete;
+                ArrayList<DirectoryNode> nodes2Remove = new ArrayList<DirectoryNode>(nodePath.length);
 
                 public void run() {
                     if (!EventQueue.isDispatchThread()) {
@@ -913,10 +914,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                         for(int i = 0; i < nodePath.length; i++) {
                             DirectoryNode nodeToDelete = (DirectoryNode)nodePath[i].getLastPathComponent();
                             try {
-                                DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
                                 FileObject fo = FileUtil.toFileObject(nodeToDelete.getFile());
                                 fo.delete();
-                                model.removeNodeFromParent(nodeToDelete);
+                                nodes2Remove.add(nodeToDelete);
                             } catch (IOException ignore) {
                                 cannotDelete++;
 
@@ -929,6 +929,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                         EventQueue.invokeLater(this);
                     } else {
                         // second pass, in EQ thread
+                        for (DirectoryNode curNode : nodes2Remove) {
+                            model.removeNodeFromParent(curNode);
+                        }
+
                         setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
                         if(cannotDelete > 0) {
                             String message = "";

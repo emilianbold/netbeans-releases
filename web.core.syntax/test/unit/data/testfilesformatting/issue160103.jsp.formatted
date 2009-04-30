@@ -3,7 +3,7 @@
     <head>
         <script type="text/javascript">
             function i18nAsirra() {
-            document.getElementById("asirra_InstructionsTextId").innerHTML = "<fmt:message key="captcha.asirra.please.select" />";
+                document.getElementById("asirra_InstructionsTextId").innerHTML = "<fmt:message key="captcha.asirra.please.select" />";
             }
         </script>
     </head>

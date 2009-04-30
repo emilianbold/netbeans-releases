@@ -201,6 +201,12 @@ final class Erprint {
         return new ExperimentStatistics(stat);
     }
 
+    ThreadsStatistic getThreadsStatistics() throws IOException {
+        exec("threads"); // NOI18N
+        String[] toParse = exec("thread_list");//NOI18N
+        return new ThreadsStatistic(toParse);
+    }
+
     LeaksStatistics getExperimentLeaks() throws IOException {
         String[] stat = exec("leaks"); // NOI18N
         return new LeaksStatistics(stat);
@@ -212,7 +218,10 @@ final class Erprint {
     }
 
     private synchronized String[] exec(String command) throws IOException {
+        long startTime = System.currentTimeMillis();
+
         try {
+            log.finest("> " + command + "'"); // NOI18N
             post(command);
         } catch (IOException ex) {
             Throwable cause = ex.getCause();
@@ -223,7 +232,13 @@ final class Erprint {
             }
         }
 
-        return outProcessor.getOutput();
+        String[] output = outProcessor.getOutput();
+
+        log.finest("Command '" + command + "' done in " + // NOI18N
+                (System.currentTimeMillis() - startTime) / 1000 +
+                " secs. Response is " + output.length + " lines."); // NOI18N
+
+        return output;
     }
 
     private class OutputProcessor {

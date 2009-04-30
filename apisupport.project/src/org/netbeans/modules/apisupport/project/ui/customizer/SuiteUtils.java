@@ -259,6 +259,8 @@ public final class SuiteUtils {
     }
     
     private void addModule(final NbModuleProject project) throws IOException, IllegalArgumentException {
+        // TODO - in case of removing from s1 and adding to s2, custom code switching module owner
+        // directly is more appropriate. Between the calls, project metadata are in inconsistent state.
         SuiteUtils.removeModuleFromSuite(project);
         // attach it to the new suite
         attachSubModuleToSuite(project);
@@ -381,7 +383,7 @@ public final class SuiteUtils {
         return removed;
     }
     
-    private void attachSubModuleToSuite(Project subModule) throws IOException {
+    private void attachSubModuleToSuite(NbModuleProject subModule) throws IOException {
         // adjust suite project's properties
         File projectDirF = FileUtil.toFile(subModule.getProjectDirectory());
         File suiteDirF = suiteProps.getProjectDirectoryFile();
@@ -421,9 +423,10 @@ public final class SuiteUtils {
         return key;
     }
     
-    private static void setNbModuleType(Project module, NbModuleProvider.NbModuleType type) throws IOException {
-        ProjectXMLManager pxm = new ProjectXMLManager(((NbModuleProject) module));
+    private static void setNbModuleType(NbModuleProject module, NbModuleProvider.NbModuleType type) throws IOException {
+        ProjectXMLManager pxm = new ProjectXMLManager((module));
         pxm.setModuleType(type);
+        module.refreshLookup(); // #160604: add SuiteProvider to lookup
     }
     
     public static String[] getAntProperty(final Collection<String> pieces) {

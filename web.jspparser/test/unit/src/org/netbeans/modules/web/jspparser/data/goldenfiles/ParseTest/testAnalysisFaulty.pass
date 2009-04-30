@@ -56,21 +56,6 @@
               tag name     : when
                   class    : org.apache.taglibs.standard.tag.el.core.WhenTag
                   attribs  : [test]
-        tag library: urn:jsptagdir:/WEB-INF/tags/
-            tlibversion : 1.0
-            jspversion  : 2.0
-            shortname   : tags
-            urn         : null
-            info        : null
-            uri         : null
-              tagfile path : /WEB-INF/tags/linklist.tag
-              tag name     : linklist
-                  class    : org.apache.jsp.tag.web.linklist_tag
-                  attribs  : [separator]
-              tagfile path : /WEB-INF/tags/othertag.tag
-              tag name     : othertag
-                  class    : org.apache.jsp.tag.web.othertag_tag
-                  attribs  : [separator]
         tag library: http://java.sun.com/jsp/jstl/fmt
             tlibversion : null
             jspversion  : 2.0
@@ -114,6 +99,21 @@
               tag name     : parseDate
                   class    : org.apache.taglibs.standard.tag.rt.fmt.ParseDateTag
                   attribs  : [value, type, dateStyle, timeStyle, pattern, timeZone, parseLocale, var, scope]
+        tag library: urn:jsptagdir:/WEB-INF/tags/
+            tlibversion : 1.0
+            jspversion  : 2.0
+            shortname   : tags
+            urn         : null
+            info        : null
+            uri         : null
+              tagfile path : /WEB-INF/tags/linklist.tag
+              tag name     : linklist
+                  class    : org.apache.jsp.tag.web.linklist_tag
+                  attribs  : [separator]
+              tagfile path : /WEB-INF/tags/othertag.tag
+              tag name     : othertag
+                  class    : org.apache.jsp.tag.web.othertag_tag
+                  attribs  : [separator]
       prefixMapper:
         c -> /WEB-INF/META-INF/c.tld
         fmt -> http://java.sun.com/jsp/jstl/fmt
