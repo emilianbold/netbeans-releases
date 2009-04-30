@@ -112,13 +112,12 @@ public class ExportDiffChangesAction extends ContextAction {
     }
 
     public void performAction(ActionEvent e) {
-        File [] files = null;
         boolean noop;
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
         } else {
-            files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+            File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
             noop = files.length == 0;
         }
         if (noop) {
@@ -127,7 +126,7 @@ public class ExportDiffChangesAction extends ContextAction {
             return;
         }
 
-        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(files, HgModuleConfig.getDefault().getPreferences()) {
+        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(new File[] {HgUtils.getRootFile(context)}, HgModuleConfig.getDefault().getPreferences()) {
             @Override
             public void writeDiffFile(final File toFile) {
                 HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N

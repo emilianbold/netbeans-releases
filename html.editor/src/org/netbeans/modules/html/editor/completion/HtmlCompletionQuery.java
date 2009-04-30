@@ -582,7 +582,7 @@ public class HtmlCompletionQuery {
         return result;
     }
 
-    static class CompletionResult {
+    public static class CompletionResult {
         private List<CompletionItem> items;
         int anchor;
         CompletionResult(List<CompletionItem> items, int anchor) {

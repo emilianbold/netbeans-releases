@@ -176,6 +176,9 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
             synchronized (EmbeddedSectionsHighlighting.this) {
                 if (checkVersion()) {
                     if (sequence == null) {
+                        if(!scanner.isActive()) {
+                            return false; //token hierarchy inactive already
+                        }
                         sequence = scanner.tokenSequence();
                         sequence.move(startOffset);
                     }

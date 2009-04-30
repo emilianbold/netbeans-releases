@@ -1350,15 +1350,22 @@ public abstract class Properties {
         private class DelegatingPropertyChangeListener implements PropertyChangeListener {
 
             private PropertyChangeListener delegate;
+            private String r = root + '.';
+            private int rl = r.length();
 
             public DelegatingPropertyChangeListener(PropertyChangeListener delegate) {
                 this.delegate = delegate;
             }
 
             public void propertyChange(PropertyChangeEvent evt) {
+                String propertyName = evt.getPropertyName();
+                if (propertyName.length() <= rl || !propertyName.startsWith(r)) {
+                    // not a listener in this root
+                    return ;
+                }
                 PropertyChangeEvent delegateEvt = new PropertyChangeEvent(
                         DelegatingProperties.this,
-                        evt.getPropertyName().substring(root.length() + 1),
+                        evt.getPropertyName().substring(rl),
                         evt.getOldValue(),
                         evt.getNewValue());
                 delegateEvt.setPropagationId(evt.getPropagationId());
