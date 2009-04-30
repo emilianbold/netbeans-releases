@@ -2229,6 +2229,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (name.equals("class")) {
                     return ((InterfaceType) expr).classObject();
                 }
+            } else if (expr instanceof ArrayType) {
+                if (name.equals("class")) {
+                    return ((ArrayType) expr).classObject();
+                }
             } else if (expr instanceof ObjectReference) {
                 if (expr instanceof ArrayReference && "length".equals(name)) {
                     return expr.virtualMachine().mirrorOf(((ArrayReference) expr).length());
@@ -2309,6 +2313,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     } else {
                         Assert2.error(arg0, "unknownField", fieldName);
                         return null;
+                    }
+                }
+                if (expr instanceof ArrayType) {
+                    ArrayType arr = (ArrayType) expr;
+                    if (fieldName.equals("class")) {
+                        return arr.classObject();
                     }
                 }
                 if (expr instanceof ObjectReference) {
