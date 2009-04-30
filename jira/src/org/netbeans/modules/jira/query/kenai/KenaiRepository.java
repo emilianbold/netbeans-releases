@@ -62,15 +62,15 @@ public class KenaiRepository extends JiraRepository {
 
     static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/kenai-small.png"; // NOI18N
     private Image icon;
-    private String product;
+    private String project;
     private KenaiQuery myIssues;
     private KenaiQuery allIssues;
     private String host;
 
-    public KenaiRepository(String repoName, String url, String host, String product) {
+    public KenaiRepository(String repoName, String url, String host, String project) {
         super(repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
         icon = ImageUtilities.loadImage(ICON_PATH, true);
-        this.product = product;
+        this.project = project;
         this.host = host;
     }
 
@@ -81,7 +81,7 @@ public class KenaiRepository extends JiraRepository {
 
     @Override
     public Query createQuery() {
-        KenaiQuery q = new KenaiQuery(null, this, null, false, false);
+        KenaiQuery q = new KenaiQuery(null, this, null, project, false, false);
         return q;
     }
 
@@ -132,7 +132,7 @@ public class KenaiRepository extends JiraRepository {
 
         // all issues
         if(allIssues == null) {
-            Project p = getConfiguration().getProjectByKey(product);
+            Project p = getConfiguration().getProjectByKey(project);
             if(p != null) {
                 FilterDefinition fd = new FilterDefinition();
                 fd.setProjectFilter(new ProjectFilter(p));
@@ -141,6 +141,7 @@ public class KenaiRepository extends JiraRepository {
                         NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), // NOI18N
                         this,
                         fd,
+                        project,
                         true,
                         true);
             } else {

@@ -161,8 +161,8 @@ public class BugzillaQuery extends Query {
                                 assert false;
                         }
                         // read the stored state ...
-                        queryIssues.addAll(repository.getIssueCache().readQueryIssues(BugzillaQuery.this.getDisplayName()));
-                        queryIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(BugzillaQuery.this.getDisplayName()));
+                        queryIssues.addAll(repository.getIssueCache().readQueryIssues(getStoredQueryName()));
+                        queryIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(getStoredQueryName()));
                         // ... and they might be rendered obsolete if not returned by the query
                         archivedIssues.addAll(queryIssues);
                     }
@@ -184,8 +184,8 @@ public class BugzillaQuery extends Query {
                     archivedIssues.removeAll(issues);
                     if(isSaved()) {
                         // ... and store all you got
-                        repository.getIssueCache().storeQueryIssues(BugzillaQuery.this.getDisplayName(), issues.toArray(new String[issues.size()]));
-                        repository.getIssueCache().storeArchivedQueryIssues(BugzillaQuery.this.getDisplayName(), archivedIssues.toArray(new String[archivedIssues.size()]));
+                        repository.getIssueCache().storeQueryIssues(getStoredQueryName(), issues.toArray(new String[issues.size()]));
+                        repository.getIssueCache().storeArchivedQueryIssues(getStoredQueryName(), archivedIssues.toArray(new String[archivedIssues.size()]));
                     }
 
                     // now get the task data for
@@ -203,6 +203,10 @@ public class BugzillaQuery extends Query {
             }
         });
         return ret[0];
+    }
+
+    protected String getStoredQueryName() {
+        return getDisplayName();
     }
 
     protected void logQueryEvent(int count, boolean autoRefresh) {
