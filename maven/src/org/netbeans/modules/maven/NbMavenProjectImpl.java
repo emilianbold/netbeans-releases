@@ -211,12 +211,12 @@ public final class NbMavenProjectImpl implements Project {
         auxprops = new MavenProjectPropsImpl(this, auxiliary, watcher);
         profileHandler = new ProjectProfileHandlerImpl(this,auxiliary);
         configEnabler = new ConfigurationProviderEnabler(this, auxiliary, profileHandler);
-        if (!SwingUtilities.isEventDispatchThread()) {
-            //#155766 sor of ugly, as not all (but the majority for sure) projects need
-            // a loaded maven project. But will protect from accidental loading in AWT
-            // thread.
-            getOriginalMavenProject();
-        }
+//        if (!SwingUtilities.isEventDispatchThread()) {
+//            //#155766 sor of ugly, as not all (but the majority for sure) projects need
+//            // a loaded maven project. But will protect from accidental loading in AWT
+//            // thread.
+//            getOriginalMavenProject();
+//        }
     }
 
     public File getPOMFile() {
