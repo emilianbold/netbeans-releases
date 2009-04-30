@@ -37,32 +37,54 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.commands;
+package org.netbeans.modules.jira.query.kenai;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.query.JiraQuery;
+import org.netbeans.modules.jira.query.QueryController;
+import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class ValidateCommand extends JiraCommand {
+public class KenaiQuery extends JiraQuery {
+    private boolean predefinedQuery = false;
+    private String project;
 
-    private final TaskRepository taskRepository;
-
-    public ValidateCommand(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    public KenaiQuery(String name, JiraRepository repository, JiraFilter jf, String project, boolean saved, boolean predefined) {
+        super(name, repository, jf, saved);
+        this.predefinedQuery = predefined;
+        this.project = project;
+        controller = createControler(repository, this, jf);
+        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
+        if(autoRefresh) {
+            getRepository().scheduleForRefresh(this);
+        }
     }
 
     @Override
-    public void execute() throws CoreException {
-        throw new UnsupportedOperationException();
-//        try {
-//            JiraClient client = Jira.getInstance().getRepositoryConnector().getClientManager().getClient(taskRepository, new NullProgressMonitor());
-//            client.validate(new NullProgressMonitor());
-//        } catch (IOException ex) {
-//            Jira.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
-//        }
+    protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
+        KenaiQueryController c = new KenaiQueryController(r, q, jiraFilter, project, predefinedQuery);
+        return c;
+    }
+
+    @Override
+    protected void logQueryEvent(int count, boolean autoRefresh) {
+        BugtrackingUtil.logQueryEvent(
+            JiraConnector.getConnectorName(),
+            getDisplayName(),
+            count,
+            true,
+            autoRefresh);
+    }
+
+    @Override
+    protected String getStoredQueryName() {
+        return super.getStoredQueryName() + "-" + project;
     }
 
 }

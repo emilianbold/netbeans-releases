@@ -145,15 +145,15 @@ public class JiraRepository extends Repository {
     }
 
     @Override
-    public Issue getIssue(String id) {
+    public Issue getIssue(String key) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
-        TaskData taskData = JiraUtils.getTaskData(JiraRepository.this, id);
+        TaskData taskData = JiraUtils.getTaskData(JiraRepository.this, key);
         if(taskData == null) {
             return null;
         }
         try {
-            return getIssueCache().setIssueData(id, taskData);
+            return getIssueCache().setIssueData(key, taskData);
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
             return null;
@@ -462,7 +462,7 @@ public class JiraRepository extends Repository {
 
     private RequestProcessor getRefreshProcessor() {
         if(refreshProcessor == null) {
-            refreshProcessor = new RequestProcessor("Bugzilla refresh - " + name); // NOI18N
+            refreshProcessor = new RequestProcessor("Jira refresh - " + name); // NOI18N
         }
         return refreshProcessor;
     }

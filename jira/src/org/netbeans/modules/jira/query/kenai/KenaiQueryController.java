@@ -37,32 +37,62 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.commands;
+package org.netbeans.modules.jira.query.kenai;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.query.JiraQuery;
+import org.netbeans.modules.jira.query.QueryController;
+import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class ValidateCommand extends JiraCommand {
+public class KenaiQueryController extends QueryController
+{
+    private String product;
+    private boolean predefinedQuery;
 
-    private final TaskRepository taskRepository;
-
-    public ValidateCommand(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    public KenaiQueryController(JiraRepository repository, JiraQuery query, JiraFilter jf, String product, boolean predefinedQuery) {
+        super(repository, query, jf);
+        this.product = product;
+        this.predefinedQuery = predefinedQuery;
     }
 
     @Override
-    public void execute() throws CoreException {
-        throw new UnsupportedOperationException();
-//        try {
-//            JiraClient client = Jira.getInstance().getRepositoryConnector().getClientManager().getClient(taskRepository, new NullProgressMonitor());
-//            client.validate(new NullProgressMonitor());
-//        } catch (IOException ex) {
-//            Jira.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
-//        }
+    public void populate(FilterDefinition filterDefinition) {
+        super.populate(filterDefinition);
+        disableProduct(product);
+    }
+
+    @Override
+    protected void enableFields(boolean bl) {
+        super.enableFields(bl);
+
+        if(predefinedQuery) {
+            // override - for predefined kenai queries are those always disabled
+            panel.modifyButton.setEnabled(false);
+            panel.removeButton.setEnabled(false);
+        }
+    }
+
+    @Override
+    public void closed() {
+        super.closed();
+        // override
+        scheduleForRefresh();
+    }
+
+    protected void logAutoRefreshEvent(boolean autoRefresh) {
+        BugtrackingUtil.logAutoRefreshEvent(
+            JiraConnector.getConnectorName(),
+            query.getDisplayName(),
+            true,
+            autoRefresh
+        );
     }
 
 }
