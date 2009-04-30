@@ -175,6 +175,9 @@ made subject to such option by the copyright holder.
                        <test/>
                    </test-dependency>
                    <test-dependency>
+                       <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                   </test-dependency>
+                   <test-dependency>
                        <code-name-base>org.openide.nodes</code-name-base>
                        <compile-dependency/>
                        <test/>

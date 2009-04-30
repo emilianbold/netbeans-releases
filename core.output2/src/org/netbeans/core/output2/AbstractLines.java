@@ -688,7 +688,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
         Color hyperlinkImp = UIManager.getColor("nb.output.link.foreground.important"); //NOI18N
         if (hyperlinkImp == null) {
-            hyperlinkImp = Color.RED;
+            hyperlinkImp = err;
         }
 
         DEF_COLORS = new Color[]{out, err, hyperlink, hyperlinkImp};

@@ -44,12 +44,14 @@ made subject to such option by the copyright holder.
 <project name="Test Test Dependecies" basedir="." default="all" >
     <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
+    <property name="netbeans.dest.dir" location="${netbeans.dest.dir.work}"/>
+    <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
+    <property file="${nb_all}/nbbuild/cluster.properties"/>
+    <property file="${nb_all}/nbbuild/build.properties"/>
+    <property name="xtest.home" value="any"/>
+    <property name="xtest.testtype" value="testtype"/>
+
     <target name="test-deps" >
-        <!-- default netbeans.dest.dir if it is not overriden -->
-        <property name="netbeans.dest.dir" location="${netbeans.dest.dir.work}"/>
-        <propertyfile file="${netbeans.dest.dir}/moduleCluster.properties"/>
-        <property name="xtest.home" value="any"/>
-        <property name="xtest.testtype" value="testtype"/>
         <parseprojectxml projectfile="${project.file}" project="${nb_all}/java/">
             <testtype name="unit" folder="unit.dist.folder" compilecp="unit.compile.cp" runtimecp="unit.runtime.cp"/>
             <testtype name="qa-functional" folder="qa.dist.folder" compilecp="qa.compile.cp" runtimecp="qa.runtime.cp"/>
@@ -114,11 +116,6 @@ made subject to such option by the copyright holder.
     </target>
  
      <target name="test-deps-no-test-deps" >
-        <!-- default netbeans.dest.dir if it is not overriden -->
-        <property name="netbeans.dest.dir" location="${netbeans.dest.dir.work}"/>
-        <propertyfile file="${netbeans.dest.dir}/moduleCluster.properties"/>
-        <property name="xtest.home" value="any"/>
-        <property name="xtest.testtype" value="testtype"/>
         <parseprojectxml projectfile="${project.file}" project="${nb_all}/java/">
             <testtype name="unit" folder="unit.dist.folder" compilecp="unit.compile.cp2" runtimecp="unit.runtime.cp2"/>
             <testtype name="qa-functional" folder="qa.dist.folder" compilecp="qa.compile.cp2" runtimecp="qa.runtime.cp2"/>
@@ -131,11 +128,31 @@ made subject to such option by the copyright holder.
         </condition>
 
         <echo message="unittestfolder  : ${unit.dist.folder}" />
-        <echo message="unittestruntimeclasspath : ${unit.runtime.cp2}" />
-        <echo message="unit.compile.cp           : ${unit.compile.cp2}" />
+        <pathconvert dirsep="/" property="unit.runtime.cp3">
+            <path path="${unit.runtime.cp2}"/>
+            <map from="${netbeans.dest.dir}/" to=""/>
+        </pathconvert>
+        <echo message="unit.runtime.cp : ${unit.runtime.cp3}" />
+        <pathconvert dirsep="/" property="unit.compile.cp3">
+            <path path="${unit.compile.cp2}"/>
+            <map from="${netbeans.dest.dir}/" to=""/>
+        </pathconvert>
+        <echo message="unit.compile.cp : ${unit.compile.cp3}" />
         <fail message="{unit.dist.folder}" unless="ok-unit-dist-folder" />
-        <fail message="{ok-unittestcompileclasspath}" if="unit.compile.cp2"/> 
-        <fail message="{ok-unittestruntimeclasspath}" if="unit.runtime.cp2"/> 
+        <fail message="Bad unit test compile cp">
+            <condition>
+                <not>
+                    <equals arg1="${unit.compile.cp3}" arg2="platform10/modules/org-netbeans-libs-junit4.jar"/>
+                </not>
+            </condition>
+        </fail>
+        <fail message="Bad unit test runtime cp">
+            <condition>
+                <not>
+                    <equals arg1="${unit.runtime.cp3}" arg2="platform10/modules/org-netbeans-libs-junit4.jar"/>
+                </not>
+            </condition>
+        </fail>
         
    <!-- qa-functional tests -->
         <condition property="ok-qa-dist-folder" >
@@ -151,11 +168,6 @@ made subject to such option by the copyright holder.
   </target>
 
      <target name="test-deps-missing-module-entry-test-deps" >
-        <!-- default netbeans.dest.dir if it is not overriden -->
-        <property name="netbeans.dest.dir" location="${netbeans.dest.dir.work}"/>
-        <propertyfile file="${netbeans.dest.dir}/moduleCluster.properties"/>
-        <property name="xtest.home" value="any"/>
-        <property name="xtest.testtype" value="testtype"/>
         <parseprojectxml projectfile="${project.file}" project="${nb_all}/java/">
             <testtype name="unit" folder="unit.dist.folder" compilecp="unit.compile.cp2" runtimecp="unit.runtime.cp2"/>
             <testtype name="qa-functional" folder="qa.dist.folder" compilecp="qa.compile.cp2" runtimecp="qa.runtime.cp2"/>

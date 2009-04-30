@@ -75,8 +75,8 @@ public class ModuleListParserTest extends TestCase {
         String prop = System.getProperty("nb_all");
         assertNotNull("${nb_all} defined", prop);
         nball = new File(prop);
-        new File(nball, "nbproject/private/scan-cache-full.ser").delete();
-        new File(nball, "nbproject/private/scan-cache-standard.ser").delete();
+        new File(nball, "nbbuild/nbproject/private/scan-cache-full.ser").delete();
+        new File(nball, "nbbuild/nbproject/private/scan-cache-standard.ser").delete();
     }
     
     public void testScanSourcesInNetBeansOrg() throws Exception {
@@ -142,7 +142,8 @@ public class ModuleListParserTest extends TestCase {
             public void buildFinished(BuildEvent buildEvent) {}
         });
         Hashtable<String,String> properties = new Hashtable<String,String>();
-        properties.put("cluster.path.final", filePath(nball, "nbbuild/netbeans/platform10"));
+        properties.put("cluster.path.final", filePath(nball, "nbbuild/netbeans/platform10")
+                + File.pathSeparator + filePath(nball, "nbbuild/netbeans/ide11"));
         properties.put("basedir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1/action-project"));
         properties.put("suite.dir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1"));
         long start = System.currentTimeMillis();
