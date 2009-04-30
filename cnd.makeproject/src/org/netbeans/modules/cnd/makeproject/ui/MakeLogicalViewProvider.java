@@ -456,17 +456,19 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     private String getShortDescription() {
         String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
-
         MakeConfigurationDescriptor mkd = getMakeConfigurationDescriptor();
-        MakeConfiguration conf = (MakeConfiguration) mkd.getConfs().getActive();
-        final DevelopmentHostConfiguration devHost = conf.getDevelopmentHost();
-        if (devHost.isLocalhost()) {
-            return NbBundle.getMessage(MakeLogicalViewProvider.class,
-                    "HINT_project_root_node", prjDirDispName); // NOI18N
-        } else {
-            return NbBundle.getMessage(MakeLogicalViewProvider.class,
-                    "HINT_project_root_node_on_host", prjDirDispName, devHost.getDisplayName(true)); // NOI18N
+        if (mkd != null) {
+            MakeConfiguration conf = (MakeConfiguration) mkd.getConfs().getActive();
+            DevelopmentHostConfiguration devHost = (conf == null) ? null : conf.getDevelopmentHost();
+            if (devHost == null || devHost.isLocalhost()) {
+                return NbBundle.getMessage(MakeLogicalViewProvider.class,
+                        "HINT_project_root_node", prjDirDispName); // NOI18N
+            } else {
+                return NbBundle.getMessage(MakeLogicalViewProvider.class,
+                        "HINT_project_root_node_on_host", prjDirDispName, devHost.getDisplayName(true)); // NOI18N
+            }
         }
+        return prjDirDispName;
     }
 
     private static class LoadingNode extends AbstractNode {
