@@ -46,6 +46,7 @@ import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -156,10 +157,12 @@ public class SearchForJavaAction extends WizardAction {
 
             if(javaInfo == null) {
                 final File jreHome = new File(javaHome, "jre");
-                LogManager.logIndent("investigating java home candidate: " + jreHome);
-                javaInfo = JavaUtils.getInfo(jreHome);
-                if(javaInfo!=null) {
-                    javaHome = jreHome;
+                if(FileUtils.exists(jreHome)) {
+                    LogManager.log("investigating java home candidate: " + jreHome);
+                    javaInfo = JavaUtils.getInfo(jreHome);
+                    if(javaInfo!=null) {
+                        javaHome = jreHome;
+                    }
                 }
             }
             
