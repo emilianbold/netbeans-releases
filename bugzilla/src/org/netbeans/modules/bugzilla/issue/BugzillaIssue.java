@@ -697,10 +697,6 @@ public class BugzillaIssue extends Issue {
             }
         };
         repository.getExecutor().execute(submitCmd);
-
-        if(submitCmd.hasFailed()) {
-            return false;
-        }
         
         BugzillaCommand refreshCmd = new BugzillaCommand() {
             @Override
@@ -713,6 +709,10 @@ public class BugzillaIssue extends Issue {
             }
         };
         repository.getExecutor().execute(refreshCmd);
+
+        if(submitCmd.hasFailed()) {
+            return false;
+        }
 
         // it was the user who made the changes, so preserve the seen status if seen already
         if (wasSeenAlready) {
