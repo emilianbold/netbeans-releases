@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -54,12 +53,11 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.remote.sync.SyncUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /*package*/ final class CreateHostVisualPanel3 extends JPanel {
 
-    public CreateHostVisualPanel3() {
+    public CreateHostVisualPanel3(CreateHostData data) {
+        this.data = data;
         initComponents();
     }
 
@@ -68,18 +66,15 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
         return CreateHostWizardIterator.getString("CreateHostVisualPanel3.Title");//NOI18N
     }
 
-    private ExecutionEnvironment execEnv;
-    private ToolsCacheManager cacheManager;
+    private final CreateHostData data;
     private CompilerSetManager compilerSetManager;
 
-    void init(ExecutionEnvironment execEnv, ToolsCacheManager cacheManager) {
-        this.execEnv = execEnv;
-        this.cacheManager = cacheManager;
-        textHostDisplayName.setText(execEnv.getDisplayName());
-        compilerSetManager = cacheManager.getCompilerSetManagerCopy(execEnv);
+    void init() {
+        textHostDisplayName.setText(data.getExecutionEnvironment().getDisplayName());
+        compilerSetManager = data.getCacheManager().getCompilerSetManagerCopy(data.getExecutionEnvironment());
         labelPlatformValue.setText(PlatformTypes.toString(compilerSetManager.getPlatform()));
-        labelUsernameValue.setText(execEnv.getUser());
-        labelHostnameValue.setText(execEnv.getHost());
+        labelUsernameValue.setText(data.getExecutionEnvironment().getUser());
+        labelHostnameValue.setText(data.getExecutionEnvironment().getHost());
         cbDefaultToolchain.setModel(new DefaultComboBoxModel(compilerSetManager.getCompilerSets().toArray()));
         cbDefaultToolchain.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -105,7 +100,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
         }
         jTextArea1.setText(st.toString());
 
-        SyncUtils.arrangeComboBox(cbSyncMode, execEnv);
+        SyncUtils.arrangeComboBox(cbSyncMode, data.getExecutionEnvironment());
     }
 
     String getHostDisplayName() {

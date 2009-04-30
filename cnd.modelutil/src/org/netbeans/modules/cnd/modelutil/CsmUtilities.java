@@ -464,7 +464,11 @@ public class CsmUtilities {
         if (csmFile != null) {
             try {
                 try {
-                    fo = FileUtil.toFileObject(new File(csmFile.getAbsolutePath().toString()).getCanonicalFile());
+                    File file = new File(csmFile.getAbsolutePath().toString());
+                    fo = FileUtil.toFileObject(file);
+                    if (fo == null) {
+                        fo = FileUtil.toFileObject(file.getCanonicalFile());
+                    }
                 } catch (IOException e) {
                     fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(csmFile.getAbsolutePath().toString())));
                 }

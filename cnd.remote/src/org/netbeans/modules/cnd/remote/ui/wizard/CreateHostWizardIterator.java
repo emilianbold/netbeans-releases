@@ -58,13 +58,18 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
 
     private int index;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
+    private final CreateHostData data;
+
+    private CreateHostWizardIterator(CreateHostData data) {
+        this.data = data;
+    }
 
     @SuppressWarnings( "unchecked" )
-    private static WizardDescriptor.Panel<WizardDescriptor>[] callUncheckedNewForPanels() {
+    private WizardDescriptor.Panel<WizardDescriptor>[] callUncheckedNewForPanels() {
         return new WizardDescriptor.Panel[]{
-                        new CreateHostWizardPanel1(),
-                        new CreateHostWizardPanel2(),
-                        new CreateHostWizardPanel3()
+                        new CreateHostWizardPanel1(data),
+                        new CreateHostWizardPanel2(data),
+                        new CreateHostWizardPanel3(data)
                     };
     }
 
@@ -132,27 +137,28 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     }
 
     public static ServerRecord invokeMe(ToolsCacheManager cacheManager) {
-        WizardDescriptor.Iterator<WizardDescriptor> iterator = new CreateHostWizardIterator();
+        CreateHostData creationData = new CreateHostData();
+        WizardDescriptor.Iterator<WizardDescriptor> iterator = new CreateHostWizardIterator(creationData);
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); //NOI18N
         wizardDescriptor.setTitle(getString("CreateNewHostWizardTitle"));
-        wizardDescriptor.putProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER, cacheManager);
+        creationData.setCacheManager(cacheManager);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
-            Runnable r = (Runnable) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_RUN_ON_FINISH);
+            Runnable r = creationData.getRunOnFinish();
             CndUtils.assertFalse(r == null);
             if (r != null) {
                 r.run();
             }
-            ExecutionEnvironment execEnv = (ExecutionEnvironment)wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_HOST);
-            String displayName = (String) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_DISPLAY_NAME);
+            ExecutionEnvironment execEnv = creationData.getExecutionEnvironment();
+            String displayName = creationData.getDisplayName();
             if (displayName == null) {
                 displayName = execEnv.getDisplayName();
             }
-            final RemoteSyncFactory syncFactory = (RemoteSyncFactory) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_SYNC);
+            final RemoteSyncFactory syncFactory = creationData.getSyncFactory();
             final ServerRecord record = ServerList.addServer(execEnv, displayName, syncFactory, false, false);
             return record;
         } else {
