@@ -47,15 +47,19 @@ import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +73,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -143,6 +148,8 @@ public class IssuePanel extends javax.swing.JPanel {
         layout.replace(dummyCommentsPanel, commentsPanel);
         layout.replace(dummyAttachmentsPanel, attachmentsPanel);
         attachmentsLabel.setLabelFor(attachmentsPanel);
+
+        issue163946Hack(scrollPane1);
     }
 
     void reloadFormInAWT(final boolean force) {
@@ -652,6 +659,23 @@ public class IssuePanel extends javax.swing.JPanel {
         if(issue != null) {
             issue.closed();
         }
+    }
+
+    private static void issue163946Hack(final JScrollPane scrollPane) {
+        MouseWheelListener listener = new MouseWheelListener() {
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (scrollPane.getVerticalScrollBar().isShowing()) {
+                    if (e.getSource() != scrollPane) {
+                        e.setSource(scrollPane);
+                        scrollPane.dispatchEvent(e);
+                    }
+                } else {
+                    scrollPane.getParent().dispatchEvent(e);
+                }
+            }
+        };
+        scrollPane.addMouseWheelListener(listener);
+        scrollPane.getViewport().getView().addMouseWheelListener(listener);
     }
 
     /** This method is called from within the constructor to
@@ -1391,7 +1415,7 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(BugzillaIssue.IssueField.KEYWORDS, keywordsField);
         storeFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO, assignedField);
         storeFieldValue(BugzillaIssue.IssueField.QA_CONTACT, qaContactField);
-        storeFieldValue(BugzillaIssue.IssueField.CC, ccField);
+        storeCCValue();
         storeFieldValue(BugzillaIssue.IssueField.DEPENDS_ON, dependsField);
         storeFieldValue(BugzillaIssue.IssueField.BLOCKS, blocksField);
         if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
@@ -1441,6 +1465,42 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_submitButtonActionPerformed
+
+    private void storeCCValue() {
+        Set<String> oldCCs = ccs(issue.getFieldValue(BugzillaIssue.IssueField.CC));
+        Set<String> newCCs = ccs(ccField.getText());
+
+        String removedCCs = getMissingCCs(oldCCs, newCCs);
+        String addedCCs = getMissingCCs(newCCs, oldCCs);
+
+        storeFieldValue(BugzillaIssue.IssueField.REMOVECC, removedCCs);
+        storeFieldValue(BugzillaIssue.IssueField.NEWCC, addedCCs);
+    }
+
+    private Set<String> ccs(String values) {
+        Set<String> ccs = new HashSet<String>();
+        StringTokenizer st = new StringTokenizer(values, ", \t\n\r\f"); // NOI18N
+        while (st.hasMoreTokens()) {
+            ccs.add(st.nextToken());
+        }
+        return ccs;
+    }
+
+    private String getMissingCCs(Set<String> ccs, Set<String> missingIn) {
+        StringBuffer ret = new StringBuffer();
+        Iterator<String> it = ccs.iterator();
+        while(it.hasNext()) {
+            String cc = it.next();
+            if(cc.trim().equals("")) continue;
+            if(!missingIn.contains(cc)) {
+                ret.append(cc);
+                if(it.hasNext()) {
+                    ret.append(',');
+                }
+            }
+        }
+        return ret.toString();
+    }
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
         String refreshMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshMessage"); // NOI18N

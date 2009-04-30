@@ -169,13 +169,13 @@ function load_page_js_locale(name,ext) {
 
 function useAnotherLocation() {
     var loc = get_language_location();
-    return loc != PAGE_ARTIFACTS_LOCATION;
+    return loc != getPageArtifactsLocation(false);
 }
 
 function isMainLanguage(language) {
     for(var i=0; i < LANGUAGES.length; i++ ) {
         if(LANGUAGES[i].id == language) {
-            return LANGUAGES[i].location == PAGE_ARTIFACTS_LOCATION;
+            return LANGUAGES[i].location == getPageArtifactsLocation(false);
         }
     }
     return false;
@@ -310,7 +310,7 @@ function get_build_location(lang_id) {
     var mainLanguage = isMainLanguage(lang_id);
     var location = get_build_info(mainLanguage).BUILD_LOCATION;
     if(!mainLanguage && location == "") {
-       location = ADDITIONAL_PAGE_ARTIFACTS_LOCATION;
+       location = get_build_info(true).ADDITIONAL_BUILD_LOCATION;
     }
     return location;
 }
@@ -364,7 +364,7 @@ function get_file_url(filename, lang_id) {
 
 function get_file_bouncer_url(platform, option, language) {
     var url = BOUNCER_URL;
-    url += "?" + "product=" + get_build_info().BOUNCER_PRODUCT_PREFIX;
+    url += "?" + "product=" + get_build_info(isMainLanguage(language)).BOUNCER_PRODUCT_PREFIX;
     if(option != "all") {
         url += "-" + option;
     }
@@ -382,7 +382,7 @@ function set_page_title(title) {
     document.title = title;
     var titleElement = document.getElementsByTagName("title");
     if(titleElement.length == 1) {
-        titleElement[0].innerHTML = title;       
+        titleElement[0].text = title;       
     } else {
         document.write('<title>' + title + '</title>');
     }
@@ -403,7 +403,7 @@ function add_file(name, size, md5, locales) {
 
 function load_files_information(name) {
     load_page_js(name);
-    if(PAGE_ARTIFACTS_LOCATION != ADDITIONAL_PAGE_ARTIFACTS_LOCATION) {
+    if(get_build_info(true).SHOW_ADDITIONAL_LANGUAGES == 1) {
         load_page_js(name, "true");
     }
 }
@@ -412,7 +412,11 @@ function add_language(id, name, suffix, webpagename) {
     var index = LANGUAGES.length;
     for(var i=0;i<index;i++) {
        if(LANGUAGES[i].id == id) {
-           return;
+           if(id == "en" && isCommunityBuild()) {
+               index = i;
+           } else {
+               return;
+           }
        }
     }
     LANGUAGES[index] = new Object;
@@ -426,22 +430,29 @@ function add_language(id, name, suffix, webpagename) {
 }
 
 
-function load_languages_current() {
-    load_page_js("languages.js");
-}
-function load_languages_additional() {
-    if(PAGE_ARTIFACTS_LOCATION != ADDITIONAL_PAGE_ARTIFACTS_LOCATION) {
-        load_page_js("languages.js", "true");
-    }
+function load_languages(additional) {
+     if(!additional) {
+          load_page_js("languages.js", false);
+     } else if(get_build_info(true).SHOW_ADDITIONAL_LANGUAGES == 1) {
+         load_page_js("languages.js", true);
+     }
 }
 function add_build_info(build_info) {
      var index = BUILD_INFO.length;
      BUILD_INFO[index]=build_info;
 }
 function get_build_info(mainLanguage) {
-     var index = mainLanguage == "" || mainLanguage == true || BUILD_INFO.length == 1 ? 0 : 1;
+     var index = (!mainLanguage && BUILD_INFO.length == 2) ? 1 : 0;
      return BUILD_INFO[index];
 }
 function isCommunityBuild() {
-     return get_build_info().COMMUNITY_BUILD == 1;
+     return get_build_info(true).COMMUNITY_BUILD == 1;
+}
+
+function load_build_info(additional) {
+     if(!additional) {
+          load_page_js("build_info.js", false);
+     } else if(get_build_info(true).SHOW_ADDITIONAL_LANGUAGES == 1) {
+         load_page_js("build_info.js", true);
+     }
 }

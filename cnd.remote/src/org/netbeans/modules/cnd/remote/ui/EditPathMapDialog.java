@@ -47,12 +47,18 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
+import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -60,7 +66,9 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -147,11 +155,10 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 return out;
             }
         });
+        addTableActions();
 
         tblPathMappings.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         tblPathMappings.getTableHeader().setPreferredSize(new Dimension(0, 20));
-//        JTextField tmp = new JTextField();
-//        tblPathMappings.setRowHeight(tmp.getPreferredSize().height);
         cbHostsList.setSelectedItem(currentHost);
 
         String explanationText;
@@ -173,6 +180,62 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
     private static RemotePathMap getRemotePathMap(ExecutionEnvironment host) {
         return RemotePathMap.getRemotePathMapInstance(host);
+    }
+
+    private void addTableActions() throws MissingResourceException {
+
+        Action removeAction = new AbstractAction(NbBundle.getMessage(getClass(), "ACTION_Remove")) {
+            public void actionPerformed(ActionEvent e) {
+                int[] rows = tblPathMappings.getSelectedRows();
+                if (rows.length > 0) {
+                    DefaultTableModel model = (DefaultTableModel) tblPathMappings.getModel();
+                    Arrays.sort(rows);
+                    for (int row = rows.length - 1; row >= 0; row-- ) {
+                        model.removeRow(row);
+                    }
+                }
+            }
+        };
+
+        Action insertAction = new AbstractAction(NbBundle.getMessage(getClass(), "ACTION_Insert")) {
+            public void actionPerformed(ActionEvent e) {
+                int row = tblPathMappings.getSelectedRow();
+                row = (row < 0) ? 0: row;
+                DefaultTableModel model = (DefaultTableModel) tblPathMappings.getModel();
+                model.insertRow(row, new Object[] {"", ""}); // NOI18N
+            }
+        };
+
+        final JPopupMenu menu = new JPopupMenu();
+        menu.add(new JMenuItem(insertAction));
+        menu.add(new JMenuItem(removeAction));
+
+        class MenuListener extends MouseAdapter {
+            private void showMenu(MouseEvent evt) {
+                if (evt != null) {
+                    int row = tblPathMappings.rowAtPoint(evt.getPoint());
+                    if (row >= 0 && tblPathMappings.getSelectionModel().isSelectionEmpty()) {
+                        tblPathMappings.getSelectionModel().setSelectionInterval(row, row);
+                    }
+                }
+                menu.show(evt.getComponent(), evt.getX(), evt.getY());
+            }
+
+            @Override
+            public void mousePressed(MouseEvent evt) {
+                if (evt.isPopupTrigger()) {
+                    showMenu(evt);
+                }
+            }
+            @Override
+            public void mouseReleased(MouseEvent evt) {
+                if (evt.isPopupTrigger()) {
+                    showMenu(evt);
+                }
+            }
+        }
+        final MenuListener menuListener = new MenuListener();
+        tblPathMappings.addMouseListener(menuListener);
     }
 
     private synchronized void initTableModel(final ServerRecord host) {

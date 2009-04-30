@@ -42,6 +42,7 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -125,6 +126,16 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     /** Initialization of the panel (called by the parent window).
      */
     public void initialize() {
+        // XXX hot fix: this should be rewritten to first initialize model in RP and later update UI in EDT
+        EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                initializeInEDT();
+            }
+        });
+    }
+
+    private void initializeInEDT() {
         final TreePathHandle handle = refactoring.getSourceType();
         JavaSource source = JavaSource.forFileObject(handle.getFileObject());
         try {

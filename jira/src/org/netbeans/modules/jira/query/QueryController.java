@@ -68,13 +68,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -127,7 +125,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private final Map<String, QueryParameter> parameters;
     
-    private RequestProcessor rp = new RequestProcessor("Bugzilla query", 1, true);  // NOI18N
+    private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
     private Task task;
 
     private final JiraRepository repository;
@@ -207,9 +205,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(query.isSaved()) {
             setAsSaved();
         }
-        if(jiraFilter != null && jiraFilter instanceof FilterDefinition) {
-            postPopulate((FilterDefinition) jiraFilter);
-        }
+        postPopulate((FilterDefinition) jiraFilter);
     }
 
     @Override
@@ -346,10 +342,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             JiraCommand cmd = new JiraCommand() {
                 @Override
                 public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-                    JiraClient client = Jira.getInstance().getClient(repository.getTaskRepository());
-
                     // XXX repository configuration
-                    Project[] projects = client.getProjects(new NullProgressMonitor());
+                    Project[] projects = repository.getConfiguration().getProjects();
 
                     DefaultListModel model = new DefaultListModel();
                     for (Project project : projects) {
@@ -378,7 +372,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
 //                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
 //                    panel.changedToTextField.setText(CHANGED_NOW);
 //
-                      setFilterDefinition(filterDefinition);
+                    if(filterDefinition != null && filterDefinition instanceof FilterDefinition) {
+                        setFilterDefinition(filterDefinition);
+                    }
 //
 //                    panel.filterComboBox.setModel(new DefaultComboBoxModel(query.getFilters()));
 //
@@ -581,7 +577,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 panel.savePanel,
                 NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),    // NOI18N
                 NbBundle.getMessage(QueryController.class, "LBL_Save"),         // NOI18N
-                new HelpCtx("org.netbeans.modules.bugzilla.query.savePanel")))  // NOI18N
+                new HelpCtx("org.netbeans.modules.jira.query.savePanel")))  // NOI18N
         {
             name = panel.queryNameTextField.getText();
             if(name == null || name.trim().equals("")) { // NOI18N
@@ -645,8 +641,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onGotoIssue() {
-        final String id = panel.idTextField.getText().trim(); 
-        if(id == null || id.trim().equals("") ) {                               // NOI18N
+        final String key = panel.idTextField.getText().trim();
+        if(key == null || key.trim().equals("") ) {                               // NOI18N
             return;
         }
         final Task[] t = new Task[1];
@@ -658,12 +654,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 return true;
             }
         };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {id}), c); // NOI18N
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {key}), c); // NOI18N
         t[0] = Jira.getInstance().getRequestProcessor().create(new Runnable() {
             public void run() {
                 handle.start();
                 try {
-                    Issue issue = repository.getIssue(id.toUpperCase()); // XXX always uppercase?
+                    Issue issue = repository.getIssue(key.toUpperCase()); // XXX always uppercase?
                     if (issue != null) {
                         issue.open();
                     } else {
@@ -956,10 +952,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    enableFields(true);
                     panel.setQueryRunning(false);
                     panel.setLastRefresh(getLastRefresh());
                     panel.showNoContentPanel(false);                    
+                    enableFields(true);
                 }
             });
         }

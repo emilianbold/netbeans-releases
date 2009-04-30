@@ -67,6 +67,7 @@ import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.spi.server.ServerInstanceProvider;
+import org.openide.filesystems.FileUtil;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -215,7 +216,8 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     public static synchronized RunTimeDDCatalog getEE6RunTimeDDCatalog(){
         // FIXME -- avoid dereferencing the property.
         if ((javaEE6DDCatalog==null) &&
-                ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures"))))  {
+                (("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures"))) ||
+                null != FileUtil.getConfigFile("GlassFish v3/EnableExperimental Features")))  {
             javaEE6DDCatalog = new RunTimeDDCatalog();
             javaEE6DDCatalog.displayNameKey = "LBL_V3RunTimeDDCatalog"; // NOI18N
             javaEE6DDCatalog.shortDescriptionKey = "DESC_V3RunTimeDDCatalog"; // NOI18N

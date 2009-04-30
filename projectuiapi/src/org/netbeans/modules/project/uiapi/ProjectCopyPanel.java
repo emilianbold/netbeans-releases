@@ -126,6 +126,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         progressImpl = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
+        warningTextArea = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -239,9 +240,8 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jLabel5, gridBagConstraints);
 
-        jPanel3.setLayout(new java.awt.BorderLayout());
         jPanel3.add(ProgressHandleFactory.createProgressComponent(handle));
-
+        jPanel3.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -253,13 +253,29 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         add(progress, gridBagConstraints);
+
+        warningTextArea.setColumns(20);
+        warningTextArea.setForeground(UIManager.getColor("nb.errorForeground"));
+        warningTextArea.setLineWrap(true);
+        warningTextArea.setRows(5);
+        warningTextArea.setText(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "VCSWarningMessage")); // NOI18N
+        warningTextArea.setWrapStyleWord(true);
+        warningTextArea.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        add(warningTextArea, gridBagConstraints);
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "ACSD_Copy_Move_Panel", new Object[] {new Integer(isMove ? 1 : 0)})); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -293,6 +309,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     private javax.swing.JTextField projectFolder;
     private javax.swing.JTextField projectLocation;
     private javax.swing.JTextField projectName;
+    private javax.swing.JTextArea warningTextArea;
     // End of variables declaration//GEN-END:variables
     
     private String lastComputedName;

@@ -36,29 +36,44 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.cpu.impl;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
-
 
 /**
  *
  * @author mt154047
  */
-public final class CpuIndicatorConfiguration extends IndicatorConfiguration{
-  static final String ID = "CpuIndicatorConfiguration_ID"; // NOI18N
+public final class CpuIndicatorConfiguration extends IndicatorConfiguration {
 
-  public CpuIndicatorConfiguration(IndicatorMetadata metadata, int position) {
-    super(metadata, position);
-  }
+    /*package*/ static final String ID = "CpuIndicatorConfiguration_ID"; // NOI18N
+    private final Set<String> sysColumns;
 
-  @Override
-  public String getID() {
-    return ID;
-  }
+    public CpuIndicatorConfiguration(IndicatorMetadata metadata, Set<String> sysColumns, int position) {
+        super(metadata, position);
+        this.sysColumns = Collections.unmodifiableSet(new HashSet<String>(sysColumns));
+    }
 
+    @Override
+    public String getID() {
+        return ID;
+    }
 
+    private Set<String> getSysColumns() {
+        return sysColumns;
+    }
 
+    private static class CpuIndicatorConfigurationAccessorImpl extends CpuIndicatorConfigurationAccessor {
+        public Set<String> getSysColumns(CpuIndicatorConfiguration conf) {
+            return conf.getSysColumns();
+        }
+    }
+
+    static {
+        CpuIndicatorConfigurationAccessor.setDefault(new CpuIndicatorConfigurationAccessorImpl());
+    }
 }

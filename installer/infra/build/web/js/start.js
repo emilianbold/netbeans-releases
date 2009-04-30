@@ -155,8 +155,7 @@ function initialize() {
 				if(testFileName==filename) {
 				    platform_id = PLATFORM_IDS[i];
 				    option_id   = BUNDLE_IDS[j];
-				    lang_id     = get_language_id();
-				    if(lang_id=="") lang_id = "en";
+				    lang_id     = get_language_id();				    
 				    i = PLATFORM_IDS.length;
 				    j = BUNDLE_IDS.length;	
 				    filename = "";
@@ -164,11 +163,12 @@ function initialize() {
                             }
                         }
 		    }
+		    if(lang_id=="") lang_id = "en";
 
 		    if(option_id != "" && platform_id != "") {
 	    	        if (useBouncer(lang_id) == 1) {
                             url      = get_file_bouncer_url(platform_id, option_id, lang_id);
-                        } else {
+                        } else {				
                             url      = get_file_url(get_file_name(platform_id, option_id, lang_id), lang_id);
 		        }
                         filename     = get_file_name(platform_id, option_id, lang_id, lang_id);
@@ -244,7 +244,7 @@ function write_download_info() {
         var info = "";
 	if (platform_display_name!="" && lang_display_name!="" && filename!="") {
 		 info = INFO_MESSAGE.
-				replace('{0}', PRODUCT_NAME.replace('{0}',get_build_info().BUILD_DISPLAY_VERSION)).
+				replace('{0}', PRODUCT_NAME.replace('{0}',get_build_info(lang_id).BUILD_DISPLAY_VERSION)).
 		 		replace('{1}', ((option_display_name != "") ? (' ' + option_display_name) : '')).
 		 		replace('{2}', ((platform_id == 'zip') ? (platform_display_name) : (INSTALLER_MESSAGE.replace('{0}',platform_display_name)))).
 		 		replace('{3}', lang_display_name).

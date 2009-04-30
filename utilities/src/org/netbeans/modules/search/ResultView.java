@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -295,6 +296,7 @@ final class ResultView extends TopComponent {
         } else {
             remove(comp);
             JTabbedPane pane = TabbedPaneFactory.createCloseButtonTabbedPane();
+            pane.setMinimumSize(new Dimension(0, 0));
             pane.addMouseListener(popL);
             pane.addPropertyChangeListener(closeL);
             if( isMacLaf ) {

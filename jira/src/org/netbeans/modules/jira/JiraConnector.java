@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.jira;
 
+import org.netbeans.modules.bugtracking.spi.KenaiSupport;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.jira.query.kenai.KenaiSupportImpl;
 import org.openide.util.NbBundle;
 
 /**
@@ -50,6 +52,8 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
 public class JiraConnector extends BugtrackingConnector {
+
+    private KenaiSupport kenaiSupport;
 
     public String getDisplayName() {
         return getConnectorName();
@@ -71,6 +75,14 @@ public class JiraConnector extends BugtrackingConnector {
 
     public static String getConnectorName() {
         return NbBundle.getMessage(JiraConnector.class, "LBL_ConnectorName");           // NOI18N
+    }
+
+    @Override
+    public KenaiSupport getKenaiSupport() {
+        if(kenaiSupport == null) {
+            kenaiSupport = new KenaiSupportImpl();
+        }
+        return kenaiSupport;
     }
 
 }

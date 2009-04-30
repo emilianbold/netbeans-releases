@@ -42,6 +42,7 @@ import java.util.Arrays;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.tools.impl.LLDataCollectorConfigurationAccessor;
 
 /**
@@ -55,6 +56,8 @@ public final class LLDataCollectorConfiguration
         CPU, MEM, SYNC
     }
 
+    public static final Column  threads_count = new DataTableMetadata.Column("threads", Integer.class); // NOI18N
+
     public static final DataTableMetadata CPU_TABLE = new DataTableMetadata(
             "lltool_cpu", Arrays.asList( // NOI18N
             new DataTableMetadata.Column("utime", Float.class), // NOI18N
@@ -67,7 +70,7 @@ public final class LLDataCollectorConfiguration
     public static final DataTableMetadata SYNC_TABLE = new DataTableMetadata(
             "lltool_sync", Arrays.asList( // NOI18N
             new DataTableMetadata.Column("locks", Integer.class), // NOI18N
-            new DataTableMetadata.Column("threads", Integer.class))); // NOI18N
+            threads_count)); // NOI18N
 
     private final CollectedData dataType;
 

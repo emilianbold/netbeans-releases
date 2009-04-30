@@ -46,8 +46,9 @@ build_info.BOUNCER_PRODUCT_PREFIX      = "{nb.bundle.files.prefix}";
 
 build_info.COMMUNITY_BUILD             = "{community.mlbuild}";
 build_info.ADD_MORE_REDIRECT_VALUE     = "{enable.languages.redirect}";
-build_info.SHOW_COMMUNITY_LANGUAGES    = 0;
-build_info.MORE_LANGUAGES_REDIRECT_URL = "{alternative.languages.page.url}";
+build_info.SHOW_ADDITIONAL_LANGUAGES   = 0;//"{enable.languages.redirect}";
+
+build_info.ADDITIONAL_BUILD_LOCATION   = "{alternative.languages.page.url}";
 
 build_info.BUILD_LOCATION = "";
 
@@ -58,11 +59,10 @@ build_info.ADD_VERSION_INFO_TO_URL     = 0;
 
 build_info.BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 
-build_info.USE_HTML_ZIP_LISTING = 1;
-
+build_info.USE_HTML_ZIP_LISTING = 0;
 build_info.add_download_tabs = function() {
 	add_download_tab("6.5.1", "http://www.netbeans.org/downloads");
-	add_download_tab("6.7M3", "http://bits.netbeans.org/netbeans/6.7/m3");
+	add_download_tab("6.7 Beta", "http://download.netbeans.org/netbeans/6.7/beta");
 	add_download_tab(DEVELOPMENT_TITLE /*,DEVELOPMENT_BUILDS_LINK*/);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }

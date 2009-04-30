@@ -24,35 +24,37 @@
         <h4>To clone a Mercurial Repository:</h4>
         
         <ol>
-            <li>Choose either:
-                
-                <ul>
-                    <li>Versioning &gt; Clone Other from the IDE's main menu (if your currently selected project is under Mercurial control).</li>
-                    <li>Versioning &gt; Mercurial &gt; Clone Other from the IDE's main menu.</li>
-            </ul>The Mercurial Clone Other wizard opens.</li>
-            
-            <li>In the Mercurial Repository panel of the wizard, enter a URL that contains the connection <a href="#protocolTypes">protocol</a> and the location of the repository
-            <br>Click Next.</li>
-            <li>In the Destination Directory panel:
-                <ul><li>Specify the Parent directory into which you want to place the Clone of the repository. 
-                Alternately, you can click the Browse button to navigate to the desired directory on your system.</li>
-                <li>Specify the Clone Name.</li>
-                
-                <li><em>Scan for NetBeans projects after clone</em>
-                    
-                    <ul><li>Select this option if you intend to immediately work with the cloned sources.</li>
-                        <li>If the sources contain projects, a dialog will appear prompting you to open them in the IDE. </li>
-                        <li>If the sources do not contain a project, the dialog will appear prompting you to create a new project from the sources and then open them in the IDE. 
-                            When you create a new project for such sources, select the appropriate project category and then use the "With Existing Sources" template in that category
-                        </li>
-                    </ul>
-                </li>
-            </li>
-            <li>Click Finish. 
-                <ul><li>The IDE initiates the clone action and the IDE's status bar indicates the progress of the files downloading 
-                from the repository to your local working directory. You can also view files being cloned from the Output window (Ctrl-4).</li></ul>
-            </li>
+            <li>Choose Team &gt; (Mercurial &gt;) Clone Other from the IDE's main menu.
+                The Mercurial Clone Other wizard opens.</li>
+            <li>In the Mercurial Repository panel of the wizard, enter a URL that contains
+                the connection <a href="#protocolTypes">protocol</a> and the location of
+                the repository.</li>
+            <li>Click Next.</li>
+            <li>In step 2 of the wizard, Clone External Repository, specify the default pull
+                and push paths to the repository.</li>
+            <li>In step 3 of the wizard, Destination Directory, specify the Parent directory
+                into which you want to place the Clone of the repository. Alternately, you
+                can click the Browse button to navigate to the desired directory on your system.</li>
+            <li>Specify the Clone Name.</li>
+            <li>Click Finish. The IDE initiates the clone action and the IDE's status
+                bar indicates the progress of the files downloading from the repository
+                to your local working directory. You can also view files being cloned
+                from the Output window (Ctrl-4).</li>
         </ol>
+
+        <p><strong>Notes:</strong></p>
+
+        <ul>
+            <li>Select the <strong>Scan for NetBeans projects after clone</strong> option
+                if you intend to immediately work with the cloned sources.</li>
+            <li>If the sources contain projects, a dialog will appear prompting you
+                to open them in the IDE.</li>
+            <li>If the sources do not contain a project, the dialog will appear prompting
+                you to create a new project from the sources and then open them in the IDE.
+                When you create a new project for such sources, select the appropriate project
+                category in the Create Project wizard and then use the Create Project with
+                Existing Sources template in that category.</li>
+        </ul>
         
         <p><a name="protocolTypes"></a>The IDE supports the following Mercurial URLs:</p>
         

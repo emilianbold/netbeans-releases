@@ -272,8 +272,8 @@ public class VariablesFormatter implements Cloneable {
         VariablesFormatter f = new VariablesFormatter(name);
         f.childrenExpandTestCode = childrenExpandTestCode;
         f.childrenFormatCode = childrenFormatCode;
-        f.childrenVariables = childrenVariables;
-        f.classTypes = classTypes;
+        f.childrenVariables = new LinkedHashMap<String, String>(childrenVariables);
+        f.classTypes = classTypes.clone();
         f.enabled = enabled;
         f.includeSubTypes = includeSubTypes;
         f.useChildrenVariables = useChildrenVariables;
@@ -285,7 +285,29 @@ public class VariablesFormatter implements Cloneable {
 
     public static VariablesFormatter[] loadFormatters() {
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
-        VariablesFormatter[] formatters = (VariablesFormatter[]) p.getArray("VariableFormatters", createDefaultFormatters());
+        VariablesFormatter[] formatters = (VariablesFormatter[]) p.getArray("VariableFormatters", null);
+        VariablesFormatter[] defaultFormatters = createDefaultFormatters();
+        if (formatters == null) {
+            formatters = defaultFormatters;
+        } else {
+            Map<String, VariablesFormatter> fm = new LinkedHashMap<String, VariablesFormatter>(defaultFormatters.length);
+            for (VariablesFormatter vf : defaultFormatters) {
+                fm.put(vf.getName(), vf);
+            }
+            for (int i = 0; i < formatters.length; i++) {
+                if (formatters[i].isDefault && fm.containsKey(formatters[i].getName())) {
+                    VariablesFormatter ovf = formatters[i];
+                    formatters[i] = fm.remove(formatters[i].getName());
+                    formatters[i].setEnabled(ovf.isEnabled());
+                }
+            }
+            if (!fm.isEmpty()) { // We have new default formatters
+                VariablesFormatter[] newFormatters = new VariablesFormatter[formatters.length + fm.size()];
+                System.arraycopy(formatters, 0, newFormatters, 0, formatters.length);
+                System.arraycopy(fm.values().toArray(), 0, newFormatters, formatters.length, fm.size());
+                formatters = newFormatters;
+            }
+        }
         return formatters;
     }
 
@@ -310,10 +332,10 @@ public class VariablesFormatter implements Cloneable {
         mapEntry.setIncludeSubTypes(true);
         mapEntry.setUseChildrenVariables(true);
         Map childrenMap = new LinkedHashMap();
-        childrenMap.put("key", "key");
-        childrenMap.put("value", "value");
+        childrenMap.put("key", "getKey()");
+        childrenMap.put("value", "getValue()");
         mapEntry.setChildrenVariables(childrenMap);
-        mapEntry.setValueFormatCode("key+\" => \"+value");
+        mapEntry.setValueFormatCode("getKey()+\" => \"+getValue()");
         mapEntry.isDefault = true;
 
         return new VariablesFormatter[] { collection, map, mapEntry };

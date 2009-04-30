@@ -59,6 +59,7 @@ import javax.swing.*;
 import java.io.*;
 import java.awt.event.ActionEvent;
 import java.awt.Dialog;
+import org.openide.cookies.OpenCookie;
 
 /**
  * Allows to view a specific revision of the given file.
@@ -146,9 +147,18 @@ public class ViewRevisionAction extends AbstractAction implements Runnable {
         Utils.copyStreamsCloseAll(new FileOutputStream(daoFile), new FileInputStream(original)); 
         Utils.associateEncoding(base, daoFile);
         final FileObject fo = FileUtil.toFileObject(daoFile);
+        DataObject dobj = DataObject.find(fo);
+        final EditorCookie ec = dobj.getCookie(EditorCookie.class);
+        final OpenCookie oc = dobj.getCookie(OpenCookie.class);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                Utils.openFile(fo, revision);
+                if (ec != null) {
+                    org.netbeans.modules.versioning.util.Utils.openFile(fo, revision);
+                } else if (oc != null) {
+                    oc.open();
+                } else {
+                    org.netbeans.modules.versioning.util.Utils.openFile(fo, revision);
+                }
             }
         });
     }

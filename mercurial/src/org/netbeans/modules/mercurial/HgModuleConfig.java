@@ -283,8 +283,15 @@ public class HgModuleConfig {
         File file = new File(name, HgCommand.HG_COMMAND); // NOI18N
         // I would like to call canExecute but that requires Java SE 6.
         if(file.exists() && file.isFile()) return true;
-        file = new File(name, HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE); // NOI18N
-        return file.exists() && file.isFile();
+        if (Utilities.isWindows()) {
+            for (String hgExecutable : HgCommand.HG_WINDOWS_EXECUTABLES) {
+                file = new File(name, hgExecutable);
+                if (file.exists() && file.isFile()) {
+                    return true;
+                };
+            }
+        }
+        return false;
     }
 
     /**

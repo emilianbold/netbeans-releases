@@ -37,20 +37,54 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.ui.wizard;
+package org.netbeans.modules.jira.query.kenai;
+
+import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.query.JiraQuery;
+import org.netbeans.modules.jira.query.QueryController;
+import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
- * Just a placeholder for all properties constants 
- * @author Vladimir Kvashin
+ *
+ * @author Tomas Stupka
  */
-/*package-local*/ interface CreateHostWizardConstants {
+public class KenaiQuery extends JiraQuery {
+    private boolean predefinedQuery = false;
+    private String project;
 
-    static final String PROP_HOST = "hostkey"; //NOI18N
-    static final String PROP_DISPLAY_NAME = "display-name"; // NOI18N
-    static final String PROP_RUN_ON_FINISH = "run-on-finish"; //NOI18N
-    static final String PROP_CACHE_MANAGER = "cachemanager"; //NOI18N
-    static final String PROP_HOSTNAME = "hostname"; // NOI18N
-    static final String PROP_PORT = "port"; //NOI18N
-    static final String PROP_SYNC = "sync"; //NOI18N
+    public KenaiQuery(String name, JiraRepository repository, JiraFilter jf, String project, boolean saved, boolean predefined) {
+        super(name, repository, jf, saved);
+        this.predefinedQuery = predefined;
+        this.project = project;
+        controller = createControler(repository, this, jf);
+        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
+        if(autoRefresh) {
+            getRepository().scheduleForRefresh(this);
+        }
+    }
+
+    @Override
+    protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
+        KenaiQueryController c = new KenaiQueryController(r, q, jiraFilter, project, predefinedQuery);
+        return c;
+    }
+
+    @Override
+    protected void logQueryEvent(int count, boolean autoRefresh) {
+        BugtrackingUtil.logQueryEvent(
+            JiraConnector.getConnectorName(),
+            getDisplayName(),
+            count,
+            true,
+            autoRefresh);
+    }
+
+    @Override
+    protected String getStoredQueryName() {
+        return super.getStoredQueryName() + "-" + project;
+    }
 
 }

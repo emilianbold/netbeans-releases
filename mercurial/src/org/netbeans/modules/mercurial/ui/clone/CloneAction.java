@@ -41,7 +41,6 @@
 package org.netbeans.modules.mercurial.ui.clone;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.MissingResourceException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
@@ -192,47 +191,21 @@ public class CloneAction extends ContextAction {
                 }finally {
                     // #125835 - Push to default was not being set automatically by hg after Clone
                     // but was after you opened the Mercurial -> Properties, inconsistent
-                    HgURL defaultPull = null;
-                    HgURL defaultPush = null;
-                    HgConfigFiles hgConfigFiles = new HgConfigFiles(target);
-                    if (pullPath != null) {
-                        defaultPull = pullPath;
-                    } else {
-                        String defaultPullStr = hgConfigFiles.getDefaultPull(false);
-                        if (defaultPullStr != null) {
-                            try {
-                                defaultPull = new HgURL(defaultPullStr);
-                            } catch (URISyntaxException ex) {
-                                Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot read default pull path"); // NOI18N
-                                Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
+                    if ((pullPath != null) || (pushPath != null)) {
+                        HgConfigFiles hgConfigFiles = new HgConfigFiles(target);
+                        if (hgConfigFiles.getException() == null) {
+                            if (pullPath != null) {
+                                hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PULL,
+                                                          pullPath.toHgCommandUrlString());
                             }
-                        }
-                    }
-                    if (pushPath != null) {
-                        defaultPush = pushPath;
-                    } else {
-                        String defaultPushStr = hgConfigFiles.getDefaultPush(false);
-                        if (defaultPushStr != null) {
-                            try {
-                                defaultPush = new HgURL(defaultPushStr);
-                            } catch (URISyntaxException ex) {
-                                Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot read default push path"); // NOI18N
-                                Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
+                            if (pushPath != null) {
+                                hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PUSH,
+                                                          pushPath.toHgCommandUrlString());
                             }
+                        } else {
+                            Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot set default push and pull path"); // NOI18N
+                            Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
                         }
-                    }
-                    if (hgConfigFiles.getException() == null) {
-                        if ((pullPath != null) && (defaultPull != null)) {
-                            hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PULL,
-                                                      defaultPull.toHgCommandUrlString());
-                        }
-                        if ((pushPath != null) && (defaultPush != null)) {
-                            hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PUSH,
-                                                      defaultPush.toHgCommandUrlString());
-                        }
-                    } else {
-                        Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot set default push and pull path"); // NOI18N
-                        Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
                     }
                         
                     if(!isLocalClone){

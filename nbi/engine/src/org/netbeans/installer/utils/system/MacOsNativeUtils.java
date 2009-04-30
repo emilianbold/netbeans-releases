@@ -75,7 +75,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     
     // constructor //////////////////////////////////////////////////////////////////
     MacOsNativeUtils() {
-        loadNativeLibrary(LIBRARY_PATH_MACOSX);
+        loadLibrary(LIBRARY_PATH_MACOSX);
         initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_MACOSX);
     }
 

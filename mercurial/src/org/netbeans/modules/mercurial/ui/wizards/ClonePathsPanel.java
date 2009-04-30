@@ -72,6 +72,7 @@ public final class ClonePathsPanel extends javax.swing.JPanel {
                 defaultPullPathField.setEditable(false);
 
                 org.openide.awt.Mnemonics.setLocalizedText(changePullPathButton, org.openide.util.NbBundle.getMessage(ClonePathsPanel.class, "changePullPushPath.Name")); // NOI18N
+                changePullPathButton.setDefaultCapable(false);
 
                 defaultPushPathLabel.setLabelFor(defaultPushPathField);
                 org.openide.awt.Mnemonics.setLocalizedText(defaultPushPathLabel, org.openide.util.NbBundle.getMessage(ClonePathsPanel.class, "defaultPushLabel.Name")); // NOI18N
@@ -80,8 +81,10 @@ public final class ClonePathsPanel extends javax.swing.JPanel {
                 defaultPushPathField.setEditable(false);
 
                 org.openide.awt.Mnemonics.setLocalizedText(changePushPathButton, org.openide.util.NbBundle.getMessage(ClonePathsPanel.class, "changePullPushPath.Name")); // NOI18N
+                changePushPathButton.setDefaultCapable(false);
 
                 org.openide.awt.Mnemonics.setLocalizedText(defaultValuesButton, org.openide.util.NbBundle.getMessage(ClonePathsPanel.class, "setDefaultValues.Name")); // NOI18N
+                defaultValuesButton.setDefaultCapable(false);
 
                 org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
                 this.setLayout(layout);

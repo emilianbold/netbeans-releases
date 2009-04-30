@@ -437,11 +437,9 @@ final class LibrariesNode extends AbstractNode {
             Dialog d = null;
             try {
                 SuiteProvider sp = project.getLookup().lookup(SuiteProvider.class);
-                if (sp == null) {
-                    ErrorManager.getDefault().log("Cannot get suite for module: " + project.getCodeNameBase()); // NOI18N
-                    return;
+                if (sp != null) {
+                    ModuleList.refreshSuiteModuleList(sp.getSuiteDirectory());
                 }
-                ModuleList.refreshSuiteModuleList(sp.getSuiteDirectory());
                 ModuleDependency dep = pxm.getModuleDependency(codeNameBase);
 
                 // XXX duplicated from CustomizerLibraries --> Refactor

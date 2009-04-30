@@ -100,7 +100,7 @@ public class SelectHandlerPanel extends JPanel implements ExplorerManager.Provid
         LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
         Node projectView = lvp.createLogicalView();
         Children.Array children = new Children.Array();
-        FilterNode filter = new FilterNode(projectView, new SourceListViewChildren());
+        FilterNode filter = new UnmodifiableFilterNode(projectView, new SourceListViewChildren());
         children.add(new FilterNode[] {filter});
         manager.setRootContext(filter);
         
@@ -165,7 +165,19 @@ public class SelectHandlerPanel extends JPanel implements ExplorerManager.Provid
         protected void removeNotify() {
             setKeys(Collections.<String>emptySet());
             super.removeNotify();
-        }
-        
+        }    
     }
+
+    class UnmodifiableFilterNode extends org.openide.nodes.FilterNode {
+
+        UnmodifiableFilterNode(Node original, org.openide.nodes.Children children) {
+            super(original, children);
+        }
+
+        @Override
+        public boolean canRename() {
+            return false;
+        }
+    }
+
 }

@@ -36,41 +36,56 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.remote.ui.wizard;
+package org.netbeans.modules.cnd.remote.ui.setup;
 
 import java.awt.Component;
 import java.awt.Dialog;
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.List;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
+import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public final class CreateHostWizardIterator implements WizardDescriptor.Iterator<WizardDescriptor> {
 
     private int index;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
+    private HostSetupWorker worker;
+    private ToolsCacheManager cacheManager;
 
-    @SuppressWarnings( "unchecked" )
-    private static WizardDescriptor.Panel<WizardDescriptor>[] callUncheckedNewForPanels() {
-        return new WizardDescriptor.Panel[]{
-                        new CreateHostWizardPanel1(),
-                        new CreateHostWizardPanel2(),
-                        new CreateHostWizardPanel3()
-                    };
+    private CreateHostWizardIterator(HostSetupWorker worker, ToolsCacheManager cacheManager) {
+        this.worker = worker;
+        this.cacheManager = cacheManager;
+    }
+
+    @SuppressWarnings("unchecked")
+    private WizardDescriptor.Panel<WizardDescriptor>[] getPanelsUnchecked() {
+        List<WizardDescriptor.Panel<WizardDescriptor>> panelsList = worker.getWizardPanels(new HostValidatorImpl(cacheManager));
+//        return (WizardDescriptor.Panel<WizardDescriptor>[]) panelsList.toArray();
+        WizardDescriptor.Panel<WizardDescriptor>[] result =
+                (WizardDescriptor.Panel<WizardDescriptor>[])(new WizardDescriptor.Panel[panelsList.size()]);
+        panelsList.toArray(result);
+        return result;
     }
 
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
         if (panels == null) {
-            panels = callUncheckedNewForPanels();
+            panels = getPanelsUnchecked();
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
                 Component c = panels[i].getComponent();
@@ -79,16 +94,15 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    // TODO if using org.openide.dialogs >= 7.8, can use WizardDescriptor.PROP_*:
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); //NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                     // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps); //NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); //NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); //NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); //NOI18N
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
                 }
             }
         }
@@ -133,35 +147,40 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     }
 
     public static ServerRecord invokeMe(ToolsCacheManager cacheManager) {
-        WizardDescriptor.Iterator<WizardDescriptor> iterator = new CreateHostWizardIterator();
+
+        Collection<? extends HostSetupProvider> providers = Lookup.getDefault().lookupAll(HostSetupProvider.class);
+        assert !providers.isEmpty();
+
+        HostSetupProvider provider = providers.iterator().next();
+        HostSetupWorker worker = provider.createHostSetupWorker();
+
+        WizardDescriptor.Iterator<WizardDescriptor> iterator = new CreateHostWizardIterator(worker, cacheManager);
+
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); //NOI18N
-        wizardDescriptor.setTitle(getString("CreateNewHostWizardTitle"));
-        wizardDescriptor.putProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER, cacheManager);
+        wizardDescriptor.setTitle(NbBundle.getMessage(CreateHostWizardIterator.class, "CreateNewHostWizardTitle"));
+        
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
-            Runnable r = (Runnable) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_RUN_ON_FINISH);
+            HostSetupWorker.Result result = worker.getResult();
+            Runnable r = result.getRunOnFinish();
             CndUtils.assertFalse(r == null);
             if (r != null) {
                 r.run();
             }
-            ExecutionEnvironment execEnv = (ExecutionEnvironment)wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_HOST);
-            String displayName = (String) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_DISPLAY_NAME);
+            ExecutionEnvironment execEnv = result.getExecutionEnvironment();
+            String displayName = result.getDisplayName();
             if (displayName == null) {
                 displayName = execEnv.getDisplayName();
             }
-            final RemoteSyncFactory syncFactory = (RemoteSyncFactory) wizardDescriptor.getProperty(CreateHostWizardConstants.PROP_SYNC);
+            final RemoteSyncFactory syncFactory = result.getSyncFactory();
             final ServerRecord record = ServerList.addServer(execEnv, displayName, syncFactory, false, false);
             return record;
         } else {
             return null;
         }
-    }
-
-    static String getString(String key) {
-        return NbBundle.getBundle(CreateHostWizardIterator.class).getString(key);
     }
 }
