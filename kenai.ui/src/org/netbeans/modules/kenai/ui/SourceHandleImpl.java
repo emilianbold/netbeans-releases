@@ -49,6 +49,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,6 +66,7 @@ import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.netbeans.modules.versioning.system.cvss.api.CVS;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
@@ -136,38 +138,45 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     @Override
     public File getWorkingDirectory() {
         if (prefs==null)
-            return null;
+            return guessWorkdir();
         try {
             String uriString = prefs.get("working.dir." + feature.getLocation(), null);
             if (uriString!=null) {
                 URI uri = new URI(uriString);
                 return new File(uri);
             } else {
-                return null;
+                return guessWorkdir();
             }
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
-            return null;
+            return guessWorkdir();
         }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         List<Project> newProjects = getNewProjects((Project[])evt.getOldValue(), (Project[])evt.getNewValue());
-        addToRecentProjects(newProjects);
+        addToRecentProjects(newProjects, true);
     }
 
-    private void addToRecentProjects(List<Project> newProjects) {
+    void remove(NbProjectHandleImpl aThis) {
+        recent.remove(aThis);
+        storeRecent();
+        projectHandle.firePropertyChange(ProjectHandle.PROP_SOURCE_LIST, null, null);
+    }
+
+    private void addToRecentProjects(List<Project> newProjects, boolean fireChanges) {
         for (Project prj : newProjects) {
             try {
                 if (isUnder(prj.getProjectDirectory())) {
-                    NbProjectHandleImpl nbHandle = RecentProjectsCache.getDefault().getProjectHandle(prj);
+                    NbProjectHandleImpl nbHandle = RecentProjectsCache.getDefault().getProjectHandle(prj, this);
                     recent.remove(nbHandle);
                     recent.add(0, nbHandle);
                     if (recent.size()>MAX_PROJECTS) {
                         recent.remove(MAX_PROJECTS);
                     }
                     storeRecent();
-                    projectHandle.firePropertyChange(ProjectHandle.PROP_SOURCE_LIST, null, null);
+                    if (fireChanges)
+                        projectHandle.firePropertyChange(ProjectHandle.PROP_SOURCE_LIST, null, null);
                 }
             } catch (IOException ex) {
                 Logger.getLogger(SourceHandleImpl.class.getName()).fine("Project not found for " + prj);
@@ -187,6 +196,17 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         return result;
     }
 
+    private File guessWorkdir() {
+        if (recent.isEmpty()) {
+            return null;
+        }
+        try {
+            return FileUtil.toFile(((NbProjectHandleImpl) recent.iterator().next()).getProject().getProjectDirectory().getParent());
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
     private void initRecent() {
         if (prefs==null) {
             //external repository not supported
@@ -195,13 +215,24 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         List<String> roots = getStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation());
         for (String root:roots) {
             try {
-                NbProjectHandleImpl nbH = RecentProjectsCache.getDefault().getProjectHandle(new URL(root));
+                NbProjectHandleImpl nbH = RecentProjectsCache.getDefault().getProjectHandle(new URL(root), this);
                 if (nbH!=null)
                     recent.add(nbH);
             } catch (IOException ex) {
                 Logger.getLogger(SourceHandleImpl.class.getName()).fine("Project not found for " + root);
             }
         }
+        int count = recent.size();
+        List list = new LinkedList();
+        final Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+        for (int i=0;count<MAX_PROJECTS && i<openProjects.length;i++) {
+            if (isUnder(openProjects[i].getProjectDirectory())) {
+                list.add(openProjects[i]);
+                count++;
+            }
+        }
+        
+        addToRecentProjects(list, false);
     }
 
     private boolean isUnder(FileObject projectDirectory) {

@@ -43,14 +43,15 @@ import org.netbeans.modules.cnd.spi.remote.*;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * A trivial HostSetup.Result implementation
+ * A trivial HostSetupWorker.Result implementation
  * @author Vladimir Kvashin
  */
-public class HostSetupResultImpl implements HostSetup.Result {
+public class HostSetupResultImpl implements HostSetupWorker.Result {
 
     private ExecutionEnvironment executionEnvironment;
     private String displayName;
     private RemoteSyncFactory syncFactory;
+    private Runnable runOnFinish;
 
     public HostSetupResultImpl() {
     }
@@ -87,5 +88,14 @@ public class HostSetupResultImpl implements HostSetup.Result {
 
     public void setSyncFactory(RemoteSyncFactory syncFactory) {
         this.syncFactory = syncFactory;
+    }
+
+    @Override
+    public Runnable getRunOnFinish() {
+        return runOnFinish;
+    }
+
+    public void setRunOnFinish(Runnable runOnFinish) {
+        this.runOnFinish = runOnFinish;
     }
 }

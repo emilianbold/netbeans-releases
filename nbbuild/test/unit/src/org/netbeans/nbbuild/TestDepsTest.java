@@ -62,6 +62,11 @@ public class TestDepsTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+        String prop = System.getProperty("nb_all");
+        assertNotNull("${nb_all} defined", prop);
+        File nball = new File(prop);
+        new File(nball, "nbbuild/nbproject/private/scan-cache-full.ser").delete();
+        new File(nball, "nbbuild/nbproject/private/scan-cache-standard.ser").delete();
     }
     
     public void testDepsTest () throws Exception {

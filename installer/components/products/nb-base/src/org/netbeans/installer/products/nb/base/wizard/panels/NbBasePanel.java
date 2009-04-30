@@ -51,16 +51,17 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.BrowserUtils;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiComboBox;
 import org.netbeans.installer.utils.helper.swing.NbiDirectoryChooser;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.components.actions.netbeans.NbRegistrationAction;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationValidator;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationsComboBoxEditor;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationsComboBoxModel;
@@ -96,7 +97,9 @@ public class NbBasePanel extends DestinationPanel {
         setProperty(JDK_LOCATION_LABEL_TEXT_PROPERTY,
                 DEFAULT_JDK_LOCATION_LABEL_TEXT);
         setProperty(BROWSE_BUTTON_TEXT_PROPERTY,
-                DEFAULT_BROWSE_BUTTON_TEXT);        
+                DEFAULT_BROWSE_BUTTON_TEXT);
+        setProperty(WARNING_INSTALL_INTO_USERDIR_PROPERTY,
+                DEFAULT_WARNING_INSTALL_INTO_USERDIR);
     }
     
     @Override
@@ -326,7 +329,24 @@ public class NbBasePanel extends DestinationPanel {
             
             return errorMessage;
         }
-        
+
+        @Override
+        protected String getWarningMessage() {
+            String warning = super.getWarningMessage();
+            if (warning == null) {
+                final String location = getDestinationField().getText().trim();
+                final File f = FileUtils.eliminateRelativity(location);
+                final File nbUserDirRoot = new File(SystemUtils.getUserHomeDirectory(), ".netbeans");
+                if (f.equals(nbUserDirRoot) || FileUtils.isParent(nbUserDirRoot, f)) {
+                    warning = StringUtils.format(panel.getProperty(
+                            WARNING_INSTALL_INTO_USERDIR_PROPERTY),
+                            nbUserDirRoot.getAbsolutePath());
+                }
+            }
+            return warning;
+        }
+
+
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
             // selectedLocationField ////////////////////////////////////////////////
@@ -436,6 +456,8 @@ public class NbBasePanel extends DestinationPanel {
             "jdk.location.label.text"; // NOI18N
     public static final String BROWSE_BUTTON_TEXT_PROPERTY =
             "browse.button.text"; // NOI18N
+    public static final String WARNING_INSTALL_INTO_USERDIR_PROPERTY =
+            "install.into.userdir.storage";
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbBasePanel.class,
@@ -463,4 +485,8 @@ public class NbBasePanel extends DestinationPanel {
     public static final String DEFAULT_BROWSE_BUTTON_TEXT =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.browse.button.text"); // NOI18N
+    
+    public static final String DEFAULT_WARNING_INSTALL_INTO_USERDIR =
+            ResourceUtils.getString(NbBasePanel.class,
+            "NBP.warning.install.into.userdir"); // NOI18N
 }

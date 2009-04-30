@@ -184,7 +184,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         if (!System.getProperty("kenai.com.url", "https://kenai.com").endsWith("testkenai.com")) {
             createChatRoom.setSelected(false);
         }
-
+        setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
     }
 
     @Override
@@ -372,7 +372,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         issuesSpacerPanel = new JPanel();
         repoSpacerPanel = new JPanel();
 
-        setPreferredSize(new Dimension(700, 450));
         setLayout(new GridBagLayout());
 
         sourceCodeLabel.setLabelFor(repoComboBox);

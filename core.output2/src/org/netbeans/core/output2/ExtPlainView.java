@@ -196,7 +196,8 @@ class ExtPlainView extends PlainView {
         s.offset += wsCount;
         s.count -= wsCount;
         int textLen = Utilities.getTabbedTextWidth(s, metrics, tabBase, this, p0 + wsCount);
-        g.drawLine(x + lineLen - textLen, y + 1, x + lineLen, y + 1);
+        int underlineShift = (int) g.getFontMetrics().getDescent() - 1;
+        g.drawLine(x + lineLen - textLen, y + underlineShift, x + lineLen, y + underlineShift);
     }
 
     @Override

@@ -28,8 +28,6 @@
 
 package org.netbeans.nbbuild;
 
-import junit.framework.TestCase;
-import org.apache.tools.ant.types.FileSet;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -81,7 +79,7 @@ public class PrintIconTest extends NbTestCase {
         
         String file = PublicPackagesInProjectizedXMLTest.readFile(out);
         
-        String[] threeParts = file.split("( |\n)+");
+        String[] threeParts = file.split("( |\r\n)+");
         assertEquals(file, 6, threeParts.length);
 
         {
@@ -129,7 +127,7 @@ public class PrintIconTest extends NbTestCase {
         
         String file = PublicPackagesInProjectizedXMLTest.readFile(out);
         
-        String[] threeParts = file.split("( |\n)+");
+        String[] threeParts = file.split("( |\r\n)+");
         assertEquals(file, 6, threeParts.length);
 
         {
@@ -183,7 +181,7 @@ public class PrintIconTest extends NbTestCase {
         
         String file = PublicPackagesInProjectizedXMLTest.readFile(out);
         
-        String[] threeParts = file.split("( |\n)+");
+        String[] threeParts = file.split("( |\r\n)+");
         assertEquals(file, 6, threeParts.length);
 
         long prevHash;
@@ -238,7 +236,7 @@ public class PrintIconTest extends NbTestCase {
             file = file.substring(1);
         }
         
-        String[] threeParts = file.split("( |\n)+");
+        String[] threeParts = file.split("( |\r\n)+");
         assertEquals(file, 3, threeParts.length);
         
         long hash = Long.parseLong(threeParts[0], 16);

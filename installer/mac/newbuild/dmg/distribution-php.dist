@@ -108,8 +108,8 @@ function checkChoiceUpgradeAction() {
     <choices-outline>
         <line choice="netbeans">
             <line choice="baseide"></line>          
-            <line choice="webcommon"></line>
             <line choice="php"></line>           
+            <line choice="webcommon"></line>
         </line>            
     </choices-outline>
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>

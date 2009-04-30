@@ -989,7 +989,7 @@ public class MakeJNLPTest extends NbTestCase {
         }
         
     }
-    
+
     private File doClassPathModuleCheck(String script) throws Exception {
         Manifest m;
 

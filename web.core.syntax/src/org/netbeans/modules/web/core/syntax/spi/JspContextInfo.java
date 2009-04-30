@@ -79,9 +79,14 @@ public abstract class JspContextInfo {
     public static final String CONTEXT_NAME = "/J2EE/JSPSyntaxColoring/"; //NOI18N
     
     private static Hashtable <String, JspContextInfo> instances = new Hashtable();
-    
+
+    /**
+     *
+     * @param fo non-null fileobject
+     * @return JspContextInfo instance, null if fo == null or not valid (already deleted)
+     */
     public static synchronized JspContextInfo getContextInfo( FileObject fo ) {
-        if (fo == null){
+        if (fo == null || !fo.isValid()){
             return null;
         }
         JspContextInfo instance = instances.get(fo.getMIMEType());

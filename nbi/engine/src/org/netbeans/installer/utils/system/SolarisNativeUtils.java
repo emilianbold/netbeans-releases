@@ -95,7 +95,7 @@ public class SolarisNativeUtils extends UnixNativeUtils {
                 LIBRARY_PATH_SOLARIS_X86;
         }
         
-        loadNativeLibrary(library);
+        loadLibrary(library);
         initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_SOLARIS);
     }
     @Override

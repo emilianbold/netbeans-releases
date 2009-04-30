@@ -37,20 +37,36 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.ui.wizard;
+package org.netbeans.modules.jira.query.kenai;
+
+import java.util.ArrayList;
+import org.eclipse.mylyn.internal.jira.core.model.Project;
+import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
+import org.netbeans.modules.jira.repository.JiraConfiguration;
+import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
- * Just a placeholder for all properties constants 
- * @author Vladimir Kvashin
+ *
+ * @author Tomas Stupka
  */
-/*package-local*/ interface CreateHostWizardConstants {
+public class KenaiConfiguration extends JiraConfiguration {
 
-    static final String PROP_HOST = "hostkey"; //NOI18N
-    static final String PROP_DISPLAY_NAME = "display-name"; // NOI18N
-    static final String PROP_RUN_ON_FINISH = "run-on-finish"; //NOI18N
-    static final String PROP_CACHE_MANAGER = "cachemanager"; //NOI18N
-    static final String PROP_HOSTNAME = "hostname"; // NOI18N
-    static final String PROP_PORT = "port"; //NOI18N
-    static final String PROP_SYNC = "sync"; //NOI18N
+    // XXX share for kenai. the same for bugzilla
+    // XXX setup only with one project. no need to initialize all projects on the repository for kenai
+    public KenaiConfiguration(JiraClient jiraClient, JiraRepository repository) {
+        super(jiraClient, repository);
+    }
+        
+    void setProducts(String product) {
+        // XXX check if product exists
+        ArrayList<String> l = new ArrayList<String>();
+        l.add(product);
+//        this.products = Collections.unmodifiableList(l);
+    }
+
+    @Override
+    public Project[] getProjects() {
+        return super.getProjects();
+    }
 
 }

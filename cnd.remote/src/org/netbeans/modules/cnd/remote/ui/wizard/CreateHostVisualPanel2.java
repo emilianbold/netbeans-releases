@@ -48,14 +48,16 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.support.TextComponentWriter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 
 /*package*/ final class CreateHostVisualPanel2 extends JPanel {
 
     private final ChangeListener wizardListener;
+    private final CreateHostData data;
 
-    public CreateHostVisualPanel2(ChangeListener listener) {
+    public CreateHostVisualPanel2(CreateHostData data, ChangeListener listener) {
+        this.data = data;
         wizardListener = listener;
         initComponents();
 
@@ -87,17 +89,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
     @Override
     public String getName() {
-        return CreateHostWizardIterator.getString("CreateHostVisualPanel2.Title");
+        return NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.Title");
     }
 
-    private String hostname;
-    private int port;
-    private ToolsCacheManager cacheManager;
-
-    void init(String hostname, Integer port, ToolsCacheManager cacheManager) {
-        this.hostname = hostname;
-        this.port = (port == null) ? ExecutionEnvironmentFactory.DEFAULT_PORT : port.intValue();
-        this.cacheManager = cacheManager;
+    void init() {
     }
 
     private String getLoginName() {
@@ -205,10 +200,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     private ExecutionEnvironment hostFound = null;
     private Runnable runOnFinish = null;
 
-    private ExecutionEnvironment getExecutionEnvironment() {
-        return ExecutionEnvironmentFactory.createNew(getLoginName(), hostname, port);
-    }
-
     public void enableControls(boolean enable) {
         textPassword.setEnabled(enable);
         textLoginName.setEnabled(enable);
@@ -223,7 +214,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     public void validateHost() {
         final String password = getPassword();
         final boolean rememberPassword = cbSavePassword.isSelected();
-        final ExecutionEnvironment env = getExecutionEnvironment();
+        final ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(getLoginName(), data.getHostName(), data.getPort());
 
         tpOutput.setText("");
 
@@ -234,7 +225,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
         phandle.start();
 
         try {
-            HostValidatorImpl hostValidator = new HostValidatorImpl(cacheManager);
+            HostValidatorImpl hostValidator = new HostValidatorImpl(data.getCacheManager());
             if (hostValidator.validate(env, password, rememberPassword, new TextComponentWriter(tpOutput))) {
                 hostFound = env;
                 runOnFinish = hostValidator.getRunOnFinish();

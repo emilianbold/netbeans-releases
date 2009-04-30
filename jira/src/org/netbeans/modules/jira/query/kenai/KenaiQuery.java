@@ -37,53 +37,54 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.spi.remote.setup;
+package org.netbeans.modules.jira.query.kenai;
 
-import org.netbeans.modules.cnd.spi.remote.*;
-import java.util.List;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.WizardDescriptor;
+import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.query.JiraQuery;
+import org.netbeans.modules.jira.query.QueryController;
+import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
- * Sets up a host.
- * Each time user wants to set up a new remote host,
- * an instance of HostSetup is created (via HostSetupProvider)
- * 
- * @author Vladimir Kvashin
+ *
+ * @author Tomas Stupka
  */
-public interface HostSetup {
+public class KenaiQuery extends JiraQuery {
+    private boolean predefinedQuery = false;
+    private String project;
 
-    /**
-     * Describes a result of setting up a host
-     */
-    interface Result {
-        /** Gets newly added host display name */
-        public String getDisplayName();
-
-        /** Gets newly added host execution environment */
-        public ExecutionEnvironment getExecutionEnvironment();
-
-        /** Gets a way of synchronization for the newly added host */
-        public RemoteSyncFactory getSyncFactory();
+    public KenaiQuery(String name, JiraRepository repository, JiraFilter jf, String project, boolean saved, boolean predefined) {
+        super(name, repository, jf, saved);
+        this.predefinedQuery = predefined;
+        this.project = project;
+        controller = createControler(repository, this, jf);
+        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
+        if(autoRefresh) {
+            getRepository().scheduleForRefresh(this);
+        }
     }
 
-    /**
-     * Gets panels of a wizard for setting up a new host.
-     *
-     * Infrastructure that calls getWizardPanels is free to add some panels
-     * before and/or after the panels returned by this method.
-     *
-     * HostSetup instance is responsible for calling HostValidator
-     * and pass it the same execution environment as will be returned by getResult.
-     *
-     * @param validator
-     * @return
-     */
-    List<WizardDescriptor.Panel<WizardDescriptor>> getWizardPanels(HostValidator validator);
+    @Override
+    protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
+        KenaiQueryController c = new KenaiQueryController(r, q, jiraFilter, project, predefinedQuery);
+        return c;
+    }
 
-    /**
-     * Gets result
-     * @return result or null in the case set up failed or was cancelled
-     */
-    Result getResult();
+    @Override
+    protected void logQueryEvent(int count, boolean autoRefresh) {
+        BugtrackingUtil.logQueryEvent(
+            JiraConnector.getConnectorName(),
+            getDisplayName(),
+            count,
+            true,
+            autoRefresh);
+    }
+
+    @Override
+    protected String getStoredQueryName() {
+        return super.getStoredQueryName() + "-" + project;
+    }
+
 }

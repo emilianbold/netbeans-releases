@@ -59,7 +59,6 @@ import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -161,8 +160,8 @@ public class JiraQuery extends Query {
                                 assert false;
                         }
                         // read the stored state ...
-                        archivedIssues.addAll(repository.getIssueCache().readQueryIssues(JiraQuery.this.getDisplayName()));
-                        archivedIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(JiraQuery.this.getDisplayName()));
+                        archivedIssues.addAll(repository.getIssueCache().readQueryIssues(getStoredQueryName()));
+                        archivedIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(getStoredQueryName()));
                     }
                     firstRun = false;
 
@@ -179,8 +178,8 @@ public class JiraQuery extends Query {
                     archivedIssues.removeAll(issues);
                     if(isSaved()) {
                         // ... and store teh actuall state
-                        repository.getIssueCache().storeQueryIssues(JiraQuery.this.getDisplayName(), issues.toArray(new String[issues.size()]));
-                        repository.getIssueCache().storeArchivedQueryIssues(JiraQuery.this.getDisplayName(), archivedIssues.toArray(new String[archivedIssues.size()]));
+                        repository.getIssueCache().storeQueryIssues(getStoredQueryName(), issues.toArray(new String[issues.size()]));
+                        repository.getIssueCache().storeArchivedQueryIssues(getStoredQueryName(), archivedIssues.toArray(new String[archivedIssues.size()]));
                     }
                 } finally {
                     logQueryEvent(issues.size(), autoRefresh);
@@ -189,6 +188,10 @@ public class JiraQuery extends Query {
             }
         });
         return ret[0];
+    }
+
+    protected String getStoredQueryName() {
+        return getDisplayName();
     }
 
     protected void logQueryEvent(int count, boolean autoRefresh) {

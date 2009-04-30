@@ -61,7 +61,7 @@ public class ValidateCommand extends JiraCommand {
 //            JiraClient client = Jira.getInstance().getRepositoryConnector().getClientManager().getClient(taskRepository, new NullProgressMonitor());
 //            client.validate(new NullProgressMonitor());
 //        } catch (IOException ex) {
-//            Bugzilla.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
+//            Jira.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
 //        }
     }
 

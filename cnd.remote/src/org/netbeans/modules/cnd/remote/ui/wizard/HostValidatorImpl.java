@@ -70,6 +70,11 @@ public class HostValidatorImpl implements HostValidator {
     public Runnable getRunOnFinish() {
         return runOnFinish;
     }
+
+    // TODO: ToolsCacheManager FIXUP
+    public ToolsCacheManager getCacheManager() {
+        return cacheManager;
+    }
     
     public boolean validate(ExecutionEnvironment env, String password, boolean rememberPassword, final PrintWriter writer) {
         boolean result = false;
@@ -78,7 +83,7 @@ public class HostValidatorImpl implements HostValidator {
         if (alreadyOnline) {
             String message = NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected1");
             message = String.format(message, env.toString());
-            writer.printf("%s", message);
+            writer.printf("%s", message); // NOI18N
         } else {
             record.resetOfflineState(); // this is a do-over
         }

@@ -126,7 +126,7 @@ public final class DeepReparsingUtils {
      * Reparse including/included files at file properties changed.
      */
     public static void reparseOnPropertyChanged(NativeFileItem nativeFile, ProjectBase project) {
-        FileImpl file = project.getFile(nativeFile.getFile());
+        FileImpl file = project.getFile(nativeFile.getFile(), false);
         if (file == null) {
             return;
         }
@@ -181,7 +181,7 @@ public final class DeepReparsingUtils {
             Set<CsmFile> coherenceLibrary = new HashSet<CsmFile>();
             for (NativeFileItem item : items) {
                 if (project.acceptNativeItem(item)) {
-                    FileImpl file = project.getFile(item.getFile());
+                    FileImpl file = project.getFile(item.getFile(), false);
                     if (file != null) {
                         file.clearStateCache();
                         pairs.put(file, item);
