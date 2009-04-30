@@ -56,7 +56,6 @@ import org.openide.filesystems.FileStateInvalidException;
 public class RecentProjectsCache {
 
     private static RecentProjectsCache instance;
-    private HashMap<URL,WeakReference<NbProjectHandleImpl>> map = new HashMap<URL, WeakReference<NbProjectHandleImpl>>();
 
     public static synchronized RecentProjectsCache getDefault() {
         if (instance==null) {
@@ -65,37 +64,23 @@ public class RecentProjectsCache {
         return instance;
     }
 
-    public synchronized NbProjectHandleImpl getProjectHandle(URL url) throws FileStateInvalidException, IOException {
-        WeakReference<NbProjectHandleImpl> ref = map.get(url);
-        NbProjectHandleImpl handle = null;
-        if (ref==null || ((handle=ref.get())==null)) {
-            for (Project p: OpenProjects.getDefault().getOpenProjects()) {
-                if (p.getProjectDirectory().getURL().equals(url)) {
-                    handle = new NbProjectHandleImpl(p);
-                    map.put(url, new WeakReference<NbProjectHandleImpl>(handle));
-                    break;
-                }
-            }
-            for (UnloadedProjectInformation i : RecentProjects.getDefault().getRecentProjectInformation()) {
-                if (i.getURL().equals(url)) {
-                    handle = new NbProjectHandleImpl(i);
-                    map.put(url, new WeakReference<NbProjectHandleImpl>(handle));
-                    break;
-                }
-
+    public synchronized NbProjectHandleImpl getProjectHandle(URL url, SourceHandleImpl src) throws FileStateInvalidException, IOException {
+        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+            if (p.getProjectDirectory().getURL().equals(url)) {
+                return new NbProjectHandleImpl(p, src);
             }
         }
-        return handle;
+        for (UnloadedProjectInformation i : RecentProjects.getDefault().getRecentProjectInformation()) {
+            if (i.getURL().equals(url)) {
+                return new NbProjectHandleImpl(i, src);
+            }
+
+        }
+        return null;
     }
 
-    public synchronized NbProjectHandleImpl getProjectHandle(Project p) throws IOException  {
-        WeakReference<NbProjectHandleImpl> nbph = map.get(p.getProjectDirectory().getURL());
-        if (nbph!=null && nbph.get()!=null) {
-            return nbph.get();
-        }
-        NbProjectHandleImpl res  = new NbProjectHandleImpl(p);
-        map.put(p.getProjectDirectory().getURL(), new WeakReference(res));
-        return res;
+    public synchronized NbProjectHandleImpl getProjectHandle(Project p, SourceHandleImpl src) throws IOException  {
+        return new NbProjectHandleImpl(p, src);
     }
 
 }
