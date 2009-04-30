@@ -36,34 +36,21 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-/*
- * IssuePanel.java
- *
- * Created on Jan 5, 2009, 6:33:53 PM
- */
-
 package org.netbeans.modules.jira.issue;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.util.logging.Level;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JFileChooser;
-import org.eclipse.mylyn.internal.jira.core.model.Resolution;
-import org.eclipse.mylyn.internal.jira.core.service.JiraException;
-import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.jira.util.JiraUtils;
 
 /**
  *
- * @author tomas
+ * @author Jan Stola
  */
 public class IssuePanel extends javax.swing.JPanel {
+    private NbJiraIssue issue;
 
-    /** Creates new form IssuePanel */
     public IssuePanel() {
         initComponents();
+    }
+
+    void setIssue(NbJiraIssue issue) {
+        this.issue = issue;
     }
 
     /** This method is called from within the constructor to
@@ -75,226 +62,20 @@ public class IssuePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane6 = new javax.swing.JScrollPane();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        jScrollPane7 = new javax.swing.JScrollPane();
-        jLabel10 = new javax.swing.JLabel();
-        jScrollPane8 = new javax.swing.JScrollPane();
-
-        commenstTextPane.setEditable(false);
-        jScrollPane6.setViewportView(commenstTextPane);
-
-        jLabel9.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel9.text")); // NOI18N
-
-        addCommentButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentButton.text")); // NOI18N
-        addCommentButton.setActionCommand(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentButton.actionCommand")); // NOI18N
-        addCommentButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addCommentButtonActionPerformed(evt);
-            }
-        });
-
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel1.text")); // NOI18N
-
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel5.text")); // NOI18N
-
-        typeField.setEditable(false);
-        typeField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.typeField.text")); // NOI18N
-
-        jLabel6.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel6.text")); // NOI18N
-
-        priorityField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.priorityField.text")); // NOI18N
-
-        jLabel7.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel7.text")); // NOI18N
-
-        statusField.setEditable(false);
-        statusField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.statusField.text")); // NOI18N
-
-        idTextField.setEditable(false);
-        idTextField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.idTextField.text")); // NOI18N
-
-        resolveButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveButton.text")); // NOI18N
-        resolveButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                resolveButtonActionPerformed(evt);
-            }
-        });
-
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel4.text")); // NOI18N
-
-        summaryField.setEditable(false);
-        summaryField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.summaryField.text")); // NOI18N
-
-        jLabel11.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel11.text")); // NOI18N
-
-        jScrollPane7.setViewportView(attachmentsList);
-
-        jLabel10.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel10.text")); // NOI18N
-
-        attachFileButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachFileButton.text")); // NOI18N
-        attachFileButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                attachFileButtonActionPerformed(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(jLabel10)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(attachFileButton))
-            .add(jScrollPane7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel10)
-                    .add(attachFileButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE))
-        );
-
-        descTextArea.setColumns(20);
-        descTextArea.setEditable(false);
-        descTextArea.setRows(5);
-        jScrollPane8.setViewportView(descTextArea);
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 720, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jScrollPane6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 680, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabel9)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 474, Short.MAX_VALUE)
-                        .add(addCommentButton))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(20, 20, 20)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel1)
-                                    .add(jLabel5))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(layout.createSequentialGroup()
-                                        .add(typeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 92, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(jLabel6)
-                                        .add(6, 6, 6)
-                                        .add(priorityField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(jLabel7)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(statusField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE))
-                                    .add(layout.createSequentialGroup()
-                                        .add(idTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 172, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                        .add(resolveButton))))
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel4)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(summaryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 367, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(jLabel11))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jScrollPane8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 680, Short.MAX_VALUE)))
-                .addContainerGap())
+            .add(0, 477, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 333, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .add(21, 21, 21)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel1)
-                            .add(idTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(resolveButton))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel5)
-                            .add(jLabel6)
-                            .add(priorityField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(typeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel7)
-                            .add(statusField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(summaryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel4))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel11))
-                    .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(14, 14, 14)
-                .add(jScrollPane8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel9)
-                    .add(addCommentButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
-                .addContainerGap())
+            .add(0, 288, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void addCommentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCommentButtonActionPerformed
-
-}//GEN-LAST:event_addCommentButtonActionPerformed
-
-    private void resolveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolveButtonActionPerformed
-
-}//GEN-LAST:event_resolveButtonActionPerformed
-
-    private void attachFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_attachFileButtonActionPerformed
-        
-}//GEN-LAST:event_attachFileButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JButton addCommentButton = new javax.swing.JButton();
-    final javax.swing.JButton attachFileButton = new javax.swing.JButton();
-    final javax.swing.JList attachmentsList = new javax.swing.JList();
-    final javax.swing.JTextPane commenstTextPane = new javax.swing.JTextPane();
-    final javax.swing.JTextArea descTextArea = new javax.swing.JTextArea();
-    final javax.swing.JTextField idTextField = new javax.swing.JTextField();
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel9;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane6;
-    private javax.swing.JScrollPane jScrollPane7;
-    private javax.swing.JScrollPane jScrollPane8;
-    final javax.swing.JTextField priorityField = new javax.swing.JTextField();
-    final javax.swing.JButton resolveButton = new javax.swing.JButton();
-    final javax.swing.JTextField statusField = new javax.swing.JTextField();
-    final javax.swing.JTextField summaryField = new javax.swing.JTextField();
-    final javax.swing.JTextField typeField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables
 
 }

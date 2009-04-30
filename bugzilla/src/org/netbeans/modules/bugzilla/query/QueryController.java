@@ -897,10 +897,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    enableFields(true);
                     panel.setQueryRunning(false);
                     panel.setLastRefresh(getLastRefresh());
                     panel.showNoContentPanel(false);                    
+                    enableFields(true);
                 }
             });
         }

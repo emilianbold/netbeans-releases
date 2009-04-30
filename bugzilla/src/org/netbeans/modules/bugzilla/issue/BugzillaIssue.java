@@ -41,7 +41,6 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.text.ParseException;
@@ -56,14 +55,12 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.data.AbstractTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -700,10 +697,6 @@ public class BugzillaIssue extends Issue {
             }
         };
         repository.getExecutor().execute(submitCmd);
-
-        if(submitCmd.hasFailed()) {
-            return false;
-        }
         
         BugzillaCommand refreshCmd = new BugzillaCommand() {
             @Override
@@ -716,6 +709,10 @@ public class BugzillaIssue extends Issue {
             }
         };
         repository.getExecutor().execute(refreshCmd);
+
+        if(submitCmd.hasFailed()) {
+            return false;
+        }
 
         // it was the user who made the changes, so preserve the seen status if seen already
         if (wasSeenAlready) {
