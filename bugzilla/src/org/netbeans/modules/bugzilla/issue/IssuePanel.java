@@ -55,9 +55,11 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1413,7 +1415,7 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(BugzillaIssue.IssueField.KEYWORDS, keywordsField);
         storeFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO, assignedField);
         storeFieldValue(BugzillaIssue.IssueField.QA_CONTACT, qaContactField);
-        storeFieldValue(BugzillaIssue.IssueField.CC, ccField);
+        storeCCValue();
         storeFieldValue(BugzillaIssue.IssueField.DEPENDS_ON, dependsField);
         storeFieldValue(BugzillaIssue.IssueField.BLOCKS, blocksField);
         if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
@@ -1463,6 +1465,42 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_submitButtonActionPerformed
+
+    private void storeCCValue() {
+        Set<String> oldCCs = ccs(issue.getFieldValue(BugzillaIssue.IssueField.CC));
+        Set<String> newCCs = ccs(ccField.getText());
+
+        String removedCCs = getMissingCCs(oldCCs, newCCs);
+        String addedCCs = getMissingCCs(newCCs, oldCCs);
+
+        storeFieldValue(BugzillaIssue.IssueField.REMOVECC, removedCCs);
+        storeFieldValue(BugzillaIssue.IssueField.NEWCC, addedCCs);
+    }
+
+    private Set<String> ccs(String values) {
+        Set<String> ccs = new HashSet<String>();
+        StringTokenizer st = new StringTokenizer(values, ", \t\n\r\f"); // NOI18N
+        while (st.hasMoreTokens()) {
+            ccs.add(st.nextToken());
+        }
+        return ccs;
+    }
+
+    private String getMissingCCs(Set<String> ccs, Set<String> missingIn) {
+        StringBuffer ret = new StringBuffer();
+        Iterator<String> it = ccs.iterator();
+        while(it.hasNext()) {
+            String cc = it.next();
+            if(cc.trim().equals("")) continue;
+            if(!missingIn.contains(cc)) {
+                ret.append(cc);
+                if(it.hasNext()) {
+                    ret.append(',');
+                }
+            }
+        }
+        return ret.toString();
+    }
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
         String refreshMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshMessage"); // NOI18N

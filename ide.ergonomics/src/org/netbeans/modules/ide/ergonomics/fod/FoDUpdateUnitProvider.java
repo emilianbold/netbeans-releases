@@ -29,15 +29,12 @@ package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.spi.autoupdate.UpdateItem;
@@ -93,7 +90,7 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
         Set<String> baseIDE = new HashSet<String>();
         Set<String> extra = new HashSet<String>();
         for (ModuleInfo mi : notYetProcessed) {
-            if (showInAU(mi)) {
+            if (FeatureManager.showInAU(mi)) {
                 if (isPlatformCluster(mi)) {
                     continue;
                 }
@@ -140,7 +137,7 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
             }
             if (justKits.contains(mi.getCodeNameBase())) {
                 processed.remove(mi);
-                if (showInAU(mi)) {
+                if (FeatureManager.showInAU(mi)) {
                     StringBuilder sb = new StringBuilder();
                     Object desc = mi.getLocalizedAttribute("OpenIDE-Module-Long-Description"); // NOI18N
                     if (!(desc instanceof String)) {
@@ -178,10 +175,6 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
         UpdateItem feature = UpdateItem.createFeature(name, specVersion, justKits, (String) featureName, description.toString(), null);
         res.put(name, feature);
         return false;
-    }
-
-    private static boolean showInAU(ModuleInfo mi) {
-        return "true".equals(mi.getAttribute("AutoUpdate-Show-In-Client")); // NOI18N
     }
 
     private boolean isIDECluster(ModuleInfo mi) {
