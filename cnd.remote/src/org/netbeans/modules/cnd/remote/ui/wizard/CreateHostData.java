@@ -39,18 +39,50 @@
 
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
+import org.netbeans.modules.cnd.spi.remote.setup.support.HostSetupResultImpl;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+
 /**
- * Just a placeholder for all properties constants 
+ * A structure that contains data used by wizard components
+ * (a replacements for WizardDescriptor.getProperty() and WizardDescriptor.setProperty())
  * @author Vladimir Kvashin
  */
-/*package-local*/ interface CreateHostWizardConstants {
+public class CreateHostData extends HostSetupResultImpl {
 
-    static final String PROP_HOST = "hostkey"; //NOI18N
-    static final String PROP_DISPLAY_NAME = "display-name"; // NOI18N
-    static final String PROP_RUN_ON_FINISH = "run-on-finish"; //NOI18N
-    static final String PROP_CACHE_MANAGER = "cachemanager"; //NOI18N
-    static final String PROP_HOSTNAME = "hostname"; // NOI18N
-    static final String PROP_PORT = "port"; //NOI18N
-    static final String PROP_SYNC = "sync"; //NOI18N
+    private ToolsCacheManager cacheManager;
+    private int port = 22;
+    private String hostName;
+    private Runnable runOnFinish;
 
+    public ToolsCacheManager getCacheManager() {
+        return cacheManager;
+    }
+
+    public void setCacheManager(ToolsCacheManager cacheManager) {
+        this.cacheManager = cacheManager;
+    }
+
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public Runnable getRunOnFinish() {
+        return runOnFinish;
+    }
+
+    public void setRunOnFinish(Runnable runOnFinish) {
+        this.runOnFinish = runOnFinish;
+    }
 }
