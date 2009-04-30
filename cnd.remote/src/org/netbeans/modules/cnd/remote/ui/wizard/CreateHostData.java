@@ -47,12 +47,16 @@ import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
  * (a replacements for WizardDescriptor.getProperty() and WizardDescriptor.setProperty())
  * @author Vladimir Kvashin
  */
-public class CreateHostData extends HostSetupResultImpl {
+/*package*/ class CreateHostData extends HostSetupResultImpl {
 
     private ToolsCacheManager cacheManager;
     private int port = 22;
     private String hostName;
-    private Runnable runOnFinish;
+
+    public CreateHostData() {
+        // TODO: ToolsCacheManager FIXUP
+        cacheManager = new ToolsCacheManager();
+    }
 
     public ToolsCacheManager getCacheManager() {
         return cacheManager;
@@ -76,13 +80,5 @@ public class CreateHostData extends HostSetupResultImpl {
 
     public void setPort(int port) {
         this.port = port;
-    }
-
-    public Runnable getRunOnFinish() {
-        return runOnFinish;
-    }
-
-    public void setRunOnFinish(Runnable runOnFinish) {
-        this.runOnFinish = runOnFinish;
     }
 }
