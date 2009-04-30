@@ -39,22 +39,21 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Collections;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
-import javax.swing.Action;
 import junit.framework.Test;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.XMLDataObject;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -63,16 +62,17 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class FodDataObjectXMLFactoryTest extends NbTestCase {
+public class EnablingAutoloadLeavesFeatureDisabledTest extends NbTestCase {
     private static final InstanceContent ic = new InstanceContent();
 
     static {
         FeatureManager.assignFeatureTypesLookup(new AbstractLookup(ic));
     }
-    private ModuleInfo au;
-    private ModuleInfo fav;
+    private ModuleInfo subversion;
+    private ModuleInfo services;
+    private FeatureInfo info;
 
-    public FodDataObjectXMLFactoryTest(String n) {
+    public EnablingAutoloadLeavesFeatureDisabledTest(String n) {
         super(n);
     }
 
@@ -81,14 +81,9 @@ public class FodDataObjectXMLFactoryTest extends NbTestCase {
 
         return NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
-            addTest(FodDataObjectXMLFactoryTest.class).
+            addTest(EnablingAutoloadLeavesFeatureDisabledTest.class).
             gui(false)
         );
-    }
-
-    @Override
-    protected boolean runInEQ() {
-        return true;
     }
 
     @Override
@@ -109,23 +104,23 @@ public class FodDataObjectXMLFactoryTest extends NbTestCase {
         StringBuffer sb = new StringBuffer();
         int found = 0;
         Exception ex2 = null;
-        for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+        for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             boolean disable = false;
             if (
-                info.getCodeNameBase().equals("org.netbeans.modules.subversion")
+                mi.getCodeNameBase().equals("org.netbeans.modules.autoupdate.services")
             ) {
                 disable = true;
-                au = info;
+                services = mi;
             }
             if (
-                info.getCodeNameBase().equals("org.netbeans.modules.favorites")
+                mi.getCodeNameBase().equals("org.netbeans.modules.subversion")
             ) {
                 disable = true;
-                fav = info;
+                subversion = mi;
             }
             if (disable) {
              Method m = null;
-                Class<?> c = info.getClass();
+                Class<?> c = mi.getClass();
                 for (;;) {
                     if (c == null) {
                         throw ex2;
@@ -141,20 +136,20 @@ public class FodDataObjectXMLFactoryTest extends NbTestCase {
                     c = c.getSuperclass();
                 }
                 m.setAccessible(true);
-                m.invoke(info, false);
-                assertFalse("Module is disabled", info.isEnabled());
+                m.invoke(mi, false);
+                assertFalse("Module is disabled", mi.isEnabled());
                 found++;
             }
-            sb.append(info.getCodeNameBase()).append('\n');
+            sb.append(mi.getCodeNameBase()).append('\n');
         }
         if (found != 2) {
             fail("Two shall be found, was " + found + ":\n" + sb);
         }
 
-        FeatureInfo info = FeatureInfo.create(
+        info = FeatureInfo.create(
             "TestFactory",
             ParseXMLContentTest.class.getResource("FeatureInfoTest.xml"),
-            ParseXMLContentTest.class.getResource("TestBundle.properties")
+            ParseXMLContentTest.class.getResource("TestBundle4.properties")
         );
         ic.add(info);
         FoDFileSystem.getInstance().refresh();
@@ -163,37 +158,22 @@ public class FodDataObjectXMLFactoryTest extends NbTestCase {
 
 
 
-    public void testCreateRecognize() throws Exception {
-        assertFalse("Autoupdate is disabled", au.isEnabled());
-        FileUtil.setMIMEType("huh", "text/huh+xml");
-        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "test/my.huh");
-        DataObject obj = DataObject.find(fo);
-        FileObject fo2 = FileUtil.createData(FileUtil.getConfigRoot(), "test/my.xml");
-        DataObject obj2 = DataObject.find(fo2);
+    public void testFeatureRemainsDisabled() throws Exception {
+        assertFalse("Subversion is disabled", subversion.isEnabled());
+        assertFalse("AU services is disabled", services.isEnabled());
 
-        assertTrue("It is kind of XML", obj instanceof XMLDataObject);
-        assertTrue("It is kind of XML2", obj2 instanceof XMLDataObject);
+        assertFalse("Feature reports itself disabled", info.isEnabled());
 
-        Action[] arr = obj.getNodeDelegate().getActions(true);
-        Action a = assertAction("Enabled in huh object", true, arr, obj.getLookup());
-        assertAction("Disabled in real xml object", false, arr, obj2.getLookup());
+        ModuleManager man = org.netbeans.core.startup.Main.getModuleSystem().getManager();
+        man.enable((Module)services);
 
-        a.actionPerformed(new ActionEvent(this, 0, ""));
+        assertTrue("AU services is active too", services.isEnabled());
+        assertFalse("Feature still reports itself disabled", info.isEnabled());
 
-        
+        man.enable((Module)subversion);
+        assertTrue("Subversion is active", subversion.isEnabled());
+
+        assertTrue("Feature is enabled now", info.isEnabled());
+
     }
-
-    private static Action assertAction(String msg, boolean enabled, Action[] arr, Lookup context) {
-        for (int i = 0; i < arr.length; i++) {
-            Action action = arr[i];
-            if (action instanceof OpenAdvancedAction) {
-                Action clone = ((ContextAwareAction)action).createContextAwareInstance(context);
-                assertEquals("Correctly enabled. " + msg, enabled, clone.isEnabled());
-                return clone;
-            }
-        }
-        fail("No open advanced action found!");
-        return null;
-    }
-
 }

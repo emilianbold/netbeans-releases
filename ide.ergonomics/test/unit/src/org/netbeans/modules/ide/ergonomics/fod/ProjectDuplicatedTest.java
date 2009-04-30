@@ -110,7 +110,7 @@ public class ProjectDuplicatedTest extends NbTestCase implements PropertyChangeL
         boolean found = false;
         Exception ex2 = null;
         for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (info.getCodeNameBase().equals("org.netbeans.modules.autoupdate.ui")) {
+            if (info.getCodeNameBase().equals("org.netbeans.modules.subversion")) {
              Method m = null;
                 Class<?> c = info.getClass();
                 for (;;) {
