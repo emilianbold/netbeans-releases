@@ -156,8 +156,11 @@ public final class FeatureInfo {
         return getPreferredCodeNameBase();
     }
 
-    boolean isEnabled() {
+    public final boolean isEnabled() {
         for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (!FeatureManager.showInAU(mi)) {
+                continue;
+            }
             if (cnbs.contains(mi.getCodeNameBase())) {
                 return mi.isEnabled();
             }

@@ -107,7 +107,7 @@ public class Jira {
      */
     public RequestProcessor getRequestProcessor() {
         if(rp == null) {
-            rp = new RequestProcessor("Bugzilla", 1, true); // NOI18N
+            rp = new RequestProcessor("Jira", 1, true); // NOI18N
         }
         return rp;
     }
