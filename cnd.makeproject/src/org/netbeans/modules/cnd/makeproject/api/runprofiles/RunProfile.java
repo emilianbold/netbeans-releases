@@ -646,9 +646,9 @@ public class RunProfile implements ConfigurationAuxObject {
         setRunDir(p.getRunDir());
         //setRawRunDirectory(p.getRawRunDirectory());
         setBuildFirst(p.getBuildFirst());
-        setEnvironment(p.getEnvironment());
-        setConsoleType(p.getConsoleType());
-        setTerminalType(p.getTerminalType());
+        getEnvironment().assign(p.getEnvironment());
+        getConsoleType().assign(p.getConsoleType());
+        getTerminalType().assign(p.getTerminalType());
     }
     
     /**
@@ -666,8 +666,8 @@ public class RunProfile implements ConfigurationAuxObject {
         //p.setRawRunDirectory(getRawRunDirectory());
         p.setBuildFirst(getBuildFirst());
         p.setEnvironment(getEnvironment().clone());
-        p.setConsoleType(getConsoleType());
-        p.setTerminalType(getTerminalType());
+        p.setConsoleType(getConsoleType().clone());
+        p.setTerminalType(getTerminalType().clone());
         return p;
     }
     

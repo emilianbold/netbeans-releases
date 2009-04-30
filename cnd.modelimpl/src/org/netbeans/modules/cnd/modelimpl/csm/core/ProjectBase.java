@@ -117,6 +117,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
         init(model, platformProject);
+        initFields();
+    }
+
+    private void initFields() {
         NamespaceImpl ns = new NamespaceImpl(this, false);
         assert ns != null;
         this.globalNamespaceUID = UIDCsmConverter.namespaceToUID(ns);
@@ -126,6 +130,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         graphStorageKey = new GraphContainer(this).getKey();
         FAKE_GLOBAL_NAMESPACE = new NamespaceImpl(this, true);
     }
+
 
     private void init(ModelImpl model, Object platformProject) {
         this.model = model;
@@ -687,6 +692,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 validator = new ProjectSettingsValidator(this);
                 validator.restoreSettings();
             }
+            if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0){
+                System.err.println("Clean index for project \""+getUniqueName()+"\" because index was corrupted (was "+RepositoryUtils.getRepositoryErrorCount(this)+" errors)."); // NOI18N
+                validator = null;
+                reopenUnit();
+            }
+
             projectRoots.fixFolder(nativeProject.getProjectRoot());
             for (String root : nativeProject.getSourceRoots()) {
                 projectRoots.fixFolder(root);
@@ -695,8 +706,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             projectRoots.addSources(headers);
             projectRoots.addSources(excluded);
             createProjectFilesIfNeed(sources, true, removedFiles, validator);
-            createProjectFilesIfNeed(headers, false, removedFiles, validator);
-
+            if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) == 0){
+                createProjectFilesIfNeed(headers, false, removedFiles, validator);
+            }
+            if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0){
+                System.err.println("Clean index for project \""+getUniqueName()+"\" because index was corrupted (was "+RepositoryUtils.getRepositoryErrorCount(this)+" errors)."); // NOI18N
+                validator = null;
+                reopenUnit();
+                createProjectFilesIfNeed(sources, true, removedFiles, validator);
+                createProjectFilesIfNeed(headers, false, removedFiles, validator);
+            }
+            
         } finally {
             disposeLock.readLock().unlock();
             if (TraceFlags.TIMING) {
@@ -708,6 +728,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     // in fact if visitor used for parsing => visitor will parse all included files
     // recursively starting from current source file
     // so, when we visit headers, they should not be reparsed if already were parsed
+    }
+
+    private void reopenUnit() {
+        setStatus(Status.Initial);
+        ParserQueue.instance().clean(this);
+        RepositoryUtils.closeUnit(this.getUniqueName().toString(), null, true);
+        RepositoryUtils.openUnit(this);
+        RepositoryUtils.hang(this);
+        initFields();
     }
 
     private void createProjectFilesIfNeed(List<NativeFileItem> items, boolean sources,
@@ -731,6 +760,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             try {
                 createIfNeed(nativeFileItem, sources, validator, reparseOnEdit, reparseOnPropertyChanged);
+                if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0) {
+                    return;
+                }
             } catch (Exception ex) {
                 DiagnosticExceptoins.register(ex);
             }
@@ -2541,8 +2573,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private ModelImpl model;
     private Unresolved unresolved;
     private CharSequence name;
-    private final CsmUID<CsmNamespace> globalNamespaceUID;
-    private final NamespaceImpl FAKE_GLOBAL_NAMESPACE;
+    private CsmUID<CsmNamespace> globalNamespaceUID;
+    private NamespaceImpl FAKE_GLOBAL_NAMESPACE;
     private Object platformProject;
     /**
      * Some notes concerning disposing and disposeLock fields.
@@ -2575,15 +2607,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private CharSequence uniqueName = null; // lazy initialized
     private Map<CharSequence, CsmUID<CsmNamespace>> namespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
     //private ClassifierContainer classifierContainer = new ClassifierContainer();
-    private final Key classifierStorageKey;
+    private Key classifierStorageKey;
 
     // collection of sharable system macros and system includes
     private APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
     private final Object namespaceLock = new String("namespaceLock in Projectbase " + hashCode()); // NOI18N
-    private final Key declarationsSorageKey;
-    private final Key fileContainerKey;
+    private Key declarationsSorageKey;
+    private Key fileContainerKey;
     private final Object fileContainerLock = new Object();
-    private final Key graphStorageKey;
+    private Key graphStorageKey;
     protected final SourceRootContainer projectRoots = new SourceRootContainer();
     private NativeProjectListenerImpl projectListener;
 
