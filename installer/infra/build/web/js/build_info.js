@@ -46,7 +46,7 @@ build_info.BOUNCER_PRODUCT_PREFIX      = "{nb.bundle.files.prefix}";
 
 build_info.COMMUNITY_BUILD             = "{community.mlbuild}";
 build_info.ADD_MORE_REDIRECT_VALUE     = "{enable.languages.redirect}";
-build_info.SHOW_ADDITIONAL_LANGUAGES   = 0;//"{enable.languages.redirect}";
+build_info.SHOW_ADDITIONAL_LANGUAGES   = "{enable.languages.redirect}";
 
 build_info.ADDITIONAL_BUILD_LOCATION   = "{alternative.languages.page.url}";
 
