@@ -41,10 +41,12 @@ package org.netbeans.modules.cnd.remote.ui.setup;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.text.MessageFormat;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -61,25 +63,47 @@ import org.openide.WizardDescriptor.Panel;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public final class CreateHostWizardIterator implements WizardDescriptor.Iterator<WizardDescriptor> {
+public final class CreateHostWizardIterator implements WizardDescriptor.Iterator<WizardDescriptor>, ChangeListener {
 
     private int index;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
-    private HostSetupWorker worker;
-    private ToolsCacheManager cacheManager;
+    private final ToolsCacheManager cacheManager;
+    private final List<HostSetupProvider> providers;
+    private final CreateHostWizardPanel0 panel0;
 
-    private CreateHostWizardIterator(HostSetupWorker worker, ToolsCacheManager cacheManager) {
-        this.worker = worker;
+    private CreateHostWizardIterator(List<HostSetupProvider> providers, ToolsCacheManager cacheManager) {
+        this.providers = providers;
         this.cacheManager = cacheManager;
+        this.panel0 = new CreateHostWizardPanel0(this, providers);
+    }
+
+    private HostSetupWorker getSelectedWorker() {
+        return panel0.getSelectedWorker();
+    }
+
+    /** to be called when provider is changed */
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        panels = null;
     }
 
     @SuppressWarnings("unchecked")
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanelsUnchecked() {
-        List<WizardDescriptor.Panel<WizardDescriptor>> panelsList = worker.getWizardPanels(new HostValidatorImpl(cacheManager));
-//        return (WizardDescriptor.Panel<WizardDescriptor>[]) panelsList.toArray();
+
+        List<WizardDescriptor.Panel<WizardDescriptor>> pList = new ArrayList<Panel<WizardDescriptor>>();
+        HostSetupWorker worker;
+        if (providers.size() == 1) {
+            worker = providers.get(0).createHostSetupWorker();
+        } else {
+            pList.add(panel0);
+            worker = panel0.getSelectedWorker();
+        }
+
+        pList.addAll(worker.getWizardPanels(new HostValidatorImpl(cacheManager)));
+
         WizardDescriptor.Panel<WizardDescriptor>[] result =
-                (WizardDescriptor.Panel<WizardDescriptor>[])(new WizardDescriptor.Panel[panelsList.size()]);
-        panelsList.toArray(result);
+                (WizardDescriptor.Panel<WizardDescriptor>[])(new WizardDescriptor.Panel[pList.size()]);
+        pList.toArray(result);
         return result;
     }
 
@@ -148,13 +172,22 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
 
     public static ServerRecord invokeMe(ToolsCacheManager cacheManager) {
 
-        Collection<? extends HostSetupProvider> providers = Lookup.getDefault().lookupAll(HostSetupProvider.class);
-        assert !providers.isEmpty();
+        List<HostSetupProvider> providers = new ArrayList<HostSetupProvider>();
+        for (HostSetupProvider provider : Lookup.getDefault().lookupAll(HostSetupProvider.class)) {
+            if (provider.isApplicable()) {
+                providers.add(provider);
+            }
+        }
 
-        HostSetupProvider provider = providers.iterator().next();
-        HostSetupWorker worker = provider.createHostSetupWorker();
+        if (providers.isEmpty()) {
+            JOptionPane.showMessageDialog(null,
+                    NbBundle.getMessage(CreateHostWizardIterator.class, "NoProviders_Message"),
+                    NbBundle.getMessage(CreateHostWizardIterator.class, "NoProviders_Title"),
+                    JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
 
-        WizardDescriptor.Iterator<WizardDescriptor> iterator = new CreateHostWizardIterator(worker, cacheManager);
+        CreateHostWizardIterator iterator = new CreateHostWizardIterator(providers, cacheManager);
 
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); //NOI18N
@@ -165,6 +198,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
+            HostSetupWorker worker = iterator.getSelectedWorker();
             HostSetupWorker.Result result = worker.getResult();
             Runnable r = result.getRunOnFinish();
             CndUtils.assertFalse(r == null);

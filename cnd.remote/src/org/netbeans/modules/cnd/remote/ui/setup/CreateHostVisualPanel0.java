@@ -38,14 +38,27 @@
  */
 package org.netbeans.modules.cnd.remote.ui.setup;
 
+import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.openide.util.NbBundle;
 
 /*package*/ final class CreateHostVisualPanel0 extends JPanel {
 
-    public CreateHostVisualPanel0(final ChangeListener listener) {
+    private final List<HostSetupProvider> providers;
+
+    public CreateHostVisualPanel0(final ChangeListener listener, List<HostSetupProvider> providers) {
+        this.providers = providers;
         initComponents();
+    }
+
+    public HostSetupProvider getSelectedProvider() {
+        return providers.get(0);
+    }
+
+    /** called each time the component is to be displayed (i.e. from readSettings)*/
+    public void reset() {
     }
 
     @Override

@@ -69,4 +69,12 @@ public interface HostSetupProvider {
      * @return an instance of HostSetupWorker
      */
     HostSetupWorker createHostSetupWorker();
+
+    /**
+     * Determines whether this provider is applicable.
+     * This allows switching providers ON and OFF programmatically
+     * e.g. via -J-D... ;-)
+     * @return true if this provider is applicable, otherwise false
+     */
+    boolean isApplicable();
 }
