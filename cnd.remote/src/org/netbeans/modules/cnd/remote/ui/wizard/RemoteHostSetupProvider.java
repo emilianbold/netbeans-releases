@@ -61,4 +61,8 @@ public class RemoteHostSetupProvider implements HostSetupProvider {
     public String getID() {
         return "cnd-remote"; //NOI18N
     }
+
+    public boolean isApplicable() {
+        return true;
+    }
 }
