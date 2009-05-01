@@ -52,6 +52,7 @@ made subject to such option by the copyright holder.
                 <property-file>${user.home}/.nbbuild.properties</property-file>
                 <property name="nbjdk.home">${java.home}/..</property>
                 <property name="nbjdk.bootclasspath">${nbjdk.home}/jre/lib/rt.jar:${nbjdk.home}/Classes/classes.jar</property>
+                <property-file>build.properties</property-file>
             </properties>
             <folders>
                 <source-folder>
@@ -195,7 +196,7 @@ made subject to such option by the copyright holder.
             <compilation-unit>
                 <package-root>test/unit/src</package-root>
                 <unit-tests/>
-                <classpath mode="compile">../libs.junit4/external/junit-4.5.jar:netbeans/harness/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:nbantext.jar</classpath>
+                <classpath mode="compile">${test.unit.cp}</classpath>
                 <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
                 <built-to>build/test/unit/classes</built-to>
                 <source-level>1.5</source-level>

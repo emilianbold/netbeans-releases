@@ -1486,13 +1486,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </antcall>
   </target>
 
-    <target name="localtest" depends="bootstrap">
+    <target name="localtest" depends="-bootstrap">
         <mkdir dir="build/test/unit/classes"/>
-        <path id="test.cp">
-            <pathelement path="../libs.junit4/external/junit-4.5.jar:netbeans/harness/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:nbantext.jar"/>
-        </path>
         <javac srcdir="test/unit/src" destdir="build/test/unit/classes" debug="true" source="1.5">
-            <classpath refid="test.cp"/>
+            <classpath path="${test.unit.cp}"/>
             <compilerarg line="-Xlint -Xlint:-serial"/>
         </javac>
         <copy todir="build/test/unit/classes">
@@ -1500,28 +1497,36 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         </copy>
         <mkdir dir="build/test/unit/results"/>
         <property name="includes" value="**/*Test"/>
-        <property name="nbbuild.test.fork.junit" value="true"/> <!-- setting to 'false' allows for debugging of nbbuild tests -->
-        <junit showoutput="true" fork="${nbbuild.test.fork.junit}" tempdir="build/test/unit/results">
+        <property name="junit.vm.args" value=""/>
+        <junit showoutput="true" fork="true" tempdir="build/test/unit/results">
             <batchtest todir="build/test/unit/results">
                 <fileset dir="build/test/unit/classes">
                     <include name="${includes}.class"/>
                 </fileset>
             </batchtest>
             <classpath>
+                <pathelement path="${test.unit.cp}"/>
                 <pathelement location="build/test/unit/classes"/>
-                <path refid="test.cp"/>
-                <pathelement location="netbeans/harness/modules/org-netbeans-insane.jar"/>
-                <fileset dir="../o.apache.tools.ant.module/external/lib" includes="*.jar"/>
             </classpath>
             <sysproperty key="nb_all" file=".."/>
             <sysproperty key="netbeans.dest.dir.work" file="${netbeans.dest.dir}"/>
             <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
+            <jvmarg value="-ea"/>
+            <jvmarg line="${junit.vm.args}"/>
         </junit>
     </target>
-  <target name="localtest-single-nb-debug" depends="bootstrap,-jdk-presetdef-nbjpdastart">
-      <fail>Not implemented</fail>
-  </target>
+    <target name="localtest-single-nb-debug" depends="-bootstrap,-jdk-presetdef-nbjpdastart">
+        <nbjpdastart addressproperty="jpda.address" name="nbbuild" transport="dt_socket">
+            <classpath>
+                <pathelement path="${test.unit.cp}"/>
+                <pathelement location="build/test/unit/classes"/>
+            </classpath>
+        </nbjpdastart>
+        <antcall target="localtest">
+            <param name="junit.vm.args" value="-Xdebug -Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+        </antcall>
+    </target>
 
   <target name="clean-cluster" description="Clean only one cluster - takes clean.cluster.name as parameters">
     <fail message="specify -Dclean.cluster.name= property" unless="clean.cluster.name"/>
