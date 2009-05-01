@@ -155,16 +155,36 @@ made subject to such option by the copyright holder.
         </fail>
         
    <!-- qa-functional tests -->
-        <condition property="ok-qa-dist-folder" >
-            <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/platform10/org-openide-loaders" />
-        </condition>
    
-        <echo message="qa test folder  : ${qa.dist.folder}" />
-        <echo message="qa-testruntimeclasspath : ${qa.runtime.cp2}" />
-        <echo message="qa.compile.cp           : ${qa.compile.cp2}" />
-        <fail message="{qa.dist.folder}" unless="ok-qa-dist-folder" />
-        <fail message="{ok-qa-testcompileclasspath}" if="qa.compile.cp2"/> 
-        <fail message="{ok-qa-testruntimeclasspath}" if="qa.runtime.cp2"/> 
+        <fail message="qa.dist.folder=${qa.dist.folder}">
+            <condition>
+                <not>
+                    <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/platform10/org-openide-loaders" />
+                </not>
+            </condition>
+        </fail>
+        <pathconvert property="qa.compile.cp3" pathsep=":">
+            <path path="${qa.compile.cp2}"/>
+            <flattenmapper/>
+        </pathconvert>
+        <fail message="Bad qa-functional test compile cp: ${qa.compile.cp2}">
+            <condition>
+                <not>
+                    <equals arg1="${qa.compile.cp3}" arg2="org-netbeans-libs-junit4.jar"/>
+                </not>
+            </condition>
+        </fail>
+        <pathconvert property="qa.runtime.cp3" pathsep=":">
+            <path path="${qa.runtime.cp2}"/>
+            <flattenmapper/>
+        </pathconvert>
+        <fail message="Bad qa-functional test runtime cp">
+            <condition>
+                <not>
+                    <equals arg1="${qa.runtime.cp3}" arg2="org-netbeans-libs-junit4.jar"/>
+                </not>
+            </condition>
+        </fail>
   </target>
 
      <target name="test-deps-missing-module-entry-test-deps" >
