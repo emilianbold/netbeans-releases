@@ -28,10 +28,10 @@
 
 package org.netbeans.nbbuild;
 
+import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 
 /**
- *
  * @author Jaroslav Tulach
  */
 public class PrintIconTest extends NbTestCase {
@@ -40,13 +40,9 @@ public class PrintIconTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         super.setUp();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
     }
 
     public void testPrintOutSameIcons() throws Exception {
@@ -79,7 +75,7 @@ public class PrintIconTest extends NbTestCase {
         
         String file = PublicPackagesInProjectizedXMLTest.readFile(out);
         
-        String[] threeParts = file.split("( |\r\n)+");
+        String[] threeParts = file.split("\\s+");
         assertEquals(file, 6, threeParts.length);
 
         {
@@ -127,7 +123,7 @@ public class PrintIconTest extends NbTestCase {
         
         String file = PublicPackagesInProjectizedXMLTest.readFile(out);
         
-        String[] threeParts = file.split("( |\r\n)+");
+        String[] threeParts = file.split("\\s+");
         assertEquals(file, 6, threeParts.length);
 
         {
@@ -149,7 +145,7 @@ public class PrintIconTest extends NbTestCase {
     public void testBrokenImageThatCould() throws Exception {
         doBrokenImageTest("data/columnIndex.gif");
     }
-    public void testBrokenImageThatCoul2() throws Exception {
+    public void testBrokenImageThatCould2() throws Exception {
         doBrokenImageTest("data/Category.png");
     }
     
@@ -181,8 +177,8 @@ public class PrintIconTest extends NbTestCase {
         
         String file = PublicPackagesInProjectizedXMLTest.readFile(out);
         
-        String[] threeParts = file.split("( |\r\n)+");
-        assertEquals(file, 6, threeParts.length);
+        String[] threeParts = file.split("\\s+");
+        assertEquals(file + " " + Arrays.toString(threeParts), 6, threeParts.length);
 
         long prevHash;
         {
@@ -236,7 +232,7 @@ public class PrintIconTest extends NbTestCase {
             file = file.substring(1);
         }
         
-        String[] threeParts = file.split("( |\r\n)+");
+        String[] threeParts = file.split("\\s+");
         assertEquals(file, 3, threeParts.length);
         
         long hash = Long.parseLong(threeParts[0], 16);
