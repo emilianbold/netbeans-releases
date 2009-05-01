@@ -657,8 +657,6 @@ made subject to such option by the copyright holder.
                 <touch file="${test.report.file}" verbose="false"/>   <!-- must exist, otherwise the XML formatter would fail -->
                 <java fork="true" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner">
                     <jvmarg value="-Xdebug"/>
-                    <jvmarg value="-Xnoagent"/>
-                    <jvmarg value="-Djava.compiler=none"/>
                     <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
                     <jvmarg line="${test.run.args}"/>
                     <classpath>
@@ -728,8 +726,6 @@ made subject to such option by the copyright holder.
                 <mkdir dir="${build.test.@{test.type}.results.dir}"/>
                 <java fork="true" classname="${main.class}">
                     <jvmarg value="-Xdebug"/>
-                    <jvmarg value="-Xnoagent"/>
-                    <jvmarg value="-Djava.compiler=none"/>
                     <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
                     <jvmarg line="${test.run.args}"/>
                     <classpath refid="test.@{test.type}.run.cp"/>
