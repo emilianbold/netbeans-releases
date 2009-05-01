@@ -37,53 +37,45 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.spi.remote.setup;
+package org.netbeans.modules.cnd.remote.ui.wizard;
 
-import org.netbeans.modules.cnd.spi.remote.*;
+import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
+import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
 
 /**
- * Sets up a host.
- * Each time user wants to set up a new remote host,
- * an instance of HostSetup is created (via HostSetupProvider)
- * 
+ *
  * @author Vladimir Kvashin
  */
-public interface HostSetup {
+public class RemoteHostSetupWorker implements HostSetupWorker {
 
-    /**
-     * Describes a result of setting up a host
-     */
-    interface Result {
-        /** Gets newly added host display name */
-        public String getDisplayName();
+    CreateHostData data;
 
-        /** Gets newly added host execution environment */
-        public ExecutionEnvironment getExecutionEnvironment();
-
-        /** Gets a way of synchronization for the newly added host */
-        public RemoteSyncFactory getSyncFactory();
+    /*package*/ RemoteHostSetupWorker() {
+        data = new CreateHostData();
     }
 
-    /**
-     * Gets panels of a wizard for setting up a new host.
-     *
-     * Infrastructure that calls getWizardPanels is free to add some panels
-     * before and/or after the panels returned by this method.
-     *
-     * HostSetup instance is responsible for calling HostValidator
-     * and pass it the same execution environment as will be returned by getResult.
-     *
-     * @param validator
-     * @return
-     */
-    List<WizardDescriptor.Panel<WizardDescriptor>> getWizardPanels(HostValidator validator);
+    public Result getResult() {
+        return data;
+    }
 
-    /**
-     * Gets result
-     * @return result or null in the case set up failed or was cancelled
-     */
-    Result getResult();
+    public List<Panel<WizardDescriptor>> getWizardPanels(HostValidator validator) {
+        if (validator instanceof HostValidatorImpl) {
+            // TODO: ToolsCacheManager FIXUP
+            data.setCacheManager(((HostValidatorImpl) validator).getCacheManager());
+        }
+        return callUncheckedNewForPanels();
+    }
+
+    @SuppressWarnings( "unchecked" )
+    private List<WizardDescriptor.Panel<WizardDescriptor>> callUncheckedNewForPanels() {
+        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<Panel<WizardDescriptor>>();
+        panels.add(new CreateHostWizardPanel1(data));
+        panels.add(new CreateHostWizardPanel2(data));
+        panels.add(new CreateHostWizardPanel3(data));
+        return panels;
+    }
 }

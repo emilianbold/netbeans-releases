@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,60 +39,66 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.hudson.impl;
+package org.netbeans.performance.j2se.dialogs;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.modules.hudson.api.HudsonVersion;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Implementation of the HudsonVersion
+ * Test of About dialog.
  *
- * @author Michal Mocnak
+ * @author  mmirilovic@netbeans.org
  */
-public class HudsonVersionImpl implements HudsonVersion {
-    
-    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\b.*"); // NOI18N
-    
-    private final int major;
-    private final int minor;
-    
-    public HudsonVersionImpl(String version) {
-        Matcher m = VERSION_PATTERN.matcher(version);
-        if(!m.matches())
-            throw new IllegalArgumentException(version);
-        this.major = Integer.parseInt(m.group(1));
-        this.minor = Integer.parseInt(m.group(2));
+public class GetKenaiSourcesTest extends PerformanceTestCase {
+
+    protected String menu, loginDialog;
+
+    /** Creates a new instance of About */
+    public GetKenaiSourcesTest(String testName) {
+        super(testName);
+        expectedTime = WINDOW_OPEN;
     }
     
-    public int getMajorVersion() {
-        return major;
+    /** Creates a new instance of About */
+    public GetKenaiSourcesTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = WINDOW_OPEN;
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+             .addTest(GetKenaiSourcesTest.class)
+             .enableModules(".*").clusters(".*")));
+        return suite;
+    }
+
+    @Override
+    public void initialize() {
+        menu = "Team|Kenai|Get Sources";
+        loginDialog = Bundle.getStringTrimmed("org.netbeans.modules.kenai.ui.Bundle", "GetSourcesFromKenaiTitle");
     }
     
-    public int getMinorVersion() {
-        return minor;
+    public void prepare(){
     }
     
-    public String toString() {
-        return getMajorVersion() + "." + getMinorVersion(); // NOI18N
+    public void testGetKenaiSources() {
+        doMeasurement();
     }
     
-    public boolean equals(Object o) {
-        if (!(o instanceof HudsonVersionImpl))
-            return false;
-        
-        HudsonVersionImpl oV = (HudsonVersionImpl) o;
-        
-        return getMajorVersion() == oV.getMajorVersion() && getMinorVersion() == oV.getMinorVersion();
+    public ComponentOperator open(){
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(menu,"|");
+        return new org.netbeans.jellytools.NbDialogOperator(loginDialog);
     }
-    
-    public int compareTo(HudsonVersion o) {
-        if (this.equals(o))
-            return 0;
-        
-        return (getMajorVersion() < o.getMajorVersion()) ? -1 :
-            (getMajorVersion() > o.getMajorVersion()) ? 1 :
-                (getMinorVersion() < o.getMinorVersion()) ? -1 :
-                    (getMinorVersion() > o.getMinorVersion()) ? 1 : 0;
+
+    public void close() {
+        new org.netbeans.jellytools.NbDialogOperator(loginDialog).cancel();
     }
 }

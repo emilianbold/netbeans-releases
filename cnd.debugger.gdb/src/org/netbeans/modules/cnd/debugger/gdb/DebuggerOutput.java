@@ -117,12 +117,12 @@ public class DebuggerOutput extends LazyActionsManagerListener implements Proper
                 break;
             case EXITED:
                 print("CTL_Debugger_finished", null, null); // NOI18N
-                break;
-            case NONE:
-                print("CTL_Debugger_finished", null, null); // NOI18N
                 if (ioManager != null) {
                     ioManager.closeStream();
                 }
+                break;
+            case NONE:
+                print("CTL_Debugger_finished", null, null); // NOI18N
                 break;
             case STOPPED:
                 String sig = debugger.getSignal();

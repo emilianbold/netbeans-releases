@@ -37,6 +37,7 @@
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
+                <friend>com.sun.cloud.cnd</friend>
                 <package>org.netbeans.modules.cnd.api.remote</package>
                 <package>org.netbeans.modules.cnd.spi.remote</package>
                 <package>org.netbeans.modules.cnd.spi.remote.setup</package>

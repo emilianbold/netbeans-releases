@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.spi.remote.setup;
 /**
  * Allows to plug in a different way of setting up a remote host.
  *
- * It's a factory that creates instances of HostSetup
+ * It's a factory that creates instances of HostSetupWorker
  * (which carries up the work of setting up a host)
  *
  * @author Vladimir Kvashin
@@ -64,9 +64,17 @@ public interface HostSetupProvider {
     String getDisplayName();
 
     /**
-     * Creates an instance of HostSetup,
+     * Creates an instance of HostSetupWorker,
      * which provide UI and performs actual work
-     * @return an instance of HostSetup
+     * @return an instance of HostSetupWorker
      */
-    HostSetup createHostSetup();
+    HostSetupWorker createHostSetupWorker();
+
+    /**
+     * Determines whether this provider is applicable.
+     * This allows switching providers ON and OFF programmatically
+     * e.g. via -J-D... ;-)
+     * @return true if this provider is applicable, otherwise false
+     */
+    boolean isApplicable();
 }
