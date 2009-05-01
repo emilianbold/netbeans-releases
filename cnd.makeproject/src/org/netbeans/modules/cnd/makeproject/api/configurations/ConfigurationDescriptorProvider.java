@@ -135,7 +135,7 @@ public class ConfigurationDescriptorProvider {
                         }
                         try {
                             ConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
-                            if (projectDescriptor == null) {
+                            if (projectDescriptor == null || newDescriptor == null) {
                                 projectDescriptor = newDescriptor;
                             } else {
                                 projectDescriptor.assign(newDescriptor);
