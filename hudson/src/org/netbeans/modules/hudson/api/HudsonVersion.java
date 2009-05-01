@@ -55,6 +55,8 @@ public final class HudsonVersion implements Comparable<HudsonVersion> {
      * Supported version
      */
     public static final HudsonVersion SUPPORTED_VERSION = new HudsonVersion("1.291"); // NOI18N
+    // XXX produce a warning about unsupported features from:
+    // <1.294 - no Maven module support
     
     private final int major;
     private final int minor;
