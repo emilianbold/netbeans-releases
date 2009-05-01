@@ -340,7 +340,7 @@ public class HudsonConnector {
 
             String sVersion = new ConnectionBuilder().instance(instance).url(instance.getUrl()).httpConnection().getHeaderField("X-Hudson"); // NOI18N
             if (sVersion != null) {
-                v = new HudsonVersionImpl(sVersion);
+                v = new HudsonVersion(sVersion);
             }
         } catch (IOException e) {
             // Nothing
