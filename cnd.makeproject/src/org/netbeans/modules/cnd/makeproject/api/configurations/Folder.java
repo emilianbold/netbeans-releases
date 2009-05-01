@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -58,6 +57,8 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
+import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
+import org.netbeans.modules.cnd.api.utils.CndFolderVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -78,7 +79,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     private final String name;
     private String displayName;
     private final Folder parent;
-    private Vector<Object> items = null; // Folder or Item
+    private ArrayList<Object> items = null; // Folder or Item
     private final Set<ChangeListener> changeListenerList = new HashSet<ChangeListener>(1);
     private final boolean projectFiles;
     private String id = null;
@@ -92,7 +93,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         this.name = name;
         this.displayName = displayName;
         this.projectFiles = projectFiles;
-        this.items = new Vector<Object>();
+        this.items = new ArrayList<Object>();
     }
 
     public void setRoot(String root) {
@@ -117,8 +118,10 @@ public class Folder implements FileChangeListener, ChangeListener {
         File folderFile = new File(AbsRootPath);
 
         // Folders to be removed
-        if (!folderFile.exists() || !folderFile.isDirectory() ||
-            !VisibilityQuery.getDefault().isVisible(folderFile)) {
+        if (!folderFile.exists() ||
+            !folderFile.isDirectory() ||
+            !VisibilityQuery.getDefault().isVisible(folderFile) ||
+            !CndFolderVisibilityQuery.getDefault().isVisible(folderFile)) {
             // Remove it plus all subfolders and items from project
             if (log.isLoggable(Level.FINE)) {
                 log.fine("------------removing folder " + getPath() + " in " + getParent().getPath()); // NOI18N
@@ -130,8 +133,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         for (Item item : getItemsAsArray()) {
             File file = item.getFile();
             if (!file.exists() ||
+                !file.isFile() ||
                 !VisibilityQuery.getDefault().isVisible(file) ||
-                !CndVisibilityQuery.getDefault().isVisible(file)) {
+                !CndFileVisibilityQuery.getDefault().isVisible(file)) {
                 if (log.isLoggable(Level.FINE)) {
                     log.fine("------------removing item " + item.getPath() + " in " + getPath()); // NOI18N
                 }
@@ -145,11 +149,16 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         List<File> fileList = new ArrayList<File>();
         for (int i = 0; i < files.length; i++) {
-            if (VisibilityQuery.getDefault().isVisible(files[i]) &&
-                CndVisibilityQuery.getDefault().isVisible(files[i]) &&
-                !files[i].getName().equals("nbproject")) { // NOI18N
-                fileList.add(files[i]);
+            if (!VisibilityQuery.getDefault().isVisible(files[i])) {
+                continue;
             }
+            if (files[i].isFile() && !CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
+                continue;
+            }
+            if (files[i].isDirectory() && !CndFolderVisibilityQuery.getDefault().isVisible(files[i])) {
+                continue;
+            }
+            fileList.add(files[i]);
         }
         for (File file : fileList) {
             if (file.isDirectory()) {
@@ -314,7 +323,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         return false;
     }
 
-    public Collection<Object> getElements() {
+    public ArrayList<Object> getElements() {
         return items;
     }
 
@@ -343,7 +352,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         String name1 = element.getSortName();
         int indexAt = items.size() - 1;
         while (indexAt >= 0) {
-            Object o = items.elementAt(indexAt);
+            Object o = items.get(indexAt);
             if (!(o instanceof Folder)) {
                 indexAt--;
                 continue;
@@ -363,24 +372,28 @@ public class Folder implements FileChangeListener, ChangeListener {
         items.add(indexAt + 1, element);
     }
 
-    private void insertItemElement(Item element) {
+    public static void insertItemElementInList(ArrayList<Object> list, Item element) {
         String name1 = (element).getSortName();
-        int indexAt = items.size() - 1;
+        int indexAt = list.size() - 1;
         while (indexAt >= 0) {
-            Object o = items.elementAt(indexAt);
+            Object o = list.get(indexAt);
             if (!(o instanceof Item)) {
                 //indexAt--;
                 break;
             }
             String name2 = ((Item) o).getSortName();
-            int compareRes = name1.compareToIgnoreCase(name2);
+            int compareRes = name1.compareTo(name2);
             if (compareRes < 0) {
                 indexAt--;
                 continue;
             }
             break;
         }
-        items.add(indexAt + 1, element);
+        list.add(indexAt + 1, element);
+    }
+
+    private void insertItemElement(Item element) {
+        insertItemElementInList(items, element);
     }
 
     public void addElement(Object element) { // FIXUP: shopuld be private
@@ -543,7 +556,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             return false;
         }
         // Remove it from folder
-        ret = items.removeElement(item);
+        ret = items.remove(item);
         if (!ret) {
             return ret;
         }
@@ -592,7 +605,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 folder.detachListener();
             }
             folder.removeAll();
-            ret = items.removeElement(folder);
+            ret = items.remove(folder);
             if (isProjectFiles()) {
                 // Remove it form all configurations
                 Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
@@ -622,7 +635,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void reset() {
-        items = new Vector<Object>();
+        items = new ArrayList<Object>();
         fireChangeEvent();
     }
 
@@ -693,7 +706,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public Item[] getItemsAsArray() {
-        Vector<Item> found = new Vector<Item>();
+        ArrayList<Item> found = new ArrayList<Item>();
         Iterator iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Object o = iter.next();
