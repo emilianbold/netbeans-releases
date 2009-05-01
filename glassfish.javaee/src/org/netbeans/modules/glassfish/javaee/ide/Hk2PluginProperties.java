@@ -210,6 +210,8 @@ public class Hk2PluginProperties {
             jars.add("jstl-impl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
             jars.add("jsf-impl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
             jars.add("jsf-api"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("bean-validator"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("webbeans-osgi-bundle"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
 
             for (String jarStr : jars) {
                 File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);
