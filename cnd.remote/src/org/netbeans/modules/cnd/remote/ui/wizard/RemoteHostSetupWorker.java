@@ -36,66 +36,46 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.spi.remote.setup.support;
 
-import org.netbeans.modules.cnd.spi.remote.setup.*;
-import org.netbeans.modules.cnd.spi.remote.*;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+package org.netbeans.modules.cnd.remote.ui.wizard;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
+import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
 
 /**
- * A trivial HostSetupWorker.Result implementation
+ *
  * @author Vladimir Kvashin
  */
-public class HostSetupResultImpl implements HostSetupWorker.Result {
+public class RemoteHostSetupWorker implements HostSetupWorker {
 
-    private ExecutionEnvironment executionEnvironment;
-    private String displayName;
-    private RemoteSyncFactory syncFactory;
-    private Runnable runOnFinish;
+    CreateHostData data;
 
-    public HostSetupResultImpl() {
+    /*package*/ RemoteHostSetupWorker() {
+        data = new CreateHostData();
     }
 
-    public HostSetupResultImpl(ExecutionEnvironment executionEnvironment, String displayName, RemoteSyncFactory syncFactory) {
-        this.executionEnvironment = executionEnvironment;
-        this.displayName = displayName;
-        this.syncFactory = syncFactory;
+    public Result getResult() {
+        return data;
     }
 
-    @Override
-    public String getDisplayName() {
-        return displayName;
+    public List<Panel<WizardDescriptor>> getWizardPanels(HostValidator validator) {
+        if (validator instanceof HostValidatorImpl) {
+            // TODO: ToolsCacheManager FIXUP
+            data.setCacheManager(((HostValidatorImpl) validator).getCacheManager());
+        }
+        return callUncheckedNewForPanels();
     }
 
-    @Override
-    public ExecutionEnvironment getExecutionEnvironment() {
-        return executionEnvironment;
-    }
-
-
-    @Override
-    public RemoteSyncFactory getSyncFactory() {
-        return syncFactory;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public void setExecutionEnvironment(ExecutionEnvironment executionEnvironment) {
-        this.executionEnvironment = executionEnvironment;
-    }
-
-    public void setSyncFactory(RemoteSyncFactory syncFactory) {
-        this.syncFactory = syncFactory;
-    }
-
-    @Override
-    public Runnable getRunOnFinish() {
-        return runOnFinish;
-    }
-
-    public void setRunOnFinish(Runnable runOnFinish) {
-        this.runOnFinish = runOnFinish;
+    @SuppressWarnings( "unchecked" )
+    private List<WizardDescriptor.Panel<WizardDescriptor>> callUncheckedNewForPanels() {
+        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<Panel<WizardDescriptor>>();
+        panels.add(new CreateHostWizardPanel1(data));
+        panels.add(new CreateHostWizardPanel2(data));
+        panels.add(new CreateHostWizardPanel3(data));
+        return panels;
     }
 }

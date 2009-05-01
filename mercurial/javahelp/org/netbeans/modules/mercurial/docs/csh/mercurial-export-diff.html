@@ -1,41 +1,73 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
             "http://www.w3.org/TR/html4/loose.dtd">
 <!--
-*     Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Mercurial: Export Diff Dialog Box</title>
         <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
+
     <body>
         <h2>Mercurial: Export Diff Dialog Box</h2>
         
         <p>The Mercurial Export Diff dialog box enables you to export all the diffs for
-            modified files within a given changeset.</p>
+            modified files within a given changeset. You can also use the dialog to attach
+            the diffs to an existing issue in your repository's issue tracker.</p>
         
-        <p>You can access the Export Diff dialog by choosing Team &gt; (Mercurial &gt;) Export Diff
-            from the main menu.</p>
+        <p>You can access the Export Diff dialog by choosing Team &gt; (Mercurial &gt;) Export
+            Diff from the main menu.</p>
             
-        <p><strong>Export from</strong>: Select a revision from the drop-down field. Revisions 
-            are displayed containing revision numbers and corresponding changeset IDs in parentheses. 
-            Revisions are listed according to date (i.e., the most current revision is displayed by 
-            default).</p>
+        <p><strong>Choose from Revisions</strong>: Select a revision from the drop-down field.
+            Revisions are displayed containing revision numbers and corresponding changeset IDs
+            in parentheses. Revisions are listed according to date (i.e., the most current
+            revision is displayed by default).</p>
+
+        <p><strong>Details</strong>: The following read-only fields list information that will
+            be associated with the exported diffs.</p>
+
+        <ul>
+            <li><strong>Description</strong>: The description associated with the changeset.</li>
+            <li><strong>Author</strong>: The author associated with the changeset.</li>
+            <li><strong>Date</strong>: The date the changeset was created (i.e., pushed to the
+                repository).</li>
+        </ul>
+
+        <p>Specify whether you want to output the diffs to a file on your computer, or attach them
+            to an existing issue. Select one of the two options:</p>
+
+        <ul>
+            <li><strong>Save as File</strong>: Specify the name and location of the output file that
+                will be generated from performing the export. Click Browse to open an explorer allowing
+                you to navigate to a specific location on your computer.</li>
+            <li><strong>Attach to Issue</strong>: To attach the diffs to an existing issue, you need
+                to specify your repository's issue tracker and the issue ID. You can also indicate
+                a description of the diff by typing a message in <strong>Patch Description</strong>.
+
+                <ul>
+                    <li><strong>Issue Tracker</strong>: Specify the issue tracker that your repository
+                        uses, by selecting an issue tracker from the drop-down list. The drop-down
+                        provides you with a list of all issue trackers registered with the IDE. If
+                        your repository's issue tracker is not registered, click the <strong>New</strong>
+                        button to register it.</li>
+                    <li><strong>Issue</strong>: Specify the issue ID. You can do this by typing in
+                        the ID, or part of the description.</li>
+                </ul></li>
+        </ul>
             
-        <p><strong>Output File</strong>: Specify the name and location of the output file that
-            will be generated from performing the export. Click Browse to open an explorer allowing
-            you to navigate to a specific location on your computer.</p>
-            
-	<dl>
-	    <dt><a name="seealso">See Also</a></dt>
-	    <dd><a href="../mercurial-about.html">About Mercurial Support</a></dd>            
-	    <dd><a href="../mercurial-quickref.html">Mercurial Tasks: Quick Reference</a></dd>
-	</dl>
- 
-	<hr>
-	<small><a href="../credits.html">Legal Notices</a></small>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../mercurial-about.html">About Mercurial Support</a></dd>
+            <dd><a href="../mercurial-quickref.html">Mercurial Tasks: Quick Reference</a></dd>
+            <dd><a href="#">About Issue Trackers</a></dd>
+            <dd><a href="#">Adding an Issue Tracker</a></dd>
+        </dl>
+
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
         <br><br><br>
     </body>
 </html>
