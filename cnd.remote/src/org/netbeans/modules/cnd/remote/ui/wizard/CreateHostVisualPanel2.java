@@ -99,8 +99,8 @@ import org.openide.util.NbBundle;
         return textLoginName.getText();
     }
 
-    String getPassword() {
-        return new String(textPassword.getPassword());
+    char[] getPassword() {
+        return textPassword.getPassword();
     }
 
     /** This method is called from within the constructor to
@@ -212,7 +212,7 @@ import org.openide.util.NbBundle;
 
     
     public void validateHost() {
-        final String password = getPassword();
+        final char[] password = getPassword();
         final boolean rememberPassword = cbSavePassword.isSelected();
         final ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(getLoginName(), data.getHostName(), data.getPort());
 

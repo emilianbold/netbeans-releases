@@ -38,14 +38,52 @@
  */
 package org.netbeans.modules.cnd.remote.ui.setup;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.openide.util.NbBundle;
 
 /*package*/ final class CreateHostVisualPanel0 extends JPanel {
 
-    public CreateHostVisualPanel0(final ChangeListener listener) {
+    private final List<HostSetupProvider> providers;
+    private HostSetupProvider selectedProvider;
+    private final ChangeListener listener;
+
+    public CreateHostVisualPanel0(final ChangeListener listener, List<HostSetupProvider> providers) {
+        this.providers = providers;
+        this.listener = listener;
         initComponents();
+        ButtonGroup buttonGroup = new ButtonGroup();
+        boolean first = true;
+        for (final HostSetupProvider provider : providers) {
+            JRadioButton button = new JRadioButton(provider.getDisplayName(), first);
+            if (first) {
+                selectedProvider = provider;
+            }
+            buttonGroup.add(button);
+            buttonsPane.add(button);
+            button.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    selectedProvider = provider;
+                    listener.stateChanged(new ChangeEvent(selectedProvider));
+                }
+            });
+            first = false;
+        }
+    }
+
+    public HostSetupProvider getSelectedProvider() {
+        return selectedProvider;
+    }
+
+    /** called each time the component is to be displayed (i.e. from readSettings)*/
+    public void reset() {
     }
 
     @Override
@@ -61,22 +99,33 @@ import org.openide.util.NbBundle;
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonsPane = new javax.swing.JPanel();
+
         setPreferredSize(new java.awt.Dimension(534, 409));
         setRequestFocusEnabled(false);
+
+        buttonsPane.setLayout(new javax.swing.BoxLayout(buttonsPane, javax.swing.BoxLayout.Y_AXIS));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 534, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(buttonsPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 409, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(buttonsPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel buttonsPane;
     // End of variables declaration//GEN-END:variables
     }
 

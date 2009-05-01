@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 /*
@@ -56,7 +56,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -409,7 +408,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         } catch (SQLHistoryException ex) {
             handleSQLHistoryException();
         }
-        ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null, sqlHistoryList);
+        ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(sqlHistoryList);
         NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
         sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED);
     }
@@ -433,7 +432,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 if (SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, historyRoot).size() > 0) {
                     List<SQLHistory> sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyRoot);
                     view.setCurrentSQLHistoryList(sqlHistoryList);
-                    ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null, sqlHistoryList);
+                    ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(sqlHistoryList);
                     view.updateConnectionUrl();
                     NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N
                 }
@@ -458,7 +457,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         LOGGER.log(Level.WARNING, NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ErrorParsingSQLHistory"));
         List<SQLHistory> sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve();
         view.setCurrentSQLHistoryList(sqlHistoryList);
-        ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null, sqlHistoryList);
+        ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(sqlHistoryList);
         view.updateConnectionUrl();
     }
 
@@ -771,13 +770,10 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
 
         public void actionPerformed(ActionEvent evt) {
-            view.setCurrentSQLHistoryList(view.filterSQLHistoryList());
-            sqlHistoryTable.repaint();
-            sqlHistoryTable.clearSelection();
-            refreshTable(evt, view.getCurrentSQLHistoryList());
+            processUpdate();
         }
         
-        public void refreshTable(ActionEvent evt, List<SQLHistory> sqlHistoryList) {
+        public void refreshTable(List<SQLHistory> sqlHistoryList) {
             String url;
             // Get the connection url from the combo box
             if (sqlHistoryList.size() > 0) {
@@ -824,56 +820,19 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
 
         public void insertUpdate(DocumentEvent evt) {
-            processUpdate(evt);
+            processUpdate();
                     } 
 
         public void removeUpdate(DocumentEvent evt) {
-            processUpdate(evt);
+            processUpdate();
                     }
 
-        private void processUpdate(DocumentEvent evt) {
-            List<String> currentSQLList = view.getSQLList(sortData());
-
-             // Read the contents
-            try {
-                String matchText = read(evt.getDocument());
-                Object[][] localData = new Object[currentSQLList.size()][2];
-                int row = 0;
-                int length;
-                int maxLength;                                
-                Iterator dateIterator = dateList.iterator();
-                for (String sql : currentSQLList) {
-                    if (sql.trim().toLowerCase().indexOf(matchText.toLowerCase()) != -1) {
-                        length = sql.trim().length();
-                        maxLength = length > TABLE_DATA_WIDTH_SQL ? TABLE_DATA_WIDTH_SQL : length;
-                        localData[row][0] = sql.trim().substring(0, maxLength);
-                        localData[row][1] = dateIterator.next();
-                        row++;
+        private void processUpdate() {
+            view.setCurrentSQLHistoryList(view.filterSQLHistoryList());
+            sqlHistoryTable.repaint();
+            sqlHistoryTable.clearSelection();
+            refreshTable(view.getCurrentSQLHistoryList());
                     }
-                }
-                // no matches so clean the table
-                if (row == 0) {
-                    cleanTable();
-                }
-                // Adjust size of data for the table
-                if (row > 0) {
-                    data = new Object[row][2];
-                    for (int i = 0; i < row; i++) {
-                        data[i][0] = localData[i][0];
-                        data[i][1] = localData[i][1];
-                    }                    
-                } else {
-                    data = new Object[0][0];                                        
-                    insertSQLButton.setEnabled(false);
-                }
-                // Refresh the table
-                sqlHistoryTable.revalidate();
-            } catch (InterruptedException e) {
-                Exceptions.printStackTrace(e);
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
 
         public void changedUpdate(DocumentEvent arg0) {
             // unused
@@ -892,7 +851,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             SQLComparator sqlComparator = new SQLComparator(sortCol, sortAsc);
             Collections.sort(filteredSQLHistoryList, sqlComparator);
             view.setCurrentSQLHistoryList(filteredSQLHistoryList);
-            refreshTable(null, filteredSQLHistoryList);
+            refreshTable( filteredSQLHistoryList);
             return filteredSQLHistoryList;
         }
     }

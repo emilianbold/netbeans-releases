@@ -47,7 +47,7 @@ import org.openide.util.NbBundle;
  *
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service=HostSetupProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=HostSetupProvider.class, position=100)
 public class RemoteHostSetupProvider implements HostSetupProvider {
 
     public HostSetupWorker createHostSetupWorker() {
@@ -60,5 +60,9 @@ public class RemoteHostSetupProvider implements HostSetupProvider {
 
     public String getID() {
         return "cnd-remote"; //NOI18N
+    }
+
+    public boolean isApplicable() {
+        return true;
     }
 }
