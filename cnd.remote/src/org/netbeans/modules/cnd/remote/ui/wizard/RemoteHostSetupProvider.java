@@ -37,53 +37,28 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.spi.remote.setup;
+package org.netbeans.modules.cnd.remote.ui.wizard;
 
-import org.netbeans.modules.cnd.spi.remote.*;
-import java.util.List;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.WizardDescriptor;
+import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
+import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
+import org.openide.util.NbBundle;
 
 /**
- * Sets up a host.
- * Each time user wants to set up a new remote host,
- * an instance of HostSetup is created (via HostSetupProvider)
- * 
+ *
  * @author Vladimir Kvashin
  */
-public interface HostSetup {
+@org.openide.util.lookup.ServiceProvider(service=HostSetupProvider.class)
+public class RemoteHostSetupProvider implements HostSetupProvider {
 
-    /**
-     * Describes a result of setting up a host
-     */
-    interface Result {
-        /** Gets newly added host display name */
-        public String getDisplayName();
-
-        /** Gets newly added host execution environment */
-        public ExecutionEnvironment getExecutionEnvironment();
-
-        /** Gets a way of synchronization for the newly added host */
-        public RemoteSyncFactory getSyncFactory();
+    public HostSetupWorker createHostSetupWorker() {
+        return new RemoteHostSetupWorker();
     }
 
-    /**
-     * Gets panels of a wizard for setting up a new host.
-     *
-     * Infrastructure that calls getWizardPanels is free to add some panels
-     * before and/or after the panels returned by this method.
-     *
-     * HostSetup instance is responsible for calling HostValidator
-     * and pass it the same execution environment as will be returned by getResult.
-     *
-     * @param validator
-     * @return
-     */
-    List<WizardDescriptor.Panel<WizardDescriptor>> getWizardPanels(HostValidator validator);
+    public String getDisplayName() {
+        return NbBundle.getMessage(getClass(), "PROVIDER_Name");
+    }
 
-    /**
-     * Gets result
-     * @return result or null in the case set up failed or was cancelled
-     */
-    Result getResult();
+    public String getID() {
+        return "cnd-remote"; //NOI18N
+    }
 }

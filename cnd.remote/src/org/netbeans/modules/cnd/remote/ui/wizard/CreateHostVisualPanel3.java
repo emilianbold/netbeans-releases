@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.remote.sync.SyncUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.openide.util.NbBundle;
 
 /*package*/ final class CreateHostVisualPanel3 extends JPanel {
 
@@ -63,7 +64,7 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 
     @Override
     public String getName() {
-        return CreateHostWizardIterator.getString("CreateHostVisualPanel3.Title");//NOI18N
+        return NbBundle.getMessage(getClass(), "CreateHostVisualPanel3.Title");//NOI18N
     }
 
     private final CreateHostData data;

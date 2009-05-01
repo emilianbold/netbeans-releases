@@ -1,12 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
         "http://www.w3.org/TR/html4/loose.dtd">
 <!--
-*     Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Mercurial: Committing Changes to the Repository</title>
         <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
             rel="StyleSheet" type="text/css">
@@ -19,13 +19,16 @@
         
         <p>Once your working copies of version-controlled files have been edited, 
             you can then place changes into the repository using the Mercurial 
-            Commit action.</p>
+            Commit action. If you have an <a href="#">issue tracker</a> set up with
+            your repository, the commit dialog box lets you associate your commit
+            action with an existing issue.</p>
 
         <ul class="note">
             <li>Mercurial versioned files and folders must be recognized by the IDE
                 as such in order to call Mercurial actions on them. To do so, you 
                 must first <a href="mercurial-cloneother.html">clone</a> sources from an 
-                external repository or <a href="mercurial-import.html">place the project</a> under Mercurial control.</li>
+                external repository or <a href="mercurial-import.html">place the project</a>
+                under Mercurial control.</li>
         </ul>
         
         <h4>To commit changes in local files to the repository:</h4>
@@ -55,6 +58,34 @@
                 commit. To do so, click on the Commit Action column for the specific file 
                 and choose Exclude from Commit. The file name responds by displaying in 
                 strike-through text.</li>
+        </ul>
+
+        <h3>Updating Issues</h3>
+
+        <p>You can update an issue by associating your commit action with an existing issue
+            in your repository's issue tracker. To do so, click on the <strong>Update Issue</strong>
+            heading in the Commit dialog box to expand it, then specify the following:</p>
+
+        <ul>
+            <li><strong>Issue Tracker</strong>: Specify the issue tracker that your repository
+                uses, by selecting an issue tracker from the drop-down list. The drop-down
+                provides you with a list of all issue trackers registered with the IDE. If
+                your repository's issue tracker is not registered, click the <strong>New</strong>
+                button to register it.</li>
+            <li><strong>Issue</strong>: Specify the issue ID. You can do this by typing in
+                the ID, or part of the description.</li>
+        </ul>
+
+        <p>You can also specify the following options:</p>
+
+        <ul>
+            <li><strong>Resolve as FIXED</strong>: Sets the issue's status as FIXED.</li>
+            <li><strong>Add Commit Message from Above</strong>: Includes your above commit
+                description in the update.</li>
+            <li><strong>Add Revision Information to the Issue</strong>: Includes revision
+                information, such as...</li>
+            <li><strong>Add Issue Information to Commit Message</strong>: Appends issue
+                information to the above commit description.</li>
         </ul>
         
         <h3>Ignoring Files</h3>
@@ -89,8 +120,12 @@
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="mercurial-cloneother.html">Cloning an External Mercurial Repository</a></dd>
             <dd><a href="mercurial-diffviewer.html">Comparing File Revisions</a></dd>
+            <dd><a href="#">About Issue Trackers</a></dd>
+            <dd><a href="#">Adding an Issue Tracker</a></dd>
         </dl>
-        <hr> <small><a href="credits.html">Legal Notices</a></small>
+
+        <hr>
+        <small><a href="credits.html">Legal Notices</a></small>
         <br><br><br>
     </body>
 </html>
