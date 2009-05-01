@@ -43,8 +43,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
 import org.openide.util.Exceptions;
 
 /**
@@ -55,7 +55,7 @@ import org.openide.util.Exceptions;
  */
 public final class TextComponentWriter extends PrintWriter {
 
-    public TextComponentWriter(final JTextPane textPane) {
+    public TextComponentWriter(final JTextComponent textPane) {
         super(new Writer() {
             @Override
             public void write(char[] cbuf, int off, int len) throws IOException {
@@ -72,7 +72,7 @@ public final class TextComponentWriter extends PrintWriter {
 
     }
 
-    private static void addOuputTextInUiThread(final String value, final JTextPane textPane) {
+    private static void addOuputTextInUiThread(final String value, final JTextComponent textPane) {
         Runnable r = new Runnable() {
                 public void run() {
                     textPane.setText(textPane.getText() + value);
