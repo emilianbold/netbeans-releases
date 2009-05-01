@@ -236,7 +236,6 @@ public class ShowFailures extends AbstractAction implements Runnable {
                     }
                 }
             });
-            // Requires Hudson 1.281 or later:
             String u = url + "testReport/api/xml?xpath=//suite[case/errorStackTrace]&wrapper=failures"; // NOI18N
             InputSource source = new InputSource(new ConnectionBuilder().job(job).url(u).connection().getInputStream());
             source.setSystemId(u);

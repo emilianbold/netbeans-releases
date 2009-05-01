@@ -55,7 +55,6 @@ import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.netbeans.modules.hudson.impl.HudsonVersionImpl;
 import org.netbeans.modules.hudson.ui.nodes.HudsonRootNode;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.DialogDescriptor;
@@ -112,7 +111,7 @@ public class InstanceDialog extends DialogDescriptor {
                         problem(NbBundle.getMessage(InstanceDialog.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
                         return;
                     }
-                    HudsonVersion version = new HudsonVersionImpl(sVersion);
+                    HudsonVersion version = new HudsonVersion(sVersion);
                     if (!Utilities.isSupportedVersion(version)) {
                         problem(NbBundle.getMessage(InstanceDialog.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
                         return;
