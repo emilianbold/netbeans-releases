@@ -160,7 +160,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
             URLConnection conn = new ConnectionBuilder().job(job).url(url).timeout(TIMEOUT).connection();
             String contentType = conn.getContentType();
             if (contentType == null || !contentType.startsWith("text/plain")) { // NOI18N
-                // Missing workspace, or Hudson prior to SVN 13601 (i.e. 1.264).
+                // Missing workspace.
                 LOG.log(Level.FINE, "non-plain dir listing: {0}", url);
                 return new String[0];
             }
