@@ -866,7 +866,6 @@ is divided into following sections:
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
-                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
             </target>
             
             <target name="-pre-jar">
@@ -925,6 +924,7 @@ is divided into following sections:
                         <globmapper from="*" to="lib/*"/>
                     </chainedmapper>
                 </pathconvert>        
+                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
                 <copylibs manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
                     <fileset dir="${{build.classes.dir}}"/>
                     <manifest>
@@ -955,6 +955,7 @@ is divided into following sections:
                         <globmapper from="*" to="lib/*"/>
                     </chainedmapper>
                 </pathconvert>
+                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
                 <copylibs runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
                     <fileset dir="${{build.classes.dir}}"/>
                 </copylibs>
