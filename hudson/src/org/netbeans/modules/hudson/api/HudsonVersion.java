@@ -41,35 +41,75 @@
 
 package org.netbeans.modules.hudson.api;
 
-import org.netbeans.modules.hudson.impl.HudsonVersionImpl;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Describes Hudson version
- *
- * @author Michal Mocnak
+ * Describes Hudson version.
  */
-public interface HudsonVersion extends Comparable<HudsonVersion> {
+public final class HudsonVersion implements Comparable<HudsonVersion> {
     
+    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\b.*"); // NOI18N
+
     /**
      * Supported version
      */
-    public static final HudsonVersion SUPPORTED_VERSION = new HudsonVersionImpl("1.123"); // NOI18N
+    public static final HudsonVersion SUPPORTED_VERSION = new HudsonVersion("1.123"); // NOI18N
     
+    private final int major;
+    private final int minor;
+
+    public HudsonVersion(String version) {
+        Matcher m = VERSION_PATTERN.matcher(version);
+        if (!m.matches()) {
+            throw new IllegalArgumentException(version);
+        }
+        this.major = Integer.parseInt(m.group(1));
+        this.minor = Integer.parseInt(m.group(2));
+    }
+
     /**
      * Returns major version
      *
      * @return major version
      */
-    public int getMajorVersion();
+    public int getMajorVersion() {
+        return major;
+    }
     
     /**
      * Returns minor version
      *
      * @return minor version
      */
-    public int getMinorVersion();
+    public int getMinorVersion() {
+        return minor;
+    }
     
-    public String toString();
-    
-    public boolean equals(Object o);
+    public @Override String toString() {
+        return major + "." + minor; // NOI18N
+    }
+
+    public @Override boolean equals(Object o) {
+        if (!(o instanceof HudsonVersion)) {
+            return false;
+        }
+        HudsonVersion oV = (HudsonVersion) o;
+        return major == oV.major && minor == oV.minor;
+    }
+
+    public @Override int hashCode() {
+        return toString().hashCode();
+    }
+
+    public int compareTo(HudsonVersion o) {
+        if (this.equals(o)) {
+            return 0;
+        }
+        return (major < o.major) ? -1 :
+            (major > o.major) ? 1 :
+                (minor < o.minor) ? -1 :
+                    (minor > o.minor) ? 1 : 0;
+    }
+
 }
