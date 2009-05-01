@@ -54,7 +54,7 @@ public final class HudsonVersion implements Comparable<HudsonVersion> {
     /**
      * Supported version
      */
-    public static final HudsonVersion SUPPORTED_VERSION = new HudsonVersion("1.123"); // NOI18N
+    public static final HudsonVersion SUPPORTED_VERSION = new HudsonVersion("1.291"); // NOI18N
     
     private final int major;
     private final int minor;
