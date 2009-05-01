@@ -53,7 +53,7 @@ public interface HudsonVersion extends Comparable<HudsonVersion> {
     /**
      * Supported version
      */
-    public static final HudsonVersion SUPPORTED_VERSION = new HudsonVersionImpl("1.104"); // NOI18N
+    public static final HudsonVersion SUPPORTED_VERSION = new HudsonVersionImpl("1.123"); // NOI18N
     
     /**
      * Returns major version
