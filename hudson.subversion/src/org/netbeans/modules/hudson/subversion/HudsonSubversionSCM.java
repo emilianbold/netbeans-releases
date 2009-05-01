@@ -143,11 +143,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
 
     public List<? extends HudsonJobChangeItem> parseChangeSet(final HudsonJob job, final Element changeSet) {
         if (!"svn".equals(Helper.xpath("kind", changeSet))) { // NOI18N
-            // Either a different SCM, or old Hudson.
-            if (changeSet.getElementsByTagName("revision").getLength() == 0) { // NOI18N
-                // A different SCM. This clause could be deleted assuming 1.284.
-                return null;
-            }
+            return null;
         }
         class SubversionItem implements HudsonJobChangeItem {
             final Element itemXML;
