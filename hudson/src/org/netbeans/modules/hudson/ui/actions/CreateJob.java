@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
@@ -135,8 +137,8 @@ public class CreateJob extends AbstractAction {
             OpenProjects.getDefault().open(new Project[] {project}, false);
             HudsonRootNode.select(instance.getUrl(), name);
         } catch (IOException x) {
-            // XXX too harsh, should report at a low level and show message (unless this already has a localized message)
-            Exceptions.printStackTrace(x);
+            Exceptions.attachLocalizedMessage(x, NbBundle.getMessage(CreateJob.class, "CreateJob.failure"));
+            Logger.getLogger(CreateJob.class.getName()).log(Level.WARNING, null, x);
         }
     }
 
