@@ -29,6 +29,9 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 
@@ -46,10 +49,28 @@ public class PrintIconTest extends NbTestCase {
         super.setUp();
     }
 
+    private File extractResource(String resource) throws Exception {
+        File f;
+        for (int i = 1; ; i++) {
+             f = new File(getWorkDir(), i + "_" + resource.replaceFirst(".+/", ""));
+             if (!f.isFile()) {
+                 break;
+             }
+        }
+        OutputStream os = new FileOutputStream(f);
+        InputStream is = PrintIconTest.class.getResourceAsStream(resource);
+        int c;
+        while ((c = is.read()) != -1) {
+            os.write(c);
+        }
+        os.close();
+        return f;
+    }
+
     public void testPrintOutSameIcons() throws Exception {
-        File img = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
-        File img3 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
+        File img = extractResource("data/instanceBroken.gif");
+        File img2 = extractResource("data/instanceObject.gif");
+        File img3 = extractResource("data/instanceBroken.gif");
         File out = PublicPackagesInProjectizedXMLTest.extractString("");
         out.delete();
         
@@ -97,9 +118,9 @@ public class PrintIconTest extends NbTestCase {
     
     
     public void testDuplicatesFromTheSameSet() throws Exception {
-        File img = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
-        File img3 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
+        File img = extractResource("data/instanceBroken.gif");
+        File img2 = extractResource("data/instanceObject.gif");
+        File img3 = extractResource("data/instanceBroken.gif");
         File out = PublicPackagesInProjectizedXMLTest.extractString("");
         out.delete();
         
@@ -151,9 +172,9 @@ public class PrintIconTest extends NbTestCase {
     }
     
     private void doBrokenImageTest(String res) throws Exception {
-        File img = PublicPackagesInProjectizedXMLTest.extractResource(res);
-        File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
-        File img3 = PublicPackagesInProjectizedXMLTest.extractResource(res);
+        File img = extractResource(res);
+        File img2 = extractResource("data/instanceObject.gif");
+        File img3 = extractResource(res);
         File out = PublicPackagesInProjectizedXMLTest.extractString("");
         out.delete();
         
@@ -198,9 +219,9 @@ public class PrintIconTest extends NbTestCase {
     }
     
     public void testPrintExtra() throws Exception {
-        File img = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
-        File img3 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
+        File img = extractResource("data/instanceBroken.gif");
+        File img2 = extractResource("data/instanceObject.gif");
+        File img3 = extractResource("data/instanceBroken.gif");
         File out = PublicPackagesInProjectizedXMLTest.extractString("");
         out.delete();
         
