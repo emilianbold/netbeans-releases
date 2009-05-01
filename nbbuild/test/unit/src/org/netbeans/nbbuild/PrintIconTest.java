@@ -53,10 +53,10 @@ public class PrintIconTest extends NbTestCase {
         out.delete();
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"printicon\" classname=\"org.netbeans.nbbuild.PrintIcon\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
-            "<target name=\"all\" >" +
+            "<?xml version='1.0' encoding='UTF-8'?>" +
+            "<project name='Test Arch' basedir='.' default='all' >" +
+            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
+            "<target name='all' >" +
             "  <printicon duplicates='" + out + "'>" +
             "    <firstpool dir='" + img.getParent() + "'>" +
             "       <include name='" + img.getName() + "'/>" +
@@ -103,10 +103,10 @@ public class PrintIconTest extends NbTestCase {
         out.delete();
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"printicon\" classname=\"org.netbeans.nbbuild.PrintIcon\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
-            "<target name=\"all\" >" +
+            "<?xml version='1.0' encoding='UTF-8'?>" +
+            "<project name='Test Arch' basedir='.' default='all' >" +
+            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
+            "<target name='all' >" +
             "  <printicon duplicates='" + out + "'>" +
             "    <firstpool dir='" + img.getParent() + "'>" +
             "       <include name='" + img.getName() + "'/>" +
@@ -157,10 +157,10 @@ public class PrintIconTest extends NbTestCase {
         out.delete();
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"printicon\" classname=\"org.netbeans.nbbuild.PrintIcon\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
-            "<target name=\"all\" >" +
+            "<?xml version='1.0' encoding='UTF-8'?>" +
+            "<project name='Test Arch' basedir='.' default='all' >" +
+            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
+            "<target name='all' >" +
             "  <printicon duplicates='" + out + "'>" +
             "    <firstpool dir='" + img.getParent() + "'>" +
             "       <include name='" + img.getName() + "'/>" +
@@ -204,10 +204,10 @@ public class PrintIconTest extends NbTestCase {
         out.delete();
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"printicon\" classname=\"org.netbeans.nbbuild.PrintIcon\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
-            "<target name=\"all\" >" +
+            "<?xml version='1.0' encoding='UTF-8'?>" +
+            "<project name='Test Arch' basedir='.' default='all' >" +
+            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
+            "<target name='all' >" +
             "  <printicon difference='" + out + "'>" +
             "    <firstpool dir='" + img.getParent() + "'>" +
             "       <include name='" + img.getName() + "'/>" +
