@@ -28,6 +28,7 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.File;
 import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 
@@ -46,13 +47,13 @@ public class PrintIconTest extends NbTestCase {
     }
 
     public void testPrintOutSameIcons() throws Exception {
-        java.io.File img = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        java.io.File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
-        java.io.File img3 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        java.io.File out = PublicPackagesInProjectizedXMLTest.extractString("");
+        File img = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
+        File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
+        File img3 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
+        File out = PublicPackagesInProjectizedXMLTest.extractString("");
         out.delete();
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        File f = PublicPackagesInProjectizedXMLTest.extractString (
             "<?xml version='1.0' encoding='UTF-8'?>" +
             "<project name='Test Arch' basedir='.' default='all' >" +
             "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
@@ -96,13 +97,13 @@ public class PrintIconTest extends NbTestCase {
     
     
     public void testDuplicatesFromTheSameSet() throws Exception {
-        java.io.File img = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        java.io.File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
-        java.io.File img3 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        java.io.File out = PublicPackagesInProjectizedXMLTest.extractString("");
+        File img = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
+        File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
+        File img3 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
+        File out = PublicPackagesInProjectizedXMLTest.extractString("");
         out.delete();
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        File f = PublicPackagesInProjectizedXMLTest.extractString (
             "<?xml version='1.0' encoding='UTF-8'?>" +
             "<project name='Test Arch' basedir='.' default='all' >" +
             "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
@@ -150,13 +151,13 @@ public class PrintIconTest extends NbTestCase {
     }
     
     private void doBrokenImageTest(String res) throws Exception {
-        java.io.File img = PublicPackagesInProjectizedXMLTest.extractResource(res);
-        java.io.File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
-        java.io.File img3 = PublicPackagesInProjectizedXMLTest.extractResource(res);
-        java.io.File out = PublicPackagesInProjectizedXMLTest.extractString("");
+        File img = PublicPackagesInProjectizedXMLTest.extractResource(res);
+        File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
+        File img3 = PublicPackagesInProjectizedXMLTest.extractResource(res);
+        File out = PublicPackagesInProjectizedXMLTest.extractString("");
         out.delete();
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        File f = PublicPackagesInProjectizedXMLTest.extractString (
             "<?xml version='1.0' encoding='UTF-8'?>" +
             "<project name='Test Arch' basedir='.' default='all' >" +
             "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
@@ -197,13 +198,13 @@ public class PrintIconTest extends NbTestCase {
     }
     
     public void testPrintExtra() throws Exception {
-        java.io.File img = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        java.io.File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
-        java.io.File img3 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        java.io.File out = PublicPackagesInProjectizedXMLTest.extractString("");
+        File img = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
+        File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
+        File img3 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
+        File out = PublicPackagesInProjectizedXMLTest.extractString("");
         out.delete();
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        File f = PublicPackagesInProjectizedXMLTest.extractString (
             "<?xml version='1.0' encoding='UTF-8'?>" +
             "<project name='Test Arch' basedir='.' default='all' >" +
             "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
