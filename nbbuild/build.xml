@@ -1486,7 +1486,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </antcall>
   </target>
 
-    <target name="localtest" depends="bootstrap">
+    <target name="localtest" depends="-bootstrap">
         <mkdir dir="build/test/unit/classes"/>
         <path id="test.cp">
             <pathelement path="../libs.junit4/external/junit-4.5.jar:netbeans/harness/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:nbantext.jar"/>
