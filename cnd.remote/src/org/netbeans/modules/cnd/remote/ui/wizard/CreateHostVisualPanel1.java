@@ -47,6 +47,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.util.NbBundle;
 
 /*package*/ final class CreateHostVisualPanel1 extends JPanel {
 
@@ -97,7 +98,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
     @Override
     public String getName() {
-        return CreateHostWizardIterator.getString("CreateHostVisualPanel1.Title");
+        return NbBundle.getMessage(getClass(), "CreateHostVisualPanel1.Title");
     }
 
     public String getHostname() {

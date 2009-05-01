@@ -70,6 +70,11 @@ public class HostValidatorImpl implements HostValidator {
     public Runnable getRunOnFinish() {
         return runOnFinish;
     }
+
+    // TODO: ToolsCacheManager FIXUP
+    public ToolsCacheManager getCacheManager() {
+        return cacheManager;
+    }
     
     public boolean validate(ExecutionEnvironment env, String password, boolean rememberPassword, final PrintWriter writer) {
         boolean result = false;
