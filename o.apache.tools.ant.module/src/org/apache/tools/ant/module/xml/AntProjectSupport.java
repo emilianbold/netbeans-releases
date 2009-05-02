@@ -50,6 +50,8 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -72,6 +74,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.ErrorHandler;
@@ -158,7 +161,16 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
             if (!parsed) {
                 parseDocument();
             }
-            return projDoc != null ? (Document) projDoc./* #111862 */cloneNode(true) : null;
+            if (projDoc == null) {
+                return null;
+            }
+            // #111862: avoid returning the original
+            try {
+                return (Document) projDoc.cloneNode(true);
+            } catch (DOMException x) {
+                Logger.getLogger(AntProjectSupport.class.getName()).log(Level.INFO, "#154502: cloning document for " + this, x);
+                return projDoc;
+            }
         }
     }
     
