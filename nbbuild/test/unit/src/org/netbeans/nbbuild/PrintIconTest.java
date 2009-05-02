@@ -28,10 +28,14 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 
 /**
- *
  * @author Jaroslav Tulach
  */
 public class PrintIconTest extends NbTestCase {
@@ -40,27 +44,41 @@ public class PrintIconTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         super.setUp();
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    private File extractResource(String resource) throws Exception {
+        File f;
+        for (int i = 1; ; i++) {
+             f = new File(getWorkDir(), i + "_" + resource.replaceFirst(".+/", ""));
+             if (!f.isFile()) {
+                 break;
+             }
+        }
+        OutputStream os = new FileOutputStream(f);
+        InputStream is = PrintIconTest.class.getResourceAsStream(resource);
+        int c;
+        while ((c = is.read()) != -1) {
+            os.write(c);
+        }
+        os.close();
+        return f;
     }
 
     public void testPrintOutSameIcons() throws Exception {
-        java.io.File img = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        java.io.File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
-        java.io.File img3 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        java.io.File out = PublicPackagesInProjectizedXMLTest.extractString("");
+        File img = extractResource("data/instanceBroken.gif");
+        File img2 = extractResource("data/instanceObject.gif");
+        File img3 = extractResource("data/instanceBroken.gif");
+        File out = PublicPackagesInProjectizedXMLTest.extractString("");
         out.delete();
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"printicon\" classname=\"org.netbeans.nbbuild.PrintIcon\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
-            "<target name=\"all\" >" +
+        File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version='1.0' encoding='UTF-8'?>" +
+            "<project name='Test Arch' basedir='.' default='all' >" +
+            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
+            "<target name='all' >" +
             "  <printicon duplicates='" + out + "'>" +
             "    <firstpool dir='" + img.getParent() + "'>" +
             "       <include name='" + img.getName() + "'/>" +
@@ -79,7 +97,7 @@ public class PrintIconTest extends NbTestCase {
         
         String file = PublicPackagesInProjectizedXMLTest.readFile(out);
         
-        String[] threeParts = file.split("( |\r\n)+");
+        String[] threeParts = file.split("\\s+");
         assertEquals(file, 6, threeParts.length);
 
         {
@@ -100,17 +118,17 @@ public class PrintIconTest extends NbTestCase {
     
     
     public void testDuplicatesFromTheSameSet() throws Exception {
-        java.io.File img = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        java.io.File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
-        java.io.File img3 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        java.io.File out = PublicPackagesInProjectizedXMLTest.extractString("");
+        File img = extractResource("data/instanceBroken.gif");
+        File img2 = extractResource("data/instanceObject.gif");
+        File img3 = extractResource("data/instanceBroken.gif");
+        File out = PublicPackagesInProjectizedXMLTest.extractString("");
         out.delete();
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"printicon\" classname=\"org.netbeans.nbbuild.PrintIcon\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
-            "<target name=\"all\" >" +
+        File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version='1.0' encoding='UTF-8'?>" +
+            "<project name='Test Arch' basedir='.' default='all' >" +
+            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
+            "<target name='all' >" +
             "  <printicon duplicates='" + out + "'>" +
             "    <firstpool dir='" + img.getParent() + "'>" +
             "       <include name='" + img.getName() + "'/>" +
@@ -127,7 +145,7 @@ public class PrintIconTest extends NbTestCase {
         
         String file = PublicPackagesInProjectizedXMLTest.readFile(out);
         
-        String[] threeParts = file.split("( |\r\n)+");
+        String[] threeParts = file.split("\\s+");
         assertEquals(file, 6, threeParts.length);
 
         {
@@ -149,22 +167,22 @@ public class PrintIconTest extends NbTestCase {
     public void testBrokenImageThatCould() throws Exception {
         doBrokenImageTest("data/columnIndex.gif");
     }
-    public void testBrokenImageThatCoul2() throws Exception {
+    public void testBrokenImageThatCould2() throws Exception {
         doBrokenImageTest("data/Category.png");
     }
     
     private void doBrokenImageTest(String res) throws Exception {
-        java.io.File img = PublicPackagesInProjectizedXMLTest.extractResource(res);
-        java.io.File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
-        java.io.File img3 = PublicPackagesInProjectizedXMLTest.extractResource(res);
-        java.io.File out = PublicPackagesInProjectizedXMLTest.extractString("");
+        File img = extractResource(res);
+        File img2 = extractResource("data/instanceObject.gif");
+        File img3 = extractResource(res);
+        File out = PublicPackagesInProjectizedXMLTest.extractString("");
         out.delete();
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"printicon\" classname=\"org.netbeans.nbbuild.PrintIcon\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
-            "<target name=\"all\" >" +
+        File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version='1.0' encoding='UTF-8'?>" +
+            "<project name='Test Arch' basedir='.' default='all' >" +
+            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
+            "<target name='all' >" +
             "  <printicon duplicates='" + out + "'>" +
             "    <firstpool dir='" + img.getParent() + "'>" +
             "       <include name='" + img.getName() + "'/>" +
@@ -181,8 +199,8 @@ public class PrintIconTest extends NbTestCase {
         
         String file = PublicPackagesInProjectizedXMLTest.readFile(out);
         
-        String[] threeParts = file.split("( |\r\n)+");
-        assertEquals(file, 6, threeParts.length);
+        String[] threeParts = file.split("\\s+");
+        assertEquals(file + " " + Arrays.toString(threeParts), 6, threeParts.length);
 
         long prevHash;
         {
@@ -201,17 +219,17 @@ public class PrintIconTest extends NbTestCase {
     }
     
     public void testPrintExtra() throws Exception {
-        java.io.File img = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        java.io.File img2 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceObject.gif");
-        java.io.File img3 = PublicPackagesInProjectizedXMLTest.extractResource("data/instanceBroken.gif");
-        java.io.File out = PublicPackagesInProjectizedXMLTest.extractString("");
+        File img = extractResource("data/instanceBroken.gif");
+        File img2 = extractResource("data/instanceObject.gif");
+        File img3 = extractResource("data/instanceBroken.gif");
+        File out = PublicPackagesInProjectizedXMLTest.extractString("");
         out.delete();
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"printicon\" classname=\"org.netbeans.nbbuild.PrintIcon\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
-            "<target name=\"all\" >" +
+        File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version='1.0' encoding='UTF-8'?>" +
+            "<project name='Test Arch' basedir='.' default='all' >" +
+            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
+            "<target name='all' >" +
             "  <printicon difference='" + out + "'>" +
             "    <firstpool dir='" + img.getParent() + "'>" +
             "       <include name='" + img.getName() + "'/>" +
@@ -236,7 +254,7 @@ public class PrintIconTest extends NbTestCase {
             file = file.substring(1);
         }
         
-        String[] threeParts = file.split("( |\r\n)+");
+        String[] threeParts = file.split("\\s+");
         assertEquals(file, 3, threeParts.length);
         
         long hash = Long.parseLong(threeParts[0], 16);

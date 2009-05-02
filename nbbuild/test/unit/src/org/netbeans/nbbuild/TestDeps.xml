@@ -45,7 +45,12 @@ made subject to such option by the copyright holder.
     <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
     <property name="netbeans.dest.dir" location="${netbeans.dest.dir.work}"/>
-    <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
+    <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties">
+        <filterchain>
+            <replaceregex pattern="platform\d+" replace="platform"/> <!-- avoid needing to change this all the time -->
+        </filterchain>
+    </loadproperties>
+    <property name="nb.cluster.platform.dir" value="platform"/> <!-- avoid needing to change this all the time -->
     <property file="${nb_all}/nbbuild/cluster.properties"/>
     <property file="${nb_all}/nbbuild/build.properties"/>
     <property name="xtest.home" value="any"/>
@@ -68,22 +73,22 @@ made subject to such option by the copyright holder.
   <!-- unittests -->
   
         <condition property="ok-unit-dist-folder" >
-            <contains string="${unit.dist.folder}" substring="${test.dist.dir}/unit/platform10/org-openide-loaders" />
+            <contains string="${unit.dist.folder}" substring="${test.dist.dir}/unit/platform/org-openide-loaders" />
         </condition>
         <condition property="ok-unittestruntimeclasspath" >
             <and>
-                <contains string="${unit.runtime.cp}" substring="${test.dist.dir}/unit/platform10/org-openide-filesystems/tests.jar"/>
-                <contains string="${unit.runtime.cp}" substring="platform10/core/org-openide-filesystems.jar"/>
-                <contains string="${unit.runtime.cp}" substring="platform10/modules/org-openide-nodes.jar"/>
-                <contains string="${unit.runtime.cp}" substring="${test.dist.dir}/unit/platform10/org-openide-nodes/tests.jar"/>
-                <contains string="${unit.runtime.cp}" substring="platform10/lib/org-openide-util.jar"/>
-                <contains string="${unit.runtime.cp}" substring="platform10/modules/org-netbeans-modules-queries.jar"/>
+                <contains string="${unit.runtime.cp}" substring="${test.dist.dir}/unit/platform/org-openide-filesystems/tests.jar"/>
+                <contains string="${unit.runtime.cp}" substring="platform/core/org-openide-filesystems.jar"/>
+                <contains string="${unit.runtime.cp}" substring="platform/modules/org-openide-nodes.jar"/>
+                <contains string="${unit.runtime.cp}" substring="${test.dist.dir}/unit/platform/org-openide-nodes/tests.jar"/>
+                <contains string="${unit.runtime.cp}" substring="platform/lib/org-openide-util.jar"/>
+                <contains string="${unit.runtime.cp}" substring="platform/modules/org-netbeans-modules-queries.jar"/>
             </and>
         </condition> 
         <condition property="ok-unittestcompileclasspath" >
             <and>
-                <contains string="${unit.compile.cp}" substring="platform10/modules/org-openide-nodes.jar"/>
-                <contains string="${unit.runtime.cp}" substring="${test.dist.dir}/unit/platform10/org-openide-nodes/tests.jar"/>
+                <contains string="${unit.compile.cp}" substring="platform/modules/org-openide-nodes.jar"/>
+                <contains string="${unit.runtime.cp}" substring="${test.dist.dir}/unit/platform/org-openide-nodes/tests.jar"/>
             </and>    
         </condition>     
    
@@ -96,13 +101,13 @@ made subject to such option by the copyright holder.
         
    <!-- qa-functional tests -->
         <condition property="ok-qa-dist-folder" >
-            <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/platform10/org-openide-loaders" />
+            <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/platform/org-openide-loaders" />
         </condition>
         <condition property="ok-qa-testruntimeclasspath" >
-                <contains string="${qa.runtime.cp}" substring="platform10/modules/org-openide-loaders.jar"/>
+                <contains string="${qa.runtime.cp}" substring="platform/modules/org-openide-loaders.jar"/>
         </condition> 
         <condition property="ok-qa-testcompileclasspath" >
-                <contains string="${qa.compile.cp}" substring="platform10/modules/org-openide-loaders.jar"/>
+                <contains string="${qa.compile.cp}" substring="platform/modules/org-openide-loaders.jar"/>
         </condition>     
    
         <echo message="qa test folder  : ${qa.dist.folder}" />
@@ -124,7 +129,7 @@ made subject to such option by the copyright holder.
   <!-- unittests -->
   
         <condition property="ok-unit-dist-folder" >
-            <contains string="${unit.dist.folder}" substring="${test.dist.dir}/unit/platform10/org-openide-loaders" />
+            <contains string="${unit.dist.folder}" substring="${test.dist.dir}/unit/platform/org-openide-loaders" />
         </condition>
 
         <echo message="unittestfolder  : ${unit.dist.folder}" />
@@ -142,29 +147,49 @@ made subject to such option by the copyright holder.
         <fail message="Bad unit test compile cp">
             <condition>
                 <not>
-                    <equals arg1="${unit.compile.cp3}" arg2="platform10/modules/org-netbeans-libs-junit4.jar"/>
+                    <equals arg1="${unit.compile.cp3}" arg2="platform/modules/org-netbeans-libs-junit4.jar"/>
                 </not>
             </condition>
         </fail>
         <fail message="Bad unit test runtime cp">
             <condition>
                 <not>
-                    <equals arg1="${unit.runtime.cp3}" arg2="platform10/modules/org-netbeans-libs-junit4.jar"/>
+                    <equals arg1="${unit.runtime.cp3}" arg2="platform/modules/org-netbeans-libs-junit4.jar"/>
                 </not>
             </condition>
         </fail>
         
    <!-- qa-functional tests -->
-        <condition property="ok-qa-dist-folder" >
-            <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/platform10/org-openide-loaders" />
-        </condition>
    
-        <echo message="qa test folder  : ${qa.dist.folder}" />
-        <echo message="qa-testruntimeclasspath : ${qa.runtime.cp2}" />
-        <echo message="qa.compile.cp           : ${qa.compile.cp2}" />
-        <fail message="{qa.dist.folder}" unless="ok-qa-dist-folder" />
-        <fail message="{ok-qa-testcompileclasspath}" if="qa.compile.cp2"/> 
-        <fail message="{ok-qa-testruntimeclasspath}" if="qa.runtime.cp2"/> 
+        <fail message="qa.dist.folder=${qa.dist.folder}">
+            <condition>
+                <not>
+                    <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/platform/org-openide-loaders" />
+                </not>
+            </condition>
+        </fail>
+        <pathconvert property="qa.compile.cp3" pathsep=":">
+            <path path="${qa.compile.cp2}"/>
+            <flattenmapper/>
+        </pathconvert>
+        <fail message="Bad qa-functional test compile cp: ${qa.compile.cp2}">
+            <condition>
+                <not>
+                    <equals arg1="${qa.compile.cp3}" arg2="org-netbeans-libs-junit4.jar"/>
+                </not>
+            </condition>
+        </fail>
+        <pathconvert property="qa.runtime.cp3" pathsep=":">
+            <path path="${qa.runtime.cp2}"/>
+            <flattenmapper/>
+        </pathconvert>
+        <fail message="Bad qa-functional test runtime cp">
+            <condition>
+                <not>
+                    <equals arg1="${qa.runtime.cp3}" arg2="org-netbeans-libs-junit4.jar"/>
+                </not>
+            </condition>
+        </fail>
   </target>
 
      <target name="test-deps-missing-module-entry-test-deps" >
@@ -176,7 +201,7 @@ made subject to such option by the copyright holder.
   <!-- unittests -->
   
         <condition property="ok-unit-dist-folder" >
-            <contains string="${unit.dist.folder}" substring="${test.dist.dir}/unit/platform10/org-openide-loaders" />
+            <contains string="${unit.dist.folder}" substring="${test.dist.dir}/unit/platform/org-openide-loaders" />
         </condition>
         <condition property="ok-unittestruntimeclasspath" >
             <and>
@@ -198,7 +223,7 @@ made subject to such option by the copyright holder.
 
    <!-- qa-functional tests -->
         <condition property="ok-qa-dist-folder" >
-            <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/platform10/org-openide-loaders" />
+            <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/platform/org-openide-loaders" />
         </condition>
 
         <condition property="ok-qatestruntimeclasspath" >
