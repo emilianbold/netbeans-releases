@@ -22,27 +22,30 @@
                 the version control system and issue tracking system for the project.
             </p>
 
-            <p>In the Source Code and Issues page you need to set the following information properties.</p>
+            <p>In the Source Code and Issues page you need to set the following properties.</p>
 
             <ul>
                 <li><strong>Source Code Repository.</strong> Select the version control system for the project
                     from the drop-down menu.
                     <ul>
-                        <li><strong>Subversion</strong> or <strong>Mercurial.</strong>
+                        <li><strong>Subversion</strong> or <strong>Mercurial.</strong> Select Subversion or Mercurial
+                        to create the repository on Kenai.
+                        If you already have a Subversion or Mercurial repository but it is not on Kenai, select External.
                         If you select Subversion or Mercurial, you need to specify an empty folder to contain the local repository.
-                        The local repository is created when you finish the wizard.</li>
+                        The IDE initializes the local repository when you finish the wizard.</li>
                         <li><strong>External.</strong> Select External to specify an existing remote repository.
-                        If you select External, you need to specify the URL of the remote repository.</li>
+                        If you select External, you need to specify the URL of the remote repository.
+                        The IDE will not create a local repository.</li>
                         <li><strong>None.</strong> Select None if you do not want to specify or create a
-                        remote repository for the project.
+                        remote repository for the project at this time.
                         You can create or specify the repository later.</li>
                     </ul>
 
                 </li>
-                <li><strong>Repository Name.</strong> This field is used to generate the URL of the remote repository.
+                <li><strong>Repository Name.</strong> (Subversion or Mercurial only) This field is used to generate the URL of the remote repository.
                 You do not need to modify the default name.</li>
-                <li><strong>Repository URL.</strong> Specify the URL of the remote repository when using an external version control system.</li>
-                <li><strong>Local Repository Folder.</strong> Specify an empty local directory for the local repository (Subversion, Mercurial).
+                <li><strong>Repository URL.</strong> (External only) Specify the URL of the remote repository when using an external version control system.</li>
+                <li><strong>Local Repository Folder.</strong> (Subversion or Mercurial only) Specify an empty local directory for the local repository.
                 The local repository is created when you finish the wizard.</li>
                 <li><strong>Issue Tracking.</strong>
                 Select the issue tracker for the project from the drop-down menu.
