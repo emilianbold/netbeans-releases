@@ -413,7 +413,14 @@ function add_language(id, name, suffix, webpagename) {
     for(var i=0;i<index;i++) {
        if(LANGUAGES[i].id == id) {
            if(id == "en" && isCommunityBuild()) {
-               index = i;
+               var newLanguages = new Array();
+               for(var j=0;j<index;j++) {
+                   if(j!=i) {
+                       newLanguages[newLanguages.length] = LANGUAGES[j];
+                   }
+               }
+               LANGUAGES = newLanguages;
+               index--;
            } else {
                return;
            }
