@@ -64,7 +64,6 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
-import org.netbeans.modules.mercurial.ui.properties.HgProperties;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,6 +73,8 @@ import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import static org.netbeans.modules.mercurial.ui.properties.HgProperties.HGPROPNAME_DEFAULT_PULL;
+import static org.netbeans.modules.mercurial.ui.properties.HgProperties.HGPROPNAME_DEFAULT_PUSH;
 
 /**
  * Clone action for mercurial: 
@@ -189,23 +190,36 @@ public class CloneAction extends ContextAction {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 }finally {
-                    // #125835 - Push to default was not being set automatically by hg after Clone
-                    // but was after you opened the Mercurial -> Properties, inconsistent
-                    if ((pullPath != null) || (pushPath != null)) {
-                        HgConfigFiles hgConfigFiles = new HgConfigFiles(target);
-                        if (hgConfigFiles.getException() == null) {
-                            if (pullPath != null) {
-                                hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PULL,
-                                                          pullPath.toHgCommandUrlString());
-                            }
-                            if (pushPath != null) {
-                                hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PUSH,
-                                                          pushPath.toHgCommandUrlString());
-                            }
-                        } else {
-                            Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot set default push and pull path"); // NOI18N
-                            Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
+                    HgConfigFiles hgConfigFiles = new HgConfigFiles(target);
+                    if (hgConfigFiles.getException() == null) {
+                        /*
+                         * Mercurial itself sets just "default" in 'hgrc' file.
+                         * We make sure that "default-push" is set, too - see
+                         * bug #125835 ("default-push should be set
+                         * automatically").
+                         */
+                        if ((pullPath == null) && (pushPath == null)) {
+                            String defaultPull = hgConfigFiles.getDefaultPull(false);
+                            hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
+
+                        } else if ((pullPath != null) && (pushPath == null)) {
+                            String defaultPull = pullPath.toHgCommandUrlString();
+                            hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                            hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
+
+                        } else if ((pullPath == null) && (pushPath != null)) {
+                            String defaultPush = pushPath.toHgCommandUrlString();
+                            hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+
+                        } else if ((pullPath != null) && (pushPath != null)) {
+                            String defaultPull = pullPath.toHgCommandUrlString();
+                            String defaultPush = pushPath.toHgCommandUrlString();
+                            hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                            hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
                         }
+                    } else {
+                        Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot set default push and pull path"); // NOI18N
+                        Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
                     }
                         
                     if(!isLocalClone){
