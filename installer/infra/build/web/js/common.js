@@ -155,6 +155,16 @@ function get_language(option) {
             }
         }    
     }
+
+    //no language (for id) selected - fallback to en if it is available
+    if (resultLanguage == "" && option == 0) {
+        for(var i=0; i < variants.length; i++ ) {
+            if(variants[i].id == "en") {
+                return "en";
+            }
+        }
+    }
+
     return resultLanguage;
 }
 
