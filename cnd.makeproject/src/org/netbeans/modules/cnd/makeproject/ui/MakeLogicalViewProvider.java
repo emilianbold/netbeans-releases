@@ -838,13 +838,22 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 if (folder.isProjectFiles()) {
                     //FileObject srcFileObject = project.getProjectDirectory().getFileObject("src");
                     FileObject srcFileObject = project.getProjectDirectory();
-                    DataObject srcDataObject;
+                    DataObject srcDataObject = null;
                     try {
-                        srcDataObject = DataObject.find(srcFileObject);
+                        if (srcFileObject.isValid()) {
+                            srcDataObject = DataObject.find(srcFileObject);
+                        }
                     } catch (DataObjectNotFoundException e) {
-                        throw new AssertionError(e);
+                        // Do not throw Exception.
+                        // It is normal use case when folder can be deleted at build time.
+                        //throw new AssertionError(e);
                     }
-                    node = new LogicalFolderNode(((DataFolder) srcDataObject).getNodeDelegate(), folder);
+                    if (srcDataObject != null) {
+                        node = new LogicalFolderNode(((DataFolder) srcDataObject).getNodeDelegate(), folder);
+                    } else {
+                        // Fix me. Create Broken Folder
+                        //node = new BrokenViewFolderNode(this, getFolder(), folder);
+                    }
                 } else {
                     node = new ExternalFilesNode(folder);
                 }
@@ -858,6 +867,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 }
             } else if (key instanceof AbstractNode) {
                 node = (AbstractNode) key;
+            }
+            if (node == null) {
+                return new Node[]{};
             }
             return new Node[]{node};
         }
