@@ -43,58 +43,30 @@ package org.netbeans.modules.asm.core.dataobjects;
 
 import java.io.IOException;
 
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
+import org.netbeans.modules.asm.core.editor.AsmEditorSupport;
+import org.netbeans.modules.cnd.support.ReadOnlySupport;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
 
 public class AsmDataObject extends MultiDataObject {
-        
     public AsmDataObject(FileObject fo, AsmDataLoader loader) throws DataObjectExistsException, IOException {
         super(fo, loader); 
         
         CookieSet cookies = getCookieSet();                       
-        CloneableEditorSupport editor = DataEditorSupport.create(this, getPrimaryEntry(), cookies);
-        cookies.add((Node.Cookie)editor);                   
-        
-        fo.addFileChangeListener (FileUtil.weakFileChangeListener (new FileChangeListenerImpl(), fo));
+        cookies.add(new AsmEditorSupport(this));
     }
-    
-    private static class FileChangeListenerImpl implements FileChangeListener {
 
-        public void fileFolderCreated(FileEvent fe) {
-            //throw new UnsupportedOperationException("Not supported yet.");
-        }
+    public void addSaveCookie(SaveCookie save) {
+        getCookieSet().add(save);
+    }
 
-        public void fileDataCreated(FileEvent fe) {
-            //throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void fileChanged(FileEvent fe) {
-            //throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void fileDeleted(FileEvent fe) {
-            //throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void fileRenamed(FileRenameEvent fe) {
-            //throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-            // throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
+    public void removeSaveCookie(SaveCookie save) {
+        getCookieSet().remove(save);
     }
 
     @Override
