@@ -46,6 +46,21 @@ made subject to such option by the copyright holder.
     <!-- XXX should use namespaces for NB in-VM tasks from ant/browsetask and debuggerjpda/ant and apisupport/ant -->
     <!-- XXX move more things here from projectized.xml when possible and desirable -->
 
+    <condition property="testcoverage.import" value="testcoverage.xml">
+        <and>
+            <isset property="harness.dir"/>
+            <available file="testcoverage.xml" filepath="${harness.dir}"/>
+        </and>
+    </condition>
+    <condition property="testcoverage.import" value="${netbeans.dest.dir}/harness/testcoverage.xml">
+        <and>
+            <isset property="netbeans.dest.dir"/>
+            <available file="testcoverage.xml" filepath="${netbeans.dest.dir}/harness"/>
+        </and>
+    </condition>
+    <property name="testcoverage.import" value="no-testcoverage.xml"/>
+    <import file="${testcoverage.import}"/>
+
     <target name="basic-init" depends="common-init,-jdk-init">
         <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
         <property file="nbproject/private/private.properties"/>
@@ -924,4 +939,13 @@ made subject to such option by the copyright holder.
         <fixtestdeps projectXml="nbproject/project.xml"
                   propertiesFile="nbproject/project.properties"/>
     </target>
+
+    <target name="display-coverage-report" depends="coverage-report"
+        description="Creates and displays test coverage report for this module">
+        <fail unless="testcoverage.report.dir">
+Property testcoverage.report.dir not set. Test coverage script may be missing in ${harness.dir}.
+        </fail>
+        <nbbrowse file="${testcoverage.report.dir}/index.html"/>
+    </target>
+    
 </project>
