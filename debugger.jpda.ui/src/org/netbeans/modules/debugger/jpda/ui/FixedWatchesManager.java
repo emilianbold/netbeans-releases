@@ -85,7 +85,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++)
-                    fixedWatches.remove (nodes [i]);
+                    fixedWatches.remove (new KeyWrapper(nodes [i]));
                 fireModelChanged(new ModelEvent.NodeChanged(
                         FixedWatchesManager.this,
                         TreeModel.ROOT,
@@ -149,7 +149,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
     public void deleteAllFixedWatches() {
         Collection nodes = new ArrayList(fixedWatches.keySet());
         for (Iterator iter = nodes.iterator(); iter.hasNext();) {
-            fixedWatches.remove(iter.next());
+            fixedWatches.remove(new KeyWrapper(iter.next()));
             fireModelChanged(new ModelEvent.NodeChanged(FixedWatchesManager.this,
                 TreeModel.ROOT,
                 ModelEvent.NodeChanged.CHILDREN_MASK));
@@ -185,8 +185,10 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
                 children = new Object [0];
             }
             Object [] allChildren = new Object [children.length + fixedSize];
-
-            fixedWatches.keySet ().toArray (allChildren);
+            int index = 0;
+            for (Object wrapper : fixedWatches.keySet()) {
+                allChildren[index++] = ((KeyWrapper)wrapper).value;
+            }
             System.arraycopy (
                 children, 
                 0, 
@@ -253,7 +255,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
     throws UnknownTypeException {
         Action [] actions = original.getActions (node);
         List myActions = new ArrayList();
-        if (fixedWatches.containsKey (node)) {
+        if (fixedWatches.containsKey (new KeyWrapper(node))) {
             myActions.add (0, DELETE_ACTION);
         } else
         if (node instanceof Variable) {
@@ -272,8 +274,9 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
     
     public String getDisplayName (NodeModel original, Object node) 
     throws UnknownTypeException {
-        if (fixedWatches.containsKey (node))
-            return (String) fixedWatches.get (node);
+        KeyWrapper wrapper = new KeyWrapper(node);
+        if (fixedWatches.containsKey (wrapper))
+            return (String) fixedWatches.get (wrapper);
         return original.getDisplayName (node);
     }
     
@@ -324,7 +327,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
                 }
             } catch (Exception ex) {} // Ignore any exceptions
         }
-        fixedWatches.put (variable, name);
+        fixedWatches.put (new KeyWrapper(variable), name);
         fireModelChanged (new ModelEvent.NodeChanged(
                 this,
                 TreeModel.ROOT,
@@ -384,7 +387,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
     }
 
     public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
-        if (fixedWatches.containsKey (node))
+        if (fixedWatches.containsKey (new KeyWrapper(node)))
             return FIXED_WATCH;
         return original.getIconBaseWithExtension (node);
     }
@@ -394,7 +397,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
     }
 
     public boolean isReadOnly(TableModel original, Object node, String columnID) throws UnknownTypeException {
-        if (fixedWatches.containsKey(node)) {
+        if (fixedWatches.containsKey(new KeyWrapper(node))) {
             return true;
         } else {
             return original.isReadOnly(node, columnID);
@@ -403,6 +406,28 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
 
     public void setValueAt(TableModel original, Object node, String columnID, Object value) throws UnknownTypeException {
         original.setValueAt(node, columnID, value);
+    }
+
+    private static class KeyWrapper {
+
+        private Object value;
+
+        KeyWrapper(Object value) {
+            this.value = value;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof KeyWrapper)) {
+                return false;
+            }
+            return value == ((KeyWrapper) obj).value;
+        }
+
+        @Override
+        public int hashCode() {
+            return value.hashCode();
+        }
     }
 
 }

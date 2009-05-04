@@ -1,2 +1,3 @@
 org.netbeans.modules.debugger.jpda.ui.models.VariablesTreeModelFilter
 org.netbeans.modules.debugger.jpda.ui.models.EvaluatorNodeModelFilter
+org.netbeans.modules.debugger.jpda.ui.FixedWatchesManager
