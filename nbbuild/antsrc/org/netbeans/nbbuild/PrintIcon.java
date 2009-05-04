@@ -199,30 +199,30 @@ public class PrintIcon extends Task {
             
             p.log("Parsing " + from, Project.MSG_VERBOSE);
             BufferedImage image;
-            int hash;
+            int _hash;
             try {
                 InputStream is = from.openStream();
                 image = ImageIO.read(is);
                 is.close();
                 int w = image.getWidth();
                 int h = image.getHeight();
-                hash = w * 3 + h * 7;
+                _hash = w * 3 + h * 7;
                 
                 for (int i = 0; i < w; i++) {
                     for (int j = 0; j < h; j++) {
                         int rgb = image.getRGB(i, j);
-                        hash += (rgb >> 2);
+                        _hash += (rgb >> 2);
                     }
                 }
             } catch (IOException e) {
                 p.log("Broken icon at " + from, Project.MSG_WARN);
-                hash = hash(e);
+                _hash = hash(e);
             } catch (IndexOutOfBoundsException ex) {
                 p.log("Broken icon at " + from, Project.MSG_WARN);
-                hash = hash(ex);
+                _hash = hash(ex);
             }
             
-            this.hash = hash;
+            this.hash = _hash;
         }
         
         public IconInfo(String name, String path, int hash) {
@@ -260,7 +260,7 @@ public class PrintIcon extends Task {
             return path.compareTo(another.path);
         }
         
-        public String toString() {
+        public @Override String toString() {
             String h = Integer.toHexString(hash);
             if (h.length() < 8) {
                 h = "00000000".substring(h.length()) + h;

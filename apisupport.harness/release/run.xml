@@ -183,7 +183,7 @@ You must shut it down before trying to run it again.
             </classpath>
         </nbjpdastart>
         <property name="debug.pause" value="n"/>
-        <property name="debug.args" value="-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=n,address=${debug.port}"/>
+        <property name="debug.args" value="-J-Xdebug -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=n,address=${debug.port}"/>
         <antcall target="run">
             <param name="run.args" value="${debug.args}"/>
             <reference refid="cluster.path.id"/>
