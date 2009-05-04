@@ -44,6 +44,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.text.JTextComponent;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -100,13 +101,14 @@ public class IssuePanel extends javax.swing.JPanel {
         JiraConfiguration config =  issue.getRepository().getConfiguration();
         reloadField(projectCombo, config.getProjectById(issue.getFieldValue(NbJiraIssue.IssueField.PROJECT)));
         reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)));
+        reloadField(summaryField, issue.getFieldValue(NbJiraIssue.IssueField.SUMMARY));
     }
 
     private void reloadField(JComponent fieldComponent, Object fieldValue) {
         if (fieldComponent instanceof JComboBox) {
             ((JComboBox)fieldComponent).setSelectedItem(fieldValue);
-        } else {
-            // PENDING
+        } else if (fieldComponent instanceof JTextComponent) {
+            ((JTextComponent)fieldComponent).setText(fieldValue.toString());
         }
     }
 
@@ -123,6 +125,8 @@ public class IssuePanel extends javax.swing.JPanel {
         projectCombo = new javax.swing.JComboBox();
         issueTypeLabel = new javax.swing.JLabel();
         issueTypeCombo = new javax.swing.JComboBox();
+        summaryLabel = new javax.swing.JLabel();
+        summaryField = new javax.swing.JTextField();
 
         projectLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.projectLabel.text")); // NOI18N
 
@@ -133,6 +137,10 @@ public class IssuePanel extends javax.swing.JPanel {
         });
 
         issueTypeLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.issueTypeLabel.text")); // NOI18N
+
+        summaryLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.summaryLabel.text")); // NOI18N
+
+        summaryField.setColumns(30);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -148,8 +156,12 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(issueTypeLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(issueTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(377, Short.MAX_VALUE))
+                        .add(issueTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(summaryLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(summaryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(169, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -162,7 +174,11 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(issueTypeLabel)
                     .add(issueTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(227, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(summaryLabel)
+                    .add(summaryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(201, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -182,6 +198,8 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel issueTypeLabel;
     private javax.swing.JComboBox projectCombo;
     private javax.swing.JLabel projectLabel;
+    private javax.swing.JTextField summaryField;
+    private javax.swing.JLabel summaryLabel;
     // End of variables declaration//GEN-END:variables
 
 }

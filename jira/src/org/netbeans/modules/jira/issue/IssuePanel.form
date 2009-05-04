@@ -29,8 +29,13 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="issueTypeCombo" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="summaryLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="summaryField" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace pref="377" max="32767" attributes="0"/>
+              <EmptySpace pref="169" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -47,7 +52,12 @@
                   <Component id="issueTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="issueTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="227" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="summaryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="summaryField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace pref="201" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -73,6 +83,18 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="issueTypeCombo">
+    </Component>
+    <Component class="javax.swing.JLabel" name="summaryLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.summaryLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="summaryField">
+      <Properties>
+        <Property name="columns" type="int" value="30"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>
