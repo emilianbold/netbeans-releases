@@ -63,7 +63,7 @@ import org.openide.util.RequestProcessor;
  */
 public class ChatNotifications {
     
-    private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.gif"));
+    private static ImageIcon NEWMSG = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/newmessage.png"));
     private static ChatNotifications instance;
     private RequestProcessor notificationsAdder = new RequestProcessor();
 
@@ -156,7 +156,7 @@ public class ChatNotifications {
     }
 
     private Icon getIcon() {
-        return ONLINE;
+        return NEWMSG;
     }
 }
 

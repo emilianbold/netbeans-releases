@@ -82,9 +82,8 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         fields = new Field[0];
         type = null;
         value = null;
-        ovalue = null;
         tinfo = null;
-        derefValue = null;
+//        derefValue = null;
         
         if (getDebugger() != null) {
             getDebugger().addPropertyChangeListener(this);
@@ -117,10 +116,10 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
                     type = getDebugger().requestWhatis(watch.getExpression());
                     if (type != null && type.length() > 0) {
                         value = getDebugger().evaluate(watch.getExpression());
-                        String rt = getTypeInfo().getResolvedType(GdbWatchVariable.this);
-                        if (GdbUtils.isPointer(rt)) {
-                            derefValue = getDebugger().evaluate('*' + watch.getExpression());
-                        }
+//                        String rt = getTypeInfo().getResolvedType(GdbWatchVariable.this);
+//                        if (GdbUtils.isPointer(rt)) {
+//                            derefValue = getDebugger().evaluate('*' + watch.getExpression());
+//                        }
                     } else {
                         type = "";
                         value = "";

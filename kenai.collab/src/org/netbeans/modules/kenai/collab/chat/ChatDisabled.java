@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 public final class ChatDisabled extends AbstractAction {
 
     public ChatDisabled() {
-        super(NbBundle.getMessage(WhoIsOnlineDisabled.class, "CTL_ChatAction"), new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/chat.gif")));
+        super(NbBundle.getMessage(WhoIsOnlineDisabled.class, "CTL_ChatAction"), new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/chat.png")));
     }
 
     public void actionPerformed(ActionEvent e) {

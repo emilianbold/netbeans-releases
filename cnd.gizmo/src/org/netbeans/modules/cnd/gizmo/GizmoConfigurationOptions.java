@@ -103,7 +103,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     public String getDLightIndicatorDPStrings(){
         StringBuilder result = new StringBuilder();
         for (String str : DLightIndicatorDPStrings){
-            result.append(str + ":");
+            result.append(str + ":");//NOI18N
         }
         String strResult = result.toString();
         if (!DLightIndicatorDPStrings.isEmpty()){
@@ -162,15 +162,18 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
                 log.log(Level.FINEST, "Looks like it is not linux and not MacOS platform is " + ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName());//NOI18N
             }
 
-        } else {//DTRACE?
-            setForLinux();
+        } else if (currentProvider == GizmoOptions.DataProvider.DTRACE){//DTRACE?
+            String platform = ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName();
+            if (platform.indexOf("Solaris") == -1){//NOI18N
+                setForLinux();
+            }
         }
     }
 
-    private boolean setForLinux() {
-        areCollectorsTurnedOn = false;
+    private boolean setForLinux() {        
         String platform = ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName();
         if (platform.indexOf("Linux") != -1 || platform.indexOf("MacOS") != -1 || platform.indexOf("Windows") != -1) {//NOI18N
+            areCollectorsTurnedOn = false;
             DLightCollectorString = SUNSTUDIO;
             DLightIndicatorDPStrings = Arrays.asList(PROC_READER, LL_MONITOR);
             return true;

@@ -90,6 +90,7 @@ public class ExternalTerminal implements PropertyChangeListener {
         ProcessBuilder pb = new ProcessBuilder(termOptions);
         
         // Set "DISPLAY" environment variable if not already set (Mac OSX only)
+        // Used only localy, so we can use Utilities.getOperatingSystem()
         if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             Map<String,String> map = pb.environment();
             if (map.get("DISPLAY") == null) { // NOI18N
