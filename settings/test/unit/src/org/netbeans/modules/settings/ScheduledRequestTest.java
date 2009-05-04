@@ -44,10 +44,9 @@ package org.netbeans.modules.settings;
 import java.io.IOException;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
-import junit.textui.TestRunner;
 
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 
@@ -58,12 +57,11 @@ import org.openide.filesystems.FileSystem;
 public final class ScheduledRequestTest extends NbTestCase {
     FileSystem fs;
 
-    /** Creates a new instance of ScheduledRequestTest */
     public ScheduledRequestTest(String name) {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         
         LocalFileSystem lfs = new LocalFileSystem();
@@ -85,7 +83,8 @@ public final class ScheduledRequestTest extends NbTestCase {
         assertTrue("scheduled request was not performed yet", toRun.finished);        
         assertNull("file is still locked", sr.getFileLock());
     }
-    
+
+    @RandomlyFails // NB-Core-Build #2564
     public void testCancel() throws Exception {
         FSA toRun = new FSA();
         FileObject fo = fs.getRoot();
