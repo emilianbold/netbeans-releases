@@ -82,5 +82,9 @@ public abstract class FunctionsListViewVisualizerConfigurationAccessor {
 
     public abstract ColumnsUIMapping getColumnsUIMapping(FunctionsListViewVisualizerConfiguration configuration);
 
+    public abstract String getEmptyRunningMessage(FunctionsListViewVisualizerConfiguration configuration);
+
+    public abstract String getEmptyAnalyzeMessage(FunctionsListViewVisualizerConfiguration configuration);
+
     public abstract String getID();
 }

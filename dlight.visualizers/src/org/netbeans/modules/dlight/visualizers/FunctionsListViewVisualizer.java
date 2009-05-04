@@ -53,6 +53,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -67,6 +68,9 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
+import org.netbeans.modules.dlight.management.api.DLightSession;
+import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
+import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
@@ -110,8 +114,10 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private final List<Column> metrics;
     private final FunctionsListViewVisualizerConfiguration configuration;
     private final TableCellRenderer outlineNodePropertyDefault;
+    private final VisualizersSupport visSupport;
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
+        visSupport = new VisualizersSupport(new VisualizerImplSessionStateListener());
         explorerManager = new ExplorerManager();
         this.configuration = configuration;
         this.functionDatatableDescription = FunctionsListViewVisualizerConfigurationAccessor.getDefault().getFunctionDatatableDescription(configuration);
@@ -222,8 +228,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
         isEmptyContent = true;
         this.removeAll();
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-//        JLabel label = new JLabel(timerHandler != null && timerHandler.isSessionAnalyzed() ? AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) : AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration)); // NOI18N
-        JLabel label = new JLabel(NbBundle.getMessage(FunctionsListViewVisualizer.class, "NoDataAvailableYet"));//NOI18N
+        this.add(Box.createVerticalStrut(20));
+        JLabel label = new JLabel(visSupport != null && visSupport.isSessionAnalyzed() ? FunctionsListViewVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) : FunctionsListViewVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration)); // NOI18N
+        //JLabel label = new JLabel(NbBundle.getMessage(FunctionsListViewVisualizer.class, "NoDataAvailableYet"));//NOI18N
         label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         this.add(label);
         repaint();
@@ -253,14 +260,11 @@ public class FunctionsListViewVisualizer extends JPanel implements
             setNonEmptyContent();
             return;
         }
-        if (isEmptyContent && isEmpty) {
-            return;
-        }
         if (isEmptyContent && !isEmpty) {
             setNonEmptyContent();
             return;
         }
-        if (!isEmptyContent && isEmpty) {
+        if (isEmpty) {
             setEmptyContent();
             return;
         }
@@ -500,5 +504,13 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
+    }
+
+    private class VisualizerImplSessionStateListener implements SessionStateListener{
+
+        public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
+            //throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 }

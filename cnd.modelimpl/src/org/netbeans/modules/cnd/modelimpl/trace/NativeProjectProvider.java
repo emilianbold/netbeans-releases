@@ -294,7 +294,7 @@ public final class NativeProjectProvider {
         public NativeFileItemImpl(File file, NativeProjectImpl project, NativeFileItem.Language language) {
 	    
             this.project = project;
-            this.file = file;
+            this.file = FileUtil.normalizeFile(file);
             this.lang = language;
         }
         

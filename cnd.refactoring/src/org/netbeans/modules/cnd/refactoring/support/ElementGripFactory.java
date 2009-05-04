@@ -91,7 +91,7 @@ public class ElementGripFactory {
 
     public ElementGrip getParent(ElementGrip el) {
         Interval start = map.get(el.getFileObject());
-        return start.getParent(el);
+        return start == null ? null : start.getParent(el);
     }
 
     public ElementGrip putInComposite(FileObject parentFile, CsmOffsetable csmObj) {

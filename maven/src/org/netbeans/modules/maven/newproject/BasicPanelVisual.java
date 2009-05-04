@@ -527,7 +527,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         return true;
     }
 
-    private boolean containsMultiByte (String text, WizardDescriptor wd) {
+    static boolean containsMultiByte (String text, WizardDescriptor wd) {
         char[] textChars = text.toCharArray();
         for (int i = 0; i < textChars.length; i++) {
             if ((int)textChars[i] > 255) {

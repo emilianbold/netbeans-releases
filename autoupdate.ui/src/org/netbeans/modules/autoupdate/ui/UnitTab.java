@@ -126,6 +126,7 @@ public class UnitTab extends javax.swing.JPanel {
     private RowTabAction moreAction;
     private RowTabAction lessAction;
     private RowTabAction removeLocallyDownloaded;
+    private static final String ADVANCED_VIEW_SELECTED_PROP = "plugin.manager.advanced.view.selected";//NOI18N
 
     private static Boolean isWaitingForExternal = false;
     
@@ -662,13 +663,14 @@ public class UnitTab extends javax.swing.JPanel {
         if (this.model.supportsTwoViews()) {
             manager.setAdvancedView(advView.isSelected());
             manager.updateUnitsChanged();
+            System.setProperty(ADVANCED_VIEW_SELECTED_PROP, "" + advView.isSelected());
         }
     }//GEN-LAST:event_advViewItemStateChanged
 
     private void advViewInit() {
         advView.setVisible(this.model.supportsTwoViews());
-        if (this.model.supportsTwoViews()) {
-            advView.setSelected(manager.isAdvancedView());
+        if (this.model.supportsTwoViews()) {            
+            advView.setSelected(Boolean.getBoolean(ADVANCED_VIEW_SELECTED_PROP));
         }
     }
     
