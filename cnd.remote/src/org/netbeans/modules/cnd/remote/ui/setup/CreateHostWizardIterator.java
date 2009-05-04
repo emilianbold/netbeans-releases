@@ -44,6 +44,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
@@ -70,6 +71,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     private final ToolsCacheManager cacheManager;
     private final List<HostSetupProvider> providers;
     private final CreateHostWizardPanel0 panel0;
+    final List<ChangeListener> changeListeners = new CopyOnWriteArrayList<ChangeListener>();
 
     private CreateHostWizardIterator(List<HostSetupProvider> providers, ToolsCacheManager cacheManager) {
         this.providers = providers;
@@ -85,6 +87,8 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     @Override
     public void stateChanged(ChangeEvent e) {
         panels = null;
+        getPanels();
+        fireStateChanged();
     }
 
     @SuppressWarnings("unchecked")
@@ -165,9 +169,18 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
 
     // If nothing unusual changes in the middle of the wizard, simply:
     public void addChangeListener(ChangeListener l) {
+        changeListeners.add(l);
     }
 
     public void removeChangeListener(ChangeListener l) {
+        changeListeners.remove(l);
+    }
+
+    private void fireStateChanged() {
+        ChangeEvent event = new ChangeEvent(this);
+        for (ChangeListener listener : changeListeners) {
+            listener.stateChanged(event);
+        }
     }
 
     public static ServerRecord invokeMe(ToolsCacheManager cacheManager) {
