@@ -47,6 +47,7 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import static org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration.*;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -61,9 +62,11 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
 
     private final ProcDataProvider provider;
     private final int cpuCount;
+    private final ServiceInfoDataStorage serviceInfoStorage;
 
-    public ProcDataProviderSolaris(ProcDataProvider provider, ExecutionEnvironment env) {
+    public ProcDataProviderSolaris(ProcDataProvider provider, ServiceInfoDataStorage serviceInfoStorage, ExecutionEnvironment env) {
         this.provider = provider;
+        this.serviceInfoStorage = serviceInfoStorage;
         int cpus = 1;
 
         try {

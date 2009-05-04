@@ -57,6 +57,7 @@ public final class LLDataCollectorConfiguration
     }
 
     public static final Column  threads_count = new DataTableMetadata.Column("threads", Integer.class);
+    private static final String NAME = "LLTool";//NOI18N
 
     public static final DataTableMetadata CPU_TABLE = new DataTableMetadata(
             "lltool_cpu", Arrays.asList( // NOI18N
@@ -88,6 +89,11 @@ public final class LLDataCollectorConfiguration
         @Override
         public CollectedData getCollectedData(LLDataCollectorConfiguration conf) {
             return conf.dataType;
+        }
+
+        @Override
+        public String getName() {
+            return NAME;
         }
     }
 
