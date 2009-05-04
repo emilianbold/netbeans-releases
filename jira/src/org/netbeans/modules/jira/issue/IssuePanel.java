@@ -44,6 +44,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 
@@ -60,14 +61,13 @@ public class IssuePanel extends javax.swing.JPanel {
 
     void setIssue(NbJiraIssue issue) {
         this.issue = issue;
+        initRenderers();
         initProjectCombo();
         reloadForm();
     }
 
-    private void initProjectCombo() {
-        Project[] projects = issue.getRepository().getConfiguration().getProjects();
-        DefaultComboBoxModel model = new DefaultComboBoxModel(projects);
-        projectCombo.setModel(model);
+    private void initRenderers() {
+        // Project combo
         projectCombo.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -77,11 +77,29 @@ public class IssuePanel extends javax.swing.JPanel {
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
         });
+
+        // Issue type combo
+        issueTypeCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value instanceof IssueType) {
+                    value = ((IssueType)value).getName();
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
+    }
+
+    private void initProjectCombo() {
+        Project[] projects = issue.getRepository().getConfiguration().getProjects();
+        DefaultComboBoxModel model = new DefaultComboBoxModel(projects);
+        projectCombo.setModel(model);
     }
 
     private void reloadForm() {
         JiraConfiguration config =  issue.getRepository().getConfiguration();
         reloadField(projectCombo, config.getProjectById(issue.getFieldValue(NbJiraIssue.IssueField.PROJECT)));
+        reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)));
     }
 
     private void reloadField(JComponent fieldComponent, Object fieldValue) {
@@ -103,8 +121,18 @@ public class IssuePanel extends javax.swing.JPanel {
 
         projectLabel = new javax.swing.JLabel();
         projectCombo = new javax.swing.JComboBox();
+        issueTypeLabel = new javax.swing.JLabel();
+        issueTypeCombo = new javax.swing.JComboBox();
 
         projectLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.projectLabel.text")); // NOI18N
+
+        projectCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                projectComboActionPerformed(evt);
+            }
+        });
+
+        issueTypeLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.issueTypeLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -112,10 +140,16 @@ public class IssuePanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(projectLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(396, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(projectLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(issueTypeLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(issueTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(377, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -124,12 +158,28 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(projectLabel)
                     .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(255, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(issueTypeLabel)
+                    .add(issueTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(227, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void projectComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectComboActionPerformed
+        Object value = projectCombo.getSelectedItem();
+        if (!(value instanceof Project)) return;
+        Project project = (Project)value;
+        JiraConfiguration config =  issue.getRepository().getConfiguration();
+
+        // PENDING JiraConfiguration doesn't provide project-specific info
+        // Reload dependent combos
+        issueTypeCombo.setModel(new DefaultComboBoxModel(config.getIssueTypes()));
+    }//GEN-LAST:event_projectComboActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox issueTypeCombo;
+    private javax.swing.JLabel issueTypeLabel;
     private javax.swing.JComboBox projectCombo;
     private javax.swing.JLabel projectLabel;
     // End of variables declaration//GEN-END:variables
