@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
@@ -77,6 +78,7 @@ public final class OptionsChooserPanel extends JPanel {
 
     private static final Logger LOGGER = Logger.getLogger(OptionsChooserPanel.class.getName());
     private static final Icon NODE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/options/export/defaultNode.gif", true);  //NOI18N
+    private static final Color DISABLED_COLOR = UIManager.getColor("Label.disabledForeground");  //NOI18N
     private DialogDescriptor dialogDescriptor;
     private PanelType panelType;
     private OptionsExportModel optionsExportModel;
@@ -108,6 +110,7 @@ public final class OptionsChooserPanel extends JPanel {
         LOGGER.fine("showExportDialog");  //NOI18N
         File sourceUserdir = new File(System.getProperty("netbeans.user")); // NOI18N
         final OptionsChooserPanel optionsChooserPanel = new OptionsChooserPanel();
+        optionsChooserPanel.panelType = PanelType.EXPORT;
         optionsChooserPanel.setOptionsExportModel(new OptionsExportModel(sourceUserdir));
         optionsChooserPanel.scrollPaneOptions.setViewportView(optionsChooserPanel.getOutline());
         optionsChooserPanel.txtFile.getDocument().addDocumentListener(new DocumentListener() {
@@ -233,7 +236,8 @@ public final class OptionsChooserPanel extends JPanel {
             List<OptionsExportModel.Item> items = category.getItems();
             for (OptionsExportModel.Item item : items) {
                 LOGGER.fine("    item=" + item);  //NOI18N
-                if (item.isApplicable()) {
+                if (panelType == PanelType.EXPORT || item.isApplicable()) {
+                    // do not show not applicable items for import
                     categoryNode.add(new DefaultMutableTreeNode(item));
                 }
             }
@@ -408,17 +412,22 @@ public final class OptionsChooserPanel extends JPanel {
     /** Update state of category node according to state of sub items. */
     private static void updateCategoryNode(DefaultMutableTreeNode categoryNode) {
         int enabledCount = 0;
+        int applicableCount = 0;
         for (int i = 0; i < categoryNode.getChildCount(); i++) {
             Object userObject = ((DefaultMutableTreeNode) categoryNode.getChildAt(i)).getUserObject();
-            if (((OptionsExportModel.Item) userObject).isEnabled()) {
-                enabledCount++;
+            OptionsExportModel.Item item = (OptionsExportModel.Item) userObject;
+            if (item.isApplicable()) {
+                applicableCount++;
+                if (item.isEnabled()) {
+                    enabledCount++;
+                }
             }
         }
         Object userObject = categoryNode.getUserObject();
         OptionsExportModel.Category category = ((OptionsExportModel.Category) userObject);
         if (enabledCount == 0) {
             category.setState(OptionsExportModel.State.DISABLED);
-        } else if (enabledCount == categoryNode.getChildCount()) {
+        } else if (enabledCount == applicableCount) {
             category.setState(OptionsExportModel.State.ENABLED);
         } else {
             category.setState(OptionsExportModel.State.PARTIAL);
@@ -447,7 +456,21 @@ public final class OptionsChooserPanel extends JPanel {
             return node.toString();
         }
 
+        /** Return like disabled color for not applicable items. */
         public Color getForeground(Object node) {
+            if (node == null) {
+                return null;
+            }
+            Object userObject = ((DefaultMutableTreeNode) node).getUserObject();
+            if (userObject instanceof OptionsExportModel.Category) {
+                if (!((OptionsExportModel.Category) userObject).isApplicable()) {
+                    return DISABLED_COLOR;
+                }
+            } else if (userObject instanceof OptionsExportModel.Item) {
+                if (!((OptionsExportModel.Item) userObject).isApplicable()) {
+                    return DISABLED_COLOR;
+                }
+            }
             return null;
         }
 
@@ -467,7 +490,21 @@ public final class OptionsChooserPanel extends JPanel {
             return true;
         }
 
+        /** Disabled for not applicable items. */
         public boolean isCheckEnabled(Object node) {
+            if (node == null) {
+                return true;
+            }
+            Object userObject = ((DefaultMutableTreeNode) node).getUserObject();
+            if (userObject instanceof OptionsExportModel.Category) {
+                if (!((OptionsExportModel.Category) userObject).isApplicable()) {
+                    return false;
+                }
+            } else if (userObject instanceof OptionsExportModel.Item) {
+                if (!((OptionsExportModel.Item) userObject).isApplicable()) {
+                    return false;
+                }
+            }
             return true;
         }
 
