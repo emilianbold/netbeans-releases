@@ -80,14 +80,19 @@ public class NetigsoModuleFactory extends ModuleFactory
 implements Stamps.Updater {
     private static NetigsoActivator activator;
     private static Felix felix;
+    private static Set<String> registered;
 
     static void clear() {
         activator = null;
         felix = null;
+        readBundles();
     }
-    private Set<String> registered;
 
     public NetigsoModuleFactory() {
+        readBundles();
+    }
+
+    private static void readBundles() {
         registered = new HashSet<String>();
         try {
             InputStream is = Stamps.getModulesJARs().asStream("felix-bundles");
