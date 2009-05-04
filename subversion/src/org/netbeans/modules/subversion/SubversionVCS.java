@@ -109,7 +109,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
                 break;
             }
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
-            if (new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead()) { // NOI18N
+            if (new File(file, SvnUtils.SVN_ENTRIES_DIR).exists()) { // NOI18N
                 Subversion.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 topmost = file;
                 done.clear();
