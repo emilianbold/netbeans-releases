@@ -40,11 +40,13 @@
 package org.netbeans.modules.cnd.api.utils;
 
 import java.io.File;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
@@ -60,7 +62,7 @@ public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2 {
      * Keep it synchronized with IgnoredFilesPreferences.PROP_IGNORED_FILES
      */
     private static final String PROP_CND_ACCEPTED_FILES = "CNDAcceptedFiles"; // NOI18N
-    private Pattern ignoreFilesPattern = null;
+    private Pattern acceptedFilesPattern = null;
 
     /** Default instance for lookup. */
     private CndFileVisibilityQuery() {
@@ -85,7 +87,7 @@ public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2 {
 
 
     boolean isVisible(final String fileName) {
-        Pattern pattern = getIgnoreFilesPattern();
+        Pattern pattern = getAcceptedFilesPattern();
         return (pattern != null) ? pattern.matcher(fileName).find() : true;
     }
 
@@ -105,25 +107,35 @@ public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2 {
         cs.removeChangeListener(l);
     }
 
-    private Pattern getIgnoreFilesPattern() {
-        if (ignoreFilesPattern == null) {
-            String ignoredFiles = getIgnoredFiles();
-            ignoreFilesPattern = (ignoredFiles != null && ignoredFiles.length() > 0) ? Pattern.compile(ignoredFiles) : null;
+    private static Set<String> createExtensionSet() {
+        if (IpeUtils.isSystemCaseInsensitive()) {
+            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+        } else {
+            return new TreeSet<String>();
         }
-        return ignoreFilesPattern;
     }
 
-    protected String getIgnoredFiles() {
-        String retval = getPreferences().get(PROP_CND_ACCEPTED_FILES, ".*\\.(H|h|hpp|hxx|C|c++|cc|cpp|cxx|c)$");//NOI18N;
-        getPreferences().addPreferenceChangeListener(new PreferenceChangeListener() {
-            public void preferenceChange(PreferenceChangeEvent evt) {
-                if (PROP_CND_ACCEPTED_FILES.equals(evt.getKey())) {
-                    ignoreFilesPattern = null;
-                    cs.fireChange();
-                }
+    private Set<String> getAcceptedFilesExtensions() {
+        Set<String> suffixes = createExtensionSet();
+        suffixes.addAll(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
+        suffixes.addAll(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
+        suffixes.addAll(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
+        return suffixes;
+    }
 
+    private Pattern getAcceptedFilesPattern() {
+        if (acceptedFilesPattern == null) {
+            Set<String> acceptedFileExtensions = getAcceptedFilesExtensions();
+            StringBuilder pat = new  StringBuilder();
+            for (String s : acceptedFileExtensions) {
+                if (pat.length() > 0) {
+                    pat.append('|');
+                }
+                pat.append(s);
             }
-        });
-        return retval;
+            String ignoredFiles = ".*\\.(" + pat.toString() + ")$"; //NOI18N;
+            acceptedFilesPattern = Pattern.compile(ignoredFiles);
+        }
+        return acceptedFilesPattern;
     }
 }
