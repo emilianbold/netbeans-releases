@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -1233,6 +1234,7 @@ abstract public class CsmCompletionQuery {
                                                 if (!res.isEmpty()) {
                                                     lastNamespace = null;
                                                     lastType = null;
+                                                    CsmObject classifierCandidate = null;
                                                     for (CsmObject obj : res) {
                                                         if (lastNamespace == null) {
                                                             if (CsmKindUtilities.isNamespace(obj)) {
@@ -1243,13 +1245,22 @@ abstract public class CsmCompletionQuery {
                                                         }
                                                         if (lastType == null) {
                                                             if (CsmKindUtilities.isClassifier(obj)) {
-                                                                obj = CsmBaseUtilities.getOriginalClassifier((CsmClassifier) obj, contextFile);
-                                                                lastType = CsmCompletion.getType((CsmClassifier) obj, 0, false, 0, false);
+                                                                // remember the first
+                                                                if (classifierCandidate == null) {
+                                                                    classifierCandidate = obj;
+                                                                }
+                                                                // prefer visible classifier
+                                                                if (CsmIncludeResolver.getDefault().isObjectVisible(contextFile, obj)) {
+                                                                    lastType = CsmCompletion.getType((CsmClassifier) obj, 0, false, 0, false);
+                                                                }
                                                             }
                                                         }
                                                         if (lastType != null && lastNamespace != null) {
                                                             break;
                                                         }
+                                                    }
+                                                    if (lastType == null && classifierCandidate != null) {
+                                                        lastType = CsmCompletion.getType((CsmClassifier) classifierCandidate, 0, false, 0, false);
                                                     }
                                                 }
                                             }
