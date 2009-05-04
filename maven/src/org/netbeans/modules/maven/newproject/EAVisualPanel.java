@@ -131,21 +131,27 @@ public final class EAVisualPanel extends JPanel implements DocumentListener {
         tfEar.setForeground(origEarC);
         tfEjb.setForeground(origEjbC);
         tfWeb.setForeground(origWebC);
-        if (!validateProjDir(tfEar.getText(), wizDesc)
-                || !validateCoordinate(tfEar.getText(), wizDesc)) {
+        final String earTxt = tfEar.getText();
+        if (!validateProjDir(earTxt,wizDesc)
+                || !validateCoordinate(earTxt,wizDesc) ||
+                BasicPanelVisual.containsMultiByte(earTxt, wizDesc)) {
             tfEar.setForeground(Color.RED);
             return false;
         }
         if (chkEjb.isSelected()) {
-            if (!validateProjDir(tfEjb.getText(), wizDesc) ||
-                !validateCoordinate(tfEjb.getText(), wizDesc)) {
+            final String ejbText = tfEjb.getText();
+            if (!validateProjDir(ejbText,wizDesc) ||
+                !validateCoordinate(ejbText,wizDesc) ||
+                BasicPanelVisual.containsMultiByte(ejbText, wizDesc)) {
                 tfEjb.setForeground(Color.RED);
                 return false;
             }
         }
         if (chkWeb.isSelected()) {
-            if (!validateProjDir(tfWeb.getText(), wizDesc) ||
-                !validateCoordinate(tfWeb.getText(), wizDesc)) {
+            final String webText = tfWeb.getText();
+            if (!validateProjDir(webText,wizDesc) ||
+                !validateCoordinate(webText,wizDesc) ||
+                BasicPanelVisual.containsMultiByte(webText, wizDesc)) {
                 tfWeb.setForeground(Color.RED);
                 return false;
             }
