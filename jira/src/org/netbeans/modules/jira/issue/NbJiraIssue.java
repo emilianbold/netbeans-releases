@@ -187,6 +187,9 @@ public class NbJiraIssue extends Issue {
         });
     }
 
+    JiraRepository getRepository() {
+        return repository;
+    }
 
     public String getID() {
 //        return taskData.getTaskId(); // XXX id or key ???
