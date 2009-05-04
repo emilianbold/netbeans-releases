@@ -48,9 +48,9 @@ import java.util.Set;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.SymbolNode;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.SymbolNode;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -135,7 +135,7 @@ public abstract class AstElement extends RubyElement {
     }
 
     public static AstElement create(ParserResult info, Node node) {
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
         case DEFNNODE:
         case DEFSNODE:
             return new AstMethodElement(info, node);

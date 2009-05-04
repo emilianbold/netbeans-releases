@@ -48,15 +48,13 @@ import java.lang.reflect.*;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.*;
-import javax.swing.Action;
 import javax.xml.parsers.DocumentBuilder;
-import org.openide.actions.OpenAction;
+import javax.xml.parsers.FactoryConfigurationError;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.*;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.xml.*;
@@ -1348,9 +1346,6 @@ public class XMLDataObject extends MultiDataObject {
         public PlainDataNode() {
             super(XMLDataObject.this, Children.LEAF);
             setIconBaseWithExtension("org/openide/loaders/xmlObject.gif"); // NOI18N
-        }
-        public Action getPreferredAction() {
-            return SystemAction.get(OpenAction.class);
         }
     }
         

@@ -87,6 +87,8 @@ public class ProjectNode extends TreeListNode {
 
     public ProjectNode( final ProjectHandle project ) {
         super( true, null );
+        if (project==null)
+            throw new IllegalArgumentException("project cannot be null");
         this.projectListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ProjectHandle.PROP_CONTENT.equals( evt.getPropertyName()) ) {

@@ -71,7 +71,7 @@ public class TimeStamps {
     }
     //where
     private void load () throws IOException {
-        FileObject cacheDir = getCacheDir();
+        FileObject cacheDir = CacheFolder.getDataFolder(root);
         FileObject f = cacheDir.getFileObject(TIME_STAMPS_FILE);
         if (f != null) {
             try {
@@ -93,7 +93,7 @@ public class TimeStamps {
 
     public Set<String> store () throws IOException {
         if (true) {
-            FileObject cacheDir = getCacheDir();
+            FileObject cacheDir = CacheFolder.getDataFolder(root);
             FileObject f = FileUtil.createData(cacheDir, TIME_STAMPS_FILE);
             assert f != null;
             try {
@@ -113,10 +113,10 @@ public class TimeStamps {
         return this.unseen;
     }
 
-    private FileObject getCacheDir () throws IOException {
-        return CacheFolder.getDataFolder(root);
-    }
-
+//    private FileObject getCacheDir () throws IOException {
+//        return CacheFolder.getDataFolder(root);
+//    }
+//
 //    public boolean isUpToDate (final File f) {
 //        String relative = null;
 //        long fts = f.lastModified();
@@ -153,4 +153,17 @@ public class TimeStamps {
         return new TimeStamps(root);
     }
 
+    public static boolean existForRoot (final URL root) throws IOException {
+        assert root != null;
+
+        FileObject cacheDir = CacheFolder.getDataFolder(root, true);
+        if (cacheDir != null) {
+            FileObject f = cacheDir.getFileObject(TIME_STAMPS_FILE);
+            if (f != null) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 }

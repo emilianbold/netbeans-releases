@@ -49,7 +49,7 @@
             <file name="GoogleMapService.java" url="/org/netbeans/modules/websvc/saas/services/google/resources/java/GoogleMapService.template">
                 <attr name="position" intvalue="3410"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="googlemapservice.properties" url="/org/netbeans/modules/websvc/saas/services/google/resources/java/googlemapservice.properties">
                 <attr name="position" intvalue="3420"/>

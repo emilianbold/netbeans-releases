@@ -75,7 +75,7 @@ public class IssueController extends BugtrackingController {
     }
 
     @Override
-    public HelpCtx getHelpContext() {
+    public HelpCtx getHelpCtx() {
         return new HelpCtx(org.netbeans.modules.bugzilla.issue.BugzillaIssue.class);
     }
 

@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.apt.utils;
 
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -52,6 +51,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -72,8 +72,8 @@ public class APTIncludeUtils {
             String folder = new File(baseFile.toString()).getParent();
             File fileFromBasePath = new File(folder, inclString);
             if (!isDirectory(fileFromBasePath) && exists(fileFromBasePath)) {
-                //return fileFromBasePath.getAbsolutePath();
-                return new ResolvedPath(folder, fileFromBasePath.getAbsolutePath(), true, 0);
+                String absolutePath = fileFromBasePath.getAbsolutePath();
+                return new ResolvedPath(folder, normalize(absolutePath), absolutePath, true, 0);
             }
         }
         return null;
@@ -83,7 +83,7 @@ public class APTIncludeUtils {
         if (APTTraceFlags.APT_ABSOLUTE_INCLUDES) {
             File absFile = new File(file);
             if (absFile.isAbsolute() && !isDirectory(absFile) && exists(absFile)) {
-                return new ResolvedPath(absFile.getParent(), file, false, 0);
+                return new ResolvedPath(absFile.getParent(), normalize(file), file, false, 0);
             }
         }   
         return null;
@@ -94,18 +94,55 @@ public class APTIncludeUtils {
         mapFoldersRef.clear();
     }
     
-    public static ResolvedPath resolveFilePath(Iterator<CharSequence> it, String file, int dirOffset) {
-        while( it.hasNext() ) {
-            CharSequence sysPrefix = it.next();
-            File fileFromPath = new File(new File(sysPrefix.toString()), file);
+    public static ResolvedPath resolveFilePath(Iterator<CharSequence> searchPaths, String includedFile, int dirOffset) {
+        while( searchPaths.hasNext() ) {
+            CharSequence sysPrefix = searchPaths.next();
+            String sysPrefixString = sysPrefix.toString();
+            File fileFromPath = new File(new File(sysPrefixString), includedFile);
             if (!isDirectory(fileFromPath) && exists(fileFromPath)) {
-                return new ResolvedPath(sysPrefix, fileFromPath.getAbsolutePath(), false, dirOffset);
+                String absolutePath = fileFromPath.getAbsolutePath();
+                return new ResolvedPath(sysPrefix, normalize(absolutePath), absolutePath, false, dirOffset);
+            } else {
+                if (sysPrefixString.endsWith("/Frameworks")){ // NOI18N
+                    int i = includedFile.indexOf('/'); // NOI18N
+                    if (i > 0) {
+                        // possible it is framework include (see IZ#160043)
+                        // #include <GLUT/glut.h>
+                        // header is located in the /System/Library/Frameworks/GLUT.framework/Headers
+                        // system path is /System/Library/Frameworks
+                        // So convert framework path
+                        String fileName = sysPrefixString+"/"+includedFile.substring(0,i)+".framework/Headers"+includedFile.substring(i); // NOI18N
+                        fileFromPath = new File(fileName);
+                        if (!isDirectory(fileFromPath) && exists(fileFromPath)) {
+                            String absolutePath = fileFromPath.getAbsolutePath();
+                            return new ResolvedPath(sysPrefix, normalize(absolutePath), absolutePath, false, dirOffset);
+                        }
+                    }
+                }
             }
             dirOffset++;
         }
         return null;
     }
-    
+
+    public static String normalize(String path) {
+        if( APTTraceFlags.OPTIMIZE_INCLUDE_SEARCH ) {
+            Map<String, String> normalizedPaths = getNormalizedFilesMap();
+            String normalized = normalizedPaths.get(path);
+            if (normalized == null) {
+                if (path.contains("..") || path.contains("./") || path.contains(".\\")) { // NOI18N
+                    normalized = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+                } else {
+                    normalized = path;
+                }
+                normalizedPaths.put(path, normalized);
+            }
+            return normalized;
+        } else {
+            return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+        }
+    }
+
     private static boolean exists(File file) {
         if( APTTraceFlags.OPTIMIZE_INCLUDE_SEARCH ) {
             //calls++;
@@ -116,7 +153,7 @@ public class APTIncludeUtils {
                 exists = files.get(path);
                 if( exists == null ) {
                     exists = Boolean.valueOf(file.exists());
-                    files.put(FilePathCache.getManager().getString(path).toString(), exists);
+                    files.put(path, exists);
                 } else {
                     //hits ++;
                 }
@@ -137,7 +174,7 @@ public class APTIncludeUtils {
                 exists = dirs.get(path);
                 if( exists == null ) {
                     exists = Boolean.valueOf(file.isDirectory());
-                    dirs.put(FilePathCache.getManager().getString(path).toString(), exists);
+                    dirs.put(path, exists);
                 } else {
                     //hits ++;
                 }
@@ -170,7 +207,24 @@ public class APTIncludeUtils {
         }
         return map;
     }
-    
+
+    private static Map<String, String> getNormalizedFilesMap() {
+        Map<String, String> map = normalizedRef.get();
+        if (map == null) {
+            try {
+                mapNormalizedRefLock.lock();
+                map = normalizedRef.get();
+                if (map == null) {
+                    map = new ConcurrentHashMap<String, String>();
+                    normalizedRef = new SoftReference<Map<String, String>>(map);
+                }
+            } finally {
+                mapNormalizedRefLock.unlock();
+            }
+        }
+        return map;
+    }
+
     private static Map<String, Boolean> getFoldersMap() {
         Map<String, Boolean> map = mapFoldersRef.get();
         if( map == null ) {
@@ -187,10 +241,12 @@ public class APTIncludeUtils {
         }
         return map;
     }  
-    private static Lock maRefLock = new ReentrantLock();
-    private static Lock mapFoldersRefLock = new ReentrantLock();
+    private static final Lock maRefLock = new ReentrantLock();
+    private static final Lock mapNormalizedRefLock = new ReentrantLock();
+    private static final Lock mapFoldersRefLock = new ReentrantLock();
     
     private static Reference<Map<String,Boolean>> mapRef = new SoftReference<Map<String,Boolean>>(new ConcurrentHashMap<String, Boolean>());
+    private static Reference<Map<String,String>> normalizedRef = new SoftReference<Map<String,String>>(new ConcurrentHashMap<String, String>());
     private static Reference<Map<String,Boolean>> mapFoldersRef = new SoftReference<Map<String,Boolean>>(new ConcurrentHashMap<String, Boolean>());
     
 }

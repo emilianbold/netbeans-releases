@@ -44,12 +44,7 @@ import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -58,9 +53,9 @@ import org.junit.Test;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.TaskFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.Exceptions;
 import static org.junit.Assert.*;
 
@@ -68,30 +63,8 @@ import static org.junit.Assert.*;
  *
  * @author ak119685
  */
-public class LocalNativeProcessTest {
+public class LocalNativeProcessTest extends NativeExecutionTest {
     ExecutionEnvironment execEnv;
-
-    static {
-        Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
-        log.setLevel(Level.ALL);
-        
-        log.addHandler(new Handler() {
-
-            @Override
-            public void publish(LogRecord record) {
-                System.err.println(record.getLoggerName() + ": " + record.getMessage());
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() throws SecurityException {
-
-            }
-        });
-    }
 
     public LocalNativeProcessTest() {
     }
@@ -107,7 +80,7 @@ public class LocalNativeProcessTest {
 
     @Before
     public void setUp() {
-        execEnv = new ExecutionEnvironment();
+        execEnv = ExecutionEnvironmentFactory.getLocal();
 //        execEnv = new ExecutionEnvironment("ak119685", "endif", 22);
 //        try {
 //            ConnectionManager.getInstance().connectTo(execEnv, "".toCharArray(), false);
@@ -211,7 +184,7 @@ public class LocalNativeProcessTest {
                                 int result = pb.call().waitFor();
                                 assertTrue(result == 0);
                             } catch (InterruptedException ex) {
-                                System.out.println("kill interrupted...");
+                                System.out.println("kill interrupted..."); // NOI18N
                             } catch (IOException ex) {
                                 Exceptions.printStackTrace(ex);
                                 fail();
@@ -231,7 +204,7 @@ public class LocalNativeProcessTest {
                                 fail();
                             }
 
-                            counters.getCounter("Killed").incrementAndGet();
+                            counters.getCounter("Killed").incrementAndGet(); // NOI18N
 
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
@@ -271,25 +244,25 @@ public class LocalNativeProcessTest {
         }
 
         public void run() {
-            NativeProcessBuilder npb = new NativeProcessBuilder("/bin/ls").setArguments("-d", "/tmp");
+            NativeProcessBuilder npb = new NativeProcessBuilder("/bin/ls").setArguments("-d", "/tmp"); // NOI18N
             try {
                 NativeProcess p = npb.call();
                 pqueue.put(p);
-                System.out.println("Short Process started: " + p.getPID());
-                counters.getCounter("Started").incrementAndGet();
-                System.out.println("Process done. Result is: " + p.waitFor());
-                counters.getCounter("Done").incrementAndGet();
+                System.out.println("Short Process started: " + p.getPID()); // NOI18N
+                counters.getCounter("Started").incrementAndGet(); // NOI18N
+                System.out.println("Process done. Result is: " + p.waitFor()); // NOI18N
+                counters.getCounter("Done").incrementAndGet(); // NOI18N
                 BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 String output = br.readLine();
-                if ("/tmp".equals(output)) {
-                    counters.getCounter("CorrectOutput").incrementAndGet();
+                if ("/tmp".equals(output)) { // NOI18N
+                    counters.getCounter("CorrectOutput").incrementAndGet(); // NOI18N
                 }
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
-                counters.getCounter("InterruptedException").incrementAndGet();
+                counters.getCounter("InterruptedException").incrementAndGet(); // NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
-                counters.getCounter("IOException").incrementAndGet();
+                counters.getCounter("IOException").incrementAndGet(); // NOI18N
             }
 
         }
@@ -308,23 +281,23 @@ public class LocalNativeProcessTest {
         }
 
         public void run() {
-            NativeProcessBuilder npb = new NativeProcessBuilder("sleep").setArguments("3");
+            NativeProcessBuilder npb = new NativeProcessBuilder("sleep").setArguments("3"); // NOI18N
             try {
                 NativeProcess p = npb.call();
                 pqueue.put(p);
-                System.out.println("Long Process started: " + p.getPID());
-                counters.getCounter("Started").incrementAndGet();
+                System.out.println("Long Process started: " + p.getPID()); // NOI18N
+                counters.getCounter("Started").incrementAndGet(); // NOI18N
                 int result = p.waitFor();
-                System.out.println("Process done. Result is: " + result);
-                counters.getCounter("Done").incrementAndGet();
+                System.out.println("Process done. Result is: " + result); // NOI18N
+                counters.getCounter("Done").incrementAndGet(); // NOI18N
                 assertTrue(result == 0);
-                counters.getCounter("CorrectOutput").incrementAndGet();
+                counters.getCounter("CorrectOutput").incrementAndGet(); // NOI18N
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
-                counters.getCounter("InterruptedException").incrementAndGet();
+                counters.getCounter("InterruptedException").incrementAndGet(); // NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
-                counters.getCounter("IOException").incrementAndGet();
+                counters.getCounter("IOException").incrementAndGet(); // NOI18N
             }
         }
     }
@@ -342,21 +315,21 @@ public class LocalNativeProcessTest {
         }
 
         public void run() {
-            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "read");
+            NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "read"); // NOI18N
             try {
                 NativeProcess p = npb.call();
                 pqueue.put(p);
-                System.out.println("Process started: " + p.getPID());
-                counters.getCounter("Started").incrementAndGet();
-                System.out.println("Process done. Result is: " + p.waitFor());
-                counters.getCounter("Done").incrementAndGet();
+                System.out.println("Process started: " + p.getPID()); // NOI18N
+                counters.getCounter("Started").incrementAndGet(); // NOI18N
+                System.out.println("Process done. Result is: " + p.waitFor()); // NOI18N
+                counters.getCounter("Done").incrementAndGet(); // NOI18N
             } catch (InterruptedException ex) {
-                counters.getCounter("InterruptedException").incrementAndGet();
+                counters.getCounter("InterruptedException").incrementAndGet(); // NOI18N
             } catch (InterruptedIOException ex) {
-                counters.getCounter("InterruptedIOException").incrementAndGet();
+                counters.getCounter("InterruptedIOException").incrementAndGet(); // NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
-                counters.getCounter("IOException").incrementAndGet();
+                counters.getCounter("IOException").incrementAndGet(); // NOI18N
             }
         }
     }

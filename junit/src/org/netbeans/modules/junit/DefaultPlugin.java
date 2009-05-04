@@ -1699,6 +1699,9 @@ public final class DefaultPlugin extends JUnitPlugin {
         List<ElementHandle<TypeElement>> testable;
         try {
             JavaSource javaSource = JavaSource.forFileObject(sourceFile);
+            //issue 161598
+            if (javaSource == null)
+                return CreationResults.EMPTY;
             if (skipNonTestable) {
                 nonTestable = new ArrayList<SkippedClass>();
                 testable = TopClassFinder.findTestableTopClasses(javaSource,

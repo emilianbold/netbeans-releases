@@ -81,12 +81,7 @@ public final class LogManager {
             logLevel = DEFAULT_LOG_LEVEL;
         }
         
-        // check whether we should log to console as well
-        if (System.getProperty(LOG_TO_CONSOLE_PROPERTY) != null) {
-            logToConsole = new Boolean(System.getProperty(LOG_TO_CONSOLE_PROPERTY));
-        } else {
-            logToConsole = DEFAULT_LOG_TO_CONSOLE;
-        }
+        initializeConsoleLogging();
         
         // init the log file and streams
         try {
@@ -102,6 +97,7 @@ public final class LogManager {
             for (String string: logCache) {
                 write(string);
             }
+            logCache.clear();
         } catch (IOException e) {
             e.printStackTrace(System.err);
             logWriter = null;
@@ -109,11 +105,43 @@ public final class LogManager {
         
         started = true;
     }
+    private static void initializeConsoleLogging () {
+        // check whether we should log to console as well
+        if (System.getProperty(LOG_TO_CONSOLE_PROPERTY) != null) {
+            logToConsole = new Boolean(System.getProperty(LOG_TO_CONSOLE_PROPERTY));
+        } else {
+            logToConsole = DEFAULT_LOG_TO_CONSOLE;
+        }
+    }
     
     public static synchronized void stop() {
         started = false;
-        
-        logWriter.close();
+        stopFileLog();
+        stopConsoleLog();
+    }
+
+    private static final void stopConsoleLog() {
+        // can happen if log manager haven`t started yet - dump to console everything cached
+        if (!logCache.isEmpty()) {
+            initializeConsoleLogging();
+            if (logToConsole) {
+                for (String string : logCache) {
+                    try {
+                        write(string);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                logCache.clear();
+            }
+        }
+    }
+
+    private static synchronized void stopFileLog() {
+        if (logWriter != null) {
+            logWriter.close();
+            logWriter = null;
+        }
     }
     
     public static synchronized void indent() {
@@ -139,6 +167,7 @@ public final class LogManager {
                     } else {
                         logCache.add(string);
                     }
+		    //System.out.println(message);
                 }
             } catch (IOException e) {
                 logWriter = null;

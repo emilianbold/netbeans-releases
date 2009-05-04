@@ -1139,24 +1139,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
 
         return true;
     }
-    
-    private boolean isBlockDefinition(BaseDocument doc, int dotPos) throws BadLocationException {
-        TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, dotPos);
-        if (ts != null) {
-            int lineStart = Utilities.getRowStart(doc, dotPos);
-            ts.move(dotPos + 1);
-            while (ts.movePrevious() && ts.offset() >= lineStart) {
-                TokenId tid = ts.token().id();
-                if (tid == PHPTokenId.PHP_DO || tid == PHPTokenId.PHP_CURLY_OPEN) {
-                    return true;
-                } else if (tid == PHPTokenId.PHP_CURLY_CLOSE) {
-                    break;
-                }
-            }
-        }
-        
-        return false;
-    }
 
     private void reindent(BaseDocument doc, int offset, TokenId id, Caret caret)
         throws BadLocationException {
@@ -1679,7 +1661,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 if (firstNonWhiteFwd != -1) {
                     char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
                     insert = chr == ')' || chr == ',' || chr == '+' || chr == '}' || //NOI18N
-                             chr == ';' || chr == ']' || chr == '/' || chr == '.'; //NOI18N
+                             chr == ';' || chr == ']' || chr == '.'; //NOI18N
                 }
             }
             

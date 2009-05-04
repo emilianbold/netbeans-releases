@@ -5,7 +5,6 @@
 package org.netbeans.modules.dlight.spi.impl;
 
 import java.util.Collection;
-import java.util.Iterator;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorFactory;
@@ -31,7 +30,7 @@ public final class IndicatorProvider {
      * @param configuraiton
      * @return new instance of data collector is returned each time this method is invoked;
      */
-    public Indicator createIndicator(final String toolName,
+    public Indicator<?> createIndicator(final String toolName,
             final IndicatorConfiguration configuraiton) {
         
         Collection<? extends IndicatorFactory> result =
@@ -41,12 +40,11 @@ public final class IndicatorProvider {
             return null;
         }
 
-        Iterator<? extends IndicatorFactory> iterator = result.iterator();
-
-        while (iterator.hasNext()) {
-            IndicatorFactory indicatorFactory = iterator.next();
+        for (IndicatorFactory indicatorFactory : result) {
             if (indicatorFactory.getID().equals(configuraiton.getID())) {
-                Indicator indicator = indicatorFactory.create(configuraiton);
+                @SuppressWarnings("unchecked")
+                // Impossible to do it in checked manner. Have to rely on factory ID check.
+                Indicator<?> indicator = indicatorFactory.create(configuraiton);
                 IndicatorAccessor.getDefault().setToolName(indicator, toolName);
                 IndicatorAccessor.getDefault().initMouseListener(indicator);
                 return indicator;

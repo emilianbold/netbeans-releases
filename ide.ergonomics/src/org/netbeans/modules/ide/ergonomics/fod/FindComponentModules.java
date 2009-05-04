@@ -173,10 +173,6 @@ public final class FindComponentModules {
 
     private Runnable doFind = new Runnable () {
         public void run() {
-            if (SwingUtilities.isEventDispatchThread ()) {
-                RequestProcessor.getDefault ().post (doFind);
-                return ;
-            }
             findComponentModules ();
         }
     };

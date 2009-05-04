@@ -39,25 +39,19 @@
 
 package org.netbeans.modules.web.jspparser;
 
-import java.io.File;
+import java.net.URI;
+import java.net.URL;
+import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.project.JavaAntLogger;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
 
 /**
  * Tests that need "full" IDE can be placed here.
@@ -72,48 +66,22 @@ public class IdeEnvironmentTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
         clearWorkDir();
-
-        File userdir = new File(getWorkDir(), "userdir");
-        FileUtil.createFolder(userdir);
-        System.setProperty("netbeans.user", userdir.getPath());
-
-        File platformCluster = new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                .getParentFile().getParentFile();
-        File ideCluster = new File(ProjectManager.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                .getParentFile().getParentFile();
-        File javaCluster = new File(JavaAntLogger.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                .getParentFile().getParentFile();
-        File enterCluster = new File(WebModule.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                .getParentFile().getParentFile();
-        System.setProperty("netbeans.home", platformCluster.getPath());
-        System.setProperty("netbeans.dirs", javaCluster.getPath() + File.pathSeparator + enterCluster.getPath()
-                + File.pathSeparator + ideCluster.getPath());
-
-        Logger.getLogger("org.netbeans.core.startup.ModuleList").setLevel(Level.OFF);
-
-        // module system
-        Lookup.getDefault().lookup(ModuleInfo.class);
+        TestUtil.initParserJARs();
     }
 
     // test for issue #70426
     public void testGetTagLibMap70426() throws Exception {
-        // first make sure that the library is not present
-        removeLibrary("emptyWebProject", "jstl11");
-
         FileObject jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "web/index.jsp");
         WebModule wm = TestUtil.getWebModule(jspFo);
-        Map library = JspParserFactory.getJspParser().getTaglibMap(wm);
+        Map<String, String[]> library = JspParserFactory.getJspParser().getTaglibMap(wm);
         assertNull("The JSTL library should not be present.", library.get("http://java.sun.com/jsp/jstl/fmt"));
 
-        addLibrary("emptyWebProject", "jstl11");
+        List<URL> urls = TestUtil.getJARs("jstl.jars");
+        addToProjectClasspath("emptyWebProject", urls);
 
         library = JspParserFactory.getJspParser().getTaglibMap(wm);
         assertNotNull("The JSTL library should be present.", library.get("http://java.sun.com/jsp/jstl/fmt"));
-
-        // cleanup
-        removeLibrary("emptyWebProject", "jstl11");
     }
 
     public void testAddedJarFile() throws Exception {
@@ -125,7 +93,7 @@ public class IdeEnvironmentTest extends NbTestCase {
         Map<String, String[]> taglibMap1 = jspParser.getTaglibMap(webModule);
 
         // add library
-        addLibrary("emptyWebProject", "junit");
+        addPathToProjectClasspath("emptyWebProject");
 
         Map<String, String[]> taglibMap2 = jspParser.getTaglibMap(webModule);
 
@@ -138,12 +106,11 @@ public class IdeEnvironmentTest extends NbTestCase {
 
         // cleanup
         jspParser = null;
-        removeLibrary("emptyWebProject", "junit");
     }
 
     public void testRemovedJarFile() throws Exception {
         // init
-        addLibrary("emptyWebProject", "junit");
+        addPathToProjectClasspath("emptyWebProject");
 
         JspParserAPI jspParser = JspParserFactory.getJspParser();
 
@@ -153,7 +120,7 @@ public class IdeEnvironmentTest extends NbTestCase {
         Map<String, String[]> taglibMap1 = jspParser.getTaglibMap(webModule);
 
         // remove library
-        removeLibrary("emptyWebProject", "junit");
+        removePathFromProjectClasspath("emptyWebProject");
 
         Map<String, String[]> taglibMap2 = jspParser.getTaglibMap(webModule);
 
@@ -163,23 +130,29 @@ public class IdeEnvironmentTest extends NbTestCase {
         assertNotNull(url2);
         assertNotSame("TagLibMaps should not be exactly the same", url1, url2);
         assertEquals("TagLibMaps should be equal", url1, url2);
-        removeLibrary("emptyWebProject", "jstl11");
     }
 
-    private void removeLibrary(String projectFolderName, String libraryName) throws Exception {
-        Library library = LibraryManager.getDefault().getLibrary(libraryName);
-        assertNotNull("Library has to be found", library);
+    private void removePathFromProjectClasspath(String projectFolderName) throws Exception {
         Project project = TestUtil.getProject(this, projectFolderName);
         FileObject srcJava = project.getProjectDirectory().getFileObject("src/java");
-        ProjectClassPathModifier.removeLibraries(new Library[]{library}, srcJava, ClassPath.COMPILE);
+        ProjectClassPathModifier.removeRoots(new URI[]{getWorkDir().toURI()}, srcJava, ClassPath.COMPILE);
     }
 
-    private void addLibrary(String projectFolderName, String libraryName) throws Exception {
-        Library library = LibraryManager.getDefault().getLibrary(libraryName);
-        assertNotNull("Library has to be found", library);
+    private void addPathToProjectClasspath(String projectFolderName) throws Exception {
         Project project = TestUtil.getProject(this, projectFolderName);
         FileObject srcJava = project.getProjectDirectory().getFileObject("src/java");
-        boolean added = ProjectClassPathModifier.addLibraries(new Library[]{library}, srcJava, ClassPath.COMPILE);
+        boolean added = ProjectClassPathModifier.addRoots(new URI[]{getWorkDir().toURI()}, srcJava, ClassPath.COMPILE);
         assertTrue("Library should be added to the class path", added);
+    }
+
+    private void addToProjectClasspath(String projectFolderName, List<URL> urls) throws Exception {
+        Project project = TestUtil.getProject(this, projectFolderName);
+        FileObject srcJava = project.getProjectDirectory().getFileObject("src/java");
+        for (URL u: urls) {
+            u = FileUtil.getArchiveRoot(u);
+            assert u != null : urls;
+            boolean added = ProjectClassPathModifier.addRoots(new URL[]{u}, srcJava, ClassPath.COMPILE);
+            assertTrue("Library should be added to the class path", added);
+        }
     }
 }

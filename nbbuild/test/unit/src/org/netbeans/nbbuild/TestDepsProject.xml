@@ -175,9 +175,12 @@ made subject to such option by the copyright holder.
                        <test/>
                    </test-dependency>
                    <test-dependency>
+                       <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                   </test-dependency>
+                   <test-dependency>
                        <code-name-base>org.openide.nodes</code-name-base>
-                       <test/>
                        <compile-dependency/>
+                       <test/>
                    </test-dependency>
                    <test-dependency>
                        <code-name-base>org.netbeans.modules.queries</code-name-base>
@@ -192,7 +195,7 @@ made subject to such option by the copyright holder.
                    </test-dependency>
              </test-type>  
             </test-dependencies>     
-            <public-packages>TestDepsProject
+            <public-packages>
                 <!-- Ideally, none. In practice, some. XXX kill when possible or use impl deps -->
                 <package>org.netbeans.modules.java</package>
                 <package>org.netbeans.modules.java.parser</package>

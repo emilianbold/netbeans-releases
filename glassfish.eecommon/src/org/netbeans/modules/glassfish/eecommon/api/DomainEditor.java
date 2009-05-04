@@ -455,17 +455,17 @@ public class DomainEditor {
     
 
     public HashMap<String,Map> getSunDatasourcesFromXml(){
-        HashMap<String,Map> dSources = new HashMap();
+        HashMap<String,Map> dSources = new HashMap<String,Map>();
         Document domainDoc = getDomainDocument();
         if (domainDoc != null) {
             HashMap<String,NamedNodeMap> dsMap = getDataSourcesAttrMap(domainDoc);
             HashMap<String,Node> cpMap = getConnPoolsNodeMap(domainDoc);
             dsMap.keySet().removeAll(Arrays.asList(sysDatasources));
-            String[] ds = (String[]) dsMap.keySet().toArray(new String[dsMap.size()]);
+            String[] ds = dsMap.keySet().toArray(new String[dsMap.size()]);
 
             for (int i = 0; i < ds.length; i++) {
                 String jndiName = ds[i];
-                NamedNodeMap dsAttrMap = (NamedNodeMap) dsMap.get(jndiName);
+                NamedNodeMap dsAttrMap = dsMap.get(jndiName);
 
                 String poolName = dsAttrMap.getNamedItem(CONST_POOLNAME).getNodeValue();
                 dSources.put(jndiName, getPoolValues(cpMap, poolName));
@@ -475,7 +475,7 @@ public class DomainEditor {
     }
 
     private HashMap<String,String> getPoolValues(HashMap cpMap, String poolName) {
-        HashMap<String,String> pValues = new HashMap();
+        HashMap<String,String> pValues = new HashMap<String,String>();
         Node cpNode = (Node) cpMap.get(poolName);
         NamedNodeMap cpAttrMap = cpNode.getAttributes();
         Node dsClassName = cpAttrMap.getNamedItem(CONST_DS_CLASS);
@@ -522,12 +522,12 @@ public class DomainEditor {
     }
 
     public HashMap<String,Map> getConnPoolsFromXml(){
-        HashMap<String,Map> pools = new HashMap();
+        HashMap<String,Map> pools = new HashMap<String,Map>();
         Document domainDoc = getDomainDocument();
         if (domainDoc != null) {
             HashMap<String,Node> cpMap = getConnPoolsNodeMap(domainDoc);
 
-            String[] cp = (String[]) cpMap.keySet().toArray(new String[cpMap.size()]);
+            String[] cp = cpMap.keySet().toArray(new String[cpMap.size()]);
             for (int i = 0; i < cp.length; i++) {
                 String name = cp[i];
                 pools.put(name, getPoolValues(cpMap, name));
@@ -537,7 +537,7 @@ public class DomainEditor {
     }
     
     private HashMap<String,NamedNodeMap> getDataSourcesAttrMap(Document domainDoc){
-        HashMap<String,NamedNodeMap> dataSourceMap = new HashMap();
+        HashMap<String,NamedNodeMap> dataSourceMap = new HashMap<String,NamedNodeMap>();
         updateWithSampleDataSource(domainDoc);
         NodeList dataSourceNodeList = domainDoc.getElementsByTagName(CONST_JDBC);
         for(int i=0; i<dataSourceNodeList.getLength(); i++){
@@ -588,13 +588,13 @@ public class DomainEditor {
                 System.err.println("Cannot create sample datasource :" + SAMPLE_DATASOURCE); //N0I18N
                 return false;
             }
-            Node oldNode = (Node)cpMap.values().iterator().next();
+            Node oldNode = cpMap.values().iterator().next();
             Node cpNode = oldNode.cloneNode(false);
             NamedNodeMap cpAttrMap = cpNode.getAttributes();
             cpAttrMap.getNamedItem(CONST_NAME).setNodeValue(SAMPLE_CONNPOOL);
             cpAttrMap.getNamedItem(CONST_DS_CLASS).setNodeValue("org.apache.derby.jdbc.ClientDataSource"); //N0I18N
             cpAttrMap.getNamedItem(CONST_RES_TYPE).setNodeValue("javax.sql.DataSource"); //N0I18N
-            HashMap poolProps = new HashMap();
+            HashMap<String, String> poolProps = new HashMap<String, String>();
             poolProps.put(CONST_SERVER_NAME, "localhost"); //N0I18N
             poolProps.put(CONST_PASSWORD, "app"); //N0I18N
             poolProps.put(CONST_USER, "app"); //N0I18N
@@ -607,7 +607,7 @@ public class DomainEditor {
                 String keyName = (String)propNames[i];
                 Element propElement = domainDoc.createElement(CONST_PROP); //N0I18N
                 propElement.setAttribute(CONST_NAME, keyName);
-                propElement.setAttribute(CONST_VALUE, (String)poolProps.get(keyName)); //N0I18N
+                propElement.setAttribute(CONST_VALUE, poolProps.get(keyName)); //N0I18N
                 cpNode.appendChild(propElement);
             }
             resourcesNode.appendChild(cpNode);
@@ -640,7 +640,7 @@ public class DomainEditor {
     }
 
     private HashMap<String,Node> getConnPoolsNodeMap(Document domainDoc){
-        HashMap<String,Node> connPoolMap = new HashMap();
+        HashMap<String,Node> connPoolMap = new HashMap<String,Node>();
         NodeList connPoolNodeList = domainDoc.getElementsByTagName(CONST_CP);
         for(int i=0; i<connPoolNodeList.getLength(); i++){
             Node cpNode = connPoolNodeList.item(i);
@@ -652,7 +652,7 @@ public class DomainEditor {
     }
 
     public HashMap<String,String> getAdminObjectResourcesFromXml(){
-        HashMap<String,String> aoResources = new HashMap();
+        HashMap<String,String> aoResources = new HashMap<String,String>();
         Document domainDoc = getDomainDocument();
         if (domainDoc != null) {
             NodeList adminObjectNodeList = domainDoc.getElementsByTagName(CONST_AO);

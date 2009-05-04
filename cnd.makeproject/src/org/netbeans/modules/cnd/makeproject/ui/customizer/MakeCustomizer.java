@@ -80,7 +80,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRoot
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
@@ -1177,7 +1177,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         } else {
             // All or Multiple Configurations are selected.
             // Which host to use? let's calculate
-            execEnv = ExecutionEnvironmentFactory.getLocalExecutionEnvironment();
+            execEnv = ExecutionEnvironmentFactory.getLocal();
             if (selectedConfigurations != null && selectedConfigurations.length > 0) {
                 for (int i = 0; i < selectedConfigurations.length; i++) {
                     MakeConfiguration conf = (MakeConfiguration) selectedConfigurations[i];

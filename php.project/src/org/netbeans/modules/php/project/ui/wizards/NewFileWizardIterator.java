@@ -50,9 +50,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -209,7 +209,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     @SuppressWarnings("unchecked") // Generic Array Creation
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
         Project p = Templates.getProject(wizard);
-        final SourceGroup[] groups = Utils.getSourceGroups(p);
+        final SourceGroup[] groups = PhpProjectUtils.getSourceGroups(p);
         WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.createSimpleTargetChooser(p, groups);
         FileObject template = Templates.getTemplate(wizard);
        

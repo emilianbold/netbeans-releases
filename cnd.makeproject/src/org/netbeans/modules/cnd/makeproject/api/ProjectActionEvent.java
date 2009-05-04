@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.util.NbBundle;

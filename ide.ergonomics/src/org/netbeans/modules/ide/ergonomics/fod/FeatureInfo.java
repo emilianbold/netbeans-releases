@@ -148,9 +148,19 @@ public final class FeatureInfo {
     String getPreferredCodeNameBase() {
         return properties.getProperty("mainModule");
     }
+    String getFeatureCodeNameBase() {
+        String f = properties.getProperty("featureModule");
+        if (f != null) {
+            return f.length() == 0 ? null : f;
+        }
+        return getPreferredCodeNameBase();
+    }
 
-    boolean isEnabled() {
+    public final boolean isEnabled() {
         for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (!FeatureManager.showInAU(mi)) {
+                continue;
+            }
             if (cnbs.contains(mi.getCodeNameBase())) {
                 return mi.isEnabled();
             }

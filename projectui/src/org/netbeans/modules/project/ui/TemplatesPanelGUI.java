@@ -72,6 +72,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -79,9 +80,9 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -109,8 +110,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     
     private Builder firer;
 
-    private static final RequestProcessor RP = new RequestProcessor();
-    
     private String presetTemplateName = null;
     private Node pleaseWait;
 
@@ -124,7 +123,18 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }
 
     public void setTemplatesFolder (final FileObject folder) {
-        DataFolder dobj = DataFolder.findFolder (folder);
+        final DataFolder dobj = DataFolder.findFolder (folder);
+        dobj.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        TemplatesPanelGUI.this.setSelectedCategoryByName(OpenProjectListSettings.getInstance().getLastSelectedProjectCategory());
+                    }
+                });
+            }
+        });
         ((ExplorerProviderPanel)this.categoriesPanel).setRootNode(new FilterNode (
             dobj.getNodeDelegate(), this.firer.createCategoriesChildren(dobj)));
     }
@@ -226,7 +236,20 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                     }
                     DataObject template = (DataObject) selectedNodes[0].getCookie(DataFolder.class);
                     if (template != null) {
-                        FileObject fo = template.getPrimaryFile();
+                        if (!template.isValid()) {
+                            // in ergonomics IDE, it is possible that dataObject
+                            // no longer valid. If so, try to find it again
+                            // (layer was replaced.)
+                            FileObject fo = template.getPrimaryFile();
+                            fo = FileUtil.getConfigFile(fo.getPath());
+                            if (fo != null) {
+                                try {
+                                    template = DataObject.find(fo);
+                                } catch (DataObjectNotFoundException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        }
                         ((ExplorerProviderPanel)this.projectsPanel).setRootNode(
                             new FilterNode (selectedNodes[0], this.firer.createTemplatesChildren((DataFolder)template)));
                         // after change of root select the first template to make easy move in wizard
@@ -241,7 +264,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 if (selectedNodes != null && selectedNodes.length == 1) {
                     DataObject template = selectedNodes[0].getCookie(DataObject.class);
                     if (template != null) {
-                        FileObject fo = template.getPrimaryFile();
                         URL descURL = getDescription (template);
                         if (descURL != null) {
                             try {
@@ -293,6 +315,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 
         // please wait node, see issue 52900
         pleaseWait = new AbstractNode (Children.LEAF) {
+            @Override
             public Image getIcon (int ignore) {
                 return PLEASE_WAIT_ICON;
             }
@@ -493,6 +516,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             }
         }
         
+        @Override
         public void requestFocus () {
             this.createComponent().requestFocus();
         }

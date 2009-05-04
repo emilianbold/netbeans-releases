@@ -262,6 +262,10 @@ public class FileObj extends BaseFileObj {
         if (fire && oldLastModified != -1 && lastModified != -1 && lastModified != 0 && isModified) {
             fireFileChangedEvent(expected);
         }
+        if (fire && lastModified != 0) {
+            // #129178 - event consumed in org.openide.text.DataEditorSupport and used to change editor read-only state
+            fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
+        }
     }
     
     public final void refresh(final boolean expected) {

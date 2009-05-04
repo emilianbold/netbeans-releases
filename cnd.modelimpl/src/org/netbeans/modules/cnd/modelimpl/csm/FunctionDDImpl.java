@@ -135,13 +135,14 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         if( decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION ) {
             return (CsmFunction) decl;
         }
-        if (!getParameterList().isEmpty()) {
+        FunctionParameterListImpl parameterList = getParameterList();
+        if (parameterList != null && !parameterList.isEmpty()) {
             CsmFile file = getContainingFile();
             if (!ProjectBase.isCppFile(file)){
                 uname = uname.substring(0,uname.indexOf('('))+"()"; // NOI18N
                 decl = prj.findDeclaration(uname);
-                if( (decl instanceof FunctionImpl) &&
-                        !((FunctionImpl)decl).isVoidParameterList()) {
+                if( (decl instanceof FunctionImpl<?>) &&
+                        !((FunctionImpl<?>)decl).isVoidParameterList()) {
                     return (CsmFunction) decl;
                 }
             }

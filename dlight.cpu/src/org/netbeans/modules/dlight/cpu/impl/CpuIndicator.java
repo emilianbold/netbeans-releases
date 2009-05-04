@@ -44,33 +44,44 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import javax.swing.*;
 import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
+/*package*/ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
 
-    private CpuIndicatorPanel panel;
+    private final CpuIndicatorPanel panel;
+    private final Set<String> acceptedColumnNames;
+    private final Set<String> acceptedSysColumnNames;
     private Collection<ActionListener> listeners;
     private int lastSysValue;
     private int lastUsrValue;
     private int seconds;
 
-    CpuIndicator(CpuIndicatorConfiguration configuration) {
+    CpuIndicator(CpuIndicatorConfiguration configuration, Set<String> sysColumns) {
         super(configuration);
         panel = new CpuIndicatorPanel();
+        acceptedColumnNames = new HashSet<String>();
+        for (Column c : getMetadataColumns()) {
+            acceptedColumnNames.add(c.getColumnName());
+        }
+        acceptedSysColumnNames = sysColumns;
     }
 
     @Override
@@ -86,13 +97,14 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
     public void updated(List<DataRow> data) {
         for (DataRow row : data) {
             if (DLightLogger.instance.isLoggable(Level.FINE)) {
-                DLightLogger.instance.fine("UPDATE: " + row.getData().get(0) + " " + row.getData().get(1));
+                DLightLogger.instance.fine("UPDATE: " + row.getData().get(0) + " " + row.getData().get(1)); // NOI18N
             }
-            Float usr = (Float) row.getData("utime"); // NOI18N
-            Float sys = (Float) row.getData("stime"); // NOI18N
-            if (usr != null && sys != null) {
-                lastSysValue = sys.intValue();
-                lastUsrValue = usr.intValue();
+            for (String column : row.getColumnNames()) {
+                if (acceptedSysColumnNames.contains(column)) {
+                    lastSysValue = ((Float) row.getData(column)).intValue();
+                } else if (acceptedColumnNames.contains(column)) {
+                    lastUsrValue = ((Float) row.getData(column)).intValue();
+                }
             }
         }
     }
@@ -138,7 +150,7 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
     @Override
     protected void repairNeeded(boolean needed) {
         if (needed) {
-            final RepairPanel repairPanel = new RepairPanel(new ActionListener() {
+            final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus(), new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     final Future<Boolean> result = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {
@@ -160,9 +172,10 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
                 }
             });
         } else {
-            final JLabel label = new JLabel(getRepairActionProvider().isValid()?
-                "<html><center>Will show data on the next run</center></html>" :
-                "<html><center>Invalid</center></html>");
+            final JLabel label = new JLabel(
+                    "<html><center>" // NOI18N
+                    + getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()) // NOI18N
+                    + "</center></html>"); // NOI18N
             label.setForeground(GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {
                 public void run() {
@@ -170,5 +183,9 @@ class CpuIndicator extends Indicator<CpuIndicatorConfiguration> {
                 }
             });
         }
+    }
+
+    private static String getMessage(String name) {
+        return NbBundle.getMessage(CpuIndicator.class, name);
     }
 }

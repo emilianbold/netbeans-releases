@@ -13,18 +13,14 @@ public class Bug111048 {
 	if (m.contains("")) {
 	}
 	
-	if (bb.contains("")) {
+	if (this.contains("")) {
 	}
 	
 	if (m.fieldOrClass.equals("")) {
 	}
 	
-	if (bb.fieldOrClass.equals("")) {
+	if (this.fieldOrClass.equals("")) {
 	    
 	}
     }
-}
-
-class bb {
-    
 }

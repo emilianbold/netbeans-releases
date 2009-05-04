@@ -135,7 +135,7 @@ public final class ProjectImpl extends ProjectBase {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName()); //NOI18N
         }
-        FileImpl file = getFile(buf.getFile());
+        FileImpl file = getFile(buf.getFile(), false);
         if (file != null) {
             synchronized (editedFiles) {
                 if (!editedFiles.remove(file)) {
@@ -144,6 +144,7 @@ public final class ProjectImpl extends ProjectBase {
                 }
             }
             file.setBuffer(buf);
+            file.clearStateCache();
             // no need for deep parsing util call here, because it will be called as external notification change anyway
 //            DeepReparsingUtils.reparseOnEdit(file, this);
         }
@@ -219,7 +220,7 @@ public final class ProjectImpl extends ProjectBase {
                 File file = item.getFile();
                 try {
                     //Notificator.instance().startTransaction();
-                    FileImpl impl = getFile(file);
+                    FileImpl impl = getFile(file, false);
                     if (impl != null) {
                         onFileRemovedImpl(impl);
                         toReparse.add(impl);

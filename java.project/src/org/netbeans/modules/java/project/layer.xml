@@ -76,7 +76,7 @@ made subject to such option by the copyright holder.
             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Class.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
         </file>
         <file name="Interface.java" url="resources/Interface.template">
             <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
@@ -86,7 +86,7 @@ made subject to such option by the copyright holder.
             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Interface.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
         </file>
         <file name="Enum.java" url="resources/Enum.template">
             <attr name="position" intvalue="300"/>
@@ -95,7 +95,7 @@ made subject to such option by the copyright holder.
             <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Enum.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             <attr name="templateCategory" stringvalue="java-classes"/>
             <attr name="javac.source" stringvalue="1.5"/>
         </file>
@@ -106,7 +106,7 @@ made subject to such option by the copyright holder.
             <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/AnnotationType.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             <attr name="templateCategory" stringvalue="java-classes"/>
             <attr name="javac.source" stringvalue="1.5"/>
         </file>
@@ -118,7 +118,7 @@ made subject to such option by the copyright holder.
             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Exception.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
         </file>
         <file name="package-info.java" url="resources/package-info.template">
             <attr name="position" intvalue="650"/>
@@ -127,7 +127,7 @@ made subject to such option by the copyright holder.
             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.packageInfoWizard"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/package-info.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             <attr name="templateCategory" stringvalue="java-classes"/>
             <attr name="javac.source" stringvalue="1.5"/>
         </file>
@@ -139,7 +139,7 @@ made subject to such option by the copyright holder.
             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/JApplet.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
         </file>
         <file name="Applet.java" url="resources/Applet.template">
             <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
@@ -149,7 +149,7 @@ made subject to such option by the copyright holder.
             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Applet.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
         </file>
         <file name="Main.java" url="resources/Main.template">
             <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
@@ -159,7 +159,7 @@ made subject to such option by the copyright holder.
             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Main.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/main-class.png"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/main-class.png"/>
         </file>
         <file name="Empty.java" url="resources/Empty.template">
             <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
@@ -169,7 +169,7 @@ made subject to such option by the copyright holder.
             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Empty.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
         </file>
         <file name="Package" url="resources/Package.template">
             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.packageWizard"/>

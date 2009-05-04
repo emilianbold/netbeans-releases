@@ -48,7 +48,8 @@ import java.util.regex.Pattern;
 
 import javax.swing.text.BadLocationException;
 
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.Node;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -372,7 +373,7 @@ public class GotoTest implements TestLocator {
                         return;
                     }
 
-                    org.jruby.nb.ast.ClassNode cls = AstUtilities.findClassAtOffset(root, offset);
+                    ClassNode cls = AstUtilities.findClassAtOffset(root, offset);
 
                     if (cls == null) {
                         // It's possible the user had the caret on a line
@@ -476,7 +477,7 @@ public class GotoTest implements TestLocator {
 
             if (fo != null) {
                 int offset = 0;
-                org.jruby.nb.ast.Node node = AstUtilities.getForeignNode(c);
+                Node node = AstUtilities.getForeignNode(c);
 
                 if (node != null) {
                     offset = node.getPosition().getStartOffset();

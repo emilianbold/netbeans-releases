@@ -77,8 +77,8 @@ public class MakeCallerCurrentActionProvider extends ActionsProviderSupport impl
 	}
     }
     
-    protected void checkEnabled(GdbDebugger.State debuggerState) {
-        if (debuggerState == GdbDebugger.State.STOPPED) {
+    private void checkEnabled(boolean stoppped) {
+        if (stoppped) {
 	    int i = getCurrentCallStackFrameIndex(debugger);
 	    setEnabled(ActionsManager.ACTION_MAKE_CALLER_CURRENT, i < (debugger.getStackDepth() - 1));
         } else {
@@ -103,7 +103,7 @@ public class MakeCallerCurrentActionProvider extends ActionsProviderSupport impl
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-	checkEnabled(debugger.getState());
+	checkEnabled(debugger.isStopped());
     }
 }
 

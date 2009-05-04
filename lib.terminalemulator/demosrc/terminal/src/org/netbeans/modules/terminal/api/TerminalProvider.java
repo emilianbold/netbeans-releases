@@ -43,6 +43,7 @@ package org.netbeans.modules.terminal.api;
 
 import org.netbeans.modules.terminal.TermTopComponent;
 import java.util.logging.Logger;
+import org.openide.windows.IOContainer;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -81,6 +82,13 @@ public final class TerminalProvider {
 
         TerminalWindow itc = (TerminalWindow) win;
         return itc;
+    }
+
+    /**
+     * Get a Terminal in the given IOContainer.
+     */
+    public Terminal createTerminal(String name, IOContainer ioContainer) {
+        return new Terminal(ioContainer, name);
     }
 
     /**

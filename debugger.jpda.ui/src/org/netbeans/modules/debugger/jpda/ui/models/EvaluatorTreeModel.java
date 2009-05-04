@@ -317,7 +317,7 @@ public class EvaluatorTreeModel extends CachedChildrenTreeModel implements NodeA
 
         @Override
         String getShortDescription() {
-            return NbBundle.getBundle(EvaluatorTreeModel.class).getString("CTL_EvaluatorHistoryItem"); // NOI18N
+            return item.tooltip;
         }
 
         @Override

@@ -171,6 +171,7 @@ made subject to such option by the copyright holder.
             verifyexcludes="lib/nbexec.cmd,lib/nbexec,lib/nbexec.exe,lib/nbexec.dll,core/ide.ks,LICENSE.txt,DISTRIBUTION.txt,THIRDPARTYLICENSEREADME.txt,docs/swing-layout-1.0-doc.zip,docs/swing-layout-1.0.1-doc.zip,docs/html40.zip,core/org-netbeans-modules-utilities-cli.jar,docs/org/netbeans/modules/usersguide/ide.css,docs/swing-layout-1.0.2-doc.zip,docs/swing-layout-1.0.2-src.zip,docs/swing-layout-1.0.3-doc.zip,docs/swing-layout-1.0.3-src.zip"
             permissions="${jnlp.permissions}"
             signjars="${jnlp.sign.jars}"
+            processjarversions="${jnlp.generate.versions}"
         >
             <resources refid="jnlp.included.modules"/>
         </makejnlp>
@@ -424,7 +425,7 @@ made subject to such option by the copyright holder.
             </classpath>
         </nbjpdastart>
         <property name="debug.pause" value="n"/>
-        <property name="debug.args" value="-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=n,address=${debug.port}"/>
+        <property name="debug.args" value="-Xdebug -Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=n,address=${debug.port}"/>
         <antcall target="run">
             <param name="run.args" value="${debug.args}"/>
             <reference refid="cluster.path.id"/>

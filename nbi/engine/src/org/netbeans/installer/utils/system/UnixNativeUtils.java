@@ -144,6 +144,17 @@ public class UnixNativeUtils extends NativeUtils {
     public UnixNativeUtils() {
         initializeForbiddenFiles();
     }
+
+
+    protected void loadLibrary(String path) {
+        try {
+            loadNativeLibrary(path);
+        } catch (NativeException e) {
+            //ok, not loaded, we`ll use Java`s implementation
+            LogManager.log("Could not load native library due to some reasons, " + //NOI18N
+                    "falling back to the Java implementation", e); //NOI18N
+        }
+    }
     
     @Override
     protected Platform getPlatform() {
@@ -510,7 +521,16 @@ public class UnixNativeUtils extends NativeUtils {
         return list;
     }
 
-    
+    private void addExecutablePermissions(File file) throws IOException {
+        // add x permission bit to r bits
+        int permissions = SystemUtils.getPermissions(file);
+        int newPermissions = (permissions +
+                ((permissions & FileAccessMode.RU) != 0 ? FileAccessMode.EU : 0) +
+                ((permissions & FileAccessMode.RG) != 0 ? FileAccessMode.EG : 0) +
+                ((permissions & FileAccessMode.RO) != 0 ? FileAccessMode.EO : 0));
+        SystemUtils.setPermissions(file, newPermissions, FA_MODE_SET);
+    }
+
     public File createShortcut(Shortcut shortcut, LocationType locationType) throws NativeException {
         final File          file     = getShortcutLocation(shortcut, locationType);
         try {
@@ -521,10 +541,12 @@ public class UnixNativeUtils extends NativeUtils {
                 } else {
                     FileUtils.writeStringList(file,
                             getDesktopEntry((FileShortcut)shortcut));
+                    addExecutablePermissions(file);
                 }
             } else if(shortcut instanceof InternetShortcut) {
                 FileUtils.writeStringList(file,
                         getDesktopEntry((InternetShortcut)shortcut));
+                addExecutablePermissions(file);
             }
         } catch (IOException e) {
             throw new NativeException("Cannot create shortcut", e);

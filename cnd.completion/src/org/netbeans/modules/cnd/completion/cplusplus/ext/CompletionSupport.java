@@ -43,6 +43,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -79,13 +81,14 @@ import org.openide.loaders.DataObject;
  *
  * @author Vladimir Voskresensky
  */
-public final class CompletionSupport {
+public final class CompletionSupport implements DocumentListener {
 
     private final Reference<Document> docRef;
     // not for external instantiation
 
     private CompletionSupport(Document doc) {
         docRef = new WeakReference<Document>(doc);
+        doc.addDocumentListener(this);
     }
 
     public static CompletionSupport get(JTextComponent component) {
@@ -174,12 +177,12 @@ public final class CompletionSupport {
         this.contextOffset = offset;
     }
 
-    private int doc2context(int docPos) {
+    public int doc2context(int docPos) {
         int offset = this.contextOffset == NOT_INITIALIZED ? docPos : this.contextOffset;
         offset = CsmMacroExpansion.getOffsetInOriginalText(getDocument(), offset);
         return offset;
     }
-    
+
     protected void setLastSeparatorOffset(int lastSeparatorOffset) {
         this.lastSeparatorOffset = lastSeparatorOffset;
     }
@@ -194,11 +197,15 @@ public final class CompletionSupport {
         if (pos == 0) {
             return 0;
         }
-        if (lastSeparatorOffset >= 0 && lastSeparatorOffset < pos) {
+        if (!CndTokenUtilities.isInPreprocessorDirective(getDocument(), pos)) {
+            if (lastSeparatorOffset >= 0 && lastSeparatorOffset < pos) {
+                return lastSeparatorOffset;
+            }
+            lastSeparatorOffset = CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
             return lastSeparatorOffset;
+        } else {
+            return CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
         }
-        lastSeparatorOffset = CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
-        return lastSeparatorOffset;
     }
 
     /** Get the class from name. The import sections are consulted to find
@@ -490,7 +497,7 @@ public final class CompletionSupport {
                 if (type.getArrayDepth() > 0) {
                     CsmClassifier cls = type.getClassifier();
                     if (cls != null) {
-                        type = CsmCompletion.getType(cls, 0, false, 0);
+                        type = CsmCompletion.getType(cls, 0, false, 0, false);
                     }
                 }
                 return type;
@@ -505,5 +512,17 @@ public final class CompletionSupport {
             }
         }
         return null;
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+        this.lastSeparatorOffset = -1;
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        this.lastSeparatorOffset = -1;
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        this.lastSeparatorOffset = -1;
     }
 }

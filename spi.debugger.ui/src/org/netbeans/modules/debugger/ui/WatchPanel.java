@@ -54,8 +54,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.KeyboardFocusManager;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.editor.EditorUI;
@@ -64,7 +62,6 @@ import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
@@ -155,6 +152,9 @@ public class WatchPanel {
     }
 
     private static void setupContext(JEditorPane editorPane, FileObject file, int line) {
+        if (line < 1) {
+            line = 1;
+        }
         StyledDocument doc;
         if (file == null) {
             return;
@@ -176,7 +176,7 @@ public class WatchPanel {
             return;
         }
         try {
-            int offset = NbDocument.findLineOffset(doc, line);
+            int offset = NbDocument.findLineOffset(doc, line - 1); // findLineOffset() expects zero based line numbers
             //editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
             //System.err.println("WatchPanel.setupContext("+file+", "+line+", "+offset+")");
             DialogBinding.bindComponentToFile(file, offset, 0, editorPane);

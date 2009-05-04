@@ -56,6 +56,15 @@ public abstract class VCSKenaiSupport {
     public abstract PasswordAuthentication getPasswordAuthentication();
 
     /**
+     * Returns an instance of PasswordAuthentication holding the actuall
+     * Kenai credentials or forces a login if forceLogin is true
+     *
+     * @param forceLogin opens a login dialog is user not logged in
+     * @return
+     */
+    public abstract PasswordAuthentication getPasswordAuthentication(boolean forceLogin);
+
+    /**
      * Returns true if the given url belongs to a Kenai project, otherwise false.
      * 
      * @param url
@@ -68,5 +77,11 @@ public abstract class VCSKenaiSupport {
      * @return true if login successfull, otherwise false
      */
     public abstract boolean showLogin();
+
+    /**
+     * Returns true if user is logged into kenai
+     * @return true if user is logged into kenai
+     */
+    public abstract boolean isLogged ();
     
 }

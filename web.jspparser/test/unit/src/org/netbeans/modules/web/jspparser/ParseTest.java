@@ -181,7 +181,7 @@ public class ParseTest extends NbTestCase {
             assertFile(outFile, goldenF, getWorkDir());
         } catch (Error e) {
             System.out.println("diff -u " + goldenF + " " + outFile);
-            fail(e.getMessage());
+            throw e;
         }
 
         return result;

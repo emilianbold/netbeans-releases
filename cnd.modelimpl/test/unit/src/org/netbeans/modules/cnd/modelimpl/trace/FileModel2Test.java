@@ -68,6 +68,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ149525() throws Exception {
+        // IZ#149525: can't process lazy body of macro expanded function
+        performTest("iz149525.cc");
+    }
+    
     public void testIZ162280() throws Exception {
         // IZ#162280: Inaccuracy tests: regression in Boost and Vlc
         performTest("iz162280_friend_fwd_cls.cpp");
@@ -248,5 +253,10 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testIZ156696() throws Exception {
         // IZ#156696 : model miss extern property if declaration statement has two objects
         performTest("iz156696.cc");
+    }
+
+    public void testIZ142674() throws Exception {
+        // IZ#142674 : Function-try-catch (C++) in editor shows error
+        performTest("iz142674.cc");
     }
 }
