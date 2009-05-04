@@ -317,6 +317,15 @@ public class JiraConfiguration extends JiraClientCache {
         }
     }
 
+    public Component getComponentById(String projectId, String componentId) {
+        for (Component component : getProjectById(projectId).getComponents()) {
+            if (componentId.equals(component.getId())) {
+                return component;
+            }
+        }
+        return null;
+    }
+
     public Version[] getVersions(String projectId) {
         return getProjectById(projectId).getVersions();
     }
