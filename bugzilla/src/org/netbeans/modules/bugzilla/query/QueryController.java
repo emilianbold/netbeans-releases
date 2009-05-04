@@ -134,6 +134,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private QueryTask refreshTask;
 
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters) {
+        this(repository, query, urlParameters, false);
+    }
+
+    public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, boolean urlDef) {
         this.repository = repository;
         this.query = query;
         
@@ -204,7 +208,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(query.isSaved()) {
             setAsSaved();
         }
-        postPopulate(urlParameters);
+        if(urlDef) {
+            panel.switchQueryFields(false);
+            panel.urlTextField.setText(urlParameters);
+        } else {            
+            postPopulate(urlParameters);
+        }
     }
 
     @Override
@@ -273,11 +282,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     public String getUrlParameters() {
-        StringBuffer sb = new StringBuffer();
-        for (QueryParameter p : parameters.values()) {
-            sb.append(p.get());
+        if(panel.urlTextField.isVisible()) {
+            return panel.urlTextField.getText();
+        } else {
+            StringBuffer sb = new StringBuffer();
+            for (QueryParameter p : parameters.values()) {
+                sb.append(p.get());
+            }
+            return sb.toString();
         }
-        return sb.toString();
     }
 
     private void postPopulate(final String urlParameters) {
@@ -864,6 +877,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 );
             }
         });
+    }
+
+    boolean isUrlDefined() {
+        return panel.urlTextField.isVisible();
     }
 
     private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {

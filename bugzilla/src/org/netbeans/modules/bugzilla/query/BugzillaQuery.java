@@ -72,10 +72,12 @@ public class BugzillaQuery extends Query {
     private Set<String> archivedIssues = new HashSet<String>();
 
     protected String urlParameters;
+    private boolean initialUrlDef;
+    
     private boolean firstRun = true;
 
     public BugzillaQuery(BugzillaRepository repository) {
-        this(null, repository, null, false, -1);
+        this(null, repository, null, false, -1, false);
     }
 
     protected BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved) {
@@ -83,19 +85,21 @@ public class BugzillaQuery extends Query {
         this.name = name;
         this.repository = repository;
         this.urlParameters = urlParameters;
+        this.initialUrlDef = false;
         this.saved = saved;
         // let the subclass create the controller
     }
 
-    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, long lastRefresh) {
-        this(name, repository, urlParameters, true, lastRefresh);
+    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, long lastRefresh, boolean urlDef) {
+        this(name, repository, urlParameters, true, lastRefresh, urlDef);
     }
 
-    private BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved, long lastRefresh) {
+    private BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved, long lastRefresh, boolean urlDef) {
         this.repository = repository;
         this.saved = saved;
         this.name = name;
         this.urlParameters = urlParameters;
+        this.initialUrlDef = urlDef;
         this.setLastRefresh(lastRefresh);
         controller = createControler(repository, this, urlParameters);
     }
@@ -124,7 +128,7 @@ public class BugzillaQuery extends Query {
     }
 
     protected QueryController createControler(BugzillaRepository r, BugzillaQuery q, String parameters) {
-        return new QueryController(r, q, parameters);
+        return new QueryController(r, q, parameters, initialUrlDef);
     }
 
     @Override
@@ -250,6 +254,10 @@ public class BugzillaQuery extends Query {
 
     public String getUrlParameters() {
         return getController().getUrlParameters();
+    }
+
+    public boolean isUrlDefined() {
+        return getController().isUrlDefined();
     }
 
     public void setName(String name) {
