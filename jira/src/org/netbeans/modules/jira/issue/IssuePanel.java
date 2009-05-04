@@ -38,6 +38,15 @@
  */
 package org.netbeans.modules.jira.issue;
 
+import java.awt.Component;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JList;
+import org.eclipse.mylyn.internal.jira.core.model.Project;
+import org.netbeans.modules.jira.repository.JiraConfiguration;
+
 /**
  *
  * @author Jan Stola
@@ -51,6 +60,36 @@ public class IssuePanel extends javax.swing.JPanel {
 
     void setIssue(NbJiraIssue issue) {
         this.issue = issue;
+        initProjectCombo();
+        reloadForm();
+    }
+
+    private void initProjectCombo() {
+        Project[] projects = issue.getRepository().getConfiguration().getProjects();
+        DefaultComboBoxModel model = new DefaultComboBoxModel(projects);
+        projectCombo.setModel(model);
+        projectCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value instanceof Project) {
+                    value = ((Project)value).getName();
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
+    }
+
+    private void reloadForm() {
+        JiraConfiguration config =  issue.getRepository().getConfiguration();
+        reloadField(projectCombo, config.getProjectById(issue.getFieldValue(NbJiraIssue.IssueField.PROJECT)));
+    }
+
+    private void reloadField(JComponent fieldComponent, Object fieldValue) {
+        if (fieldComponent instanceof JComboBox) {
+            ((JComboBox)fieldComponent).setSelectedItem(fieldValue);
+        } else {
+            // PENDING
+        }
     }
 
     /** This method is called from within the constructor to
@@ -62,20 +101,37 @@ public class IssuePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        projectLabel = new javax.swing.JLabel();
+        projectCombo = new javax.swing.JComboBox();
+
+        projectLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.projectLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 477, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(projectLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(396, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 288, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(projectLabel)
+                    .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(255, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox projectCombo;
+    private javax.swing.JLabel projectLabel;
     // End of variables declaration//GEN-END:variables
 
 }

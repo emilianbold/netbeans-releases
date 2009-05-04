@@ -115,7 +115,7 @@ public class NbJiraIssue extends Issue {
         STATUS(TaskAttribute.STATUS),
         PRIORITY(JiraAttribute.PRIORITY.id()),
         RESOLUTION(JiraAttribute.RESOLUTION.id()),
-        PRODUCT(JiraAttribute.PROJECT.id()),
+        PROJECT(JiraAttribute.PROJECT.id()),
         COMPONENT(JiraAttribute.COMPONENTS.id()),
 //        VERSION(JiraAttribute. .getName()),
 //        PLATFORM(JiraAttribute.REP_PLATFORM.getName()),
