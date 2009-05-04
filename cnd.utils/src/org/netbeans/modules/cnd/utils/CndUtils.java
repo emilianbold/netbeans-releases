@@ -70,7 +70,7 @@ public class CndUtils {
     static {
         boolean caseSenstive;
         try {
-            File tmpFile = File.createTempFile("CaseSensitiveFile", ".check");
+            File tmpFile = File.createTempFile("CaseSensitiveFile", ".check"); // NOI18N
             String absPath = tmpFile.getAbsolutePath();
             absPath = absPath.toUpperCase();
             caseSenstive = !new File(absPath).exists();

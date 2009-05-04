@@ -383,14 +383,21 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public Item findItemByFile(File file) {
         Collection<Item> coll = projectItems.values();
         Iterator<Item> it = coll.iterator();
+        Item canonicalItem = null;
         while (it.hasNext()) {
             Item item = it.next();
-            File itemFile = item.getCanonicalFile();
+            File itemFile = item.getNormalizedFile();
             if (itemFile == file || itemFile.getPath().equals(file.getPath())) {
                 return item;
             }
+            if (canonicalItem == null) {
+                File canonicalItemFile = item.getCanonicalFile();
+                if (canonicalItemFile == file || canonicalItemFile.getPath().equals(file.getPath())) {
+                    canonicalItem = item;
+                }
+            }
         }
-        return null;
+        return canonicalItem;
     }
 
     public Item findProjectItemByPath(String path) {
