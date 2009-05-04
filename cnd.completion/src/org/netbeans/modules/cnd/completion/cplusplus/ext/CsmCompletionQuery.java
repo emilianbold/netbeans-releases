@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -941,25 +942,26 @@ abstract public class CsmCompletionQuery {
             ExprKind kind = ExprKind.NONE;
             ExprKind nextKind = ExprKind.NONE;
             int lastInd = parmCnt - 1;
+            AtomicBoolean derefOfTHIS = new AtomicBoolean(false);
             for (int i = startIdx; i < parmCnt && ok; i++) { // resolve all items in exp
                 kind = extractKind(exp, i, startIdx, lastDot, true);
                 nextKind = extractKind(exp, i + 1, startIdx, lastDot, false);
                 /*resolve arrows*/
-                if ((kind == ExprKind.ARROW) && (i != startIdx) && (i < parmCnt || lastDot || findType) && (lastType != null) && (lastType.getArrayDepth() == 0)) {
+                if ((kind == ExprKind.ARROW && !derefOfTHIS.get()) && (i != startIdx) && (i < parmCnt || lastDot || findType) && (lastType != null) && (lastType.getArrayDepth() == 0)) {
                     CsmType opType = getOverloadedOperatorReturnType(lastType, contextFile, CsmFunction.OperatorKind.ARROW, MAX_DEPTH);
                     if (opType != null) {
                         lastType = opType;
                     }
                 }
+                derefOfTHIS.set(false);
                 ok = resolveItem(exp.getParameter(i), (i == startIdx),
                         (!lastDot && i == lastInd),
-                        kind, nextKind);
-
+                        kind, nextKind, derefOfTHIS);
             }
             if (ok && lastDot) {
                 kind = extractKind(exp, tokCount + 1, startIdx, true, true);
                 /*resolve arrows*/
-                if ((kind == ExprKind.ARROW) && (lastDot || findType) && (lastType != null) && (lastType.getArrayDepth() == 0)) {
+                if ((kind == ExprKind.ARROW && !derefOfTHIS.get()) && (lastDot || findType) && (lastType != null) && (lastType.getArrayDepth() == 0)) {
                     CsmType opType = getOverloadedOperatorReturnType(lastType, contextFile, CsmFunction.OperatorKind.ARROW, MAX_DEPTH);
                     if (opType != null) {
                         lastType = opType;
@@ -1103,7 +1105,8 @@ abstract public class CsmCompletionQuery {
                     exp = exp.getParameter(0);
                 // nobreak
                 default: // The rest of the situations is resolved as a singleton item
-                    ok = resolveItem(exp, true, true, ExprKind.NONE, ExprKind.NONE);
+                    AtomicBoolean derefOfTHIS = new AtomicBoolean(false);
+                    ok = resolveItem(exp, true, true, ExprKind.NONE, ExprKind.NONE, derefOfTHIS);
                     break;
             }
 
@@ -1123,7 +1126,7 @@ abstract public class CsmCompletionQuery {
          * @param last whether this expression is the last one in a dot expression
          */
         @SuppressWarnings({"fallthrough", "unchecked"})
-        boolean resolveItem(CsmCompletionExpression item, boolean first, boolean last, ExprKind kind, ExprKind nextKind) {
+        boolean resolveItem(CsmCompletionExpression item, boolean first, boolean last, ExprKind kind, ExprKind nextKind, AtomicBoolean derefOfThisOUT) {
             boolean cont = true; // whether parsing should continue or not
             boolean methodOpen = false; // helper flag for unclosed methods
             boolean skipConstructors = (kind != ExprKind.NONE && kind != ExprKind.SCOPE);
@@ -1143,6 +1146,7 @@ abstract public class CsmCompletionQuery {
                             if (first) { // first item in expression
                                 CsmClass cls = sup.getClass(item.getTokenOffset(0));
                                 if (cls != null) {
+                                    derefOfThisOUT.set(true);
                                     lastType = CsmCompletion.getType(cls, 0, false, 0, false);
                                     staticOnly = false;
                                 }
@@ -1220,30 +1224,66 @@ abstract public class CsmCompletionQuery {
                                             compResolver.setResolveTypes(
                                                     CompletionResolver.RESOLVE_CLASSES |
                                                     CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS |
-                                                    CompletionResolver.RESOLVE_GLOB_NAMESPACES |
                                                     CompletionResolver.RESOLVE_LIB_CLASSES |
                                                     CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS |
-                                                    CompletionResolver.RESOLVE_LOCAL_CLASSES |
-                                                    CompletionResolver.RESOLVE_LIB_NAMESPACES);
+                                                    CompletionResolver.RESOLVE_LOCAL_CLASSES);
+                                            boolean foundVisibleClassifier = false;
                                             if (resolve(varPos, var, true)) {
                                                 Collection<? extends CsmObject> res = compResolver.getResult().addResulItemsToCol(new ArrayList<CsmObject>());
                                                 if (!res.isEmpty()) {
-                                                    CsmObject obj = res.iterator().next();
-                                                    if (CsmKindUtilities.isNamespace(obj)) {
-                                                        lastNamespace = (CsmNamespace) obj;
-                                                    } else if (CsmKindUtilities.isNamespaceAlias(obj)) {
-                                                        lastNamespace = ((CsmNamespaceAlias) obj).getReferencedNamespace();
-                                                    } else if (CsmKindUtilities.isClassifier(obj)) {
-                                                        obj = CsmBaseUtilities.getOriginalClassifier((CsmClassifier) obj, contextFile);
-                                                        lastType = CsmCompletion.getType((CsmClassifier) obj, 0, false, 0, false);
+                                                    lastType = null;
+                                                    CsmObject classifierCandidate = null;
+                                                    for (CsmObject obj : res) {
+                                                        if (lastType == null) {
+                                                            if (CsmKindUtilities.isClassifier(obj)) {
+                                                                // remember the first
+                                                                if (classifierCandidate == null) {
+                                                                    classifierCandidate = obj;
+                                                                }
+                                                                // prefer visible classifier
+                                                                if (CsmIncludeResolver.getDefault().isObjectVisible(contextFile, obj)) {
+                                                                    lastType = CsmCompletion.getType((CsmClassifier) obj, 0, false, 0, false);
+                                                                    foundVisibleClassifier = true;
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
                                                     }
+                                                    if (lastType == null && classifierCandidate != null) {
+                                                        lastType = CsmCompletion.getType((CsmClassifier) classifierCandidate, 0, false, 0, false);
+                                                    }
+                                                }
+                                            }
+                                            if (!foundVisibleClassifier) {
+                                                QueryScope old = compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
+                                                compResolver.setResolveTypes(
+                                                        CompletionResolver.RESOLVE_GLOB_NAMESPACES |
+                                                        CompletionResolver.RESOLVE_LIB_NAMESPACES);
+                                                if (resolve(varPos, var, true)) {
+                                                    Collection<? extends CsmObject> res = compResolver.getResult().addResulItemsToCol(new ArrayList<CsmObject>());
+                                                    if (!res.isEmpty()) {
+                                                        CsmObject ns = res.iterator().next();
+                                                        if (CsmKindUtilities.isNamespaceAlias(ns)) {
+                                                            lastNamespace = ((CsmNamespaceAlias) ns).getReferencedNamespace();
+                                                        } else if (CsmKindUtilities.isNamespace(ns)) {
+                                                            lastNamespace = (CsmNamespace) ns;
+                                                        }
+                                                    }
+                                                }
+                                                // restore old
+                                                compResolver.setResolveScope(old);
+                                                if (lastNamespace != null) {
+                                                    // clean up invisible backup
+                                                    lastType = null;
                                                 }
                                             }
                                         }
                                     }
                                 }
                             } else { // not the first item
+                                boolean needToCheckNS = true;
                                 if (lastType != null) { // last was type
+                                    needToCheckNS = false;
                                     if (findType || !last) {
                                         boolean inner = false;
                                         int ad = lastType.getArrayDepth();
@@ -1313,17 +1353,22 @@ abstract public class CsmCompletionQuery {
                                                 List<CsmClass> baseClasses = finder.findBaseClasses(contextElement, cls, var, openingSource, sort);
                                                 res.addAll(baseClasses);
                                             }
-                                            result = new CsmCompletionResult(
-                                                    component, getBaseDocument(),
-                                                    //                                                 findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), cls, var, false, staticOnly, false),
-                                                    res,
-                                                    formatType(lastType, true, true, false) + var + '*',
-                                                    item,
-                                                    0/*cls.getName().length() + 1*/,
-                                                    isProjectBeeingParsed(), contextElement, instantiateTypes);
+                                            if (res.isEmpty() && scopeAccessedClassifier && lastNamespace != null) {
+                                                needToCheckNS = true;
+                                            } else {
+                                                result = new CsmCompletionResult(
+                                                        component, getBaseDocument(),
+                                                        //                                                 findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), cls, var, false, staticOnly, false),
+                                                        res,
+                                                        formatType(lastType, true, true, false) + var + '*',
+                                                        item,
+                                                        0/*cls.getName().length() + 1*/,
+                                                        isProjectBeeingParsed(), contextElement, instantiateTypes);
+                                            }
                                         }
                                     }
-                                } else { // currently package
+                                }
+                                if (lastNamespace != null && needToCheckNS) { // currently package
                                     String searchPkg = (lastNamespace.isGlobal() ? "" : (lastNamespace.getQualifiedName() + CsmCompletion.SCOPE)) + var;
                                     if (findType || !last) {
                                         List res = finder.findNestedNamespaces(lastNamespace, var, true, false); // find matching nested namespaces

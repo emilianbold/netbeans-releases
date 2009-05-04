@@ -23,7 +23,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.collab.resources.Bundle"/>
                 <attr name="component" methodvalue="org.netbeans.modules.kenai.collab.chat.ChatTopComponent.findInstance"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.collab.chat.Bundle#CTL_ChatAction"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/kenai/collab/resources/chat.gif"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/kenai/collab/resources/chat.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
             </file>
         </folder>

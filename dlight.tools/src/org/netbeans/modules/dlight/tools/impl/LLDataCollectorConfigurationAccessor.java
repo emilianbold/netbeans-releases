@@ -69,4 +69,6 @@ public abstract class LLDataCollectorConfigurationAccessor {
     }
 
     public abstract LLDataCollectorConfiguration.CollectedData getCollectedData(LLDataCollectorConfiguration conf);
+
+    public abstract String getName();
 }

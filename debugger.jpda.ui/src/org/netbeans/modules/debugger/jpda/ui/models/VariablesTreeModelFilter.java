@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -455,6 +456,8 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
      * @return The filter or <code>null</code>.
      */
     private VariablesFilter getFilter (Object o, boolean checkEvaluated, Runnable whenEvaluated) {
+        Map typeToFilterL;
+        Map ancestorToFilterL;
         synchronized (filtersLock) {
             if (typeToFilter == null) {
                 typeToFilter = new HashMap ();
@@ -476,49 +479,52 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
 
             if (typeToFilter.size() == 0 && ancestorToFilter.size() == 0) return null; // Optimization for corner case
 
-            if (!(o instanceof Variable)) return null;
+            typeToFilterL = typeToFilter;
+            ancestorToFilterL = ancestorToFilter;
+        }
 
-            Variable v = (Variable) o;
+        if (!(o instanceof Variable)) return null;
 
-            if (checkEvaluated) {
-                if (!isEvaluated(v)) {
-                    if (whenEvaluated != null) {
-                        postEvaluationMonitor(o, whenEvaluated);
-                    }
-                    return null;
+        Variable v = (Variable) o;
+
+        if (checkEvaluated) {
+            if (!isEvaluated(v)) {
+                if (whenEvaluated != null) {
+                    postEvaluationMonitor(o, whenEvaluated);
                 }
+                return null;
             }
+        }
 
-            String type = v.getType ();
-            VariablesFilter vf = (VariablesFilter) typeToFilter.get (type);
-            if (vf != null) return vf;
+        String type = v.getType ();
+        VariablesFilter vf = (VariablesFilter) typeToFilterL.get (type);
+        if (vf != null) return vf;
 
-            if (!(o instanceof ObjectVariable)) return null;
-            ObjectVariable ov = (ObjectVariable) o;
-            // TODO: List<JPDAClassType> ov.getAllInterfaces();
-            List<JPDAClassType> allInterfaces;
-            try {
-                java.lang.reflect.Method allInterfacesMethod = ov.getClass().getMethod("getAllInterfaces");
-                allInterfacesMethod.setAccessible(true);
-                allInterfaces = (List<JPDAClassType>) allInterfacesMethod.invoke(ov);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-                allInterfaces = null;
-            }
-            if (allInterfaces != null) {
-                for (JPDAClassType ct : allInterfaces) {
-                    type = ct.getName();
-                    vf = (VariablesFilter) ancestorToFilter.get (type);
-                    if (vf != null) return vf;
-                }
-            }
-            // Consider ancestors as the type + it's ancestors
-            while (ov != null) {
-                type = ov.getType ();
-                vf = (VariablesFilter) ancestorToFilter.get (type);
+        if (!(o instanceof ObjectVariable)) return null;
+        ObjectVariable ov = (ObjectVariable) o;
+        // TODO: List<JPDAClassType> ov.getAllInterfaces();
+        List<JPDAClassType> allInterfaces;
+        try {
+            java.lang.reflect.Method allInterfacesMethod = ov.getClass().getMethod("getAllInterfaces");
+            allInterfacesMethod.setAccessible(true);
+            allInterfaces = (List<JPDAClassType>) allInterfacesMethod.invoke(ov);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            allInterfaces = null;
+        }
+        if (allInterfaces != null) {
+            for (JPDAClassType ct : allInterfaces) {
+                type = ct.getName();
+                vf = (VariablesFilter) ancestorToFilterL.get (type);
                 if (vf != null) return vf;
-                ov = ov.getSuper ();
             }
+        }
+        // Consider ancestors as the type + it's ancestors
+        while (ov != null) {
+            type = ov.getType ();
+            vf = (VariablesFilter) ancestorToFilterL.get (type);
+            if (vf != null) return vf;
+            ov = ov.getSuper ();
         }
         return null;
     }

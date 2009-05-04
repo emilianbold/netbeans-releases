@@ -21,6 +21,8 @@ import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -32,6 +34,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
@@ -100,24 +103,8 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
             StatusDisplayer.getDefault().setStatusText(loc("SourceSupportProviderImpl.UnknownSource")); // NOI18N
             return;
         }
-
-        //String[] lineInfo = getLineInfo(state);
-//        String fname = lineInfo[0];
-//        int line = Integer.parseInt(lineInfo[1]);
-
-//    final int lineNum = lineInfo.getLine() < 1 ? 1 : lineInfo.getLine();
         String fileName = lineInfo.getFileName();
-
-//        // xxx remove after testing
-//        if (!window.get_parent().is_embedded)
-//            return;
-
         try {
-//      File f = new File(lineInfo.getFileName());
-//      FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
-//      if (fo == null) {
-//        return;
-//      }
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fileName)));
             if (fo == null) {
                 InputStream inputStream = null;
@@ -174,27 +161,27 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
 
             final EditorCookie.Observable ec = dob.getCookie(EditorCookie.Observable.class);
             if (ec != null) {
-//                StatusDisplayer.getDefault().setStatusText(
-//                        I18n.getMessage("MSG_OpeningElement", // NOI18N
-//                        getElementJumpName(element))
-//                        );
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
                         JEditorPane[] panes = ec.getOpenedPanes();
-                        if (panes == null || panes.length < 0) {
+                        if (panes == null || panes.length <= 0) {
                             ec.open();
                             panes = ec.getOpenedPanes();
                         }
-                        JEditorPane pane = panes[0];
+                        final JEditorPane pane = panes[0];
+                        RequestProcessor.getDefault().post(new Runnable() {
+
+                            public void run() {
+                                jumpToLine(pane, lineInfo);
+                            }
+                        });
                         // try to activate outer TopComponent
                         Container temp = pane;
                         while (!(temp instanceof TopComponent)) {
-                            temp = temp.getParent();
+                            temp =  SwingUtilities.getAncestorOfClass(TopComponent.class, temp);
                         }
                         ((TopComponent) temp).requestActive();
-
-                        jumpToLine(pane, lineInfo);
                     }
                 });
             }
@@ -213,7 +200,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
         if (sourceFileInfo.hasOffset()) {
             start = sourceFileInfo.getOffset();
         } else {
-            start = lineToPosition(pane, sourceFileInfo.getLine());
+            start = Utilities.getRowStartFromLineOffset((BaseDocument) pane.getDocument(), sourceFileInfo.getLine() - 1);
         }
 
         if (start > 0 && pane.getCaretPosition() == caretPos &&
@@ -224,28 +211,5 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
         StatusDisplayer.getDefault().setStatusText(""); // NOI18N
     }
 
-    private static int lineToPosition(JEditorPane pane, int line) {
-        Document doc = pane.getDocument();
-        int len = doc.getLength();
-        int lineSt = 0;
-        try {
-            String text = doc.getText(0, len);
-            boolean afterEOL = false;
-            for (int i = 0; i < len; i++) {
-                char c = text.charAt(i);
-                if (c == '\n') {
-                    line--;
-                    if (line == 0) {
-                        return lineSt;
-                    }
-                    afterEOL = true;
-                } else if (afterEOL) {
-                    lineSt = i;
-                    afterEOL = false;
-                }
-            }
-        } catch (BadLocationException e) {
-        }
-        return lineSt;
-    }
+
 }
