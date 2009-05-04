@@ -141,7 +141,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
- * Provede Parsing API parser build on the top of Javac (JSR 199)
+ * Provides Parsing API parser built atop Javac (using JSR 199).
  * @author Tomas Zezula
  */
 //@NotThreadSafe
@@ -701,13 +701,17 @@ public class JavacParser extends Parser {
             if (source.name.equals(sourceLevel)) {
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_4) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/AssertionError.class") == null) { //NOI18N
-                        LOGGER.warning("Even thought the source level is set to: " + sourceLevel + ", 'java.lang.AssertionError' class cannot be found on the bootclasspath: " + bootClassPath + "\nChanging source level to 1.3"); //NOI18N
+                        LOGGER.warning("Even though the source level is set to: " + sourceLevel +
+                                ", java.lang.AssertionError cannot be found on the bootclasspath: " + bootClassPath +
+                                "\nChanging source level to 1.3"); //NOI18N
                         return com.sun.tools.javac.code.Source.JDK1_3;
                     }
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_5) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/StringBuilder.class") == null) { //NOI18N
-                        LOGGER.warning("Even thought the source level is set to: " + sourceLevel + ", 'java.lang.StringBuilder' class cannot be found on the bootclasspath: " + bootClassPath + "\nChanging source level to 1.4"); //NOI18N
+                        LOGGER.warning("Even though the source level is set to: " + sourceLevel +
+                                ", java.lang.StringBuilder cannot be found on the bootclasspath: " + bootClassPath +
+                                "\nChanging source level to 1.4"); //NOI18N
                         return com.sun.tools.javac.code.Source.JDK1_4;
                     }
                 }
