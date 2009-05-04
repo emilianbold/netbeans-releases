@@ -116,7 +116,7 @@ made subject to such option by the copyright holder.
              keyfile="${deployment.scp.keyfile}"
              passphrase="${deployment.scp.passphrase.eval}"
              trust="yes">
-             <fileset dir="${basedir}">
+             <fileset dir="${deployment.dir}">
                  <patternset refid="deployment.patternset"/>
              </fileset>
          </scp>

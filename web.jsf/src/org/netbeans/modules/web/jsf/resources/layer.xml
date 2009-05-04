@@ -176,12 +176,6 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    
-    <folder name="org-netbeans-api-project-libraries">
-        <folder name="Libraries">
-            <file name="jsf-extensions.xml" url="/org/netbeans/modules/web/jsf/libraries/jsf-extensions.xml"/>
-         </folder>
-    </folder>
 
     <folder name="JSPPalette">
         <folder name="JSF">
