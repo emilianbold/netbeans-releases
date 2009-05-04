@@ -102,43 +102,25 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
                 return true;
             }
         };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(EditorHyperlinkProviderImpl.class, "MSG_Opening", new Object[] {issueId}), c); // NOI18N
         class IssueDisplayer implements Runnable {
-            private Issue issue = null;
             public void run() {
-                try {
-                    
-
-                    DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-                    File file = null;
-                    if (dobj != null) {
-                        FileObject fileObject = dobj.getPrimaryFile();
-                        if(fileObject != null) {
-                            file = FileUtil.toFile(fileObject);
-                        }
+                DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+                File file = null;
+                if (dobj != null) {
+                    FileObject fileObject = dobj.getPrimaryFile();
+                    if(fileObject != null) {
+                        file = FileUtil.toFile(fileObject);
                     }
-                    if(file == null) return;
-
-                    final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
-                    if(repo == null) return;
-
-                    BugtrackingOwnerSupport.getInstance().setLooseAssociation(file, repo);
-
-                    if (issue == null) {
-                        issue = repo.getIssue(issueId);
-                        if (issue != null) {
-                            EventQueue.invokeLater(this);
-                        }
-                    } else {
-                        assert EventQueue.isDispatchThread();
-                        issue.open();
-                    }
-                } finally {
-                    handle.finish();
                 }
+                if(file == null) return;
+
+                final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
+                if(repo == null) return;
+
+                BugtrackingOwnerSupport.getInstance().setLooseAssociation(file, repo);
+                Issue.open(repo, issueId);
             }
         }
-        handle.start();
         t[0] = RequestProcessor.getDefault().post(new IssueDisplayer());
     }
 
