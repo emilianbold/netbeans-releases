@@ -34,12 +34,12 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
         if (newSession != null && newSession.getState() == SessionState.CLOSED){
             return;
         }
-//        if (newSession.getState() != SessionState.CONFIGURATION)
-        UIThread.invoke(new Runnable() {
-            public void run() {
-                getComponent(newSession).setSession(newSession);
-            }
-        });
+////        if (newSession.getState() != SessionState.CONFIGURATION)
+//        UIThread.invoke(new Runnable() {
+//            public void run() {
+//                getComponent(newSession).setSession(newSession);
+//            }
+//        });
     }
 
     private String getProjectFolder(DLightSession session) {

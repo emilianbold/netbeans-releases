@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.visualizers.api;
 
 import java.util.List;
@@ -52,17 +51,20 @@ import org.netbeans.modules.dlight.visualizers.api.impl.FunctionsListViewVisuali
  *
  * @author mt154047
  */
-public final class FunctionsListViewVisualizerConfiguration implements VisualizerConfiguration{
+public final class FunctionsListViewVisualizerConfiguration implements VisualizerConfiguration {
+
     private static final String ID = "FunctionsListViewVisualizerConfiguration";//NOI18N
     private final FunctionDatatableDescription functionDatatableDescription;
     private final DataTableMetadata metadata;
     private final List<Column> metrics;
     private ColumnsUIMapping columnsUIMapping;
+    private String emptyRuntimeMessage;
+    private String emptyAnalyzeMessage;
+    
 
-    static{
+    static {
         FunctionsListViewVisualizerConfigurationAccessor.setDefault(new FunctionsListViewVisualizerConfigurationAccessorImpl());
     }
-
 
     public FunctionsListViewVisualizerConfiguration(DataTableMetadata metadata,
             FunctionDatatableDescription functionDescription, List<Column> metrics) {
@@ -71,12 +73,27 @@ public final class FunctionsListViewVisualizerConfiguration implements Visualize
         this.metrics = metrics;
     }
 
-
-    public void setColumnsUIMapping(ColumnsUIMapping columnsUIMapping){
+    public void setColumnsUIMapping(ColumnsUIMapping columnsUIMapping) {
         this.columnsUIMapping = columnsUIMapping;
     }
-    
-     private FunctionDatatableDescription getFunctionDatatableDescription() {
+
+    public void setEmptyRunningMessage(String emptyRuntimeMessage) {
+        this.emptyRuntimeMessage = emptyRuntimeMessage;
+    }
+
+    public void setEmptyAnalyzeMessage(String emptyAnalyzeMessage) {
+        this.emptyAnalyzeMessage = emptyAnalyzeMessage;
+    }
+
+    String getEmptyRunningMessage() {
+        return emptyRuntimeMessage;
+    }
+
+    String getEmptyAnalyzeMessage() {
+        return emptyAnalyzeMessage;
+    }
+
+    private FunctionDatatableDescription getFunctionDatatableDescription() {
         return functionDatatableDescription;
     }
 
@@ -92,7 +109,8 @@ public final class FunctionsListViewVisualizerConfiguration implements Visualize
         return ID;
     }
 
-    private static final class FunctionsListViewVisualizerConfigurationAccessorImpl extends FunctionsListViewVisualizerConfigurationAccessor{
+    private static final class FunctionsListViewVisualizerConfigurationAccessorImpl extends FunctionsListViewVisualizerConfigurationAccessor {
+
         @Override
         public FunctionDatatableDescription getFunctionDatatableDescription(FunctionsListViewVisualizerConfiguration configuration) {
             return configuration.getFunctionDatatableDescription();
@@ -112,7 +130,15 @@ public final class FunctionsListViewVisualizerConfiguration implements Visualize
         public ColumnsUIMapping getColumnsUIMapping(FunctionsListViewVisualizerConfiguration configuration) {
             return configuration.columnsUIMapping;
         }
-        
-    }
 
+        @Override
+        public String getEmptyRunningMessage(FunctionsListViewVisualizerConfiguration configuration) {
+            return configuration.getEmptyRunningMessage();
+        }
+
+        @Override
+        public String getEmptyAnalyzeMessage(FunctionsListViewVisualizerConfiguration configuration) {
+            return configuration.getEmptyAnalyzeMessage();
+        }
+    }
 }
