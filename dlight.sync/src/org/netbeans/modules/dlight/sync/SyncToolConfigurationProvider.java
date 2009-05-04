@@ -182,6 +182,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         uiMapping.setColumnUI(SunStudioDCConfiguration.c_eSync.getColumnName(), loc("SyncTool.ColumnName.e_sync"), loc("SyncTool.ColumnTooltip.e_sync")); // NOI18N
         uiMapping.setColumnUI(SunStudioDCConfiguration.c_eSyncn.getColumnName(), loc("SyncTool.ColumnName.syncn"), loc("SyncTool.ColumnTooltip.syncn")); // NOI18N
         tableVisualizerConfiguration.setColumnsUIMapping(uiMapping);
+        tableVisualizerConfiguration.setEmptyAnalyzeMessage(loc("DetailedView.EmptyAnalyzeMessage"));//NOI18N
+        tableVisualizerConfiguration.setEmptyRunningMessage(loc("DetailedView.EmptyRunningMessage"));//NOI18N
         indicatorConfiguration.addVisualizerConfiguration(tableVisualizerConfiguration);
 
         return indicatorConfiguration;
@@ -283,7 +285,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         uiMapping.setColumnUI("time", loc("SyncTool.ColumnName.e_sync"), loc("SyncTool.ColumnTooltip.e_sync")); // NOI18N
         uiMapping.setColumnUI("count", loc("SyncTool.ColumnName.syncn"), loc("SyncTool.ColumnTooltip.syncn")); // NOI18N
         tableVisualizerConfiguration.setColumnsUIMapping(uiMapping);
-
+        tableVisualizerConfiguration.setEmptyAnalyzeMessage(loc("DetailedView.EmptyAnalyzeMessage"));//NOI18N
+        tableVisualizerConfiguration.setEmptyRunningMessage(loc("DetailedView.EmptyRunningMessage"));//NOI18N
         return tableVisualizerConfiguration;
     }
 

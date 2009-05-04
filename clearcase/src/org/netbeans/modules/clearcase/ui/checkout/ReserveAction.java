@@ -59,6 +59,7 @@ import java.io.File;
 import java.util.*;
 import java.awt.event.ActionEvent;
 import java.awt.Dialog;
+import org.netbeans.modules.clearcase.util.ProgressSupport;
 
 /**
  * Checks all files/folders in the context out, making them editable by the user.
@@ -118,7 +119,7 @@ public class ReserveAction extends AbstractAction {
         }
     }
     
-    private void performUnreserve(File [] files, String title) {
+    private void performUnreserve(final File [] files, String title) {
         JButton reserveButton = new JButton(); 
         reserveButton.setToolTipText(NbBundle.getMessage(ReserveAction.class, "TT_UnreserveAction"));
         CheckoutPanel panel = new CheckoutPanel();
@@ -142,19 +143,40 @@ public class ReserveAction extends AbstractAction {
         Object value = dd.getValue();
         if (value != reserveButton) return;
         
-        String message = panel.taMessage.getText();
+        final boolean expand = panel.cbRecursive.isSelected();
+        final String message = panel.taMessage.getText();
+        final ProgressSupport ps = new FileStatusCache.RefreshSupport(Clearcase.getInstance().getClient().getRequestProcessor(),
+                context, NbBundle.getMessage(CheckoutAction.class, "Progress_Modifying_Checkout_Preparing")) { //NOI18N
+            @Override
+            protected void perform() {
+                File[] targetFiles = files;
+                // list target files recursively if user selected the option
+                if (expand) {
+                    FileStatusCache cache = Clearcase.getInstance().getFileStatusCache();
+                    // refresh the cache first so we will
+                    // know all unreserve candidates
+                    refresh();
+                    // get all files to be reserved
+                    targetFiles = cache.listFiles(context, ALLOW_UNRESERVE, true);
+                }
+                if (isCanceled()) {
+                    return;
+                }
 
         Utils.insert(ClearcaseModuleConfig.getPreferences(), CheckoutAction.RECENT_CHECKOUT_MESSAGES, message, 20);
         UnreserveCommand cmd = 
                 new UnreserveCommand(
-                    files, 
+                        targetFiles,
                     message, 
-                    new AfterCommandRefreshListener(files), 
+                        new AfterCommandRefreshListener(targetFiles),
                     new OutputWindowNotificationListener());                
         Clearcase.getInstance().getClient().post(NbBundle.getMessage(ReserveAction.class, "Progress_Modifying_Checkout"), cmd); //NOI18N
     }
+        };
+        ps.start();
+    }
 
-    public static void performReserve(File[] files, String title) {        
+    public void performReserve(final File[] files, String title) {
         JButton reserveButton = new JButton(); 
         reserveButton.setToolTipText(NbBundle.getMessage(ReserveAction.class, "TT_ReserveAction"));
         CheckoutPanel panel = new CheckoutPanel();
@@ -178,15 +200,34 @@ public class ReserveAction extends AbstractAction {
         Object value = dd.getValue();
         if (value != reserveButton) return;
         
-        String message = panel.taMessage.getText();
-        Utils.insert(ClearcaseModuleConfig.getPreferences(), CheckoutAction.RECENT_CHECKOUT_MESSAGES, message, 20);
-        
+        final String message = panel.taMessage.getText();
+        final boolean expand = panel.cbRecursive.isSelected();
+        final ProgressSupport ps = new FileStatusCache.RefreshSupport(Clearcase.getInstance().getClient().getRequestProcessor(),
+                context, NbBundle.getMessage(CheckoutAction.class, "Progress_Modifying_Checkout_Preparing")) { //NOI18N
+            @Override
+            protected void perform() {
+                File[] targetFiles = files;
+                // list target files recursively if user selected the option
+                if (expand) {
+                    FileStatusCache cache = Clearcase.getInstance().getFileStatusCache();
+                    // refresh the cache first so we will
+                    // know all reserve candidates
+                    refresh();
+                    // get all files to be reserved
+                    targetFiles = cache.listFiles(context, ALLOW_RESERVE, true);
+                }
+                if (isCanceled()) {
+                    return;
+                }
         ReserveCommand cmd = 
                 new ReserveCommand(
-                    files, 
+                        targetFiles,
                     message, 
                     new OutputWindowNotificationListener(), 
-                    new AfterCommandRefreshListener(files));                
+                        new AfterCommandRefreshListener(targetFiles));
         Clearcase.getInstance().getClient().post(NbBundle.getMessage(ReserveAction.class, "Progress_Modifying_Checkout"), cmd); //NOI18N
     }        
+        };
+        ps.start();
+}
 }

@@ -44,6 +44,7 @@ import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -376,7 +377,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         } else {
             collectors.clear();
         }
-
+        Collection<IndicatorDataProvider> idproviders = new ArrayList();
         
         //if we have IDP which are collectors add them into the list of collectors
         for (DLightTool tool : validTools) {
@@ -398,6 +399,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                             if (notAttachableDataCollector == null && !((DataCollector) idp).isAttachable()) {
                                 notAttachableDataCollector = ((DataCollector) idp);
                             }
+                        }else{
+                            idproviders.add(idp);
                         }
                         List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
                         for (Indicator i : indicators) {
@@ -439,6 +442,9 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                         storage.put(key, info.get(key));
                     }
                     toolCollector.init(storage, target);
+                    if (toolCollector instanceof IndicatorDataProvider){
+                        ((IndicatorDataProvider)toolCollector).init(storage);
+                    }
                     if (storages == null) {
                         storages = new ArrayList<DataStorage>();
                     }
@@ -467,8 +473,18 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                 serviceInfoDataStorages.add(serviceInfoDataStorage);
             }
         }
-
-
+        //We should init IDPs with the ServiceInfoDataStorage
+        ServiceInfoDataStorage storage = null;
+        if (storages != null && !storages.isEmpty()){
+            storage = storages.get(0);//I need any, no matter what it is if it contains info needed
+        }else if (serviceInfoDataStorages != null && !serviceInfoDataStorages.isEmpty()){
+            storage = serviceInfoDataStorages.get(0);
+        }
+        if (storage != null){
+            for (IndicatorDataProvider idp : idproviders){
+                idp.init(storage);
+            }
+        }
 
         //and now if we have collectors which cannot be attached let's substitute target
         //the question is is it possible in case target is the whole system: WebTierTarget

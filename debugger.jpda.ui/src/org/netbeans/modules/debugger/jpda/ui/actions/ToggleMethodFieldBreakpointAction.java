@@ -58,8 +58,10 @@ import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.FieldBreakpointPanel;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.MethodBreakpointPanel;
 
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 import org.openide.util.Utilities;
 
 
@@ -117,12 +119,17 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
      */
     
     public void actionPerformed (ActionEvent evt) {
-        if (!submitFieldOrMethodBreakpoint()) {
-            DebuggerManager.getDebuggerManager().getActionsManager().doAction(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
+        Task[] toggleBpTaskPtr = new Task[] { null };
+        if (!submitFieldOrMethodBreakpoint(toggleBpTaskPtr)) {
+            Task toggleBpTask = DebuggerManager.getDebuggerManager().getActionsManager().postAction(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
+            synchronized (toggleBpTaskPtr) {
+                toggleBpTaskPtr[0] = toggleBpTask;
+                toggleBpTaskPtr.notify();
+            }
         }
     }
     
-    private boolean submitFieldOrMethodBreakpoint() {
+    private boolean submitFieldOrMethodBreakpoint(final Task[] toggleBpTaskPtr) {
         // 1) get class name & element info
         final String[] className = new String[] { null };
         java.awt.IllegalComponentStateException cex;
@@ -190,6 +197,21 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
                     if (fn != null && fn.length() == 0) fn = null;
                     if (submitFieldOrMethodBreakpoint(cn, fn, mn, ms, url, ln)) {
                         // We've submitted a field or method breakpoint, so delete the line one:
+                        Task toggleBpTask = null;
+                        if (toggleBpTaskPtr != null) {
+                            synchronized (toggleBpTaskPtr) {
+                                if (toggleBpTaskPtr[0] == null) {
+                                    try {
+                                        toggleBpTaskPtr.wait();
+                                    } catch (InterruptedException ex) {}
+                                    toggleBpTask = toggleBpTaskPtr[0];
+                                }
+                            }
+                        }
+                        // Wait for the line breakpoint to be actually submitted
+                        if (toggleBpTask != null) {
+                            toggleBpTask.waitFinished();
+                        }
                         LineBreakpoint lb = ToggleBreakpointActionProvider.findBreakpoint (
                             url, ln
                         );

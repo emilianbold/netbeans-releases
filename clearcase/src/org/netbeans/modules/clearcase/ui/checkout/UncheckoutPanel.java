@@ -50,19 +50,25 @@ import org.netbeans.modules.clearcase.ClearcaseModuleConfig;
 public class UncheckoutPanel extends javax.swing.JPanel {
     
     private static final String UNCHECKOUT_KEEP = "uncheckout.keep";
+    private static final String UNCHECKOUT_RECURSIVE = "uncheckout.recursive";
+    boolean onlyFolders;
 
     /** Creates new form UncheckoutPanel */
     public UncheckoutPanel() {
+        onlyFolders = true;
         initComponents();
     }
 
     public void addNotify() {
         super.addNotify();
         cbKeep.setSelected(ClearcaseModuleConfig.getPreferences().getBoolean(UNCHECKOUT_KEEP, true));
+        cbRecursively.setSelected(ClearcaseModuleConfig.getPreferences().getBoolean(UNCHECKOUT_RECURSIVE, true));
+        enableKeepCheckBox();
     }
 
     public void removeNotify() {
         ClearcaseModuleConfig.getPreferences().putBoolean(UNCHECKOUT_KEEP, cbKeep.isSelected());
+        ClearcaseModuleConfig.getPreferences().putBoolean(UNCHECKOUT_RECURSIVE, cbRecursively.isSelected());
         super.removeNotify();
     }
 
@@ -78,10 +84,20 @@ public class UncheckoutPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         cbKeep = new javax.swing.JCheckBox();
 
+        setPreferredSize(new java.awt.Dimension(1136, 187));
+
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(UncheckoutPanel.class, "UncheckoutPanel.jLabel1.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbKeep, org.openide.util.NbBundle.getMessage(UncheckoutPanel.class, "UncheckoutPanel.cbKeep.text")); // NOI18N
         cbKeep.setToolTipText(org.openide.util.NbBundle.getMessage(UncheckoutPanel.class, "UncheckoutPanel.cbKeep.toolTipText")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbRecursively, org.openide.util.NbBundle.getMessage(UncheckoutPanel.class, "UncheckoutPanel.cbRecursively.text")); // NOI18N
+        cbRecursively.setToolTipText(org.openide.util.NbBundle.getMessage(UncheckoutPanel.class, "UncheckoutPanel.cbRecursively.toolTipText")); // NOI18N
+        cbRecursively.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbRecursivelyActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -90,23 +106,37 @@ public class UncheckoutPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbKeep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)))
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1124, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, cbKeep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1124, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(cbRecursively, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1112, Short.MAX_VALUE)
+                        .add(12, 12, 12))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 15, Short.MAX_VALUE)
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(cbKeep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(cbKeep)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(cbRecursively)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cbRecursivelyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbRecursivelyActionPerformed
+        enableKeepCheckBox();
+    }//GEN-LAST:event_cbRecursivelyActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JCheckBox cbKeep;
+    final javax.swing.JCheckBox cbRecursively = new javax.swing.JCheckBox();
     javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 
+    private void enableKeepCheckBox() {
+        cbKeep.setEnabled(!onlyFolders || cbRecursively.isSelected());
+}
 }

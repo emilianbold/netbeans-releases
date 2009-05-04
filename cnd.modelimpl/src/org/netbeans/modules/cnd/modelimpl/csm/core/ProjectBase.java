@@ -334,19 +334,28 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public final Collection<CsmClassifier> findClassifiers(CharSequence qualifiedName) {
         CsmClassifier result = getClassifierSorage().getClassifier(qualifiedName);
-        Collection<CsmClassifier> out = UIDCsmConverter.UIDsToDeclarations(new ArrayList<CsmUID<CsmClassifier>>());
+        Collection<CsmClassifier> out = new ArrayList<CsmClassifier>();
         //Collection<CsmClassifier> out = new LazyCsmCollection<CsmClassifier, CsmClassifier>(new ArrayList<CsmUID<CsmClassifier>>(), TraceFlags.SAFE_UID_ACCESS);
         if (result != null) {
             if (CsmKindUtilities.isBuiltIn(result)) {
                 return Collections.<CsmClassifier>singletonList(result);
             }
             CharSequence[] allClassifiersUniqueNames = Utils.getAllClassifiersUniqueNames(result.getUniqueName());
+            Collection<CsmClassifier> fwds = new ArrayList<CsmClassifier>(1);
             for (CharSequence curUniqueName : allClassifiersUniqueNames) {
                 Collection<? extends CsmDeclaration> decls = this.findDeclarations(curUniqueName);
                 @SuppressWarnings("unchecked")
                 Collection<CsmClassifier> classifiers = (Collection<CsmClassifier>) decls;
-                out.addAll(classifiers);
+                for (CsmClassifier csmClassifier : classifiers) {
+                    if (ForwardClass.isForwardClass(csmClassifier)) {
+                        fwds.add(csmClassifier);
+                    } else {
+                        out.add(csmClassifier);
+                    }
+                }
             }
+            // All forwards move at the end
+            out.addAll(fwds);
         }
         return out;
     }

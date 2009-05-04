@@ -61,35 +61,42 @@ import org.netbeans.modules.php.editor.model.VariableName;
  * @author Jan Lahoda, Radek Matous
  */
 public class InstantRenamerImpl implements InstantRenamer {
+    //TODO: instant rename isn't proper refactoring but cause it was released this way in 6.5
+    // and because rename refactoring won't be implemented, so I've reverted it into
+    //6.5 shape to supress the feeling there is a regression
+    private static final boolean IS_RENAME_REFACTORING_ENABLED = false;
     private List<Occurence> allOccurences = Collections.emptyList();
 
     public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
-        //TODO: put some comments into status line if false is returned
         allOccurences.clear();
         OccurencesSupport occurencesSupport = ModelFactory.getModel(info).getOccurencesSupport(caretOffset);
         Occurence caretOccurence = occurencesSupport.getOccurence();
         if (caretOccurence != null) {
-            ModelElement decl = caretOccurence.getDeclaration();
-            if (caretOccurence.getAllDeclarations().size() > 1) {
-                return false;
-            }
-            if (decl instanceof VariableName) {
-                VariableName varName = (VariableName) decl;
-                if (!varName.isGloballyVisible() && !varName.representsThis()) {
-                    return checkAll(caretOccurence);
+            if (IS_RENAME_REFACTORING_ENABLED) {
+                ModelElement decl = caretOccurence.getDeclaration();
+                if (caretOccurence.getAllDeclarations().size() > 1) {
+                    return false;
                 }
-            } else if (decl instanceof MethodScope) {
-                MethodScope meth = (MethodScope) decl;
-                PhpModifiers phpModifiers = meth.getPhpModifiers();
-                if (phpModifiers.isPrivate()) {
-                    return checkAll(caretOccurence);
+                if (decl instanceof VariableName) {
+                    VariableName varName = (VariableName) decl;
+                    if (!varName.isGloballyVisible() && !varName.representsThis()) {
+                        return checkAll(caretOccurence);
+                    }
+                } else if (decl instanceof MethodScope) {
+                    MethodScope meth = (MethodScope) decl;
+                    PhpModifiers phpModifiers = meth.getPhpModifiers();
+                    if (phpModifiers.isPrivate()) {
+                        return checkAll(caretOccurence);
+                    }
+                } else if (decl instanceof FieldElement) {
+                    FieldElement fld = (FieldElement) decl;
+                    PhpModifiers phpModifiers = fld.getPhpModifiers();
+                    if (phpModifiers.isPrivate()) {
+                        return checkAll(caretOccurence);
+                    }
                 }
-            } else if (decl instanceof FieldElement) {
-                FieldElement fld = (FieldElement) decl;
-                PhpModifiers phpModifiers = fld.getPhpModifiers();
-                if (phpModifiers.isPrivate()) {
-                    return checkAll(caretOccurence);
-                }
+            } else {
+                return checkAll(caretOccurence);
             }
         }
         return false;
@@ -108,11 +115,15 @@ public class InstantRenamerImpl implements InstantRenamer {
         List<Occurence> collected = new ArrayList<Occurence>();
         Collection<Occurence> all = caretOccurence.getAllOccurences();
         for (Occurence occurence : all) {
-            if (occurence.getAllDeclarations().size() == 1 ) {
-                collected.add(occurence);
+            if (IS_RENAME_REFACTORING_ENABLED) {
+                if (occurence.getAllDeclarations().size() == 1 ) {
+                    collected.add(occurence);
+                } else {
+                    allOccurences.clear();
+                    return false;
+                }
             } else {
-                allOccurences.clear();
-                return false;
+                collected.add(occurence);
             }
         }
         allOccurences = collected;

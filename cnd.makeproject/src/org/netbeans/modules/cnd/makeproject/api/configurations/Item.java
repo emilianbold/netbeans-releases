@@ -244,12 +244,17 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return folder;
     }
 
-    public File getFile() {
+    public File getNormalizedFile() {
         String aPath = getAbsPath();
         if (aPath != null) {
             return FileUtil.normalizeFile(new File(aPath));
         }
         return file;
+    }
+
+    public File getFile() {
+        // let's try to use normalized, not canonical paths
+        return getNormalizedFile();
     }
 
     public File getCanonicalFile() {
@@ -328,11 +333,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public FileObject getFileObject() {
-        File curFile = getCanonicalFile();
-        FileObject fo = null;
-        try {
-            fo = FileUtil.toFileObject(curFile.getCanonicalFile());
-        } catch (IOException e) {
+        File curFile = getNormalizedFile();
+        FileObject fo = FileUtil.toFileObject(curFile);
+        if (fo == null) {
+            fo = FileUtil.toFileObject(getCanonicalFile());
         }
         return fo;
     }

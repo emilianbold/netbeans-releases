@@ -150,16 +150,27 @@ public class TestsuiteNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type) {
-        if (report != null && Status.ABORTED == report.getStatus()) {
-            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning_16.png"); //NOI18N
+        if (report != null){
+            Status status = report.getStatus();
+            if (!report.completed){
+                switch (status){
+                    case FAILED:
+                    case ERROR: return ImageUtilities.mergeImages(
+                            ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/run.gif"), //NOI18N
+                            ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error-badge.gif"), //NOI18N
+                            8, 8);
+                }
+            }else{
+                switch (status){
+                    case ABORTED: return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning_16.png"); //NOI18N
+                    case PENDING: return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
+                    case PASSED: return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/ok_16.png"); //NOI18N
+                    case FAILED:
+                    case ERROR: return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error_16.png"); //NOI18N
+                }
+            }
         }
-        if (containsFailed()) {
-            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error_16.png"); //NOI18N
-        }
-        if (report != null && Status.PENDING == report.getStatus()) {
-            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
-        }
-        return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/ok_16.png"); //NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/run.gif"); //NOI18N
     }
     
     /**
