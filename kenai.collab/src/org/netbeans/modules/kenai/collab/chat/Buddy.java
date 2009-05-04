@@ -54,7 +54,7 @@ import org.openide.util.ImageUtilities;
 public class Buddy implements Comparable<Buddy> {
     
     private String jid;
-    private static final Icon ONLINE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.gif"));
+    private static final Icon ONLINE_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.png"));
 
     public Buddy(String jid) {
         assert jid!=null:"Jid cannot be null. Show JID must be enabled on server.";
