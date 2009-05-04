@@ -135,7 +135,7 @@ final class InspectorFolderNode extends AbstractNode {
     
     @Override
     public boolean canRename() {
-        return folder.canRename();
+        return false;
     }
     
     public AcceptSuggestion createSuggestion(Transferable transferable) {
