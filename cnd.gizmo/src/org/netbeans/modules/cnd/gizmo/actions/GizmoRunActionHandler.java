@@ -147,7 +147,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
         if (options instanceof GizmoConfigurationOptions) {
             ((GizmoConfigurationOptions) options).configure(pae.getProject());
-            targetConf.putInfo("idps", ((GizmoConfigurationOptions) options).getDLightIndicatorDPStrings());
+            targetConf.putInfo("idps", ((GizmoConfigurationOptions) options).getDLightIndicatorDPStrings());//NOI18N
         }
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);

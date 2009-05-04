@@ -199,6 +199,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
                 new FunctionsListViewVisualizerConfiguration(detailedViewTableMetadata, functionDesc, Arrays.asList(SunStudioDCConfiguration.c_leakSize, SunStudioDCConfiguration.c_leakCount));
         tableVisualizerConfiguration.setColumnsUIMapping(columnsUIMapping);
+        tableVisualizerConfiguration.setEmptyAnalyzeMessage(loc("DetailedView.EmptyAnalyzeMessage"));//NOI18N
+        tableVisualizerConfiguration.setEmptyRunningMessage(loc("DetailedView.EmptyRunningMessage"));//NOI18N
         indicatorConfiguration.addVisualizerConfiguration(tableVisualizerConfiguration);
 
         indicatorConfiguration.addVisualizerConfiguration(getDetails(rawTableMetadata));
@@ -232,7 +234,8 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         FunctionsListViewVisualizerConfiguration tableVisualizerConfiguration =
                 new FunctionsListViewVisualizerConfiguration(viewTableMetadata, functionDesc, Arrays.asList(metricColumn));
         tableVisualizerConfiguration.setColumnsUIMapping(columnsUIMapping);
-
+        tableVisualizerConfiguration.setEmptyAnalyzeMessage(loc("DetailedView.EmptyAnalyzeMessage"));//NOI18N
+        tableVisualizerConfiguration.setEmptyRunningMessage(loc("DetailedView.EmptyRunningMessage"));//NOI18N
         return tableVisualizerConfiguration;
     }
 

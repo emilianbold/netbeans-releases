@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -1223,34 +1224,57 @@ abstract public class CsmCompletionQuery {
                                             compResolver.setResolveTypes(
                                                     CompletionResolver.RESOLVE_CLASSES |
                                                     CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS |
-                                                    CompletionResolver.RESOLVE_GLOB_NAMESPACES |
                                                     CompletionResolver.RESOLVE_LIB_CLASSES |
                                                     CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS |
-                                                    CompletionResolver.RESOLVE_LOCAL_CLASSES |
-                                                    CompletionResolver.RESOLVE_LIB_NAMESPACES);
+                                                    CompletionResolver.RESOLVE_LOCAL_CLASSES);
+                                            boolean foundVisibleClassifier = false;
                                             if (resolve(varPos, var, true)) {
                                                 Collection<? extends CsmObject> res = compResolver.getResult().addResulItemsToCol(new ArrayList<CsmObject>());
                                                 if (!res.isEmpty()) {
-                                                    lastNamespace = null;
                                                     lastType = null;
+                                                    CsmObject classifierCandidate = null;
                                                     for (CsmObject obj : res) {
-                                                        if (lastNamespace == null) {
-                                                            if (CsmKindUtilities.isNamespace(obj)) {
-                                                                lastNamespace = (CsmNamespace) obj;
-                                                            } else if (CsmKindUtilities.isNamespaceAlias(obj)) {
-                                                                lastNamespace = ((CsmNamespaceAlias) obj).getReferencedNamespace();
-                                                            }
-                                                        }
                                                         if (lastType == null) {
                                                             if (CsmKindUtilities.isClassifier(obj)) {
-                                                                obj = CsmBaseUtilities.getOriginalClassifier((CsmClassifier) obj, contextFile);
-                                                                lastType = CsmCompletion.getType((CsmClassifier) obj, 0, false, 0, false);
+                                                                // remember the first
+                                                                if (classifierCandidate == null) {
+                                                                    classifierCandidate = obj;
+                                                                }
+                                                                // prefer visible classifier
+                                                                if (CsmIncludeResolver.getDefault().isObjectVisible(contextFile, obj)) {
+                                                                    lastType = CsmCompletion.getType((CsmClassifier) obj, 0, false, 0, false);
+                                                                    foundVisibleClassifier = true;
+                                                                    break;
+                                                                }
                                                             }
                                                         }
-                                                        if (lastType != null && lastNamespace != null) {
-                                                            break;
+                                                    }
+                                                    if (lastType == null && classifierCandidate != null) {
+                                                        lastType = CsmCompletion.getType((CsmClassifier) classifierCandidate, 0, false, 0, false);
+                                                    }
+                                                }
+                                            }
+                                            if (!foundVisibleClassifier) {
+                                                QueryScope old = compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
+                                                compResolver.setResolveTypes(
+                                                        CompletionResolver.RESOLVE_GLOB_NAMESPACES |
+                                                        CompletionResolver.RESOLVE_LIB_NAMESPACES);
+                                                if (resolve(varPos, var, true)) {
+                                                    Collection<? extends CsmObject> res = compResolver.getResult().addResulItemsToCol(new ArrayList<CsmObject>());
+                                                    if (!res.isEmpty()) {
+                                                        CsmObject ns = res.iterator().next();
+                                                        if (CsmKindUtilities.isNamespaceAlias(ns)) {
+                                                            lastNamespace = ((CsmNamespaceAlias) ns).getReferencedNamespace();
+                                                        } else if (CsmKindUtilities.isNamespace(ns)) {
+                                                            lastNamespace = (CsmNamespace) ns;
                                                         }
                                                     }
+                                                }
+                                                // restore old
+                                                compResolver.setResolveScope(old);
+                                                if (lastNamespace != null) {
+                                                    // clean up invisible backup
+                                                    lastType = null;
                                                 }
                                             }
                                         }

@@ -214,7 +214,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
             TreePath path = layout.getPathForRow(row);
             boolean isExpanded = layout.isExpanded(path);
             setExpanded (isExpanded);
-            int nd = path.getPathCount() - (tbl.isRootVisible() ? 1 : 2);
+            int nd = path == null ? 0 : path.getPathCount() - (tbl.isRootVisible() ? 1 : 2);
             if (nd < 0) {
                 nd = 0;
             }

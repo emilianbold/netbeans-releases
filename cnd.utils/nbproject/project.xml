@@ -40,6 +40,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.asm</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.model</friend>
                 <friend>org.netbeans.modules.cnd.apt</friend>
