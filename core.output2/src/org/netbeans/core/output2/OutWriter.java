@@ -143,23 +143,21 @@ class OutWriter extends PrintWriter {
         return "OutWriter@" + System.identityHashCode(this) + " for " + owner + " closed ";
     }
 
+    private int errorCount = 0;
+
     /** Generic exception handling, marking the error flag and notifying it with ErrorManager */
-    private void handleException (Exception e) {
+    private void handleException(Exception e) {
         setError();
-        String msg = Exceptions.findLocalizedMessage(e);
-        if (msg == null) {
-            Exceptions.attachLocalizedMessage(e,
-                                              NbBundle.getMessage(OutWriter.class,
-                                                                  "MSG_GenericError")); //NOI18N
-        }
         if (Controller.LOG) {
             StackTraceElement[] el = e.getStackTrace();
-            Controller.log ("EXCEPTION: " + e.getClass() + e.getMessage());
-            for (int i=1; i < el.length; i++) {
-                Controller.log (el[i].toString());
+            Controller.log("EXCEPTION: " + e.getClass() + e.getMessage());
+            for (int i = 1; i < el.length; i++) {
+                Controller.log(el[i].toString());
             }
         }
-        Exceptions.printStackTrace(e);
+        if (errorCount++ < 3) {
+            Exceptions.printStackTrace(e);
+        }
     }
 
     /**
