@@ -91,6 +91,11 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
         myFooterFontValue = Config.getDefault().getFooterFont();
     }
 
+    public void invalidValue(String value) {
+//out("INVALID value: " + value);
+        printError(i18n("ERR_Zoom_Value_Is_Invalid")); // NOI18N
+    }
+
     @Override
     protected DialogDescriptor createDescriptor() {
         myDescriptor = new DialogDescriptor(
@@ -114,11 +119,6 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
             }
         );
         return myDescriptor;
-    }
-
-    public void invalidValue(String value) {
-//out("INVALID value: " + value);
-        printError(i18n("ERR_Zoom_Value_Is_Invalid")); // NOI18N
     }
 
     private Object[] getButtons() {

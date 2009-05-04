@@ -102,9 +102,6 @@ import org.openide.util.RequestProcessor;
  * TODO:
  * - all text from bundles
  * - all possible error states and messages
- * - check project name against AJAX API
- * - fix regexp
- * - check for isUnique(prjName)
  *
  * @author Milan Kubec
  */
@@ -177,7 +174,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         folderTosShareTextField.getDocument().addDocumentListener(firingDocListener);
 
         setupLicensesListModel();
-
+        setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
     }
 
     private void setAutoCommit(boolean autoCommit) {
@@ -297,7 +294,6 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         additionalDescription = new JLabel();
         autoCommit = new JCheckBox();
 
-        setPreferredSize(new Dimension(700, 450));
         setLayout(new GridBagLayout());
         Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loggedInLabel.text"));
         gridBagConstraints = new GridBagConstraints();
@@ -430,12 +426,12 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             }
         });
         projectLicenseComboBox.addPopupMenuListener(new PopupMenuListener() {
-            public void popupMenuWillBecomeVisible(PopupMenuEvent evt) {
-                projectLicenseComboBoxPopupMenuWillBecomeVisible(evt);
+            public void popupMenuCanceled(PopupMenuEvent evt) {
             }
             public void popupMenuWillBecomeInvisible(PopupMenuEvent evt) {
             }
-            public void popupMenuCanceled(PopupMenuEvent evt) {
+            public void popupMenuWillBecomeVisible(PopupMenuEvent evt) {
+                projectLicenseComboBoxPopupMenuWillBecomeVisible(evt);
             }
         });
         gridBagConstraints = new GridBagConstraints();

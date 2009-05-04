@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
@@ -159,8 +160,8 @@ public class JiraQuery extends Query {
                                 assert false;
                         }
                         // read the stored state ...
-                        archivedIssues.addAll(repository.getIssueCache().readQueryIssues(JiraQuery.this.getDisplayName()));
-                        archivedIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(JiraQuery.this.getDisplayName()));
+                        archivedIssues.addAll(repository.getIssueCache().readQueryIssues(getStoredQueryName()));
+                        archivedIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(getStoredQueryName()));
                     }
                     firstRun = false;
 
@@ -177,8 +178,8 @@ public class JiraQuery extends Query {
                     archivedIssues.removeAll(issues);
                     if(isSaved()) {
                         // ... and store teh actuall state
-                        repository.getIssueCache().storeQueryIssues(JiraQuery.this.getDisplayName(), issues.toArray(new String[issues.size()]));
-                        repository.getIssueCache().storeArchivedQueryIssues(JiraQuery.this.getDisplayName(), archivedIssues.toArray(new String[archivedIssues.size()]));
+                        repository.getIssueCache().storeQueryIssues(getStoredQueryName(), issues.toArray(new String[issues.size()]));
+                        repository.getIssueCache().storeArchivedQueryIssues(getStoredQueryName(), archivedIssues.toArray(new String[archivedIssues.size()]));
                     }
                 } finally {
                     logQueryEvent(issues.size(), autoRefresh);
@@ -187,6 +188,10 @@ public class JiraQuery extends Query {
             }
         });
         return ret[0];
+    }
+
+    protected String getStoredQueryName() {
+        return getDisplayName();
     }
 
     protected void logQueryEvent(int count, boolean autoRefresh) {
@@ -289,6 +294,14 @@ public class JiraQuery extends Query {
                 IssueCache cache = repository.getIssueCache();
                 issue = (NbJiraIssue) cache.setIssueData(id, taskData);
                 issues.add(issue.getID());
+                
+                try {
+                    // XXX dummy
+                    Jira.getInstance().storeTaskData(repository, taskData);
+                } catch (CoreException ex) {
+                    Jira.LOG.log(Level.SEVERE, null, ex); 
+                }
+
             } catch (IOException ex) {
                 Jira.LOG.log(Level.SEVERE, null, ex);
                 return;

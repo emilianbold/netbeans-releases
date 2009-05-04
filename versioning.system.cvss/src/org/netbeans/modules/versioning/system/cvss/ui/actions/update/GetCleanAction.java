@@ -177,7 +177,7 @@ public class GetCleanAction extends AbstractSystemAction {
                         FileObject folder = Utils.mkfolders(dir);
                         target = folder.createData(file.getName());
                     } else {
-                        target = FileUtil.toFileObject(file);
+                        target = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                     }
                     if (target == null) {
                         org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(file), new FileInputStream(cleanFile));

@@ -165,6 +165,8 @@ class CategoryPanelFormatters extends StorablePanel {
         formatChildrenListScrollPane.setViewportView(formatChildrenListTable);
 
         formattersScrollPane.setViewportView(formattersList);
+        formattersList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersList.a11y.name")); // NOI18N
+        formattersList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formattersList.a11y.description")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(formatterNameLabel, org.openide.util.NbBundle.getMessage(CategoryPanelFormatters.class, "CategoryPanelFormatters.formatterNameLabel.text")); // NOI18N
 
@@ -277,7 +279,7 @@ class CategoryPanelFormatters extends StorablePanel {
                         .add(12, 12, 12)
                         .add(formatterNameLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE))
+                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -286,14 +288,14 @@ class CategoryPanelFormatters extends StorablePanel {
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                         .add(formatterClassTypesLabel)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(formatterClassTypesTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
+                                        .add(formatterClassTypesTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE))
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, formatValueLabel)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, childrenCodeLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(subtypesLabel)
                                 .add(6, 6, 6))
                             .add(layout.createSequentialGroup()
-                                .add(formattersScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
+                                .add(formattersScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                     .add(layout.createSequentialGroup()
@@ -340,6 +342,9 @@ class CategoryPanelFormatters extends StorablePanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(formatChildrenCodeScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
         );
+
+        layout.linkSize(new java.awt.Component[] {formattersScrollPane, jPanel1}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
     }// </editor-fold>//GEN-END:initComponents
 
     private void formattersAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formattersAddButtonActionPerformed

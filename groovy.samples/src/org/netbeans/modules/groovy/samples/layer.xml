@@ -9,14 +9,14 @@
                     <file name="GroovyJavaDemoProject.zip" url="GroovyJavaDemoProject.zip">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.samples.gjdemo.GroovyJavaDemoWizardIterator.createIterator"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/samples/gjdemo/GroovyJavaDemoDescription.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
                     <file name="NBProjectGeneratorsProject.zip" url="NBProjectGeneratorsProject.zip">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.samples.nbprojectgen.NBProjectGeneratorsWizardIterator.createIterator"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/samples/nbprojectgen/NBProjectGeneratorsDescription.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>

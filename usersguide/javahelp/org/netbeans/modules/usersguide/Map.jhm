@@ -490,6 +490,7 @@
 <!-- Collaboration csh topics-->
 <mapID target="org.netbeans.modules.kenai.ui.NameAndLicenseWizardPanel" url="collab/csh/new_kenai_project1.html" />
 <mapID target="org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanel" url="collab/csh/new_kenai_project2.html" />
+<mapID target="org.netbeans.modules.kenai.ui.ShareOnKenai" url="collab/csh/share_kenai_project.html" />
 
 <!-- Issue tracking topics -->
 <mapID target="issues_trackers" url="collab/issues_about.html" />

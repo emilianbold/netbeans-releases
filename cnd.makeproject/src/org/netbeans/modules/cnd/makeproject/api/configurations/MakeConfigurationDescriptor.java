@@ -62,6 +62,8 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
+import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -101,6 +103,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public static final String ICONBASE = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject"; // NOI18N
     public static final String ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
     public static final Icon MAKEFILE_ICON = ImageUtilities.loadImageIcon(ICON, false); // NOI18N
+    public static final String DEFAULT_IGNORE_FOLDERS_PATTERN = "^(nbproject|build|test)$"; // NOI18N
     private Project project = null;
     private String baseDir;
     private boolean modified = false;
@@ -113,6 +116,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
+    private CndVisibilityQuery folderVisibilityQuery = null;
 
     public MakeConfigurationDescriptor(String baseDir) {
         super();
@@ -497,6 +501,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setProjectItemsMap(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsChangeListeners());
         setSourceRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceRootsRaw());
+        setFolderVisibilityQuery(((MakeConfigurationDescriptor)clonedConfigurationDescriptor).getFolderVisibilityQuery().getRegEx());
     }
 
     public ConfigurationDescriptor cloneProjectDescriptor() {
@@ -508,6 +513,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         clone.setProjectItemsMap(getProjectItemsMap());
         clone.setProjectItemsChangeListeners(getProjectItemsChangeListeners());
         clone.setSourceRoots(getSourceRootsRaw());
+        clone.setFolderVisibilityQuery(getFolderVisibilityQuery().getRegEx());
         return clone;
     }
 
@@ -556,6 +562,23 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      */
     public void addAdditionalHeaderExtensions(Collection<String> needAdd) {
         ((MakeProject) getProject()).addAdditionalHeaderExtensions(needAdd);
+    }
+
+    public CndVisibilityQuery getFolderVisibilityQuery() {
+        if (folderVisibilityQuery == null) {
+            folderVisibilityQuery = new CndVisibilityQuery(DEFAULT_IGNORE_FOLDERS_PATTERN);
+        }
+        return folderVisibilityQuery;
+
+    }
+
+    public void setFolderVisibilityQuery(String regex) {
+        if (folderVisibilityQuery == null) {
+            folderVisibilityQuery = new CndVisibilityQuery(regex);
+        }
+        else {
+            folderVisibilityQuery.setPattern(regex);
+        }
     }
 
     private class SaveRunnable implements Runnable {
@@ -1049,8 +1072,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             return;
         }
         for (int i = 0; i < files.length; i++) {
-            if (!VisibilityQuery.getDefault().isVisible(files[i]) ||
-                    files[i].getName().equals("nbproject")) { // NOI18N
+            if (!VisibilityQuery.getDefault().isVisible(files[i])) {
+                continue;
+            }
+            if (files[i].isFile() && !CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
+                continue;
+            }
+            if (files[i].isDirectory() && getFolderVisibilityQuery().isVisible(files[i])) {
                 continue;
             }
             if (files[i].isDirectory()) {

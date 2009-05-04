@@ -39,12 +39,7 @@
 
 package org.netbeans.modules.jira.issue;
 
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import java.awt.Font;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,19 +48,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
-import javax.swing.JList;
-import javax.swing.event.MouseInputListener;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.Element;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
+import javax.swing.JScrollPane;
+import javax.swing.UIManager;
 import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
 import org.eclipse.mylyn.internal.jira.core.model.Attachment;
 import org.eclipse.mylyn.internal.jira.core.model.Comment;
+import org.eclipse.mylyn.internal.jira.core.model.IssueType;
+import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
+import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -76,14 +67,14 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
-import org.netbeans.modules.bugtracking.util.StackTraceSupport;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class NbJiraIssue extends Issue {
     private TaskData taskData;
@@ -198,14 +189,12 @@ public class NbJiraIssue extends Issue {
 
 
     public String getID() {
-        if(taskData.isNew()) {
-            return null;
-        }
-        return taskData.getTaskId(); // XXX id or key ???
+//        return taskData.getTaskId(); // XXX id or key ???
+        return getID(taskData);
     }
 
     String getKey() {
-        return getFieldValue(IssueField.KEY);
+        return getID(taskData);
     }
 
     public String getSummary() {
@@ -214,6 +203,26 @@ public class NbJiraIssue extends Issue {
     
     String getDescription() {
         return getFieldValue(IssueField.DESCRIPTION);
+    }
+
+    IssueType getType() {
+        String id = getFieldValue(IssueField.TYPE);
+        return repository.getConfiguration().getIssueTypeById(id);
+    }
+
+    Priority getPriority() {
+        String id = getFieldValue(IssueField.PRIORITY);
+        return repository.getConfiguration().getPriorityById(id);
+    }
+
+    JiraStatus getStatus() {
+        String id = getFieldValue(IssueField.STATUS);
+        return repository.getConfiguration().getStatusById(id);
+    }
+
+    Resolution getResolution() {
+        String id = getFieldValue(IssueField.RESOLUTION);
+        return repository.getConfiguration().getResolutionById(id);
     }
 
     TaskRepository getTaskRepository() {
@@ -265,24 +274,24 @@ public class NbJiraIssue extends Issue {
     }
 
     public void resolveFixed(String val) {
-        try {
-            Resolution[] res = Jira.getInstance().getResolutions(getTaskRepository());
-            Resolution resolution = null;
-            if(res != null) {
-                for (Resolution r : res) {
-                    // XXX HACK
-                    if(r.getName().equals("Fixed")) {
-                        resolution = r;
-                    }
-                }
-            }
-            if(resolution == null) {
-                Jira.LOG.severe("Can't close issue " + getKey() + " as 'Fixed'");
-            }
-            resolve(resolution, val);
-        } catch (JiraException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            Resolution[] res = Jira.getInstance().getResolutions(getTaskRepository());
+//            Resolution resolution = null;
+//            if(res != null) {
+//                for (Resolution r : res) {
+//                    // XXX HACK
+//                    if(r.getName().equals("Fixed")) {
+//                        resolution = r;
+//                    }
+//                }
+//            }
+//            if(resolution == null) {
+//                Jira.LOG.severe("Can't close issue " + getKey() + " as 'Fixed'");
+//            }
+//            resolve(resolution, val);
+//        } catch (JiraException ex) {
+//            Jira.LOG.log(Level.SEVERE, null, ex);
+//        }
     }
 
     @Override
@@ -387,7 +396,7 @@ public class NbJiraIssue extends Issue {
         if(taskData.isNew()) {
             return null;
         }
-        return taskData.getTaskId();
+        return getFieldValue(taskData, IssueField.KEY);
     }
 
     // XXX fields logic - 100% bugzilla overlap
@@ -398,6 +407,10 @@ public class NbJiraIssue extends Issue {
      * @return
      */
     String getFieldValue(IssueField f) {
+        return getFieldValue(taskData, f);
+    }
+
+    static String getFieldValue(TaskData taskData, IssueField f) {
         if(f.isSingleAttribute()) {
             TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
             if(a != null && a.getValues().size() > 1) {
@@ -418,7 +431,7 @@ public class NbJiraIssue extends Issue {
      * @param a
      * @return
      */
-    private String listValues(TaskAttribute a) {
+    private static String listValues(TaskAttribute a) {
         if(a == null) {
             return "";                                                          // NOI18N
         }
@@ -505,156 +518,47 @@ public class NbJiraIssue extends Issue {
         return seenAtributes;
     }
 
-    private class Controller extends BugtrackingController implements ActionListener, MouseMotionListener, MouseInputListener {
-        private IssuePanel panel = new IssuePanel();
-        private CommentPanel addCommentPanel = new CommentPanel();
-        private ResolvePanel resolvePanel = new ResolvePanel();
-        private StyledDocument doc;
-        private DefaultListModel attachmentsModel;
-
-        private final static String HL_ATTRIBUTE = "linkact";
+    private class Controller extends BugtrackingController {
+        private JComponent issuePanel;
 
         public Controller() {
-            doc = panel.commenstTextPane.getStyledDocument();
-
-            resolvePanel.resolutionCBO.setRenderer(new DefaultListCellRenderer() {
-                @Override
-                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                    if(value != null) {
-                        Resolution r = (Resolution) value;
-                        value = r.getName();
-                    }
-                    return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                }
-            });
-
-            attachmentsModel = new DefaultListModel();
-            panel.attachmentsList.setModel(attachmentsModel);
-            panel.attachmentsList.setCellRenderer(new DefaultListCellRenderer() {
-                @Override
-                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                    if(value != null) {
-                        Attachment a = (Attachment) value;
-                        value = a.getName() + " : " + a.getAuthor() + " : " + dateFormat.format(a.getCreated());
-                    }
-                    return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                }
-            });
-
-            panel.addCommentButton.addActionListener(this);
-            panel.resolveButton.addActionListener(this);
-            panel.attachFileButton.addActionListener(this);
-            panel.commenstTextPane.addMouseMotionListener(this);
-            panel.commenstTextPane.addMouseListener(this);
+            IssuePanel panel = new IssuePanel();
+            panel.setIssue(NbJiraIssue.this);
+            JScrollPane scrollPane = new JScrollPane(panel);
+            scrollPane.setBorder(null);
+            Font font = UIManager.getFont("Label.font"); // NOI18N
+            if (font != null) {
+                int size = (int)(font.getSize()*1.5);
+                scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
+                scrollPane.getVerticalScrollBar().setUnitIncrement(size);
+            }
+            BugtrackingUtil.keepFocusedComponentVisible(scrollPane);
+            issuePanel = scrollPane;
 
             refreshViewData();
         }
 
         @Override
         public JComponent getComponent() {
-            return panel;
+            return issuePanel;
         }
 
         @Override
         public boolean isValid() {
-            return !panel.summaryField.getText().trim().equals("") &&
-                   !panel.priorityField.getText().trim().equals("") &&
-                   !panel.summaryField.getText().trim().equals("") &&
-                   !panel.descTextArea.getText().trim().equals("") &&
-                   !panel.typeField.getText().trim().equals("");
+            return true; // PENDING
         }
 
         @Override
         public void applyChanges() {
-
-        }
-
-        public void mousePressed(MouseEvent e) { }
-        public void mouseReleased(MouseEvent e) { }
-        public void mouseEntered(MouseEvent e) { }
-        public void mouseExited(MouseEvent e) { }
-        public void mouseDragged(MouseEvent e) { }
-
-        public void mouseClicked(MouseEvent e) {
-            try{
-                Element elem = doc.getCharacterElement(panel.commenstTextPane.viewToModel(e.getPoint()));
-                AttributeSet as = elem.getAttributes();
-                StackTraceAction a = (StackTraceAction) as.getAttribute(HL_ATTRIBUTE);
-                if(a != null) {
-                    a.openStackTrace(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()));
-                }
-            } catch(Exception ex) {
-                Jira.LOG.log(Level.SEVERE, null, ex);
-            }
-        }
-
-        public void mouseMoved(MouseEvent e) {
-            Element elem = doc.getCharacterElement( panel.commenstTextPane.viewToModel(e.getPoint()));
-			AttributeSet as = elem.getAttributes();
-			if(StyleConstants.isUnderline(as)) {
-				panel.commenstTextPane.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            } else {
-				panel.commenstTextPane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            }
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if(e.getSource() == panel.addCommentButton) {
-                onAddComment();
-            } else if(e.getSource() == panel.resolveButton) {
-                onResolve();
-            } else if(e.getSource() == panel.attachFileButton) {
-                onAttach();
-            }
-        }
-
-        private void onAddComment() {
-            throw new UnsupportedOperationException();
-        }
-
-        private void onAttach() {
-            throw new UnsupportedOperationException();
-        }
-
-        private void onResolve() {
-            throw new UnsupportedOperationException();
         }
 
         private void refreshViewData() {
-            panel.idTextField.setText(getKey());
-            panel.priorityField.setText(getFieldValue(IssueField.PRIORITY));
-            panel.summaryField.setText(getFieldValue(IssueField.SUMMARY));
-            panel.statusField.setText(getFieldValue(IssueField.STATUS));
-            panel.typeField.setText(getFieldValue(IssueField.TYPE));
-            panel.descTextArea.setText(getDescription());
-//            Comment[] comments = issue.getComments();
-//            StringBuffer sb = new StringBuffer();
-//            for (Comment comment : comments) {
-//                sb.append(comment.getAuthor());
-//                sb.append(" : ");
-//                sb.append(comment.getCreated());
-//                sb.append("\n");
-//                sb.append(comment.getComment());
-//                sb.append("\n\n");
-//            }
-//            panel.commenstTextPane.setText(sb.toString());
-//            Attachment[] attachements = issue.getAttachments();
-//            attachmentsModel.clear();
-//            for (Attachment attachment : attachements) {
-//                attachmentsModel.addElement(attachment);
-//            }
+            // PENDING
         }
 
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(org.netbeans.modules.jira.issue.NbJiraIssue.class);
         }
-
-        private class StackTraceAction {
-            void openStackTrace(String text) {
-                StackTraceSupport.findAndOpen(text);
-            }
-        }
-
     }
 }

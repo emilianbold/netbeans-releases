@@ -76,12 +76,12 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
      * @return one of {@link org.netbeans.api.queries.SharabilityQuery}'s constants
      */
     public int getSharability(final File file) {
-        ConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-        if (configurationDescriptor != null && configurationDescriptor.getModified()) {
-            // Make sure all sharable files are saved on disk
-            // See IZ http://www.netbeans.org/issues/show_bug.cgi?id=153504
-            configurationDescriptor.save();
-        }
+        //ConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+        //if (configurationDescriptor != null && configurationDescriptor.getModified()) {
+        //    // Make sure all sharable files are saved on disk
+        //    // See IZ http://www.netbeans.org/issues/show_bug.cgi?id=153504
+        //    configurationDescriptor.save();
+        //}
         Integer ret = ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
 
             public Integer run() {

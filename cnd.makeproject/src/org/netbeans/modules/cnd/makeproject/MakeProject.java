@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -594,7 +595,8 @@ public final class MakeProject implements Project, AntProjectListener {
         this.sourceEncoding = sourceEncoding;
     }
 
-    private MakeConfiguration getActiveConfiguration() {
+    /** NPE-safe method for getting active configuration */
+    public MakeConfiguration getActiveConfiguration() {
         if (projectDescriptorProvider.gotDescriptor()) {
             MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
             if (projectDescriptor != null) {
@@ -944,7 +946,8 @@ public final class MakeProject implements Project, AntProjectListener {
         }
     }
 
-    private DevelopmentHostConfiguration getDevelopmentHostConfiguration() {
+    /** NPE-safe method for getting active DevelopmentHostConfiguration */
+    public DevelopmentHostConfiguration getDevelopmentHostConfiguration() {
         MakeConfiguration conf = getActiveConfiguration();
         if (conf != null) {
             return conf.getDevelopmentHost();
@@ -952,10 +955,16 @@ public final class MakeProject implements Project, AntProjectListener {
         return null;
     }
 
+    /** NPE-safe method for getting active ExecutionEnvironment */
+    public ExecutionEnvironment getDevelopmentHostExecutionEnvironment() {
+        DevelopmentHostConfiguration dc = getDevelopmentHostConfiguration();
+        return (dc == null) ? null : dc.getExecutionEnvironment();
+    }
+
     class RemoteProjectImpl implements RemoteProject {
-        public String getDevelopmentHost() {
+        public ExecutionEnvironment getDevelopmentHost() {
             DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
-            return (devHost == null) ? null : devHost.getName();
+            return (devHost == null) ? null : devHost.getExecutionEnvironment();
         }
     }
 

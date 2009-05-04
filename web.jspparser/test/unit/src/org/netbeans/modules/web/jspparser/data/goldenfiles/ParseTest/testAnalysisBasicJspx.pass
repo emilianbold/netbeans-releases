@@ -79,8 +79,8 @@
       hasJspRoot          : true
       prefixes:
         c
-        xmlns
         jsp
+        xmlns
       includePrelude:
       includeCoda:
       pluginDcls:

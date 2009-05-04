@@ -41,6 +41,7 @@
 
 package org.netbeans.lib.richexecution;
 
+import org.netbeans.lib.richexecution.program.Program;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -61,7 +62,7 @@ import org.netbeans.lib.richexecution.Pty.Mode;
  * as {@link java.lang.ProcessBuilder} would.
  * @author ivan
  */
-public class PtyExecutor {
+public final class PtyExecutor {
     private static String setpgrpCmd = null;
     private Mode mode = Mode.REGULAR;
 
@@ -269,13 +270,28 @@ public class PtyExecutor {
         return wrapperCmd;
     }
 
+    /**
+     * Construct a ProcessBuilder from the given Program.
+     * @param program
+     * @return
+     */
+    private static ProcessBuilder processBuilder(Program program) {
+        ProcessBuilder pb = new ProcessBuilder(program.command());
+        pb.directory(program.directory());
+        pb.environment().putAll(program.environment());
+        // LATER pb.redirectErrorStream(program.redirectErrorStream());
+        return pb;
+    }
+
     public final PtyProcess start(Program program, Pty pty) {
         Process process;
         int pid = -1;
         try {
             List<String> wrappedCmd = wrappedCmd(program.command(), pty);
-            program.processBuilder().command(wrappedCmd);
-            process = program.processBuilder().start();
+            // OLD program.processBuilder().command(wrappedCmd);
+            program.command(wrappedCmd);
+            // OLD process = program.processBuilder().start();
+            process = processBuilder(program).start();
         } catch (IOException ex) {
             Logger.getLogger(Program.class.getName()).log(Level.SEVERE, null, ex);
             return null;

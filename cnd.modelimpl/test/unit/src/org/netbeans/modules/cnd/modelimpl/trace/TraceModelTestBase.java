@@ -111,7 +111,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
     }
 
     protected final FileImpl getFileImpl(File file) {
-        return helper.getProject().getFile(file);
+        return helper.getProject().getFile(file, true);
     }
 
     protected final void reparseFile(CsmFile file) {

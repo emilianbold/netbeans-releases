@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -185,7 +186,16 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
      * @return unmodifiable collection of namespaces visible in given namespace though "using" directives
      */
     public Collection<CsmNamespace> findVisibleNamespaces(CsmNamespace namespace, CsmProject startPrj) {
-        return extractNamespaces(findUsingDirectives(namespace), startPrj);
+        List<CsmNamespace> res = new ArrayList<CsmNamespace>();
+        if (!namespace.isGlobal()) {
+            for (CsmNamespace ns : namespace.getNestedNamespaces()) {
+                if (ns.getName().length() == 0) {
+                    res.add(ns);
+                }
+            }
+        }
+        res.addAll(extractNamespaces(findUsingDirectives(namespace), startPrj));
+        return res;
     }
 
     /**

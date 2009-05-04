@@ -298,9 +298,6 @@ public final class ConnectionBuilder {
             case HttpURLConnection.HTTP_MOVED_PERM:
             case HttpURLConnection.HTTP_MOVED_TEMP:
                 URL redirect = new URL(conn.getHeaderField("Location")); // NOI18N
-                if (!"delay=0sec".equals(curr.getQuery()) && !Utilities.compareObjects(curr.getQuery(), redirect.getQuery())) { // NOI18N
-                    LOG.warning("Warning: possibly incorrect redirect from " + curr + " to " + redirect); // #160508
-                }
                 conn = redirect.openConnection();
                 continue RETRY;
             case HttpURLConnection.HTTP_FORBIDDEN:

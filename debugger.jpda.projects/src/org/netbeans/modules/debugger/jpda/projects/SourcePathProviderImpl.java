@@ -483,6 +483,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     fo = originalSourcePath.findResource(relativePath);
                                                                     if (verbose) System.out.println ("SPPI:   fo " + fo);
                 }
+                if (fo == null && global) {
+                    fo = GlobalPathRegistry.getDefault().findResource(relativePath);
+                                                                    if (verbose) System.out.println ("SPPI:   fo " + fo);
+                }
             }
         }
         if (fo == null) return null;

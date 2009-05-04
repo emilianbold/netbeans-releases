@@ -161,7 +161,8 @@ public class UpdateAction extends ContextAction {
             // The problem here is that the revision in the metadata is set to HEAD even if the file didn't change =>
             // we have to explicitly force the refresh for the relevant context - see bellow in updateRoots
             client.removeNotifyListener(Subversion.getInstance().getRefreshHandler());
-            client.addNotifyListener(listener);            
+            client.addNotifyListener(listener);
+            progress.setCancellableDelegate(client);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;

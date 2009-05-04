@@ -578,6 +578,7 @@ public class Utils {
         
     /** Like mkdirs but but using openide filesystems (firing events) */
     public static FileObject mkfolders(File file) throws IOException {
+        file = FileUtil.normalizeFile(file);
         if (file.isDirectory()) return FileUtil.toFileObject(file);
 
         File parent = file.getParentFile();

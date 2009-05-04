@@ -96,7 +96,10 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         }
 
         String[] parametersGiven = parametersUrl.split("&");
-        String[] parametersReturned = c.getUrlParameters().split("&");
+        String params = c.getUrlParameters();
+        assertTrue(params.startsWith("&"));
+        params = params.substring(1, params.length() - 1);
+        String[] parametersReturned = params.split("&");
         assertEquals(parametersGiven.length, parametersReturned.length);
 
         Set<String> s = new HashSet<String>(parametersReturned.length);
@@ -165,7 +168,7 @@ public class ControllerTest extends NbTestCase implements TestConstants {
 
         @Override
         public void publish(LogRecord record) {
-            if(!done) done = record.getMessage().equals(msg);
+            if(!done) done = record.getMessage().startsWith(msg);
         }
 
         @Override

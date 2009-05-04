@@ -49,7 +49,7 @@ public class Lock implements ILock {
     }
 
     public boolean acquire(long delay) throws InterruptedException {
-        return false;
+        return true;
     }
 
     public int getDepth() {

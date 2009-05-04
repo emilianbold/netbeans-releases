@@ -95,7 +95,51 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
         moveDownButton = new JButton();
         includePathLabel = new JLabel();
 
-        setFocusTraversalPolicy(null);
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return addFolderButton;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return addFolderButton;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return moveDownButton;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  addFolderButton){
+                    return removeButton;
+                }
+                if(aComponent ==  removeButton){
+                    return moveUpButton;
+                }
+                if(aComponent ==  includePathList){
+                    return addFolderButton;
+                }
+                if(aComponent ==  moveUpButton){
+                    return moveDownButton;
+                }
+                return addFolderButton;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  removeButton){
+                    return addFolderButton;
+                }
+                if(aComponent ==  moveUpButton){
+                    return removeButton;
+                }
+                if(aComponent ==  addFolderButton){
+                    return includePathList;
+                }
+                if(aComponent ==  moveDownButton){
+                    return moveUpButton;
+                }
+                return moveDownButton;//end getComponentBefore
+
+            }}
+        );
 
         includePathScrollPane.setViewportView(includePathList);
 

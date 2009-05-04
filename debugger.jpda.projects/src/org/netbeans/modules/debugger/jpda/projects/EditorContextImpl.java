@@ -1201,6 +1201,9 @@ public class EditorContextImpl extends EditorContext {
                     return new Operation[] {};
                 }
                 Tree methodTree = ci.getTrees().getTree(method);
+                if (methodTree == null) { // method not found
+                    return new Operation[] {};
+                }
                 CompilationUnitTree cu = ci.getCompilationUnit();
                 ExpressionScanner scanner = new ExpressionScanner(lineNumber, cu, ci.getTrees().getSourcePositions());
                 ExpressionScanner.ExpressionsInfo info = new ExpressionScanner.ExpressionsInfo();

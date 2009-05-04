@@ -52,7 +52,7 @@ import javax.swing.event.DocumentListener;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class RepositoryPanel extends javax.swing.JPanel implements DocumentListener, ActionListener {
     private RepositoryController controller;
@@ -84,13 +84,16 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        urlLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.urlLabel.text_1")); // NOI18N
+        urlLabel.setLabelFor(urlField);
+        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.urlLabel.text_1")); // NOI18N
 
         urlField.setColumns(30);
 
-        userLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.userLabel.text_1")); // NOI18N
+        userLabel.setLabelFor(userField);
+        org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.userLabel.text_1")); // NOI18N
 
-        psswdLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.psswdLabel.text_1")); // NOI18N
+        psswdLabel.setLabelFor(psswdField);
+        org.openide.awt.Mnemonics.setLocalizedText(psswdLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.psswdLabel.text_1")); // NOI18N
 
         userField.setColumns(15);
         userField.addActionListener(new java.awt.event.ActionListener() {
@@ -101,11 +104,12 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
 
         psswdField.setColumns(15);
 
-        nameLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.nameLabel.text_1")); // NOI18N
+        nameLabel.setLabelFor(nameField);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.nameLabel.text_1")); // NOI18N
 
         nameField.setColumns(30);
 
-        validateButton.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.validateButton.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(validateButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.validateButton.text_1")); // NOI18N
         validateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 validateButtonActionPerformed(evt);
@@ -114,16 +118,17 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
 
         progressPanel.setLayout(new java.awt.BorderLayout());
 
-        validateLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.validateLabel.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(validateLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.validateLabel.text_1")); // NOI18N
 
-        httpCheckBox.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.httpCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(httpCheckBox, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.httpCheckBox.text")); // NOI18N
         httpCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 httpCheckBoxActionPerformed(evt);
             }
         });
 
-        userLabel1.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.userLabel1.text")); // NOI18N
+        userLabel1.setLabelFor(httpUserField);
+        org.openide.awt.Mnemonics.setLocalizedText(userLabel1, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.userLabel1.text")); // NOI18N
 
         httpUserField.setColumns(15);
         httpUserField.addActionListener(new java.awt.event.ActionListener() {
@@ -132,7 +137,8 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
             }
         });
 
-        psswdLabel1.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.psswdLabel1.text")); // NOI18N
+        psswdLabel1.setLabelFor(httpPsswdField);
+        org.openide.awt.Mnemonics.setLocalizedText(psswdLabel1, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.psswdLabel1.text")); // NOI18N
 
         httpPsswdField.setColumns(15);
 
@@ -156,7 +162,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                     .add(validateLabel)
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                    .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
                     .addContainerGap())
                 .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -209,6 +215,15 @@ public class RepositoryPanel extends javax.swing.JPanel implements DocumentListe
                 .add(239, 239, 239)
                 .add(validateButton))
         );
+
+        urlField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.urlField.AccessibleContext.accessibleDescription")); // NOI18N
+        userField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.userField.AccessibleContext.accessibleDescription")); // NOI18N
+        psswdField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.psswdField.AccessibleContext.accessibleDescription")); // NOI18N
+        nameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.nameField.AccessibleContext.accessibleDescription")); // NOI18N
+        validateButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.validateButton.AccessibleContext.accessibleDescription")); // NOI18N
+        httpCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.httpCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        httpUserField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.httpUserField.AccessibleContext.accessibleDescription")); // NOI18N
+        httpPsswdField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "RepositoryPanel.httpPsswdField.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void userFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userFieldActionPerformed

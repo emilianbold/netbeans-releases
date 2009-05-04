@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.apt.support;
 
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
 
 /**
@@ -78,6 +79,14 @@ public class APTHandlersSupport {
 
     public static Map<CharSequence, APTMacro> extractMacroMap(APTPreprocHandler.State state){
         return APTHandlersSupportImpl.extractMacroMap(state);
+    }
+
+    public static APTBaseMacroMap.State extractMacroMapState(APTPreprocHandler.State state){
+        return APTHandlersSupportImpl.extractMacroMapState(state);
+    }
+
+    public static String getMacroMapID(APTPreprocHandler.State state){
+        return APTHandlersSupportImpl.getMacroMapID(state);
     }
 
     public static int getMacroSize(APTPreprocHandler.State state) {

@@ -71,6 +71,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
@@ -106,6 +107,8 @@ public class JiraTestUtil {
         ta.setValue(desc);
         ta = rta.createMappedAttribute(JiraAttribute.TYPE.id());
         ta.setValue(getIssueTypeByName(client, typeName).getId());
+        ta = rta.createMappedAttribute(JiraAttribute.INITIAL_ESTIMATE.id());
+        ta.setValue("600");
 
         Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
         return rc.getTaskDataHandler().postTaskData(repository, data, attrs, nullProgressMonitor);
@@ -144,6 +147,7 @@ public class JiraTestUtil {
         issue.setProject(getProject(client));
 		issue.setPriority(getPriorityByName(client, "Blocker"));
         issue.setReporter(JiraTestUtil.REPO_USER);
+        issue.setInitialEstimate(60 * 10);
 
         return client.createIssue(issue, nullProgressMonitor);
     }
@@ -166,10 +170,14 @@ public class JiraTestUtil {
     }
 
     public static TestTaskDataCollector list(JiraRepositoryConnector rc, TaskRepository repository, FilterDefinition fd) {
+        return list(rc, repository, fd, null);
+    }
+
+    public static TestTaskDataCollector list(JiraRepositoryConnector rc, TaskRepository repository, FilterDefinition fd, ISynchronizationSession session) {
         final RepositoryQuery repositoryQuery = new RepositoryQuery(rc.getConnectorKind(), "query");
         JiraUtil.setQuery(repository, repositoryQuery, fd);
         TestTaskDataCollector tdc = new TestTaskDataCollector();
-        rc.performQuery(repository, repositoryQuery, tdc, null, JiraTestUtil.nullProgressMonitor);
+        rc.performQuery(repository, repositoryQuery, tdc, session, JiraTestUtil.nullProgressMonitor);
         return tdc;
     }
 

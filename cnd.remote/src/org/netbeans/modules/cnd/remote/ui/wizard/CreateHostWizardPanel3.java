@@ -39,18 +39,21 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 /*package*/ final class CreateHostWizardPanel3 implements WizardDescriptor.Panel<WizardDescriptor> {
 
     private CreateHostVisualPanel3 component;
+    private final CreateHostData data;
+
+    public CreateHostWizardPanel3(CreateHostData data) {
+        this.data = data;
+    }
 
     public CreateHostVisualPanel3 getComponent() {
         if (component == null) {
-            component = new CreateHostVisualPanel3();
+            component = new CreateHostVisualPanel3(data);
         }
         return component;
     }
@@ -71,14 +74,12 @@ import org.openide.util.HelpCtx;
     }
 
     public void readSettings(WizardDescriptor settings) {
-        getComponent().init(
-            (ExecutionEnvironment)settings.getProperty(CreateHostWizardConstants.PROP_HOST),
-            (ToolsCacheManager)settings.getProperty(CreateHostWizardConstants.PROP_CACHE_MANAGER)
-        );
+        getComponent().init();
     }
 
     public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(CreateHostWizardConstants.PROP_DISPLAY_NAME, getComponent().getHostDisplayName());
+        data.setDisplayName(getComponent().getHostDisplayName());
+        data.setSyncFactory(getComponent().getRemoteSyncFactory());
     }
 }
 

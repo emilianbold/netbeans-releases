@@ -52,6 +52,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,11 +91,11 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
     
     private final static String LOCAL_URL_HELP          = "file:/repository_path";              // NOI18N
     private final static String HTTP_URL_HELP           = Utilities.isWindows()? 
-        "http://[DOMAIN%5C[username[:password]@]hostname/repository_path":      // NOI18N
-        "http://[username[:password]@]hostname/repository_path";      // NOI18N
+        "http://[DOMAIN%5C]hostname/repository_path":      // NOI18N
+        "http://hostname/repository_path";      // NOI18N
     private final static String HTTPS_URL_HELP          = Utilities.isWindows()? 
-        "https://[DOMAIN%5C[username[:password]@]hostname/repository_path":     // NOI18N
-        "https://[username[:password]@]hostname/repository_path";     // NOI18N
+        "https://[DOMAIN%5C]hostname/repository_path":     // NOI18N
+        "https://hostname/repository_path";     // NOI18N
     private final static String STATIC_HTTP_URL_HELP    = "static-http://hostname/repository_path";       // NOI18N
     private final static String SSH_URL_HELP            = "ssh://hostname/repository_path";   // NOI18N   
                
@@ -130,7 +132,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         repositoryPanel.tipLabel.setVisible(isSet(FLAG_SHOW_HINTS));
         
         //repositoryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 0));
-        
+
         // retrieve the dialog size for the largest configuration
         if(bPushPull)
             updateVisibility("foo:"); // NOI18N
@@ -139,7 +141,11 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         maxNeededSize = repositoryPanel.getPreferredSize();
 
         repositoryPanel.savePasswordCheckBox.setSelected(HgModuleConfig.getDefault().getSavePassword());
-        refreshUrlHistory();
+        repositoryPanel.schedulePostInitRoutine(new Runnable() {
+                    public void run() {
+                        refreshUrlHistory();
+                    }
+        });
     }
     
     public void actionPerformed(ActionEvent e) {
@@ -152,7 +158,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         OptionsDisplayer.getDefault().open("General");              // NOI18N
     }    
     
-    private void initPanel() {        
+    private void initPanel() {
         repositoryPanel = new RepositoryPanel();
 
         urlComboEditor = (JTextComponent) repositoryPanel.urlComboBox
@@ -178,51 +184,122 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         tweakComboBoxEditor();
     }
 
-    /**
-     * Tweaks the combo-box's editor in two ways:
-     * <ul>
-     *     <li>displays a complete repository URI (including name and password)
-     *         when a repository connection is selected</li>
-     *     <li>sets a flag (urlBeingSelectedFromPopup) for the period
-     *         the text in the editor is being changed</li>
-     * </ul>
-     */
     private void tweakComboBoxEditor() {
         final ComboBoxEditor origEditor = repositoryPanel.urlComboBox.getEditor();
-        ComboBoxEditor tweakedEditor = new ComboBoxEditor() {
 
-            public void setItem(Object anObject) {
-                if (anObject instanceof RepositoryConnection) {
-                    urlBeingSelectedFromPopup = true;
-                    try {
-                        origEditor.setItem(((RepositoryConnection) anObject)
-                                           .getUrl().toCompleteUrlString());
-                    } finally {
-                        urlBeingSelectedFromPopup = false;
-                    }
-                } else {
-                    origEditor.setItem(anObject);
+        if (origEditor.getClass() == UrlComboBoxEditor.class) {
+            /* attempt to tweak the combo-box multiple times */
+            assert false;
+            return;
+        }
+
+        repositoryPanel.urlComboBox.setEditor(new UrlComboBoxEditor(origEditor));
+    }
+
+    /**
+     * Customized combo-box editor for displaying/modification of URL
+     * of a Mercurial repository.
+     * It is customized in the following aspects:
+     * <ul>
+     *     <li>When a RepositoryConnection is selected, displays its URL
+     *         without user data (name and password).</li>
+     *     <li>If a {@code RepositoryConnection} is set via method
+     *         {@code setItem}, it holds a reference to it until another item
+     *         is set via method {@code setItem()} or until the user modifies
+     *         the text. This allows method {@code getItem()} to return
+     *         the same item ({@code RepositoryConnection}).
+     *         The allows the combo-box to correctly detect whether the item
+     *         has been changed (since the last call of {@code setItem()}
+     *         or not.</li>
+     * </ul>
+     */
+    private final class UrlComboBoxEditor implements ComboBoxEditor,
+                                                         DocumentListener {
+
+        private final ComboBoxEditor origEditor;
+        private Reference<RepositoryConnection> repoConnRef;
+
+        private UrlComboBoxEditor(ComboBoxEditor originalEditor) {
+            this.origEditor = originalEditor;
+            ((JTextComponent) originalEditor.getEditorComponent())
+                    .getDocument().addDocumentListener(this);
+        }
+
+        public void setItem(Object anObject) {
+            urlBeingSelectedFromPopup = true;
+            try {
+                setItemImpl(anObject);
+            } finally {
+                urlBeingSelectedFromPopup = false;
+            }
+        }
+
+        private void setItemImpl(Object anObject) {
+            assert urlBeingSelectedFromPopup;
+
+            if (anObject instanceof RepositoryConnection) {
+                RepositoryConnection repoConn = (RepositoryConnection) anObject;
+                repoConnRef = new WeakReference<RepositoryConnection>(repoConn);
+                origEditor.setItem(repoConn.getUrl().toUrlStringWithoutUserInfo());
+            } else {
+                clearRepoConnRef();
+                origEditor.setItem(anObject);
+            }
+        }
+
+        public Component getEditorComponent() {
+            return origEditor.getEditorComponent();
+        }
+        public Object getItem() {
+            RepositoryConnection repoConn = getRepoConn();
+            if (repoConn != null) {
+                return repoConn;
+            }
+
+            return origEditor.getItem();
+        }
+        public void selectAll() {
+            origEditor.selectAll();
+        }
+        public void addActionListener(ActionListener l) {
+            origEditor.addActionListener(l);
+        }
+        public void removeActionListener(ActionListener l) {
+            origEditor.removeActionListener(l);
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            textChanged();
+        }
+        public void removeUpdate(DocumentEvent e) {
+            textChanged();
+        }
+        public void changedUpdate(DocumentEvent e) {
+            textChanged();
+        }
+        private void textChanged() {
+            if (urlBeingSelectedFromPopup) {
+                return;
+            }
+            clearRepoConnRef();
+        }
+
+        private RepositoryConnection getRepoConn() {
+            if (repoConnRef != null) {
+                RepositoryConnection repoConn = repoConnRef.get();
+                if (repoConn != null) {
+                    return repoConn;
                 }
             }
+            return null;
+        }
 
-            public Component getEditorComponent() {
-                return origEditor.getEditorComponent();
+        private void clearRepoConnRef() {
+            if (repoConnRef != null) {
+                repoConnRef.clear();
             }
-            public Object getItem() {
-                return origEditor.getItem();
-            }
-            public void selectAll() {
-                origEditor.selectAll();
-            }
-            public void addActionListener(ActionListener l) {
-                origEditor.addActionListener(l);
-            }
-            public void removeActionListener(ActionListener l) {
-                origEditor.removeActionListener(l);
-            }
+        }
 
-        };
-        repositoryPanel.urlComboBox.setEditor(tweakedEditor);
     }
     
     public void refreshUrlHistory() {
@@ -298,7 +375,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
     private void quickValidateUrl() {
         String errMsg = HgURL.validateQuickly(getUrlString());
         if (errMsg == null) {
-            setValid(true, "");
+            setValid();
         } else {
             setValid(false, errMsg);
         }        
@@ -311,6 +388,11 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         if (!urlBeingSelectedFromPopup) {
             repositoryConnection = null;
             url = null;
+
+            repositoryPanel.userTextField.setText(null);
+            repositoryPanel.userPasswordField.setText(null);
+            repositoryPanel.tunnelCommandTextField.setText(null);
+            repositoryPanel.savePasswordCheckBox.setSelected(false);
         }
         quickValidateUrl();
         updateVisibility();
@@ -350,17 +432,12 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
             }));
         }
 
-        //repositoryPanel.userPasswordField.setVisible(authFields);
-        //repositoryPanel.passwordLabel.setVisible(authFields);          
-        //repositoryPanel.userTextField.setVisible(authFields);          
-        //repositoryPanel.leaveBlankLabel.setVisible(authFields);        
-        //repositoryPanel.userLabel.setVisible(authFields);             
+        repositoryPanel.userPasswordField.setVisible(authFields);
+        repositoryPanel.passwordLabel.setVisible(authFields);          
+        repositoryPanel.userTextField.setVisible(authFields);          
+        repositoryPanel.leaveBlankLabel.setVisible(authFields);        
+        repositoryPanel.userLabel.setVisible(authFields);             
         //repositoryPanel.savePasswordCheckBox.setVisible(authFields);
-        repositoryPanel.userPasswordField.setVisible(false);
-        repositoryPanel.passwordLabel.setVisible(false);          
-        repositoryPanel.userTextField.setVisible(false);          
-        repositoryPanel.leaveBlankLabel.setVisible(false);        
-        repositoryPanel.userLabel.setVisible(false);             
         repositoryPanel.savePasswordCheckBox.setVisible(false);
         repositoryPanel.proxySettingsButton.setVisible(proxyFields && ((modeMask & FLAG_SHOW_PROXY) != 0));        
         //repositoryPanel.tunnelCommandTextField.setVisible(sshFields);        
@@ -372,6 +449,17 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         repositoryPanel.tunnelCommandLabel.setVisible(false);        
         repositoryPanel.tunnelLabel.setVisible(false);        
         repositoryPanel.tunnelHelpLabel.setVisible(false);       
+    }
+
+    public void setEditable(boolean editable) {
+        assert EventQueue.isDispatchThread();
+
+        repositoryPanel.urlComboBox.setEnabled(editable && isSet(FLAG_URL_ENABLED));
+        repositoryPanel.userTextField.setEnabled(editable && valid);
+        repositoryPanel.userPasswordField.setEnabled(editable && valid);
+        repositoryPanel.savePasswordCheckBox.setEnabled(editable && valid);
+        repositoryPanel.tunnelCommandTextField.setEnabled(editable && valid);
+        repositoryPanel.proxySettingsButton.setEnabled(editable && valid);
     }
 
     private String getSVNTunnelTip(String urlString) {
@@ -424,12 +512,13 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
             return;
         }
 
+        String urlString = getUrlString();
         String username = getUsername();
-        String password = getPassword();
-        if ((username.length() == 0) && (password.length() == 0)) {
-            url = new HgURL(getUrlString());
+
+        if (username.length() == 0) {
+            url = new HgURL(urlString);
         } else {
-            url = new HgURL(getUrlString(), getUsername(), getPassword());
+            url = new HgURL(urlString, username, getPassword());
         }
     }
 
@@ -466,6 +555,14 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
     
     public boolean isValid() {
         return valid;
+    }
+
+    private void setValid() {
+        setValid(true, "");                                             //NOI18N
+    }
+
+    public void setInvalid() {
+        setValid(false, "");
     }
 
     private void setValid(boolean valid, String message) {
