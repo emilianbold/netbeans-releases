@@ -1801,9 +1801,8 @@ public final class VeryPretty extends JCTree.Visitor {
                     pendingComments = null;
                 }
                 TokenSequence<JavaTokenId> tokens = cInfo.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-                tokens.move(startPos);
-                if (moveToSrcRelevant(tokens, Direction.BACKWARD) == null)
-                    tokens.moveStart();
+                if (tokens.move(startPos) != 0) return;
+                if (moveToSrcRelevant(tokens, Direction.BACKWARD) == null) return; //we can't locate relevant token we just skip processing.
                 int indent = NOPOS;
                 while (tokens.moveNext() && nonRelevant.contains(tokens.token().id())) {
                     if (tokens.index() > lastReadCommentIdx) {
