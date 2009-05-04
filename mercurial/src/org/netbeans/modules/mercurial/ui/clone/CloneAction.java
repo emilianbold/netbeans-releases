@@ -41,6 +41,7 @@
 package org.netbeans.modules.mercurial.ui.clone;
 
 import java.io.IOException;
+import java.net.PasswordAuthentication;
 import java.util.MissingResourceException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
@@ -55,6 +56,7 @@ import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.HgKenaiSupport;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -64,7 +66,6 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
-import org.netbeans.modules.mercurial.ui.properties.HgProperties;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,6 +75,9 @@ import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import static org.netbeans.modules.mercurial.ui.properties.HgProperties.HGPROPNAME_DEFAULT_PULL;
+import static org.netbeans.modules.mercurial.ui.properties.HgProperties.HGPROPNAME_DEFAULT_PUSH;
+import static org.netbeans.modules.mercurial.ui.properties.HgProperties.HGPROPNAME_USERNAME;
 
 /**
  * Clone action for mercurial: 
@@ -189,23 +193,20 @@ public class CloneAction extends ContextAction {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 }finally {
-                    // #125835 - Push to default was not being set automatically by hg after Clone
-                    // but was after you opened the Mercurial -> Properties, inconsistent
-                    if ((pullPath != null) || (pushPath != null)) {
-                        HgConfigFiles hgConfigFiles = new HgConfigFiles(target);
-                        if (hgConfigFiles.getException() == null) {
-                            if (pullPath != null) {
-                                hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PULL,
-                                                          pullPath.toHgCommandUrlString());
-                            }
-                            if (pushPath != null) {
-                                hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PUSH,
-                                                          pushPath.toHgCommandUrlString());
+                    HgConfigFiles hgConfigFiles = new HgConfigFiles(target);
+                    if (hgConfigFiles.getException() == null) {
+                        if (source.isKenaiURL()) {
+                            initializeDefaultPullPushUrlForKenai(hgConfigFiles);
+                            String kenaiUserName = getKenaiUserName();
+                            if (kenaiUserName != null) {
+                                hgConfigFiles.setProperty(HGPROPNAME_USERNAME, kenaiUserName);
                             }
                         } else {
-                            Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot set default push and pull path"); // NOI18N
-                            Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
+                            initializeDefaultPullPushUrl(hgConfigFiles);
                         }
+                    } else {
+                        Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot set default push and pull path"); // NOI18N
+                        Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
                     }
                         
                     if(!isLocalClone){
@@ -213,6 +214,79 @@ public class CloneAction extends ContextAction {
                         logger.output(""); // NOI18N
                     }
                 }
+            }
+
+            private void initializeDefaultPullPushUrl(HgConfigFiles hgConfigFiles) {
+                /*
+                 * Mercurial itself sets just "default" in 'hgrc' file.
+                 * We make sure that "default-push" is set, too - see
+                 * bug #125835 ("default-push should be set
+                 * automatically").
+                 */
+                if ((pullPath == null) && (pushPath == null)) {
+                    String defaultPull = hgConfigFiles.getDefaultPull(false);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
+
+                } else if ((pullPath != null) && (pushPath == null)) {
+                    String defaultPull = pullPath.toHgCommandUrlString();
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
+
+                } else if ((pullPath == null) && (pushPath != null)) {
+                    String defaultPush = pushPath.toHgCommandUrlString();
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+
+                } else if ((pullPath != null) && (pushPath != null)) {
+                    String defaultPull = pullPath.toHgCommandUrlString();
+                    String defaultPush = pushPath.toHgCommandUrlString();
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                }
+            }
+
+            private void initializeDefaultPullPushUrlForKenai(HgConfigFiles hgConfigFiles) {
+                /*
+                 * Mercurial itself sets just "default" in 'hgrc' file.
+                 * We make sure that "default-push" is set, too - see
+                 * bug #125835 ("default-push should be set
+                 * automatically"). Because Kenai username and password
+                 * should not be saved, we also modify the "default" - we
+                 * strip the userdata (username and password) if any.
+                 */
+                if ((pullPath == null) && (pushPath == null)) {
+                    String defaultPull = hgConfigFiles.getDefaultPull(false);
+                    String modifiedPullUrl = HgURL.stripUserInfo(defaultPull);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, modifiedPullUrl);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, modifiedPullUrl);
+
+                } else if ((pullPath != null) && (pushPath == null)) {
+                    String defaultPull = pullPath.toHgCommandUrlStringWithoutUserInfo();
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
+
+                } else if ((pullPath == null) && (pushPath != null)) {
+                    String defaultPull = hgConfigFiles.getDefaultPull(false);
+                    String modifiedPullUrl = HgURL.stripUserInfo(defaultPull);
+                    String defaultPush = pushPath.toHgCommandUrlStringWithoutUserInfo();
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, modifiedPullUrl);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+
+                } else if ((pullPath != null) && (pushPath != null)) {
+                    String defaultPull = pullPath.toHgCommandUrlStringWithoutUserInfo();
+                    String defaultPush = pushPath.toHgCommandUrlStringWithoutUserInfo();
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                }
+            }
+
+            private String getKenaiUserName() {
+                PasswordAuthentication passwordAuthentication
+                        = HgKenaiSupport.getInstance().getPasswordAuthentication(
+                                            source.toUrlStringWithoutUserInfo(),
+                                            false);
+                return (passwordAuthentication != null)
+                       ? passwordAuthentication.getUserName()
+                       : null;
             }
 
             private void openProject(final File clonePrjFile, final ProjectManager projectManager, final Mercurial hg) throws MissingResourceException {
