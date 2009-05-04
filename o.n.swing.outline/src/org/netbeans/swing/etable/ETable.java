@@ -154,7 +154,7 @@ public class ETable extends JTable {
     private int editing = DEFAULT;
     
     /** 
-     * Array with size exactly sama as the number of rows in the data model
+     * Array with size exactly same as the number of rows in the data model
      * or null. If it is not null the row originally at index i will be
      * displayed on index sortingPermutation[i].
      */
