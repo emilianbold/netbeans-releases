@@ -56,6 +56,7 @@ import java.util.*;
 class CheckoutPanel extends javax.swing.JPanel {
         
     private static final String CHECKOUT_RESERVED = "checkout.reserved";
+    private static final String CHECKOUT_RECURSIVE = "checkout.recursive";
 
     /** Creates new form CheckoutPanel */
     public CheckoutPanel() {
@@ -65,6 +66,7 @@ class CheckoutPanel extends javax.swing.JPanel {
     public void addNotify() {
         super.addNotify();
         cbReserved.setSelected(ClearcaseModuleConfig.getPreferences().getBoolean(CHECKOUT_RESERVED, true));        
+        cbRecursive.setSelected(ClearcaseModuleConfig.getPreferences().getBoolean(CHECKOUT_RECURSIVE, false));
         bRecentMessages.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         List<String> messages = Utils.getStringList(ClearcaseModuleConfig.getPreferences(), CheckoutAction.RECENT_CHECKOUT_MESSAGES);
         if (messages.size() > 0) {
@@ -76,6 +78,7 @@ class CheckoutPanel extends javax.swing.JPanel {
 
     public void removeNotify() {
         ClearcaseModuleConfig.getPreferences().putBoolean(CHECKOUT_RESERVED, cbReserved.isSelected());
+        ClearcaseModuleConfig.getPreferences().putBoolean(CHECKOUT_RECURSIVE, cbRecursive.isSelected());
         super.removeNotify();
     }
 
@@ -122,6 +125,9 @@ class CheckoutPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbRecursive, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CheckoutPanel.cbRecursive.text")); // NOI18N
+        cbRecursive.setToolTipText(org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CheckoutPanel.cbRecursive.toolTipText")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -129,28 +135,29 @@ class CheckoutPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(cbRecursive)
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 327, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 315, Short.MAX_VALUE)
                         .add(bRecentMessages))
-                    .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
+                    .add(cbReserved))
                         .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(cbReserved)
-                        .addContainerGap(329, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(0, 0, 0)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(jLabel1)
                     .add(bRecentMessages))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(cbReserved))
+                .add(cbReserved)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(cbRecursive)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -170,6 +177,7 @@ class CheckoutPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JButton bRecentMessages;
+    final javax.swing.JCheckBox cbRecursive = new javax.swing.JCheckBox();
     javax.swing.JCheckBox cbReserved;
     javax.swing.JLabel jLabel1;
     javax.swing.JScrollPane jScrollPane1;
