@@ -76,8 +76,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     protected String name;
     protected String type;
     protected String value;
-    protected String ovalue;
-    protected String derefValue;
+//    protected String derefValue;
     protected Field[] fields;
     protected TypeInfo tinfo;
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
@@ -99,7 +98,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         assert !SwingUtilities.isEventDispatchThread();
         this.name = name;
         type = getDebugger().requestWhatis(name);
-        ovalue = null;
         fields = new Field[0];
         tinfo = TypeInfo.getTypeInfo(getDebugger(), this);
         getDebugger().addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
@@ -111,11 +109,11 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             this.value = GdbUtils.mackHack(value);
         }
 
-        if (GdbUtils.isSinglePointer(type)) {
-            derefValue = getDebugger().requestValue('*' + name);
-        } else {
-            derefValue = null;
-        }
+//        if (GdbUtils.isSinglePointer(type)) {
+//            derefValue = getDebugger().requestValue('*' + name);
+//        } else {
+//            derefValue = null;
+//        }
     }
 
     protected AbstractVariable() { // used by AbstractField instantiation...
@@ -288,7 +286,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 } else {
                     fullname = getFullName();
                 }
-                ovalue = this.value;
                 if (!debugger.isCplusPlus() && rt.equals("_Bool") && !isNumber(value)) { // NOI18N
                     value = value.equals("true") ? "1" : "0"; // NOI18N - gdb doesn't handle
                 }
@@ -320,15 +317,11 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
     }
 
-    public void restoreOldValue() {
-        value = ovalue;
-    }
-
     public synchronized void setModifiedValue(String value) {
         this.value = value;
         if (fields.length > 0) {
             emptyFields();
-            derefValue = null;
+//            derefValue = null;
             if (value.length() > 0) {
                 expandChildren();
             }
@@ -1016,10 +1009,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
 
     private void updateVariable() {
         value = getDebugger().requestValue("\"" + getName() + "\""); // NOI18N
-        String rt = getTypeInfo().getResolvedType(this);
-        if (GdbUtils.isPointer(rt)) {
-            derefValue = getDebugger().requestValue('*' + getName());
-        }
+//        String rt = getTypeInfo().getResolvedType(this);
+//        if (GdbUtils.isPointer(rt)) {
+//            derefValue = getDebugger().requestValue('*' + getName());
+//        }
         setModifiedValue(value);
     }
 
@@ -1077,7 +1070,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             }
             this.parent = parent;
             fields = new Field[0];
-            derefValue = null;
+//            derefValue = null;
             tinfo = null;
 
             if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
