@@ -1,0 +1,34 @@
+Name: Cobertura
+Version: 1.9
+Description: Library for measuring and reporting code coverage of tests.
+License: Mostly GPL 2.0/Ant Tasks are ASL 1.1 (see http://cobertura.sourceforge.net/license.html)
+OSR: No idea what to put here, or even what an OSR is
+Origin: http://prdownloads.sourceforge.net/cobertura/cobertura-1.9-bin.zip?download
+Files: cobertura-1.9.jar
+Source: http://prdownloads.sourceforge.net/cobertura/cobertura-1.9-src.zip?download
+Comment: See issue 145107
+
+Use of Cobertura 1.9 is governed by the terms of the license below:
+
+[TEXT OF THE LICENSE]
+
+LICENSE
+
+Cobertura is free software.  Most of it is licensed under the GNU
+GPL, and you can redistribute it and/or modify it under the terms
+of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option)
+any later version.  Please review the file COPYING included in this
+distribution for further details.
+
+Parts of Cobertura are licensed under the Apache Software License,
+Version 1.1.
+
+WARRANTY
+
+Cobertura is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+
