@@ -72,7 +72,7 @@ public class FormNode extends Node {
 
     static final OpenAction openAction = new OpenAction();
     static final EditAction editAction = new EditAction();
-    static final CompileAction compileAction = new CompileAction();
+    static final CompileJavaAction compileAction = new CompileJavaAction();
     static final CutAction cutAction = new CutAction();
     static final CopyAction copyAction = new CopyAction();
     static final PasteAction pasteAction = new PasteAction();

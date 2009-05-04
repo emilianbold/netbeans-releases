@@ -40,56 +40,23 @@
  */
 package org.netbeans.jellytools.modules.debugger.actions;
 
-import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.nodes.Node;
 
-/** Used to call "Run|Run File|Debug "MyClass.java"" main menu item,
- * "Debug File" popup menu item or CTRL+Shift+F5 shortcut.
- * @see org.netbeans.jellytools.actions.Action
- * @author Jiri.Skrivanek@sun.com
+/** Used to call "Debug" popup menu item on project's root node.
+ * @see Action
+ * @see org.netbeans.jellytools.nodes.JavaProjectRootNode
+ * @author Vojtech.Sigler@sun.com
  */
-public class DebugAction extends Action {
+public class DebugProjectAction extends Action {
 
-    // "Run"
-    private static final String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
-    // "Run File"
-    //private static final String runFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
-    // "Debug File"
-    private static final String POPUP_PATH = 
-            Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_DebugFile_Action");
-    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-            KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK) :
-            KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
-    
-    /** Creates new DebugAction instance. */
-    public DebugAction() {
-        super(null, POPUP_PATH, keystroke);
-    }
-    
-    /** Performs action through main menu. 
-     * @param node node to be selected before action
-     */
-    @Override
-    public void performMenu(Node node) {
-        this.menuPath = runItem+"|"+
-                Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle",
-                                        "LBL_DebugSingleAction_Name",
-                                        new Object[] {new Integer(1), node.getText()});
-        super.performMenu(node);
+    private static final String debugProjectPopup = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.debugger.ui.actions.Bundle",
+            "LBL_DebugProjectActionOnProject_Name");
+
+    /** Creates new DebugJavaProjectAction */
+    public DebugProjectAction() {
+        super(null, debugProjectPopup);
     }
 
-    /** Performs action through popup menu. 
-     * @param node node to be selected before action
-     */
-    @Override
-    public void performPopup(Node node) {
-        this.popupPath =
-                Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle",
-                                        "LBL_DebugSingleAction_Name",
-                                        new Object[] {new Integer(1), node.getText()});
-        super.performPopup(node);
-    }
+
 }

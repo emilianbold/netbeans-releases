@@ -40,7 +40,6 @@
  */
 package org.netbeans.jellytools.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Build Project" popup menu item on project's root node.
@@ -49,12 +48,13 @@ import org.netbeans.jellytools.Bundle;
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  * @author Jiri.Skrivanek@sun.com
  */
-public class BuildProjectAction extends Action {
+public class BuildCNDProjectAction extends Action {
 
-    private static final String buildProjectPopup = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_BuildAction_Name");
+    private static final String buildProjectPopup = Bundle.getString("org.netbeans.modules.cnd.makeproject.ui.Bundle",
+            "LBL_BuildAction_Name");
 
     /** creates new BuildProjectAction instance */    
-    public BuildProjectAction() {
+    public BuildCNDProjectAction() {
         super(null, buildProjectPopup);
     }
 }

@@ -38,53 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.jellytools.nodes;
+package org.netbeans.jellytools.actions;
 
-import org.netbeans.jellytools.actions.*;
-import org.netbeans.jemmy.operators.JTreeOperator;
+import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
+import org.netbeans.jellytools.Bundle;
 
-/** Project root node class. It represents root node of a project in Projects
- * view.
- * @see org.netbeans.jellytools.ProjectsTabOperator
+/** Used to call "Build|Compile File" main menu item, "Compile File" popup menu or F9 shortcut.
+ * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
  */
-public class ProjectRootNode extends Node {
+public class CompileCNDAction extends Action {
 
-    static final FindAction findAction = new FindAction();    
-    static final PropertiesAction propertiesAction = new PropertiesAction();
-    static final DebugProjectAction debugProjectAction = new DebugProjectAction();
-   
-    /** tests popup menu items for presence */    
-    public void verifyPopup() {
-        verifyPopup(new Action[]{
-            findAction,            
-            propertiesAction,
-            debugProjectAction
-        });
-    }
+    // Build|Compile
+    private static final String compileMenu = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject")+"|"
+                                            +Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_CompileSingleAction_Name");
+    private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
+    // Compile File
+    private static final String compilePopup = Bundle.getString("org.netbeans.modules.java.project.Bundle", "LBL_CompileFile_Action");
     
-    /** creates new ProjectRootNode instance
-     * @param treeOperator treeOperator JTreeOperator of tree with Filesystems repository 
-     * @param projectName display name of project
-     */
-    public ProjectRootNode(JTreeOperator treeOperator, String projectName) {
-        super(treeOperator, projectName);
-    }
-    
-    /** opens Search Filesystems dialog */    
-    public void find() {
-        findAction.perform(this);
-    }
-       
-    /** opens properties of project */    
-    public void properties() {
-        propertiesAction.perform(this);
-    }
-
-    /** debug project */
-    public void debug()
-    {
-        debugProjectAction.perform(this);
+    /** creates new CompileAction instance */    
+    public CompileCNDAction() {
+        super(compileMenu, compilePopup, keystroke);
     }
 }

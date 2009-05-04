@@ -38,53 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.jellytools.nodes;
+package org.netbeans.jellytools.actions;
 
-import org.netbeans.jellytools.actions.*;
-import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jellytools.Bundle;
 
-/** Project root node class. It represents root node of a project in Projects
- * view.
- * @see org.netbeans.jellytools.ProjectsTabOperator
+/** Used to call "Build Project" popup menu item on project's root node.
+ * @see Action
+ * @see org.netbeans.jellytools.nodes.ProjectRootNode
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  * @author Jiri.Skrivanek@sun.com
  */
-public class ProjectRootNode extends Node {
+public class BuildJavaProjectAction extends Action {
 
-    static final FindAction findAction = new FindAction();    
-    static final PropertiesAction propertiesAction = new PropertiesAction();
-    static final DebugProjectAction debugProjectAction = new DebugProjectAction();
-   
-    /** tests popup menu items for presence */    
-    public void verifyPopup() {
-        verifyPopup(new Action[]{
-            findAction,            
-            propertiesAction,
-            debugProjectAction
-        });
-    }
-    
-    /** creates new ProjectRootNode instance
-     * @param treeOperator treeOperator JTreeOperator of tree with Filesystems repository 
-     * @param projectName display name of project
-     */
-    public ProjectRootNode(JTreeOperator treeOperator, String projectName) {
-        super(treeOperator, projectName);
-    }
-    
-    /** opens Search Filesystems dialog */    
-    public void find() {
-        findAction.perform(this);
-    }
-       
-    /** opens properties of project */    
-    public void properties() {
-        propertiesAction.perform(this);
-    }
+    private static final String buildProjectPopup = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle",
+            "LBL_BuildAction_Name");
 
-    /** debug project */
-    public void debug()
-    {
-        debugProjectAction.perform(this);
+    /** creates new BuildProjectAction instance */    
+    public BuildJavaProjectAction() {
+        super(null, buildProjectPopup);
     }
 }

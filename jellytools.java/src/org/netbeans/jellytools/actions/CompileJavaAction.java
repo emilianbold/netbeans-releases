@@ -48,7 +48,7 @@ import org.netbeans.jellytools.Bundle;
  * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class CompileAction extends Action {
+public class CompileJavaAction extends Action {
 
     // Build|Compile
     private static final String compileMenu = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject")+"|"
@@ -58,7 +58,7 @@ public class CompileAction extends Action {
     private static final String compilePopup = Bundle.getString("org.netbeans.modules.java.project.Bundle", "LBL_CompileFile_Action");
     
     /** creates new CompileAction instance */    
-    public CompileAction() {
+    public CompileJavaAction() {
         super(compileMenu, compilePopup, keystroke);
     }
 }

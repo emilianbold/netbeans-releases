@@ -51,8 +51,8 @@ import org.netbeans.jemmy.operators.JTreeOperator;
  */
 public class JavaProjectRootNode extends ProjectRootNode {
 
-    static final BuildProjectAction buildProjectAction = new BuildProjectAction();
-    static final CleanProjectAction cleanProjectAction = new CleanProjectAction();
+    static final BuildJavaProjectAction buildProjectAction = new BuildJavaProjectAction();
+    static final CleanJavaProjectAction cleanProjectAction = new CleanJavaProjectAction();
     
 
     /** tests popup menu items for presence */

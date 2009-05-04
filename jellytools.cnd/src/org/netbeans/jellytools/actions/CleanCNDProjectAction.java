@@ -42,17 +42,18 @@ package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "Clean Project" popup menu item on project's root node.
+/** Used to call "Clean Project" popup menu item on a CND project's root node.
  * @see Action
- * @see org.netbeans.jellytools.nodes.ProjectRootNode
- * @author Jiri.Skrivanek@sun.com
+ * @see org.netbeans.jellytools.nodes.CNDProjectRootNode
+ * @author Vojtech.Sigler@sun.com
  */
-public class CleanProjectAction extends Action {
+public class CleanCNDProjectAction extends Action {
 
-    private static final String cleanProjectPopup = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_CleanAction_Name");
+    private static final String cleanProjectPopup = Bundle.getString("org.netbeans.modules.cnd.makeproject.ui.Bundle",
+            "LBL_CleanAction_Name");
 
     /** creates new CleanProjectAction instance */
-    public CleanProjectAction() {
+    public CleanCNDProjectAction() {
         super(null, cleanProjectPopup);
     }
 }
