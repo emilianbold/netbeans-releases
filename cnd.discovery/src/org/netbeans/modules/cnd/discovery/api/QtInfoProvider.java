@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
@@ -88,10 +87,10 @@ public abstract class QtInfoProvider {
         public List<String> getQtIncludeDirectories(MakeConfiguration conf) {
             String baseDir;
             synchronized (cache) {
-                baseDir = cache.get(conf.getDevelopmentHost().getName());
+                baseDir = cache.get(conf.getDevelopmentHost().getHostKey());
                 if (baseDir == null) {
                     baseDir = queryQtIncludeDir(conf);
-                    cache.put(conf.getDevelopmentHost().getName(), baseDir);
+                    cache.put(conf.getDevelopmentHost().getHostKey(), baseDir);
                 }
             }
             if (baseDir != null && !baseDir.equals(FAKE_DIR)) {

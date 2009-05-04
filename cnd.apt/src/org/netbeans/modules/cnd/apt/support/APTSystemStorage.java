@@ -89,9 +89,11 @@ public final class APTSystemStorage {
                 // create new one and put in map
                 map = new APTSystemMacroMap(sysMacros);
                 allMacroMaps.put(configID, map);
-                APTUtils.LOG.log(Level.FINE, 
-                        "new system macro map was added\n {0}", // NOI18N
-                        new Object[] { map });
+                if (APTUtils.LOG.isLoggable(Level.FINE)) {
+                    APTUtils.LOG.log(Level.FINE,
+                            "new system macro map was added\n {0}", // NOI18N
+                            new Object[] { map });
+                }
             }
             return map;
         }

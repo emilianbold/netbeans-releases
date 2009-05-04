@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.midp.components.items;
 
+import java.util.Collection;
 import org.netbeans.modules.vmd.api.codegen.CodeWriter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.codegen.Parameter;
@@ -52,6 +53,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 
 /**
  * @author David Kaspar
@@ -186,7 +188,16 @@ public class ChoiceGroupCode {
         }
 
         public boolean isRequiredToBeSet (DesignComponent component) {
-            return ! component.isDefaultValue (ChoiceGroupCD.PROP_ELEMENTS);
+            Collection<DesignComponent> children = DocumentSupport.gatherSubComponentsOfType(component, ChoiceElementCD.TYPEID);
+            if (children == null) {
+                return false;
+            }
+            for (DesignComponent child : children) {
+                if (!child.isDefaultValue(ChoiceElementCD.PROP_FONT)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public int getCount (DesignComponent component) {

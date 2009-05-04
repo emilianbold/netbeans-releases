@@ -35,19 +35,19 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="variablesButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="rbCopy" alignment="0" pref="188" max="32767" attributes="0"/>
+                  <Component id="rbCopy" alignment="0" pref="192" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                      <Component id="copyTo" pref="167" max="32767" attributes="0"/>
+                      <Component id="copyTo" pref="171" max="32767" attributes="0"/>
                   </Group>
                   <Component id="rbAbsolute" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                      <Component id="absolutePath" pref="167" max="32767" attributes="0"/>
+                      <Component id="absolutePath" pref="171" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
-                      <Component id="relativePath" pref="167" max="32767" attributes="0"/>
+                      <Component id="relativePath" pref="171" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -105,6 +105,9 @@
           <ResourceString bundle="org/netbeans/modules/project/ant/Bundle.properties" key="ACSD_FileChooserAccessory_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rbActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="relativePath">
       <Properties>
@@ -126,6 +129,9 @@
           <ResourceString bundle="org/netbeans/modules/project/ant/Bundle.properties" key="ACSD_FileChooserAccessory_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rbActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="variablePath">
     </Component>
@@ -158,6 +164,9 @@
           <ResourceString bundle="org/netbeans/modules/project/ant/Bundle.properties" key="ACSD_FileChooserAccessory_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rbActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="copyTo">
       <Properties>
@@ -179,6 +188,9 @@
           <ResourceString bundle="org/netbeans/modules/project/ant/Bundle.properties" key="ACSD_FileChooserAccessory_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rbActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="absolutePath">
       <Properties>

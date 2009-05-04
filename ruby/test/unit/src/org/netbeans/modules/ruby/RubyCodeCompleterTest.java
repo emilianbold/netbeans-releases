@@ -172,8 +172,7 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
         checkCompletion("testfiles/completion/lib/test2.rb", "puts 'Hello'.class^");
     }
 
-//    
-//    // TODO: Test open classes, class inheritance, relative symbols, finding classes, superclasses, def completion, ...
+    // TODO: test open classes, class inheritance, relative symbols, finding classes, superclasses, def completion, ...
     public void checkComputeMethodCall(String file, String caretLine, String fqn, String param, boolean expectSuccess) throws Exception {
         checkComputeMethodCall(file, caretLine, param, expectSuccess);
     }
@@ -276,10 +275,19 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
         checkCompletion("testfiles/completion/lib/globals.rb", "$^m # input");
     }
 
+//    FileObject getTestGlobalsClassPath() {
+//        return getTestFile("testfiles/completion/lib");
+//    }
+//
     public void testAttributes() throws Exception {
         checkCompletion("testfiles/completion/lib/song.rb", "ss.^");
     }
 
+    FileObject getTestAttributesClassPath() {
+        return getTestFile("testfiles/completion/lib");
+    }
+
+    
     public void testIfWithFailingInferenceInBranchType() throws Exception {
         checkCompletion("testfiles/if_with_failing_inference_in_branch_type.rb", "var.to_i^");
     }
@@ -358,6 +366,10 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
 
     public void testMethodTypeInference() throws Exception {
         checkCompletion("testfiles/method_type_inference.rb", "puts num.abs^");
+    }
+
+    public void testClassVariables() throws Exception {
+        checkCompletion("testfiles/cc-classvars.rb", "puts @@my_cl^ass_var");
     }
 
     // TODO uncomment when reindexed

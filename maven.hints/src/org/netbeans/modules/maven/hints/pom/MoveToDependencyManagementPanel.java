@@ -114,7 +114,7 @@ public class MoveToDependencyManagementPanel extends javax.swing.JPanel implemen
 
     public void run() {
                 try {
-                    ModelLineage lin = EmbedderFactory.createModelLineage(current, EmbedderFactory.createOnlineEmbedder(), false);
+                    ModelLineage lin = EmbedderFactory.createModelLineage(current, EmbedderFactory.getOnlineEmbedder(), false);
                     final Children ch = new PomChildren(lin);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {

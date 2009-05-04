@@ -43,7 +43,6 @@ package org.netbeans.modules.maven.samples;
 
 import java.awt.Component;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -56,6 +55,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -68,7 +68,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class MavenSamplesWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private int index;
     private WizardDescriptor.Panel[] panels;
@@ -92,7 +92,8 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.Instantiatin
         };
     }
     
-    public Set/*<FileObject>*/ instantiate() throws IOException {
+    public Set instantiate(ProgressHandle handle) throws IOException {
+        handle.start(5);
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty(WizardProperties.PROJ_DIR));
         createFolder(dirF);
@@ -104,19 +105,32 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.Instantiatin
         
         // Always open top dir as a project:
         resultSet.add(dir);
+        handle.progress(1);
+        Project prj = ProjectManager.getDefault().findProject(dir);
+        if (prj != null) {
+            NbMavenProject mvn = prj.getLookup().lookup(NbMavenProject.class);
+            if (mvn != null) {
+                mvn.downloadDependencyAndJavadocSource();
+            }
+        }
+        handle.progress(3);
+
         // Look for nested projects to open as well:
         Enumeration e = dir.getFolders(true);
         while (e.hasMoreElements()) {
             FileObject subfolder = (FileObject) e.nextElement();
             if (ProjectManager.getDefault().isProject(subfolder)) {
-                Project prj = ProjectManager.getDefault().findProject(subfolder);
-                NbMavenProject mvn = prj.getLookup().lookup(NbMavenProject.class);
-                if (mvn != null) {
-                    mvn.triggerDependencyDownload();
+                prj = ProjectManager.getDefault().findProject(subfolder);
+                if (prj != null) {
+                    NbMavenProject mvn = prj.getLookup().lookup(NbMavenProject.class);
+                    if (mvn != null) {
+                        mvn.downloadDependencyAndJavadocSource();
+                    }
+                    resultSet.add(subfolder);
                 }
-                resultSet.add(subfolder);
             }
         }
+        handle.progress(4);
         
         File parent = dirF.getParentFile();
         if (parent != null && parent.exists()) {
@@ -251,5 +265,9 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.Instantiatin
         assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
         dirFO.getFileSystem().refresh(false);
     }
-    
+
+    public Set instantiate() throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

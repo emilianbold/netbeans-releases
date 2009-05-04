@@ -1,2 +1,2 @@
 [usersubs]
-cvs@ruby.netbeans.org=o.jruby.distro/*,o.rubyforge.debugcommons/*,ruby*/*,o.jruby/*,o.kxml2/*,languages.yaml/*,gsf.testrunner/*
+cvs@ruby.netbeans.org=o.jruby.distro/*,o.rubyforge.debugcommons/*,ruby*/*,o.jruby/*,o.kxml2/*,languages.yaml/*,gsf.testrunner/*,libs.jrubyparser/*,libs.yydebug/*

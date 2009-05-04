@@ -76,8 +76,6 @@ made subject to such option by the copyright holder.
                 <pathelement path="${module.classpath}"/>
             </classpath>
             <jvmarg value="-Xdebug"/>
-            <jvmarg value="-Xnoagent"/>
-            <jvmarg value="-Djava.compiler=none"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address},suspend=n"/>
         </java>
     </target>

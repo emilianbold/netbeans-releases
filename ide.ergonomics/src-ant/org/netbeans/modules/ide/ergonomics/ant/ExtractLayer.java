@@ -74,7 +74,7 @@ import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.types.ResourceCollection;
 import org.apache.tools.ant.types.resources.StringResource;
 import org.apache.tools.ant.types.resources.ZipResource;
-import org.apache.tools.ant.util.FlatFileNameMapper;
+import org.apache.tools.ant.util.FileNameMapper;
 import org.apache.tools.zip.ZipEntry;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -85,7 +85,8 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class ExtractLayer extends Task {
+public final class ExtractLayer extends Task
+implements FileNameMapper {
     private List<FileSet> moduleSet = new ArrayList<FileSet>();
     public void addConfiguredModules(FileSet fs) {
         moduleSet.add(fs);
@@ -273,7 +274,7 @@ public final class ExtractLayer extends Task {
             HashMap<String,Resource> names = new HashMap<String,Resource>();
             HashSet<String> duplicates = new HashSet<String>();
             for (Resource r : icons) {
-                String name = r.getName().replaceFirst(".*/", "");
+                String name = r.getName();
                 Resource prev = names.put(name, r);
                 if (prev != null) {
                     if (prev.getName().equals(r.getName())) {
@@ -292,7 +293,7 @@ public final class ExtractLayer extends Task {
         copy.setProject(getProject());
         copy.add(icons);
         copy.setTodir(output);
-        copy.add(new FlatFileNameMapper());
+        copy.add(this);
         copy.execute();
 
         try {
@@ -341,6 +342,12 @@ public final class ExtractLayer extends Task {
                         } else {
                             additionalKeys.add(prefix);
                         }
+                    } else if (name.equals("iconResource") || name.equals("iconBase")) {
+                        String s = attributes.getValue("stringvalue");
+                        if (s == null) {
+                            throw new BuildException("No stringvalue attribute for " + name);
+                        }
+                        addResource("nbresloc:" + s, false);
                     } else if (attributes.getValue("bundlevalue") != null) {
                         String bundlevalue = attributes.getValue("bundlevalue");
                         int idx = bundlevalue.indexOf('#');
@@ -393,6 +400,18 @@ public final class ExtractLayer extends Task {
             }
         });
     }
+
+    public void setFrom(String arg0) {
+    }
+
+    public void setTo(String arg0) {
+    }
+
+    /** Dash instead of slash file mapper */
+    public String[] mapFileName(String fileName) {
+        return new String[] { fileName.replace('/', '-') };
+    }
+
     private static final class ResArray extends ArrayList<Resource>
     implements ResourceCollection {
         public boolean isFilesystemOnly() {

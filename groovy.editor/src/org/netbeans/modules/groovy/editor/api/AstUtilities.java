@@ -84,6 +84,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
+import org.netbeans.editor.FinderFactory;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -193,8 +194,24 @@ public class AstUtilities {
                 // that even though we're running on an ClassNode, there is no "class " String
                 // in the sourcefile. So take doc.getLength() as maximum.
 
-                int start = getOffset(doc, lineNumber, columnNumber) + "class".length(); // NOI18N
+                int start = getOffset(doc, lineNumber, columnNumber);
                 int docLength = doc.getLength();
+
+                int limit = (node.getLastLineNumber() > 0 && node.getLastColumnNumber() > 0)
+                        ? getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber())
+                        : docLength;
+
+                if (limit > docLength) {
+                    limit = docLength;
+                }
+
+                try {
+                    // we have to really search for class keyword other keyword
+                    // (such as abstract) can precede class
+                    start = doc.find(new FinderFactory.StringFwdFinder("class", true), start, limit) + "class".length(); // NOI18N
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
 
                 if (start > docLength) {
                     start = docLength;
@@ -207,7 +224,7 @@ public class AstUtilities {
                 }
 
                 // This seems to happen every now and then ...
-                if (start < 0){
+                if (start < 0) {
                     start = 0;
                 }
 
@@ -219,6 +236,9 @@ public class AstUtilities {
                     end = docLength;
                 }
 
+                if (start == end) {
+                    return OffsetRange.NONE;
+                }
                 return new OffsetRange(start, end);
             }
         } else if (node instanceof ConstructorNode) {

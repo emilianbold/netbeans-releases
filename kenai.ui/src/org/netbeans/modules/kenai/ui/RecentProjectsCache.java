@@ -40,6 +40,7 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.HashMap;
 import org.netbeans.api.project.Project;
@@ -55,7 +56,6 @@ import org.openide.filesystems.FileStateInvalidException;
 public class RecentProjectsCache {
 
     private static RecentProjectsCache instance;
-    private HashMap<URL, NbProjectHandleImpl> map = new HashMap<URL, NbProjectHandleImpl>();
 
     public static synchronized RecentProjectsCache getDefault() {
         if (instance==null) {
@@ -64,36 +64,23 @@ public class RecentProjectsCache {
         return instance;
     }
 
-    public synchronized NbProjectHandleImpl getProjectHandle(URL url) throws FileStateInvalidException, IOException {
-        NbProjectHandleImpl handle = map.get(url);
-        if (handle==null) {
-            for (Project p: OpenProjects.getDefault().getOpenProjects()) {
-                if (p.getProjectDirectory().getURL().equals(url)) {
-                    handle = new NbProjectHandleImpl(p);
-                    map.put(url, handle);
-                    break;
-                }
-            }
-            for (UnloadedProjectInformation i : RecentProjects.getDefault().getRecentProjectInformation()) {
-                if (i.getURL().equals(url)) {
-                    handle = new NbProjectHandleImpl(i);
-                    map.put(url, handle);
-                    break;
-                }
-
+    public synchronized NbProjectHandleImpl getProjectHandle(URL url, SourceHandleImpl src) throws FileStateInvalidException, IOException {
+        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+            if (p.getProjectDirectory().getURL().equals(url)) {
+                return new NbProjectHandleImpl(p, src);
             }
         }
-        return handle;
+        for (UnloadedProjectInformation i : RecentProjects.getDefault().getRecentProjectInformation()) {
+            if (i.getURL().equals(url)) {
+                return new NbProjectHandleImpl(i, src);
+            }
+
+        }
+        return null;
     }
 
-    public synchronized NbProjectHandleImpl getProjectHandle(Project p) throws IOException  {
-        NbProjectHandleImpl nbph = map.get(p.getProjectDirectory().getURL());
-        if (nbph!=null) {
-            return nbph;
-        }
-        nbph  = new NbProjectHandleImpl(p);
-        map.put(p.getProjectDirectory().getURL(), nbph);
-        return nbph;
+    public synchronized NbProjectHandleImpl getProjectHandle(Project p, SourceHandleImpl src) throws IOException  {
+        return new NbProjectHandleImpl(p, src);
     }
 
 }

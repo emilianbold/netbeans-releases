@@ -67,6 +67,7 @@ import javax.swing.event.ChangeListener;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -120,7 +121,10 @@ public class STSWizard implements TemplateWizard.Iterator {
         } else {
             fileName = "sts13";
         }
-        final File wsdlFile = new File(System.getProperty("netbeans.user") + File.separator + fileName + ".wsdl");
+
+        final String userDir = System.getProperty("netbeans.user") + File.separator + "config" +
+                File.separator + "WebServices" + File.separator;
+        final File wsdlFile = new File(userDir + fileName + ".wsdl");
 
         FileUtil.runAtomicAction(new Runnable() {
 
@@ -128,7 +132,7 @@ public class STSWizard implements TemplateWizard.Iterator {
                 OutputStream schemaos = null;
                 try {
                     final InputStream schemaIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/templates/sts_schema.template"); //NOI18N
-                    File schema = new File(System.getProperty("netbeans.user") + File.separator + "sts_schema.xsd");     //NOI18N
+                    File schema = new File(userDir + "sts_schema.xsd");     //NOI18N
                     schema.createNewFile();
                     schemaos = new FileOutputStream(schema);
                     FileUtil.copy(schemaIS, schemaos);
@@ -309,7 +313,8 @@ public class STSWizard implements TemplateWizard.Iterator {
 
         project = Templates.getProject(wiz);
 
-        boolean wizardEnabled = Util.isJavaEE5orHigher(project) && ServerUtils.isGlassfish(project);
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory()); // only web module supported for now
+        boolean wizardEnabled = Util.isJavaEE5orHigher(project) && ServerUtils.isGlassfish(project) && (wm != null);
 
         versionPanel = new STSVersionPanel(wiz);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);

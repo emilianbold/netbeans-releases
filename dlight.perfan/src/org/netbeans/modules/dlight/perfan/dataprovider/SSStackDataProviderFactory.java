@@ -55,8 +55,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory.class)
 public final class SSStackDataProviderFactory implements DataProviderFactory {
 
-    private final Collection<DataModelScheme> providedSchemas = Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:stack"));
-    private static final String ID = "PerfanDataStorage";
+    private final Collection<DataModelScheme> providedSchemas = Arrays.asList(DataModelSchemeProvider.getInstance().getScheme("model:stack")); // NOI18N
+    private static final String ID = "PerfanDataStorage"; // NOI18N
 
     public DataProvider create() {
         return new SSStackDataProvider();

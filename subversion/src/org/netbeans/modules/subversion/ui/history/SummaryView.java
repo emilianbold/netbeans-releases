@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.subversion.ui.history;
 
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -75,6 +76,9 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -519,7 +523,22 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 return;
             }
             FileObject fo = FileUtil.toFileObject(file);
-            org.netbeans.modules.versioning.util.Utils.openFile(fo, rev);
+            EditorCookie ec = null;
+            OpenCookie oc = null;
+            try {
+                DataObject dobj = DataObject.find(fo);
+                ec = dobj.getCookie(EditorCookie.class);
+                oc = dobj.getCookie(OpenCookie.class);
+            } catch (DataObjectNotFoundException ex) {
+                Subversion.LOG.log(Level.FINE, null, ex);
+            }
+            if (ec != null) {
+                org.netbeans.modules.versioning.util.Utils.openFile(fo, rev);
+            } else if (oc != null) {
+                oc.open();
+            } else {
+                org.netbeans.modules.versioning.util.Utils.openFile(fo, rev);
+            }
         }
     }
     private void diffPrevious(int idx) {

@@ -39,19 +39,27 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
+import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +73,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -119,6 +128,12 @@ public class IssuePanel extends javax.swing.JPanel {
         duplicateField.setVisible(false);
         attachDocumentListeners();
 
+        // A11Y - Issues 163597 and 163598
+        Set<AWTKeyStroke> set = addCommentArea.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        set = new HashSet<AWTKeyStroke>(set);
+        set.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
+        addCommentArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
+
         // Comments panel
         commentsPanel = new CommentsPanel();
         commentsPanel.setNewCommentHandler(new CommentsPanel.NewCommentHandler() {
@@ -132,6 +147,9 @@ public class IssuePanel extends javax.swing.JPanel {
         GroupLayout layout = (GroupLayout)getLayout();
         layout.replace(dummyCommentsPanel, commentsPanel);
         layout.replace(dummyAttachmentsPanel, attachmentsPanel);
+        attachmentsLabel.setLabelFor(attachmentsPanel);
+
+        issue163946Hack(scrollPane1);
     }
 
     void reloadFormInAWT(final boolean force) {
@@ -213,9 +231,10 @@ public class IssuePanel extends javax.swing.JPanel {
                 layout.replace(productCombo, productField);
             }
         }
+        productLabel.setLabelFor(isNew ? productCombo : productField);
         headerLabel.setVisible(!isNew);
         statusCombo.setEnabled(!isNew);
-        addCommentLabel.setText(NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
         reportedLabel.setVisible(!isNew);
         reportedField.setVisible(!isNew);
         modifiedLabel.setVisible(!isNew);
@@ -226,7 +245,7 @@ public class IssuePanel extends javax.swing.JPanel {
         attachmentsPanel.setVisible(!isNew);
         refreshButton.setVisible(!isNew);
         cancelButton.setVisible(!isNew);
-        submitButton.setText(NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew && force) {
             // Preselect the first product
             productCombo.setSelectedIndex(0);
@@ -266,28 +285,30 @@ public class IssuePanel extends javax.swing.JPanel {
             reloadField(force, keywordsField, BugzillaIssue.IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
 
             // reported field
-            format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
-            String creationTxt = issue.getFieldValue(BugzillaIssue.IssueField.CREATION);
-            try {
-                Date creation = creationFormat.parse(creationTxt);
-                creationTxt = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(creation);
-            } catch (ParseException pex) {
-                Bugzilla.LOG.log(Level.INFO, null, pex);
+            if (!isNew) {
+                format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
+                String creationTxt = issue.getFieldValue(BugzillaIssue.IssueField.CREATION);
+                try {
+                    Date creation = creationFormat.parse(creationTxt);
+                    creationTxt = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(creation);
+                } catch (ParseException pex) {
+                    Bugzilla.LOG.log(Level.INFO, null, pex);
+                }
+                String reportedTxt = MessageFormat.format(format, creationTxt, issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME));
+                reportedField.setText(reportedTxt);
+                fixPrefSize(reportedField);
+
+                // modified field
+                String modifiedTxt = issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION);
+                try {
+                    Date modification = modificationFormat.parse(modifiedTxt);
+                    modifiedTxt = DateFormat.getDateTimeInstance().format(modification);
+                } catch (ParseException pex) {
+                    Bugzilla.LOG.log(Level.INFO, null, pex);
+                }
+                modifiedField.setText(modifiedTxt);
+                fixPrefSize(modifiedField);
             }
-            String reportedTxt = MessageFormat.format(format, creationTxt, issue.getFieldValue(BugzillaIssue.IssueField.REPORTER));
-            reportedField.setText(reportedTxt);
-            fixPrefSize(reportedField);
-            
-            // modified field
-            String modifiedTxt = issue.getFieldValue(BugzillaIssue.IssueField.MODIFICATION);
-            try {
-                Date modification = modificationFormat.parse(modifiedTxt);
-                modifiedTxt = DateFormat.getDateTimeInstance().format(modification);
-            } catch (ParseException pex) {
-                Bugzilla.LOG.log(Level.INFO, null, pex);
-            }
-            modifiedField.setText(modifiedTxt);
-            fixPrefSize(modifiedField);
 
             reloadField(force, assignedField, BugzillaIssue.IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
             reloadField(force, qaContactField, BugzillaIssue.IssueField.QA_CONTACT, qaContactWarning, qaContactLabel);
@@ -303,7 +324,9 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
         oldCommentCount = newCommentCount;
-        commentsPanel.setIssue(issue);
+        if (!isNew) {
+            commentsPanel.setIssue(issue);
+        }
         attachmentsPanel.setIssue(issue);
         BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
         BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
@@ -638,6 +661,23 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
 
+    private static void issue163946Hack(final JScrollPane scrollPane) {
+        MouseWheelListener listener = new MouseWheelListener() {
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (scrollPane.getVerticalScrollBar().isShowing()) {
+                    if (e.getSource() != scrollPane) {
+                        e.setSource(scrollPane);
+                        scrollPane.dispatchEvent(e);
+                    }
+                } else {
+                    scrollPane.getParent().dispatchEvent(e);
+                }
+            }
+        };
+        scrollPane.addMouseWheelListener(listener);
+        scrollPane.getViewport().getView().addMouseWheelListener(listener);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -731,19 +771,24 @@ public class IssuePanel extends javax.swing.JPanel {
 
         resolutionField.setEditable(false);
         resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        resolutionField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolutionField.AccessibleContext.accessibleDescription")); // NOI18N
 
         productField.setEditable(false);
         productField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        productField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.productField.AccessibleContext.accessibleDescription")); // NOI18N
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
-        productLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.productLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(productLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.productLabel.text")); // NOI18N
 
-        componentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.componentLabel.text")); // NOI18N
+        componentLabel.setLabelFor(componentCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(componentLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.componentLabel.text")); // NOI18N
 
-        versionLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.versionLabel.text")); // NOI18N
+        versionLabel.setLabelFor(versionCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(versionLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.versionLabel.text")); // NOI18N
 
-        platformLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.platformLabel.text")); // NOI18N
+        platformLabel.setLabelFor(platformCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(platformLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.platformLabel.text")); // NOI18N
 
         productCombo.addActionListener(formListener);
 
@@ -753,77 +798,92 @@ public class IssuePanel extends javax.swing.JPanel {
 
         platformCombo.addActionListener(formListener);
 
-        statusLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.statusLabel.text")); // NOI18N
+        statusLabel.setLabelFor(statusCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(statusLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.statusLabel.text")); // NOI18N
 
         statusCombo.addActionListener(formListener);
 
-        resolutionLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolutionLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(resolutionLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolutionLabel.text")); // NOI18N
 
         resolutionCombo.addActionListener(formListener);
 
-        priorityLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.priorityLabel.text")); // NOI18N
+        priorityLabel.setLabelFor(priorityCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(priorityLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.priorityLabel.text")); // NOI18N
 
         priorityCombo.addActionListener(formListener);
 
-        severityLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.severityLabel.text")); // NOI18N
+        severityLabel.setLabelFor(severityCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(severityLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.severityLabel.text")); // NOI18N
 
         severityCombo.addActionListener(formListener);
 
-        targetMilestoneLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.targetMilestoneLabel.text")); // NOI18N
+        targetMilestoneLabel.setLabelFor(targetMilestoneCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(targetMilestoneLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.targetMilestoneLabel.text")); // NOI18N
 
         targetMilestoneCombo.addActionListener(formListener);
 
-        urlLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.urlLabel.text")); // NOI18N
+        urlLabel.setLabelFor(urlField);
+        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.urlLabel.text")); // NOI18N
 
         urlField.setColumns(15);
 
-        keywordsLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsLabel.text")); // NOI18N
+        keywordsLabel.setLabelFor(keywordsField);
+        org.openide.awt.Mnemonics.setLocalizedText(keywordsLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsLabel.text")); // NOI18N
 
         keywordsField.setColumns(15);
 
-        reportedLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.text")); // NOI18N
+        reportedLabel.setLabelFor(reportedField);
+        org.openide.awt.Mnemonics.setLocalizedText(reportedLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.text")); // NOI18N
 
         reportedField.setEditable(false);
         reportedField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        modifiedLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.modifiedLabel.text")); // NOI18N
+        modifiedLabel.setLabelFor(modifiedField);
+        org.openide.awt.Mnemonics.setLocalizedText(modifiedLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.modifiedLabel.text")); // NOI18N
 
         modifiedField.setEditable(false);
         modifiedField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        assignedLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.assignedLabel.text")); // NOI18N
+        assignedLabel.setLabelFor(assignedField);
+        org.openide.awt.Mnemonics.setLocalizedText(assignedLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.assignedLabel.text")); // NOI18N
 
         assignedField.setColumns(15);
 
-        qaContactLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.qaContactLabel.text")); // NOI18N
+        qaContactLabel.setLabelFor(qaContactField);
+        org.openide.awt.Mnemonics.setLocalizedText(qaContactLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.qaContactLabel.text")); // NOI18N
 
         qaContactField.setColumns(15);
 
-        ccLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.ccLabel.text")); // NOI18N
+        ccLabel.setLabelFor(ccField);
+        org.openide.awt.Mnemonics.setLocalizedText(ccLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.ccLabel.text")); // NOI18N
 
         ccField.setColumns(15);
 
-        dependsLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsLabel.text")); // NOI18N
+        dependsLabel.setLabelFor(dependsField);
+        org.openide.awt.Mnemonics.setLocalizedText(dependsLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsLabel.text")); // NOI18N
 
         dependsField.setColumns(15);
 
-        blocksLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksLabel.text")); // NOI18N
+        blocksLabel.setLabelFor(blocksField);
+        org.openide.awt.Mnemonics.setLocalizedText(blocksLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksLabel.text")); // NOI18N
 
         blocksField.setColumns(15);
 
-        addCommentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentLabel.text")); // NOI18N
+        addCommentLabel.setLabelFor(addCommentArea);
+        org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentLabel.text")); // NOI18N
 
         addCommentArea.setColumns(20);
         addCommentArea.setRows(5);
         scrollPane1.setViewportView(addCommentArea);
+        addCommentArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentArea.AccessibleContext.accessibleDescription")); // NOI18N
 
-        submitButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(submitButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
         submitButton.addActionListener(formListener);
 
-        cancelButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.cancelButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(formListener);
 
-        attachmentsLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachmentsLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(attachmentsLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachmentsLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout dummyAttachmentsPanelLayout = new org.jdesktop.layout.GroupLayout(dummyAttachmentsPanel);
         dummyAttachmentsPanel.setLayout(dummyAttachmentsPanelLayout);
@@ -836,31 +896,34 @@ public class IssuePanel extends javax.swing.JPanel {
             .add(0, 0, Short.MAX_VALUE)
         );
 
-        refreshButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(refreshButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.text")); // NOI18N
         refreshButton.addActionListener(formListener);
 
-        duplicateLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateLabel.text")); // NOI18N
+        duplicateLabel.setLabelFor(duplicateField);
+        org.openide.awt.Mnemonics.setLocalizedText(duplicateLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateLabel.text")); // NOI18N
 
-        keywordsButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(keywordsButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsButton.text")); // NOI18N
         keywordsButton.setFocusPainted(false);
         keywordsButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         keywordsButton.addActionListener(formListener);
 
-        blocksButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(blocksButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.text")); // NOI18N
         blocksButton.setFocusPainted(false);
         blocksButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         blocksButton.addActionListener(formListener);
 
-        dependsOnButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(dependsOnButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.text")); // NOI18N
         dependsOnButton.setFocusPainted(false);
         dependsOnButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         dependsOnButton.addActionListener(formListener);
 
-        osLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.osLabel.text")); // NOI18N
+        osLabel.setLabelFor(osCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(osLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.osLabel.text")); // NOI18N
 
         osCombo.addActionListener(formListener);
 
-        summaryLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.summaryLabel.text")); // NOI18N
+        summaryLabel.setLabelFor(summaryField);
+        org.openide.awt.Mnemonics.setLocalizedText(summaryLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.summaryLabel.text")); // NOI18N
 
         messagePanel.setLayout(new javax.swing.BoxLayout(messagePanel, javax.swing.BoxLayout.PAGE_AXIS));
 
@@ -1156,6 +1219,33 @@ public class IssuePanel extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {assignedLabel, blocksLabel, ccLabel, componentLabel, dependsLabel, keywordsLabel, osLabel, platformLabel, priorityLabel, productLabel, qaContactLabel, resolutionLabel, severityLabel, statusCombo, statusLabel, targetMilestoneLabel, urlLabel, versionLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        productCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.productCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        componentCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.componentCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        versionCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.versionCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        platformCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.platformCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        statusCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.statusCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        resolutionCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolutionCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        priorityCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.priorityCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        severityCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.severityCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        targetMilestoneCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.targetMilestoneCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        urlField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.urlField.AccessibleContext.accessibleDescription")); // NOI18N
+        keywordsField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsField.AccessibleContext.accessibleDescription")); // NOI18N
+        reportedField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedField.AccessibleContext.accessibleDescription")); // NOI18N
+        modifiedField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.modifiedField.AccessibleContext.accessibleDescription")); // NOI18N
+        assignedField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.assignedField.AccessibleContext.accessibleDescription")); // NOI18N
+        qaContactField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.qaContactField.AccessibleContext.accessibleDescription")); // NOI18N
+        ccField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.ccField.AccessibleContext.accessibleDescription")); // NOI18N
+        dependsField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsField.AccessibleContext.accessibleDescription")); // NOI18N
+        blocksField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksField.AccessibleContext.accessibleDescription")); // NOI18N
+        submitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.AccessibleContext.accessibleDescription")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.cancelButton.AccessibleContext.accessibleDescription")); // NOI18N
+        refreshButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.AccessibleContext.accessibleDescription")); // NOI18N
+        duplicateField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateField.AccessibleContext.accessibleDescription")); // NOI18N
+        keywordsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsButton.AccessibleContext.accessibleDescription")); // NOI18N
+        blocksButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.AccessibleContext.accessibleDescription")); // NOI18N
+        dependsOnButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.AccessibleContext.accessibleDescription")); // NOI18N
+        osCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.osCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        summaryField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.summaryField.AccessibleContext.accessibleDescription")); // NOI18N
     }
 
     // Code for dispatching events from components to event handlers.
@@ -1289,6 +1379,7 @@ public class IssuePanel extends javax.swing.JPanel {
             duplicateLabel.setVisible(false);
             duplicateField.setVisible(false);
         }
+        resolutionLabel.setLabelFor(resolutionCombo.isVisible() ? resolutionCombo : resolutionField);
     }//GEN-LAST:event_statusComboActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
@@ -1324,7 +1415,7 @@ public class IssuePanel extends javax.swing.JPanel {
         storeFieldValue(BugzillaIssue.IssueField.KEYWORDS, keywordsField);
         storeFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO, assignedField);
         storeFieldValue(BugzillaIssue.IssueField.QA_CONTACT, qaContactField);
-        storeFieldValue(BugzillaIssue.IssueField.CC, ccField);
+        storeCCValue();
         storeFieldValue(BugzillaIssue.IssueField.DEPENDS_ON, dependsField);
         storeFieldValue(BugzillaIssue.IssueField.BLOCKS, blocksField);
         if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
@@ -1374,6 +1465,42 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_submitButtonActionPerformed
+
+    private void storeCCValue() {
+        Set<String> oldCCs = ccs(issue.getFieldValue(BugzillaIssue.IssueField.CC));
+        Set<String> newCCs = ccs(ccField.getText());
+
+        String removedCCs = getMissingCCs(oldCCs, newCCs);
+        String addedCCs = getMissingCCs(newCCs, oldCCs);
+
+        storeFieldValue(BugzillaIssue.IssueField.REMOVECC, removedCCs);
+        storeFieldValue(BugzillaIssue.IssueField.NEWCC, addedCCs);
+    }
+
+    private Set<String> ccs(String values) {
+        Set<String> ccs = new HashSet<String>();
+        StringTokenizer st = new StringTokenizer(values, ", \t\n\r\f"); // NOI18N
+        while (st.hasMoreTokens()) {
+            ccs.add(st.nextToken());
+        }
+        return ccs;
+    }
+
+    private String getMissingCCs(Set<String> ccs, Set<String> missingIn) {
+        StringBuffer ret = new StringBuffer();
+        Iterator<String> it = ccs.iterator();
+        while(it.hasNext()) {
+            String cc = it.next();
+            if(cc.trim().equals("")) continue;
+            if(!missingIn.contains(cc)) {
+                ret.append(cc);
+                if(it.hasNext()) {
+                    ret.append(',');
+                }
+            }
+        }
+        return ret.toString();
+    }
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
         String refreshMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshMessage"); // NOI18N

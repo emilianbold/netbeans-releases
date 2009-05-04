@@ -210,6 +210,14 @@ class InstancePropertiesVisual extends JPanel {
                 .add(checkProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        nameTxt.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstancePropertiesVisual.class, "InstancePropertiesVisual.nameTxt.AccessibleContext.accessibleDescription")); // NOI18N
+        urlTxt.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstancePropertiesVisual.class, "InstancePropertiesVisual.urlTxt.AccessibleContext.accessibleDescription")); // NOI18N
+        autoSyncCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstancePropertiesVisual.class, "InstancePropertiesVisual.autoSyncCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        autoSyncSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstancePropertiesVisual.class, "InstancePropertiesVisual.autoSyncSpinner.AccessibleContext.accessibleDescription")); // NOI18N
+        proxyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstancePropertiesVisual.class, "InstancePropertiesVisual.proxyButton.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstancePropertiesVisual.class, "InstancePropertiesVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
 private void proxyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyButtonActionPerformed

@@ -41,12 +41,17 @@ package org.netbeans.modules.kenai.ui;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
@@ -56,20 +61,43 @@ import org.openide.util.Exceptions;
  */
 public class NbProjectHandleImpl extends NbProjectHandle{
 
-    Icon icon;
-    String displayName;
+    private Icon icon;
+    private String displayName;
     URL url;
+    private SourceHandleImpl parent;
 
-    NbProjectHandleImpl(Project p) throws IOException {
+    NbProjectHandleImpl(Project p, SourceHandleImpl parent) throws IOException {
         displayName = ProjectUtils.getInformation(p).getDisplayName();
         icon = ProjectUtils.getInformation(p).getIcon();
-            url = p.getProjectDirectory().getURL();
+        url = p.getProjectDirectory().getURL();
+        p.getProjectDirectory().addFileChangeListener(new FileChangeAdapter() {
+            @Override
+            public void fileDeleted(FileEvent fe) {
+                try {
+                    if (fe.getFile().getURL().equals(url)) {
+                        remove();
+                    }
+                } catch (FileStateInvalidException ex) {
+                    //ignore
+                }
+            }
+        });
+        this.parent = parent;
+        assert this.parent!=null;
+        assert displayName!=null;
+        assert icon!=null;
+        assert url!=null;
     }
 
-    NbProjectHandleImpl(UnloadedProjectInformation i) {
+    NbProjectHandleImpl(UnloadedProjectInformation i, SourceHandleImpl parent) {
         displayName = i.getDisplayName();
         icon = i.getIcon();
         url = i.getURL();
+        this.parent = parent;
+        assert this.parent!=null;
+        assert displayName!=null;
+        assert icon!=null;
+        assert url!=null;
     }
 
     @Override
@@ -88,7 +116,12 @@ public class NbProjectHandleImpl extends NbProjectHandle{
      */
     public Project getProject() {
         try {
-            Project project = ProjectManager.getDefault().findProject(URLMapper.findFileObject(url));
+            final FileObject fo = URLMapper.findFileObject(url);
+            if (fo==null) {
+                return null;
+            }
+            Project project = ProjectManager.getDefault().findProject(fo);
+            Logger.getLogger(NbProjectHandleImpl.class.getName()).severe("Cannot find project for " + fo.getPath());
             return project;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -98,4 +131,29 @@ public class NbProjectHandleImpl extends NbProjectHandle{
         return null;
     }
 
+    public void remove() {
+        parent.remove(this);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final NbProjectHandleImpl other = (NbProjectHandleImpl) obj;
+        if (this.url != other.url && (this.url == null || !this.url.equals(other.url))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 67 * hash + (this.url != null ? this.url.hashCode() : 0);
+        return hash;
+    }
 }

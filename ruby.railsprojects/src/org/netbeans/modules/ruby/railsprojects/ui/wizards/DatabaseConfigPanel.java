@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.railsprojects.server.RailsServerUiUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
@@ -102,6 +103,7 @@ public class DatabaseConfigPanel implements
     public boolean isFinishPanel() {
         RubyPlatform platform = (RubyPlatform) wizardDescriptor.getProperty("platform");
         return RailsInstallationValidator.getRailsInstallation(platform).isValid()
-                && WizardUtil.checkWarbler(wizardDescriptor);
+                && WizardUtil.checkWarbler(wizardDescriptor)
+                && RailsServerUiUtils.isValidServer(wizardDescriptor.getProperty(NewRailsProjectWizardIterator.SERVER_INSTANCE));
     }
 }

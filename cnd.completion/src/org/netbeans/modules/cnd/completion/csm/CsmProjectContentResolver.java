@@ -65,7 +65,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmField;
@@ -180,10 +179,6 @@ public final class CsmProjectContentResolver {
         return res;
     }
 
-    private CsmProject getProject() {
-        return this.project;
-    }
-
     public boolean isCaseSensitive() {
         return caseSensitive;
     }
@@ -206,14 +201,6 @@ public final class CsmProjectContentResolver {
 
     public void setSortNeeded(boolean sort) {
         this.sort = sort;
-    }
-
-    public CsmFile getFile() {
-        return file;
-    }
-
-    public void setFile(CsmFile file) {
-        this.file = file;
     }
 
     /** ================= help methods =======================================*/
@@ -1186,7 +1173,7 @@ public final class CsmProjectContentResolver {
                         res = baseRes;
                     }
                 } else {
-                   CndUtils.assertTrue(false, "Infinite recursion in file " + csmClass.getContainingFile() + " class " + csmClass, Level.INFO); //NOI18N
+                   CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + csmClass.getContainingFile() + " class " + csmClass); //NOI18N
                 }
             }
         }

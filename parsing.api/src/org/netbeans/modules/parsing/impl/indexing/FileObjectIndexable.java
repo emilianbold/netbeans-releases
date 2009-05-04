@@ -45,19 +45,20 @@ import java.net.URL;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class FileObjectIndexable implements IndexableImpl {
+public final class FileObjectIndexable implements IndexableImpl {
 
     private final FileObject root;
     private final FileObject file;
 
     public FileObjectIndexable (final FileObject root, final FileObject file) {
-        assert root != null;
-        assert file != null;
+        Parameters.notNull("root", root); //NOI18N
+        Parameters.notNull("file", file); //NOI18N
         this.root = root;
         this.file = file;
     }
@@ -71,7 +72,9 @@ public class FileObjectIndexable implements IndexableImpl {
     }
 
     public String getRelativePath() {
-        return FileUtil.getRelativePath(root, file);
+        String path = FileUtil.getRelativePath(root, file);
+        assert path != null : "File not under root: file=" + file + ", root" + root; //NOI18N
+        return path;
     }
 
     public URL getURL() {
@@ -85,6 +88,33 @@ public class FileObjectIndexable implements IndexableImpl {
 
     public InputStream openInputStream() throws IOException {
         return this.file.getInputStream();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FileObjectIndexable other = (FileObjectIndexable) obj;
+        if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 83 * hash + (this.file != null ? this.file.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        return "FileObjectIndexable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + getURL() + "]"; //NOI18N
     }
 
 }

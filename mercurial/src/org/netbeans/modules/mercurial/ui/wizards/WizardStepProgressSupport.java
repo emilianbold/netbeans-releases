@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,71 +41,118 @@
 
 package org.netbeans.modules.mercurial.ui.wizards;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.mercurial.HgProgressSupport;
-
 import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
+import static org.jdesktop.layout.GroupLayout.LEADING;
+import static org.jdesktop.layout.LayoutStyle.RELATED;
 
 /**
  *
  * @author Tomas Stupka
+ * @author Marian Petras
  */
 public abstract class WizardStepProgressSupport extends HgProgressSupport implements Runnable, Cancellable {   
 
-    private JPanel progressComponent;
+    private JComponent progressComponent;
     private JLabel progressLabel;
-    private JPanel panel;
+    private JComponent progressBar;
     private JButton stopButton;
+    private JComponent progressLine;
     
-    public WizardStepProgressSupport(JPanel panel) {
-        this.panel = panel;        
+    public WizardStepProgressSupport() {
     }
 
     public abstract void setEditable(boolean bl);
 
+    @Override
+    public JComponent getProgressComponent() {
+        if (progressComponent == null) {
+            progressComponent = createProgressComponent();
+        }
+        return progressComponent;
+    }
+
+    private JComponent createProgressComponent() {
+        progressLabel = new JLabel(getDisplayName());
+
+        progressBar = super.getProgressComponent();
+
+        stopButton = new JButton(NbBundle.getMessage(WizardStepProgressSupport.class, "BK2022")); // NOI18N
+        stopButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                cancel();
+            }
+        });
+
+        JPanel panel = new JPanel();
+        GroupLayout layout = new GroupLayout(panel);
+
+        progressLine = new JPanel();
+        progressLine.add(progressBar);
+        progressLine.add(Box.createHorizontalStrut(
+                                LayoutStyle.getSharedInstance()
+                                .getPreferredGap(progressBar,
+                                                 stopButton,
+                                                 RELATED,
+                                                 SwingConstants.EAST,
+                                                 progressLine)));
+        progressLine.add(stopButton);
+
+        progressLine.setLayout(new BoxLayout(progressLine, BoxLayout.X_AXIS));
+        progressBar.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+        stopButton.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(LEADING)
+                .add(progressLabel)
+                .add(progressLine));
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                .add(progressLabel)
+                .addPreferredGap(RELATED)
+                .add(progressLine));
+        panel.setLayout(layout);
+
+        layout.setHonorsVisibility(false);   //hiding should not affect prefsize
+
+        progressLabel.setVisible(false);
+        progressLine.setVisible(false);
+
+        return panel;
+    }
+
     public void startProgress() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                ProgressHandle progress = getProgressHandle(); // NOI18N
-                JComponent bar = ProgressHandleFactory.createProgressComponent(progress);
-                stopButton = new JButton(org.openide.util.NbBundle.getMessage(WizardStepProgressSupport.class, "BK2022")); // NOI18N
-                stopButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        cancel();
-                    }
-                });
-                progressComponent = new JPanel();
-                progressComponent.setLayout(new BorderLayout(6, 0));
-                progressLabel = new JLabel();
-                progressLabel.setText(getDisplayName());
-                progressComponent.add(progressLabel, BorderLayout.NORTH);
-                progressComponent.add(bar, BorderLayout.CENTER);
-                progressComponent.add(stopButton, BorderLayout.LINE_END);
+                progressLabel.setVisible(true);
+                progressLine.setVisible(true);
+
                 WizardStepProgressSupport.super.startProgress();
-                panel.setVisible(true);
-                panel.add(progressComponent, BorderLayout.SOUTH);
-                panel.revalidate();
             }
         });                                                
     }
 
     protected void finnishProgress() {        
-        WizardStepProgressSupport.super.finnishProgress();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {                
-                panel.remove(progressComponent);
-                panel.revalidate();
-                panel.repaint();
-                panel.setVisible(false);
+                WizardStepProgressSupport.super.finnishProgress();
+
+                progressLabel.setVisible(false);
+                progressLine.setVisible(false);
+
                 setEditable(true);
             }
         });                

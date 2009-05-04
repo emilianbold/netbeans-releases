@@ -48,9 +48,9 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
  */
 public final class TimerIDPConfiguration implements IndicatorDataProviderConfiguration {
 
-  public static final String TIME_ID = "time";
+  public static final String TIME_ID = "time"; // NOI18N
   public static final Column TIME_INFO = new Column(TIME_ID, Long.class);
-  public static final String ID = "TimerIndicatorDataProviderConfiguration_ID";
+  public static final String ID = "TimerIndicatorDataProviderConfiguration_ID"; // NOI18N
 
   public String getID() {
     return ID;

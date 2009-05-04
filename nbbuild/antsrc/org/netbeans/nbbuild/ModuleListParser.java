@@ -354,22 +354,31 @@ final class ModuleListParser {
         case ParseProjectXml.TYPE_NB_ORG:
             assert path != null;
             // Find the associated cluster.
-            for (Map.Entry<String,String> entry : properties.entrySet()) {
-                String val = entry.getValue();
-                String[] modules = val.split(", *");
-                if (Arrays.asList(modules).contains(path)) {
-                    String key = entry.getKey();
-                    String clusterDir = properties.get(key + ".dir");
-                    if (clusterDir != null) {
-                        faketask.setName("cluster.dir");
-                        faketask.setValue(clusterDir);
-                        faketask.execute();
-                        break;
+            // first try direct mapping in nbbuild/netbeans/moduleCluster.properties
+            String clusterDir = properties.get(path + ".dir");
+            if (clusterDir != null) {
+                clusterDir = clusterDir.substring(clusterDir.lastIndexOf('/') + 1);
+            } else {
+                // not found, try indirect nbbuild/cluster.properties
+                for (Map.Entry<String, String> entry : properties.entrySet()) {
+                    String val = entry.getValue();
+                    String[] modules = val.split(", *");
+                    if (Arrays.asList(modules).contains(path)) {
+                        String key = entry.getKey();
+                        clusterDir = properties.get(key + ".dir");
+                        if (clusterDir != null) {
+                            faketask.setName("cluster.dir");
+                            faketask.setValue(clusterDir);
+                            faketask.execute();
+                            break;
+                        }
                     }
                 }
+                if (clusterDir == null)
+                    clusterDir = "extra";   // fallback
             }
             faketask.setName("cluster.dir");
-            faketask.setValue("extra"); // fallback
+            faketask.setValue(clusterDir);
             faketask.execute();
             faketask.setName("netbeans.dest.dir");
             faketask.setValue(properties.get("netbeans.dest.dir"));
@@ -705,7 +714,7 @@ final class ModuleListParser {
                     for (int j = 0; j < clustersS.length; j++) {
                         File cluster = new File(clustersS[j]);
                         if (! cluster.isDirectory()) {
-                            throw new IOException("No such cluster " + cluster + " referred to from ${cluster.path}: " + clusterPath);
+                            throw new IOException("No such cluster " + cluster + " referred to from ${cluster.path.final}: " + clusterPath);
                         }
                         clusters[j] = cluster;
                     }
@@ -713,7 +722,7 @@ final class ModuleListParser {
             }
 
             if (clusters == null || clusters.length == 0)
-                throw new IOException("Invalid ${cluster.path}: " + clusterPath);
+                throw new IOException("Invalid ${cluster.path.final}: " + clusterPath);
 
             // External module.
             if (nball != null && project != null) {

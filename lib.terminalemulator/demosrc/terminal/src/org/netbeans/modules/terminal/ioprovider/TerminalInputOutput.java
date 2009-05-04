@@ -5,21 +5,30 @@
 
 package org.netbeans.modules.terminal.ioprovider;
 
+import java.awt.Color;
 import java.awt.event.InputEvent;
 import java.io.IOException;
-import java.io.PipedReader;
-import java.io.PipedWriter;
 import java.io.Reader;
-import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.Icon;
+import org.netbeans.lib.richexecution.program.Program;
 import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
+import org.netbeans.lib.terminalemulator.Coord;
 import org.netbeans.lib.terminalemulator.Extent;
+import org.netbeans.lib.terminalemulator.StreamTerm;
 import org.netbeans.lib.terminalemulator.Term;
-import org.netbeans.lib.terminalemulator.TermInputListener;
 import org.netbeans.modules.terminal.api.Terminal;
 import org.netbeans.modules.terminal.api.TerminalProvider;
-import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.IOColorLines;
+import org.openide.windows.IOColors;
+import org.openide.windows.IOContainer;
+import org.openide.windows.IOPosition;
+import org.openide.windows.IOTab;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -57,116 +66,292 @@ import org.openide.windows.OutputWriter;
  * </ul>
  * @author ivan
  */
-public final class TerminalInputOutput implements InputOutput {
+public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
+
+    private final IOContainer ioContainer;
 
     private final Terminal terminal;
-    private final Term term;
+    private final StreamTerm term;
     private OutputWriter outputWriter;
-    private Pipe pipe;
+
+    // shadow copies in support of IOTab
+    private Icon icon;
+    private String toolTipText;
+
+    private final Lookup lookup = Lookups.fixed(new MyIOColorLines(),
+                                                new MyIOColors(),
+                                                new MyIOPosition(),
+                                                new MyIOExecution(),
+                                                new MyIOTab()
+                                                );
+
+
+    private final Map<Color, Integer> colorMap = new HashMap<Color, Integer>();
+    private int allocatedColors = 0;
+
+    private final Map<IOColors.OutputType, Color> typeColorMap =
+        new HashMap<IOColors.OutputType, Color>();
+
+    private int outputColor = 0;
+
+    public Lookup getLookup() {
+        return lookup;
+    }
 
     /**
-     * Delegate writes to a Term.
+     * Convert a Color to an ANSI Term color index.
+     * @param color
+     * @return
      */
-    private static class TermWriter extends Writer {
+    private int customColor(Color color) {
+        if (color == null)
+            return -1;
 
-        private final Term term;
-        private boolean closed = false;
-
-        TermWriter(Term term) {
-            this.term = term;
+        if (!colorMap.containsKey(color)) {
+            if (allocatedColors >= 8)
+                return -1;  // ran out of slots for custom colors
+            term().setCustomColor(allocatedColors, color);
+            colorMap.put(color, (allocatedColors++)+50);
         }
+        int customColor = colorMap.get(color);
+        return customColor;
+    }
 
-        @Override
-        public void write(char[] cbuf, int off, int len) throws IOException {
-            if (closed)
-                throw new IOException();
-            term.putChars(cbuf, off, len);
-        }
-
-        @Override
-        public void flush() throws IOException {
-            if (closed)
-                throw new IOException();
-            term.flush();
-        }
-
-        @Override
-        public void close() throws IOException {
-            if (closed)
-                return;
-            flush();
-            closed = true;
+    private void println(CharSequence text, Color color) {
+        int customColor = customColor(color);
+        if (customColor == -1) {        // ran out of colors
+            getOut().println(text);
+        } else {
+            term().setAttribute(customColor);
+            getOut().println(text);
+            term().setAttribute(outputColor);
         }
     }
+
+    private void println(CharSequence text, OutputListener listener, boolean important, Color color) {
+        if ( !(term instanceof ActiveTerm))
+            throw new UnsupportedOperationException("Term is not an ActiveTerm");
+
+        if (color == null) {
+            // If color isn't overriden, use default colors.
+            if (listener != null) {
+                if (important)
+                    color = typeColorMap.get(IOColors.OutputType.HYPERLINK_IMPORTANT);
+                else
+                    color = typeColorMap.get(IOColors.OutputType.HYPERLINK);
+            } else {
+                // color = typeColorMap.get(IOColors.OutputType.OUTPUT);
+            }
+        }
+
+        ActiveTerm at = (ActiveTerm) term;
+        if (listener != null) {
+            ActiveRegion ar = at.beginRegion(true);
+            ar.setUserObject(listener);
+            ar.setLink(true);
+            println(text, color);
+            at.endRegion();
+        } else {
+            println(text, color);
+        }
+    }
+
+    private void scrollTo(Coord coord) {
+        term.possiblyNormalize(coord);
+    }
+
+    private class MyIOColorLines extends IOColorLines {
+        @Override
+        protected void println(CharSequence text, OutputListener listener, boolean important, Color color) {
+            TerminalInputOutput.this.println(text, listener, important, color);
+        }
+    }
+
+    private class MyIOColors extends IOColors {
+
+        @Override
+        protected Color getColor(OutputType type) {
+            return typeColorMap.get(type);
+        }
+
+        @Override
+        protected void setColor(OutputType type, Color color) {
+            typeColorMap.put(type, color);
+            if (type == OutputType.OUTPUT) {
+                outputColor = customColor(color);
+                if (outputColor == -1)
+                    outputColor = 0;
+                term.setAttribute(outputColor);
+            }
+        }
+    }
+
+    private static class MyPosition implements IOPosition.Position {
+        private final TerminalInputOutput back;
+        private final Coord coord;
+
+        MyPosition(TerminalInputOutput back, Coord coord) {
+            this.back = back;
+            this.coord = coord;
+        }
+
+        public void scrollTo() {
+            back.scrollTo(coord);
+        }
+    }
+
+    private class MyIOPosition extends IOPosition {
+
+        @Override
+        protected Position currentPosition() {
+            return new MyPosition(TerminalInputOutput.this, term.getCursorCoord());
+        }
+    }
+
+    private class MyIOTab extends IOTab {
+
+        @Override
+        protected Icon getIcon() {
+            return icon;
+        }
+
+        @Override
+        protected void setIcon(Icon icon) {
+	    TerminalInputOutput.this.icon = icon;
+	    ioContainer.setIcon(terminal, icon);
+        }
+
+        @Override
+        protected String getToolTipText() {
+	    return toolTipText;
+        }
+
+        @Override
+        protected void setToolTipText(String text) {
+	    TerminalInputOutput.this.toolTipText = toolTipText;
+	    ioContainer.setToolTipText(terminal, toolTipText);
+        }
+    }
+
+    /* LATER
+    private class MyIOColorPrint extends IOColorPrint {
+
+        private final Map<Color, Integer> colorMap = new HashMap<Color, Integer>();
+        private int index = 0;
+
+        public MyIOColorPrint() {
+            // preset standard colors
+            colorMap.put(Color.black, 30);
+            colorMap.put(Color.red, 31);
+            colorMap.put(Color.green, 32);
+            colorMap.put(Color.yellow, 33);
+            colorMap.put(Color.blue, 34);
+            colorMap.put(Color.magenta, 35);
+            colorMap.put(Color.cyan, 36);
+            colorMap.put(Color.white, 37);
+        }
+
+        private int customColor(Color color) {
+            if (!colorMap.containsKey(color)) {
+                if (index >= 8)
+                    return -1;  // ran out of slots for custom colors
+                term().setCustomColor(index, color);
+                colorMap.put(color, (index++)+50);
+            }
+            int customColor = colorMap.get(color);
+            return customColor;
+
+        }
+
+        @Override
+        protected void print(CharSequence text, Color color) {
+            if ( !(term instanceof ActiveTerm))
+                throw new UnsupportedOperationException("Term is not an ActiveTerm");
+
+            int customColor = customColor(color);
+            if (customColor == -1) {
+                outputWriter.print(text);
+            } else {
+                term().setAttribute(customColor);
+                outputWriter.print(text);
+                term().setAttribute(0);
+            }
+        }
+    }
+    */
+
+    private class MyIOExecution extends IOExecution {
+
+        @Override
+        protected void execute(Program program) {
+	    terminal.startProgram(program, true);
+	    /* OLD
+            //
+            // Create a pty, handle window size changes
+            //
+            final Pty pty;
+            try {
+                pty = Pty.create(Pty.Mode.REGULAR);
+            } catch (PtyException ex) {
+                Exceptions.printStackTrace(ex);
+                return;
+            }
+
+            term().addListener(new TermListener() {
+                public void sizeChanged(Dimension cells, Dimension pixels) {
+                    pty.masterTIOCSWINSZ(cells.height, cells.width,
+                                         pixels.height, pixels.width);
+                }
+            });
+
+            //
+            // Create a process
+            //
+            if (term() != null) {
+                Map<String, String> env = program.environment();
+                env.put("TERM", term().getEmulation());
+            }
+            PtyExecutor executor = new PtyExecutor();
+            executor.start(program, pty);
+
+            //
+            // connect them up
+            //
+
+            // Hmm, what's the difference between the PtyProcess io streams
+            // and the Pty's io streams?
+            // Nothing.
+            OutputStream pin = pty.getOutputStream();
+            InputStream pout = pty.getInputStream();
+
+	    term.connect(pin, pout, null);
+	     */
+        }
+    }
+
+
 
     /**
      * Delegate prints and writes to a Term via TermWriter.
      */
-    private static class TermOutputWriter extends OutputWriter {
-        private final Term term;
-
-        TermOutputWriter(Term term) {
-            super(new TermWriter(term));
-            this.term = term;
+    private class TermOutputWriter extends OutputWriter {
+        TermOutputWriter() {
+            super(term.getOut());
         }
 
         @Override
         public void println(String s, OutputListener l) throws IOException {
-            if ( !(term instanceof ActiveTerm))
-                throw new IOException("Term is not an ActiveTerm");
+            TerminalInputOutput.this.println(s, l, false, null);
+        }
 
-            ActiveTerm at = (ActiveTerm) term;
-            ActiveRegion ar = at.beginRegion(true);
-            ar.setUserObject(l);
-            ar.setLink(true);
-            println(s);
-            at.endRegion();
+        @Override
+        public void println(String s, OutputListener l, boolean important) throws IOException {
+            TerminalInputOutput.this.println(s, l, important, null);
         }
 
         @Override
         public void reset() throws IOException {
             term.clearHistory();
-        }
-    }
-
-    /**
-     * Help pass keystrokes to process.
-     */
-    private static class Pipe {
-        private final Term term;
-        private final PipedReader pipedReader;
-        private final PipedWriter pipedWriter;
-
-        private class TermListener implements TermInputListener {
-            public void sendChars(char[] c, int offset, int count) {
-                try {
-                    pipedWriter.write(c, offset, count);
-                    pipedWriter.flush();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-
-            public void sendChar(char c) {
-                try {
-                    pipedWriter.write(c);
-                    pipedWriter.flush();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-
-        Pipe(Term term) throws IOException {
-            this.term = term;
-            pipedReader = new PipedReader();
-            pipedWriter = new PipedWriter(pipedReader);
-
-            term.addInputListener(new TermListener());
-        }
-
-        Reader reader() {
-            return pipedReader;
         }
     }
 
@@ -184,8 +369,9 @@ public final class TerminalInputOutput implements InputOutput {
         }
     }
 
-    TerminalInputOutput(String name) {
-        terminal = TerminalProvider.getDefault().createTerminal(name);
+    TerminalInputOutput(String name, IOContainer ioContainer) {
+        this.ioContainer = ioContainer;
+        terminal = TerminalProvider.getDefault().createTerminal(name, ioContainer);
         term = terminal.term();
 
         if (! (term instanceof ActiveTerm))
@@ -207,9 +393,19 @@ public final class TerminalInputOutput implements InputOutput {
                 ol.outputLineAction(oe);
             }
         });
+
+        // preset standard colors
+        colorMap.put(Color.black, 30);
+        colorMap.put(Color.red, 31);
+        colorMap.put(Color.green, 32);
+        colorMap.put(Color.yellow, 33);
+        colorMap.put(Color.blue, 34);
+        colorMap.put(Color.magenta, 35);
+        colorMap.put(Color.cyan, 36);
+        colorMap.put(Color.white, 37);
     }
 
-    public Term term() {
+    public StreamTerm term() {
         return term;
     }
     
@@ -220,7 +416,7 @@ public final class TerminalInputOutput implements InputOutput {
      */
     public OutputWriter getOut() {
         if (outputWriter == null)
-            outputWriter = new TermOutputWriter(term);
+            outputWriter = new TermOutputWriter();
         return outputWriter;
     }
 
@@ -229,14 +425,7 @@ public final class TerminalInputOutput implements InputOutput {
      * @return the reader.
      */
     public Reader getIn() {
-        if (pipe == null) {
-            try {
-                pipe = new Pipe(term);
-            } catch (IOException ex) {
-                return null;
-            }
-        }
-        return pipe.reader();
+	return term.getIn();
     }
 
     /**
@@ -302,6 +491,6 @@ public final class TerminalInputOutput implements InputOutput {
 
     @Deprecated
     public Reader flushReader() {
-        return pipe.reader();
+	return term.getIn();
     }
 }

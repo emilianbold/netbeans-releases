@@ -41,12 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.cnd.apt.impl.support.lang.APTGnuCFilter;
-import org.netbeans.modules.cnd.apt.impl.support.lang.APTGnuCppFilter;
 import org.netbeans.modules.cnd.apt.impl.support.lang.APTLanguageSupportImpl;
-import org.netbeans.modules.cnd.apt.impl.support.lang.APTStdCFilter;
 
 /**
  * support for languages:

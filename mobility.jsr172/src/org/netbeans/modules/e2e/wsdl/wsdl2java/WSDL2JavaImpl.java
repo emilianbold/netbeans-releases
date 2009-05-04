@@ -523,7 +523,8 @@ public class WSDL2JavaImpl implements WSDL2Java {
             off.write( "public Class getType(String dataItemName) {\n" );
             for( SchemaConstruct sc : type.getSubconstructs()) {
                 if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                    Element sce = (Element) sc;
+                    // Fix for #162200 - Generated WS client is compiled with errors
+                    Element sce = getSimplifiedElement((Element) sc);
                     String propertyName = sce.getName().getLocalPart();
                     String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
                     String propertyType = sce.getType().getName().getLocalPart();
@@ -549,10 +550,11 @@ public class WSDL2JavaImpl implements WSDL2Java {
             off.write( "public Object getValue(String dataItemName) {\n" );
             for( SchemaConstruct sc : type.getSubconstructs()) {
                 if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                    Element sce = (Element) sc;
+                    // Fix for #162200 - Generated WS client is compiled with errors
+                    Element sce = getSimplifiedElement((Element) sc);
                     String propertyName = sce.getName().getLocalPart();
                     String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
-                    String propertyType = sce.getType().getName().getLocalPart();
+                    //String propertyType = sce.getType().getName().getLocalPart();
 
                     off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
 //                        if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
@@ -576,7 +578,8 @@ public class WSDL2JavaImpl implements WSDL2Java {
             off.write( "public void setValue(String dataItemName, Object value) throws DataBindingException {\n" );
             for( SchemaConstruct sc : type.getSubconstructs()) {
                 if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                    Element sce = (Element) sc;
+                    // Fix for #162200 - Generated WS client is compiled with errors
+                    Element sce = getSimplifiedElement((Element) sc);
                     String propertyName = sce.getName().getLocalPart();
                     String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
                     String propertyType = sce.getType().getName().getLocalPart();
@@ -600,10 +603,10 @@ public class WSDL2JavaImpl implements WSDL2Java {
             off.write( "public void setAsString(String dataItemName, String value) throws DataBindingException {\n" );
             for( SchemaConstruct sc : type.getSubconstructs()) {
                 if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                    Element sce = (Element) sc;
+                    Element sce = getSimplifiedElement((Element) sc);
                     String propertyName = sce.getName().getLocalPart();
                     String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
-                    String propertyType = sce.getType().getName().getLocalPart();
+                    //String propertyType = sce.getType().getName().getLocalPart();
 
                     // Generate set only for non array fields
                     if( sce.getMaxOccurs() <= 1 ) {

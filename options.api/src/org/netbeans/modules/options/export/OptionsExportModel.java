@@ -109,17 +109,20 @@ public final class OptionsExportModel {
     State getState() {
         int enabled = 0;
         int disabled = 0;
+        int applicableCount = 0;
         for (OptionsExportModel.Category category : getCategories()) {
-            if (category.getState() == State.ENABLED) {
-                enabled++;
-            } else if (category.getState() == State.DISABLED) {
-                disabled++;
+            if (category.isApplicable()) {
+                applicableCount++;
+                if (category.getState() == State.ENABLED) {
+                    enabled++;
+                } else if (category.getState() == State.DISABLED) {
+                    disabled++;
+                }
             }
         }
-        int size = getCategories().size();
-        if (enabled == size) {
+        if (enabled == applicableCount) {
             return State.ENABLED;
-        } else if (disabled == size) {
+        } else if (disabled == applicableCount) {
             return State.DISABLED;
         } else {
             return State.PARTIAL;
@@ -257,6 +260,9 @@ public final class OptionsExportModel {
         private String include;
         private String exclude;
         private boolean enabled = false;
+        /** Whether some patterns match current source. */
+        private boolean applicable = false;
+        private boolean applicableInitialized = false;
 
         public Item(String displayName, String include, String exclude) {
             this.displayName = displayName;
@@ -282,11 +288,15 @@ public final class OptionsExportModel {
          * matches include/exclude patterns, false otherwise
          */
         public boolean isApplicable() {
-            List<String> applicablePaths = getApplicablePaths(
-                    Collections.singleton(Pattern.compile(include)),
-                    Collections.singleton(Pattern.compile(exclude)));
-            LOGGER.fine("    applicablePaths=" + applicablePaths);  //NOI18N
-            return !applicablePaths.isEmpty();
+            if (!applicableInitialized) {
+                List<String> applicablePaths = getApplicablePaths(
+                        Collections.singleton(Pattern.compile(include)),
+                        Collections.singleton(Pattern.compile(exclude)));
+                LOGGER.fine("    applicablePaths=" + applicablePaths);  //NOI18N
+                applicable = !applicablePaths.isEmpty();
+                applicableInitialized = true;
+            }
+            return applicable;
         }
 
         /** Returns true if user selected this item for export/import.
@@ -432,6 +442,15 @@ public final class OptionsExportModel {
             return state;
         }
 
+        public boolean isApplicable() {
+            for (Item item : getItems()) {
+                if (item.isApplicable()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /** Just for debugging. */
         @Override
         public String toString() {
@@ -440,7 +459,7 @@ public final class OptionsExportModel {
 
         private void updateItems(State state) {
             for (Item item : getItems()) {
-                if (state != State.PARTIAL) {
+                if (state != State.PARTIAL && item.isApplicable()) {
                     item.setEnabled(state.toBoolean());
                 }
             }

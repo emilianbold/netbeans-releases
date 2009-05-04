@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -55,8 +54,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.openide.filesystems.FileUtil;
 
 /**
  * base walker to visit project files based APTs
@@ -82,15 +79,9 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
         FileImpl included = null;
         if (resolvedPath != null) {
             CharSequence path = resolvedPath.getPath();
-            if (CharSequenceKey.indexOf(path, "..") > 0 || CharSequenceKey.indexOf(path, "./") > 0) { // NOI18N
-                String normalized = FileUtil.normalizeFile(new File(path.toString())).getAbsolutePath();
-                resolvedPath = new ResolvedPath(resolvedPath.getFolder(), normalized, resolvedPath.isDefaultSearchPath(), resolvedPath.getIndex());
-                // obtain new cached string
-                path = resolvedPath.getPath();
-            }
             if (getIncludeHandler().pushInclude(path, apt.getToken().getLine(), resolvedPath.getIndex())) {
                 ProjectBase aStartProject = this.getStartProject();
-                if (aStartProject != null) {
+                if (aStartProject != null && aStartProject.isValid()) {
                     ProjectBase inclFileOwner = LibraryManager.getInstance().resolveFileProjectOnInclude(aStartProject, getFile(), resolvedPath);
                     try {
                         included = includeAction(inclFileOwner, path, mode, apt);

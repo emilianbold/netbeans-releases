@@ -61,11 +61,14 @@ public class ChangesetPanel extends javax.swing.JPanel {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jPanel1.border.title"))); // NOI18N
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(jTextField1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jLabel1.text")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jLabel2.text")); // NOI18N
+        jLabel2.setLabelFor(jTextField2);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jLabel2.text")); // NOI18N
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jLabel3.text")); // NOI18N
+        jLabel3.setLabelFor(jTextField3);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jLabel3.text")); // NOI18N
 
         jTextField1.setEditable(false);
         jTextField1.setText(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jTextField1.text")); // NOI18N
@@ -110,6 +113,10 @@ public class ChangesetPanel extends javax.swing.JPanel {
                     .add(jTextField3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(16, Short.MAX_VALUE))
         );
+
+        jTextField1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jTextField1.AccessibleContext.accessibleDescription")); // NOI18N
+        jTextField2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jTextField2.AccessibleContext.accessibleDescription")); // NOI18N
+        jTextField3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jTextField3.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

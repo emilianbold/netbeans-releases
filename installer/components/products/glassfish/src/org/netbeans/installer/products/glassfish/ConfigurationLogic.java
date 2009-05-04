@@ -631,8 +631,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
     public boolean requireLegalArtifactSaving() {     
        return false;                                   
-    }    
-    
+    }
+
 /////////////////////////////////////////////////////////////////////////////////
 // Constants
     public static final String WIZARD_COMPONENTS_URI =

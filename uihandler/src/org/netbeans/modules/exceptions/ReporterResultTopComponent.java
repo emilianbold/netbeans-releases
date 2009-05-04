@@ -331,7 +331,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                instance.dataDisplayer.setText(NbBundle.getMessage(ReporterResultTopComponent.class,"no_data_found") + url);
+                instance.dataDisplayer.setText(NbBundle.getMessage(ReporterResultTopComponent.class,"no_data_found", url));
             }
         });
     }
