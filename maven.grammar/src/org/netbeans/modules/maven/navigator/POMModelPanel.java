@@ -271,7 +271,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             // can be null for stuff in jars?
             if (file != null) {
                 try {
-                    ModelLineage lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.createOnlineEmbedder(), false);
+                    ModelLineage lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.getOnlineEmbedder(), false);
                     @SuppressWarnings("unchecked")
                     Iterator<File> it = lin.fileIterator();
                     List<Project> prjs = new ArrayList<Project>();

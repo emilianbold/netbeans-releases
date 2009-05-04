@@ -81,7 +81,7 @@ public class LinuxNativeUtils extends UnixNativeUtils {
                 LIBRARY_I386 : null;
         
         if(library!=null) {
-            loadNativeLibrary(LIBRARY_PREFIX_LINUX + library);
+            loadLibrary(LIBRARY_PREFIX_LINUX + library);
         }        
         initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_LINUX);
     }

@@ -738,6 +738,8 @@ public class JavaMembersPanel extends javax.swing.JPanel {
 
         javaMembersTreeScrollPane.setBorder(null);
         javaMembersTreeScrollPane.setViewportView(javaMembersTree);
+        javaMembersTree.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JavaMembersPanel.class, "ACSN_JavaMembersTree")); // NOI18N
+        javaMembersTree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JavaMembersPanel.class, "ACSD_JavaMembersTree")); // NOI18N
 
         splitPane.setLeftComponent(javaMembersTreeScrollPane);
 
@@ -827,14 +829,14 @@ public class JavaMembersPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 710, Short.MAX_VALUE)
+                    .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 740, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(filterLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
+                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(caseSensitiveFilterCheckBox))
-                    .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 710, Short.MAX_VALUE)
+                    .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 740, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(filtersLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)

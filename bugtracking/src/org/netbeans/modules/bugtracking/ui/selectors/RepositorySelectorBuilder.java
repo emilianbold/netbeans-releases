@@ -277,6 +277,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         }
         itemSelected(combo.getSelectedItem());
         combo.addItemListener(this);
+        combo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RepositorySelectorBuilder.class, "RepositorySelectorBuilder.combo.accessibleDescription")); // NOI18N
 
         if (label != null) {
             bindLabelToCombo();
@@ -338,6 +339,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
                                                      VERTICAL)));
         panel.add(upperPanel, BorderLayout.NORTH);
         panel.add(cardsPanel, BorderLayout.CENTER);
+        panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RepositorySelectorBuilder.class, "RepositorySelector.accessibleDescription")); // NOI18N
 
         addInsetsToPanel(panel);
 

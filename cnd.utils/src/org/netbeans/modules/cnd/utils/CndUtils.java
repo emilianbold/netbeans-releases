@@ -108,9 +108,9 @@ public class CndUtils {
         }
     }
 
-    public static void assertTrue(boolean value, String message, Level level) {
+    public static void assertTrueInConsole(boolean value, String message) {
         if (isDebugMode() && !value) {
-            LOG.log(level, message, new Exception(message));
+            LOG.log(Level.INFO, message, new Exception(message));
         }
     }
 

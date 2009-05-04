@@ -93,7 +93,6 @@ public class ElementNode extends AbstractNode {
     private StructureItem description;
     private ClassMemberPanelUI ui;
     private FileObject fileObject; // For the root description
-    private static NavigatorFormatter FORMATTER = new NavigatorFormatter();
            
     /** Creates a new instance of TreeNode */
     public ElementNode( StructureItem description, ClassMemberPanelUI ui, FileObject fileObject) {
@@ -130,8 +129,7 @@ public class ElementNode extends AbstractNode {
             
     @Override
     public String getHtmlDisplayName() {
-        FORMATTER.reset();
-        return description.getHtml(FORMATTER);
+        return description.getHtml(new NavigatorFormatter());
     }
     
     @Override
@@ -283,10 +281,8 @@ public class ElementNode extends AbstractNode {
                         
         StructureItem oldDescription = description; // Remember old description        
         description = newDescription; // set new descrioption to the new node
-        FORMATTER.reset();
-        String oldHtml = oldDescription.getHtml(FORMATTER);
-        FORMATTER.reset();
-        String descHtml = description.getHtml(FORMATTER);
+        String oldHtml = oldDescription.getHtml(new NavigatorFormatter());
+        String descHtml = description.getHtml(new NavigatorFormatter());
         if ( oldHtml != null && !oldHtml.equals(descHtml)) {
             // Different headers => we need to fire displayname change
             fireDisplayNameChange(oldHtml, descHtml);

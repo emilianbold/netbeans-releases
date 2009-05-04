@@ -76,10 +76,10 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
 
     static Map<Object, String> FORMATTED_CHILDREN_VARS = new WeakHashMap<Object, String>();
 
-    private JPDADebugger debugger;
+    //private JPDADebugger debugger;
 
     public VariablesFormatterFilter(ContextProvider lookupProvider) {
-        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        //debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
     }
     
     public String[] getSupportedTypes () {
@@ -152,9 +152,15 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                             Object var = evaluateMethod.invoke(ov, chvs.get(name));
                             FORMATTED_CHILDREN_VARS.put(var, name);
                             ch[i++] = var;
+                        } catch (java.lang.reflect.InvocationTargetException itex) {
+                            Throwable t = itex.getTargetException();
+                            if (!(t instanceof InvalidExpressionException) ){
+                                Exceptions.printStackTrace(t);
+                            }
+                            return original.getChildren (variable, from, to);
                         } catch (Exception ex) {
                             Exceptions.printStackTrace(ex);
-                            return new Object[] {};
+                            return original.getChildren (variable, from, to);
                         }
                     }
                     return ch;
@@ -166,6 +172,13 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                             evaluateMethod.setAccessible(true);
                             Variable ret = (Variable) evaluateMethod.invoke(ov, code);
                             return getChildren(original, ret, from, to);
+                        } catch (java.lang.reflect.InvocationTargetException itex) {
+                            Throwable t = itex.getTargetException();
+                            if (t instanceof InvalidExpressionException) {
+                                return original.getChildren (variable, from, to);
+                            } else {
+                                Exceptions.printStackTrace(t);
+                            }
                         } catch (Exception ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -293,6 +306,13 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                     evaluateMethod.setAccessible(true);
                     Variable ret = (Variable) evaluateMethod.invoke(ov, code);
                     return getValueAt(original, ret, columnID);
+                } catch (java.lang.reflect.InvocationTargetException itex) {
+                    Throwable t = itex.getTargetException();
+                    if (t instanceof InvalidExpressionException) {
+                        return VariablesTableModel.getMessage((InvalidExpressionException) t);
+                    } else {
+                        Exceptions.printStackTrace(t);
+                    }
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }

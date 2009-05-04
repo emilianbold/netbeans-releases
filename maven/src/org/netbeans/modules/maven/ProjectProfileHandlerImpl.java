@@ -229,7 +229,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     
     private static void extractProfilesFromModelLineage(File file, Set<String> profileIds) {
         try {
-            ModelLineage lineage = EmbedderFactory.createModelLineage(file, EmbedderFactory.createOnlineEmbedder(), true);
+            ModelLineage lineage = EmbedderFactory.createModelLineage(file, EmbedderFactory.getOnlineEmbedder(), true);
             Iterator it = lineage.modelIterator();
             while (it.hasNext()) {
                 Model mdl = (Model) it.next();

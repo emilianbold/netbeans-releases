@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -252,7 +253,15 @@ public final class HostInfoUtils {
             return false;
         }
 
-        return infoFetcher.getInfo(false) != null;
+        HostInfo hostInfo = null;
+
+        try {
+            hostInfo = infoFetcher.getInfo(false);
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        return hostInfo != null;
     }
 
     /**
@@ -272,7 +281,7 @@ public final class HostInfoUtils {
      * if interrupted of connection initiation is cancelled by user.
      * @see #isHostInfoAvailable(org.netbeans.modules.nativeexecution.api.ExecutionEnvironment)
      */
-    public static HostInfo getHostInfo(final ExecutionEnvironment execEnv) {
+    public static HostInfo getHostInfo(final ExecutionEnvironment execEnv) throws IOException, CancellationException {
         HostInfoFetcher infoFetcher;
 
         synchronized (hostInfoProviders) {

@@ -104,7 +104,7 @@ public class ProjectFalsePositiveTest extends NbTestCase implements PropertyChan
         File jar = new File(uri);
         System.setProperty("netbeans.home", jar.getParentFile().getParent());
         System.setProperty("netbeans.user", getWorkDirPath());
-        disableModule("org.netbeans.modules.autoupdate.ui");
+        disableModule("org.netbeans.modules.subversion");
 
         FeatureInfo info = FeatureInfo.create(
             "cluster",

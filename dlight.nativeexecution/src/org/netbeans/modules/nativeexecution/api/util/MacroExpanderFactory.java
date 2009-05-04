@@ -38,10 +38,12 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OS;
@@ -142,8 +144,15 @@ public final class MacroExpanderFactory {
 
             synchronized (this) {
                 if (!initialized) {
-                    setupPredefined(HostInfoUtils.getHostInfo(execEnv));
-                    initialized = true;
+                    try {
+                        HostInfo hi = HostInfoUtils.getHostInfo(execEnv);
+                        setupPredefined(hi);
+                        initialized = true;
+                    } catch (IOException ex) {
+                    } catch (CancellationException ex) {
+                    }
+                // Should we try to get host info next time?
+                // (in case of failure)
                 }
             }
 

@@ -186,7 +186,7 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     private void getKenaiAuthData(SvnKenaiSupport support) {
         final String urlString = url.toString();
         
-        PasswordAuthentication pa = support.getPasswordAuthentication(urlString, true);
+        PasswordAuthentication pa = support.getPasswordAuthentication(true);
         if(pa == null) {
             return;
         }

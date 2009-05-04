@@ -201,6 +201,12 @@ final class Erprint {
         return new ExperimentStatistics(stat);
     }
 
+    ThreadsStatistic getThreadsStatistics() throws IOException {
+        exec("threads"); // NOI18N
+        String[] toParse = exec("thread_list");//NOI18N
+        return new ThreadsStatistic(toParse);
+    }
+
     LeaksStatistics getExperimentLeaks() throws IOException {
         String[] stat = exec("leaks"); // NOI18N
         return new LeaksStatistics(stat);

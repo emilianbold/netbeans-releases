@@ -44,7 +44,9 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.Value;
 
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.openide.util.NbBundle;
 
 /**
  * @author   Martin Entlicher
@@ -107,6 +109,16 @@ public class ArgumentObjectVariable extends AbstractObjectVariable implements or
     
     public Value getInnerValue() {
         return super.getInnerValue();
+    }
+
+    @Override
+    public void setValue(String expression) throws InvalidExpressionException {
+        throw new InvalidExpressionException(NbBundle.getMessage(ArgumentObjectVariable.class, "MSG_CanNotChangeArgumentValues"));
+    }
+
+    @Override
+    protected void setValue(Value value) throws InvalidExpressionException {
+        throw new InvalidExpressionException(NbBundle.getMessage(ArgumentObjectVariable.class, "MSG_CanNotChangeArgumentValues"));
     }
     
     /*

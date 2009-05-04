@@ -12,6 +12,7 @@ testmodule() {
 if [ "$action" = "build" ]; then
     ant build || exit
     ant commit-validation -Dcontinue.after.failing.tests=true || exit
+    ant -Dtest-unit-sys-prop.ignore.random.failures=true localtest || exit
     testmodule ant.freeform
     testmodule api.java
     testmodule api.java.classpath

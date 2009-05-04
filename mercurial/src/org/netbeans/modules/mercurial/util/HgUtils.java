@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -62,6 +62,7 @@ import java.util.HashSet;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.regex.Pattern;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -82,7 +83,11 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
@@ -218,7 +223,7 @@ public class HgUtils {
      * @param name to check
      * @return String full path to name
      */
-    public static String findInUserPath(String name) {
+    public static String findInUserPath(String... names) {
         String pathEnv = System.getenv().get("PATH");// NOI18N
         // Work around issues on Windows fetching PATH
         if(pathEnv == null) pathEnv = System.getenv().get("Path");// NOI18N
@@ -228,10 +233,12 @@ public class HgUtils {
 
         String[] paths = pathEnv.split(pathSeparator);
         for (String path : paths) {
-            File f = new File(path, name);
-            // On Windows isFile will fail on hgk.cmd use !isDirectory
-            if (f.exists() && !f.isDirectory()) {
-                return path;
+            for (String name : names) {
+                File f = new File(path, name);
+                // On Windows isFile will fail on hgk.cmd use !isDirectory
+                if (f.exists() && !f.isDirectory()) {
+                    return path;
+                }
             }
         }
         return "";
@@ -268,7 +275,19 @@ public class HgUtils {
                 NbBundle.getMessage(bundleLocation,title),
                 JOptionPane.WARNING_MESSAGE);
     }
-    
+
+    public static JComponent addContainerBorder(JComponent comp) {
+        final LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
+
+        JPanel panel = new JPanel();
+        panel.add(comp);
+        panel.setBorder(BorderFactory.createEmptyBorder(
+                layoutStyle.getContainerGap(comp, SwingConstants.NORTH, null),
+                layoutStyle.getContainerGap(comp, SwingConstants.WEST,  null),
+                layoutStyle.getContainerGap(comp, SwingConstants.SOUTH, null),
+                layoutStyle.getContainerGap(comp, SwingConstants.EAST,  null)));
+        return panel;
+    }
 
     /**
      * stripDoubleSlash - converts '\\' to '\' in path on Windows

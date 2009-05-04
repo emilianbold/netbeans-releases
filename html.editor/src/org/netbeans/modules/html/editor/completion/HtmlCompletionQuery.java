@@ -88,7 +88,7 @@ public class HtmlCompletionQuery {
      * @param support syntax-support that will be used during resolving of the query.
      * @return result of the query or null if there's no result.
      */
-    public List<CompletionItem> query(JTextComponent component, int offset) {
+    public CompletionResult query(JTextComponent component, int offset) {
         BaseDocument doc = (BaseDocument) component.getDocument();
 
         //temporarily disabled functionality since we do not have any UI in preferences to change it.
@@ -98,6 +98,7 @@ public class HtmlCompletionQuery {
 //                    HtmlSettingsDefaults.defaultCompletionLowerCase);
 //        }
         lowerCase = true;
+        int anchor = -1;
 
         if (doc.getLength() == 0) {
             return null; // nothing to examine
@@ -192,74 +193,44 @@ public class HtmlCompletionQuery {
             /* Character reference finder */
             int ampIndex = preText.lastIndexOf('&'); //NOI18N
             if ((id == HTMLTokenId.TEXT || id == HTMLTokenId.VALUE) && ampIndex > -1) {
-                len = preText.length() - ampIndex;
                 String refNamePrefix = preText.substring(ampIndex + 1);
-                result = translateCharRefs(offset - len, len, dtd.getCharRefList(refNamePrefix));
+                anchor = offset;
+                result = translateCharRefs(offset - len, dtd.getCharRefList(refNamePrefix));
 
             } else if (id == HTMLTokenId.CHARACTER) {
                 if (inside || !preText.endsWith(";")) { // NOI18N
-                    len = offset - itemOffset;
-                    result = translateCharRefs(offset - len, len, dtd.getCharRefList(preText.substring(1)));
+                    anchor = itemOffset + 1; //plus "&" length
+                    result = translateCharRefs(itemOffset, dtd.getCharRefList(preText.substring(1)));
                 }
-                /* Tag finder */
+
             } else if (id == HTMLTokenId.TAG_OPEN) { // NOI18N
-                len = offset - itemOffset + 1; // minus the < char length
-                result = translateTags(itemOffset - 1, len, dtd.getElementList(preText));
-
-//                //test whether there is only one item in the CC list
-//                if (result.size() == 1) {
-//                    //test whether the CC is trying to complete an already COMPLETE token - the problematic situation
-//                    TagItem ti = (TagItem) result.get(0); //there should only one item
-//                    String itemText = ti.getItemText();
-//                    //itemText = itemText.substring(1, itemText.length() - 1); //remove the < > from the tag name
-//
-//                    if (preText.equals(itemText)) {
-//                        //now I have to look ahead to get know whether
-//                        //there are some attributes or an end of the tag
-//
-//                        ts.move(offset);
-//                        ts.moveNext();
-//                        Token t = ts.token();
-//
-//                        //test if next token is a whitespace and the next a tag token or an attribute token
-//                        if (t.id() == HTMLTokenId.WS) {
-//                            if (ts.moveNext()) {
-//                                t = ts.token();
-//                                if ((t.id() == HTMLTokenId.TAG_CLOSE || t.id() == HTMLTokenId.ARGUMENT)) {
-//                                    //do not put the item into CC - otherwise it will break the completed tag
-//                                    result = null;
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-
+                /* Tag finder */
+                anchor = itemOffset;
+                result = translateTags(itemOffset - 1, dtd.getElementList(preText));
 
             } else if (id != HTMLTokenId.BLOCK_COMMENT && preText.endsWith("<")) { // NOI18N
                 // There will be lookup for possible StartTags, in SyntaxSupport
-                //                l = translateTags( offset-len, len, sup.getPossibleStartTags ( offset-len, "" ) );
-                result = translateTags(offset - len, len, dtd.getElementList(""));
+                anchor = offset;
+                result = translateTags(offset - 1, dtd.getElementList(""));
 
-                /* EndTag finder */
             } else if (id == HTMLTokenId.TEXT && preText.endsWith("</")) { // NOI18N
-                len = 2;
+                /* EndTag finder */
+                anchor = offset;
                 result = getPossibleEndTags(doc, offset, "");
+
             } else if (id == HTMLTokenId.TAG_OPEN_SYMBOL && preText.endsWith("</")) { // NOI18N
-                len = 2;
+                anchor = offset;
                 result = getPossibleEndTags(doc, offset, "");
+
             } else if (id == HTMLTokenId.TAG_CLOSE) { // NOI18N
-                len = offset - itemOffset;
+                anchor = itemOffset;
                 result = getPossibleEndTags(doc, offset, preText);
 
-                /*Argument finder */
-                /* TBD: It is possible to have arg just next to quoted value of previous
-                 * arg, these rules doesn't match start of such arg this case because
-                 * of need for matching starting quote
-                 */
             } else if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
                 result = getAutocompletedEndTag(doc, offset);
 
             } else if (id == HTMLTokenId.WS || id == HTMLTokenId.ARGUMENT) {
+                /*Argument finder */
                 SyntaxElement elem = null;
                 try {
                     elem = sup.getElementChain(offset);
@@ -328,16 +299,12 @@ public class HtmlCompletionQuery {
                             attribs.add(attr);
                         }
                     }
-                    result = translateAttribs(offset - len, len, attribs, tag);
+                    anchor = offset - len;
+                    result = translateAttribs(anchor, attribs, tag);
                 }
 
-                /* Value finder */
-                /* Suggestion - find special-meaning attributes ( IMG src, A href,
-                 * color,.... - may be better resolved by attr type, may be moved
-                 * to propertysheet
-                 */
             } else if (id == HTMLTokenId.VALUE || id == HTMLTokenId.OPERATOR || id == HTMLTokenId.WS) {
-
+                /* Value finder */
                 if (id == HTMLTokenId.WS) {
                     //is the token before an operator? '<div color= |red>'
                     ts.move(item.offset(hi));
@@ -392,11 +359,9 @@ public class HtmlCompletionQuery {
                     }
 
                     if (id != HTMLTokenId.VALUE) {
-                        len = 0;
-                        result = translateValues(offset - len, len, arg.getValueList(""));
+                        anchor = offset;
+                        result = translateValues(anchor, arg.getValueList(""));
                     } else {
-                        len = offset - itemOffset;
-
                         String quotationChar = null;
                         if (preText != null && preText.length() > 0) {
                             if (preText.substring(0, 1).equals("'")) {
@@ -406,8 +371,8 @@ public class HtmlCompletionQuery {
                                 quotationChar = "\""; // NOI18N
                             }
                         }
-
-                        result = translateValues(offset - len, len, arg.getValueList(quotationChar == null ? preText : preText.substring(1)), quotationChar);
+                        anchor = itemOffset + (quotationChar != null ? 1 : 0);
+                        result = translateValues(itemOffset, arg.getValueList(quotationChar == null ? preText : preText.substring(1)), quotationChar);
                     }
                 }
             } else if (id == HTMLTokenId.SCRIPT) {
@@ -416,7 +381,7 @@ public class HtmlCompletionQuery {
                 result = addEndTag(STYLE_TAG_NAME, preText, offset);
             }
 
-            return result;
+            return result == null ? null : new CompletionResult(result, anchor);
 
         } catch (BadLocationException ble) {
             ErrorManager.getDefault().notify(ble);
@@ -559,7 +524,7 @@ public class HtmlCompletionQuery {
         return i;
     }
 
-    List<CompletionItem> translateCharRefs(int offset, int length, List refs) {
+    List<CompletionItem> translateCharRefs(int offset, List refs) {
         List result = new ArrayList(refs.size());
         String name;
         for (Iterator i = refs.iterator(); i.hasNext();) {
@@ -570,7 +535,7 @@ public class HtmlCompletionQuery {
         return result;
     }
 
-    List<CompletionItem> translateTags(int offset, int length, List tags) {
+    List<CompletionItem> translateTags(int offset, List tags) {
         List result = new ArrayList(tags.size());
         String name;
         for (Iterator i = tags.iterator(); i.hasNext();) {
@@ -581,7 +546,7 @@ public class HtmlCompletionQuery {
         return result;
     }
 
-    List<CompletionItem> translateAttribs(int offset, int length, List<DTD.Attribute> attribs, DTD.Element tag) {
+    List<CompletionItem> translateAttribs(int offset, List<DTD.Attribute> attribs, DTD.Element tag) {
         List<CompletionItem> result = new ArrayList<CompletionItem>(attribs.size());
         String tagName = tag.getName() + "#"; // NOI18N
         for (DTD.Attribute attrib : attribs) {
@@ -599,11 +564,11 @@ public class HtmlCompletionQuery {
         return result;
     }
 
-    List<CompletionItem> translateValues(int offset, int length, List values) {
-        return translateValues(offset, length, values, null);
+    List<CompletionItem> translateValues(int offset, List values) {
+        return translateValues(offset, values, null);
     }
 
-    List<CompletionItem> translateValues(int offset, int length, List values, String quotationChar) {
+    List<CompletionItem> translateValues(int offset, List values, String quotationChar) {
         if (values == null) {
             return new ArrayList(0);
         }
@@ -615,6 +580,21 @@ public class HtmlCompletionQuery {
             result.add(HtmlCompletionItem.createAttributeValue(((DTD.Value) i.next()).getName(), offset));
         }
         return result;
+    }
+
+    public static class CompletionResult {
+        private List<CompletionItem> items;
+        int anchor;
+        CompletionResult(List<CompletionItem> items, int anchor) {
+            this.items = items;
+            this.anchor = anchor;
+        }
+        public int getAnchor() {
+            return anchor;
+        }
+        public List<CompletionItem> getItems() {
+            return items;
+        }
     }
 
 }

@@ -54,8 +54,6 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.ViewCookie;
@@ -70,6 +68,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.UserCancelException;
 
 /** Object that represents one html file.
  *
@@ -100,7 +99,12 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         set.assign(SaveAsCapable.class, new SaveAsCapable() {
             public void saveAs( FileObject folder, String fileName ) throws IOException {
                 HtmlEditorSupport es = getCookie( HtmlEditorSupport.class );
-                es.saveAs( folder, fileName );
+                try {
+                    es.updateEncoding();
+                    es.saveAs( folder, fileName );
+                } catch (UserCancelException e) {
+                    //ignore, just not save anything
+                }
             }
         });
 

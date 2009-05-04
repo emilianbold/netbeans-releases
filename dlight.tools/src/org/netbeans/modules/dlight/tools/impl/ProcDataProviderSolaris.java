@@ -38,15 +38,18 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
+import java.util.concurrent.CancellationException;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
-import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
+import static org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration.*;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
@@ -57,11 +60,20 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
 
     private final ProcDataProvider provider;
-    private int cpuCount;
+    private final int cpuCount;
 
     public ProcDataProviderSolaris(ProcDataProvider provider, ExecutionEnvironment env) {
         this.provider = provider;
-        this.cpuCount = HostInfoUtils.getHostInfo(env).getCpuNum();
+        int cpus = 1;
+
+        try {
+            HostInfo info = HostInfoUtils.getHostInfo(env);
+            cpus = info.getCpuNum();
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        this.cpuCount = cpus;
     }
 
     public String getCommand(int pid) {
@@ -74,6 +86,7 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
 
     private class SolarisProcLineProcessor implements LineProcessor {
 
+        private int threads;
         private double prevTime;
         private double currTime;
         private double prevUsrTime;
@@ -95,29 +108,33 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
                 if ("0000000".equals(firstToken)) { // NOI18N
                     prevTime = currTime;
                     tokenizer.nextToken();
-                    tokenizer.nextToken();
-                    long seconds = parseLong(tokenizer.nextToken());
-                    long nanos = parseLong(tokenizer.nextToken());
+                    threads = (int) parseHex(tokenizer.nextToken());
+                    long seconds = parseHex(tokenizer.nextToken());
+                    long nanos = parseHex(tokenizer.nextToken());
                     currTime = time(seconds, nanos);
                 } else if ("0000040".equals(firstToken)) { // NOI18N
                     prevUsrTime = currUsrTime;
                     tokenizer.nextToken();
                     tokenizer.nextToken();
-                    long usrSeconds = parseLong(tokenizer.nextToken());
-                    long usrNanos = parseLong(tokenizer.nextToken());
+                    long usrSeconds = parseHex(tokenizer.nextToken());
+                    long usrNanos = parseHex(tokenizer.nextToken());
                     currUsrTime = time(usrSeconds, usrNanos);
                 } else if ("0000060".equals(firstToken)) { // NOI18N
                     prevSysTime = currSysTime;
-                    long sysSeconds = parseLong(tokenizer.nextToken());
-                    long sysNanos = parseLong(tokenizer.nextToken());
+                    long sysSeconds = parseHex(tokenizer.nextToken());
+                    long sysNanos = parseHex(tokenizer.nextToken());
                     currSysTime = time(sysSeconds, sysNanos);
                     if (0 < prevTime) {
                         double deltaTime = (currTime - prevTime) * cpuCount;
                         float usrPercent = percent(currUsrTime - prevUsrTime, deltaTime);
                         float sysPercent = percent(currSysTime - prevSysTime, deltaTime);
                         DataRow row = new DataRow(
-                                ProcDataProviderConfiguration.CPU_TABLE.getColumnNames(),
-                                Arrays.asList(usrPercent, sysPercent));
+                                Arrays.asList(USR_TIME.getColumnName(),
+                                              SYS_TIME.getColumnName(),
+                                              THREADS.getColumnName()),
+                                Arrays.asList(usrPercent,
+                                              sysPercent,
+                                              threads));
                         provider.notifyIndicators(row);
                     }
                 }
@@ -135,7 +152,7 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
         }
     }
 
-    private static long parseLong(String value) {
+    private static long parseHex(String value) {
         return Long.parseLong(value, 16);
     }
 
@@ -151,7 +168,7 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
             if (total <= value) {
                 return 100f;
             } else {
-                return (float)(100f * value / total);
+                return (float) (100f * value / total);
             }
         } else {
             return 0f;

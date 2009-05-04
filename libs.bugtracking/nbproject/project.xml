@@ -111,6 +111,7 @@ made subject to such option by the copyright holder.
                 <package>org.eclipse.mylyn.internal.tasks.core</package>
                 <package>org.eclipse.mylyn.internal.tasks.core.data</package>
                 <package>org.eclipse.mylyn.internal.tasks.core.externalization</package>
+                <package>org.eclipse.mylyn.internal.tasks.core.sync</package>
                 <package>org.eclipse.mylyn.tasks.core</package>
                 <package>org.eclipse.mylyn.tasks.core.data</package>
                 <package>org.eclipse.mylyn.tasks.core.sync</package>

@@ -92,6 +92,11 @@ implements PropertyChangeListener, LookupListener {
         UILOG.log(rec);
     }
 
+    static boolean showInAU(ModuleInfo mi) {
+        final Object show = mi.getAttribute("AutoUpdate-Show-In-Client"); // NOI18N
+        return show == null || "true".equals(show); // NOI18N
+    }
+
 
     public static Map<String,String> nbprojectTypes() {
         return FeatureInfo.nbprojectTypes();

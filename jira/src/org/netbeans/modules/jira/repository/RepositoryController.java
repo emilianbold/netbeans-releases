@@ -303,7 +303,7 @@ public class RepositoryController extends BugtrackingController implements Docum
 //                    repository.getExecutor().execute(cmd, false);
 //                    if(cmd.hasFailed()) {
 //                        if(cmd.getErrorMessage() == null) {
-//                            Bugzilla.LOG.warning("validate command has failed, yet the returned error message is null."); // NOI18N
+//                            Jira.LOG.warning("validate command has failed, yet the returned error message is null."); // NOI18N
 //                            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED");
 //                        } else {
 //                            errorMessage = cmd.getErrorMessage();

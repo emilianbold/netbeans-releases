@@ -65,7 +65,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -657,7 +656,7 @@ abstract public class CsmCompletionQuery {
                     }
                 } else {
                     System.err.printf("circular pointer delegation detected:%s, line %d/n", type.getContainingFile().getAbsolutePath(), type.getStartPosition().getLine());//NOI18N
-                    CndUtils.assertTrue(false, "Infinite recursion in file " + type.getContainingFile() + " class " + type, Level.INFO); //NOI18N
+                    CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + type.getContainingFile() + " class " + type); //NOI18N
                 }
             }
         }
@@ -1600,7 +1599,11 @@ abstract public class CsmCompletionQuery {
 
                 case CsmCompletionExpression.TYPE:
                     if (findType) {
-                        lastType = getPredefinedType(item);
+                        if (item.getParameterCount() > 0) {
+                            lastType = resolveType(item.getParameter(0));
+                        } else {
+                            lastType = getPredefinedType(item);
+                        }
                     }
                     if (!findType || lastType == null) {
                         // this is the case of code completion on parameter or unresolved predefined type

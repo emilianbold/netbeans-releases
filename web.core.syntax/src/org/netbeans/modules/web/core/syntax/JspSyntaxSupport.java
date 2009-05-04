@@ -962,28 +962,28 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
                 new TagInfo("attribute", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2014.html",             // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("name", true, url + "syntaxref2014.html#1003581#1006483", false),           // NOI18N
                         new TagAttributeInfo("trim", false, url + "syntaxref2014.html#1006483#1003583", false)}),           // NOI18N
-                        new TagInfo("body", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2015.html#1006731#1003768",             // NOI18N
+                new TagInfo("body", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2015.html#1006731#1003768",             // NOI18N
                         null, null, new TagAttributeInfo[]{}),
-                        new TagInfo("element", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2016.html#1003696#1003708",             // NOI18N
+                new TagInfo("element", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2016.html#1003696#1003708",             // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("name", true, url + "syntaxref2016.html#1003706#1003708", false)}),           // NOI18N
-                        new TagInfo("expression", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref205.html#1004353#11268",                 // NOI18N
+                new TagInfo("expression", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref205.html#1004353#11268",                 // NOI18N
                         null, null, new TagAttributeInfo[] {}),
-                        new TagInfo("fallback", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2023.html#11583#19029",    // NOI18N
+                new TagInfo("fallback", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2023.html#11583#19029",    // NOI18N
                         null, null, new TagAttributeInfo[] {}),
-                        new TagInfo("forward", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2018.html#1003349#15708", // NOI18N
+                new TagInfo("forward", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2018.html#1003349#15708", // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("page", true, url + "syntaxref2018.html#15704#15708", true)}),       // NOI18N
-                        new TagInfo("getProperty", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2019.html#8820#9201",           // NOI18N
+                new TagInfo("getProperty", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2019.html#8820#9201",           // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("name", true, url + "syntaxref2019.html#15748#10919", false),       // NOI18N
                         new TagAttributeInfo("property", true, url + "syntaxref2019.html#10919#19482", false)}), // NOI18N
-                        new TagInfo("include", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2020.html#8828#9228",              // NOI18N
+                new TagInfo("include", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2020.html#8828#9228",              // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("flush", true, url + "syntaxref2020.html#17145#18376", false),       // NOI18N
                         new TagAttributeInfo("page", true, url + "syntaxref2020.html#10930#17145", true)}),       // NOI18N
-                        new TagInfo("param", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2023.html#11538#11583",                // NOI18N
+                new TagInfo("param", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2023.html#11538#11583",                // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("name", true, url + "syntaxref2023.html#11538#11583", false),        // NOI18N
                         new TagAttributeInfo("value", true, url + "syntaxref2023.html#11538#11583", true)}),      // NOI18N
-                        new TagInfo("params", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2023.html#11538#11583",                 // NOI18N
+                new TagInfo("params", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2023.html#11538#11583",                 // NOI18N
                         null, null, new TagAttributeInfo[] {}),
-                        new TagInfo("plugin", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2023.html#1004158#19029",               // NOI18N
+                new TagInfo("plugin", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2023.html#1004158#19029",               // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("align", false, url + "syntaxref2023.html#11516#11518", false),      // NOI18N
                         new TagAttributeInfo("archive", false, url + "syntaxref2023.html#11553#11516", false),    // NOI18N
                         new TagAttributeInfo("code", true, url + "syntaxref2023.html#11514#11515", false),        // NOI18N
@@ -997,67 +997,53 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
                         new TagAttributeInfo("type", true, url + "syntaxref2023.html#10935#11514", false),        // NOI18N
                         new TagAttributeInfo("vspace", false, url + "syntaxref2023.html#11568#11520", false),     // NOI18N
                         new TagAttributeInfo("width", false, url + "syntaxref2023.html#11518#11568", false)}),    // NOI18N
-                        new TagInfo("setProperty", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2025.html#8856#9329",           // NOI18N
+                new TagInfo("setProperty", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2025.html#8856#9329",           // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("name", true, url + "syntaxref2025.html#17612#1001786", true),        // NOI18N
                         new TagAttributeInfo("param", false, url + "syntaxref2025.html#9919#20483", false),      // NOI18N
                         new TagAttributeInfo("property", false, url + "syntaxref2025.html#1001786#9329", false),   // NOI18N
                         new TagAttributeInfo("value", false, url + "syntaxref2025.html#20483#9329", true)}),     // NOI18N
-                        new TagInfo("text", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2026.html",
+                new TagInfo("text", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2026.html",
                         null, null, new TagAttributeInfo[]{}),
-                        new TagInfo("useBean", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2027.html#8865#9359",     // NOI18N
+                new TagInfo("useBean", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2027.html#8865#9359",     // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("beanName", false, url + "syntaxref2027.html#15804#9359", false),   // NOI18N
                         new TagAttributeInfo("class", false, url + "syntaxref2027.html#10968#19433", false),      // NOI18N
                         new TagAttributeInfo("id", true, url + "syntaxref2027.html#10964#10966", false),         // NOI18N
                         new TagAttributeInfo("scope", true, url + "syntaxref2027.html#10966#10968", false),      // NOI18N
                         new TagAttributeInfo("type", false, url + "syntaxref2027.html#19433#18019", false)}),     // NOI18N
-                        new TagInfo("declaration", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref204.html#10983#10991",                 // NOI18N
+                new TagInfo("declaration", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref204.html#10983#10991",                 // NOI18N
                         null, null, new TagAttributeInfo[] {}),
-                        new TagInfo("scriptlet", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref206.html#10996#11007",                 // NOI18N
+                new TagInfo("scriptlet", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref206.html#10996#11007",                 // NOI18N
                         null, null, new TagAttributeInfo[] {}),
-                        new TagInfo("directive.page", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
+                new TagInfo("directive.page", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
                         null, null, directiveJspData[1].getAttributes()),
-                        new TagInfo("directive.include", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
+                new TagInfo("directive.include", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
                         null, null, directiveJspData[0].getAttributes())
             };
 
-            standardTagTagDatas = new TagInfo[standardJspTagDatas.length + 6 ];
-            standardTagTagDatas[0] = standardJspTagDatas[0]; //"attribute"
-            standardTagTagDatas[1] = standardJspTagDatas[1]; //"body"
-            standardTagTagDatas[2] = new TagInfo("doBody", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2017.html", null, null,            // NOI18N
+            List<TagInfo> standardTagTagDatasList = new ArrayList<TagInfo>();
+            standardTagTagDatasList.addAll(Arrays.asList(standardJspTagDatas));
+
+            standardTagTagDatasList.add(new TagInfo("doBody", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2017.html", null, null,            // NOI18N
                     new TagAttributeInfo[] { new TagAttributeInfo("scope", false, url + "syntaxref2017.html#1006246#syntaxref20.html", false),           // NOI18N
                     new TagAttributeInfo("var", false, url + "syntaxref2017.html#1006234#1006240", false),           // NOI18N
-                    new TagAttributeInfo("varReader", false, url + "syntaxref2017.html#1006240#1006246", false)});           // NOI18N
+                    new TagAttributeInfo("varReader", false, url + "syntaxref2017.html#1006240#1006246", false)}));           // NOI18N
 
-            standardTagTagDatas[3] = standardJspTagDatas[2]; //"element"
-            standardTagTagDatas[4] = standardJspTagDatas[3]; //"expression"
-            standardTagTagDatas[5] = standardJspTagDatas[4]; //"fallback"
-            standardTagTagDatas[6] = standardJspTagDatas[5]; //"forward"
-            standardTagTagDatas[7] = standardJspTagDatas[6]; //"getProperty"
-            standardTagTagDatas[8] = standardJspTagDatas[7]; //"include"
-            standardTagTagDatas[9] = new TagInfo("invoke", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2021.html#8837#1003634", null, null,            // NOI18N
+            standardTagTagDatasList.add(new TagInfo("invoke", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2021.html#8837#1003634", null, null,            // NOI18N
                     new TagAttributeInfo[] { new TagAttributeInfo("fragment", true, url + "syntaxref2021.html#1007359#1007361", false),           // NOI18N
                     new TagAttributeInfo("scope", false, url + "syntaxref2021.html#1007373#1003634", false),           // NOI18N
                     new TagAttributeInfo("var", false, url + "syntaxref2021.html#1007361#1007367", false),           // NOI18N
-                    new TagAttributeInfo("varReader", false, url + "syntaxref2021.html#1007367#1007373", false)});           // NOI18N
+                    new TagAttributeInfo("varReader", false, url + "syntaxref2021.html#1007367#1007373", false)}));           // NOI18N
 
-            standardTagTagDatas[10] = standardJspTagDatas[8]; //"param"
-            standardTagTagDatas[11] = standardJspTagDatas[9]; //"params"
-            standardTagTagDatas[12] = standardJspTagDatas[10]; //"plugin"
-            standardTagTagDatas[13] = standardJspTagDatas[11]; //"setProperty"
-            standardTagTagDatas[14] = standardJspTagDatas[12]; //"text"
-            standardTagTagDatas[15] = standardJspTagDatas[13]; //"useBean"
-            standardTagTagDatas[16] = standardJspTagDatas[14]; //"declaration"
-            standardTagTagDatas[17] = standardJspTagDatas[15]; //"expression"
-            standardTagTagDatas[18] = new TagInfo("directive.tag", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[2].getInfoString(), // NOI18N
-                        null, null, directiveTagFileData[2].getAttributes());
-            standardTagTagDatas[19] = new TagInfo("directive.attribute", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[0].getInfoString(), // NOI18N
-                        null, null, directiveTagFileData[0].getAttributes());
-            standardTagTagDatas[20] = new TagInfo("directive.variable", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[4].getInfoString(), // NOI18N
-                        null, null, directiveTagFileData[4].getAttributes());
-            standardTagTagDatas[21] = new TagInfo("directive.include", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
-                        null, null, directiveJspData[0].getAttributes());
+            standardTagTagDatasList.add(new TagInfo("directive.tag", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[2].getInfoString(), // NOI18N
+                        null, null, directiveTagFileData[2].getAttributes()));
+            standardTagTagDatasList.add(new TagInfo("directive.attribute", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[0].getInfoString(), // NOI18N
+                        null, null, directiveTagFileData[0].getAttributes()));
+            standardTagTagDatasList.add(new TagInfo("directive.variable", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[4].getInfoString(), // NOI18N
+                        null, null, directiveTagFileData[4].getAttributes()));
+
+            standardTagTagDatas = standardTagTagDatasList.toArray(new TagInfo[]{});
+
         }
-
 
         if (xmlJspTagDatas == null) {
             TagInfo[] commonXMLTagDatas;
@@ -1073,45 +1059,15 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
                         new TagAttributeInfo("xmlns:x", false, url+"syntaxref2024.html#1003301#1003311", false)})
             };
 
-            xmlJspTagDatas = new TagInfo[] {
-            };
+            List<TagInfo> xmlJspTagDatasList = new ArrayList<TagInfo>();
+            xmlJspTagDatasList.addAll(Arrays.asList(standardJspTagDatas));
+            xmlJspTagDatasList.addAll(Arrays.asList(commonXMLTagDatas));
+            xmlJspTagDatas = xmlJspTagDatasList.toArray(new TagInfo[]{});
 
-            ArrayList list = new ArrayList();
-            for (int i = 0; i < xmlJspTagDatas.length; i++){
-                list.add(xmlJspTagDatas[i]);
-            }
-            for (int i = 0; i < standardJspTagDatas.length; i++){
-                list.add(standardJspTagDatas[i]);
-            }
-            for (int i = 0; i < commonXMLTagDatas.length; i++){
-                list.add(commonXMLTagDatas[i]);
-            }
-
-            // sort the list of xml tags
-            Collections.sort(list,  TAG_NAME_COMPARATOR);
-
-            xmlJspTagDatas = new TagInfo[list.size()];
-            for (int i = 0; i < list.size(); i++)
-                xmlJspTagDatas[i] = (TagInfo)list.get(i);
-
-            xmlTagFileTagDatas = new TagInfo[] {
-            };
-
-            list = new ArrayList();
-            for (int i = 0; i < xmlTagFileTagDatas.length; i++){
-                list.add(xmlTagFileTagDatas[i]);
-            }
-            for (int i = 0; i < standardTagTagDatas.length; i++){
-                list.add(standardTagTagDatas[i]);
-            }
-            for (int i = 0; i < commonXMLTagDatas.length; i++){
-                list.add(commonXMLTagDatas[i]);
-            }
-
-            Collections.sort(list, TAG_NAME_COMPARATOR);
-            xmlTagFileTagDatas = new TagInfo[list.size()];
-            for (int i = 0; i < list.size(); i++)
-                xmlTagFileTagDatas[i] = (TagInfo)list.get(i);
+            List<TagInfo> xmlTagFileTagDatasList = new ArrayList<TagInfo>();
+            xmlTagFileTagDatasList.addAll(Arrays.asList(standardTagTagDatas));
+            xmlTagFileTagDatasList.addAll(Arrays.asList(commonXMLTagDatas));
+            xmlTagFileTagDatas = xmlTagFileTagDatasList.toArray(new TagInfo[]{});
 
         }
 

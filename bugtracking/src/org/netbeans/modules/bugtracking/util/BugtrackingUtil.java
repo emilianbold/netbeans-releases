@@ -85,6 +85,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -129,7 +130,9 @@ public class BugtrackingUtil {
 
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
+        ok.getAccessibleContext().setAccessibleDescription(ok.getText());
         JButton cancel = new JButton(NbBundle.getMessage(BugtrackingUtil.class, "LBL_Cancel")); // NOI18N
+        cancel.getAccessibleContext().setAccessibleDescription(cancel.getText());
         final DialogDescriptor dd =
             new DialogDescriptor(
                     panel,
@@ -216,8 +219,10 @@ public class BugtrackingUtil {
         JPanel panel = new JPanel();
         BoxLayout layout = new BoxLayout(panel, BoxLayout.PAGE_AXIS);
         panel.setLayout(layout);
-        JLabel label = new JLabel(message);
+        JLabel label = new JLabel();
+        Mnemonics.setLocalizedText(label, message);
         panel.add(label);
+        label.setLabelFor(bar.getCommand());
         LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
         int gap = layoutStyle.getPreferredGap(label, bar, LayoutStyle.RELATED, SwingConstants.SOUTH, panel);
         panel.add(Box.createVerticalStrut(gap));
@@ -233,10 +238,12 @@ public class BugtrackingUtil {
                 layoutStyle.getContainerGap(panel, SwingConstants.WEST, null),
                 0,
                 layoutStyle.getContainerGap(panel, SwingConstants.EAST, null)));
+        panel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_IssueSelector"));
         Issue issue = null;
-
         JButton ok = new JButton(bundle.getString("LBL_Select")); // NOI18N
+        ok.getAccessibleContext().setAccessibleDescription(ok.getText());
         JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
+        cancel.getAccessibleContext().setAccessibleDescription(cancel.getText());
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
                 bundle.getString("LBL_Issues"), // NOI18N

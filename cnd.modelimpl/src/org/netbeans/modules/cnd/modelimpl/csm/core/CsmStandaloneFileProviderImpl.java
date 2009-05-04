@@ -148,7 +148,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
         if (project != null && project.isValid()) {
             try {
-                CsmFile out = project.getFile(javaIoFile);
+                CsmFile out = project.getFile(javaIoFile, false);
                 if (TRACE) {trace("returns standalone file %s", out);} //NOI18N
                 return out;
             } catch (BufferUnderflowException ex) {
@@ -171,7 +171,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             if (dummy.getPlatformProject() instanceof NativeProjectImpl) {
                 for (CsmFile file : dummy.getAllFiles()) {
                     if (TRACE) {trace("\nchecking file %s", file.getAbsolutePath());} //NOI18N
-                    if (projectOpened.getFile(((FileImpl) file).getFile()) != null) {
+                    if (projectOpened.getFile(((FileImpl) file).getFile(), false) != null) {
                         scheduleProjectRemoval(dummy);
                         continue;
                     }

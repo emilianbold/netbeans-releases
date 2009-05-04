@@ -109,7 +109,7 @@ public class ProjectWithDependenciesTest extends NbTestCase implements PropertyC
         Exception ex2 = null;
         for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             if (
-                info.getCodeNameBase().equals("org.netbeans.modules.autoupdate.ui") ||
+                info.getCodeNameBase().equals("org.netbeans.modules.subversion") ||
                 info.getCodeNameBase().equals("org.netbeans.modules.favorites")
             ) {
              Method m = null;

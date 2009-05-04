@@ -114,7 +114,13 @@ final class LineRootElement extends GapBranchElement {
         }
         
         LineElement elem = (LineElement)super.getElement(index);
-        assert (elem != null);
+        if (elem == null) {
+            // if the document is not locked elem may be null even after the initial checks (#159491)
+            throw new IndexOutOfBoundsException("Can't find element, index=" + index //NOI18N
+                + ", count=" + getElementCount() //NOI18N
+                + ", documentLocked=" + (DocumentUtilities.isReadLocked(doc) || DocumentUtilities.isWriteLocked(doc))); //NOI18N
+        }
+
         return elem;
     }
 

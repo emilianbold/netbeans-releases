@@ -466,7 +466,8 @@ public class MakeConfiguration extends Configuration {
      */
     @Override
     public Object clone() {
-        MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue(), getDevelopmentHost().getName());
+        MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(),
+                getConfigurationType().getValue(), getDevelopmentHost().getHostKey());
         super.cloneConf(clone);
         clone.setCloneOf(this);
 

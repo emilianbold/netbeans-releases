@@ -457,14 +457,14 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             for (IndentCommand ic : l.lineIndent) {
                 if (ic.getType() == IndentCommand.Type.BLOCK_START) {
                     assert start == -1 : ""+l;
-                    start = Utilities.getLineOffset(getDocument(), ic.getLineOffset());
+                    start = l.index;
                 } else if (ic.getType() == IndentCommand.Type.BLOCK_END) {
                     if (start == -1) {
                         // perhaps file is being editted and BLOCK_START is simply missing
                         // (you can simulate this by writing "<html> </style>"):
                         // do nothing
                     } else {
-                        int end = Utilities.getLineOffset(getDocument(), ic.getLineOffset());
+                        int end = l.index;
                         // ignore blocks which do not have 1 and more lines in them
                         if (end-start > 1) {
                             blocks.add(new ForeignLanguageBlock(start, end));
@@ -490,7 +490,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             assert l != null : ""+b;
             l.foreignLanguageBlockStart = true;
             l = findLineByLineIndex(all, b.endLine);
-            assert l != null : ""+b;
+            assert l != null : "fb="+b+" lines="+all;
             l.foreignLanguageBlockEnd = true;
         }
     }
@@ -1332,7 +1332,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 i = 0 - shift;
             }
         }
-        assert i+shift >= 0 : "i="+i+" shift="+shift+" commands="+indentations;
+        if (i+shift < 0) {
+            return -1;
+        }
         return i+shift;
     }
 

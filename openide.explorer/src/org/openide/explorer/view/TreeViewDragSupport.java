@@ -40,10 +40,10 @@
  */
 package org.openide.explorer.view;
 
+import java.awt.Rectangle;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 
-import java.awt.Component;
 import java.awt.dnd.*;
 
 import javax.swing.JTree;
@@ -77,6 +77,7 @@ final class TreeViewDragSupport extends ExplorerDragSupport {
         this.tree = tree;
     }
 
+    @Override
     public int getAllowedDragActions() {
         return view.getAllowedDragActions();
     }
@@ -85,6 +86,7 @@ final class TreeViewDragSupport extends ExplorerDragSupport {
         return view.getAllowedDropActions();
     }
 
+    @Override
     public void dragGestureRecognized(DragGestureEvent dge) {
         super.dragGestureRecognized(dge);
 
@@ -98,6 +100,7 @@ final class TreeViewDragSupport extends ExplorerDragSupport {
         }
     }
 
+    @Override
     public void dragDropEnd(DragSourceDropEvent dsde) {
         // get the droped nodes
         Node[] dropedNodes = exDnD.getDraggedNodes();
@@ -154,7 +157,8 @@ final class TreeViewDragSupport extends ExplorerDragSupport {
         int cnt = 0;
 
         for (int i = 0; i < tps.length; i++) {
-            if (tree.getPathBounds(tps[i]).contains(dge.getDragOrigin())) {
+            Rectangle r = tree.getPathBounds(tps[i]);
+            if (r != null && r.contains(dge.getDragOrigin())) {
                 cnt++;
             }
 
