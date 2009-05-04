@@ -202,6 +202,7 @@ public class HgCommand {
 
     private static final String HG_RENAME_CMD = "rename"; // NOI18N
     private static final String HG_RENAME_AFTER_CMD = "-A"; // NOI18N
+    private static final String HG_NEWEST_FIRST = "--newest-first"; // NOI18N
 
 
     // TODO: replace this hack
@@ -847,6 +848,10 @@ public class HgCommand {
     }
 
     public static List<HgLogMessage> processLogMessages(File root, List<File> files, List<String> list, final List<HgLogMessage> messages) {
+        return processLogMessages(root, files, list, messages, false);
+    }
+
+    public static List<HgLogMessage> processLogMessages(File root, List<File> files, List<String> list, final List<HgLogMessage> messages, boolean revertOrder) {
         String rev, author, desc, date, id, parents, fm, fa, fd, fc;
         List<String> filesShortPaths = new ArrayList<String>();
 
@@ -911,7 +916,12 @@ public class HgCommand {
                 }
 
                 if (rev != null & bEnd) {
-                    messages.add(new HgLogMessage(rootPath, filesShortPaths, rev, author, desc, date, id, parents, fm, fa, fd, fc));
+                    HgLogMessage hgMsg = new HgLogMessage(rootPath, filesShortPaths, rev, author, desc, date, id, parents, fm, fa, fd, fc);
+                    if (revertOrder) {
+                        messages.add(0, hgMsg);
+                    } else {
+                        messages.add(hgMsg);
+                    }
                     rev = author = desc = date = id = parents = fm = fa = fd = fc = null;
                     bEnd = false;
                 }
@@ -927,7 +937,7 @@ public class HgCommand {
 
             List<String> list = new LinkedList<String>();
             list = HgCommand.doIncomingForSearch(root, toRevision, bShowMerges, logger);
-            processLogMessages(root, null, list, messages);
+            processLogMessages(root, null, list, messages, true);
 
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
@@ -946,7 +956,7 @@ public class HgCommand {
 
             List<String> list = new LinkedList<String>();
             list = HgCommand.doOutForSearch(root, toRevision, bShowMerges, logger);
-            processLogMessages(root, null, list, messages);
+            processLogMessages(root, null, list, messages, true);
 
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
@@ -960,20 +970,20 @@ public class HgCommand {
 
     public static HgLogMessage[] getLogMessages(final File root, final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges, OutputLogger logger) {
          return getLogMessages(root, files, fromRevision, toRevision,
-                                bShowMerges, true, -1, logger);
+                                bShowMerges, true, -1, logger, true);
     }
 
-    public static HgLogMessage[] getLogMessagesNoFileInfo(final File root, final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges, OutputLogger logger) {
-         return getLogMessages(root, files, fromRevision, toRevision, bShowMerges, false, -1, logger);
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final File root, final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges, int limitRevisions, OutputLogger logger) {
+         return getLogMessages(root, files, fromRevision, toRevision, bShowMerges, false, limitRevisions, logger, true);
     }
     
     public static HgLogMessage[] getLogMessagesNoFileInfo(final File root, final Set<File> files, int limit, OutputLogger logger) {
-         return getLogMessages(root, files, HG_STATUS_FLAG_TIP_CMD, "0", true, false, limit, logger);
+         return getLogMessages(root, files, "0", HG_STATUS_FLAG_TIP_CMD, true, false, limit, logger, false);
     }
 
     public static HgLogMessage[] getLogMessages(final File root,
             final Set<File> files, String fromRevision, String toRevision,
-            boolean bShowMerges,  boolean bGetFileInfo, int limit, OutputLogger logger) {
+            boolean bShowMerges,  boolean bGetFileInfo, int limit, OutputLogger logger, boolean ascOrder) {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);
 
         try {
@@ -987,7 +997,7 @@ public class HgCommand {
             list = HgCommand.doLog(root,
                     filesList,
                     fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
-            processLogMessages(root, filesList, list, messages);
+            processLogMessages(root, filesList, list, messages, ascOrder);
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -1210,7 +1220,7 @@ public class HgCommand {
              }
         }
         List<HgLogMessage> messages = new ArrayList<HgLogMessage>(1);
-        messages = processLogMessages(repository, null, list, messages);
+        messages = processLogMessages(repository, null, list, messages, false);
 
         return messages.get(0);
     }
@@ -1232,6 +1242,7 @@ public class HgCommand {
         command.add(HG_OUT_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        command.add(HG_NEWEST_FIRST);
         if(!bShowMerges){
             command.add(HG_LOG_NO_MERGES_CMD);
         }
@@ -1281,6 +1292,7 @@ public class HgCommand {
         command.add(HG_INCOMING_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        command.add(HG_NEWEST_FIRST);
         if(!bShowMerges){
             command.add(HG_LOG_NO_MERGES_CMD);
         }
@@ -1442,11 +1454,11 @@ public class HgCommand {
         // Handle revision ranges
         String revStr = null;
         if (fromInt > -1 && toInt > -1){
-            revStr = from + ":" + to;
+            revStr = to + ":" + from;
         }else if (fromInt > -1){
-            revStr = from + (headRevInt != -1 ? ":" + headRevInt: "");
+            revStr = (headRevInt != -1 ? headRevInt + ":" : "tip:") + from;
         }else if (toInt > -1){
-            revStr = "0:" + to;
+            revStr = to + ":0";
         }
 
         if(revStr == null) {
@@ -1456,7 +1468,7 @@ public class HgCommand {
             if(from == null) {
                 from = "0";
             }
-            revStr = from + ":" + to;
+            revStr = to + ":" + from;
         }
 
         return revStr;
