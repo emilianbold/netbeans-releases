@@ -696,6 +696,12 @@ public class DwarfSource implements SourceFileProperties{
                     if (line.startsWith("include")){ // NOI18N
                         line = line.substring(7).trim();
                         if (line.length()>2) {
+                            if (line.startsWith("/*")) {
+                                int i = line.indexOf("*/");
+                                if (i > 0) {
+                                    line = line.substring(i+2).trim();
+                                }
+                            }
                             char c = line.charAt(0);
                             if (c == '"') {
                                 if (line.indexOf('"',1)>0){
