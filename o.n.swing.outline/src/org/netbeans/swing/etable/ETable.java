@@ -205,7 +205,6 @@ public class ETable extends JTable {
     String selectVisibleColumnsLabel = "Select Visible Columns";
 
     private boolean inEditRequest = false;
-    private boolean inEditorChangeRequest=false;
     private boolean inRemoveRequest=false;
     
     private static String COMPUTING_TOOLTIP = "ComputingTooltip";
@@ -2042,13 +2041,8 @@ public class ETable extends JTable {
         }
         
         if (isEditing()) {
-            inEditorChangeRequest = true;
-            try {
-                removeEditor();
-                changeSelection(row, column, false, false);
-            } finally {
-                inEditorChangeRequest = false;
-            }
+            removeEditor();
+            changeSelection(row, column, false, false);
         }
         
         try {
