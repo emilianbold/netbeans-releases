@@ -155,6 +155,16 @@ function get_language(option) {
             }
         }    
     }
+
+    //no language (for id) selected - fallback to en if it is available
+    if (resultLanguage == "" && option == 0) {
+        for(var i=0; i < variants.length; i++ ) {
+            if(variants[i].id == "en") {
+                return "en";
+            }
+        }
+    }
+
     return resultLanguage;
 }
 
@@ -413,7 +423,14 @@ function add_language(id, name, suffix, webpagename) {
     for(var i=0;i<index;i++) {
        if(LANGUAGES[i].id == id) {
            if(id == "en" && isCommunityBuild()) {
-               index = i;
+               var newLanguages = new Array();
+               for(var j=0;j<index;j++) {
+                   if(j!=i) {
+                       newLanguages[newLanguages.length] = LANGUAGES[j];
+                   }
+               }
+               LANGUAGES = newLanguages;
+               index--;
            } else {
                return;
            }
