@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.cnd.utils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -52,7 +55,8 @@ public class CndUtils {
     private static Logger LOG = Logger.getLogger("cnd.logger"); // NOI18N
 
     private static boolean releaseMode;
-    
+    private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
+
     static {
         String text = System.getProperty("cnd.release.mode");
         if (text == null) {
@@ -61,6 +65,20 @@ public class CndUtils {
         } else {
             releaseMode = Boolean.parseBoolean(text);
         }
+    }
+
+    static {
+        boolean caseSenstive;
+        try {
+            File tmpFile = File.createTempFile("CaseSensitiveFile", ".check"); // NOI18N
+            String absPath = tmpFile.getAbsolutePath();
+            absPath = absPath.toUpperCase();
+            caseSenstive = !new File(absPath).exists();
+            tmpFile.deleteOnExit();
+        } catch (IOException ex) {
+            caseSenstive = Utilities.isUnix() && !Utilities.isMac();
+        }
+        TRUE_CASE_SENSITIVE_SYSTEM = caseSenstive;
     }
 
     private CndUtils() {
@@ -116,5 +134,9 @@ public class CndUtils {
 
     public static final void assertNonUiThread() {
         assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
+    }
+
+    public static boolean isSystemCaseSensitive() {
+        return TRUE_CASE_SENSITIVE_SYSTEM;
     }
 }
