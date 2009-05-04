@@ -166,12 +166,12 @@ public abstract class Issue {
      * @param issueId 
      */
     public static void open(final Repository repository, final String issueId) {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[] {issueId}));
-        handle.start();
+        final ProgressHandle[] handle = new ProgressHandle[1];
+        handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[] {issueId}));
+        handle[0].start();
         final IssueTopComponent tc = IssueTopComponent.find(issueId);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-
                 final Issue issue = tc.getIssue();
                 if(issue == null) {
                     tc.initNoIssue();
@@ -183,6 +183,9 @@ public abstract class Issue {
                     public void run() {
                         try {
                             if(issue != null) {
+                                handle[0].finish();
+                                handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[] {issueId}));
+                                handle[0].start();
                                 issue.refresh();
                             } else {
                                 final Issue refIssue = repository.getIssue(issueId);
@@ -198,7 +201,7 @@ public abstract class Issue {
                                 }
                             }
                         } finally {
-                            handle.finish();
+                            handle[0].finish();
                         }
                     }
                 });
