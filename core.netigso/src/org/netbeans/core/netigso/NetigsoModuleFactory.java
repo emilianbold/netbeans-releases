@@ -39,23 +39,32 @@
 
 package org.netbeans.core.netigso;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import org.apache.felix.framework.Felix;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
+import org.netbeans.Stamps;
 import org.openide.util.lookup.ServiceProvider;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -67,13 +76,35 @@ import org.osgi.framework.Constants;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @ServiceProvider(service=ModuleFactory.class)
-public class NetigsoModuleFactory extends ModuleFactory {
+public class NetigsoModuleFactory extends ModuleFactory
+implements Stamps.Updater {
     private static NetigsoActivator activator;
     private static Felix felix;
 
     static void clear() {
         activator = null;
         felix = null;
+    }
+    private Set<String> registered;
+
+    public NetigsoModuleFactory() {
+        registered = new HashSet<String>();
+        try {
+            InputStream is = Stamps.getModulesJARs().asStream("felix-bundles");
+            if (is == null) {
+                return;
+            }
+            BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
+            for (;;) {
+                String line = r.readLine();
+                if (line == null) {
+                    break;
+                }
+                registered.add(line);
+            }
+        } catch (IOException ex) {
+            NetigsoActivator.LOG.log(Level.WARNING, "Cannot read cache", ex);
+        }
     }
 
     @Override
@@ -179,6 +210,10 @@ public class NetigsoModuleFactory extends ModuleFactory {
     }
 
     private void registerBundle(Module m) throws IOException {
+        if (!registered.add(m.getCodeName())) {
+            return;
+        }
+
         InputStream is = fakeBundle(m);
         if (is != null) {
             try {
@@ -189,6 +224,19 @@ public class NetigsoModuleFactory extends ModuleFactory {
             } catch (BundleException ex) {
                 throw new IOException(ex);
             }
+            Stamps.getModulesJARs().scheduleSave(this, "felix-bundles", false); // NOI18N
         }
+    }
+
+    public void flushCaches(DataOutputStream os) throws IOException {
+        Writer w = new OutputStreamWriter(os);
+        for (String s : registered) {
+            w.write(s);
+            w.write('\n');
+        }
+        w.close();
+    }
+
+    public void cacheReady() {
     }
 }
