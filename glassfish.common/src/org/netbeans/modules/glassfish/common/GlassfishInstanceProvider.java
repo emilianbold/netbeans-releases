@@ -100,7 +100,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_REGISTERED_NAME", new Object[] {}),
                         org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_CREATED_NAME", new Object[] {}),
                         "GlassFish_v3", // NOI18N
-                        "http://java.net/download/glassfish/v3/promoted/latest-glassfish.zip", // NOI18N
+                        "http://java.net/download/glassfish/v3-preview/promoted/latest-glassfish.zip", // NOI18N
                         "http://serverplugins.netbeans.org/glassfishv3/ee6zipfilename.txt",  // NOI18N
                         "last-v3ee6-install-root",  // NOI18N
                         new String[] { "lib"+File.separator+"schemas"+File.separator+"web-app_3_0.xsd" }, // NOI18N
