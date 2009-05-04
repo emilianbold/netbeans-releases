@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,6 +44,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EmptyStackException;
 import java.util.WeakHashMap;
 import javax.swing.JLabel;
 import javax.swing.event.TableModelEvent;
@@ -108,7 +109,12 @@ class PropertiesRowModel implements RowModel {
             }
             Collections.reverse(al);
             TreePath tp = new TreePath(al.toArray());
-            int row = outline.getLayoutCache().getRowForPath(tp);
+            int row = -1;
+            try {
+                row = outline.getLayoutCache().getRowForPath(tp);
+            } catch (EmptyStackException ese) {
+                // ignore; see issue 157888
+            }
             return row;
         }
         return -1;
