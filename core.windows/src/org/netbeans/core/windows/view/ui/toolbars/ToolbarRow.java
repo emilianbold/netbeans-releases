@@ -301,7 +301,8 @@ class ToolbarRow extends JPanel {
         Point res = null;
         if( null == dropContainter )
             return res;
-        res = dropReplacement.getLocationOnScreen();
+        if( dropReplacement.isShowing() )
+            res = dropReplacement.getLocationOnScreen();
         if( null != dragConstraints ) {
             //the dropped toolbar was originally in this row, just reorder constraints
             add( dragContainer );
