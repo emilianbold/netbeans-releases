@@ -55,8 +55,12 @@ public class CsmFileFilter {
            return false;
        } else if (!isShowTypedef() && CsmKindUtilities.isTypedef(object)) {
            return false;
-       } else if (!isShowVariable() && CsmKindUtilities.isVariable(object) && !CsmKindUtilities.isClassMember(object)) {
-           return false;
+       } else if ((!isShowVariable() || !isShowField())&& CsmKindUtilities.isVariable(object)) {
+           if ( CsmKindUtilities.isClassMember(object)) {
+               return isShowField();
+           } else {
+               return isShowVariable();
+           }
        } else if (!isShowUsing() &&
                  (CsmKindUtilities.isUsing(object) ||
                   CsmKindUtilities.isNamespaceAlias(object))) {
@@ -119,6 +123,14 @@ public class CsmFileFilter {
         this.showVariable.setSelected(showVariable);
     }
 
+    public boolean isShowField() {
+        return showField.isSelected();
+    }
+
+    public void setShowField(boolean showField) {
+        this.showField.setSelected(showField);
+    }
+
     public boolean isShowUsing() {
         return showUsing.isSelected();
     }
@@ -159,6 +171,7 @@ public class CsmFileFilter {
     private BooleanFilter showMacro = new BooleanFilter("ShowMacro", true); // NOI18N;
     private BooleanFilter showTypedef = new BooleanFilter("ShowTypedef", true); // NOI18N
     private BooleanFilter showVariable = new BooleanFilter("ShowVariable", true); // NOI18N
+    private BooleanFilter showField = new BooleanFilter("ShowField", true); // NOI18N
     private BooleanFilter showUsing = new BooleanFilter("ShowUsing", true); // NOI18N
     private SortMode sortByName = SortMode.Name;
     private BooleanFilter groupByKind = new BooleanFilter("groupByKind", false); // NOI18N
