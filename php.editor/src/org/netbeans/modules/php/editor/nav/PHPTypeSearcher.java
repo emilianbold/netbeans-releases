@@ -40,8 +40,10 @@
 package org.netbeans.modules.php.editor.nav;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.swing.Icon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -64,28 +66,40 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Radek Matous, Jan Lahoda
  */
 public class PHPTypeSearcher implements IndexSearcher {
     //TODO: no supported: came cases, regular expressions in queries (needs improve PHPIndex methods)
     public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind kind, Helper helper) {
         // XXX: use PHP specific path ids
+        EnumSet<Kind> regexpKinds = EnumSet.of(Kind.CAMEL_CASE, Kind.CASE_INSENSITIVE_CAMEL_CASE,  Kind.CASE_INSENSITIVE_REGEXP);
         PHPIndex index = PHPIndex.get(QuerySupport.findRoots(
                 project, Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP),
                 Collections.<String>emptySet()));
 
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
-        //CAMEL CASES,wild cards doesn't work - just accept textForQuery as incase sensitive string
-        textForQuery = textForQuery.toLowerCase();
-        kind = QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
         if (index != null) {
-            addClasses(index, textForQuery, kind, helper, result);
-            addInterfaces(index, textForQuery, kind, helper, result);
+            String query = prepareIdxQuery(textForQuery, regexpKinds, kind);
+            query = query.toLowerCase();
+            addClasses(index, query, Kind.CASE_INSENSITIVE_PREFIX, helper, result);
+            addInterfaces(index, query, Kind.CASE_INSENSITIVE_PREFIX, helper, result);
             //TODO: missing iface members
-            addClassMembers(index, stripDollar(textForQuery), kind, helper, result);
-            addFunctions(index, textForQuery, kind, helper, result);
-            addConstants(index, textForQuery, kind, helper, result);
-            addTpLevelVariables(index, appendDollar(textForQuery), kind, helper, result);
+            addClassMembers(index, stripDollar(query), Kind.CASE_INSENSITIVE_PREFIX, helper, result);
+            addFunctions(index, query, Kind.CASE_INSENSITIVE_PREFIX, helper, result);
+            addConstants(index, query, Kind.CASE_INSENSITIVE_PREFIX, helper, result);
+            addTpLevelVariables(index, appendDollar(query), Kind.CASE_INSENSITIVE_PREFIX, helper, result);
+        }
+        if (regexpKinds.contains(kind)) {
+            //handles wildcards and camelCases
+            Set<PHPTypeDescriptor> originalResult = result;
+            result = new HashSet<PHPTypeDescriptor>();
+            Pattern pattern = queryToPattern(textForQuery);
+            for (PHPTypeDescriptor typeDescriptor : originalResult) {
+                String typeName = typeDescriptor.getElement().getName();
+                if (pattern.matcher(typeName).matches()) {
+                    result.add(typeDescriptor);
+                }
+            }
         }
 
         return result;
@@ -93,19 +107,29 @@ public class PHPTypeSearcher implements IndexSearcher {
 
     public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind kind, Helper helper) {
         // XXX: use PHP specific path ids
+        EnumSet<Kind> regexpKinds = EnumSet.of(Kind.CAMEL_CASE, Kind.CASE_INSENSITIVE_CAMEL_CASE,  Kind.CASE_INSENSITIVE_REGEXP);
         PHPIndex index = PHPIndex.get(QuerySupport.findRoots(
                 project, Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP),
                 Collections.<String>emptySet()));
 
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
-        //CAMEL CASES,wild cards doesn't work - just accept textForQuery as incase sensitive string        
-        textForQuery = textForQuery.toLowerCase();
-        kind = QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
         if (index != null) {
-            addClasses(index, textForQuery, kind, helper, result);
-            addInterfaces(index, textForQuery, kind, helper, result);
+            String query = prepareIdxQuery(textForQuery, regexpKinds, kind);
+            addClasses(index, query, Kind.CASE_INSENSITIVE_PREFIX, helper, result);
+            addInterfaces(index, query, Kind.CASE_INSENSITIVE_PREFIX, helper, result);
         }
-
+        if (regexpKinds.contains(kind)) {
+            //handles wildcards and camelCases
+            Set<PHPTypeDescriptor> originalResult = result;
+            result = new HashSet<PHPTypeDescriptor>();
+            Pattern pattern = queryToPattern(textForQuery);
+            for (PHPTypeDescriptor typeDescriptor : originalResult) {
+                String typeName = typeDescriptor.getElement().getName();
+                if (pattern.matcher(typeName).matches()) {
+                    result.add(typeDescriptor);
+                }
+            }
+        }
         return result;
     }
 
@@ -277,5 +301,65 @@ public class PHPTypeSearcher implements IndexSearcher {
         public String getOuterName() {
             return null;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final PHPTypeDescriptor other = (PHPTypeDescriptor) obj;
+            if (this.element != other.element && (this.element == null || !this.element.equals(other.element))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            return hash;
+        }
+        
+    }
+
+    private static Pattern queryToPattern(String query) {
+        StringBuilder sb = new StringBuilder();
+        char[] chars = query.toCharArray();
+        boolean incamel = false;
+        for (int i = 0; i < chars.length; i++) {
+            if (chars[i] == '*') {
+                if (!incamel) {
+                    sb.append(".*");
+                }
+            } else if (Character.isUpperCase(chars[i])) {
+                if (incamel) {
+                    sb.append(".*");
+                }
+                sb.append(chars[i]);
+                incamel = true;
+            } else {
+                sb.append(chars[i]);
+            }
+
+        }
+        sb.append(".*");
+        String patternString = sb.toString();
+        patternString = patternString.replaceAll(Pattern.quote(".."), ".");//NOI18N
+        return Pattern.compile(patternString);
+    }
+
+    private String prepareIdxQuery(String textForQuery, EnumSet<Kind> regexpKinds, Kind kind) {
+        String query = textForQuery.toLowerCase();
+        if (regexpKinds.contains(kind)) {
+            if (Character.isLetter(textForQuery.charAt(0))) {
+                query = query.substring(0, 1);//NOI18N
+            } else {
+                query = "";//NOI18N
+            }
+        }
+        return query;
     }
 }
