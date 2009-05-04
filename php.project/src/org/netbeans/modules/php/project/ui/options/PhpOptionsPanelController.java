@@ -268,7 +268,7 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         PhpUnit phpUnit = new PhpUnit(phpOptionsPanel.getPhpUnit());
         if (!phpUnit.supportedVersionFound()) {
             phpOptionsPanel.setWarning(NbBundle.getMessage(
-                    PhpOptionsPanelController.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit.getVersion())));
+                    PhpOptionsPanelController.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit)));
             return true;
         }
 
