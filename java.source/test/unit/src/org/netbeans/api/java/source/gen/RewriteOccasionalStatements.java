@@ -444,33 +444,6 @@ public class RewriteOccasionalStatements extends GeneratorTest {
                 wc.toPhase(JavaSource.Phase.RESOLVED);                
                 SimpleScanner ss = new SimpleScanner(wc);
                 ss.scan(wc.getCompilationUnit().getTypeDecls().get(0), null);
-            }            
-
-            class SimpleScanner extends TreeScanner<Void, Void> {
-                private final WorkingCopy wc;
-                protected GeneratorUtilities gu;
-
-                SimpleScanner(WorkingCopy wc) {
-                    this.wc = wc;
-                    gu = GeneratorUtilities.get(this.wc);
-                }
-
-                @Override
-                public Void visitBlock(BlockTree node, Void p) {
-                    List<? extends StatementTree> st = node.getStatements();
-                    if (st.size() == 2) {
-                        List<StatementTree> st2 = new ArrayList<StatementTree>();
-                        st2.add(st.get(0));
-                        TreeMaker make = wc.getTreeMaker();
-                        BlockTree modified = make.Block(st2, node.isStatic());
-                        modified = gu.importFQNs(modified);                         
-                        System.out.println("original: " + node);
-                        System.out.println("modified: " + modified);
-                        wc.rewrite(node, modified);
-                    }
-                    return super.visitBlock(node, p);
-                }
-
             }
 
         };
@@ -482,4 +455,30 @@ public class RewriteOccasionalStatements extends GeneratorTest {
     }
 
 
+    class SimpleScanner extends TreeScanner<Void, Void> {
+        private final WorkingCopy wc;
+        protected GeneratorUtilities gu;
+
+        SimpleScanner(WorkingCopy wc) {
+            this.wc = wc;
+            gu = GeneratorUtilities.get(this.wc);
+        }
+
+        @Override
+        public Void visitBlock(BlockTree node, Void p) {
+            List<? extends StatementTree> st = node.getStatements();
+            if (st.size() == 2) {
+                List<StatementTree> st2 = new ArrayList<StatementTree>();
+                st2.add(st.get(0));
+                TreeMaker make = wc.getTreeMaker();
+                BlockTree modified = make.Block(st2, node.isStatic());
+                modified = gu.importFQNs(modified);                         
+                System.out.println("original: " + node);
+                System.out.println("modified: " + modified);
+                wc.rewrite(node, modified);
+            }
+            return super.visitBlock(node, p);
+        }
+
+    }
 }
