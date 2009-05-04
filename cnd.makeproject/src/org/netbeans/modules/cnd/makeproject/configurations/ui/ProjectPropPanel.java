@@ -78,7 +78,7 @@ public class ProjectPropPanel extends javax.swing.JPanel {
         initComponents();
         projectTextField.setText(FileUtil.toFile(project.getProjectDirectory()).getPath());
         sourceRootPanel.add(sourceRootChooser = new SourceRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getSourceRoots()));
-
+        ignoreFoldersTextField.setText(makeConfigurationDescriptor.getFolderVisibilityQuery().getRegEx());
         MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
 //        makeCustomizerProvider.addActionListener(this);
 
@@ -121,6 +121,7 @@ public class ProjectPropPanel extends javax.swing.JPanel {
 
         Vector<String> newSourceRoots = sourceRootChooser.getListData();
         makeConfigurationDescriptor.setSourceRoots(newSourceRoots);
+        makeConfigurationDescriptor.setFolderVisibilityQuery(ignoreFoldersTextField.getText());
     }
 
     private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
@@ -252,6 +253,11 @@ public class ProjectPropPanel extends javax.swing.JPanel {
         encodingPanel = new javax.swing.JPanel();
         encodingLabel = new javax.swing.JLabel();
         encoding = new javax.swing.JComboBox();
+        ignoreFolderPanel = new javax.swing.JPanel();
+        ignoreFoldersLabel = new javax.swing.JLabel();
+        ignoreFoldersTextField = new javax.swing.JTextField();
+        ignoreFoldersDefaultButton = new javax.swing.JButton();
+        seeAlsoLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -279,7 +285,6 @@ public class ProjectPropPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(sourceRootPanel, gridBagConstraints);
 
@@ -305,17 +310,74 @@ public class ProjectPropPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        add(encodingPanel, gridBagConstraints);
+
+        ignoreFolderPanel.setLayout(new java.awt.GridBagLayout());
+
+        ignoreFoldersLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("ProjectPropPanel.ignoreFoldersLabel.mn").charAt(0));
+        ignoreFoldersLabel.setLabelFor(ignoreFoldersTextField);
+        ignoreFoldersLabel.setText(org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.ignoreFoldersLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        ignoreFolderPanel.add(ignoreFoldersLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        ignoreFolderPanel.add(ignoreFoldersTextField, gridBagConstraints);
+
+        ignoreFoldersDefaultButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("ProjectPropPanel.ignoreFoldersDefaultButton.mn").charAt(0));
+        ignoreFoldersDefaultButton.setText(org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.ignoreFoldersDefaultButton.text")); // NOI18N
+        ignoreFoldersDefaultButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ignoreFoldersDefaultButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        ignoreFolderPanel.add(ignoreFoldersDefaultButton, gridBagConstraints);
+
+        seeAlsoLabel.setText(org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.seeAlsoLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        ignoreFolderPanel.add(seeAlsoLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(encodingPanel, gridBagConstraints);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(ignoreFolderPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void ignoreFoldersDefaultButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreFoldersDefaultButtonActionPerformed
+        // TODO add your handling code here:
+        ignoreFoldersTextField.setText(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN);
+    }//GEN-LAST:event_ignoreFoldersDefaultButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox encoding;
     private javax.swing.JLabel encodingLabel;
     private javax.swing.JPanel encodingPanel;
+    private javax.swing.JPanel ignoreFolderPanel;
+    private javax.swing.JButton ignoreFoldersDefaultButton;
+    private javax.swing.JLabel ignoreFoldersLabel;
+    private javax.swing.JTextField ignoreFoldersTextField;
     private javax.swing.JLabel projectLabel;
     private javax.swing.JTextField projectTextField;
+    private javax.swing.JLabel seeAlsoLabel;
     private javax.swing.JPanel sourceRootPanel;
     // End of variables declaration//GEN-END:variables
 
