@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
-import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -77,6 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Storage for files and states. Class was extracted from ProjectBase.
@@ -300,8 +300,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     public static CharSequence getFileKey(File file, boolean sharedText) {
         if (CndUtils.isDebugMode()) {
-            String path = file.getAbsolutePath();
-            CndUtils.assertTrueInConsole(APTIncludeUtils.normalize(path).equals(path), "File not normalized " + file); // NOI18N
+            File normFile = FileUtil.normalizeFile(file);
+            CndUtils.assertTrueInConsole(file.equals(normFile), "Parameter file was not " + // NOI18N
+                        "normalized. Was " + file + " instead of " + normFile); // NOI18N
         }
         String key = null;
         if (TraceFlags.USE_CANONICAL_PATH) {

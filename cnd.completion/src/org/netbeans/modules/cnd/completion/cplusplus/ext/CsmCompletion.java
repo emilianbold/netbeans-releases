@@ -632,7 +632,7 @@ abstract public class CsmCompletion {
 
     public static class OffsetableType implements CsmType {
 
-        private final BaseType delegate;
+        private final CsmType delegate;
         private final CsmFile container;
         private final int start;
         private final int end;
@@ -662,7 +662,7 @@ abstract public class CsmCompletion {
             }
             if (o instanceof CsmType) {
                 CsmType t = (CsmType) o;
-                return delegate.equals(t) && container.equals(t.getContainingFile()) && start == t.getStartOffset() && end == t.getEndOffset();
+                return delegate.equals(t) && container.equals(t.getContainingFile()) && (start == t.getStartOffset()) && (end == t.getEndOffset());
             }
             return false;
         }

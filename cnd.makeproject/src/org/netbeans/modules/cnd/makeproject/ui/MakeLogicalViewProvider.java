@@ -1277,7 +1277,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     if ((IpeUtils.isPathAbsolute(item.getPath()) || item.getPath().startsWith("..")) && !toFolder.isDiskFolder()) { // NOI18N
                         Toolkit.getDefaultToolkit().beep();
                     } else {
-                        FileObject fo = FileUtil.toFileObject(item.getCanonicalFile());
+                        FileObject fo = FileUtil.toFileObject(item.getNormalizedFile());
                         String ext = fo.getExt();
                         if (toFolder.isDiskFolder()) {
                             String toFolderPath = IpeUtils.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
@@ -1310,7 +1310,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     }
                 } else {
                     if (toFolder.isDiskFolder()) {
-                        FileObject fo = FileUtil.toFileObject(item.getCanonicalFile());
+                        FileObject fo = FileUtil.toFileObject(item.getNormalizedFile());
                         String ext = fo.getExt();
                         String toFolderPath = IpeUtils.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
                         FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
@@ -1520,7 +1520,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             this.childrenKeys = childrenKeys;
             this.folder = folder;
             this.item = item;
-            File file = item.getCanonicalFile();
+            File file = item.getNormalizedFile();
             setShortDescription(file.getPath());
         }
 
@@ -1748,7 +1748,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             this.childrenKeys = childrenKeys;
             this.folder = folder;
             this.item = item;
-            File file = item.getCanonicalFile();
+            File file = item.getNormalizedFile();
             setName(file.getPath());
             setDisplayName(file.getName());
             setShortDescription(NbBundle.getMessage(getClass(), "BrokenTxt", file.getPath())); // NOI18N

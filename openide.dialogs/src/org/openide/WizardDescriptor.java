@@ -1413,9 +1413,10 @@ public class WizardDescriptor extends DialogDescriptor {
                         });
                     }
                 } catch (WizardValidationException wve) {
-                    validationRuns = false;
-                    updateState ();
 
+                    validationRuns = false;
+                    err.log (Level.FINE, "validation failed", wve); // NOI18N
+                    updateState ();
                     // cannot continue, notify user
                     if (wizardPanel != null) {
                         wizardPanel.setMessage(WizardPanel.MSG_TYPE_ERROR, wve.getLocalizedMessage());

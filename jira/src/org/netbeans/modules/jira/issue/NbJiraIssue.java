@@ -115,9 +115,10 @@ public class NbJiraIssue extends Issue {
         STATUS(TaskAttribute.STATUS),
         PRIORITY(JiraAttribute.PRIORITY.id()),
         RESOLUTION(JiraAttribute.RESOLUTION.id()),
-        PRODUCT(JiraAttribute.PROJECT.id()),
+        PROJECT(JiraAttribute.PROJECT.id()),
         COMPONENT(JiraAttribute.COMPONENTS.id()),
-//        VERSION(JiraAttribute. .getName()),
+        AFFECTSVERSIONS(JiraAttribute.AFFECTSVERSIONS.id()),
+        FIXVERSIONS(JiraAttribute.FIXVERSIONS.id()),
 //        PLATFORM(JiraAttribute.REP_PLATFORM.getName()),
 //        OS(JiraAttribute.OP_SYS.getName()),
 //        MILESTONE(JiraAttribute.TARGET_MILESTONE.getName()),
@@ -187,6 +188,9 @@ public class NbJiraIssue extends Issue {
         });
     }
 
+    JiraRepository getRepository() {
+        return repository;
+    }
 
     public String getID() {
 //        return taskData.getTaskId(); // XXX id or key ???

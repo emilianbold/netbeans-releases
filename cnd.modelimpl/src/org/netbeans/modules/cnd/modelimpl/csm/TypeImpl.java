@@ -462,7 +462,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
             needToRender = false;
             if (!isTypeWithClassifier() && (qname != null) && (parent != null) && !CsmKindUtilities.isBuiltIn(classifier)) {
                 // check visibility of classifier
-                if (!CsmIncludeResolver.getDefault().isObjectVisible(parent.getStartFile(), classifier)) {
+                if (ForwardClass.isForwardClass(classifier) || !CsmIncludeResolver.getDefault().isObjectVisible(parent.getStartFile(), classifier)) {
                     needToRender = true;
                     classifier = null;
                 }

@@ -42,20 +42,28 @@ package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeNode;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Children.Keys;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Property;
+import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 
 /** Fixes fix of issue #152857: Sorting in TreeTableView should not be done on Visualizers
  *
  * @author  Jiri Rechtacek
  */
-public final class OutlineView152857Test extends TreeTableView152857Test {
+public final class OutlineView152857Test extends NbTestCase {
 
     private OutlineViewComponent comp;
 
@@ -65,7 +73,7 @@ public final class OutlineView152857Test extends TreeTableView152857Test {
 
     @Override
     protected boolean runInEQ () {
-        return false;
+        return true;
     }
 
     public void testRemoveNodeInOutlineView () throws InterruptedException {
@@ -120,7 +128,118 @@ public final class OutlineView152857Test extends TreeTableView152857Test {
         }
     }
 
-    @Override
-    public void testRemoveNodeInTTV () throws InterruptedException {
+    private static class StringKeys extends Keys<String> {
+
+        public StringKeys (boolean lazy) {
+            super (lazy);
+        }
+
+        @Override
+        protected Node[] createNodes (String key) {
+            AbstractNode n = new TestNode (Children.LEAF, key);
+            n.setName (key);
+            return new Node[]{n};
+        }
+
+        void doSetKeys (String[] keys) {
+            setKeys (keys);
+        }
     }
+
+    private static class TestNode extends AbstractNode {
+
+        public TestNode (String name) {
+            super (Children.LEAF);
+            setName (name);
+        }
+
+        public TestNode (Children children, String name) {
+            super (children);
+            setName (name);
+        }
+
+        @Override
+        protected Sheet createSheet () {
+            Sheet s = super.createSheet ();
+            Sheet.Set ss = s.get (Sheet.PROPERTIES);
+            if (ss == null) {
+                ss = Sheet.createPropertiesSet ();
+                s.put (ss);
+            }
+            Property [] props = new Property [2];
+
+            DummyProperty dp = new DummyProperty (getName ());
+            dp.setValue ("ComparableColumnTTV", Boolean.TRUE);
+            props [0] = dp;
+
+            Property p_tree = new Node.Property<Boolean> (Boolean.class) {
+
+                @Override
+                public boolean canRead () {
+                    return true;
+                }
+
+                @Override
+                public Boolean getValue () throws IllegalAccessException, InvocationTargetException {
+                    return Boolean.TRUE;
+                }
+
+                @Override
+                public boolean canWrite () {
+                    return false;
+                }
+
+                @Override
+                public void setValue (Boolean val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                    throw new UnsupportedOperationException ("Not supported yet.");
+                }
+            };
+
+            p_tree.setValue ("TreeColumnTTV", Boolean.TRUE);
+            p_tree.setValue ("ComparableColumnTTV", Boolean.TRUE);
+            p_tree.setValue ("SortingColumnTTV", Boolean.TRUE);
+            props [1] = p_tree;
+
+            ss.put (props);
+
+            return s;
+        }
+
+        private class DummyProperty extends Property<String> {
+
+            public DummyProperty (String val) {
+                super (String.class);
+                setName ("unitTestPropName");
+                try {
+                    setValue (val);
+                } catch (IllegalAccessException ex) {
+                    Exceptions.printStackTrace (ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace (ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace (ex);
+                }
+            }
+
+            public boolean canRead () {
+                return true;
+            }
+
+            public String getValue () throws IllegalAccessException,
+                    InvocationTargetException {
+                return (String) getValue ("unitTestPropName");
+            }
+
+            public boolean canWrite () {
+                return true;
+            }
+
+            public void setValue (String val) throws IllegalAccessException,
+                    IllegalArgumentException,
+                    InvocationTargetException {
+                setValue ("unitTestPropName", val);
+            }
+        }
+    }
+    
 }

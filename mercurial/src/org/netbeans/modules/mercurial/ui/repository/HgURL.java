@@ -45,6 +45,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import org.netbeans.modules.mercurial.HgKenaiSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -168,12 +170,17 @@ public final class HgURL {
     }
 
     private static String getSchemeName(String uriString) {
+        return getSchemeName(uriString, Scheme.getMaxSchemeNameLength());
+    }
+
+    private static String getSchemeName(String uriString, int maxLength) {
         if (uriString.length() < 2) { //at least initial letter and colon needed
             return null;
         }
 
-        final int maxSchemeLength = Math.min(uriString.length() - 1,
-                                             Scheme.getMaxSchemeNameLength());
+        final int maxSchemeLength = (maxLength != -1)
+                                    ? Math.min(uriString.length() - 1, maxLength)
+                                    :          uriString.length() - 1;
 
         StringBuilder buf = null;
 
@@ -279,8 +286,7 @@ public final class HgURL {
             throw new IllegalArgumentException("empty URL string");     //NOI18N
         }
 
-        if ((urlString.charAt(0) == '/')
-                || Utilities.isWindows() && isWindowsAbsolutePath(urlString)) {
+        if (looksLikePlainFilePath(urlString)) {
             originalUri = new File(urlString).toURI();
             scheme = Scheme.FILE;
         } else {
@@ -327,6 +333,103 @@ public final class HgURL {
         rawFragment = originalUri.getRawFragment();
 
         path = originalUri.getPath();
+    }
+
+    /**
+     * Detects with certain probability whether the given URL string is just
+     * a plain path (i.e. without any scheme/protocol specification).
+     *
+     * @param  urlString  path/URL string to be checked
+     * @return  {@code true} if the string seems to be a plain file path,
+     *          {@code false} otherwise
+     */
+    public static boolean looksLikePlainFilePath(String urlString) {
+        if (urlString == null) {
+            throw new IllegalArgumentException("<null> URL string");    //NOI18N
+        }
+
+        if (urlString.length() == 0) {
+            return false;
+        }
+
+        return (urlString.charAt(0) == '/')
+               || Utilities.isWindows() && isWindowsAbsolutePath(urlString);
+    }
+
+    public static String stripUserInfo(String urlString) {
+        if (urlString == null) {
+            throw new IllegalArgumentException("<null> URL string");    //NOI18N
+        }
+
+        urlString = urlString.trim();
+
+        if (urlString.length() == 0) {
+            return urlString;
+        }
+
+
+        try {
+            HgURL hgUrl = new HgURL(urlString);
+
+            /* Keep the form of the Mercurial URL string:
+             * If it was specified as plain file path, return plain file path.
+             * If it was specified with schema/protocol, return URL string
+             * with schema/protocol.
+             */
+            if (hgUrl.isFile() && looksLikePlainFilePath(urlString)) {
+                return hgUrl.toHgCommandUrlStringWithoutUserInfo();
+            } else {
+                return hgUrl.toUrlStringWithoutUserInfo();
+            }
+
+        } catch (URISyntaxException ex) {    //not a valid URL
+            return stripUserInfoFromInvalidURI(urlString);
+        }
+    }
+
+    private static String stripUserInfoFromInvalidURI(String urlString) {
+        if (looksLikePlainFilePath(urlString)) {
+            return urlString;
+        }
+
+        String schemeName = getSchemeName(urlString, -1);
+        String schemeSpecific = (schemeName != null)
+                                ? urlString.substring(schemeName.length() + 1).trim()
+                                : urlString;
+
+        int atIndex = schemeSpecific.indexOf('@');
+        if (atIndex == -1) {
+            if ("file".equals(schemeName)) {
+                return trimDupliciteInitialSlashes(schemeSpecific);
+            } else {
+                return urlString;
+            }
+        } else {
+            return schemeSpecific.substring(atIndex + 1);
+        }
+    }
+
+    private static String trimDupliciteInitialSlashes(String schemaSpecificUrlPart) {
+        int length = schemaSpecificUrlPart.length();
+
+        if (length == 0) {
+            return schemaSpecificUrlPart;
+        }
+
+        String str = schemaSpecificUrlPart;
+
+        /* find index of the first non-slash character: */
+        int index;
+        for (index = 0; (index < length) && (str.charAt(index) == '/'); index++) {
+            index++;
+        }
+
+        if ((index == 0) || (index == 1)) {
+            /* no duplicite initial slahes */
+            return schemaSpecificUrlPart;   //0 .. relative path, 1 .. absolute path
+        }
+
+        return schemaSpecificUrlPart.substring(index - 1);
     }
 
     private static Scheme determineScheme(String schemeString) {
@@ -385,6 +488,10 @@ public final class HgURL {
 
     public boolean isFile() {
         return scheme == Scheme.FILE;
+    }
+
+    public boolean isKenaiURL() {
+        return HgKenaiSupport.getInstance().isKenai(toUrlStringWithoutUserInfo());
     }
 
     /**

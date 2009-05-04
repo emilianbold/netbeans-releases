@@ -201,7 +201,7 @@ public class OutputDocument implements Document, Element, ChangeListener {
                 int linesOffset = Math.min(charCount, offset);
                 int linesEnd = Math.min(charCount, offset + length);
                 char[] chars = getLines().getText(linesOffset, linesEnd, reusableSubrange);
-                if (offset + length >= charCount) {
+                if (offset + length > charCount) {
                     int inEnd = offset - charCount + length;
                     int inStart = Math.max(0, offset - charCount);
                     // calling Math.min to prevent nasty AOOBE wich seem to come out of nowhere..

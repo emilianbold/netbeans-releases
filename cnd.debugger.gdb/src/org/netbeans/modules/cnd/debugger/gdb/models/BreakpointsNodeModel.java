@@ -85,30 +85,6 @@ public class BreakpointsNodeModel implements NodeModel {
         "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpointHit"; // NOI18N
 
     private Collection<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
-
-    static int log10(int n) {
-        int l = 1;
-        while ((n = n / 10) > 0) {
-            l++;
-        }
-        return l;
-    }
-
-    // We have the same in AbstractVariable
-    private static final String ZEROS = "            "; // NOI18N
-    
-    static String zeros(int n) {
-        if (n < ZEROS.length()) {
-            return ZEROS.substring(0, n);
-        } else {
-            String z = ZEROS;
-            while (z.length() < n) {
-                z += " "; // NOI18N
-            }
-            return z;
-        }
-    }
-
     
     public String getDisplayName(Object o) throws UnknownTypeException {
         if (o instanceof LineBreakpoint) {
@@ -118,9 +94,9 @@ public class BreakpointsNodeModel implements NodeModel {
             Integer maxInt = BreakpointsTreeModelFilter.MAX_LINES.get(b);
             if (maxInt != null) {
                 int max = maxInt.intValue();
-                int num0 = log10(max) - log10(lineNum);
+                int num0 = AbstractVariable.log10(max) - AbstractVariable.log10(lineNum);
                 if (num0 > 0) {
-                    line = zeros(num0) + line;
+                    line = AbstractVariable.zeros(num0) + line;
                 }
             }
             return bold(b, NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Line_Breakpoint", // NOI18N

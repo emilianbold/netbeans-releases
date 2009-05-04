@@ -77,7 +77,7 @@ public class OpenNbProjectNode extends LeafNode {
                 panel = new JPanel(new GridBagLayout());
                 panel.setOpaque(false);
                 btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_OpenNbProject"), getDefaultAction()); //NOI18N
-                panel.add( btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,25,0,0), 0, 0));
+                panel.add( btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,45,0,0), 0, 0));
                 panel.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
             }
             btn.setForeground(foreground, isSelected);
