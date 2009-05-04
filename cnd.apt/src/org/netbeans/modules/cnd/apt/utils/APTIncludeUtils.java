@@ -51,6 +51,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -130,7 +131,9 @@ public class APTIncludeUtils {
             Map<String, String> normalizedPaths = getNormalizedFilesMap();
             String normalized = normalizedPaths.get(path);
             if (normalized == null) {
-                if (path.contains("..") || path.contains("./") || path.contains(".\\")) { // NOI18N
+                // small optimization for true case sensitive OSs
+                boolean caseSensitive = CndUtils.isSystemCaseSensitive();
+                if (!caseSensitive || (path.contains("..") || path.contains("./") || path.contains(".\\"))) { // NOI18N
                     normalized = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
                 } else {
                     normalized = path;
