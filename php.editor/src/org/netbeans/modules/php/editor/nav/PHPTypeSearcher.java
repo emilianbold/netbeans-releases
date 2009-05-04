@@ -319,10 +319,10 @@ public class PHPTypeSearcher implements IndexSearcher {
 
         @Override
         public int hashCode() {
-            int hash = 3;
+            int hash = 7;
+            hash = 19 * hash + (this.element != null ? this.element.hashCode() : 0);
             return hash;
         }
-        
     }
 
     private static Pattern queryToPattern(String query) {
