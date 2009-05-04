@@ -224,43 +224,61 @@ public abstract class NativeUtils {
     public abstract List<File> getFileSystemRoots() throws IOException;
     
     // protected ////////////////////////////////////////////////////////////////////
-    protected void loadNativeLibrary(String path) {
+    protected void loadNativeLibrary(String path) throws NativeException {
         LogManager.logIndent("loading jni library");
         LogManager.log("library resource path: " + path);
-        
-        if (path != null) {
-            InputStream input = null;
-            
-            try {
-                final File file = FileUtils.createTempFile();
-                
-                LogManager.log("library file path: " + file.getAbsolutePath());
-                
-                input = getClass().getClassLoader().getResourceAsStream(path);
-                FileUtils.writeFile(file, input);
-                
-                System.load(file.getAbsolutePath());
-                nativeLibraryLoaded = true;
-                addDeleteOnExitFile(file);
-            } catch (IOException e) {
-                ErrorManager.notifyCritical(
-                        "Cannot load native library from path: " + path, e);
-            } catch (UnsatisfiedLinkError e) {
-                ErrorManager.notifyCritical(
-                        "Cannot load native library from path: " + path, e);
-            } finally {
-                if (input != null) {
+        try {
+            if (path != null) {
+                final File tempDir = SystemUtils.getTempDirectory();
+                if(!tempDir.exists() && !tempDir.mkdirs()) {
+                    throw new NativeException("Cannot create temporary directory " + tempDir.getAbsolutePath());
+                }
+                File file = null;
+                try {
+                    file = FileUtils.createTempFile(tempDir);
+                } catch (IOException e) {
+                    throw new NativeException("Cannot create temporary file for native library at " + tempDir.getAbsolutePath(), e);
+                }
+
+                InputStream input = getClass().getClassLoader().getResourceAsStream(path);
+                if (input == null) {
+                    throw new NativeException("Cannot find native library at resource " + path);//NOI18N
+                }
+                try {
+                    LogManager.log("library file path: " + file.getAbsolutePath());
+                    FileUtils.writeFile(file, input);
+                } catch (IOException e) {
+                    file.delete();
+                    throw new NativeException("Cannot write native library (" + path + ") to temporary file " + file.getAbsolutePath(), e);
+                } finally {
                     try {
                         input.close();
                     } catch (IOException e) {
-                        ErrorManager.notifyDebug("Failed to close the input " +
-                                "stream to the cached jni library", e);
+                        //ignore
+                    }
+                }
+                try {
+                    System.load(file.getAbsolutePath());
+                    LogManager.log("... successfully loaded the library");
+                    nativeLibraryLoaded = true;
+                    addDeleteOnExitFile(file);
+                } catch (UnsatisfiedLinkError e) {
+                    LogManager.log("... failed loading the library", e);
+                    final String message = e.getMessage();
+                    //special handling for #163022
+                    if (message != null && message.contains("failed to map segment from shared object")) {
+                        throw new NativeException("Could not load library from temporary directory which is located on the filesystem mounted with \"noexec\" option:\n" +
+                                tempDir.getAbsolutePath() + 
+                                "\n\nTry to use other temporary directory.", e);
+                    } else {
+                        throw new NativeException("Cannot load native library from path: " + path, e);
                     }
                 }
             }
+        } finally {
+            LogManager.unindent();
         }
-        
-        LogManager.logUnindent("... successfully loaded the library");
+
     }
     
     protected void initializeForbiddenFiles(String ... filepaths) {

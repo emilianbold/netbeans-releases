@@ -135,13 +135,12 @@ public class ExportDiffAction extends ContextAction {
         }
         
         boolean noop;
-        File [] files = null;
+        Context context = getContext(nodes);
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
         } else {
-            Context context = getContext(nodes);
-            files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+            File [] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
             noop = files.length == 0;
         }
         if (noop) {
@@ -150,7 +149,7 @@ public class ExportDiffAction extends ContextAction {
             return;
         }
 
-        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(files, SvnModuleConfig.getDefault().getPreferences()) {
+        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(context.getRootFiles(), SvnModuleConfig.getDefault().getPreferences()) {
             @Override
             public void writeDiffFile(final File toFile) {
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor();

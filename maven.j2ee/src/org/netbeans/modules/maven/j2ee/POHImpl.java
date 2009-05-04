@@ -67,6 +67,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.j2ee.web.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Profile;
@@ -74,6 +75,7 @@ import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -225,6 +227,14 @@ public class POHImpl extends ProjectOpenedHook {
         if (lastJ2eeProvider != null) {
             Deployment.getDefault().disableCompileOnSaveSupport(lastJ2eeProvider);
             lastJ2eeProvider = null;
+        }
+       CopyOnSave copyOnSave = project.getLookup().lookup(CopyOnSave.class);
+        if (copyOnSave != null) {
+            try {
+                copyOnSave.cleanup();
+            } catch (FileStateInvalidException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 

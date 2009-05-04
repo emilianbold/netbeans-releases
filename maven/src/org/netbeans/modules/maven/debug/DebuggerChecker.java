@@ -130,7 +130,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
         boolean mavenDebug = "maven".equalsIgnoreCase(config.getProperties().getProperty(Constants.ACTION_PROPERTY_JPDALISTEN)); //NOI18N
         if (debug || mavenDebug) {
             if (mavenDebug && !config.getProperties().contains("Env.MAVEN_OPTS")) { //NOI18N
-                config.setProperty("Env.MAVEN_OPTS", "-Xdebug -Djava.compiler=none -Xnoagent -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}"); //NOI18N
+                config.setProperty("Env.MAVEN_OPTS", "-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}"); //NOI18N
             }
             try {
                 JPDAStart start = new JPDAStart(context.getInputOutput());

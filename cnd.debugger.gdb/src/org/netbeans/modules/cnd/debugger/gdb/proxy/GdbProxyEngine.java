@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.debugger.gdb.proxy;
 
 
 // Imported classes for ShellCommand() class
-import java.io.File;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -52,15 +51,15 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
-import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 import org.netbeans.modules.cnd.api.utils.Path;
-import org.netbeans.modules.cnd.debugger.gdb.EnvUtils;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -90,7 +89,6 @@ public class GdbProxyEngine {
     private int nextToken = MIN_TOKEN;
     private int currentToken = MIN_TOKEN;
     private boolean active;
-    private InteractiveCommandProvider provider = null;
     private RequestProcessor.Task gdbReader = null;
 
     // This queue was created due to the issue 156138
@@ -131,29 +129,24 @@ public class GdbProxyEngine {
         getLogger().logMessage("NB version: " + System.getProperty("netbeans.buildnumber")); // NOI18N
         getLogger().logMessage("================================================"); // NOI18N
         
-        if (debugger.getHostExecutionEnvironment().isLocal()) {
-            localDebugger(debuggerCommand, debuggerEnvironment, workingDirectory, cspath);
-        } else {
-            remoteDebugger(debugger, debuggerCommand, debuggerEnvironment, workingDirectory, cspath);
-        }
+        startDebugger(debuggerCommand, workingDirectory, cspath);
     }
     
-    private void localDebugger(List<String> debuggerCommand, String[] debuggerEnvironment, String workingDirectory, String cspath) throws IOException {
-        ProcessBuilder pb = new ProcessBuilder(debuggerCommand);
-        Map<String, String> env = pb.environment();
+    private void startDebugger(List<String> debuggerCommand, String workingDirectory, String cspath) throws IOException {
+        ExecutionEnvironment execEnv = debugger.getHostExecutionEnvironment();
+        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, debuggerCommand.get(0));
+        String[] args = debuggerCommand.subList(1, debuggerCommand.size()).toArray(new String[debuggerCommand.size()-1]);
+        npb = npb.setArguments(args);
 
-        // see IZ 158224, we set environment inside gdb
-        //appendEnv(env, debuggerEnvironment);
-        
-        String pathname = Path.getPathName();
-        //appendPath(env, pathname, Path.getPathAsString());
-        EnvUtils.appendPath(env, pathname, cspath);
-        
-        pb.directory(new File(workingDirectory));
-        pb.redirectErrorStream(true);
-        
-        final Process proc = pb.start(); // Let IOException be handled in GdbdebuggerImpl.startDebugging()...
+        if (execEnv.isLocal()) {
+            String pathname = Path.getPathName();
+            npb = npb.addEnvironmentVariable(pathname, cspath);
+            npb = npb.setWorkingDirectory(workingDirectory);
+        }
+
+        final NativeProcess proc = npb.call();
         toGdb = gdbReader(proc.getInputStream(), proc.getOutputStream());
+
         new RequestProcessor("GdbReaperThread").post(new Runnable() { // NOI18N
             public void run() {
                 try {
@@ -189,27 +182,6 @@ public class GdbProxyEngine {
         debugger.finish(false);
     }
     
-    private void remoteDebugger(GdbDebugger debugger, List<String> debuggerCommand, String[] debuggerEnvironment, String workingDirectory, String cspath) {
-        StringBuilder sb = new StringBuilder();
-        
-        for (String arg : debuggerCommand) {
-            sb.append(arg);
-            sb.append(' ');
-        }
-
-        // see IZ 158224, we set environment inside gdb
-        //Map<String, String> env = new HashMap<String, String>(debuggerEnvironment.length);
-        //appendEnv(env, debuggerEnvironment);
-        
-        provider = InteractiveCommandProviderFactory.create(debugger.getHostExecutionEnvironment());
-        if (provider != null && provider.run(debugger.getHostExecutionEnvironment(), sb.toString(), null)) {
-            try {
-                toGdb = gdbReader(provider.getInputStream(), provider.getOutputStream());
-            } catch (IOException ioe) {
-           }
-        }
-    }
-    
     private PrintStream gdbReader(InputStream is, OutputStream os) {
         final BufferedReader fromGdb = new BufferedReader(new InputStreamReader(is));
         PrintStream togdb = new PrintStream(os, true);
@@ -226,11 +198,7 @@ public class GdbProxyEngine {
                         }
                     }
                 } catch (IOException ioe) {
-                } finally {
-                    if (provider != null) {
-//                        provider.disconnect();
-                        provider = null;
-                    }
+                    log.log(Level.WARNING, "Exception in gdbReader", ioe); // NOI18N
                 }
             }
         });
@@ -238,9 +206,6 @@ public class GdbProxyEngine {
     }
     
     public void finish() {
-        if (provider != null) {
-            provider.disconnect();
-        }
         if (gdbReader != null) {
             gdbReader.cancel();
         }

@@ -43,6 +43,7 @@ import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
@@ -70,11 +71,13 @@ public class CreateChatAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        final JButton source = (JButton) e.getSource();
         final TopComponent mainWindow = WindowManager.getDefault().findTopComponent("KenaiTopComponent");
         mainWindow.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         final ProgressHandle progress = ProgressHandleFactory.createSystemHandle(NbBundle.getMessage(CreateChatAction.class, "LBL_CheckPermissions"));
         progress.setInitialDelay(0);
         progress.start();
+        source.setEnabled(false);
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
@@ -86,6 +89,7 @@ public class CreateChatAction extends AbstractAction {
                                 JOptionPane.showMessageDialog(null, NbBundle.getMessage(CreateChatAction.class, "CTL_NotAuthorizedToCreateChat"));
                                 progress.finish();
                                 mainWindow.setCursor(Cursor.getDefaultCursor());
+                                source.setEnabled(true);
                             }
                         });
                         return;
@@ -125,15 +129,20 @@ public class CreateChatAction extends AbstractAction {
                                         SwingUtilities.invokeLater(new Runnable() {
 
                                             public void run() {
-                                                ChatTopComponent.findInstance().addChat(new ChatPanel(KenaiConnection.getDefault().createChat(f)));
+                                                final ChatTopComponent chatTc = ChatTopComponent.findInstance();
+                                                chatTc.open();
+                                                chatTc.addChat(new ChatPanel(KenaiConnection.getDefault().createChat(f)));
                                                 mainWindow.setCursor(Cursor.getDefaultCursor());
                                                 progress.finish();
+                                                source.setEnabled(true);
+                                                chatTc.requestActive();
                                             }
                                         });
                                     } catch (KenaiException kenaiException) {
                                         Exceptions.printStackTrace(kenaiException);
                                         mainWindow.setCursor(Cursor.getDefaultCursor());
                                         progress.finish();
+                                        source.setEnabled(true);
                                     }
                                 }
                             });
@@ -141,6 +150,7 @@ public class CreateChatAction extends AbstractAction {
                         } else {
                             mainWindow.setCursor(Cursor.getDefaultCursor());
                             progress.finish();
+                            source.setEnabled(true);
                         }
                     }
                 });

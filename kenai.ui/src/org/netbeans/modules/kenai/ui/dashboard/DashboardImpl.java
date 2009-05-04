@@ -501,11 +501,15 @@ public final class DashboardImpl extends Dashboard {
 
     private void storeAllProjects() {
         Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS); //NOI18N
-        prefs.putInt(PREF_COUNT, allProjects.size()); //NOI18N
         int index = 0;
         for( ProjectHandle project : allProjects ) {
-            prefs.put(PREF_ID+index++, project.getId()); //NOI18N
+            //do not store private projects
+            if (!project.isPrivate()) {
+                prefs.put(PREF_ID+index++, project.getId()); //NOI18N
+            }
         }
+        //store size
+        prefs.putInt(PREF_COUNT, index); //NOI18N
     }
 
     private void setOtherProjects(ArrayList<ProjectHandle> projects) {

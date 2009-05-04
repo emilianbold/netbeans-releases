@@ -52,6 +52,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
@@ -125,6 +126,7 @@ public class SunStudioDataCollector
     private String sproHome;
     private DLightTarget target;
     private boolean isAttachable;
+    private HostInfo hostInfo = null;
 
 
     static {
@@ -239,22 +241,23 @@ public class SunStudioDataCollector
             this.target = target;
 
             ExecutionEnvironment execEnv = target.getExecEnv();
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-
-            switch (hostInfo.getOSFamily()) {
-                case LINUX:
-                case SUNOS:
-                    break;
-                default:
-                    validationStatus = ValidationStatus.invalidStatus(
-                            "SunStudioDataCollector works on SunOS or Linux only."); // NOI18N
-                    return validationStatus;
-            }
 
             String command = null;
             String sprohome = null;
-
             try {
+                hostInfo = HostInfoUtils.getHostInfo(execEnv);
+
+                switch (hostInfo.getOSFamily()) {
+                    case LINUX:
+                    case SUNOS:
+                        break;
+                    default:
+                        validationStatus = ValidationStatus.invalidStatus(
+                                loc("ValidationStatus.UnsupportedPlatform")); // NOI18N
+                        return validationStatus;
+                }
+
+
                 Collection<? extends SunStudioLocatorFactory> factories =
                         Lookup.getDefault().lookupAll(SunStudioLocatorFactory.class);
 
@@ -279,7 +282,8 @@ public class SunStudioDataCollector
                 }
 
                 if (notFound) {
-                    validationStatus = ValidationStatus.invalidStatus("No SunStudio Found, use link http://developers.sun.com/sunstudio/ to download latest SunStudio"); //NOI18N
+                    validationStatus = ValidationStatus.invalidStatus(
+                            loc("ValidationStatus.NoSunStudioFound.html")); //NOI18N
                     return validationStatus;
                 }
 
@@ -348,7 +352,7 @@ public class SunStudioDataCollector
             DLightLogger.assertTrue(this.target == target,
                     "Validation was performed against another target"); // NOI18N
 
-            String tmpDirBase = HostInfoUtils.getHostInfo(target.getExecEnv()).getTempDir();
+            String tmpDirBase = hostInfo.getTempDir();
             this.experimentDir = tmpDirBase + "/experiment_" + uid.incrementAndGet() + ".er"; // NOI18N
             this.storage = (PerfanDataStorage) dataStorage;
 
@@ -385,22 +389,16 @@ public class SunStudioDataCollector
 
             List<String> args = new ArrayList<String>();
 
-            // From collect(1):
-            // ...
-            // -l signal
-            //    Record a sample point  whenever  the  given  signal  is
-            //    delivered to the process.
-            // ..
-            // Add this arguments to allow indicator provider based on
-            // mmonitor to coexist with collect
-
-            args.add("-l"); // NOI18N
-            args.add("USR1"); // NOI18N
+            // Disregard collect's output...
+            if (!log.isLoggable(Level.FINEST)) {
+                args.add("-O"); // NOI18N
+                args.add("/dev/null"); // NOI18N
+            }
 
             if (collectedInfo.contains(CollectedInfo.SYNCHRONIZATION) ||
                     collectedInfo.contains(CollectedInfo.SYNCSUMMARY)) {
                 args.add("-s"); // NOI18N
-                args.add("30"); // NOI18N
+                args.add("1000"); // NOI18N
             }
 
             if (collectedInfo.contains(CollectedInfo.MEMORY) ||

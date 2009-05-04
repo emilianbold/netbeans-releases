@@ -116,7 +116,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             return;
         }
 
-        hkey = ((MakeConfiguration) activeConfiguration).getDevelopmentHost().getName();
+        hkey = ((MakeConfiguration) activeConfiguration).getDevelopmentHost().getHostKey();
         //if we have sun studio compiler along compiler collections presentedCompiler
         CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
         List<CompilerSet> compilers = compilerSetManager.getCompilerSets();
@@ -158,7 +158,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     private boolean setForLinux() {
         areCollectorsTurnedOn = false;
         String platform = ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName();
-        if (platform.indexOf("Linux") != -1) {//NOI18N
+        if (platform.indexOf("Linux") != -1 || platform.indexOf("MacOS") != -1 || platform.indexOf("Windows") != -1) {//NOI18N
             DLightCollectorString = SUNSTUDIO;
             DLightIndicatorDPStrings = Arrays.asList(PROC_READER, LL_MONITOR);
             return true;

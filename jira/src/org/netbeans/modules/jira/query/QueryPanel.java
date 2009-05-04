@@ -50,7 +50,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -64,7 +63,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.query.QueryParameter.ParameterValueCellRenderer;
 import org.openide.util.ImageUtilities;
 

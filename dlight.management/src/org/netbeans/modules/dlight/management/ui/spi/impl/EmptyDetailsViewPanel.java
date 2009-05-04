@@ -92,7 +92,7 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         repairPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         repairPanel.setLayout(new BoxLayout(repairPanel, BoxLayout.Y_AXIS));
         for (final DataCollector c : collectors) {
-            if (c.getValidationStatus() == ValidationStatus.initialStatus()){
+            if (c.getValidationStatus() == ValidationStatus.initialStatus()) {
                 c.addValidationListener(this);
                 //validate one more time
                 states.put(c, c.getValidationStatus());
@@ -106,7 +106,7 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
                 panelsList.add(p);
                 panels.put(c, panelsList.indexOf(p));
                 repair(c);
-            }else  if (!c.getValidationStatus().isKnown()) {
+            } else if (!c.getValidationStatus().isKnown()) {
                 c.addValidationListener(this);
                 //validate one more time
                 states.put(c, c.getValidationStatus());
@@ -138,7 +138,12 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
                 if (!status.isKnown()) {
                     p.add(new JLabel(status.getReason()));
                 } else if (status.isValid()) {
-                    p.add(new JLabel(NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun")));//NOI18N
+                    String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");
+                    if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
+                        message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");
+                    }
+                    p.add(new JLabel(message));//NOI18N
+
                 } else if (status.isInvalid()) {
                     p.add(new JLabel(status.getReason()));
 
@@ -155,13 +160,12 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         repairPanel.setAlignmentX(CENTER_ALIGNMENT);
         repairPanel.setAlignmentY(CENTER_ALIGNMENT);
         this.add(repairPanel);
-        if (!toRepairList.isEmpty()){
-            for (DataCollector c : toRepairList){
+        if (!toRepairList.isEmpty()) {
+            for (DataCollector c : toRepairList) {
                 repair(c);
             }
         }
     }
-
 
     private void repair(final DataCollector<?> c) {
         final ValidateableSupport<DLightTarget> support = new ValidateableSupport<DLightTarget>(c);
@@ -193,7 +197,11 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
             return;
         }
         if (status.isValid()) {
-            p.add(new JLabel(NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun")));//NOI18N
+            String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");
+            if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
+                message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");
+            }
+            p.add(new JLabel(message));//NOI18N
             repaint();
             return;
         }
@@ -215,7 +223,11 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
             if (!status.isKnown()) {
                 p.add(new JLabel(status.getReason()));
             } else if (status.isValid()) {
-                p.add(new JLabel(NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun")));//NOI18N
+                String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");
+                if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
+                    message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");
+                }
+                p.add(new JLabel(message));//NOI18N
             } else if (status.isInvalid()) {
                 p.add(new JLabel(status.getReason()));
             }

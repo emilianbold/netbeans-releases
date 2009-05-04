@@ -43,15 +43,19 @@ package org.netbeans.modules.mercurial.util;
 
 import java.awt.EventQueue;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import javax.swing.JOptionPane;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.net.PasswordAuthentication;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -91,7 +95,14 @@ import org.openide.util.Utilities;
 public class HgCommand {
     public static final String HG_COMMAND = "hg";  // NOI18N
     public static final String HG_WINDOWS_EXE = ".exe";  // NOI18N
+    public static final String HG_WINDOWS_BAT = ".bat";  // NOI18N
     public static final String HG_WINDOWS_CMD = ".cmd";  // NOI18N
+    public static final String[] HG_WINDOWS_EXECUTABLES = new String[] {
+            HG_COMMAND + HG_WINDOWS_EXE,
+            HG_COMMAND + HG_WINDOWS_BAT,
+            HG_COMMAND + HG_WINDOWS_CMD,
+    };
+    public static final String HG_COMMAND_PLACEHOLDER = new String(HG_COMMAND);
     public static final String HGK_COMMAND = "hgk";  // NOI18N
 
     private static final String HG_STATUS_CMD = "status";  // NOI18N // need -A to see ignored files, specified in .hgignore, see man hgignore for details
@@ -1639,7 +1650,7 @@ public class HgCommand {
         // acquire credentials for kenai
         PasswordAuthentication credentials = null;
         HgKenaiSupport supp = HgKenaiSupport.getInstance();
-        String rawUrl = repository.toUrlString(true, true);
+        String rawUrl = repository.toUrlStringWithoutUserInfo();
         if (supp.isKenai(rawUrl) && supp.isLoggedIntoKenai()) {
             credentials = supp.getPasswordAuthentication(rawUrl, false);
         }
@@ -2788,6 +2799,7 @@ public class HgCommand {
         List<String> list = new ArrayList<String>();
         BufferedReader input = null;
         Process proc = null;
+        File outputStyleFile = null;
         try{
             if (command.size() > 10)  {
                 List<String> smallCommand = new ArrayList<String>();
@@ -2800,16 +2812,21 @@ public class HgCommand {
             } else {
                 Mercurial.LOG.log(Level.FINE, "execEnv(): " + command); // NOI18N
             }
+            try {
+                outputStyleFile = createOutputStyleFile(command);
+            } catch (IOException ex) {
+                Mercurial.LOG.log(Level.WARNING, "Failed to create temporary file defining Hg output style."); //NOI18N
+                //ignore - outputStyleFile will remain <null>
+            }
+            List<String> commandLine = toCommandList(command, outputStyleFile);
+            ProcessBuilder pb = new ProcessBuilder(commandLine);
             if(env != null && env.size() > 0){
-                ProcessBuilder pb = new ProcessBuilder(toCommandList(command));
                 Map<String, String> envOrig = pb.environment();
                 for(String s: env){
                     envOrig.put(s.substring(0,s.indexOf('=')), s.substring(s.indexOf('=')+1));
                 }
-                proc = pb.start();
-            }else{
-                proc = new ProcessBuilder(toCommandList(command)).start();
             }
+            proc = pb.start();
 
             input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 
@@ -2878,41 +2895,84 @@ public class HgCommand {
                 }
                 input = null;
             }
+            if (outputStyleFile != null) {
+                outputStyleFile.delete();
+            }
         }
         return list;
     }
 
-    private static List<String> toCommandList(List<? extends Object> cmdLine) {
-        if (cmdLine.isEmpty()) {
-            return (List<String>) cmdLine;
-        }
+    private static File createOutputStyleFile(List<? extends Object> cmdLine) throws IOException {
+        File result = null;
 
-        /*
-         * check for the simple case - what if there are just Strings and nulls?
-         */
-        List<String> result = null;
         for (Object obj : cmdLine) {
             if (obj == null) {
                 assert false;
                 continue;
             }
-            if (obj.getClass() != String.class) {
-                result = new ArrayList<String>(cmdLine.size());
-                break;
+
+            if (obj.getClass() == String.class) {
+                String str = (String) obj;
+                if (str.startsWith("--template=")) {                    //NOI18N
+                    if (result != null) {
+                        assert false : "implementation not ready for multiple templates on one command line"; //NOI18N
+                        continue;
+                    }
+
+                    String template = str.substring("--template=".length()); //NOI18N
+
+                    File tempFile = File.createTempFile(
+                                                "hg-output-style",      //NOI18N
+                                                null);    //extension (default)
+                    Writer writer = new OutputStreamWriter(
+                                                new FileOutputStream(tempFile),
+                                                "ISO-8859-1");          //NOI18N
+                    try {
+                        writer.append("changeset = ")                   //NOI18N
+                              .append('"').append(template).append('"');
+                    } finally {
+                        if (writer != null) {
+                            try {
+                                writer.close();
+                            } catch (IOException ex) {
+                                //ignore
+                            }
+                        }
+                    }
+
+                    /*
+                     * only store the reference to the file to variable 'result'
+                     * if the file's content was successfully written:
+                     */
+                    result = tempFile;
+                }
             }
         }
-        if (result == null) {
-            return (List<String>) cmdLine; //there were just Strings in the list
+        return result;
+    }
+
+    private static List<String> toCommandList(List<? extends Object> cmdLine, File styleFile) {
+        if (cmdLine.isEmpty()) {
+            return (List<String>) cmdLine;
         }
 
+        List<String> result = new ArrayList<String>(cmdLine.size() + 2);
         boolean first = true;
         for (Object obj : cmdLine) {
             if (obj == null) {
                 assert false;
                 continue;
             }
-            if (obj.getClass() == String.class) {
-                result.add((String) obj);
+            if (obj == HG_COMMAND_PLACEHOLDER) {
+                result.addAll(makeHgLauncherCommandLine());
+            } else if (obj.getClass() == String.class) {
+                String str = (String) obj;
+                if (str.startsWith("--template=") && (styleFile != null)) { //NOI18N
+                    result.add("--style");                              //NOI18N
+                    result.add(styleFile.getAbsolutePath());
+                } else {
+                    result.add(str);
+                }
             } else if (obj instanceof HgURL) {
                 if (first) {
                     assert false;
@@ -2953,21 +3013,51 @@ public class HgCommand {
     }
 
     private static String getHgCommand() {
+        return HG_COMMAND_PLACEHOLDER;
+    }
+
+    private static List<String> makeHgLauncherCommandLine() {
         String defaultPath = HgModuleConfig.getDefault().getExecutableBinaryPath();
+
         if (defaultPath == null || defaultPath.length() == 0) {
-            return HG_COMMAND;
+            return Collections.singletonList(HG_COMMAND);
+        }
+
+        File f = new File(defaultPath);
+        File launcherFile;
+        if(f.isFile()) {
+            launcherFile = f;
         } else {
-            File f = new File(defaultPath);
-            if(f.isFile()) {
-                return f.getAbsolutePath();
-            } else {
-                if(Utilities.isWindows()){
-                    return defaultPath + File.separatorChar + HG_COMMAND + HG_WINDOWS_EXE;
-                } else {
-                    return defaultPath + File.separatorChar + HG_COMMAND;
+            if(Utilities.isWindows()){
+                launcherFile = null;
+                for (String hgExecutable : HG_WINDOWS_EXECUTABLES) {
+                    File executableFile = new File(f, hgExecutable);
+                    if (executableFile.isFile()) {
+                        launcherFile = executableFile;
+                        break;
+                    }
                 }
+                if (launcherFile == null) {
+                    launcherFile = new File(f, HG_COMMAND + HG_WINDOWS_EXE);
+                }
+            } else {
+                launcherFile = new File(f, HG_COMMAND);
             }
         }
+        String launcherPath = launcherFile.getAbsolutePath();
+
+        List<String> result;
+        if (Utilities.isWindows() && !launcherPath.endsWith(HG_WINDOWS_EXE)) {
+            /* handle .bat and .cmd files: */
+            result = new ArrayList<String>(3);
+            result.add("cmd.exe");                                      //NOI18N
+            result.add("/C");                                           //NOI18N
+            result.add(launcherPath);
+            return result;
+        } else {
+            result = Collections.singletonList(launcherPath);
+        }
+        return result;
     }
 
     private static void handleError(List<? extends Object> command, List<String> cmdOutput, String message, OutputLogger logger) throws HgException{
@@ -3373,7 +3463,7 @@ public class HgCommand {
             boolean showLoginWindow = true;
             credentials = null;
             HgKenaiSupport supp = HgKenaiSupport.getInstance();
-            String rawUrl = remoteUrl.toUrlString(true, true);
+            String rawUrl = remoteUrl.toUrlStringWithoutUserInfo();
             acquireCredentialsFirst |= supp.isLoggedIntoKenai();
             if (supp.isKenai(rawUrl) && acquireCredentialsFirst) {
                 // will force user to login into kenai, if he isn't yet

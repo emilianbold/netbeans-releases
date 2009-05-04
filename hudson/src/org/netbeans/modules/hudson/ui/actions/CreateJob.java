@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
@@ -59,6 +61,7 @@ import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
+import org.netbeans.modules.hudson.ui.nodes.HudsonRootNode;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -79,7 +82,7 @@ public class CreateJob extends AbstractAction {
 
     public CreateJob() {
         super(NbBundle.getMessage(CreateJob.class, "CTL_CreateJob"));
-        Collection<HudsonInstance> instances = HudsonManagerImpl.getDefault().getInstances();
+        Collection<? extends HudsonInstance> instances = HudsonManagerImpl.getDefault().getInstances();
         this.instance = instances.isEmpty() ? null : instances.iterator().next();
     }
 
@@ -132,9 +135,10 @@ public class CreateJob extends AbstractAction {
             ProjectHudsonProvider.getDefault().recordAssociation(project,
                     new ProjectHudsonProvider.Association(instance.getUrl(), name));
             OpenProjects.getDefault().open(new Project[] {project}, false);
+            HudsonRootNode.select(instance.getUrl(), name);
         } catch (IOException x) {
-            // XXX too harsh, should report at a low level and show message (unless this already has a localized message)
-            Exceptions.printStackTrace(x);
+            Exceptions.attachLocalizedMessage(x, NbBundle.getMessage(CreateJob.class, "CreateJob.failure"));
+            Logger.getLogger(CreateJob.class.getName()).log(Level.WARNING, null, x);
         }
     }
 

@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
+* Copyright ï¿½ 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 *
 -->
@@ -15,8 +15,7 @@
 <h2>Breakpoint Dialog Box: Line</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>You use this dialog box to set the properties of a line breakpoint.</p>
-<p>You can set line breakpoint properties when modifying an
-existing line breakpoint.</p>
+<p>You can set line breakpoint properties when modifying an existing line breakpoint.</p>
 <p><b>To set line breakpoint properties:</b></p>
 <ol>
     <li>Set a new line breakpoint by right-clicking in the margin to the left of the line 
@@ -28,9 +27,14 @@ existing line breakpoint.</p>
 <ul>
 	<li><b>Settings.</b>
             <ul>
-                <li><b>File.</b> Specifies the name of the source file that contains the breakpoint</li>
-                <li><b>Line Number.</b> Shows the line number on which the breakpoint is set.</li>
-        </ul></li>
+                <li><strong>File.</strong> Specifies the name of the source file that contains the breakpoint</li>
+                <li><strong>Line Number.</strong> Shows the line number on which the breakpoint is set.</li>
+                <li><strong>Resolved URL.</strong> (read-only)  When running the JavaScript debugger,
+                the Resolved URL field indicates the location of the file as seen by the browser.
+                The line number on which the breakpoint occurs is automatically appended to the URL (e.g.,
+                <tt>http://localhost:8080/MyWebApp/javascript.js*:18*</tt>).</li>
+            </ul>
+        </li>
         <li><b>Conditions</b>
             <ul>
             <li><b>Condition.</b> A Boolean expression that triggers the breakpoint when the expression evaluates to True. For information on the syntax rules for setting a condition, see <a href="../debug_syntaxrules_breakpointconditions.html">Syntax Rules for Setting a Condition on a Breakpoint</a>.</li>

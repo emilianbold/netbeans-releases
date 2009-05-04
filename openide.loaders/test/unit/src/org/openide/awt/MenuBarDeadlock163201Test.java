@@ -50,7 +50,6 @@ import javax.swing.AbstractAction;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
@@ -67,6 +66,7 @@ import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -118,7 +118,6 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Jaroslav Tulach
  */
-@RandomlyFails // Temporary solution
 public class MenuBarDeadlock163201Test extends NbTestCase {
     private DataFolder df;
     private MenuBar mb;
@@ -178,8 +177,12 @@ public class MenuBarDeadlock163201Test extends NbTestCase {
                     mb2.waitFinished();
                     assertEquals("One menu", 1, mb2.getMenuCount());
                     // MenuBar.LazyMenu
-                    ChangeListener l = (ChangeListener) mb2.getMenu(0);
-                    l.stateChanged(new ChangeEvent(this));
+                    if (Utilities.isMac()) {
+                        ChangeListener l = (ChangeListener) mb2.getMenu(0);
+                        l.stateChanged(new ChangeEvent(this));
+                    } else {
+                        mb2.getMenu(0).setPopupMenuVisible(true);
+                    }
                     assertEquals("One action", 1, mb2.getMenu(0).getMenuComponentCount());
                 } catch (Throwable ex) {
                     this.t = ex;

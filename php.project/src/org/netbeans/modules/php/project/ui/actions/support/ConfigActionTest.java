@@ -127,9 +127,8 @@ class ConfigActionTest extends ConfigAction {
         }
         PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
         if (phpUnit == null || !phpUnit.supportedVersionFound()) {
-            int[] version = phpUnit.getVersion();
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(version)),
+                    NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit)),
                     NotifyDescriptor.WARNING_MESSAGE));
             return;
         }
@@ -407,7 +406,7 @@ class ConfigActionTest extends ConfigAction {
                     defaultProcessor.reset();
                 }
                 public void close() throws IOException {
-                    String msg = NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit.getVersion()));
+                    String msg = NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit));
                     char[] separator = new char[msg.length()];
                     Arrays.fill(separator, '='); // NOI18N
                     defaultProcessor.processInput("\n".toCharArray()); // NOI18N

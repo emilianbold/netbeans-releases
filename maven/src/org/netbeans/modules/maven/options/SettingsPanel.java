@@ -650,8 +650,6 @@ public class SettingsPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     public void setValues() {
-        changed = false;
-
         txtOptions.setText(MavenSettings.getDefault().getDefaultOptions());
         txtCommandLine.getDocument().removeDocumentListener(docList);
         File command = MavenSettings.getDefault().getCommandLinePath();
@@ -667,6 +665,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         comJavadoc.setSelectedItem(MavenSettings.getDefault().getJavadocDownloadStrategy());
         comSource.setSelectedItem(MavenSettings.getDefault().getSourceDownloadStrategy());
         cbSkipTests.setSelected(MavenSettings.getDefault().isSkipTests());
+
+        changed = false;  //#163955 - do not fire change events on load
     }
     
     public void applyValues() {

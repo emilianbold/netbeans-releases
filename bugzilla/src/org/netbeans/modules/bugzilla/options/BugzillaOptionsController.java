@@ -60,13 +60,15 @@ public final class BugzillaOptionsController extends OptionsPanelController impl
 
     public BugzillaOptionsController() {
         panel = new BugzillaOptionsPanel();
-        panel.issuesTextField.getDocument().addDocumentListener(this);
-        panel.queriesTextField.getDocument().addDocumentListener(this);
     }
     
     public void update() {
+        panel.issuesTextField.getDocument().removeDocumentListener(this); // #163955 - do not fire change events on load
+        panel.queriesTextField.getDocument().removeDocumentListener(this);
         panel.issuesTextField.setText(BugzillaConfig.getInstance().getIssueRefreshInterval() + "");  // NOI18N
         panel.queriesTextField.setText(BugzillaConfig.getInstance().getQueryRefreshInterval() + ""); // NOI18N
+        panel.issuesTextField.getDocument().addDocumentListener(this);
+        panel.queriesTextField.getDocument().addDocumentListener(this);
     }
     
     public void applyChanges() {

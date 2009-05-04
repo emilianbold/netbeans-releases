@@ -175,7 +175,7 @@ public class SvnClientExceptionHandler {
     }
        
     public boolean handleKenaiAuthorisation(SvnKenaiSupport support, String url) {
-        PasswordAuthentication pa = support.getPasswordAuthentication(url, true);
+        PasswordAuthentication pa = support.getPasswordAuthentication(true);
         if(pa == null) {
             return false;
         }

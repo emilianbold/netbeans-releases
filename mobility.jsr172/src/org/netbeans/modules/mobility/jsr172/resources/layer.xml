@@ -46,10 +46,10 @@ made subject to such option by the copyright holder.
             <file name="Jsr172Application.wsclient" url="templates/MIDP/Jsr172Application_wsclient.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.jsr172.wizard.Bundle"/>
                 <!-- icon does not seem to be present
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/mobility/jsr172/resources/e2eclienticon.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/mobility/jsr172/resources/e2eclienticon.gif"/>
                 -->
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.jsr172.wizard.WebServiceClientWizardIterator.singleton"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:org/netbeans/modules/mobility/jsr172/resources/descriptions/MIDP/JSR172_wsclient.html"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/jsr172/resources/descriptions/MIDP/JSR172_wsclient.html"/>
                 <attr name="position" intvalue="900"/>
                 <attr boolvalue="true" name="template"/>
                 <attr name="MIDP" boolvalue="true"/>

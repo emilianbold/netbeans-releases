@@ -88,9 +88,10 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     static private String PRELUDE_INSTANCES_PATH = "/GlassFish/Instances"; // NOI18N
 
     public static GlassfishInstanceProvider getEe6() {
+        FileObject fo = FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features");
         String v3Root = System.getProperty(EE6_INSTALL_ROOT_PROP);
-        if ("true".equals(System.getProperty(PRELUDE_PROP_ROOT + ENABLE_EXPERIMENTAL_SUFFIX)) || // NOI18N
-               (null != v3Root && v3Root.trim().length() > 0) ) {
+        if ("true".equals(System.getProperty(PRELUDE_PROP_ROOT + ENABLE_EXPERIMENTAL_SUFFIX)) || 
+               (null != v3Root && v3Root.trim().length() > 0) || null != fo) {
             if (ee6Provider == null) {
                 ee6Provider = new GlassfishInstanceProvider(new String[] {EE6_DEPLOYER_FRAGMENT},
                         new String[] {EE6_INSTANCES_PATH},
@@ -145,7 +146,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         return preludeProvider;
     }
     
-    private final Map<String, GlassfishInstance> instanceMap = 
+    private final Map<String, GlassfishInstance> instanceMap =
             Collections.synchronizedMap(new HashMap<String, GlassfishInstance>());
     private final ChangeSupport support = new ChangeSupport(this);
 
@@ -180,7 +181,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         this.requiredFiles = requiredFiles;
         this.excludedFiles = excludedFiles;
         this.needsJdk6 = needsJdk6;
-        init();
+        //init();
     }
 
     public static synchronized boolean initialized() {
@@ -304,11 +305,13 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
     
     public ServerInstanceImplementation getInternalInstance(String uri) {
+        init();
         return instanceMap.get(uri);
     }
 
     public <T> T getInstanceByCapability(String uri, Class <T> serverFacadeClass) {
         T result = null;
+        init();
         GlassfishInstance instance = instanceMap.get(uri);
         if(instance != null) {
             result = instance.getLookup().lookup(serverFacadeClass);
@@ -318,6 +321,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     
     public <T> List<T> getInstancesByCapability(Class<T> serverFacadeClass) {
         List<T> result = new ArrayList<T>();
+        init();
         synchronized (instanceMap) {
             for (GlassfishInstance instance : instanceMap.values()) {
                 T serverFacade = instance.getLookup().lookup(serverFacadeClass);
@@ -335,6 +339,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     public List<ServerInstance> getInstances() {
 //        return new ArrayList<ServerInstance>(instanceMap.values());
         List<ServerInstance> result = new  ArrayList<ServerInstance>();
+        init();
         synchronized (instanceMap) {
             for (GlassfishInstance instance : instanceMap.values()) {
                 result.add(instance.getCommonInstance());
@@ -358,6 +363,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     
     public ServerInstance getInstance(String uri) {
 //        return instanceMap.get(uri);
+        init();
         GlassfishInstance instance = instanceMap.get(uri);
         return instance == null ? null : instance.getCommonInstance();
     }
@@ -375,6 +381,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     // shutdown any instances we started during this IDE session.
     // ------------------------------------------------------------------------
     Collection<GlassfishInstance> getInternalInstances() {
+        init();
         return instanceMap.values();
     }
 
@@ -383,21 +390,26 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
 
     private void init() {
-        try {
-            registerDefaultInstance();
-            loadServerInstances();
-        } catch(RuntimeException ex) {
-            getLogger().log(Level.INFO, null, ex);
-        }
-        RegisteredDDCatalog catalog = getDDCatalog();
-        if (null != catalog) {
-            if (this.equals(preludeProvider)) {
-                catalog.registerPreludeRunTimeDDCatalog(this);
-            } else {
-                catalog.registerEE6RunTimeDDCatalog(this);
+        synchronized (instanceMap) {
+            if (instanceMap.isEmpty()) {
+                try {
+                    registerDefaultInstance();
+                    loadServerInstances();
+                } catch (RuntimeException ex) {
+                    getLogger().log(Level.INFO, null, ex);
+                }
+                RegisteredDDCatalog catalog = getDDCatalog();
+                if (null != catalog) {
+                    if (this.equals(preludeProvider)) {
+                        catalog.registerPreludeRunTimeDDCatalog(this);
+                    } else {
+                        catalog.registerEE6RunTimeDDCatalog(this);
+                    }
+                    refreshCatalogFromFirstInstance(this, catalog);
+                }
             }
-            refreshCatalogFromFirstInstance(this, catalog);
         }
+
     }
     
     // ------------------------------------------------------------------------

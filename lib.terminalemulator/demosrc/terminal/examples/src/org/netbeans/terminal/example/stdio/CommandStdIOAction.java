@@ -27,7 +27,7 @@ public final class CommandStdIOAction extends CallableSystemAction {
             return;
 
         IOProvider iop = IOProvider.getDefault();
-        support.performAction(iop, cmd);
+        support.executeCommand(iop, cmd);
     }
 
     public String getName() {

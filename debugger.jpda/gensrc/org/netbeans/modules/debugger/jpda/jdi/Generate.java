@@ -70,6 +70,7 @@ import java.util.zip.ZipFile;
 
 /**
  * Generates wrapper methods for JDI calls.
+ * Use "ant generate" to run this class and generate JDI wrapper classes.
  */
 public class Generate {
 
@@ -945,31 +946,42 @@ public class Generate {
 
     // Custom code can be provided here to override the original invocation
     private static String methodImpl(String className, String methodName, String exec) {
-        if (com.sun.jdi.ThreadReference.class.getName().equals(className) && methodName.equals("popFrames")) {
-            String catchJDWPException = "            try {\n"+
-                                        "    "+exec+
-                                        "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
-                                        "                if (iex.errorCode() == 32) { // OPAQUE_FRAME\n"+
-                                        "                    // "+com.sun.jdi.NativeMethodException.class.getSimpleName()+" should be thrown here!\n"+
-                                        "                    throw new "+com.sun.jdi.NativeMethodException.class.getName()+"(iex.getMessage());\n"+
-                                        "                } else {\n"+
-                                        "                    throw iex; // re-throw the original\n"+
-                                        "                }\n"+
-                                        "            }\n";
-            return catchJDWPException;
-        }
-        if (com.sun.jdi.ThreadReference.class.getName().equals(className) && methodName.equals("currentContendedMonitor")) {
-            String catchJDWPException = "            try {\n"+
-                                        "    "+exec+
-                                        "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
-                                        "                if (iex.errorCode() == 13) { // THREAD_NOT_SUSPENDED\n"+
-                                        "                    // "+com.sun.jdi.IncompatibleThreadStateException.class.getSimpleName()+" should be thrown here!\n"+
-                                        "                    throw new "+com.sun.jdi.IncompatibleThreadStateException.class.getName()+"(iex.getMessage());\n"+
-                                        "                } else {\n"+
-                                        "                    throw iex; // re-throw the original\n"+
-                                        "                }\n"+
-                                        "            }\n";
-            return catchJDWPException;
+        if (com.sun.jdi.ThreadReference.class.getName().equals(className)) {
+            if (methodName.equals("popFrames")) {
+                String catchJDWPException = "            try {\n"+
+                                            "    "+exec+
+                                            "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                            "                if (iex.errorCode() == 32) { // OPAQUE_FRAME\n"+
+                                            "                    // "+com.sun.jdi.NativeMethodException.class.getSimpleName()+" should be thrown here!\n"+
+                                            "                    throw new "+com.sun.jdi.NativeMethodException.class.getName()+"(iex.getMessage());\n"+
+                                            "                } else {\n"+
+                                            "                    throw iex; // re-throw the original\n"+
+                                            "                }\n"+
+                                            "            }\n";
+                return catchJDWPException;
+            }
+            if (methodName.equals("currentContendedMonitor")) {
+                String catchJDWPException = "            try {\n"+
+                                            "    "+exec+
+                                            "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                            "                if (iex.errorCode() == 13) { // THREAD_NOT_SUSPENDED\n"+
+                                            "                    // "+com.sun.jdi.IncompatibleThreadStateException.class.getSimpleName()+" should be thrown here!\n"+
+                                            "                    throw new "+com.sun.jdi.IncompatibleThreadStateException.class.getName()+"(iex.getMessage());\n"+
+                                            "                } else {\n"+
+                                            "                    throw iex; // re-throw the original\n"+
+                                            "                }\n"+
+                                            "            }\n";
+                return catchJDWPException;
+            }
+            if (methodName.equals("frame")) {
+                String catchNPE = "            try {\n"+
+                                  "    "+exec+
+                                  "            } catch ("+NullPointerException.class.getName()+" npex) {\n"+
+                                  "                // See http://www.netbeans.org/issues/show_bug.cgi?id=159887\n"+
+                                  "                throw new "+com.sun.jdi.IncompatibleThreadStateException.class.getName()+"(npex.getMessage());\n"+
+                                  "            }\n";
+                return catchNPE;
+            }
         }
         if (com.sun.jdi.ReferenceType.class.getName().equals(className) && methodName.equals("constantPool")) {
             String catchNPE = "            try {\n"+
@@ -984,6 +996,44 @@ public class Generate {
                               "                }\n"+
                               "            }\n";
             return catchNPE;
+        }
+        if (com.sun.jdi.StackFrame.class.getName().equals(className) && methodName.equals("thisObject")) {
+            String catchJDWPException = "            try {\n"+
+                                        "    "+exec+
+                                        "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                        "                if (iex.errorCode() == 35) { // INVALID_SLOT, see http://www.netbeans.org/issues/show_bug.cgi?id=163652\n"+
+                                        "                    return null;\n"+
+                                        "                } else {\n"+
+                                        "                    throw iex; // re-throw the original\n"+
+                                        "                }\n"+
+                                        "            }\n";
+            return catchJDWPException;
+        }
+        if (com.sun.jdi.Location.class.getName().equals(className)) {
+            if (methodName.equals("sourcePath") || methodName.equals("sourceName")) {
+                String catchJDWPException = "            try {\n"+
+                                            "    "+exec+
+                                            "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                            "                if (iex.errorCode() == 101) { // ABSENT_INFORMATION\n"+
+                                            "                    throw new com.sun.jdi.AbsentInformationException(iex.getMessage());\n"+
+                                            "                } else {\n"+
+                                            "                    throw iex; // re-throw the original\n"+
+                                            "                }\n"+
+                                            "            }\n";
+                return catchJDWPException;
+            }
+            if (methodName.equals("lineNumber")) {
+                String catchJDWPException = "            try {\n"+
+                                            "    "+exec+
+                                            "            } catch ("+com.sun.jdi.InternalException.class.getName()+" iex) {\n"+
+                                            "                if (iex.errorCode() == 101) { // ABSENT_INFORMATION\n"+
+                                            "                    return -1;\n"+
+                                            "                } else {\n"+
+                                            "                    throw iex; // re-throw the original\n"+
+                                            "                }\n"+
+                                            "            }\n";
+                return catchJDWPException;
+            }
         }
         return exec;
     }

@@ -206,7 +206,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
                 BreakpointsActionsProvider.class, "CTL_Breakpoint_Customizer_Title"), // NOI18N
             
             true,
-            DialogDescriptor.OK_CANCEL_OPTION,
+        DialogDescriptor.OK_CANCEL_OPTION,
             DialogDescriptor.OK_OPTION,
             DialogDescriptor.DEFAULT_ALIGN,
             helpCtx,

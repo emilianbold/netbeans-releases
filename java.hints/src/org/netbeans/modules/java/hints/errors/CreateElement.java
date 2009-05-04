@@ -77,6 +77,7 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.hints.FieldForUnusedParam;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateInnerClassFix;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateOuterClassFix;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -378,7 +379,12 @@ public final class CreateElement implements ErrorRule<Void> {
                     if (target.getKind() == ElementKind.ENUM) {
                         result.add(new CreateEnumConstant(info, simpleName, modifiers, target, type, targetFile));
                     } else {
-                        result.add(new CreateFieldFix(info, simpleName, modifiers, target, type, targetFile));
+                        if (firstMethod != null && info.getTrees().getElement(firstMethod).getKind() == ElementKind.CONSTRUCTOR && ErrorFixesFakeHint.isCreateFinalFieldsForCtor()) {
+                            modifiers.add(Modifier.FINAL);
+                        }
+                        if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_FINAL_FIELD_CTOR)) {
+                            result.add(new CreateFieldFix(info, simpleName, modifiers, target, type, targetFile));
+                        }
                     }
                 }
             }

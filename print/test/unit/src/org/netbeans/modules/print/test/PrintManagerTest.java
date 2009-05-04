@@ -53,7 +53,7 @@ public class PrintManagerTest extends TestCase {
 
     public void testPrintAction() {
         Action action = getPrintAction();
-        assertTrue("Print action can't be null", action != null);
+        assertTrue("Print action can't be null", action != null); // NOI18N
     }
 
     public void testPrintActionProperties() {
@@ -68,6 +68,6 @@ public class PrintManagerTest extends TestCase {
     }
 
     private void checkProperty(Action action, String property) {
-        assertTrue("Print action." + property + " can't be null", action.getValue(property) != null);
+        assertTrue("Print action." + property + " can't be null", action.getValue(property) != null); // NOI18N
     }
 }

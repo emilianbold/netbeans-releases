@@ -199,6 +199,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.frameworks.facelets</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
+                <friend>org.netbeans.modules.web.jsf.simplesnippets</friend>
                 <package>org.netbeans.modules.web.jsps.parserapi</package>
             </friend-packages>
             <extra-compilation-unit>

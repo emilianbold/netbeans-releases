@@ -176,6 +176,8 @@ public class GlassFishPanel extends DestinationPanel {
                 DEFAULT_ERROR_HTTPS_EQUALS_ADMIN);
         setProperty(ERROR_UNC_PATH_UNSUPPORTED_PROPERTY,
                 DEFAULT_ERROR_UNC_PATH_UNSUPPORTED);
+        setProperty(ERROR_BRACKETS_IN_NOT_SPACED_PATH_PROPERTY,
+                DEFAULT_BRACKETS_IN_NOT_SPACED_PATH);
         
         setProperty(WARNING_PORT_IN_USE_PROPERTY,
                 DEFAULT_WARNING_PORT_IN_USE);
@@ -641,6 +643,16 @@ public class GlassFishPanel extends DestinationPanel {
                 return StringUtils.format(
                         component.getProperty(ERROR_UNC_PATH_UNSUPPORTED_PROPERTY),
                         f.getAbsolutePath());
+            }
+            //#163233 Installer allow enter paths which can not be used for installation
+            //#163426 Unable to install GlassFish V2.1 to C:\Program Files (x86)\glassfish-v2.1
+            if(SystemUtils.isWindows() && 
+                !f.getAbsolutePath().contains(StringUtils.SPACE) && 
+                (f.getAbsolutePath().contains("(") || f.getAbsolutePath().contains(")"))) {
+                return StringUtils.format(
+                        component.getProperty(ERROR_BRACKETS_IN_NOT_SPACED_PATH_PROPERTY),
+                        f.getAbsolutePath());
+
             }
             return null;
         }
@@ -1230,7 +1242,9 @@ public class GlassFishPanel extends DestinationPanel {
             "error.https.equals.admin"; // NOI18N
     public static final String ERROR_UNC_PATH_UNSUPPORTED_PROPERTY =
             "error.unc.path.unsupported"; // NOI18N
-    
+    public static final String ERROR_BRACKETS_IN_NOT_SPACED_PATH_PROPERTY =
+            "error.brackets.in.not.spaced.path";
+
     public static final String WARNING_PORT_IN_USE_PROPERTY =
             "warning.port.in.use"; // NOI18N
     public static final String WARNING_ASADMIN_FILES_EXIST_PROPERTY =
@@ -1305,6 +1319,9 @@ public class GlassFishPanel extends DestinationPanel {
     public static final String DEFAULT_ERROR_UNC_PATH_UNSUPPORTED =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.error.unc.path.unsupported"); // NOI18N
+    public static final String DEFAULT_BRACKETS_IN_NOT_SPACED_PATH =
+            ResourceUtils.getString(GlassFishPanel.class,
+            "GFP.error.brackets.in.not.spaced.path"); // NOI18N
             
     public static final String DEFAULT_WARNING_PORT_IN_USE =
             ResourceUtils.getString(GlassFishPanel.class,

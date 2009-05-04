@@ -45,6 +45,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -148,29 +150,29 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 getClass().getClassLoader().getResource(WARNING_ICON));
         emptyIcon = new ImageIcon(
                 getClass().getClassLoader().getResource(EMPTY_ICON));
-        
-        initComponents();
+                
         setDefaultMinimumSize();
+        initComponents();
     }
 	
     private void setDefaultMinimumSize(){
         switch (UiUtils.getLAF()) {
             case WINDOWS_CLASSIC :
             case WINDOWS_XP :
-                setMinimumSize(new Dimension(560, 420));
+                setMinimumSize(new Dimension(560, 420 + EXTRA_SIZE));
                 break;
             case GTK:
-                setMinimumSize(new Dimension(660, 500));
+                setMinimumSize(new Dimension(660, 500 + EXTRA_SIZE));
                 break;
             case AQUA:
-                setMinimumSize(new Dimension(550,410));
+                setMinimumSize(new Dimension(550,410 + EXTRA_SIZE));
                 break;
             case MOTIF:
             case METAL:
-                setMinimumSize(new Dimension(620,460));
+                setMinimumSize(new Dimension(620,460 + EXTRA_SIZE));
                 break;
             default:
-                setMinimumSize(new Dimension(560,420));
+                setMinimumSize(new Dimension(560,420 + EXTRA_SIZE));
                 break;
         }
     }
@@ -186,6 +188,14 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     
     // private //////////////////////////////////////////////////////////////////////
     private void initComponents() {
+        //workaround with minimum size for JDK5
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                setSize(Math.max(getSize().width, getMinimumSize().width),
+                        Math.max(getSize().height, getMinimumSize().height));
+            }
+        });
         // messageLabel /////////////////////////////////////////////////////////////
         messageLabel = new NbiLabel();
         
@@ -890,4 +900,5 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             "evaluate.cancel"; // NOI18N
     private static final String NB_IDE_GROUP_UID = 
             "nb-ide-group";//NOI18N
+    private static final int EXTRA_SIZE = 15;
 }

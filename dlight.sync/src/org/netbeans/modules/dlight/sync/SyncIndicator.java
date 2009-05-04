@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -53,6 +54,7 @@ import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.util.NbBundle;
 
@@ -64,8 +66,9 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
     private SyncIndicatorPanel panel;
     private final Set<String> acceptedColumnNames;
-    private int lastLocks;
-    private int lastThreads;
+    private final List<String> acceptedThreadsCountColumnNames;
+    private float lastLocks;
+    private int lastThreads = 1;
 
     public SyncIndicator(SyncIndicatorConfiguration configuration) {
         super(configuration);
@@ -73,6 +76,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
         for (Column column : getMetadataColumns()) {
             acceptedColumnNames.add(column.getColumnName());
         }
+        this.acceptedThreadsCountColumnNames = configuration.getThreadColumnNames();
     }
 
     @Override
@@ -88,18 +92,29 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
 
     public void updated(List<DataRow> rows) {
         for (DataRow row : rows) {
-            String locks = row.getStringValue("locks"); // NOI18N
-            String threads = row.getStringValue("threads"); // NOI18N
-            if (locks != null && threads != null) {
-                lastThreads = Integer.parseInt(threads);
-                lastLocks = Math.round(lastThreads * Float.parseFloat(locks) / 100);
+            for (String column : row.getColumnNames()) {
+                if (acceptedThreadsCountColumnNames.contains(column)) {
+                    String threads = row.getStringValue(column);
+                    try {
+                        lastThreads = Integer.parseInt(threads);
+                    } catch (NumberFormatException ex) {
+                        DLightLogger.instance.log(Level.WARNING, null, ex);
+                    }
+                } else if (acceptedColumnNames.contains(column)) {
+                    String locks = row.getStringValue(column);
+                    try {
+                        lastLocks = Float.parseFloat(locks);
+                    } catch (NumberFormatException ex) {
+                        DLightLogger.instance.log(Level.WARNING, null, ex);
+                    }
+                }
             }
         }
     }
 
     @Override
     protected void tick() {
-        panel.addData(lastLocks, lastThreads);
+        panel.addData(Math.round(lastThreads * lastLocks / 100), lastThreads);
     }
 
     @Override
@@ -129,7 +144,7 @@ public class SyncIndicator extends Indicator<SyncIndicatorConfiguration> {
         } else {
             final JLabel label = new JLabel(
                     "<html><center>" // NOI18N
-                    + getMessage(getRepairActionProvider().isValid()? "Repair.Valid" : "Repair.Invalid") // NOI18N
+                    + getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()) // NOI18N
                     + "</center></html>"); // NOI18N
             label.setForeground(GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {

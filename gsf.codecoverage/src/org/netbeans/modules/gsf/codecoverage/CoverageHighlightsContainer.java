@@ -292,6 +292,9 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer imp
                             type == CoverageType.NOT_COVERED || type == CoverageType.PARTIAL) {
                         try {
                             int offset = Utilities.getRowStartFromLineOffset(doc, lineno);
+                            if (offset == -1) {
+                                continue;
+                            }
                             // Attach the highlight position to the beginning of text, such
                             // that if we insert a new line at the beginning of a line (or in
                             // the whitespace region) the highlight will move down with the

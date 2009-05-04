@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.editor.lib2.highlighting;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
@@ -74,27 +77,27 @@ public class SyntaxHighlightingTest extends NbTestCase {
     public void testSimple() {
         checkText("+ - / * public", TestTokenId.language());
     }
-    
+
     public void testEmbedded() {
         checkText("/**//* this is a comment */", TestTokenId.language());
     }
-    
+
     public void testComplex() {
         checkText(
-            "public       /**/ +/-  private /** hello */ something /* this is a comment */ \"hi hi hi\" xyz    ", 
+            "public       /**/ +/-  private /** hello */ something /* this is a comment */ \"hi hi hi\" xyz    ",
             TestTokenId.language());
     }
 
     public void testNoPrologEpilogEmbedding() {
         checkText(
-            "hello world 0-1-2-3-4-5-6-7-8-9-A-B-C-D-E-F      Ooops", 
+            "hello world 0-1-2-3-4-5-6-7-8-9-A-B-C-D-E-F      Ooops",
             TestPlainTokenId.language());
     }
-    
+
     public void testConcurrentModifications() throws BadLocationException {
         Document doc = createDocument(TestTokenId.language(), "NetBeans NetBeans NetBeans");
         SyntaxHighlighting layer = new SyntaxHighlighting(doc);
-        
+
         {
             HighlightsSequence hs = layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);
             assertTrue("There should be some highlights", hs.moveNext());
@@ -103,7 +106,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
             doc.insertString(0, "Hey", SimpleAttributeSet.EMPTY);
 
             assertFalse("There should be no highlights after co-modification", hs.moveNext());
-        }        
+        }
     }
 
     public void testEvents() throws BadLocationException {
@@ -112,24 +115,59 @@ public class SyntaxHighlightingTest extends NbTestCase {
         SyntaxHighlighting layer = new SyntaxHighlighting(doc);
         L listener = new L();
         layer.addHighlightsChangeListener(listener);
-        
+
         assertHighlights(
-            TokenHierarchy.create(text, TestTokenId.language()).tokenSequence(), 
-            layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE), 
-            true, 
+            TokenHierarchy.create(text, TestTokenId.language()).tokenSequence(),
+            layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE),
+            true,
             ""
         );
-        
+
         assertEquals("There should be no events", 0, listener.eventsCnt);
-        
+
         final String addedText = "World";
         doc.insertString(6, addedText, SimpleAttributeSet.EMPTY);
-        
+
         assertEquals("Wrong number of events", 1, listener.eventsCnt);
         assertTrue("Wrong change start offset", 6 >= listener.lastStartOffset);
         assertTrue("Wrong change end offset", 6 + addedText.length() <= listener.lastEndOffset);
     }
-    
+
+    public void testRanges() {
+        Document doc = createDocument(TestPlainTokenId.language(), "aaa   bbb   ccc");
+        SyntaxHighlighting layer = new SyntaxHighlighting(doc);
+
+        HighlightsSequence hs = layer.getHighlights(1, 2);
+        assertTrue("Highlight sequence should not be empty", hs.moveNext());
+        assertEquals("Wrong start offset", 1, hs.getStartOffset());
+        assertEquals("Wrong end offset", 2, hs.getEndOffset());
+        assertFalse("There should only be one highlight", hs.moveNext());
+
+        hs = layer.getHighlights(5, 11);
+        checkHighlights("Wrong highlights", hs, new Integer [] { 5, 6, 6, 9, 9, 11 });
+    }
+
+    public void testEmbeddedRanges() {
+        Document doc = createDocument(TestTokenId.language(), "public    /* word word word */ void");
+        SyntaxHighlighting layer = new SyntaxHighlighting(doc);
+
+        HighlightsSequence hs = layer.getHighlights(19, 21);
+        assertTrue("Highlight sequence should not be empty", hs.moveNext());
+        assertEquals("Wrong start offset", 19, hs.getStartOffset());
+        assertEquals("Wrong end offset", 21, hs.getEndOffset());
+        assertFalse("There should only be one highlight", hs.moveNext());
+    }
+
+    private void checkHighlights(String message, HighlightsSequence seq, Integer... expected) {
+        List<Integer> actual = new ArrayList<Integer>();
+        while(seq.moveNext()) {
+            actual.add(seq.getStartOffset());
+            actual.add(seq.getEndOffset());
+        }
+
+        assertEquals(message, Arrays.asList(expected), actual);
+    }
+
     private void checkText(String text, Language<?> lang) {
         System.out.println("Checking text: '" + text + "'\n");
         Document doc = createDocument(lang, text);

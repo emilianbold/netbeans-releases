@@ -137,6 +137,7 @@ public class J2eeLookupProvider implements LookupProvider {
                 } catch (FileStateInvalidException ex) {
                     ex.printStackTrace();
                 }
+                content.remove(copyOnSave);
                 copyOnSave = null;
             }
             if (NbMavenProject.TYPE_WAR.equals(packaging) && !lastType.equals(packaging)) {
@@ -155,6 +156,7 @@ public class J2eeLookupProvider implements LookupProvider {
                 } catch (FileStateInvalidException ex) {
                     ex.printStackTrace();
                 }
+                content.add(copyOnSave);
             } else if (NbMavenProject.TYPE_EAR.equals(packaging) && !lastType.equals(packaging)) {
                 removeInstances();
                 lastInstance = new EarModuleProviderImpl(project);

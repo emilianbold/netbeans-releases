@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.db.h2;
 
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
@@ -86,12 +87,47 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
             logger.log(Level.SEVERE, null, ex);
         }
 
-        HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
-        String tempDir = hi.getTempDir();
+        String tempDir = null;
+        try {
+            HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+            tempDir = hi.getTempDir();
+            if (hi.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                tempDir = WindowsSupport.getInstance().convertoToWindowsPath(tempDir);
+            }
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        if (tempDir == null) {
+            tempDir = System.getProperty("java.io.tmpdir"); // NOI18N
+        }
+
         url = "jdbc:h2:" + tempDir + "/dlight"; // NOI18N
-        tmpDir = hi.getOSFamily() == HostInfo.OSFamily.WINDOWS
-                ? WindowsSupport.getInstance().convertoToWindowsPath(tempDir)
-                : tempDir;
+
+        tmpDir = tempDir;
+
+        // FIXUP: deleting /tmp/dlight*
+        File tmpDirFile = new File(tmpDir); // NOI18N
+
+        if (tmpDirFile.exists()) {
+            File[] files = tmpDirFile.listFiles(new FilenameFilter() {
+
+                public boolean accept(File dir, String name) {
+                    return name.startsWith("dlight"); // NOI18N
+                }
+            });
+            int newValue = 0;
+            boolean result = true;
+            for (int i = 0; i < files.length; i++) {
+                boolean localResult = files[i].delete();
+                result = result && localResult;
+                newValue++;
+            }
+            if (!result) {
+                //should increse dbIndex??
+                dbIndex.set(newValue);
+            }
+        }
     }
 
     private void initStorageTypes() {
@@ -114,31 +150,6 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
             logger.log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
-        }
-    }
-    // FIXUP: deleting /tmp/dlight*
-
-
-    static {
-        File tmpDirFile = new File(tmpDir); // NOI18N
-        if (tmpDirFile.exists()) {
-            File[] files = tmpDirFile.listFiles(new FilenameFilter() {
-
-                public boolean accept(File dir, String name) {
-                    return name.startsWith("dlight"); // NOI18N
-                }
-            });
-            int newValue = 0;
-            boolean result = true;
-            for (int i = 0; i < files.length; i++) {
-                boolean localResult = files[i].delete();
-                result = result && localResult;
-                newValue++;
-            }
-            if (!result) {
-                //should increse dbIndex??
-                dbIndex.set(newValue);
-            }
         }
     }
 
