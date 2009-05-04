@@ -42,6 +42,8 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.awt.datatransfer.Transferable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -54,6 +56,7 @@ import java.util.prefs.Preferences;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
 import javax.swing.Action;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -95,7 +98,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     private LinkedList evaluationQueue = new LinkedList();
 
-    private PreferenceChangeListener prefListener;
+    private VariablesPreferenceChangeListener prefListener;
     private Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(VariablesViewButtons.PREFERENCES_NAME);
     
     public VariablesTreeModelFilter (ContextProvider lookupProvider) {
@@ -103,6 +106,8 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         evaluationRP = lookupProvider.lookupFirst(null, RequestProcessor.class);
         prefListener = new VariablesPreferenceChangeListener();
         preferences.addPreferenceChangeListener(prefListener);
+        Properties properties = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N
+        properties.addPropertyChangeListener(prefListener);
     }
 
     /** 
@@ -436,7 +441,8 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     
     // helper methods ..........................................................
-    
+
+    private final Object filtersLock = new Object();
     private HashMap typeToFilter;
     private HashMap ancestorToFilter;
     
@@ -449,68 +455,70 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
      * @return The filter or <code>null</code>.
      */
     private VariablesFilter getFilter (Object o, boolean checkEvaluated, Runnable whenEvaluated) {
-        if (typeToFilter == null) {
-            typeToFilter = new HashMap ();
-            ancestorToFilter = new HashMap ();
-            List l = lookupProvider.lookup (null, VariablesFilter.class);
-            int i, k = l.size ();
-            for (i = 0; i < k; i++) {
-                VariablesFilter f = (VariablesFilter) l.get (i);
-                String[] types = f.getSupportedAncestors ();
-                int j, jj = types.length;
-                for (j = 0; j < jj; j++)
-                    ancestorToFilter.put (types [j], f);
-                types = f.getSupportedTypes ();
-                jj = types.length;
-                for (j = 0; j < jj; j++)
-                    typeToFilter.put (types [j], f);
-            }
-        }
-        
-        if (typeToFilter.size() == 0 && ancestorToFilter.size() == 0) return null; // Optimization for corner case
-        
-        if (!(o instanceof Variable)) return null;
-        
-        Variable v = (Variable) o;
-        
-        if (checkEvaluated) {
-            if (!isEvaluated(v)) {
-                if (whenEvaluated != null) {
-                    postEvaluationMonitor(o, whenEvaluated);
+        synchronized (filtersLock) {
+            if (typeToFilter == null) {
+                typeToFilter = new HashMap ();
+                ancestorToFilter = new HashMap ();
+                List l = lookupProvider.lookup (null, VariablesFilter.class);
+                int i, k = l.size ();
+                for (i = 0; i < k; i++) {
+                    VariablesFilter f = (VariablesFilter) l.get (i);
+                    String[] types = f.getSupportedAncestors ();
+                    int j, jj = types.length;
+                    for (j = 0; j < jj; j++)
+                        ancestorToFilter.put (types [j], f);
+                    types = f.getSupportedTypes ();
+                    jj = types.length;
+                    for (j = 0; j < jj; j++)
+                        typeToFilter.put (types [j], f);
                 }
-                return null;
             }
-        }
-        
-        String type = v.getType ();
-        VariablesFilter vf = (VariablesFilter) typeToFilter.get (type);
-        if (vf != null) return vf;
-        
-        if (!(o instanceof ObjectVariable)) return null;
-        ObjectVariable ov = (ObjectVariable) o;
-        // TODO: List<JPDAClassType> ov.getAllInterfaces();
-        List<JPDAClassType> allInterfaces;
-        try {
-            java.lang.reflect.Method allInterfacesMethod = ov.getClass().getMethod("getAllInterfaces");
-            allInterfacesMethod.setAccessible(true);
-            allInterfaces = (List<JPDAClassType>) allInterfacesMethod.invoke(ov);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            allInterfaces = null;
-        }
-        if (allInterfaces != null) {
-            for (JPDAClassType ct : allInterfaces) {
-                type = ct.getName();
+
+            if (typeToFilter.size() == 0 && ancestorToFilter.size() == 0) return null; // Optimization for corner case
+
+            if (!(o instanceof Variable)) return null;
+
+            Variable v = (Variable) o;
+
+            if (checkEvaluated) {
+                if (!isEvaluated(v)) {
+                    if (whenEvaluated != null) {
+                        postEvaluationMonitor(o, whenEvaluated);
+                    }
+                    return null;
+                }
+            }
+
+            String type = v.getType ();
+            VariablesFilter vf = (VariablesFilter) typeToFilter.get (type);
+            if (vf != null) return vf;
+
+            if (!(o instanceof ObjectVariable)) return null;
+            ObjectVariable ov = (ObjectVariable) o;
+            // TODO: List<JPDAClassType> ov.getAllInterfaces();
+            List<JPDAClassType> allInterfaces;
+            try {
+                java.lang.reflect.Method allInterfacesMethod = ov.getClass().getMethod("getAllInterfaces");
+                allInterfacesMethod.setAccessible(true);
+                allInterfaces = (List<JPDAClassType>) allInterfacesMethod.invoke(ov);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                allInterfaces = null;
+            }
+            if (allInterfaces != null) {
+                for (JPDAClassType ct : allInterfaces) {
+                    type = ct.getName();
+                    vf = (VariablesFilter) ancestorToFilter.get (type);
+                    if (vf != null) return vf;
+                }
+            }
+            // Consider ancestors as the type + it's ancestors
+            while (ov != null) {
+                type = ov.getType ();
                 vf = (VariablesFilter) ancestorToFilter.get (type);
                 if (vf != null) return vf;
+                ov = ov.getSuper ();
             }
-        }
-        ov = ov.getSuper ();
-        while (ov != null) {
-            type = ov.getType ();
-            vf = (VariablesFilter) ancestorToFilter.get (type);
-            if (vf != null) return vf;
-            ov = ov.getSuper ();
         }
         return null;
     }
@@ -587,18 +595,32 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
     }
 
-    private class VariablesPreferenceChangeListener implements PreferenceChangeListener {
+    private class VariablesPreferenceChangeListener implements PreferenceChangeListener, PropertyChangeListener {
 
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
             if (VariablesViewButtons.SHOW_VALUE_AS_STRING.equals(key)) {
-                try {
-                    fireModelChange(new ModelEvent.NodeChanged(this, TreeModel.ROOT));
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t) {
-                    Exceptions.printStackTrace(t);
+                refresh();
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if ("VariableFormatters".equals(evt.getPropertyName())) {
+                synchronized (filtersLock) {
+                    typeToFilter = null;
+                    ancestorToFilter = null;
                 }
+                refresh();
+            }
+        }
+
+        private void refresh() {
+            try {
+                fireModelChange(new ModelEvent.NodeChanged(this, TreeModel.ROOT));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                Exceptions.printStackTrace(t);
             }
         }
 

@@ -54,11 +54,13 @@ import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
 import org.eclipse.mylyn.internal.jira.core.JiraClientFactory;
 import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
 import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
+import org.eclipse.mylyn.internal.jira.core.WorkLogConverter;
 import org.eclipse.mylyn.internal.jira.core.model.Attachment;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraAction;
 import org.eclipse.mylyn.internal.jira.core.model.JiraIssue;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
+import org.eclipse.mylyn.internal.jira.core.model.JiraWorkLog;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.IssueCollector;
@@ -68,11 +70,18 @@ import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
+import org.eclipse.mylyn.internal.tasks.core.TaskActivityManager;
+import org.eclipse.mylyn.internal.tasks.core.TaskList;
+import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
+import org.eclipse.mylyn.internal.tasks.core.TaskTask;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataStore;
+import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizationSession;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -173,6 +182,93 @@ public class JiraIssueTest extends NbTestCase {
         }
     }
 
+    public void testSyncSession() throws Throwable {
+        try {
+
+            // create
+            RepositoryResponse rr = JiraTestUtil.createIssue(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()), "Kaputt", "Alles Kaputt!", "Bug");
+            assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
+            assertNotNull(JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()));
+
+            String taskId = rr.getTaskId();
+
+            TaskRepositoryManager trm = new TaskRepositoryManager();
+            trm.addRepository(JiraTestUtil.getTaskRepository());
+            trm.addRepositoryConnector(getRepositoryConnector());
+            TaskDataStore tds = new TaskDataStore(trm);
+
+            TaskList tl = new TaskList();
+            TaskActivityManager tam = new TaskActivityManager(trm, tl);
+            TaskDataManager tdm = new TaskDataManager(tds, trm, tl, tam);
+            tdm.setDataPath("/tmp/dilino");
+            SynchronizationSession ss = new SynchronizationSession(tdm);
+
+            // list
+            System.out.println("   +++++++++++++++++++++++++++++++++++++ ");
+            long t = System.currentTimeMillis();
+            List<TaskData> l = list(ss);
+            long n = System.currentTimeMillis();
+            System.out.println(" +++ " + (n - t));
+            for (TaskData taskData : l) {
+                tdm.putUpdatedTaskData(
+                    new TaskTask(JiraTestUtil.getTaskRepository().getConnectorKind(), JiraTestUtil.getTaskRepository().getUrl(), taskData.getTaskId()),
+                    taskData,
+                    true);
+            }
+            t = System.currentTimeMillis();
+            l = list(ss);
+            n = System.currentTimeMillis();
+            System.out.println(" +++ " + (n - t));
+            System.out.println("   +++++++++++++++++++++++++++++++++++++ ");
+
+        } catch (Exception exception) {
+            JiraTestUtil.handleException(exception);
+        }
+    }
+
+    public void testJiraIssueWorklog() throws Throwable {
+        try {
+
+            // create
+            JiraIssue issue = JiraTestUtil.createJiraIssue(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(),
+                  JiraTestUtil.TEST_PROJECT, "Kaputt", "Alles Kaputt!", "Bug");
+//            JiraIssue issue = getClient().getIssueByKey("TESTPROJECTWL-1", JiraTestUtil.nullProgressMonitor);
+            assertNotNull(issue);
+            assertNotNull(issue.getId());
+            assertNotNull(issue.getKey());
+
+
+            // update
+            updateJiraIssue(issue);
+            addJiraWorkLog(issue);
+            //updateJiraWorkLog(issue);
+
+            // close issue
+            closeIssue(issue);
+        } catch (Exception exception) {
+            JiraTestUtil.handleException(exception);
+        }
+    }
+
+    public void testJiraWorklogTaskData() throws Throwable {
+        try {
+//            TaskData td = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), "TESTPROJECTWL-1");
+            RepositoryResponse rr = JiraTestUtil.createIssue(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()), "Kaputt", "Alles Kaputt!", "Bug");
+            assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
+            assertNotNull(JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()));
+
+            String taskId = rr.getTaskId();
+            // update
+            updateTaskData(taskId);
+            addWorkLogTaskData(taskId);
+
+            // close issue
+            closeIssue(taskId);
+        } catch (Exception exception) {
+            JiraTestUtil.handleException(exception);
+        }
+    }
+
     private void addAttachement(String taskId, String comment) throws CoreException, JiraException, Exception {
         String key = getClient().getKeyFromId(taskId, JiraTestUtil.nullProgressMonitor);
         Task task = new Task(JiraTestUtil.getTaskRepository().getRepositoryUrl(), JiraTestUtil.getTaskRepository().getConnectorKind(), key, taskId, "");
@@ -259,12 +355,19 @@ public class JiraIssueTest extends NbTestCase {
 
         Set<TaskAttribute> attrs = new HashSet<TaskAttribute>();
         attrs.add(ta);
+        // edit estimated time
+        ta = rta.getAttribute(JiraAttribute.ESTIMATE.id());
+        long estimated = Long.parseLong(ta.getValue()) + 60 * 10;
+        ta.setValue(Long.toString(estimated));
+
         RepositoryResponse rr = getRepositoryConnector().getTaskDataHandler().postTaskData(JiraTestUtil.getTaskRepository(),data, attrs, JiraTestUtil.nullProgressMonitor);
         assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_UPDATED);
 
         rta = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()).getRoot();
         ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
         assertEquals(val + " updated", ta.getValue());
+        ta = rta.getAttribute(JiraAttribute.ESTIMATE.id());
+        assertEquals(estimated, Long.parseLong(ta.getValue()));
     }
 
     private void updateJiraIssue(JiraIssue issue) throws Throwable {
@@ -272,12 +375,15 @@ public class JiraIssueTest extends NbTestCase {
 
         String oldSumary = issue.getSummary();
         issue.setSummary(issue.getSummary() + " updated");
+        long estimatedTime = 60 * 10; // 10 minutes ETA
+        issue.setEstimate(estimatedTime);
         getClient().updateIssue(issue, "changed summary", JiraTestUtil.nullProgressMonitor);
 
         issue = getClient().getIssueByKey(issue.getKey(), JiraTestUtil.nullProgressMonitor);
         assertEquals(oldSumary + " updated", issue.getSummary());
         Date updated2 = issue.getUpdated();
         assertNotSame(updated1, updated2);
+        assertEquals(estimatedTime, issue.getEstimate());
     }
 
     private void closeIssue(String taskId) throws CoreException, JiraException {
@@ -343,6 +449,19 @@ public class JiraIssueTest extends NbTestCase {
         assertNotNull(data);
     }
 
+    public List<TaskData> list(ISynchronizationSession session) throws Throwable {
+        JiraClientFactory.getDefault().getJiraClient(JiraTestUtil.getTaskRepository()).getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
+
+        FilterDefinition fd = new FilterDefinition();
+        fd.setProjectFilter(new ProjectFilter(JiraTestUtil.getProject(getClient())));
+        fd.setStatusFilter(new StatusFilter(new JiraStatus[] {getStatusByName(getClient(), "Open")}));
+        fd.setIssueTypeFilter(new IssueTypeFilter(new IssueType[] {getIssueTypeByName("Bug")}));
+        JiraTestUtil.TestTaskDataCollector tdc = JiraTestUtil.list(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), fd, session);
+
+        assertTrue(tdc.data.size() > 0);
+        return tdc.data;
+    }
+
     public void listJiraIssues(JiraIssue issue) throws Throwable {
         JiraClientFactory.getDefault().getJiraClient(JiraTestUtil.getTaskRepository()).getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
 
@@ -405,6 +524,76 @@ public class JiraIssueTest extends NbTestCase {
         assertNotNull(subTask.getKey());
         assertNotNull(subTask.getParentId());
     }
+
+    private void addJiraWorkLog(JiraIssue issue) throws JiraException {
+        long est = issue.getEstimate();
+        long actual = issue.getActual();
+        String workLogId;
+
+        JiraWorkLog workLog = new JiraWorkLog();
+        workLog.setStartDate(new Date());
+        workLog.setTimeSpent(5 * 60); // 5 minutes
+        workLog.setComment("Some work done");
+        workLog = getClient().addWorkLog(issue.getKey(), workLog, JiraTestUtil.nullProgressMonitor);
+        workLogId = workLog.getId();
+
+        issue = getClient().getIssueByKey(issue.getKey(), JiraTestUtil.nullProgressMonitor);
+        assertEquals(actual = actual + workLog.getTimeSpent(), issue.getActual());
+        assertEquals(est < workLog.getTimeSpent() ? 0 : est - workLog.getTimeSpent(), issue.getEstimate());
+
+        JiraWorkLog[] workLogs = getClient().getWorklogs(issue.getKey(), JiraTestUtil.nullProgressMonitor);
+        assertEquals(workLogId, workLogs[workLogs.length - 1].getId());
+    }
+
+    private void addWorkLogTaskData(String taskId) throws CoreException {
+        TaskData data = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), taskId);
+        TaskAttribute rta = data.getRoot();
+        TaskAttribute ta = rta.createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+
+        WorkLogConverter wc = new WorkLogConverter();
+        Long timeSpent = new Long(60 * 5);
+        TaskAttribute child = wc.addAttribute(ta, WorkLogConverter.TIME_SPENT);
+        ta.getTaskData().getAttributeMapper().setLongValue(child, timeSpent);
+        Date dateStarted = new Date();
+        child = wc.addAttribute(ta, WorkLogConverter.START_DATE);
+        ta.getTaskData().getAttributeMapper().setDateValue(child, dateStarted);
+        String comment = "Work log done";
+        child = wc.addAttribute(ta, WorkLogConverter.COMMENT);
+        ta.getTaskData().getAttributeMapper().setValue(child, comment);
+
+        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>();
+        attrs.add(ta);
+        RepositoryResponse rr = getRepositoryConnector().getTaskDataHandler().postTaskData(JiraTestUtil.getTaskRepository(),data, attrs, JiraTestUtil.nullProgressMonitor);
+        assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_UPDATED);
+
+        rta = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()).getRoot();
+        List<TaskAttribute> workLogs = rta.getTaskData().getAttributeMapper().getAttributesByType(rta.getTaskData(), WorkLogConverter.TYPE_WORKLOG);
+        TaskAttribute workLog = workLogs.get(workLogs.size() - 1);
+        assertEquals(timeSpent, workLog.getTaskData().getAttributeMapper().getLongValue(workLog.getAttribute(WorkLogConverter.TIME_SPENT.key())));
+        assertEquals(dateStarted, workLog.getTaskData().getAttributeMapper().getDateValue(workLog.getAttribute(WorkLogConverter.START_DATE.key())));
+        assertEquals(comment, workLog.getTaskData().getAttributeMapper().getValue(workLog.getAttribute(WorkLogConverter.COMMENT.key())));
+    }
+
+    /*private void updateJiraWorkLog(JiraIssue issue) throws JiraException {
+        long est = issue.getEstimate();
+        long actual = issue.getActual();
+        JiraWorkLog[] workLogs = getClient().getWorklogs(issue.getKey(), JiraTestUtil.nullProgressMonitor);
+        assertNotSame(0, workLogs.length);
+        JiraWorkLog workLog = workLogs[workLogs.length - 1];
+        workLog.setComment(workLog.getComment() + " - updated");
+        workLog.setTimeSpent(workLog.getTimeSpent() + 60 * 5); // another 5 minutes
+        getClient().addWorkLog(issue.getKey(), workLog, JiraTestUtil.nullProgressMonitor);
+
+        workLogs = getClient().getWorklogs(issue.getKey(), JiraTestUtil.nullProgressMonitor);
+        assertNotSame(0, workLogs.length);
+        assertEquals(workLog.getId(), workLogs[workLogs.length - 1].getId());
+        assertEquals(workLog.getComment(), workLogs[workLogs.length - 1].getComment());
+        assertEquals(workLog.getTimeSpent(), workLogs[workLogs.length - 1].getTimeSpent());
+
+        issue = getClient().getIssueByKey(issue.getKey(), JiraTestUtil.nullProgressMonitor);
+        assertEquals(actual = actual + workLog.getTimeSpent(), issue.getActual());
+        assertEquals(est < workLog.getTimeSpent() ? 0 : est - workLog.getTimeSpent(), issue.getEstimate());
+    }*/
 
     private class JiraCollector implements IssueCollector {
         private List<org.eclipse.mylyn.internal.jira.core.model.JiraIssue> issues = new ArrayList<org.eclipse.mylyn.internal.jira.core.model.JiraIssue>();

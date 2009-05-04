@@ -57,7 +57,12 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
     
     @Override
     public PasswordAuthentication getPasswordAuthentication() {
-        return KenaiUtil.getPasswordAuthentication(true);
+        return getPasswordAuthentication(true);
+    }
+
+    @Override
+    public PasswordAuthentication getPasswordAuthentication(boolean forceLogin) {
+        return KenaiUtil.getPasswordAuthentication(forceLogin);
     }
 
     @Override

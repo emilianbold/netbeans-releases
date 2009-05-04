@@ -124,7 +124,7 @@ public class RunJarPanel extends javax.swing.JPanel {
     private boolean isCurrentProfile = true;
     private static final String RUN_PARAMS = "exec.args"; //NOI18N
     private static final String RUN_WORKDIR = "exec.workingdir"; //NOI18N
-    private static final String DEFAULT_DEBUG_PARAMS = "-Xdebug -Djava.compiler=none -Xnoagent -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}"; //NOI18N
+    private static final String DEFAULT_DEBUG_PARAMS = "-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}"; //NOI18N
     private static final String DEFAULT_PROFILE_PARAMS = "${profiler.args}"; // NOI18N
     private static final String DEFAULT_PROFILER_EXEC = "${profiler.java}"; // NOI18N
     private static final String RUN_EXEC = "exec.executable"; // NOI18N

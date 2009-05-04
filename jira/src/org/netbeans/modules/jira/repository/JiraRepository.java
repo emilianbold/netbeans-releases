@@ -45,18 +45,25 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import java.awt.Image;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.commands.JiraExecutor;
+import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -85,6 +92,7 @@ public class JiraRepository extends Repository {
     private Task refreshQueryTask;
     private RequestProcessor refreshProcessor;
     private JiraExecutor executor;
+    private JiraConfiguration configuration;
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -99,14 +107,22 @@ public class JiraRepository extends Repository {
         if(password == null) {
             password = "";                                                      // NOI18N
         }
-        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
+        setTaskRepository(name, url, user, password, httpUser, httpPassword);
     }
 
     public Query createQuery() {
+        if(getConfiguration() == null) {
+            // invalid connection data?
+            return null;
+        }
         return new JiraQuery(this);
     }
 
     public Issue createIssue() {
+        if(getConfiguration() == null) {
+            // invalid connection data?
+            return null;
+        }
         throw new UnsupportedOperationException();
     }
 
@@ -129,15 +145,15 @@ public class JiraRepository extends Repository {
     }
 
     @Override
-    public Issue getIssue(String id) {
+    public Issue getIssue(String key) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
-        TaskData taskData = JiraUtils.getTaskData(JiraRepository.this, id);
+        TaskData taskData = JiraUtils.getTaskData(JiraRepository.this, key);
         if(taskData == null) {
             return null;
         }
         try {
-            return getIssueCache().setIssueData(id, taskData);
+            return getIssueCache().setIssueData(key, taskData);
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
             return null;
@@ -209,7 +225,53 @@ public class JiraRepository extends Repository {
 
     @Override
     public Issue[] simpleSearch(String criteria) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        assert taskRepository != null;
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+
+        String[] keywords = criteria.split(" ");                                // NOI18N
+
+        final List<Issue> issues = new ArrayList<Issue>();
+        TaskDataCollector collector = new TaskDataCollector() {
+            public void accept(TaskData taskData) {
+                NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
+                issues.add(issue); // we don't cache this issues
+                                   // - the retured taskdata are partial
+                                   // - and we need an as fast return as possible at this place
+
+            }
+        };
+
+        if(keywords.length == 1) {
+            // only one search criteria -> might be we are looking for the bug with id=keywords[0]
+            TaskData taskData = JiraUtils.getTaskData(this, keywords[0], false);
+            if(taskData != null) {
+                NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
+                issues.add(issue); // we don't cache this issues
+                                   // - the retured taskdata are partial
+                                   // - and we need an as fast return as possible at this place
+            }
+        }
+
+        // XXX escape special characters
+        // + - && || ! ( ) { } [ ] ^ " ~ * ? \
+        
+        FilterDefinition fd = new FilterDefinition();
+        StringBuffer sb = new StringBuffer();
+        StringTokenizer st = new StringTokenizer(criteria, " \t"); // NOI18N
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            sb.append(token);
+            sb.append(' ');
+            sb.append(token);
+            sb.append('*');
+            sb.append(' ');
+        }
+
+        final ContentFilter cf = new ContentFilter(sb.toString(), true, false, false, false);
+        fd.setContentFilter(cf);
+        PerformQueryCommand queryCmd = new PerformQueryCommand(this, fd, collector);
+        getExecutor().execute(queryCmd);
+        return issues.toArray(new NbJiraIssue[issues.size()]);
     }
 
     @Override
@@ -231,7 +293,10 @@ public class JiraRepository extends Repository {
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
-        TaskRepository repository = new TaskRepository(name, url);
+        TaskRepository repository =
+                new TaskRepository(
+                    Jira.getInstance().getRepositoryConnector().getConnectorKind(),
+                    url);
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
 
@@ -269,13 +334,27 @@ public class JiraRepository extends Repository {
     
     synchronized void resetRepository() {
         // XXX
-//        bc = null;
-//        if(getTaskRepository() != null) {
-//            Jira.getInstance()
-//                    .getRepositoryConnector()
-//                    .getClientManager()
-//                    .repositoryRemoved(getTaskRepository());
-//        }
+        configuration = null;
+        TaskRepository taskRepo = getTaskRepository();
+        if(taskRepo != null) {
+            Jira.getInstance().removeClient(taskRepo);
+        }
+    }
+
+    /**
+     * Returns the jira configuration or null if not available
+     *
+     * @return
+     */
+    public synchronized JiraConfiguration getConfiguration() {
+        if(configuration == null) {
+            configuration = createConfiguration();
+        }
+        return configuration;
+    }
+
+    protected JiraConfiguration createConfiguration() {
+        return JiraConfiguration.create(this);
     }
 
     // XXX spi
@@ -383,7 +462,7 @@ public class JiraRepository extends Repository {
 
     private RequestProcessor getRefreshProcessor() {
         if(refreshProcessor == null) {
-            refreshProcessor = new RequestProcessor("Bugzilla refresh - " + name); // NOI18N
+            refreshProcessor = new RequestProcessor("Jira refresh - " + name); // NOI18N
         }
         return refreshProcessor;
     }

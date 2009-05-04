@@ -712,7 +712,7 @@ public class ProjectsRootNode extends AbstractNode {
         public @Override Image getIcon(int type) {
             Image img = super.getIcon(type);
 
-            if (files != null && files.iterator().hasNext()) {
+            if (logicalView && files != null && files.iterator().hasNext()) {
                 try {
                     FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
@@ -727,7 +727,7 @@ public class ProjectsRootNode extends AbstractNode {
         public @Override Image getOpenedIcon(int type) {
             Image img = super.getOpenedIcon(type);
 
-            if (files != null && files.iterator().hasNext()) {
+            if (logicalView && files != null && files.iterator().hasNext()) {
                 try {
                     FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);

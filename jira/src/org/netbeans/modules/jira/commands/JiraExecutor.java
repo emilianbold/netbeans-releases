@@ -58,7 +58,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * Executes commands against one bugzilla Repository and handles errors
+ * Executes commands against one jira Repository and handles errors
  * 
  * @author Tomas Stupka
  */
@@ -82,7 +82,16 @@ public class JiraExecutor {
     }
 
     public void execute(JiraCommand cmd, boolean handleExceptions) {
+        execute(cmd, handleExceptions, true);
+    }
+
+    public void execute(JiraCommand cmd, boolean handleExceptions, boolean ensureConfiguration) {
         try {
+
+            if(ensureConfiguration) {
+               repository.getConfiguration(); // XXX hack
+            }
+
             cmd.setFailed(true);
 
             cmd.execute();
@@ -262,6 +271,7 @@ public class JiraExecutor {
 
         @SuppressWarnings("empty-statement")
         private static String parseHtmlMessage(String html) {
+            // XXX
             int idxS = html.indexOf("<div id=\"bugzilla-body\">");              // NOI18N
             if(idxS < 0) {
                 return html;

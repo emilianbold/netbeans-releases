@@ -109,8 +109,6 @@
     &lt;/nbjpdastart&gt;
     &lt;java classname="<i>MainClassSpecifiedInRunTarget</i>" classpath="<i>ClasspathSpecifiedInYourRunTarget</i>" fork="true"&gt;
     &lt;jvmarg value="-Xdebug"/&gt;
-    &lt;jvmarg value="-Xnoagent"/&gt;
-    &lt;jvmarg value="-Djava.compiler=none"/&gt;
     &lt;jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/&gt;
     &lt;/java&gt;
     &lt;/target&gt;
@@ -135,8 +133,6 @@
     &lt;java classname="<i>some.main.Class</i>" fork="true"&gt;
     &lt;classpath refid="cp"/&gt;
     &lt;jvmarg value="-Xdebug"/&gt;
-    &lt;jvmarg value="-Xnoagent"/&gt;
-    &lt;jvmarg value="-Djava.compiler=none"/&gt;
     &lt;jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/&gt;
     &lt;/java&gt;
     &lt;/target&gt;

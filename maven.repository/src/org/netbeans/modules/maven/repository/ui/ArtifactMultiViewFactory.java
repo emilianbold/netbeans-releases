@@ -174,7 +174,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                     }
                     }
                     ic.add(mvnprj);
-                    DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
+                    DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, embedder, Artifact.SCOPE_TEST);
                     ic.add(root);
                 } catch (ComponentLookupException ex) {
                     Exceptions.printStackTrace(ex); //this should not happen, if it does, report.

@@ -43,7 +43,9 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -56,6 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
@@ -73,7 +76,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 70;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 71;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -244,8 +247,16 @@ public final class RepositoryUtils {
 
     public static void startup() {
         repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
-        repository.unregisterRepositoryListener(RepositoryListenerImpl.instance());
-        repository.registerRepositoryListener(RepositoryListenerImpl.instance());
+        repository.unregisterRepositoryListener(getRepositoryListenerProxy());
+        repository.registerRepositoryListener(getRepositoryListenerProxy());
+    }
+
+    private static RepositoryListenerProxy myRepositoryListenerProxy;
+    private static synchronized RepositoryListenerProxy getRepositoryListenerProxy() {
+        if (myRepositoryListenerProxy == null) {
+            myRepositoryListenerProxy = new RepositoryListenerProxy();
+        }
+        return myRepositoryListenerProxy;
     }
 
     public static void shutdown() {
@@ -266,22 +277,31 @@ public final class RepositoryUtils {
         closeUnit(UIDtoKey(uid), requiredUnits, cleanRepository);
     }
 
-    public static void closeUnit(String unitName, Set<String> requiredUnits) {
-        closeUnit(unitName, requiredUnits, !TraceFlags.PERSISTENT_REPOSITORY);
-    }
-
     public static void closeUnit(String unitName, Set<String> requiredUnits, boolean cleanRepository) {
         RepositoryListenerImpl.instance().onExplicitClose(unitName);
-        repository.closeUnit(unitName, cleanRepository, requiredUnits);
-    }
-
-    public static void closeUnit(Key key, Set<String> requiredUnits) {
-        closeUnit(key, requiredUnits, !TraceFlags.PERSISTENT_REPOSITORY);
+        _closeUnit(unitName, requiredUnits, cleanRepository);
     }
 
     public static void closeUnit(Key key, Set<String> requiredUnits, boolean cleanRepository) {
         assert key != null;
-        repository.closeUnit(key.getUnit().toString(), cleanRepository, requiredUnits);
+        _closeUnit(key.getUnit().toString(), requiredUnits, cleanRepository);
+    }
+
+    private static void _closeUnit(String unit, Set<String> requiredUnits, boolean cleanRepository) {
+        assert unit != null;
+        if (!cleanRepository) {
+            int errors = myRepositoryListenerProxy.getErrorCount(unit);
+            if (errors > 0) {
+                System.err.println("Clean index for project \""+unit+"\" because index was corrupted (was "+errors+" errors)."); // NOI18N
+                cleanRepository = true;
+            }
+        }
+        myRepositoryListenerProxy.cleanErrorCount(unit);
+        repository.closeUnit(unit, cleanRepository, requiredUnits);
+    }
+
+    public static int getRepositoryErrorCount(ProjectBase project){
+        return getRepositoryListenerProxy().getErrorCount(project.getUniqueName().toString());
     }
 
     public static void onProjectDeleted(NativeProject nativeProject) {
@@ -343,5 +363,48 @@ public final class RepositoryUtils {
         }
     }
 
+    private static class RepositoryListenerProxy implements RepositoryListener {
+        private RepositoryListener parent = RepositoryListenerImpl.instance();
+        private Map<String,Integer> wasErrors = new ConcurrentHashMap<String,Integer>();
+        private RepositoryListenerProxy(){
+        }
+        public int getErrorCount(String unitName) {
+            Integer i = wasErrors.get(unitName);
+            if (i == null) {
+                return 0;
+            } else {
+                return i.intValue();
+            }
+        }
+        public void cleanErrorCount(String unitName) {
+            wasErrors.remove(unitName);
+        }
+        public boolean unitOpened(String unitName) {
+            return parent.unitOpened(unitName);
+        }
+        public void unitClosed(String unitName) {
+            parent.unitClosed(unitName);
+        }
+        public void anExceptionHappened(String unitName, RepositoryException exc) {
+            primitiveErrorStrategy(unitName, exc);
+            parent.anExceptionHappened(unitName, exc);
+        }
+
+        /**
+         * Strategy only count errors.
+         * TODO enhancement:
+         * Provide intelligence logic that take into account possibility to "fixing" errors.
+         * For example error in "file" segment can be fixed by file reparse.
+         */
+        private void primitiveErrorStrategy(String unitName, RepositoryException exc){
+            Integer i = wasErrors.get(unitName);
+            if (i == null) {
+                i = Integer.valueOf(1);
+            } else {
+                i = Integer.valueOf(i.intValue()+1);
+            }
+            wasErrors.put(unitName, i);
+        }
+    }
 }
 

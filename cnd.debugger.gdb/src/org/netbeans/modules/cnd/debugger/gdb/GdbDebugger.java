@@ -375,6 +375,10 @@ public class GdbDebugger implements PropertyChangeListener {
                             //return; // since we've failed, a return here keeps us from sending more gdb commands
                         }
                     }
+                    // we need to switch to the first frame here
+                    // for anonymous breakpoints to be set correctly, see IZ 139388
+                    gdb.up_silently(1024);
+                    
                     setLoading();
                 }
                 gdb.data_list_register_names("");
@@ -1079,7 +1083,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     if (token == shareToken) {
                         shareTab = createShareTab(cb.getResponse());
                     }
-                } else if (pendingBreakpointMap.get(token) != null) {
+                } else if (pendingBreakpointMap.containsKey(token)) {
                     breakpointValidation(token, null);
                 }
             }
@@ -1090,7 +1094,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             }
         // end of ^done block
-        } else if (msg.startsWith("^running") && getState() == State.STOPPED) { // NOI18N
+        } else if (msg.startsWith("^running") && isStopped()) { // NOI18N
             setRunning();
         } else if (msg.startsWith("^error,msg=")) { // NOI18N
             msg = msg.substring(11);
@@ -1160,7 +1164,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private void validateBreakpoint(int token, Map<String, String> map) {
         boolean checked = breakpointValidation(token, map);
-        if (!checked && getState() == State.SILENT_STOP && pendingBreakpointMap.isEmpty()) {
+        if (!checked && state == State.SILENT_STOP && pendingBreakpointMap.isEmpty()) {
             // TODO: check this looks like not reachable
             setRunning();
         }
@@ -1263,6 +1267,8 @@ public class GdbDebugger implements PropertyChangeListener {
     /** Handle gdb responses starting with '&' */
     public void logStreamOutput(String msg) {
         if (msg.startsWith("&\"No source file named ")) {  // NOI18N
+            breakpointValidation(currentToken, msg.substring(2, msg.length() - 3));
+        } else if (msg.startsWith("&\"Function ") && msg.endsWith("not defined.\\n\"")) {  // NOI18N
             breakpointValidation(currentToken, msg.substring(2, msg.length() - 3));
         } else if (msg.startsWith("&\"info proc") || // NOI18N
                 msg.startsWith("&\"info threads") || // NOI18N
@@ -2234,6 +2240,11 @@ public class GdbDebugger implements PropertyChangeListener {
     public String evaluate(String expression) {
         // IZ:131315 (gdb may not be initialized yet)
         if (gdb == null) {
+            return null;
+        }
+
+        // IZ:161093 (do not evalue anything if not stopped)
+        if (!isStopped()) {
             return null;
         }
 

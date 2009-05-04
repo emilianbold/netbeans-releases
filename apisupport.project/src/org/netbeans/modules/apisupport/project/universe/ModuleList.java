@@ -1207,7 +1207,7 @@ public final class ModuleList {
      */
     private static String findClusterLocation(File basedir, File nbroot) throws IOException {
         String path = PropertyUtils.relativizeFile(nbroot, basedir);
-        assert path.indexOf("..") == -1 : path;
+// #163744: can happen with symlinks       assert path.indexOf("..") == -1 : path;
         Map<String,String> clusterLocationsHere = clusterLocations.get(nbroot);
         if (clusterLocationsHere == null) {
             clusterLocationsHere = new HashMap<String,String>();

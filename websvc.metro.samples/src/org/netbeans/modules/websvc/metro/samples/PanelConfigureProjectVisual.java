@@ -62,7 +62,7 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
         locationContainer.add(projectLocationPanel, java.awt.BorderLayout.NORTH);
 
         optionsPanel = new PanelOptionsVisual(panel);
-        // optionsContainer.add(optionsPanel, java.awt.BorderLayout.NORTH);
+        optionsContainer.add(optionsPanel, java.awt.BorderLayout.NORTH);
 
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "LBL_NWP1_ProjectTitleName")); //NOI18N

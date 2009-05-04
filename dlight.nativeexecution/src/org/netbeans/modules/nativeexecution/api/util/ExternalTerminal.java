@@ -38,12 +38,15 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.nativeexecution.ExternalTerminalAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.support.TerminalProfile;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -149,8 +152,13 @@ public final class ExternalTerminal {
                 }
 
                 if ("$shell".equals(arg)) { // NOI18N
-                    result.add(HostInfoUtils.getHostInfo(execEnv).getShell());
-                    continue;
+                    try {
+                        HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                        result.add(hostInfo.getShell());
+                        continue;
+                    } catch (IOException ex) {
+                    } catch (CancellationException ex) {
+                    }
                 }
 
                 if (arg.contains("$title")) { // NOI18N

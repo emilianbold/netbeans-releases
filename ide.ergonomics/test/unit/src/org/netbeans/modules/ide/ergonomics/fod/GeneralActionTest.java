@@ -82,7 +82,7 @@ public class GeneralActionTest extends NbTestCase {
         StringBuffer sb = new StringBuffer();
         boolean found = false;
         for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (info.getCodeNameBase().equals("org.netbeans.modules.autoupdate.ui")) {
+            if (info.getCodeNameBase().equals("org.netbeans.modules.subversion")) {
                 Method m = null;
                 Class<?> c = info.getClass();
                 Exception ex = null;

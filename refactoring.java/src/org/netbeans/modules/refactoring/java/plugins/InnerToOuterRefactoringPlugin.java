@@ -52,6 +52,7 @@ import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -106,7 +107,10 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         //                return result;
         //            }
         if (!RetoucheUtils.isElementInOpenProject(RetoucheUtils.getFileObject(sourceType))) {
-            preCheckProblem = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+            preCheckProblem = new Problem(true, NbBundle.getMessage(
+                    InnerToOuterRefactoringPlugin.class,
+                    "ERR_ProjectNotOpened",
+                    FileUtil.getFileDisplayName(RetoucheUtils.getFileObject(sourceType))));
             return preCheckProblem;
         }
         

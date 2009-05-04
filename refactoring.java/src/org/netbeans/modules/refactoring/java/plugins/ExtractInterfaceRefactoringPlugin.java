@@ -184,7 +184,10 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
                 return result;
             }
             if (!RetoucheUtils.isElementInOpenProject(sourceType.getFileObject())) {
-                return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ProjectNotOpened")); // NOI18N
+                return new Problem(true, NbBundle.getMessage(
+                        ExtractInterfaceRefactoringPlugin.class,
+                        "ERR_ProjectNotOpened",  // NOI18N
+                        FileUtil.getFileDisplayName(sourceType.getFileObject())));
             }
             
             // check whether the element is an unresolved class

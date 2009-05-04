@@ -173,7 +173,12 @@ public class TestsuiteNode extends AbstractNode {
         suiteName = report.getSuiteClassName();
         
         setDisplayName();
-        setChildren(new TestsuiteNodeChildren(report, filtered));
+        Children ch = getChildren();
+        if (ch instanceof TestsuiteNodeChildren){
+            ((TestsuiteNodeChildren)ch).addNotify();
+        }else{
+            setChildren(new TestsuiteNodeChildren(report, filtered));
+        }
         if (DISPLAY_TOOLTIPS) {
             setShortDescription(toTooltipText(getOutput()));
         }

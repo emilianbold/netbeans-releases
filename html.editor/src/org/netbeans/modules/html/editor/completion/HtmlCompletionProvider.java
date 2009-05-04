@@ -103,12 +103,12 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
         
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            List<CompletionItem> items = HtmlCompletionQuery.getDefault().query(component, caretOffset);
-            if(items == null) {
+            HtmlCompletionQuery.CompletionResult result = HtmlCompletionQuery.getDefault().query(component, caretOffset);
+            if(result == null) {
                 return ;
             }
-            resultSet.addAllItems(items);
-//            resultSet.setAnchorOffset(res.getSubstituteOffset());
+            resultSet.addAllItems(result.getItems());
+            resultSet.setAnchorOffset(result.getAnchor());
         }
     }
     
@@ -127,14 +127,14 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
         
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            List<CompletionItem> res = null;
+            List<CompletionItem> items = null;
             if (item == null) {
                 //item == null means that the DocQuery is invoked
                 //based on the explicit documentation opening request
                 //(not ivoked by selecting a completion item in the list)
-                res = HtmlCompletionQuery.getDefault().query(component, caretOffset);
-                if (res != null && res.size() > 0) {
-                    item = res.get(0);
+                HtmlCompletionQuery.CompletionResult result = HtmlCompletionQuery.getDefault().query(component, caretOffset);
+                if (result != null && result.getItems().size() > 0) {
+                    item = result.getItems().get(0);
                 }
             }
             HtmlCompletionItem htmlItem = (HtmlCompletionItem) item;

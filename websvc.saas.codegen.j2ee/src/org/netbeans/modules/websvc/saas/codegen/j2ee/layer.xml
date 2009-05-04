@@ -8,32 +8,32 @@
             <file name="HttpBasicAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/j2ee/resources/HttpBasicAuthenticator.template">
                 <attr name="position" intvalue="300"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="HttpBasicLogin.java" url="/org/netbeans/modules/websvc/saas/codegen/j2ee/resources/HttpBasicLogin.template">
                 <attr name="position" intvalue="310"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="HttpBasicCallback.java" url="/org/netbeans/modules/websvc/saas/codegen/j2ee/resources/HttpBasicCalback.template">
                 <attr name="position" intvalue="320"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="SessionKeyAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/j2ee/resources/SessionKeyAuthenticator.template">
                 <attr name="position" intvalue="330"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="SessionKeyCallback.java" url="/org/netbeans/modules/websvc/saas/codegen/j2ee/resources/SessionKeyCallback.template">
                 <attr name="position" intvalue="340"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="SessionKeyLogin.java" url="/org/netbeans/modules/websvc/saas/codegen/j2ee/resources/SessionKeyLogin.template">
                 <attr name="position" intvalue="350"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
         </folder>
     </folder>

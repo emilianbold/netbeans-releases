@@ -90,7 +90,7 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             return ;
         }
         
-        LOG.log(Level.FINE, "invocationCount={0}, file={0}", new Object [] { invocationCount, info.getFileObject() });
+        LOG.log(Level.FINE, "invocationCount={0}, file={1}", new Object [] { invocationCount, info.getFileObject() });
         if (invocationCount++ > 1) {
             LOG.log(Level.FINE, "Too many invocations: {0}", invocationCount);
             return ;
@@ -132,7 +132,7 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             }
 
             long lastModified = file.lastModified().getTime();
-            if (timestamp != lastModified) {
+            if (timestamp != 0 && timestamp != lastModified) {
                 //modified since last check, ignore
                 LOG.log(Level.FINE, "File modified since last check: {0}, timestamp={1}, lastModified={2}, invocationCount={3}",
                         new Object [] { info.getFileObject(), timestamp, lastModified, invocationCount });

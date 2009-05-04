@@ -66,7 +66,7 @@ public class PersistenceCatalog implements CatalogReader, CatalogDescriptor, org
     
     private static final String PERSISTENCE_NS = "http://java.sun.com/xml/ns/persistence"; // NOI18N
     private static final String ORM_NS = PERSISTENCE_NS +  "/orm"; // NOI18N
-    private static final String RESOURCE_PATH = "nbres:org/netbeans/modules/j2ee/persistence/dd/resources/"; //NOI18N 
+    private static final String RESOURCE_PATH = "nbres:/org/netbeans/modules/j2ee/persistence/dd/resources/"; //NOI18N 
     
     private List<SchemaInfo> schemas = new ArrayList<SchemaInfo>();
 

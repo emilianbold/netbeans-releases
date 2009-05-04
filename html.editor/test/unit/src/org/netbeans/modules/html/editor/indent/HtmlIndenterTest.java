@@ -196,6 +196,10 @@ public class HtmlIndenterTest extends TestBase2 {
         reformatFileContents("testfiles/simple05.html",new IndentPrefs(4,4));
     }
 
+    public void testFormattingHTML06() throws Exception {
+        reformatFileContents("testfiles/simple06.html",new IndentPrefs(4,4));
+    }
+
     public void testIndentation() throws Exception {
         insertNewline("<html>^</html>", "<html>\n    ^\n</html>", null);
         insertNewline("        <table>\n            <tr>\n                <td>^</td>\n            </tr>\n</table>",

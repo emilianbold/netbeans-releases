@@ -48,6 +48,7 @@ import com.sun.tools.javac.model.JavacElements;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -101,7 +102,7 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 public final class ElementHandle<T extends Element> {
-    
+    private static Logger log = Logger.getLogger(ElementHandle.class.getName());
     static {
         ElementHandleAccessor.INSTANCE = new ElementHandleAccessorImpl ();
     }
@@ -127,17 +128,22 @@ public final class ElementHandle<T extends Element> {
      */
     @SuppressWarnings ("unchecked")     // NOI18N
     public @CheckForNull T resolve (@NonNull final CompilationInfo compilationInfo) {
-        Parameters.notNull("compilationInfo", compilationInfo);
+        Parameters.notNull("compilationInfo", compilationInfo); // NOI18N
         T result = resolveImpl (compilationInfo.impl.getJavacTask());
         if (result == null) {
-            Logger.getLogger(ElementHandle.class.getName()).info("Cannot resolve: "+toString());    //NOI18N
+            if (log.isLoggable(Level.INFO))
+                log.log(Level.INFO, "Cannot resolve: "+toString()); //NOI18N                
+        } else {
+            if (log.isLoggable(Level.FINE))
+                log.log(Level.FINE, "Resolved element = " + result);
         }
         return result;
     }
         
     
     private T resolveImpl (final JavacTaskImpl jt) {
-                
+        if (log.isLoggable(Level.FINE))
+            log.log(Level.FINE, "Resolving element kind: " + this.kind); // NOI18N       
         switch (this.kind) {
             case PACKAGE:
                 assert signatures.length == 1;
@@ -165,7 +171,8 @@ public final class ElementHandle<T extends Element> {
                            }
                        }
                    }
-                }
+                } else if (log.isLoggable(Level.FINE))
+                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind);  // NOI18N
                 break;
             }
             case INSTANCE_INIT:
@@ -184,7 +191,8 @@ public final class ElementHandle<T extends Element> {
                            }
                        }
                    }
-                }
+                } else if (log.isLoggable(Level.FINE))
+                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind); // NOI18N
                 break;
             }
             case FIELD:
@@ -203,7 +211,8 @@ public final class ElementHandle<T extends Element> {
                             }
                         }
                     }
-                }
+                } else if (log.isLoggable(Level.FINE))
+                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind); // NOI18N
                 break;
             }
             case TYPE_PARAMETER:
@@ -217,7 +226,8 @@ public final class ElementHandle<T extends Element> {
                                  return (T)tpe;
                              }
                          }
-                     }
+                     } else if (log.isLoggable(Level.FINE))
+                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind + " signatures.length = " + signatures.length);   // NOI18N
                 }
                 else if (signatures.length == 4) {
                     final TypeElement type = getTypeElementByBinaryName (signatures[0], jt);
@@ -238,7 +248,8 @@ public final class ElementHandle<T extends Element> {
                                 }
                             }
                         }
-                    }
+                    } else if (log.isLoggable(Level.FINE))
+                        log.log(Level.FINE, "Resolved type is null for kind=" + this.kind + " signatures.length = " + signatures.length); // NOI18N
                 }
                 else {
                     throw new IllegalStateException ();
@@ -248,6 +259,8 @@ public final class ElementHandle<T extends Element> {
             default:
                 throw new IllegalStateException ();
         }
+        if (log.isLoggable(Level.FINE))
+            log.log(Level.FINE, "All resolvings failed. Returning null.");  // NOI18N
         return null;
     }
     
@@ -528,6 +541,8 @@ public final class ElementHandle<T extends Element> {
     }
     
     private static TypeElement getTypeElementByBinaryName (final String signature, final JavacTaskImpl jt) {
+        if (log.isLoggable(Level.FINE))
+            log.log(Level.FINE, "Calling getTypeElementByBinaryName: signature=" + signature);
         if (isArray(signature)) {
             return Symtab.instance(jt.getContext()).arrayClass;
         }

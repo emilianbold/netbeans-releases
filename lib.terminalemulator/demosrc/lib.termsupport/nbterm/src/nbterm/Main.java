@@ -47,10 +47,10 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.lib.richexecution.Command;
-import org.netbeans.lib.richexecution.Program;
+import org.netbeans.lib.richexecution.program.Command;
+import org.netbeans.lib.richexecution.program.Program;
 import org.netbeans.lib.richexecution.Pty.Mode;
-import org.netbeans.lib.richexecution.Shell;
+import org.netbeans.lib.richexecution.program.Shell;
 import org.netbeans.lib.termsupport.TermExecutor;
 
 /**

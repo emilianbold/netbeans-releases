@@ -88,7 +88,14 @@ public class HostInfoTest extends NativeExecutionTest {
             System.out.println(ex);
         }
 
-        HostInfo hi = HostInfoUtils.getHostInfo(execEnv);
+        HostInfo hi = null;
+        try {
+            hi = HostInfoUtils.getHostInfo(execEnv);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         HostInfoUtils.dumpInfo(hi, System.out);
     }
 
@@ -101,7 +108,14 @@ public class HostInfoTest extends NativeExecutionTest {
         String expResult = "SunOS"; // NOI18N
         String result;
         expResult = "SunOS"; // NOI18N
-        HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.createNew("ak119685", "127.0.0.1")); // NOI18N
+        HostInfo hi = null; // NOI18N
+        try {
+            hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.createNew("ak119685", "127.0.0.1"));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         result = hi.getOS().getName();
         System.out.printf("Expected result is %s, actual result is %s\n", expResult, result); // NOI18N
         assertEquals(expResult, result);
