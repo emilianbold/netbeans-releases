@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.api.utils.CndFolderVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -121,7 +120,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (!folderFile.exists() ||
             !folderFile.isDirectory() ||
             !VisibilityQuery.getDefault().isVisible(folderFile) ||
-            !CndFolderVisibilityQuery.getDefault().isVisible(folderFile)) {
+            ((MakeConfigurationDescriptor) getConfigurationDescriptor()).getFolderVisibilityQuery().isVisible(folderFile)) {
             // Remove it plus all subfolders and items from project
             if (log.isLoggable(Level.FINE)) {
                 log.fine("------------removing folder " + getPath() + " in " + getParent().getPath()); // NOI18N
@@ -155,7 +154,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (files[i].isFile() && !CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
                 continue;
             }
-            if (files[i].isDirectory() && !CndFolderVisibilityQuery.getDefault().isVisible(files[i])) {
+            if (files[i].isDirectory() && ((MakeConfigurationDescriptor) getConfigurationDescriptor()).getFolderVisibilityQuery().isVisible(files[i])) {
                 continue;
             }
             fileList.add(files[i]);
@@ -201,7 +200,8 @@ public class Folder implements FileChangeListener, ChangeListener {
 
         if (isDiskFolder() && getRoot() != null) {
             VisibilityQuery.getDefault().addChangeListener(this);
-            CndVisibilityQuery.getDefault().addChangeListener(this);
+            CndFileVisibilityQuery.getDefault().addChangeListener(this);
+            ((MakeConfigurationDescriptor) getConfigurationDescriptor()).getFolderVisibilityQuery().addChangeListener(this);
             if (log.isLoggable(Level.FINER)) {
                 log.finer("-----------attachFilterListener " + getPath()); // NOI18N
             }
@@ -233,7 +233,8 @@ public class Folder implements FileChangeListener, ChangeListener {
         FileUtil.removeFileChangeListener(this);
         if (isDiskFolder() && getRoot() != null) {
             VisibilityQuery.getDefault().removeChangeListener(this);
-            CndVisibilityQuery.getDefault().removeChangeListener(this);
+            CndFileVisibilityQuery.getDefault().removeChangeListener(this);
+            ((MakeConfigurationDescriptor) getConfigurationDescriptor()).getFolderVisibilityQuery().removeChangeListener(this);
             if (log.isLoggable(Level.FINER)) {
                 log.finer("-----------detachFilterListener " + getPath()); // NOI18N
             }
