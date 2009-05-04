@@ -103,7 +103,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     public String getDLightIndicatorDPStrings(){
         StringBuilder result = new StringBuilder();
         for (String str : DLightIndicatorDPStrings){
-            result.append(str + ":");
+            result.append(str + ":");//NOI18N
         }
         String strResult = result.toString();
         if (!DLightIndicatorDPStrings.isEmpty()){
