@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.utils;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -116,5 +117,12 @@ public class CndUtils {
 
     public static final void assertNonUiThread() {
         assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
+    }
+
+    private static final boolean TRUE_CASE_SENSITIVE_SYSTEM = !Utilities.isWindows() && !Utilities.isMac() /*Mac have different behavior based on config*/
+                                                             && (Utilities.getOperatingSystem() != Utilities.OS_OS2) && (Utilities.getOperatingSystem() != Utilities.OS_VMS);
+
+    public static boolean isSystemCaseSensitive() {
+        return TRUE_CASE_SENSITIVE_SYSTEM;
     }
 }
