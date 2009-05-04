@@ -137,6 +137,7 @@
                 <package>org.netbeans.jellytools.modules.javacvs</package>
                 <package>org.netbeans.jellytools.modules.javacvs.actions</package>
                 <package>org.netbeans.jellytools.nodes</package>
+                <package>org.netbeans.jellytools.testutils</package>
             </public-packages>
         </data>
     </configuration>

@@ -38,28 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.jellytools.actions;
+
+package org.netbeans.jellytools.modules.debugger.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
-//import org.netbeans.jellytools.FindInFilesOperator;
 import org.netbeans.jellytools.JellyTestCase;
-//import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
-//import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
-/** Test org.netbeans.jellytools.actions.FindAction
+/** Test DeleteAllBreakpointsAction.
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Martin.Schovanek@sun.com
  */
-public class FindActionTest extends JellyTestCase {
-    
+public class DebugJavaFileActionTest extends JellyTestCase {
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
-    public FindActionTest(String testName) {
+    public DebugJavaFileActionTest(String testName) {
         super(testName);
     }
     
@@ -68,18 +68,45 @@ public class FindActionTest extends JellyTestCase {
     public static Test suite() {
         /*
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new FindActionTest("testPerformPopup"));
-        suite.addTest(new FindActionTest("testPerformMenu"));
-        suite.addTest(new FindActionTest("testPerformAPI"));
-        suite.addTest(new FindActionTest("testPerformShortcut"));
+        suite.addTest(new BreakpointsWindowActionTest("testPerformMenu"));
         return suite;
          */
-        return createModuleTest(FindActionTest.class);
+        return createModuleTest(DebugJavaFileActionTest.class);
+    }
+    
+    private static final String SAMPLE_CLASS_1 = "SampleClass1";
+    private static JavaNode sampleClass1 = null;
+    private static final String outputTitle = "SampleProject (debug-single)";
+
+    protected void setUp() throws IOException {
+        openDataProjects("SampleProject");
+        System.out.println("### "+getName()+" ###");
+        if(sampleClass1 == null) {
+            Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1");  // NOI18N
+            sampleClass1 = new JavaNode(sample1, SAMPLE_CLASS_1);
+            sampleClass1.open();
+        }
     }
 
     @Override
-    protected void setUp() throws IOException {
-        openDataProjects("SampleProject");
+    protected void tearDown() throws Exception {
+        new OutputTabOperator(outputTitle).waitText("BUILD SUCCESSFUL");
+        super.tearDown();
+    }
+
+    /** Test performMenu() method. */
+    public void testPerformMenu() {
+        new DebugJavaFileAction().performMenu(sampleClass1);
+    }
+    
+    /** Test performMenu() method. */
+    public void testPerformPopup() {
+        new DebugJavaFileAction().performPopup(sampleClass1);
+    }
+    
+    /** Test performMenu() method. */
+    public void testPerformShortcut() {
+        new DebugJavaFileAction().performShortcut(sampleClass1);
     }
     
     /** Use for internal test execution inside IDE
@@ -88,35 +115,4 @@ public class FindActionTest extends JellyTestCase {
     public static void main(java.lang.String[] args) {
         TestRunner.run(suite());
     }
-    
-    /** Test performPopup */
-    public void testPerformPopup() {
-    /*    Node node = new JavaProjectsTabOperator().getProjectRootNode("SampleProject"); // NOI18N
-        new FindAction().performPopup(node);
-        new FindInFilesOperator().close();*/
-    }
-    
-    /** Test performMenu */
-    public void testPerformMenu() {
-        /*Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1"); // NOI18N
-        new FindAction().performMenu(node);
-        new FindInFilesOperator().close();*/
-    }
-    
-    /** Test performAPI */
-    public void testPerformAPI() {/*
-        new FindAction().performAPI();
-        new FindInFilesOperator().close();*/
-    }
-    
-    /** Test performShortcut */
-    public void testPerformShortcut() {
-        /*new FindAction().performShortcut();
-        new FindInFilesOperator().close();
-        // On some linux it may happen autorepeat is activated and it 
-        // opens dialog multiple times. So, we need to close all modal dialogs.
-        // See issue http://www.netbeans.org/issues/show_bug.cgi?id=56672.
-        closeAllModal();*/
-    }
-    
 }

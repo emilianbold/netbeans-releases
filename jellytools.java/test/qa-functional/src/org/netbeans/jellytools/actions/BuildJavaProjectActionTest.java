@@ -55,12 +55,12 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author Jiri.Skrivanek@sun.com
  */
-public class BuildProjectActionTest extends JellyTestCase {
+public class BuildJavaProjectActionTest extends JellyTestCase {
 
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
-    public BuildProjectActionTest(String testName) {
+    public BuildJavaProjectActionTest(String testName) {
         super(testName);
     }
     
@@ -72,7 +72,7 @@ public class BuildProjectActionTest extends JellyTestCase {
         suite.addTest(new BuildProjectActionTest("testPerformPopup"));
         return suite;
          */
-        return createModuleTest(BuildProjectActionTest.class, "testPerformPopup");
+        return createModuleTest(BuildJavaProjectActionTest.class, "testPerformPopup");
     }
     
     /** Use for internal test execution inside IDE
@@ -93,7 +93,7 @@ public class BuildProjectActionTest extends JellyTestCase {
         MainWindowOperator.StatusTextTracer statusTextTracer = 
                             MainWindowOperator.getDefault().getStatusTextTracer();
         statusTextTracer.start();
-        new BuildProjectAction().performPopup(n);
+        new BuildJavaProjectAction().performPopup(n);
         // wait status text "Building SampleProject (jar)"
         statusTextTracer.waitText("jar", true); // NOI18N
         // wait status text "Finished building SampleProject (jar)"

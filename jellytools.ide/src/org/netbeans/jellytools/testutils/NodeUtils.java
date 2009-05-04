@@ -38,12 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.jellytools.nodes;
+package org.netbeans.jellytools.testutils;
 
 import java.awt.Toolkit;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -56,7 +57,7 @@ import org.netbeans.jemmy.operators.JDialogOperator;
  *
  * @author Jiri.Skrivanek@sun.com
  */
-public class Utils {
+public class NodeUtils {
 
     /** Test cut */
     public static void testClipboard(final Object clipboard1) {
@@ -105,6 +106,7 @@ public class Utils {
     
     /** Perform delete action and confirm refactoring dialog. */
     public static void performSafeDelete(Node node) {
+        //TODO: fix this
         new DeleteAction().performAPI(node);
         // "Safe Delete"
         String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle",

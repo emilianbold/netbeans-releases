@@ -42,15 +42,12 @@ package org.netbeans.jellytools.nodes;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.FindInFilesOperator;
 import org.netbeans.jellytools.JavaProjectsTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test of org.netbeans.jellytools.nodes.ProjectRootNodeTest
  *

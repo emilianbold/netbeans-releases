@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,32 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.jellytools.nodes;
 
-import java.awt.Toolkit;
+package org.netbeans.jellytools.actions;
+
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.SaveAsTemplateOperator;
-import org.netbeans.jellytools.actions.CompileAction;
-import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.Node;
 
-/** Test of org.netbeans.jellytools.nodes.ClassNode
+/** Test of org.netbeans.jellytools.actions.CleanProjectAction
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  * @author Jiri.Skrivanek@sun.com
  */
-public class ClassNodeTest extends JellyTestCase {
-    
+public class CleanJavaProjectActionTest extends JellyTestCase {
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
-    public ClassNodeTest(String testName) {
+    public CleanJavaProjectActionTest(String testName) {
         super(testName);
     }
     
@@ -72,13 +67,17 @@ public class ClassNodeTest extends JellyTestCase {
     public static Test suite() {
         /*
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new ClassNodeTest("testVerifyPopup"));
-        suite.addTest(new ClassNodeTest("testProperties"));
+        suite.addTest(new CleanProjectActionTest("testPerformPopup"));
         return suite;
-        */
-        return createModuleTest(ClassNodeTest.class, 
-                "testVerifyPopup", "testProperties");
+         */
+        return createModuleTest(CleanJavaProjectActionTest.class, "testPerformPopup");
     }
+
+    @Override
+    protected void setUp() throws IOException {
+        openDataProjects("SampleProject");
+    }
+    
     
     /** Use for internal test execution inside IDE
      * @param args command line arguments
@@ -86,41 +85,18 @@ public class ClassNodeTest extends JellyTestCase {
     public static void main(java.lang.String[] args) {
         TestRunner.run(suite());
     }
-    
-    /** ClassNode instance used in all test cases. */
-    protected static ClassNode classNode = null;
 
-    /** Finds data node before each test case. */
-    protected void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
-        openDataProjects("SampleProject");
-        // find class node
-        if(classNode == null) { // NOI18N
-            Node sampleClass1Node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
-            MainWindowOperator.StatusTextTracer statusTextTracer = MainWindowOperator.getDefault().getStatusTextTracer();
-            statusTextTracer.start();
-            new CompileAction().perform(sampleClass1Node);
-            // wait status text "Building SampleProject (compile-single)"
-            statusTextTracer.waitText("compile-single", true); // NOI18N
-            // wait status text "Finished building SampleProject (compile-single).
-            statusTextTracer.waitText("compile-single", true); // NOI18N
-            statusTextTracer.stop();
-            // create exactly (full match) and case sensitively comparing comparator to distinguish build and build.xml node
-            Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
-            Node filesProjectNode = new FilesTabOperator().getProjectNode("SampleProject");
-            filesProjectNode.setComparator(comparator);
-            classNode = new ClassNode(filesProjectNode, "build|classes|sample1|SampleClass1.class"); // NOI18N
-        }
-    }
-    
-    /** Test verifyPopup */
-    public void testVerifyPopup() {
-        classNode.verifyPopup();
-    }
-    
-    /** Test properties */
-    public void testProperties() {
-        classNode.properties();
-        Utils.closeProperties("SampleClass1.class");
+    /** Test performPopup method. */
+    public void testPerformPopup() {
+        Node n = new ProjectsTabOperator().getProjectRootNode("SampleProject"); // NOI18N
+        MainWindowOperator.StatusTextTracer statusTextTracer = 
+                            MainWindowOperator.getDefault().getStatusTextTracer();
+        statusTextTracer.start();
+        new CleanJavaProjectAction().performPopup(n);
+        // wait status text "Building SampleProject (clean)"
+        statusTextTracer.waitText("clean", true); // NOI18N
+        // wait status text "Finished building SampleProject (clean).
+        statusTextTracer.waitText("clean", true); // NOI18N
+        statusTextTracer.stop();
     }
 }

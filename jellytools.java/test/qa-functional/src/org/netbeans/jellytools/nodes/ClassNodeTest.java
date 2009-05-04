@@ -40,29 +40,27 @@
  */
 package org.netbeans.jellytools.nodes;
 
-import java.awt.Toolkit;
 import java.io.IOException;
-import org.netbeans.junit.NbTestSuite;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.SaveAsTemplateOperator;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.actions.CompileJavaAction;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jellytools.testutils.NodeUtils;
 
-/** Test of org.netbeans.jellytools.nodes.JavaNode
+/** Test of org.netbeans.jellytools.nodes.ClassNode
  *
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  * @author Jiri.Skrivanek@sun.com
  */
-public class JavaNodeTest extends JellyTestCase {
+public class ClassNodeTest extends JellyTestCase {
     
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
-    public JavaNodeTest(String testName) {
+    public ClassNodeTest(String testName) {
         super(testName);
     }
     
@@ -71,23 +69,12 @@ public class JavaNodeTest extends JellyTestCase {
     public static Test suite() {
         /*
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new JavaNodeTest("testVerifyPopup"));
-        suite.addTest(new JavaNodeTest("testOpen"));
-        suite.addTest(new JavaNodeTest("testCut"));
-        suite.addTest(new JavaNodeTest("testCopy"));
-        suite.addTest(new JavaNodeTest("testDelete"));
-        suite.addTest(new JavaNodeTest("testSaveAsTemplate"));
-        suite.addTest(new JavaNodeTest("testProperties"));
+        suite.addTest(new ClassNodeTest("testVerifyPopup"));
+        suite.addTest(new ClassNodeTest("testProperties"));
         return suite;
-         */
-        return createModuleTest(JavaNodeTest.class, 
-        "testVerifyPopup",
-        "testOpen",
-        "testCut",
-        "testCopy",
-        "testDelete",
-        "testSaveAsTemplate",
-        "testProperties");
+        */
+        return createModuleTest(ClassNodeTest.class, 
+                "testVerifyPopup", "testProperties");
     }
     
     /** Use for internal test execution inside IDE
@@ -97,59 +84,40 @@ public class JavaNodeTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
-    protected static JavaNode javaNode = null;
-    
-    /** Finds node before each test case. */
+    /** ClassNode instance used in all test cases. */
+    protected static ClassNode classNode = null;
+
+    /** Finds data node before each test case. */
     protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
         openDataProjects("SampleProject");
-        if(javaNode == null) {
-            javaNode = new JavaNode(new FilesTabOperator().getProjectNode("SampleProject"),
-                                      "src|sample1|SampleClass1.java"); // NOI18N
+        // find class node
+        if(classNode == null) { // NOI18N
+            Node sampleClass1Node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
+            MainWindowOperator.StatusTextTracer statusTextTracer = MainWindowOperator.getDefault().getStatusTextTracer();
+            statusTextTracer.start();
+            new CompileJavaAction().perform(sampleClass1Node);
+            // wait status text "Building SampleProject (compile-single)"
+            statusTextTracer.waitText("compile-single", true); // NOI18N
+            // wait status text "Finished building SampleProject (compile-single).
+            statusTextTracer.waitText("compile-single", true); // NOI18N
+            statusTextTracer.stop();
+            // create exactly (full match) and case sensitively comparing comparator to distinguish build and build.xml node
+            Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
+            Node filesProjectNode = new FilesTabOperator().getProjectNode("SampleProject");
+            filesProjectNode.setComparator(comparator);
+            classNode = new ClassNode(filesProjectNode, "build|classes|sample1|SampleClass1.class"); // NOI18N
         }
     }
     
     /** Test verifyPopup */
     public void testVerifyPopup() {
-        javaNode.verifyPopup();
-    }
-    
-    /** Test open */
-    public void testOpen() {
-        javaNode.open();
-        new EditorOperator("SampleClass1.java").closeDiscard();  // NOI18N
-    }
-    
-    /** Test cut  */
-    public void testCut() {
-        Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
-        javaNode.cut();
-        Utils.testClipboard(clipboard1);
-    }
-    
-    /** Test copy */
-    public void testCopy() {
-        Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
-        javaNode.copy();
-        Utils.testClipboard(clipboard1);
-    }
-    
-    /** Test delete */
-    public void testDelete() {
-        javaNode.delete();
-        Utils.closeSafeDeleteDialog();
+        classNode.verifyPopup();
     }
     
     /** Test properties */
     public void testProperties() {
-        javaNode.properties();
-        Utils.closeProperties("SampleClass1.java"); // NOI18N
+        classNode.properties();
+        NodeUtils.closeProperties("SampleClass1.class");
     }
-    
-    /** Test saveAsTemplate */
-    public void testSaveAsTemplate() {
-        javaNode.saveAsTemplate();
-        new SaveAsTemplateOperator().close();
-    }
-    
 }

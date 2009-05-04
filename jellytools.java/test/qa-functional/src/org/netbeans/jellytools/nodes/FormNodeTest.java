@@ -43,7 +43,6 @@ package org.netbeans.jellytools.nodes;
 import java.awt.Toolkit;
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.FilesTabOperator;
@@ -52,7 +51,7 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.SaveAsTemplateOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jellytools.testutils.NodeUtils;
 
 /** Test of org.netbeans.jellytools.nodes.FormNode
  */
@@ -148,20 +147,20 @@ public class FormNodeTest extends JellyTestCase {
     public void testCut() {
         Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         formNode.cut();
-        Utils.testClipboard(clipboard1);
+        NodeUtils.testClipboard(clipboard1);
     }
     
     /** Test copy  */
     public void testCopy() {
         Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         formNode.copy();
-        Utils.testClipboard(clipboard1);
+        NodeUtils.testClipboard(clipboard1);
     }
 
     /** Test delete */
     public void testDelete() {
         formNode.delete();
-        Utils.closeSafeDeleteDialog();
+        NodeUtils.closeSafeDeleteDialog();
     }
     
     /** Test saveAsTemplate. */
@@ -173,6 +172,6 @@ public class FormNodeTest extends JellyTestCase {
     /** Test properties */
     public void testProperties() {
         formNode.properties();
-        Utils.closeProperties("JFrameSample");  // NOI18N
+        NodeUtils.closeProperties("JFrameSample");  // NOI18N
     }
 }

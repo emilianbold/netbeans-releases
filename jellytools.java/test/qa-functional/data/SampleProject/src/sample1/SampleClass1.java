@@ -38,67 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package sample1;
 
-package org.netbeans.jellytools.actions;
-
-import java.io.IOException;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.junit.NbTestSuite;
-
-/** Test of org.netbeans.jellytools.actions.CleanProjectAction
- *
- * @author Jiri.Skrivanek@sun.com
+/**
+ * This is a sample class used in Jellytools tests
  */
-public class CleanProjectActionTest extends JellyTestCase {
+public class SampleClass1 {
 
-    /** constructor required by JUnit
-     * @param testName method name to be used as testcase
-     */
-    public CleanProjectActionTest(String testName) {
-        super(testName);
-    }
-    
-    /** method used for explicit testsuite definition
-     */
-    public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new CleanProjectActionTest("testPerformPopup"));
-        return suite;
-         */
-        return createModuleTest(CleanProjectActionTest.class, "testPerformPopup");
+    /** Creates a new instance of SampleClass1 */
+    public SampleClass1() {
     }
 
-    @Override
-    protected void setUp() throws IOException {
-        openDataProjects("SampleProject");
-    }
-    
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
+    /**
+     * @param args the command line arguments
      */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
+    public static void main(String[] args) {
     }
 
-    /** Test performPopup method. */
-    public void testPerformPopup() {
-        Node n = new ProjectsTabOperator().getProjectRootNode("SampleProject"); // NOI18N
-        MainWindowOperator.StatusTextTracer statusTextTracer = 
-                            MainWindowOperator.getDefault().getStatusTextTracer();
-        statusTextTracer.start();
-        new CleanProjectAction().performPopup(n);
-        // wait status text "Building SampleProject (clean)"
-        statusTextTracer.waitText("clean", true); // NOI18N
-        // wait status text "Finished building SampleProject (clean).
-        statusTextTracer.waitText("clean", true); // NOI18N
-        statusTextTracer.stop();
-    }
 }
+

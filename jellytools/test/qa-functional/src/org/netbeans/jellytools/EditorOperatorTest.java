@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import javax.swing.text.JTextComponent;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.DockWindowAction;
 import org.netbeans.jellytools.actions.UndockWindowAction;
@@ -55,9 +54,6 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.AbstractButtonOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTest;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  * Test of org.netbeans.jellytools.EditorOperator.

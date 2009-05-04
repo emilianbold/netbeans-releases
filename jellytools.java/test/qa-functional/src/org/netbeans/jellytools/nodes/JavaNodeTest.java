@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,29 +38,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.jellytools.nodes;
 
-package org.netbeans.jellytools.actions;
-
+import java.awt.Toolkit;
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
 
-/** Test org.netbeans.jellytools.actions.CleanProjectAction
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.FilesTabOperator;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.SaveAsTemplateOperator;
+import org.netbeans.jellytools.testutils.NodeUtils;
+
+/** Test of org.netbeans.jellytools.nodes.JavaNode
  *
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  * @author Jiri.Skrivanek@sun.com
  */
-public class CompileActionTest extends JellyTestCase {
-
+public class JavaNodeTest extends JellyTestCase {
+    
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
-    public CompileActionTest(String testName) {
+    public JavaNodeTest(String testName) {
         super(testName);
     }
     
@@ -69,14 +70,25 @@ public class CompileActionTest extends JellyTestCase {
     public static Test suite() {
         /*
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new CompileActionTest("testPerformPopup"));
-        suite.addTest(new CompileActionTest("testPerformMenu"));
-        suite.addTest(new CompileActionTest("testPerformShortcut"));
+        suite.addTest(new JavaNodeTest("testVerifyPopup"));
+        suite.addTest(new JavaNodeTest("testOpen"));
+        suite.addTest(new JavaNodeTest("testCut"));
+        suite.addTest(new JavaNodeTest("testCopy"));
+        suite.addTest(new JavaNodeTest("testDelete"));
+        suite.addTest(new JavaNodeTest("testSaveAsTemplate"));
+        suite.addTest(new JavaNodeTest("testProperties"));
         return suite;
          */
-        return createModuleTest(CompileActionTest.class, "testPerformPopup", "testPerformMenu", "testPerformShortcut");
+        return createModuleTest(JavaNodeTest.class, 
+        "testVerifyPopup",
+        "testOpen",
+        "testCut",
+        "testCopy",
+        "testDelete",
+        "testSaveAsTemplate",
+        "testProperties");
     }
-
+    
     /** Use for internal test execution inside IDE
      * @param args command line arguments
      */
@@ -84,41 +96,59 @@ public class CompileActionTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
-    private static Node node;
-    private static MainWindowOperator.StatusTextTracer statusTextTracer;
+    protected static JavaNode javaNode = null;
     
-    public void setUp() throws IOException {
+    /** Finds node before each test case. */
+    protected void setUp() throws IOException {
+        System.out.println("### "+getName()+" ###");
         openDataProjects("SampleProject");
-        if(node ==null) {
-            node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java");
+        if(javaNode == null) {
+            javaNode = new JavaNode(new FilesTabOperator().getProjectNode("SampleProject"),
+                                      "src|sample1|SampleClass1.java"); // NOI18N
         }
-        if(statusTextTracer == null) {
-            statusTextTracer = MainWindowOperator.getDefault().getStatusTextTracer();
-        }
-        statusTextTracer.start();
-    }
-
-    public void tearDown() {
-        // wait status text "Building SampleProject (compile-single)"
-        statusTextTracer.waitText("compile-single", true); // NOI18N
-        // wait status text "Finished building SampleProject (compile-single).
-        statusTextTracer.waitText("compile-single", true); // NOI18N
-        statusTextTracer.stop();
     }
     
-    /** Test performPopup method. */
-    public void testPerformPopup() {
-        new CompileAction().performPopup(node);
+    /** Test verifyPopup */
+    public void testVerifyPopup() {
+        javaNode.verifyPopup();
     }
     
-    /** Test performMenu method. */
-    public void testPerformMenu() {
-        new CompileAction().performMenu(node);
+    /** Test open */
+    public void testOpen() {
+        javaNode.open();
+        new EditorOperator("SampleClass1.java").closeDiscard();  // NOI18N
     }
     
-    /** Test performShortcut method. */
-    public void testPerformShortcut() {
-        new CompileAction().performShortcut(node);
+    /** Test cut  */
+    public void testCut() {
+        Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
+        javaNode.cut();
+        NodeUtils.testClipboard(clipboard1);
+    }
+    
+    /** Test copy */
+    public void testCopy() {
+        Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
+        javaNode.copy();
+        NodeUtils.testClipboard(clipboard1);
+    }
+    
+    /** Test delete */
+    public void testDelete() {
+        javaNode.delete();
+        NodeUtils.closeSafeDeleteDialog();
+    }
+    
+    /** Test properties */
+    public void testProperties() {
+        javaNode.properties();
+        NodeUtils.closeProperties("SampleClass1.java"); // NOI18N
+    }
+    
+    /** Test saveAsTemplate */
+    public void testSaveAsTemplate() {
+        javaNode.saveAsTemplate();
+        new SaveAsTemplateOperator().close();
     }
     
 }

@@ -39,31 +39,26 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.jellytools.modules.debugger.actions;
+package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperator;
-import org.netbeans.jellytools.nodes.JavaNode;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
 
-/** Test DeleteAllBreakpointsAction.
+/** Test org.netbeans.jellytools.actions.CleanProjectAction
  *
- * @author Martin.Schovanek@sun.com
+ * @author Jiri.Skrivanek@sun.com
  */
-public class DebugActionTest extends JellyTestCase {
+public class CompileJavaActionTest extends JellyTestCase {
 
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
-    public DebugActionTest(String testName) {
+    public CompileJavaActionTest(String testName) {
         super(testName);
     }
     
@@ -72,51 +67,56 @@ public class DebugActionTest extends JellyTestCase {
     public static Test suite() {
         /*
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new BreakpointsWindowActionTest("testPerformMenu"));
+        suite.addTest(new CompileActionTest("testPerformPopup"));
+        suite.addTest(new CompileActionTest("testPerformMenu"));
+        suite.addTest(new CompileActionTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(DebugActionTest.class);
-    }
-    
-    private static final String SAMPLE_CLASS_1 = "SampleClass1";
-    private static JavaNode sampleClass1 = null;
-    private static final String outputTitle = "SampleProject (debug-single)";
-
-    protected void setUp() throws IOException {
-        openDataProjects("SampleProject");
-        System.out.println("### "+getName()+" ###");
-        if(sampleClass1 == null) {
-            Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1");  // NOI18N
-            sampleClass1 = new JavaNode(sample1, SAMPLE_CLASS_1);
-            sampleClass1.open();
-        }
+        return createModuleTest(CompileJavaActionTest.class, "testPerformPopup", "testPerformMenu", "testPerformShortcut");
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        new OutputTabOperator(outputTitle).waitText("BUILD SUCCESSFUL");
-        super.tearDown();
-    }
-
-    /** Test performMenu() method. */
-    public void testPerformMenu() {
-        new DebugAction().performMenu(sampleClass1);
-    }
-    
-    /** Test performMenu() method. */
-    public void testPerformPopup() {
-        new DebugAction().performPopup(sampleClass1);
-    }
-    
-    /** Test performMenu() method. */
-    public void testPerformShortcut() {
-        new DebugAction().performShortcut(sampleClass1);
-    }
-    
     /** Use for internal test execution inside IDE
      * @param args command line arguments
      */
     public static void main(java.lang.String[] args) {
         TestRunner.run(suite());
     }
+    
+    private static Node node;
+    private static MainWindowOperator.StatusTextTracer statusTextTracer;
+    
+    public void setUp() throws IOException {
+        openDataProjects("SampleProject");
+        if(node ==null) {
+            node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java");
+        }
+        if(statusTextTracer == null) {
+            statusTextTracer = MainWindowOperator.getDefault().getStatusTextTracer();
+        }
+        statusTextTracer.start();
+    }
+
+    public void tearDown() {
+        // wait status text "Building SampleProject (compile-single)"
+        statusTextTracer.waitText("compile-single", true); // NOI18N
+        // wait status text "Finished building SampleProject (compile-single).
+        statusTextTracer.waitText("compile-single", true); // NOI18N
+        statusTextTracer.stop();
+    }
+    
+    /** Test performPopup method. */
+    public void testPerformPopup() {
+        new CompileJavaAction().performPopup(node);
+    }
+    
+    /** Test performMenu method. */
+    public void testPerformMenu() {
+        new CompileJavaAction().performMenu(node);
+    }
+    
+    /** Test performShortcut method. */
+    public void testPerformShortcut() {
+        new CompileJavaAction().performShortcut(node);
+    }
+    
 }
