@@ -52,6 +52,7 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.nbbuild.PublicPackagesInProjectizedXMLTest.ExecutionError;
 
 /**
@@ -62,10 +63,11 @@ public class MakeNBMTest extends NbTestCase {
         super (name);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
     }
-    
+
+    @RandomlyFails // NB-Core-Build #2570
     public void testGenerateNBMForSimpleModule() throws Exception {
         Manifest m;
         

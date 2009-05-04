@@ -129,7 +129,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             posVis.scan(cuTree, pos);
         }
         
-        if ( !canceled.get()) {
+        if ( !canceled.get() && elements != null) {
             for (Element element : elements) {
                 Description topLevel = element2description(element, null, false, info, pos);
                 if( null != topLevel ) {

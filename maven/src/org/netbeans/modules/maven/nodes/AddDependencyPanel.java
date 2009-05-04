@@ -1118,7 +1118,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
 
 
     private static class OpenListPanel extends JPanel implements ExplorerManager.Provider,
-            PropertyChangeListener, Runnable {
+            PropertyChangeListener, Runnable, ActionListener {
 
         private ListView lv;
         private ExplorerManager manager;
@@ -1129,7 +1129,9 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             this.depPanel = depPanel;
             this.project = project;
             lv = new ListView();
-            //lv.setDefaultProcessor(this);
+            lv.setDefaultProcessor(this);
+            lv.setPopupAllowed(false);
+            lv.setTraversalAllowed(false);
             manager = new ExplorerManager();
             manager.addPropertyChangeListener(this);
             setLayout(new BorderLayout());
@@ -1197,6 +1199,10 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     }
                 }
             });
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // empty impl, disables default action
         }
 
     }

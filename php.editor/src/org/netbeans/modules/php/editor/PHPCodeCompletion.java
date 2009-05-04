@@ -238,7 +238,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             request.anchor = caretOffset - prefix.length();
             request.result = result;
             request.info = info;
-            request.prefix = prefix;
+            request.prefix = prefix.startsWith("@") ? prefix.substring(1) : prefix;//NOI18N
             request.index = PHPIndex.get(info);
 
             try {
