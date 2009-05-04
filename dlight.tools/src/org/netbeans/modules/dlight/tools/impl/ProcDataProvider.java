@@ -232,10 +232,10 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
         Engine engine;
         switch (hostInfo.getOSFamily()) {
             case LINUX:
-                engine = new ProcDataProviderLinux(this);
+                engine = new ProcDataProviderLinux(this, getServiceInfoDataStorage());
                 break;
             case SUNOS:
-                engine = new ProcDataProviderSolaris(this, env);
+                engine = new ProcDataProviderSolaris(this, getServiceInfoDataStorage(), env);
                 break;
             default:
                 DLightLogger.instance.severe("Called ProcDataProvider.targetStarted() on unsupported OS"); // NOI18N

@@ -143,13 +143,14 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
         this.io = io;
         targetConf.setIO(io);
-        NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
-        target.addTargetListener(this);
         DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
         if (options instanceof GizmoConfigurationOptions) {
             ((GizmoConfigurationOptions) options).configure(pae.getProject());
+            targetConf.putInfo("idps", ((GizmoConfigurationOptions) options).getDLightIndicatorDPStrings());
         }
+        NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
+        target.addTargetListener(this);
 
 
         //WE are here only when Profile On RUn 
