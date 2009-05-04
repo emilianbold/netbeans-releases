@@ -70,7 +70,7 @@ import org.netbeans.modules.jira.commands.JiraCommand;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Jan Stola
  */
 public class JiraConfiguration extends JiraClientCache {
 
@@ -318,7 +318,7 @@ public class JiraConfiguration extends JiraClientCache {
     }
 
     public Component getComponentById(String projectId, String componentId) {
-        for (Component component : getProjectById(projectId).getComponents()) {
+        for (Component component : getComponents(projectId)) {
             if (componentId.equals(component.getId())) {
                 return component;
             }
@@ -335,6 +335,15 @@ public class JiraConfiguration extends JiraClientCache {
             ensureProjectLoaded(project);
             return project.getVersions();
         }
+    }
+
+    public Version getVersionById(String projectId, String versionId) {
+        for (Version version : getVersions(projectId)) {
+            if (versionId.equals(version.getId())) {
+                return version;
+            }
+        }
+        return null;
     }
 
     private class LazyData extends JiraClientData {
