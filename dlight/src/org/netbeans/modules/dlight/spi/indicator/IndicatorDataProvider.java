@@ -48,6 +48,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfigurat
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 
 /**
  * Provided information for {@link org.netbeans.modules.dlight.spi.indicator.Indicator}.
@@ -60,6 +61,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfiguration> implements DLightTargetListener, Validateable<DLightTarget> {
 
   private final Collection<Indicator> listeners = new ArrayList<Indicator>();
+  private ServiceInfoDataStorage serviceInfoDataStorage;
 
   
   private void addIndicatorDataProviderListener(Indicator l) {
@@ -139,4 +141,21 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
    * @return data provider name
    */
   public abstract String getName();
+
+
+  /**
+   *  Initialize with service info data storage
+   * @param infoStorage service infor data storage
+   */
+  public final void init(ServiceInfoDataStorage infoStorage){
+    this.serviceInfoDataStorage = infoStorage;
+  }
+
+  /**
+   * Returns service info storage
+   * @return service info storage
+   */
+  protected final ServiceInfoDataStorage getServiceInfoDataStorage(){
+      return serviceInfoDataStorage;
+  }
 }

@@ -9,8 +9,8 @@
     <target name="netbeans" depends="projectized-common.netbeans">
         <chmod file="${cluster}/bin/nativeexecution/Linux-x86/unbuffer.so" perm="ugo+rx"/>
         <chmod file="${cluster}/bin/nativeexecution/Linux-x86_64/unbuffer.so" perm="ugo+rx"/>
-        <chmod file="${cluster}/bin/nativeexecution/Mac_OS_X-x86/unbuffer.dylib" perm="ugo+rx"/>
-        <chmod file="${cluster}/bin/nativeexecution/Mac_OS_X-x86_64/unbuffer.dylib" perm="ugo+rx"/>
+        <chmod file="${cluster}/bin/nativeexecution/MacOSX-x86/unbuffer.dylib" perm="ugo+rx"/>
+        <chmod file="${cluster}/bin/nativeexecution/MacOSX-x86_64/unbuffer.dylib" perm="ugo+rx"/>
         <chmod file="${cluster}/bin/nativeexecution/SunOS-sparc/privp" perm="ugo+rx"/>
         <chmod file="${cluster}/bin/nativeexecution/SunOS-sparc/unbuffer.so" perm="ugo+rx"/>
         <chmod file="${cluster}/bin/nativeexecution/SunOS-sparc_64/unbuffer.so" perm="ugo+rx"/>
@@ -18,7 +18,7 @@
         <chmod file="${cluster}/bin/nativeexecution/SunOS-x86/unbuffer.so" perm="ugo+rx"/>
         <chmod file="${cluster}/bin/nativeexecution/SunOS-x86_64/unbuffer.so" perm="ugo+rx"/>
         <chmod file="${cluster}/bin/nativeexecution/dorun.sh" perm="ugo+rx"/>
-        <chmod file="${cluster}/bin/nativeexecution/Windows_XP-x86/unbuffer.dll" perm="ugo+rx"/>
+        <chmod file="${cluster}/bin/nativeexecution/Windows-x86/unbuffer.dll" perm="ugo+rx"/>
     </target>
 
 </project>
