@@ -96,6 +96,7 @@ import org.openide.util.HelpCtx;
 
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
+        applyChanges();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -105,6 +106,10 @@ import org.openide.util.HelpCtx;
     }
 
     public void storeSettings(WizardDescriptor settings) {
+        applyChanges();
+    }
+
+    public void applyChanges() {
         HostSetupProvider provider = getComponent().getSelectedProvider();
         assert provider != null;
 

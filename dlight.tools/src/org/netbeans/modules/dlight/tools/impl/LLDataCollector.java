@@ -96,9 +96,11 @@ public class LLDataCollector
     private DLightTarget target;
     private ValidationStatus validationStatus;
     private List<ValidationListener> validationListeners;
+    private final String name;
 
     public LLDataCollector(LLDataCollectorConfiguration configuration) {
         collectedData = EnumSet.of(LLDataCollectorConfigurationAccessor.getDefault().getCollectedData(configuration));
+        name = LLDataCollectorConfigurationAccessor.getDefault().getName();
         validationStatus = ValidationStatus.initialStatus();
         validationListeners = new ArrayList<ValidationListener>();
     }
@@ -108,7 +110,7 @@ public class LLDataCollector
     }
 
     public String getName() {
-        return "LLTool"; // NOI18N
+        return name;
     }
 
     public List<DataTableMetadata> getDataTablesMetadata() {

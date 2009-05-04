@@ -81,16 +81,20 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
             CharSequence path = resolvedPath.getPath();
             if (getIncludeHandler().pushInclude(path, apt.getToken().getLine(), resolvedPath.getIndex())) {
                 ProjectBase aStartProject = this.getStartProject();
-                if (aStartProject != null && aStartProject.isValid()) {
-                    ProjectBase inclFileOwner = LibraryManager.getInstance().resolveFileProjectOnInclude(aStartProject, getFile(), resolvedPath);
-                    try {
-                        included = includeAction(inclFileOwner, path, mode, apt);
-                    } catch (FileNotFoundException ex) {
-                        APTUtils.LOG.log(Level.WARNING, "APTProjectFileBasedWalker: file {0} not found", new Object[] {path});// NOI18N
-			DiagnosticExceptoins.register(ex);
-                    } catch (IOException ex) {
-                        APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: error on including {0}:\n{1}", new Object[] {path, ex});
-			DiagnosticExceptoins.register(ex);
+                if (aStartProject != null){
+                    if (aStartProject.isValid()) {
+                        ProjectBase inclFileOwner = LibraryManager.getInstance().resolveFileProjectOnInclude(aStartProject, getFile(), resolvedPath);
+                        try {
+                            included = includeAction(inclFileOwner, path, mode, apt);
+                        } catch (FileNotFoundException ex) {
+                            APTUtils.LOG.log(Level.WARNING, "APTProjectFileBasedWalker: file {0} not found", new Object[] {path});// NOI18N
+                            DiagnosticExceptoins.register(ex);
+                        } catch (IOException ex) {
+                            APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: error on including {0}:\n{1}", new Object[] {path, ex});
+                            DiagnosticExceptoins.register(ex);
+                        }
+                    } else {
+                        getIncludeHandler().popInclude();
                     }
                 } else {
                     APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: file {0} without project!!!", new Object[] {file});// NOI18N
@@ -98,7 +102,9 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                 }
             }
         }
-	postInclude(apt, included);
+        if (included != null) {
+            postInclude(apt, included);
+        }
     }
     
     abstract protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt) throws IOException;
