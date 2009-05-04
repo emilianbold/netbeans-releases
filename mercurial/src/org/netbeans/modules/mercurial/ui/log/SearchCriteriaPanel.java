@@ -76,6 +76,24 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         return s;
     }
 
+    /**
+     *
+     * @return limit for shown changesets, -1 for no limit
+     */
+    public int getLimit() {
+        String s = tfLimit.getText().trim();
+        Integer retval = -1;
+        try {
+            retval = Integer.parseInt(s);
+        } catch (NumberFormatException ex) {
+            retval = -1;
+        }
+        if (retval <= 0) {
+            retval = -1;
+        }
+        return retval;
+    }
+
     void setForIncoming() {
         fromInfoLabel.setText(NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_FromToOutOrIncomingHint"));
         toInfoLabel.setText(NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_FromToOutOrIncomingHint"));
@@ -86,6 +104,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
         tfFrom.setText(NbBundle.getMessage(SearchHistoryPanel.class,  "TTF_IncomingFrom"));
         tfFrom.setEnabled(false);
+        tfLimit.setEnabled(false);
     }
     
     void setForOut() {
@@ -98,6 +117,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         
         tfFrom.setText(NbBundle.getMessage(SearchHistoryPanel.class,  "TTF_OutFrom"));
         tfFrom.setEnabled(false);
+        tfLimit.setEnabled(false);
     }
     
     private Date parseDate(String s) {
@@ -169,6 +189,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         fromInfoLabel = new javax.swing.JLabel();
         toLabel = new javax.swing.JLabel();
         toInfoLabel = new javax.swing.JLabel();
+        toLabel1 = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 12, 0, 11));
         setLayout(new java.awt.GridBagLayout());
@@ -239,20 +260,15 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         toLabel.setToolTipText(bundle.getString("TT_To")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         add(toLabel, gridBagConstraints);
 
         tfTo.setColumns(20);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(tfTo, gridBagConstraints);
 
@@ -261,9 +277,27 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_START;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 2, 0, 4);
         add(toInfoLabel, gridBagConstraints);
+
+        toLabel1.setLabelFor(tfLimit);
+        org.openide.awt.Mnemonics.setLocalizedText(toLabel1, bundle.getString("CTL_UseLimit")); // NOI18N
+        toLabel1.setToolTipText(bundle.getString("TT_Limit")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
+        add(toLabel1, gridBagConstraints);
+
+        tfLimit.setColumns(10);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
+        add(tfLimit, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     
@@ -273,10 +307,12 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     private javax.swing.JLabel fromLabel;
     private javax.swing.JTextField tfCommitMessage;
     final javax.swing.JTextField tfFrom = new javax.swing.JTextField();
+    final javax.swing.JTextField tfLimit = new javax.swing.JTextField();
     final javax.swing.JTextField tfTo = new javax.swing.JTextField();
     private javax.swing.JTextField tfUsername;
     private javax.swing.JLabel toInfoLabel;
     private javax.swing.JLabel toLabel;
+    private javax.swing.JLabel toLabel1;
     private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
     
