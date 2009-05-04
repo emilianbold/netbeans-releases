@@ -940,7 +940,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return "[" + data + "]"; // NOI18N
     }
 
-    private static int log10(int n) {
+    static int log10(int n) {
         int l = 1;
         while ((n = n / 10) > 0) {
             l++;
@@ -952,6 +952,11 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     private static final String ZEROS = "            "; // NOI18N
 
     static String zeros(int n) {
+        // Perf & mem optimization
+        switch (n) {
+            case 1 : return " "; // NOI18N
+            case 2 : return "  "; // NOI18N
+        }
         if (n < ZEROS.length()) {
             return ZEROS.substring(0, n);
         } else {
