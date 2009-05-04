@@ -116,27 +116,22 @@ public class Mercurial {
             throw new IllegalArgumentException("repository URL is null"); //NOI18N
         }
 
-        // use repository url as default
-        if (pullUrl == null || pullUrl.length() == 0) {
-            pullUrl = repositoryUrl;
-        }
-        if (pushUrl == null || pushUrl.length() == 0) {
-            pushUrl = pullUrl;
-        }
-
         HgURL hgUrl, pullPath, pushPath;
         try {
             hgUrl = new HgURL(repositoryUrl, username, password);
         } catch (URISyntaxException ex) {
             throw new MalformedURLException(ex.getMessage());
         }
+
+        pullUrl = getNonEmptyString(pullUrl);
+        pushUrl = getNonEmptyString(pushUrl);
         try {
-            pullPath = new HgURL(pullUrl);
+            pullPath = (pullUrl != null) ? new HgURL(pullUrl) : null;
         } catch (URISyntaxException ex) {
             throw new MalformedURLException("Invalid pull URL: " + ex.getMessage());
         }
         try {
-            pushPath = new HgURL(pushUrl);
+            pushPath = (pushUrl != null) ? new HgURL(pushUrl) : null;
         } catch (URISyntaxException ex) {
             throw new MalformedURLException("Invalid push URL: " + ex.getMessage());
         }
@@ -154,6 +149,25 @@ public class Mercurial {
         } catch (Exception e) {
             Logger.getLogger(Mercurial.class.getName()).log(Level.FINE, "Cannot store mercurial workdir preferences", e);
         }
+    }
+
+    /**
+     * Trims leading and trailing spaces from the given string the same way
+     * as method String.trim(). The difference is that if the passed string
+     * is {@code null} or if the string contains just spaces, {@code null}
+     * is returned.
+     * 
+     * @param  s  string to trim the spaces off
+     * @return  trimmed string, or {@code null} if the given string was
+     *          {@code null} or if the given string contained just spaces
+     */
+    private static String getNonEmptyString(String s) {
+        if (s == null) {
+            return null;
+        }
+
+        s = s.trim();
+        return (s.length() != 0) ? s : null;
     }
 
     private static final String WORKINGDIR_KEY_PREFIX = "working.dir."; //NOI18N

@@ -43,6 +43,7 @@ package org.netbeans.spi.project.support.ant;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -785,7 +786,7 @@ public class PropertyUtils {
         private final PropertyProvider preprovider;
         private final PropertyProvider[] providers;
         private Map<String,String> defs;
-        private final List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         
         public SequentialPropertyEvaluator(final PropertyProvider preprovider, final PropertyProvider[] providers) {
             this.preprovider = preprovider;
@@ -841,15 +842,11 @@ public class PropertyUtils {
         }
         
         public void addPropertyChangeListener(PropertyChangeListener listener) {
-            synchronized (listeners) {
-                listeners.add(listener);
-            }
+            pcs.addPropertyChangeListener(listener);
         }
         
         public void removePropertyChangeListener(PropertyChangeListener listener) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
+            pcs.removePropertyChangeListener(listener);
         }
         
         public void stateChanged(ChangeEvent e) {
@@ -877,14 +874,8 @@ public class PropertyUtils {
                 }
                 assert !events.isEmpty();
                 defs = newdefs;
-                PropertyChangeListener[] _listeners;
-                synchronized (listeners) {
-                    _listeners = listeners.toArray(new PropertyChangeListener[listeners.size()]);
-                }
-                for (PropertyChangeListener l : _listeners) {
-                    for (PropertyChangeEvent ev : events) {
-                        l.propertyChange(ev);
-                    }
+                for (PropertyChangeEvent ev : events) {
+                    pcs.firePropertyChange(ev);
                 }
             }
         }
