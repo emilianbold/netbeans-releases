@@ -100,6 +100,7 @@ class SearchExecutor implements Runnable {
 
         final String fromRevision = criteria.getFrom();
         final String toRevision = criteria.getTo();
+        final int limitRevisions = criteria.getLimit();
 
         completedSearches = 0;
         for (Map.Entry<File, Set<File>> entry : workFiles.entrySet()) {
@@ -109,7 +110,7 @@ class SearchExecutor implements Runnable {
             HgProgressSupport support = new HgProgressSupport() {
                 public void perform() {
                     OutputLogger logger = getLogger();
-                    search(root, files, fromRevision, toRevision, this, logger);
+                    search(root, files, fromRevision, toRevision, limitRevisions, this, logger);
                 }
             };
             support.start(rp, root, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
@@ -117,7 +118,7 @@ class SearchExecutor implements Runnable {
     }
 
     private void search(File root, Set<File> files, String fromRevision,
-            String toRevision, HgProgressSupport progressSupport, OutputLogger logger) {
+            String toRevision, int limitRevisions, HgProgressSupport progressSupport, OutputLogger logger) {
         if (progressSupport.isCanceled()) {
             searchCanceled = true;
             return;
@@ -130,9 +131,9 @@ class SearchExecutor implements Runnable {
             messages = HgCommand.getOutMessages(root, toRevision, master.isShowMerges(), logger);
         } else {
             if(!master.isShowInfo()) {
-                messages = HgCommand.getLogMessagesNoFileInfo(root, files, fromRevision, toRevision, master.isShowMerges(), logger);
+                messages = HgCommand.getLogMessagesNoFileInfo(root, files, fromRevision, toRevision, master.isShowMerges(), limitRevisions, logger);
             } else {
-                messages = HgCommand.getLogMessages(root, files, fromRevision, toRevision, master.isShowMerges(), logger);
+                messages = HgCommand.getLogMessages(root, files, fromRevision, toRevision, master.isShowMerges(), true, limitRevisions, logger, true);
             }
         }
         appendResults(root, messages);
