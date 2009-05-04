@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.tools.impl;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -47,6 +48,7 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import static org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration.*;
 
 /**
@@ -65,9 +67,15 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
     private static final int THREADS_IDX = 19; /* num_threads */
 
     private final ProcDataProvider provider;
+    private final ServiceInfoDataStorage serviceInfoStorage;
+    private final boolean decreaseThreads;
 
-    public ProcDataProviderLinux(ProcDataProvider provider) {
+    public ProcDataProviderLinux(ProcDataProvider provider, ServiceInfoDataStorage serviceInfoStorage) {
         this.provider = provider;
+        this.serviceInfoStorage = serviceInfoStorage;
+        String[] idps = this.serviceInfoStorage == null || serviceInfoStorage.getValue("idps") == null? null : serviceInfoStorage.getValue("idps").split(":");//NOI18N
+        List<String> idpsList = idps == null ? null : Arrays.asList(idps);
+        decreaseThreads = idpsList == null ? false : idpsList.contains(LLDataCollectorConfigurationAccessor.getDefault().getName());
     }
 
     public String getCommand(int pid) {
@@ -117,6 +125,9 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
                         } else if (THREADS_IDX == i) {
                             threads = Integer.parseInt(token);
                         }
+                    }
+                    if (decreaseThreads){
+                        threads--;
                     }
                     currUsrTicks = usrTicks;
                     currSysTicks = sysTicks;

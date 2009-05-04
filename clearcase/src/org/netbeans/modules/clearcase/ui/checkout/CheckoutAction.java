@@ -57,6 +57,7 @@ import org.netbeans.modules.clearcase.ClearcaseModuleConfig;
 import org.netbeans.modules.clearcase.FileInformation;
 import org.netbeans.modules.clearcase.client.*;
 
+import org.netbeans.modules.clearcase.util.ProgressSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -123,7 +124,7 @@ public class CheckoutAction extends AbstractAction {
         }
     }
     
-    private void performUncheckout(File [] files) {
+    private void performUncheckout(final File [] files) {
         String contextTitle = Utils.getContextDisplayName(context);
         JButton unCheckoutButton = new JButton(); 
         unCheckoutButton.setToolTipText(NbBundle.getMessage(CheckoutAction.class, "TT_UncheckoutAction"));
@@ -133,6 +134,7 @@ public class CheckoutAction extends AbstractAction {
         for (File file : files) {
             if(file.isFile()) {
                 panel.cbKeep.setEnabled(true);        
+                panel.onlyFolders = false;
                 break;
             }
         }
@@ -156,31 +158,59 @@ public class CheckoutAction extends AbstractAction {
         Object value = dd.getValue();
         if (value != unCheckoutButton) return;
 
-        // the direct children for every root have to be refeshed as
-        // the unceheckout might have changed the files structure -
-        // - newly added file won't be referenced etc.      
-        List<File> filesToRefresh = new ArrayList<File>();
-        for (File file : files) {
-            filesToRefresh.add(file);
-            File[] children = file.listFiles();
-            if(children != null) {
-                for (File child : children) {
-                    filesToRefresh.add(child);
+        final boolean keepFiles = panel.cbKeep.isSelected();
+        final boolean expand = panel.cbRecursively.isSelected();
+        final ProgressSupport ps = new FileStatusCache.RefreshSupport(Clearcase.getInstance().getClient().getRequestProcessor(),
+                context, NbBundle.getMessage(CheckoutAction.class, "Progress_Undoing_Checkout_Preparing")) { //NOI18N
+            @Override
+            protected void perform() {
+                File[] targetFiles = files;
+                // list target files recursively if user selected the option
+                if (expand) {
+                    FileStatusCache cache = Clearcase.getInstance().getFileStatusCache();
+
+                    // refresh the cache first so we will
+                    // know all uncheckout candidates
+                    refresh();
+
+                    // get all files to be un-checked out
+                    targetFiles = cache.listFiles(context, ALLOW_UNCO);
                 }
-            }    
-        }
+                if (isCanceled()) {
+                    return;
+                }
+
+                // the direct children for every root have to be refeshed as
+                // the unceheckout might have changed the files structure -
+                // - newly added file won't be referenced etc.
+                final Set<File> filesToRefresh = new HashSet<File>();
+                for (File file : targetFiles) {
+                    filesToRefresh.add(file);
+                    File[] children = file.listFiles();
+                    if (children != null) {
+                        for (File child : children) {
+                            filesToRefresh.add(child);
+                        }
+                    }
+                }
         
-        boolean keepFiles = panel.cbKeep.isSelected();
+                if (isCanceled()) {
+                    return;
+                }
+
         UnCheckoutCommand cmd = 
                 new UnCheckoutCommand(
-                    files, 
+                        targetFiles,
                     keepFiles, 
                     new AfterCommandRefreshListener(filesToRefresh.toArray(new File[filesToRefresh.size()])), 
                     new OutputWindowNotificationListener());
         Clearcase.getInstance().getClient().post(NbBundle.getMessage(CheckoutAction.class, "Progress_Undoing_Checkout"), cmd); //NOI18N
     }
+        };
+        ps.start();
+    }
 
-    private static void performCheckout(File[] files, String title) {        
+    private void performCheckout(final File[] files, String title) {
         JButton checkoutButton = new JButton(); 
         CheckoutPanel panel = new CheckoutPanel();
         checkoutButton.setToolTipText(NbBundle.getMessage(CheckoutAction.class, "TT_CheckoutAction"));
@@ -203,18 +233,40 @@ public class CheckoutAction extends AbstractAction {
         Object value = dd.getValue();
         if (value != checkoutButton) return;
         
-        String message = panel.taMessage.getText();
-        boolean doReserved = panel.cbReserved.isSelected();
+        final String message = panel.taMessage.getText();
+        final boolean doReserved = panel.cbReserved.isSelected();
+        final boolean expand = panel.cbRecursive.isSelected();
+
+        final ProgressSupport ps = new FileStatusCache.RefreshSupport(Clearcase.getInstance().getClient().getRequestProcessor(),
+                context, NbBundle.getMessage(CheckoutAction.class, "Progress_Checkout_Preparing")) { //NOI18N
+            @Override
+            protected void perform() {
+                File[] targetFiles = files;
+                // list target files recursively if user selected the option
+                if (expand) {
+                    FileStatusCache cache = Clearcase.getInstance().getFileStatusCache();
+                    // refresh the cache first so we will
+                    // know all checkout candidates
+                    refresh();
+                    // get all files to be checked out
+                    targetFiles = cache.listFiles(context, ALLOW_CHECKOUT);
+                }
+                if (isCanceled()) {
+                    return;
+                }
 
         Utils.insert(ClearcaseModuleConfig.getPreferences(), RECENT_CHECKOUT_MESSAGES, message, 20);
         CheckoutCommand cmd = 
                 new CheckoutCommand(
-                        files, 
+                        targetFiles,
                         message, 
                         doReserved ? CheckoutCommand.Reserved.Reserved : CheckoutCommand.Reserved.Unreserved, 
                         false, 
-                        new AfterCommandRefreshListener(files), 
+                        new AfterCommandRefreshListener(targetFiles),
                         new OutputWindowNotificationListener());                
         Clearcase.getInstance().getClient().post(NbBundle.getMessage(CheckoutAction.class, "Progress_Checkout"), cmd); //NOI18N
     }        
+        };
+        ps.start();
+}
 }

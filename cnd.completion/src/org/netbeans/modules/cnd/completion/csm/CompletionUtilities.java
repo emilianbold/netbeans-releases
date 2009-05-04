@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.CsmCompletionResult;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -142,20 +143,20 @@ public class CompletionUtilities {
             if (idFunBlk == null) {
                 idFunBlk = new int[]{dotPos, dotPos};
             }
-
+            CsmFile currentFile = CsmUtilities.getCsmFile(doc, false);
             boolean searchFuncsOnly = (idFunBlk.length == 3);
             for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
                 CsmCompletionResult result = query.query(target, baseDoc, idFunBlk[ind], true, false, false);
                 if (result != null && !result.getItems().isEmpty()) {
-                    List<CsmObject> filtered = getAssociatedObjects(result.getItems(), searchFuncsOnly);
-                    out = !filtered.isEmpty() ? filtered : getAssociatedObjects(result.getItems(), false);
+                    List<CsmObject> filtered = getAssociatedObjects(result.getItems(), searchFuncsOnly, currentFile);
+                    out = !filtered.isEmpty() ? filtered : getAssociatedObjects(result.getItems(), false, currentFile);
                     if (filtered.size() > 1 && searchFuncsOnly) {
                         // It is overloaded method, lets check for the right one
                         int endOfMethod = findEndOfMethod(baseDoc, idFunBlk[ind] - 1);
                         if (endOfMethod > -1) {
                             CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, true, false, false);
                             if (resultx != null && !resultx.getItems().isEmpty()) {
-                                out = getAssociatedObjects(resultx.getItems(), false);
+                                out = getAssociatedObjects(resultx.getItems(), false, currentFile);
                             }
                         }
                     }
@@ -167,22 +168,36 @@ public class CompletionUtilities {
         return out;
     }
 
-    private static List<CsmObject> getAssociatedObjects(List items, boolean wantFuncsOnly) {
-        List<CsmObject> out = new ArrayList<CsmObject>();
+    private static List<CsmObject> getAssociatedObjects(List items, boolean wantFuncsOnly, CsmFile contextFile) {
+        List<CsmObject> visible = new ArrayList<CsmObject>();
+        List<CsmObject> all = new ArrayList<CsmObject>();
         List<CsmObject> funcs = new ArrayList<CsmObject>();
+        List<CsmObject> visibleFuncs = new ArrayList<CsmObject>();
 
         for (Object item : items) {
             if (item instanceof CsmResultItem) {
                 CsmObject ret = getAssociatedObject(item);
+                boolean isVisible = contextFile == null ? false : CsmIncludeResolver.getDefault().isObjectVisible(contextFile, ret);
                 boolean isFunc = CsmKindUtilities.isFunction(ret);
                 if (isFunc) {
-                    funcs.add(ret);
+                    if (isVisible) {
+                        visibleFuncs.add(ret);
+                    } else {
+                        funcs.add(ret);
+                    }
                 }
-                out.add(ret);
+                if (isVisible) {
+                    visible.add(ret);
+                } else {
+                    all.add(ret);
+                }
             }
         }
+        List<CsmObject> out;
         if (wantFuncsOnly) {
-            out = funcs;
+            out = !visibleFuncs.isEmpty() ? visibleFuncs : funcs;
+        } else {
+            out = !visible.isEmpty() ? visible : all;
         }
         return out;
     }

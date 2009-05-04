@@ -59,6 +59,10 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void testArrowDerefOfThis() throws Exception {
+        performStaticTest("arrow_deref_of_this.cpp");
+    }
+
     public void testIZ162745() throws Exception {
         // IZ#162745:unnamed_enum_typedef.cpp
         performStaticTest("unnamed_enum_typedef.cpp");

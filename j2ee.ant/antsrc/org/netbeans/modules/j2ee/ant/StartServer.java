@@ -98,6 +98,7 @@ public class StartServer extends Task implements Deployment.Logger {
             String title = NbBundle.getMessage(ServerInstance.class,
                     "LBL_StartServerProgressMonitor", si.getDisplayName());
             ProgressUI ui = new ProgressUI(title, false, this);
+            ui.start();
             ServerDebugInfo sdi = null;
             // Start server instance if it has not yet been started.
             try {
@@ -134,7 +135,10 @@ public class StartServer extends Task implements Deployment.Logger {
                 }
             } catch (Exception ex) {
                 throw new BuildException(ex);
+            } finally {
+                ui.finish();
             }
+
         } finally {
             if (originalLoader != null) {
                 Thread.currentThread().setContextClassLoader(originalLoader);

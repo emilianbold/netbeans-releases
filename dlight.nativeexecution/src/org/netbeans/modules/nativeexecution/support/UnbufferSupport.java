@@ -55,7 +55,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 public class UnbufferSupport {
-
+    private static final java.util.logging.Logger log = Logger.getInstance();
     private static final HashMap<ExecutionEnvironment, String> cache =
             new HashMap<ExecutionEnvironment, String>();
 
@@ -85,6 +85,8 @@ public class UnbufferSupport {
         if (unbufferLib != null && unbufferPath != null) {
             InstalledFileLocator fl = InstalledFileLocator.getDefault();
             File file = fl.locate(unbufferPath + "/" + unbufferLib, null, false); // NOI18N
+
+            log.fine("Look for unbuffer library here: " + unbufferPath + "/" + unbufferLib); // NOI18N
 
             if (file != null && file.exists()) {
                 if (execEnv.isRemote()) {
