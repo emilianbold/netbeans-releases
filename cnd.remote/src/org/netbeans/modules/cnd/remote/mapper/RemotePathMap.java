@@ -255,12 +255,12 @@ public class RemotePathMap implements PathMap {
 
     private static String getPreferences(ExecutionEnvironment execEnv) {
         return NbPreferences.forModule(RemotePathMap.class).get(
-                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toString(execEnv), null);
+                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toUniqueID(execEnv), null);
     }
 
     private void setPreferences(String newValue) {
         NbPreferences.forModule(RemotePathMap.class).put(
-                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toString(execEnv), newValue);
+                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toUniqueID(execEnv), newValue);
     }
 
     private static boolean validateMapping(ExecutionEnvironment exexEnv, 

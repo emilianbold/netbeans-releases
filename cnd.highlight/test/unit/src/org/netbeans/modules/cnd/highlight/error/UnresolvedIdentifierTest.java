@@ -202,6 +202,16 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz150827.cpp");
     }
 
+    public void testIZ142674() throws Exception {
+        // IZ#142674 : Function-try-catch (C++) in editor shows error
+        performStaticTest("iz142674.cpp");
+    }
+
+    public void testIZ149285() throws Exception {
+        // IZ#149285 : A problem with function bodies in different condition branches in headers
+        performStaticTest("iz149285.cpp");
+        performStaticTest("iz149285.h");
+    }
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
@@ -212,7 +222,7 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         }
 
         @Override
-        protected Class getTestCaseDataClass() {
+        protected Class<?> getTestCaseDataClass() {
             return UnresolvedIdentifierTest.class;
         }
 

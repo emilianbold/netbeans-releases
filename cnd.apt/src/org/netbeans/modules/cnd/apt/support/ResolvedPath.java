@@ -50,20 +50,30 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 public final class ResolvedPath {
     private final CharSequence folder;
     private final CharSequence path;
+    private final CharSequence notNormalizedPath;
     private final boolean isDefaultSearchPath;
     private final int index;
     
-    public ResolvedPath(CharSequence folder, CharSequence path, boolean isDefaultSearchPath, int index) {
+    public ResolvedPath(CharSequence folder, CharSequence path, CharSequence notNormalizedPath, boolean isDefaultSearchPath, int index) {
         this.folder = FilePathCache.getManager().getString(folder);
         this.path = FilePathCache.getManager().getString(path);
+        this.notNormalizedPath = FilePathCache.getManager().getString(notNormalizedPath);
         this.isDefaultSearchPath = isDefaultSearchPath;
         this.index = index;
     }
     /**
-     * Resolved file path
+     * Resolved file path (normalized version)
      */
     public CharSequence getPath(){
         return path;
+    }
+
+    /**
+     * Resolved file path (not normalized version)
+     * @return
+     */
+    public CharSequence getNotNormalizedPath() {
+        return notNormalizedPath;
     }
 
     /**

@@ -138,6 +138,7 @@ public class PushDownTransformer extends RefactoringVisitor {
             Types types = workingCopy.getTypes();
             if (types.isSubtype(types.erasure(tm), types.erasure(p.asType()))) {
                 List<String> imports = new ArrayList<String>();
+                boolean makeClassAbstract = false;
                 for (int i = 0; i<members.length; i++) {
                     Element member = members[i].getElementHandle().resolve(workingCopy);
                     if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS) {
@@ -146,6 +147,27 @@ public class PushDownTransformer extends RefactoringVisitor {
                         }
                         imports.add(member.asType().toString()); //add may-be necessary import
                         njuClass = make.addClassImplementsClause(njuClass, make.Identifier(member));
+                    } else if (members[i].getGroup()==MemberInfo.Group.METHOD
+                            && member.getModifiers().contains(Modifier.ABSTRACT) && el.getKind().isClass() && p.getKind().isInterface()) {
+                        // moving abstract method from interface to class
+                        if (RetoucheUtils.elementExistsIn((TypeElement) el, member, workingCopy)) {
+                            problem = MoveTransformer.createProblem(problem, false, org.openide.util.NbBundle.getMessage(PushDownTransformer.class, "ERR_PushDown_AlreadyExists", member.getSimpleName(), el.getSimpleName()));
+                        }
+                        MethodTree methodTree = workingCopy.getTrees().getTree((ExecutableElement) member);
+                        ModifiersTree mods = RetoucheUtils.makeAbstract(make, methodTree.getModifiers());
+                        mods = make.addModifiersModifier(mods, Modifier.PUBLIC);
+                        MethodTree njuMethod = make.Method(
+                                mods,
+                                methodTree.getName(),
+                                methodTree.getReturnType(),
+                                methodTree.getTypeParameters(),
+                                methodTree.getParameters(),
+                                methodTree.getThrows(),
+                                (BlockTree) null,
+                                null);
+                        RetoucheUtils.copyJavadoc(member, njuMethod, workingCopy);
+                        njuClass = genUtils.insertClassMember(njuClass, njuMethod);
+                        makeClassAbstract = true;
                     } else {
                         if (RetoucheUtils.elementExistsIn((TypeElement) el, member, workingCopy)) {
                             problem = MoveTransformer.createProblem(problem, false, org.openide.util.NbBundle.getMessage(PushDownTransformer.class, "ERR_PushDown_AlreadyExists", member.getSimpleName(), el.getSimpleName()));
@@ -153,11 +175,19 @@ public class PushDownTransformer extends RefactoringVisitor {
                         TreePath path = workingCopy.getTrees().getPath(member);
                         Tree memberTree = genUtils.importComments(path.getLeaf(), path.getCompilationUnit());
                         memberTree = genUtils.importFQNs(path.getLeaf());
-                        if (member!=null) 
-                            RetoucheUtils.copyJavadoc(member, memberTree, workingCopy);
-                       njuClass = genUtils.insertClassMember(njuClass, memberTree);
+                        njuClass = genUtils.insertClassMember(njuClass, memberTree);
+                        makeClassAbstract |= member.getModifiers().contains(Modifier.ABSTRACT);
                     }
                 }
+
+                if (makeClassAbstract && !njuClass.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+                    // make enclosing class abstract if necessary
+                    njuClass = make.Class(RetoucheUtils.makeAbstract(make,
+                            njuClass.getModifiers()), njuClass.getSimpleName(),
+                            njuClass.getTypeParameters(), njuClass.getExtendsClause(),
+                            njuClass.getImplementsClause(), njuClass.getMembers());
+                }
+
                 try {
                     if (imports.size() > 0) {
                         CompilationUnitTree newCut = RetoucheUtils.addImports(workingCopy.getCompilationUnit(), imports, make);

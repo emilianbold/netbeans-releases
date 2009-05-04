@@ -131,7 +131,15 @@ public final class LocationWrapper {
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static int lineNumber0(com.sun.jdi.Location a) {
         try {
-            return a.lineNumber();
+            try {
+                return a.lineNumber();
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 101) { // ABSENT_INFORMATION
+                    return -1;
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return 0;
@@ -143,7 +151,15 @@ public final class LocationWrapper {
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static int lineNumber(com.sun.jdi.Location a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return a.lineNumber();
+            try {
+                return a.lineNumber();
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 101) { // ABSENT_INFORMATION
+                    return -1;
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
@@ -155,7 +171,15 @@ public final class LocationWrapper {
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static int lineNumber0(com.sun.jdi.Location a, java.lang.String b) {
         try {
-            return a.lineNumber(b);
+            try {
+                return a.lineNumber(b);
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 101) { // ABSENT_INFORMATION
+                    return -1;
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return 0;
@@ -167,7 +191,15 @@ public final class LocationWrapper {
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static int lineNumber(com.sun.jdi.Location a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return a.lineNumber(b);
+            try {
+                return a.lineNumber(b);
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 101) { // ABSENT_INFORMATION
+                    return -1;
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
@@ -191,7 +223,15 @@ public final class LocationWrapper {
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.lang.String sourceName(com.sun.jdi.Location a) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return a.sourceName();
+            try {
+                return a.sourceName();
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 101) { // ABSENT_INFORMATION
+                    throw new com.sun.jdi.AbsentInformationException(iex.getMessage());
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
@@ -203,7 +243,15 @@ public final class LocationWrapper {
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.lang.String sourceName(com.sun.jdi.Location a, java.lang.String b) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return a.sourceName(b);
+            try {
+                return a.sourceName(b);
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 101) { // ABSENT_INFORMATION
+                    throw new com.sun.jdi.AbsentInformationException(iex.getMessage());
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
@@ -215,7 +263,15 @@ public final class LocationWrapper {
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.lang.String sourcePath(com.sun.jdi.Location a) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return a.sourcePath();
+            try {
+                return a.sourcePath();
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 101) { // ABSENT_INFORMATION
+                    throw new com.sun.jdi.AbsentInformationException(iex.getMessage());
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
@@ -227,7 +283,15 @@ public final class LocationWrapper {
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.lang.String sourcePath(com.sun.jdi.Location a, java.lang.String b) throws com.sun.jdi.AbsentInformationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return a.sourcePath(b);
+            try {
+                return a.sourcePath(b);
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 101) { // ABSENT_INFORMATION
+                    throw new com.sun.jdi.AbsentInformationException(iex.getMessage());
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);

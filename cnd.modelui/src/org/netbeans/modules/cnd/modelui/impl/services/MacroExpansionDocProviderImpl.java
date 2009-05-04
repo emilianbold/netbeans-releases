@@ -144,7 +144,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                             tt.appendInterval(endOffset - tt.currentIn.start, 0, false);
                             break;
                         }
-                        if (docTokenEndOffset <= fileToken.getOffset() || !APTUtils.isMacro(fileToken)) {
+                        if (docTokenEndOffset <= fileToken.getOffset() || !APTUtils.isMacroExpandedToken(fileToken)) {
                             if (isOnInclude(docTS)) {
                                 if (!(inMacroParams || inDeadCode)) {
                                     copyInterval(inDoc, docTokenStartOffset - tt.currentIn.start, tt, expandedData);
@@ -278,7 +278,9 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             CsmFile file = CsmUtilities.getCsmFile(doc, true);
             tt = updateMacroTableIfNeeded(doc, file);
         } else {
-            tt = getMacroTable(doc);
+            synchronized (doc) {
+                tt = getMacroTable(doc);
+            }
         }
         if (tt != null) {
             int startIndex = tt.findInIntervalIndex(offset);
@@ -379,6 +381,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return;
         }
         // Init file token sequence
+        // why only one token stream is analyzed and not all preprocessor branches?
         final MyTokenSequence fileTS = getFileTokenSequence(file, 0, doc.getLength());
         if (fileTS == null) {
             return;
@@ -424,7 +427,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                             tt.appendInterval(endOffset - tt.currentIn.start, 0, false);
                             break;
                         }
-                        if (docTokenEndOffset <= fileToken.getOffset() || !APTUtils.isMacro(fileToken)) {
+                        if (docTokenEndOffset <= fileToken.getOffset() || !APTUtils.isMacroExpandedToken(fileToken)) {
                             if (isOnInclude(docTS)) {
                                 if (!(inMacroParams || inDeadCode)) {
                                     copyInterval(doc, docTokenStartOffset - tt.currentIn.start, tt, null);
@@ -471,16 +474,26 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     private String expandMacroToken(MyTokenSequence fileTS, int docTokenStartOffset, int docTokenEndOffset) {
         APTToken fileToken = fileTS.token();
         StringBuilder expandedToken = new StringBuilder(""); // NOI18N
+        boolean skipIndent = true;
         if (fileToken.getOffset() < docTokenEndOffset) {
-            expandedToken.append(fileToken.getText());
+            // empty comment - expansion of empty macro
+            if (!APTUtils.isCommentToken(fileToken)) {
+                expandedToken.append(fileToken.getText());
+                skipIndent = false;
+            }
             APTToken prevFileToken = fileToken;
             fileTS.moveNext();
             fileToken = fileTS.token();
             while (fileToken != null && !APTUtils.isEOF(fileToken) && fileToken.getOffset() < docTokenEndOffset) {
-                if (!APTUtils.areAdjacent(prevFileToken, fileToken)) {
-                    expandedToken.append(" "); // NOI18N
+                if (!APTUtils.isCommentToken(fileToken)) {
+                    if (!skipIndent) {
+                        if (!APTUtils.areAdjacent(prevFileToken, fileToken)) {
+                            expandedToken.append(" "); // NOI18N
+                        }
+                    }
+                    skipIndent = false;
+                    expandedToken.append(fileToken.getText());
                 }
-                expandedToken.append(fileToken.getText());
                 prevFileToken = fileToken;
                 fileTS.moveNext();
                 fileToken = fileTS.token();
@@ -621,7 +634,8 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         FileImpl fileImpl = null;
         if (file instanceof FileImpl) {
             fileImpl = (FileImpl) file;
-            TokenStream ts = fileImpl.getTokenStream(startOffset, endOffset, false);
+            // why only one token stream is analyzed and not all preprocessor branches?
+            TokenStream ts = fileImpl.getTokenStream(startOffset, endOffset, 0, false);
             if (ts != null) {
                 return new MyTokenSequence(ts, fileImpl);
             }
@@ -761,6 +775,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         public boolean contains(int offset) {
             return (start <= offset && end >= offset);
         }
+
+        @Override
+        public String toString() {
+            return "["+start+"-"+end+"]"; // NOI18N
+        }
     }
 
     private static class IntervalCorrespondence {
@@ -787,6 +806,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         public CharSequence getMacroExpansion() {
             return macroExpansion;
         }
+
+        @Override
+        public String toString() {
+            return "IN:"+inInterval + " OUT:"+outInterval; // NOI18N
+        }
     }
 
     private static class TransformationTable {
@@ -805,6 +829,10 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
         public void cleanUp() {
             cache = null;
+        }
+
+        public boolean isInited() {
+            return cache == null;
         }
 
         public void setInStart(int start) {
@@ -941,19 +969,26 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return null;
         }
         TransformationTable tt = null;
-        boolean updateTable = false;
         synchronized (doc) {
             tt = getMacroTable(doc);
-            if (tt == null || tt.documentVersion != DocumentUtilities.getDocumentVersion(doc) || tt.fileVersion != CsmFileInfoQuery.getDefault().getFileVersion(file)) {
+            if (tt == null) {
                 tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
                 doc.putProperty(MACRO_EXPANSION_MACRO_TABLE, tt);
-                updateTable = true;
             }
         }
-        if (updateTable) {
-            synchronized (tt) {
+        synchronized (tt) {
+            synchronized (doc) {
+                tt = getMacroTable(doc);
+                if (tt.documentVersion != DocumentUtilities.getDocumentVersion(doc) || tt.fileVersion != CsmFileInfoQuery.getDefault().getFileVersion(file)) {
+                    tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+                }
+            }
+            if (!tt.isInited()) {
                 expand(doc, file, tt);
                 tt.cleanUp();
+                synchronized (doc) {
+                    doc.putProperty(MACRO_EXPANSION_MACRO_TABLE, tt);
+                }
             }
         }
         return tt;

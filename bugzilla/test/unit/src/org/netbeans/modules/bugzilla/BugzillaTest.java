@@ -370,10 +370,14 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
 
         FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(f);
         attachmentSource.setContentType("text/plain");
-        BugzillaTaskAttachmentHandler.AttachmentPartSource source = new BugzillaTaskAttachmentHandler.AttachmentPartSource(attachmentSource);
 
-        String bugId = Integer.toString(BugzillaRepositoryConnector.getBugId(data.getTaskId()));
-        brc.getClientManager().getClient(repository, nullProgressMonitor).postAttachment(bugId, comment, desc, attachmentSource.getContentType(), false, source, nullProgressMonitor);
+//        List<TaskAttribute> attributes = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
+        TaskAttribute attAttribute = new TaskAttribute(data.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
+        TaskAttribute a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION);
+        a.setValue(desc);
+        String bugId = data.getTaskId();
+        brc.getClientManager().getClient(repository, nullProgressMonitor)
+                .postAttachment(bugId, comment, attachmentSource, attAttribute, nullProgressMonitor);
 
         data = brc.getTaskData(repository, data.getTaskId(), nullProgressMonitor);
         List<TaskAttribute> attributes = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);

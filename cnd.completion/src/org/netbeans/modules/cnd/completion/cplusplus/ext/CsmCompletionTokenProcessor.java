@@ -66,7 +66,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
      */
     private int bufferOffsetDelta;
     /** Stack of the expressions. */
-    private ArrayList<CsmCompletionExpression> expStack = new ArrayList<CsmCompletionExpression>();
+    private List<CsmCompletionExpression> expStack = new ArrayList<CsmCompletionExpression>();
     /** TokenID of the last found token except Syntax.EOT and Syntax.EOL */
     private CppTokenId lastValidTokenID;
     /** Text of the last found token except Syntax.EOT and Syntax.EOL */
@@ -100,7 +100,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
     }
 
     /** Get the expression stack from the bottom to top */
-    final List getStack() {
+    final List<CsmCompletionExpression> getStack() {
         return expStack;
     }
 
@@ -289,6 +289,25 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
             int top2ID = getValidExpID(top2);
             int topID = getValidExpID(top);
             switch (topID) {
+                case GENERIC_TYPE:
+                {
+                    switch (top2ID) {
+                        case METHOD_OPEN:
+                            switch (tokenID) {
+                                case STAR:
+                                case AMP:
+                                case CONST:
+                                case IDENTIFIER:
+                                    popExp();
+                                    CsmCompletionExpression typeExpr = new CsmCompletionExpression(TYPE);
+                                    typeExpr.addParameter(top);
+                                    pushExp(typeExpr);
+                                    break;
+                            }
+                            break;
+                    }
+                }
+                break;
                 case VARIABLE:
                     boolean stop = false;
                     switch (top2ID) {

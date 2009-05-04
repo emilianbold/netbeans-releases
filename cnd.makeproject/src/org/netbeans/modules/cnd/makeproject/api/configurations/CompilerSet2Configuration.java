@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -197,7 +196,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         if (compilerSet != null) {
             displayName = compilerSet.getName();
         }
-        if (displayName != null && dhconf.isOnline()) {
+        if (displayName != null && dhconf.isConfigured()) {
             return displayName;
         } else {
             if (displayIfNotFound) {
@@ -209,15 +208,15 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
 
     public String createNotFoundName(String name) {
-        if (!dhconf.isOnline()) {
+        if (!dhconf.isConfigured()) {
             return "";
         } else {
             return name.equals(CompilerSet.None) ? name : NbBundle.getMessage(CompilerSet2Configuration.class,  "NOT_FOUND", name); // NOI18N
         }
     }
 
-    public boolean isDevHostOnline() {
-        return dhconf.isOnline();
+    public boolean isDevHostSetUp() {
+        return dhconf.isConfigured();
     }
 
     // Clone and assign
@@ -292,8 +291,8 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     public void propertyChange(final PropertyChangeEvent evt) {
         CompilerSet ocs = null;
-        String hkey = ((DevelopmentHostConfiguration) evt.getNewValue()).getName();
-        final ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(hkey);
+        String hkey = ((DevelopmentHostConfiguration) evt.getNewValue()).getHostKey();
+        final ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hkey);
         final String oldName = oldNameMap.get(hkey);
         if (oldName != null) {
             ocs = CompilerSetManager.getDefault(env).getCompilerSet(oldName);
@@ -302,6 +301,9 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         }
         if (ocs == null) {
             ocs = CompilerSetManager.getDefault(env).getCompilerSet(0);
+        }
+        if (ocs == null) {
+            return;
         }
 
         String okey = (String) evt.getOldValue();
@@ -313,15 +315,12 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             final CompilerSet focs = ocs;
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    ServerList server = Lookup.getDefault().lookup(ServerList.class);
-                    if (server != null) {
-                        ServerRecord record = server.get(env);
-                        if (record != null) {
-                            // Not sure why we do this in an RP, but don't want to remove it this late in the release
-                            setValue(focs.getName());
-                            if (compilerSetNodeProp != null) {
-                                compilerSetNodeProp.repaint();
-                            }
+                    ServerRecord record = ServerList.get(env);
+                    if (record != null) {
+                        // Not sure why we do this in an RP, but don't want to remove it this late in the release
+                        setValue(focs.getName());
+                        if (compilerSetNodeProp != null) {
+                            compilerSetNodeProp.repaint();
                         }
                     }
                 }

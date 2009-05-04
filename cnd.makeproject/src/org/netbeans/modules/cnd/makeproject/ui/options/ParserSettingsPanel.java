@@ -40,14 +40,19 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
+import javax.swing.JList;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -58,11 +63,11 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.ui.options.IsChangedListener;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public class ParserSettingsPanel extends JPanel implements ChangeListener, ActionListener, IsChangedListener {
@@ -89,6 +94,14 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         // Accessible Description
         getAccessibleContext().setAccessibleDescription(getString("MANAGE_COMPILERS_SETTINGS_AD"));
         compilerCollectionComboBox.getAccessibleContext().setAccessibleDescription(getString("COMPILER_COLLECTION_AD"));
+        compilerCollectionComboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                //CompilerSet cs = (CompilerSet) value;
+                return label;
+            }
+        });
         tp = ToolsPanel.getToolsPanel();
         if (tp != null) {
             // This gets called from commitValidation and tp is null - its not a run-time problem
@@ -129,22 +142,20 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
 
         CompilerSetPresenter toSelect = null;
         List<CompilerSetPresenter> allCS = new ArrayList<CompilerSetPresenter>();
-        ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
-        if (serverList != null) {
-            List<ExecutionEnvironment> servers = serverList.getEnvironments();
-            if (servers.size() > 1) {
-                for (ExecutionEnvironment execEnv : servers) {
-                    for (CompilerSet cs : getCompilerSetManager(execEnv).getCompilerSets()) {
-                        CompilerSetPresenter csp = new CompilerSetPresenter(cs, execEnv.getHost() + " : " + cs.getName()); //NOI18N
-                        if (csToSelect == cs) {
-                            toSelect = csp;
-                        }
-                        allCS.add(csp);
+        Collection<? extends ServerRecord> servers = ServerList.getRecords();
+        if (servers.size() > 1) {
+            for (ServerRecord record : servers) {
+                for (CompilerSet cs : getCompilerSetManager(record.getExecutionEnvironment()).getCompilerSets()) {
+                    CompilerSetPresenter csp = new CompilerSetPresenter(cs, record.getDisplayName() + " : " + cs.getName()); //NOI18N
+                    if (csToSelect == cs) {
+                        toSelect = csp;
                     }
+                    allCS.add(csp);
                 }
-            } else {
-                assert servers.get(0).isLocal();
             }
+        } else {
+            assert servers.iterator().hasNext();
+            assert ! servers.iterator().next().isRemote();
         }
 
         if (allCS.size() == 0) {

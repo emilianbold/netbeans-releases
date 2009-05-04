@@ -56,6 +56,7 @@ import org.netbeans.modules.dlight.spi.impl.IndicatorRepairActionProviderAccesso
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -119,6 +120,18 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         }
     }
 
+    public final String getMessage(ValidationStatus status) {
+        if (status.isValid()) {
+            String message=  NbBundle.getMessage(IndicatorRepairActionProvider.class, "NextRun");
+            if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
+                message =  NbBundle.getMessage(IndicatorRepairActionProvider.class, "DataCollectorDisabled");
+            }
+            return message;
+
+        }
+        return status.getReason();
+    }
+
     public boolean isValid() {
         return currentStatus.isValid();
     }
@@ -131,7 +144,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         return currentStatus.getReason();
     }
 
-    public final ValidationStatus getValidationStatus(){
+    public final ValidationStatus getValidationStatus() {
         return currentStatus;
     }
 
@@ -189,5 +202,4 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
             return new IndicatorRepairActionProvider(configuration, tool, targetToRepairFor);
         }
     }
-
 }

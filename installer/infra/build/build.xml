@@ -778,7 +778,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
 	<antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee nb-javame nb-ruby nb-cnd nb-php nb-ergonomics runtimes-group glassfish glassfish-mod tomcat openesb"/>
+	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee nb-javame nb-ruby nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish glassfish-mod tomcat openesb"/>
         </antcall>
      </target>
 
@@ -800,7 +800,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-javatools-components" if="do.build.jtb">
 	<set property="netbeans.group.uid" value="nb-ide-group"/>
         <antcall target="build-list">
-	    <param name="build.list"  value="tools-group nb-ide-group nb-base nb-javase nb-javaee nb-webcommon nb-soa nb-portalpack"/>
+	    <param name="build.list"  value="tools-group nb-ide-group nb-base nb-javase nb-groovy nb-javaee nb-webcommon nb-soa nb-portalpack"/>
         </antcall>
         <antcall target="build-list">
 	     <param name="build.list" value="runtimes-group sjsas sjsam openesb portletcontainer wsrp documentation-group javaeesdk-firstcup javaeesdk-blueprints javaeesdk-samples"/>
@@ -1235,6 +1235,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javame"     version="${nb.full.version}"/>
             <component uid="nb-webcommon"  version="${nb.full.version}"/>
             <component uid="nb-javaee"     version="${nb.full.version}"/>
+            <component uid="nb-groovy"     version="${nb.full.version}"/>
             <component uid="nb-ergonomics" version="${nb.full.version}"/>
             <component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
@@ -1254,6 +1255,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase"     version="${nb.full.version}"/>
             <component uid="nb-webcommon"  version="${nb.full.version}"/>
             <component uid="nb-javaee"     version="${nb.full.version}"/>
+            <component uid="nb-groovy"     version="${nb.full.version}"/>
             <component uid="nb-ergonomics" version="${nb.full.version}"/>
             <component uid="glassfish"     version="2.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
@@ -1350,6 +1352,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
                        <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
                        <component uid="nb-ruby"        version="${nb.full.version}"/>
+	               <component uid="nb-groovy"     version="${nb.full.version}"/>
                        <component uid="nb-cnd"         version="${nb.full.version}"/>
                        <component uid="nb-php"         version="${nb.full.version}"/>
                        <component uid="nb-ergonomics"  version="${nb.full.version}"/>
@@ -1371,6 +1374,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <!--<component uid="nb-soa"         version="${nb.full.version}"/>-->
                        <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
                        <component uid="nb-ruby"        version="${nb.full.version}"/>
+		       <component uid="nb-groovy"     version="${nb.full.version}"/>
                        <component uid="nb-cnd"         version="${nb.full.version}"/>
                        <component uid="nb-php"         version="${nb.full.version}"/>
                        <component uid="nb-ergonomics"  version="${nb.full.version}"/>
@@ -1394,6 +1398,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <!--<component uid="nb-soa"        version="${nb.full.version}"/>-->
             <!--<component uid="nb-uml"    version="${nb.full.version}"/>-->
             <component uid="nb-ruby"       version="${nb.full.version}"/>
+            <component uid="nb-groovy"     version="${nb.full.version}"/>
             <component uid="nb-cnd"        version="${nb.full.version}"/>
             <component uid="nb-php"        version="${nb.full.version}"/>
             <component uid="nb-ergonomics" version="${nb.full.version}"/>

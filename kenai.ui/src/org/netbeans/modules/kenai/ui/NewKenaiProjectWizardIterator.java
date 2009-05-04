@@ -92,6 +92,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     public static final String PROP_ISSUES = "projectIssues";
     public static final String PROP_ISSUES_URL = "projectIssuesUrl";
     public static final String PROP_AUTO_COMMIT = "projectIssuesUrl";
+    public static final String PROP_CREATE_CHAT = "projectCreateChat";
 
     public static final String PROP_EXC_ERR_MSG = "exceptionErrorMessage";
 
@@ -112,7 +113,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
     public Set<CreatedProjectInfo> instantiate(ProgressHandle handle) throws IOException {
 
-        handle.start(5);
+        handle.start(6);
 
         String newPrjName = (String) wizard.getProperty(PROP_PRJ_NAME);
         String newPrjTitle = (String) wizard.getProperty(PROP_PRJ_TITLE);
@@ -127,7 +128,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         String newPrjIssues = (String) wizard.getProperty(PROP_ISSUES);
         String newPrjIssuesUrl = (String) wizard.getProperty(PROP_ISSUES_URL);
         boolean autoCommit = Boolean.valueOf((String) wizard.getProperty(PROP_AUTO_COMMIT));
-
+        Boolean createChat = (Boolean) wizard.getProperty(PROP_CREATE_CHAT);
         // Create project
         try {
             handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
@@ -203,7 +204,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         if (repoCreated) {
             try {
                 KenaiFeature features[] = Kenai.getDefault().getProject(newPrjName).getFeatures(KenaiService.Type.SOURCE);
-                URI scmLoc = null;
+                String scmLoc = null;
                 String featureService = null;
                 for (KenaiFeature feature : features) {
                     if (newPrjScmName.equals(feature.getName())) {
@@ -215,7 +216,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                 if (scmLoc != null) {
                     handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
                             "NewKenaiProject.progress.repositoryCheckout"),4);
-                    logger.log(Level.FINE, "Checking out repository - Location: " + scmLoc.toASCIIString() +
+                    logger.log(Level.FINE, "Checking out repository - Location: " + scmLoc +
                             ", Local Folder: " + newPrjScmLocal + ", Service: " + featureService); // NOI18N
                     PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
                     if (passwdAuth != null) {
@@ -224,7 +225,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                             if (isShareExistingFolder) {
                                 String initialRevision = NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "NewKenaiProject.initialRevision", newPrjTitle);
                                 String dirName = activeNode.getLookup().lookup(Project.class).getProjectDirectory().getName();
-                                    final String remoteDir = scmLoc.toASCIIString().concat("/" + dirName);
+                                    final String remoteDir = scmLoc.concat("/" + dirName);
                                 try {
                                     Subversion.mkdir(remoteDir,passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
                                 } catch (IOException io) {
@@ -238,13 +239,13 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                                     Subversion.commit(new File[]{localFile}, passwdAuth.getUserName(), new String(passwdAuth.getPassword()), initialRevision);
                                 }
                             } else {
-                                Subversion.checkoutRepositoryFolder(scmLoc.toASCIIString(), new String[]{"."},localFile,
+                                Subversion.checkoutRepositoryFolder(scmLoc, new String[]{"."},localFile,
                                         passwdAuth.getUserName(), new String(passwdAuth.getPassword()), false);
                             }
 
                         } else if (KenaiService.Names.MERCURIAL.equals(featureService)) {
 
-                            Mercurial.cloneRepository(scmLoc.toASCIIString(),localFile, "", "", "",
+                            Mercurial.cloneRepository(scmLoc,localFile, "", "", "",
                                 passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
 
                         }
@@ -255,6 +256,18 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
             } catch (KenaiException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+
+        if (createChat) {
+            handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "CTL_CreatingChatProgress"), 6);
+            final KenaiFeature f = Kenai.getDefault().getProject(newPrjName).createProjectFeature(
+                    newPrjName,
+                    NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "CTL_ChatRoomName", newPrjName),
+                    NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "CTL_ChatRoomDescription", newPrjName),
+                    KenaiService.Names.XMPP_CHAT,
+                    null,
+                    null,
+                    null);
         }
 
         // Open the project in Dashboard
@@ -346,11 +359,17 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
             if (prepend != null) {
                 sb.append(prepend + " "); // NOI18N
             }
+            boolean sepAdded = false;
             for (Iterator<String> it = errMap.keySet().iterator(); it.hasNext(); ) {
                 String fld = it.next();
-                sb.append(errMap.get(fld));
+                sb.append(errMap.get(fld) + ". ");
+                sepAdded = true;
             }
-            errMsg = sb.toString();
+            if (sepAdded) {
+                errMsg = sb.substring(0, sb.length() - 2);
+            } else {
+                errMsg = sb.toString();
+            }
         } else {
             errMsg = kex.getLocalizedMessage();
         }

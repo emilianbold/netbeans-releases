@@ -461,10 +461,13 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             }
         }
 
-        if (context.isBlankLine() && iis.isEmpty() && firstPreservedLineIndent != -1 && ts.moveNext()) {
+        if (context.isBlankLine() && iis.isEmpty() && ts.moveNext()) {
             Token<T1> token = ts.token();
             if (token != null && ts.embedded() == null && isPreservedLine(token, context)) {
                 IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
+                if (firstPreservedLineIndent == -1) {
+                    firstPreservedLineIndent = getPreservedLineInitialIndentation(ts);
+                }
                 ic.setFixedIndentSize(firstPreservedLineIndent);
                 iis.add(ic);
             }
@@ -501,8 +504,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                                     context.getLineStartOffset()));
                                 item.processed = true;
                             } else {
-                                if (closingTag) {
-                                    assert item.tagName.equalsIgnoreCase(tokenName) : "was expecting tag "+tokenName+" but was "+item+ ": "+fileStack+" index="+index;
+                                if (closingTag && item.tagName.equalsIgnoreCase(tokenName)) {
                                     iis.add(new IndentCommand(IndentCommand.Type.RETURN,
                                         context.getLineStartOffset()));
                                     item.processed = true;

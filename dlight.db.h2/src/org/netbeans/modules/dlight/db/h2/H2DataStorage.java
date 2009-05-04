@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.db.h2;
 
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.storage.SQLStackStorage;
@@ -60,6 +61,10 @@ import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 
 public final class H2DataStorage extends SQLDataStorage implements StackDataStorage {
 
@@ -69,7 +74,9 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
     private static final AtomicInteger dbIndex = new AtomicInteger();
     private SQLStackStorage stackStorage;
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
-    private static final String url = "jdbc:h2:/tmp/dlight"; // NOI18N
+    private static final String tmpDir;
+    private static final String url;
+    private String dbURL;
 
 
     static {
@@ -79,37 +86,31 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
         } catch (ClassNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
-    }
 
-    private void initStorageTypes() {
-        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(H2DataStorageFactory.H2_DATA_STORAGE_TYPE));
-        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
-        supportedStorageTypes.addAll(super.getStorageTypes());
-    }
-
-    H2DataStorage() throws SQLException {
-        this(url + dbIndex.incrementAndGet());
-    }
-
-    private H2DataStorage(String url) throws SQLException {
-        super(url);
+        String tempDir = null;
         try {
-            initStorageTypes();
-            stackStorage = new SQLStackStorage(this);
-        } catch (SQLException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+            tempDir = hi.getTempDir();
+            if (hi.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                tempDir = WindowsSupport.getInstance().convertoToWindowsPath(tempDir);
+            }
         } catch (IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
+        } catch (CancellationException ex) {
         }
-    }
 
-    // FIXUP: deleting /tmp/dlight*
+        if (tempDir == null) {
+            tempDir = System.getProperty("java.io.tmpdir"); // NOI18N
+        }
 
+        url = "jdbc:h2:" + tempDir + "/dlight"; // NOI18N
 
-    static {
-        File tmpDir = new File("/tmp"); // NOI18N
-        if (tmpDir.exists()) {
-            File[] files = tmpDir.listFiles(new FilenameFilter() {
+        tmpDir = tempDir;
+
+        // FIXUP: deleting /tmp/dlight*
+        File tmpDirFile = new File(tmpDir); // NOI18N
+
+        if (tmpDirFile.exists()) {
+            File[] files = tmpDirFile.listFiles(new FilenameFilter() {
 
                 public boolean accept(File dir, String name) {
                     return name.startsWith("dlight"); // NOI18N
@@ -127,6 +128,48 @@ public final class H2DataStorage extends SQLDataStorage implements StackDataStor
                 dbIndex.set(newValue);
             }
         }
+    }
+
+    private void initStorageTypes() {
+        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(H2DataStorageFactory.H2_DATA_STORAGE_TYPE));
+        supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
+        supportedStorageTypes.addAll(super.getStorageTypes());
+    }
+
+    H2DataStorage() throws SQLException {
+        this(url + dbIndex.incrementAndGet());
+    }
+
+    private H2DataStorage(String url) throws SQLException {
+        super(url);
+        dbURL = url;
+        try {
+            initStorageTypes();
+            stackStorage = new SQLStackStorage(this);
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public boolean shutdown() {
+        boolean result = stackStorage.shutdown() && super.shutdown();
+        final String filesToDelete = dbURL.substring(dbURL.lastIndexOf("/") + 1);//NOI18N
+        File tmpDirFile = new File(tmpDir); // NOI18N
+        if (tmpDirFile.exists()) {
+            File[] files = tmpDirFile.listFiles(new FilenameFilter() {
+
+                public boolean accept(File dir, String name) {
+                    return name.startsWith(filesToDelete); // NOI18N
+                }
+            });
+            for (int i = 0; i < files.length; i++) {
+                result &= files[i].delete();
+            }
+        }
+        return result;
     }
 
     @Override

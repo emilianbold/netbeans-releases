@@ -167,7 +167,8 @@ public class EdgeWidget extends ConnectionWidget {
                 DependencyNode includedDepN = grScene.getGraphNodeRepresentant(
                         edge.getTarget()).getArtifact();
                 String confText = NbBundle.getMessage(EdgeWidget.class,
-                        "TIP_VersionConflict", includedDepN.getArtifact().getVersion(),
+                        edgeConflictType == ArtifactGraphNode.CONFLICT ? "TIP_VersionConflict" : "TIP_VersionWarning",
+                        includedDepN.getArtifact().getVersion(),
                         includedDepN.getParent().getArtifact().getArtifactId());
                 conflictVersion.setToolTipText(confText);
                 sb.append(confText);

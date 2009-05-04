@@ -46,6 +46,7 @@ import java.util.Set;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.AstNode.Description;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
@@ -166,12 +167,13 @@ public class HtmlParserResult extends ParserResult {
                             }
 
                             Error error =
-                                    new DefaultError("unmatched_tag",//NOI18N
+                                    DefaultError.createDefaultError("unmatched_tag",//NOI18N
                                     NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"),//NOI18N
                                     null,
                                     getSnapshot().getSource().getFileObject(),
                                     node.startOffset(),
                                     node.endOffset(),
+                                    false /* not line error */,
                                     Severity.WARNING); //NOI18N
                             _errors.add(error);
 
@@ -179,25 +181,20 @@ public class HtmlParserResult extends ParserResult {
                                 node.type() == AstNode.NodeType.OPEN_TAG ||
                                 node.type() == AstNode.NodeType.ENDTAG) {
 
-                            if (node.getErrorMessages().size() > 0) {
-                                StringBuffer b = new StringBuffer();
-                                for (String s : node.getErrorMessages()) {
-                                    b.append(s);
-                                    b.append(';');
-                                    b.append('\n');
+                            for(Description desc : node.getDescriptions()) {
+                                if(desc.getType() < Description.WARNING) {
+                                    continue;
                                 }
-                                //remove the tail ';\n'
-                                b.delete(b.length() - 2, b.length());
-
                                 //some error in the node, report
                                 Error error =
-                                        new DefaultError("tag_error", //NOI18N
-                                        b.toString(),
+                                        DefaultError.createDefaultError("tag_error", //NOI18N
+                                        desc.getText(),
                                         null,
                                         getSnapshot().getSource().getFileObject(),
-                                        node.startOffset(),
-                                        node.endOffset(),
-                                        Severity.WARNING); //NOI18N
+                                        desc.getFrom(),
+                                        desc.getTo(),
+                                        false /* not line error */,
+                                        desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
                                 _errors.add(error);
 
                             }

@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -119,7 +120,7 @@ class HostsListTableModel extends AbstractTableModel {
             case 0:
                 return record.name;
             case 1:
-                return CreateHostWizardIterator.getString(record.ssh ? "HostAvailable" : "HostUnavailable"); //NOI18N
+                return NbBundle.getMessage(getClass(), record.ssh ? "HostAvailable" : "HostUnavailable"); //NOI18N
             case 2:
                 return null;
             default:

@@ -111,6 +111,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private transient int currentState = INPUT_PARAMETERS;
 
     private boolean cancelRequest = false;
+    private boolean canceledDialog;
     
     /** Enables/disables Preview button of dialog. Can be used by refactoring-specific
      * parameters panel to disable accepting the parameters when needed (e.g. if
@@ -294,6 +295,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     
     private void cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelActionPerformed
         synchronized (this) {
+            canceledDialog = true;
             if (evt!=null && evt.getSource() instanceof Cancellable) {
                 putResult(null);
                 dialog.setVisible(false);
@@ -531,6 +533,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     }
     
     private final void setCancelStuff() {
+        canceledDialog = false;
         KeyStroke k = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
         Object actionKey = "cancel"; // NOI18N
         getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(k, actionKey);
@@ -549,6 +552,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     cancelActionPerformed(null);
             }
         });
+    }
+
+    boolean isCanceledDialog() {
+        return canceledDialog;
     }
     
     private ProblemDetails getDetails(Problem problem) {

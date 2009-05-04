@@ -184,5 +184,8 @@
         <!-- TODO: find out what this target is for -->
         <mapID target="org.netbeans.modules.subversion.ui.browser.urlpattern" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
 
+    <!-- Open Projects dialog (This applies to all versioning systems!) -->
+        <mapID target="org.netbeans.modules.versioning.util.projects.ProjectOpener" url="svnmodule/csh/vcs_open_projects_dialog.html" />
+
 </map>
 

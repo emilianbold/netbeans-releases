@@ -119,6 +119,33 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance, R
         return resolvedClassifier;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        hash = 11 * hash + this.visibility.hashCode();
+        hash = 11 * hash + (this.virtual ? 1 : 0);
+        hash = 11 * hash + (this.ancestorType != null ? this.ancestorType.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        final InheritanceImpl other = (InheritanceImpl) obj;
+        if (this.visibility != other.visibility) {
+            return false;
+        }
+        if (this.virtual != other.virtual) {
+            return false;
+        }
+        if (this.ancestorType != other.ancestorType && (this.ancestorType == null || !this.ancestorType.equals(other.ancestorType))) {
+            return false;
+        }
+        return true;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     

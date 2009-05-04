@@ -406,7 +406,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
     public static Datasource createDataSource(String jndiName, String url, 
             String username, String password, String driver, File resourceDir) 
             throws ConfigurationException, DatasourceAlreadyExistsException {
-        SunDatasource ds = null;
+        SunDatasource ds;
         DuplicateJdbcResourceFinder jdbcFinder = new DuplicateJdbcResourceFinder(jndiName);
         ConnectionPoolFinder cpFinder = new ConnectionPoolFinder();
         

@@ -160,6 +160,8 @@ public class autoupdate extends GeneralXMLTest {
     // Select SOA
     int iCellRow = jtTable.findCellRow( "SOA" );
     jtTable.clickOnCell( iCellRow, 0 );
+    iCellRow = jtTable.findCellRow( "XML Schema and WSDL" );
+    jtTable.clickOnCell( iCellRow, 0 );
 
     // Click install
     // "Install"

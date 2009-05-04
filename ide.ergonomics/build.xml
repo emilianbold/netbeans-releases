@@ -163,6 +163,7 @@
             basedir="${proxytmp}/layers/"
             destdir="${proxytmp}/extracted/" style="${ergonomicsdir}/project-wizard.xsl"
             useimplicitfileset="true" extension=".fragment"
+            filenameparameter="filename"
         >
             <xmlcatalog refid="xml.fs.catalog"/>
             <param name="cluster.name" expression="${cluster.name}"/>

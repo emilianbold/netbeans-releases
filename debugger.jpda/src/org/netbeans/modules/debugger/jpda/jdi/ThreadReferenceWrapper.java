@@ -128,7 +128,12 @@ public final class ThreadReferenceWrapper {
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.StackFrame frame(com.sun.jdi.ThreadReference a, int b) throws com.sun.jdi.IncompatibleThreadStateException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper {
         try {
-            return a.frame(b);
+            try {
+                return a.frame(b);
+            } catch (java.lang.NullPointerException npex) {
+                // See http://www.netbeans.org/issues/show_bug.cgi?id=159887
+                throw new com.sun.jdi.IncompatibleThreadStateException(npex.getMessage());
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);

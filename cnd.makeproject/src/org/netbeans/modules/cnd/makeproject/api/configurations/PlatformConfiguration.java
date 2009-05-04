@@ -73,7 +73,7 @@ public class PlatformConfiguration extends IntConfiguration implements PropertyC
 
     @Override
     public String getName() {
-        return dhconf.isOnline() ? super.getName() : "";
+        return dhconf.isConfigured() ? super.getName() : "";
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -90,8 +90,8 @@ public class PlatformConfiguration extends IntConfiguration implements PropertyC
         }
     }
 
-    public boolean isDevHostOnline() {
-        return dhconf.isOnline();
+    public boolean isConfigured() {
+        return dhconf.isConfigured();
     }
 
     // Clone and Assign

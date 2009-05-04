@@ -88,9 +88,10 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     static private String PRELUDE_INSTANCES_PATH = "/GlassFish/Instances"; // NOI18N
 
     public static GlassfishInstanceProvider getEe6() {
+        FileObject fo = FileUtil.getConfigFile("GlassFish v3/Enable Experimental Features");
         String v3Root = System.getProperty(EE6_INSTALL_ROOT_PROP);
-        if ("true".equals(System.getProperty(PRELUDE_PROP_ROOT + ENABLE_EXPERIMENTAL_SUFFIX)) || // NOI18N
-               (null != v3Root && v3Root.trim().length() > 0) ) {
+        if ("true".equals(System.getProperty(PRELUDE_PROP_ROOT + ENABLE_EXPERIMENTAL_SUFFIX)) || 
+               (null != v3Root && v3Root.trim().length() > 0) || null != fo) {
             if (ee6Provider == null) {
                 ee6Provider = new GlassfishInstanceProvider(new String[] {EE6_DEPLOYER_FRAGMENT},
                         new String[] {EE6_INSTANCES_PATH},
@@ -180,6 +181,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         this.requiredFiles = requiredFiles;
         this.excludedFiles = excludedFiles;
         this.needsJdk6 = needsJdk6;
+        init();
     }
 
     public static synchronized boolean initialized() {
@@ -252,11 +254,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
 
     public String[] getRequiredFiles() {
-        return requiredFiles;
+        return requiredFiles.clone();
     }
 
     public String[] getExcludedFiles() {
-        return excludedFiles;
+        return excludedFiles.clone();
     }
     
     public String getNameOfBits() {
@@ -335,9 +337,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 //        return new ArrayList<ServerInstance>(instanceMap.values());
         List<ServerInstance> result = new  ArrayList<ServerInstance>();
         synchronized (instanceMap) {
-            if (instanceMap.isEmpty()) {
-                init();
-            }
             for (GlassfishInstance instance : instanceMap.values()) {
                 result.add(instance.getCommonInstance());
             }

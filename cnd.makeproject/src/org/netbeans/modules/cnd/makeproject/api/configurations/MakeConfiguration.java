@@ -127,7 +127,7 @@ public class MakeConfiguration extends Configuration {
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String host) {
         super(baseDir, name);
         configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES, null);
-        developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromString(host));
+        developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(host));
         compilerSet = new CompilerSet2Configuration(developmentHost);
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
@@ -466,7 +466,8 @@ public class MakeConfiguration extends Configuration {
      */
     @Override
     public Object clone() {
-        MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue(), getDevelopmentHost().getName());
+        MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(),
+                getConfigurationType().getValue(), getDevelopmentHost().getHostKey());
         super.cloneConf(clone);
         clone.setCloneOf(this);
 
@@ -507,7 +508,7 @@ public class MakeConfiguration extends Configuration {
         ConfigurationAuxObject[] objects = getAuxObjects();
         List<ConfigurationAuxObject> clonedAuxObjects = new ArrayList<ConfigurationAuxObject>();
         for (int i = 0; i < objects.length; i++) {
-            clonedAuxObjects.add((ConfigurationAuxObject) objects[i].clone());
+            clonedAuxObjects.add(objects[i].clone(this));
         }
         clone.setAuxObjects(clonedAuxObjects);
         return clone;

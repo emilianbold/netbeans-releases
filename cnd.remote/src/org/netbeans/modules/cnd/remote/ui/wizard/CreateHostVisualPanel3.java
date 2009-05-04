@@ -39,39 +39,59 @@
 
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
+import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.List;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.cnd.remote.sync.SyncUtils;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.openide.util.NbBundle;
 
 /*package*/ final class CreateHostVisualPanel3 extends JPanel {
 
-    public CreateHostVisualPanel3() {
+    public CreateHostVisualPanel3(CreateHostData data) {
+        this.data = data;
         initComponents();
     }
 
     @Override
     public String getName() {
-        return CreateHostWizardIterator.getString("CreateHostVisualPanel3.Title");//NOI18N
+        return NbBundle.getMessage(getClass(), "CreateHostVisualPanel3.Title");//NOI18N
     }
 
-    private ExecutionEnvironment execEnv;
-    private ToolsCacheManager cacheManager;
+    private final CreateHostData data;
+    private CompilerSetManager compilerSetManager;
 
-    void init(ExecutionEnvironment execEnv, ToolsCacheManager cacheManager) {
-        this.execEnv = execEnv;
-        this.cacheManager = cacheManager;
-        textHostDisplayName.setText(execEnv.getHost());
-        CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(execEnv);
-        labelPlatformValue.setText(PlatformTypes.toString(csm.getPlatform()));
-        labelUsernameValue.setText(execEnv.getUser());
-        labelHostnameValue.setText(execEnv.getHost());
-        List<String> sets = csm.getCompilerSetDisplayNames();
-        cbDefaultToolchain.setModel(new javax.swing.DefaultComboBoxModel(sets.toArray(new String[sets.size()])));
-        List<CompilerSet> sets2 = csm.getCompilerSets();
+    void init() {
+        textHostDisplayName.setText(data.getExecutionEnvironment().getDisplayName());
+        compilerSetManager = data.getCacheManager().getCompilerSetManagerCopy(data.getExecutionEnvironment());
+        labelPlatformValue.setText(PlatformTypes.toString(compilerSetManager.getPlatform()));
+        labelUsernameValue.setText(data.getExecutionEnvironment().getUser());
+        labelHostnameValue.setText(data.getExecutionEnvironment().getHost());
+        cbDefaultToolchain.setModel(new DefaultComboBoxModel(compilerSetManager.getCompilerSets().toArray()));
+        cbDefaultToolchain.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel out = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                CompilerSet cset = (CompilerSet) value;
+                out.setText(cset.getDisplayName());
+                return out;
+            }
+        });
+        cbDefaultToolchain.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                compilerSetManager.setDefault((CompilerSet) cbDefaultToolchain.getSelectedItem());
+            }
+        });
+        List<CompilerSet> sets2 = compilerSetManager.getCompilerSets();
         StringBuilder st = new StringBuilder();
         for (CompilerSet set : sets2) {
             if (st.length() > 0) {
@@ -80,11 +100,18 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
             st.append(set.getName()).append(" (").append(set.getDirectory()).append(")");//NOI18N
         }
         jTextArea1.setText(st.toString());
+
+        SyncUtils.arrangeComboBox(cbSyncMode, data.getExecutionEnvironment());
     }
 
-    String getDefaultCompilerSetDisplayName() {
-        return (String)cbDefaultToolchain.getSelectedItem();
+    String getHostDisplayName() {
+        return textHostDisplayName.getText();
     }
+
+    RemoteSyncFactory getRemoteSyncFactory() {
+        return (RemoteSyncFactory) cbSyncMode.getSelectedItem();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -93,6 +120,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        syncButtonGroup = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         textHostDisplayName = new javax.swing.JTextField();
         labelPlatform = new javax.swing.JLabel();
@@ -107,13 +135,13 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
         labelPlatformValue = new javax.swing.JLabel();
         labelHostnameValue = new javax.swing.JLabel();
         labelUsernameValue = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        cbSyncMode = new javax.swing.JComboBox();
 
         setPreferredSize(new java.awt.Dimension(534, 409));
         setRequestFocusEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel1.text")); // NOI18N
-
-        textHostDisplayName.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.textHostDisplayName.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(labelPlatform, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelPlatform.text")); // NOI18N
 
@@ -137,40 +165,40 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
         org.openide.awt.Mnemonics.setLocalizedText(labelUsernameValue, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.labelUsernameValue.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel4.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(40, 40, 40)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(textHostDisplayName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE))
-                            .add(jLabel2)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(labelPlatform)
-                                    .add(labelHostname)
-                                    .add(labelUsername))
-                                .add(14, 14, 14)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(labelUsernameValue)
-                                    .add(labelHostnameValue)
-                                    .add(labelPlatformValue)))))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabel3)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(cbDefaultToolchain, 0, 236, Short.MAX_VALUE)))
+            .add(layout.createSequentialGroup()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(textHostDisplayName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(labelPlatform)
+                    .add(labelHostname)
+                    .add(labelUsername))
+                .add(14, 14, 14)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(labelUsernameValue)
+                    .add(labelHostnameValue)
+                    .add(labelPlatformValue))
                 .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(jLabel2)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel4)
+                    .add(jLabel3))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(cbSyncMode, 0, 386, Short.MAX_VALUE)
+                    .add(cbDefaultToolchain, 0, 386, Short.MAX_VALUE)))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -195,19 +223,26 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
                     .add(cbDefaultToolchain, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(37, 37, 37))
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(cbSyncMode, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel4))
+                .add(29, 29, 29))
         );
     }// </editor-fold>//GEN-END:initComponents
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbDefaultToolchain;
+    private javax.swing.JComboBox cbSyncMode;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextArea jTextArea1;
@@ -217,6 +252,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     private javax.swing.JLabel labelPlatformValue;
     private javax.swing.JLabel labelUsername;
     private javax.swing.JLabel labelUsernameValue;
+    private javax.swing.ButtonGroup syncButtonGroup;
     private javax.swing.JTextField textHostDisplayName;
     // End of variables declaration//GEN-END:variables
 }

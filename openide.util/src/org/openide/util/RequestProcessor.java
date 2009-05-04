@@ -128,14 +128,19 @@ public final class RequestProcessor implements Executor{
     private static RequestProcessor UNLIMITED = new RequestProcessor("Default RequestProcessor", 50); // NOI18N
 
     /** A shared timer used to pass timeouted tasks to pending queue */
-    private static Timer starterThread = new Timer(true);
+    private static final Timer starterThread = new Timer(true);
 
     /** logger */
     private static Logger logger;
 
     /** The counter for automatic naming of unnamed RequestProcessors */
     private static int counter = 0;
-    static final boolean SLOW = Boolean.getBoolean("org.openide.util.RequestProcessor.Item.SLOW");
+    private static final boolean SLOW;
+    static {
+        boolean slow = false;
+        assert slow = true;
+        SLOW = slow;
+    }
 
     /** The name of the RequestProcessor instance */
     String name;
@@ -146,7 +151,7 @@ public final class RequestProcessor implements Executor{
 
     /** The lock covering following four fields. They should be accessed
      * only while having this lock held. */
-    private Object processorLock = new Object();
+    private final Object processorLock = new Object();
 
     /** The set holding all the Processors assigned to this RequestProcessor */
     private HashSet<Processor> processors = new HashSet<Processor>();
@@ -335,10 +340,8 @@ public final class RequestProcessor implements Executor{
     */
     public boolean isRequestProcessorThread() {
         Thread c = Thread.currentThread();
-
-        //        return c instanceof Processor && ((Processor)c).source == this;
         synchronized (processorLock) {
-            return processors.contains(c);
+            return c instanceof Processor && processors.contains((Processor) c);
         }
     }
 
@@ -811,9 +814,9 @@ public final class RequestProcessor implements Executor{
         private final RequestProcessor owner;
         private Object action;
         private boolean enqueued;
+        String message;
 
         Item(Task task, RequestProcessor rp) {
-            super("Posted StackTrace"); // NOI18N
             action = task;
             owner = rp;
         }
@@ -849,6 +852,11 @@ public final class RequestProcessor implements Executor{
         public Throwable fillInStackTrace() {
             return SLOW ? super.fillInStackTrace() : this;
         }
+
+        public @Override String getMessage() {
+            return message;
+        }
+
     }
 
     //------------------------------------------------------------------------------
@@ -862,7 +870,7 @@ public final class RequestProcessor implements Executor{
      */
     private static class Processor extends Thread {
         /** A stack containing all the inactive Processors */
-        private static Stack<Processor> pool = new Stack<Processor>();
+        private static final Stack<Processor> pool = new Stack<Processor>();
 
         /* One minute of inactivity and the Thread will die if not assigned */
         private static final int INACTIVE_TIMEOUT = 60000;
@@ -879,7 +887,7 @@ public final class RequestProcessor implements Executor{
         private boolean idle = true;
 
         /** Waiting lock */
-        private Object lock = new Object();
+        private final Object lock = new Object();
 
         public Processor() {
             super(getTopLevelThreadGroup(), "Inactive RequestProcessor thread"); // NOI18N
@@ -1077,10 +1085,12 @@ public final class RequestProcessor implements Executor{
 
         /** @see "#20467" */
         private static void doNotify(RequestProcessor.Task todo, Throwable ex) {
-            logger().log(Level.SEVERE, null, ex);
-            if (SLOW) {
-                logger.log(Level.SEVERE, null, todo.item);
+            if (SLOW && todo.item.message == null) {
+                todo.item.message = "task failed: " + ex;
+                todo.item.initCause(ex);
+                ex = todo.item;
             }
+            logger().log(Level.SEVERE, null, ex);
         }
 
         /**

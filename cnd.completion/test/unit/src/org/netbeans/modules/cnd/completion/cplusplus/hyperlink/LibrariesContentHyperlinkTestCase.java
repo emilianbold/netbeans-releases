@@ -85,7 +85,7 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         assertTrue("Not directory" + srcDir, srcDir.isDirectory());
     }
 
-    public void /*change to test*/ tstTwoLevelsStructRedirection() throws Exception {
+    public void /*change to test*/ testTwoLevelsStructRedirection() throws Exception {
         performTest("src/format1.c", 17, 15, "src/format1.c", 7, 5);
         performTest("src/format1.c", 18, 15, "src/format1.c", 8, 5);
         performTest("src/format1.c", 19, 15, "src/format1.c", 12, 5);
@@ -206,7 +206,7 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
-        protected Class getTestCaseDataClass() {
+        protected Class<?> getTestCaseDataClass() {
             return BasicHyperlinkTestCase.class;
         }
 

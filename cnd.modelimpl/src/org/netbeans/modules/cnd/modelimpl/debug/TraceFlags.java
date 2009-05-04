@@ -73,7 +73,7 @@ public class TraceFlags {
      */
     public static final boolean EXCLUDE_COMPOUND = DebugUtils.getBoolean("cnd.modelimpl.excl.compound", true); // NOI18N
     
-    public static final boolean APT_CHECK_GET_STATE = DebugUtils.getBoolean("apt.check.get.state", true); // NOI18N
+    public static final boolean APT_CHECK_GET_STATE = DebugUtils.getBoolean("apt.check.get.state", false); // NOI18N
  
     public static final int     BUF_SIZE = APTTraceFlags.BUF_SIZE;
     
@@ -84,12 +84,14 @@ public class TraceFlags {
     public static final boolean TRACE_CACHE = DebugUtils.getBoolean("cnd.trace.cache", false); // NOI18N
     public static final boolean USE_AST_CACHE = DebugUtils.getBoolean("cnd.use.ast.cache", false); // NOI18N
     public static final boolean CACHE_SKIP_APT_VISIT = DebugUtils.getBoolean("cnd.cache.skip.apt.visit", false); // NOI18N
+    public static final boolean CACHE_FILE_STATE = DebugUtils.getBoolean("cnd.cache.file.state", true); // NOI18N
 
     public static final boolean CACHE_SKIP_SAVE = DebugUtils.getBoolean("cnd.cache.skip.save", true); // NOI18N
     
     public static final boolean TRACE_MODEL_STATE = Boolean.getBoolean("cnd.modelimpl.installer.trace"); // NOI18N
 
     public static final boolean USE_CANONICAL_PATH = DebugUtils.getBoolean("cnd.modelimpl.use.canonical.path", false); // NOI18N
+    public static final boolean SYMLINK_AS_OWN_FILE = DebugUtils.getBoolean("cnd.modelimpl.symlink.as.file", true); // NOI18N
     
     public static final boolean CHECK_MEMORY = DebugUtils.getBoolean("cnd.check.memory", false); // NOI18N
     

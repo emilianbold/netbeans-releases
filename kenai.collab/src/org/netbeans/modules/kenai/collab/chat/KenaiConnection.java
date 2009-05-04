@@ -116,7 +116,7 @@ public class KenaiConnection implements PropertyChangeListener {
         listeners.remove(name);
     }
 
-    private MultiUserChat createChat(KenaiFeature prj) {
+    public MultiUserChat createChat(KenaiFeature prj) {
         MultiUserChat multiUserChat = new MultiUserChat(connection, getChatroomName(prj));
         chats.put(prj.getName(), multiUserChat);
         messageQueue.put(prj.getName(), new LinkedList<Message>());
@@ -274,7 +274,7 @@ public class KenaiConnection implements PropertyChangeListener {
                     final PasswordAuthentication pa = (PasswordAuthentication) e.getNewValue();
                     if (pa != null) {
                         USER = pa.getUserName();
-                        PASSWORD = System.getProperty("kenai.xmpp.password",new String(pa.getPassword())); ;
+                        PASSWORD = System.getProperty("kenai.xmpp.password",new String(pa.getPassword()));
                         tryConnect();
                     } else {
                         for (MultiUserChat muc : getChats()) {
@@ -303,8 +303,8 @@ public class KenaiConnection implements PropertyChangeListener {
     private String PASSWORD;
     
     //TODO this should be removed when xmpp server starts working on kenai.com
-    private static final String XMPP_SERVER = System.getProperty("kenai.xmpp.url","testkenai.com");
-    private static final String CHAT_ROOM = "@" + System.getProperty("kenai.xmpp.muc.url", "muc.testkenai.com");
+    private static final String XMPP_SERVER = System.getProperty("kenai.com.url","https://kenai.com").substring(System.getProperty("kenai.com.url","https://kenai.com").lastIndexOf("/")+1);
+    private static final String CHAT_ROOM = "@muc." + XMPP_SERVER;
 
     /**
      * TODO: should return kenai account name
@@ -319,7 +319,6 @@ public class KenaiConnection implements PropertyChangeListener {
         return prj.getName() + CHAT_ROOM;
     }
 
-    //TODO: my projects does not work so far
     public Collection<KenaiFeature> getMyChats() {
         ArrayList myChats = new ArrayList();
         try {

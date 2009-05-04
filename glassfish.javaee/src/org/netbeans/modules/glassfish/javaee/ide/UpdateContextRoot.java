@@ -61,53 +61,59 @@ public class UpdateContextRoot implements ProgressListener {
     private MonitorProgressObject returnProgress;
     private Hk2TargetModuleID moduleId;
     private ServerInstance si;
+    private boolean needToDo;
 
     public UpdateContextRoot(MonitorProgressObject returnProgress, Hk2TargetModuleID moduleId,
-            ServerInstance si) {
+            ServerInstance si, boolean needToDo) {
         this.returnProgress = returnProgress;
         this.moduleId = moduleId;
         this.si = si;
+        this.needToDo = needToDo;
     }
 
     public void handleProgressEvent(ProgressEvent arg0) {
         if (arg0.getDeploymentStatus().isCompleted()) {
-            returnProgress.operationStateChanged(OperationState.RUNNING, arg0.getDeploymentStatus().getMessage());
-            // let's update the context-root
-            //
-            RequestProcessor.getDefault().post(new Runnable() {
+            if (needToDo) {
+                returnProgress.operationStateChanged(OperationState.RUNNING, arg0.getDeploymentStatus().getMessage());
+                // let's update the context-root
+                //
+                RequestProcessor.getDefault().post(new Runnable() {
 
-                public void run() {
-                    // Maven projects like to embed a '.' into the ModuleID
-                    //   that played havoc with the get command, so we started
-                    //   to use a different get pattern,
-                    GetPropertyCommand gpc = new GetPropertyCommand("applications.application.*.context-root");
-                    Future<OperationState> result =
-                            ((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
-                    try {
-                        if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
-                            Map<String, String> retVal = gpc.getData();
-                            String newCR = retVal.get("applications.application." + moduleId.getModuleID() + ".context-root");
-                            if (null != newCR) {
-                                moduleId.setPath(newCR); //e.getValue());
-                                returnProgress.operationStateChanged(OperationState.COMPLETED, "updated the moduleid");
-                                return;
+                    public void run() {
+                        // Maven projects like to embed a '.' into the ModuleID
+                        //   that played havoc with the get command, so we started
+                        //   to use a different get pattern,
+                        GetPropertyCommand gpc = new GetPropertyCommand("applications.application.*.context-root");
+                        Future<OperationState> result =
+                                ((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
+                        try {
+                            if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                                Map<String, String> retVal = gpc.getData();
+                                String newCR = retVal.get("applications.application." + moduleId.getModuleID() + ".context-root");
+                                if (null != newCR) {
+                                    moduleId.setPath(newCR); //e.getValue());
+                                    returnProgress.operationStateChanged(OperationState.COMPLETED, "updated the moduleid");
+                                    return;
+                                }
+                                returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
                             }
+                        } catch (InterruptedException ex) {
                             returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
+                            Exceptions.printStackTrace(ex);
+                        } catch (ExecutionException ex) {
+                            returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
+                            Exceptions.printStackTrace(ex);
+                        } catch (TimeoutException ex) {
+                            returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
+                            Exceptions.printStackTrace(ex);
                         }
-                    } catch (InterruptedException ex) {
-                        returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
-                        Exceptions.printStackTrace(ex);
-                    } catch (ExecutionException ex) {
-                        returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
-                        Exceptions.printStackTrace(ex);
-                    } catch (TimeoutException ex) {
-                        returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
-                        Exceptions.printStackTrace(ex);
                     }
-                }
-            });
-        } else if (arg0.getDeploymentStatus().isFailed()) {
-            returnProgress.operationStateChanged(OperationState.FAILED, "failed to update the moduleid");
+                });
+            } else {
+                returnProgress.operationStateChanged(OperationState.COMPLETED, arg0.getDeploymentStatus().getMessage());
+            }
+        }else if (arg0.getDeploymentStatus().isFailed()) {
+            returnProgress.operationStateChanged(OperationState.FAILED, arg0.getDeploymentStatus().getMessage());
         } else {
             returnProgress.operationStateChanged(OperationState.RUNNING, arg0.getDeploymentStatus().getMessage());
         }

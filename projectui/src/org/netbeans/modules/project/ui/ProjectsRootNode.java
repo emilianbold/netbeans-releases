@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
+import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
@@ -68,6 +69,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -157,56 +159,50 @@ public class ProjectsRootNode extends AbstractNode {
      * @return the node or null if the node was not found
      */
     Node findNode(FileObject target) {        
-        
+
         ProjectChildren ch = (ProjectChildren)getChildren();
-        
-        if ( ch.type == LOGICAL_VIEW ) {
-            // Speed up search in case we have an owner project - look in its node first.
-            Project ownerProject = FileOwnerQuery.getOwner(target);
-            for (int lookOnlyInOwnerProject = (ownerProject != null) ? 0 : 1; lookOnlyInOwnerProject < 2; lookOnlyInOwnerProject++) {
-                for (Node node : ch.getNodes(true)) {
-                    Project p = node.getLookup().lookup(Project.class);
-                    assert p != null : "Should have had a Project in lookup of " + node;
-                    if (lookOnlyInOwnerProject == 0 && p != ownerProject) {
-                        continue; // but try again (in next outer loop) as a fallback
-                    }
+
+        assert ((ch.type == LOGICAL_VIEW) || (ch.type == PHYSICAL_VIEW));
+        // Speed up search in case we have an owner project - look in its node first.
+        Project ownerProject = FileOwnerQuery.getOwner(target);
+        for (int lookOnlyInOwnerProject = (ownerProject != null) ? 0 : 1; lookOnlyInOwnerProject < 2; lookOnlyInOwnerProject++) {
+            for (Node node : ch.getNodes(true)) {
+                Project p = node.getLookup().lookup(Project.class);
+                assert p != null : "Should have had a Project in lookup of " + node;
+                if (lookOnlyInOwnerProject == 0 && p != ownerProject) {
+                    continue; // but try again (in next outer loop) as a fallback
+                }
+                Node n = null;
+                if (ch.type == LOGICAL_VIEW) {
                     LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
                     if (lvp != null) {
                         // XXX (cf. #63554): really should be calling this on DataObject usually, since
                         // DataNode does *not* currently have a FileObject in its lookup (should it?)
                         // ...but it is not clear who has implemented findPath to assume FileObject!
-                        Node selectedNode = lvp.findPath(node, target);
-                        if (selectedNode != null) {
-                            return selectedNode;
-                        }
+                        n = lvp.findPath(node, target);
+                    }
+                } else if (ch.type == PHYSICAL_VIEW){
+                    PhysicalView.PathFinder pf = node.getLookup().lookup(PhysicalView.PathFinder.class);
+                    if ( pf != null ) {
+                        n = pf.findPath(node, target);
                     }
                 }
-            }
-            return null;
-            
-        }
-        else if ( ch.type == PHYSICAL_VIEW ) {
-            for (Node node : ch.getNodes(true)) {
-                // XXX could do similar optimization as for LOGICAL_VIEW; every nodes[i] must have some Project in its lookup
-                PhysicalView.PathFinder pf = node.getLookup().lookup(PhysicalView.PathFinder.class);
-                if ( pf != null ) {
-                    Node n = pf.findPath(node, target);
-                    if ( n != null ) {
-                        return n;
-                    }
+                if ( n != null ) {
+                    return n;
                 }
             }
-            return null;
-        }       
-        else {
-            return null;
         }
+        return null;
     }
 
     static void checkNoLazyNode(Object msg) {
         synchronized(all){
             for (ProjectsRootNode root : all) {
                 for (Node n : root.getChildren().getNodes()) {
+                    if (n instanceof BadgingNode) {
+                        ((BadgingNode)n).replaceProject(null);
+                    }
+
                     if (n.getLookup().lookup(LazyProject.class) != null) {
                         LogRecord REC = new LogRecord(Level.WARNING, "LazyProjects remain visible:\n {0}"); // NOI18N
                         REC.setLoggerName(OpenProjectList.LOGGER.getName());
@@ -290,6 +286,7 @@ public class ProjectsRootNode extends AbstractNode {
                 }
                 else {
                     badgedNodes[i] = new BadgingNode(
+                        this,
                         p,
                         origNodes[i],
                         type == LOGICAL_VIEW  && projectInLookup[0],
@@ -421,7 +418,7 @@ public class ProjectsRootNode extends AbstractNode {
         }
                                                 
     }
-        
+
     static final class BadgingNode extends FilterNode implements ChangeListener, PropertyChangeListener, Runnable, FileStatusListener {
 
         private static String badgedNamePattern = NbBundle.getMessage(ProjectsRootNode.class, "LBL_MainProject_BadgedNamePattern");
@@ -433,6 +430,7 @@ public class ProjectsRootNode extends AbstractNode {
         RequestProcessor.Task task;
         private boolean nameChange;
         private boolean iconChange;
+        private final ProjectChildren ch;
         private final boolean logicalView;
         private final ProjectChildren.Pair pair;
         private final Set<FileObject> projectDirsListenedTo = new WeakSet<FileObject>();
@@ -445,12 +443,15 @@ public class ProjectsRootNode extends AbstractNode {
             }
         };
 
-        public BadgingNode(ProjectChildren.Pair p, Node n, boolean addSearchInfo, boolean logicalView) {
+        public BadgingNode(ProjectChildren ch, ProjectChildren.Pair p, Node n, boolean addSearchInfo, boolean logicalView) {
             super(n, null, badgingLookup(n, addSearchInfo));
+            this.ch = ch;
             this.pair = p;
             this.logicalView = logicalView;
+            OpenProjectList.log(Level.FINE, "BadgingNode init {0}", toStringForLog()); // NOI18N
             OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
             setProjectFiles();
+            OpenProjectList.log(Level.FINE, "BadgingNode finished {0}", toStringForLog()); // NOI18N
         }
         
         private static Lookup badgingLookup(Node n, boolean addSearchInfo) {
@@ -466,6 +467,74 @@ public class ProjectsRootNode extends AbstractNode {
 
             if (prj != null && /* #145682 */ !(prj instanceof LazyProject)) {
                 setProjectFiles(prj);
+            }
+        }
+
+        private void replaceProject(Project newProj) {
+            if (newProj == null) {
+                try {
+                    newProj = ProjectManager.getDefault().findProject(pair.fo);
+                    if (newProj == pair.project) {
+                        return;
+                    }
+                } catch (IOException ex) {
+                    OpenProjectList.log(Level.INFO, "No project for " + pair.fo, ex); // NOI18N
+                } catch (IllegalArgumentException ex) {
+                    OpenProjectList.log(Level.INFO, "No project for " + pair.fo, ex); // NOI18N
+                }
+
+            }
+            
+            OpenProjectList.log(Level.FINER, "replacing for {0}", toStringForLog());
+            Project p = getLookup().lookup(Project.class);
+            if (p == null) {
+                OpenProjectList.log(Level.FINE, "no project in lookup {0}", toStringForLog());
+                return;
+            }
+            FileObject fo = p.getProjectDirectory();
+            if (newProj.getProjectDirectory().equals(fo)) {
+                Node n = null;
+                if (logicalView) {
+                    n = ch.logicalViewForProject(newProj, null);
+                    OpenProjectList.log(Level.FINER, "logical view {0}", n);
+                } else {
+                    Node[] arr = PhysicalView.createNodesForProject(newProj);
+                    OpenProjectList.log(Level.FINER, "physical view {0}", Arrays.asList(arr));
+                    if (arr.length > 1) {
+                        pair.project = newProj;
+                        OpenProjectList.log(Level.FINER, "refreshing for {0}", newProj);
+                        ch.refresh(newProj);
+                        OpenProjectList.log(Level.FINER, "refreshed for {0}", newProj);
+                        return;
+                    }
+                    for (Node one : arr) {
+                        if (PhysicalView.isProjectDirNode(one)) {
+                            n = one;
+                            break;
+                        }
+                    }
+                    assert n != null : "newProject yields null node: " + newProj;
+                }
+                OpenProjectList.log(Level.FINER, "change original: {0}", n);
+                OpenProjectList.log(Level.FINER, "children before change original: {0}", getChildren());
+                OpenProjectList.log(Level.FINER, "delegate children before change original: {0}", getOriginal().getChildren());
+                changeOriginal(n, true);
+                OpenProjectList.log(Level.FINER, "delegate after change original: {0}", getOriginal());
+                OpenProjectList.log(Level.FINER, "name after change original: {0}", getName());
+                OpenProjectList.log(Level.FINER, "children after change original: {0}", getChildren());
+                OpenProjectList.log(Level.FINER, "delegate children after change original: {0}", getOriginal().getChildren());
+                BadgingLookup bl = (BadgingLookup) getLookup();
+                if (bl.isSearchInfo()) {
+                    OpenProjectList.log(Level.FINER, "is search info {0}", bl);
+                    bl.setMyLookups(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(newProj)));
+                } else {
+                    OpenProjectList.log(Level.FINER, "no search info {0}", bl);
+                    bl.setMyLookups(n.getLookup());
+                }
+                OpenProjectList.log(Level.FINER, "done {0}", toStringForLog());
+                setProjectFiles();
+            } else {
+                OpenProjectList.log(Level.FINE, "wrong directories. current: " + fo + " new " + newProj.getProjectDirectory());
             }
         }
 
@@ -643,7 +712,7 @@ public class ProjectsRootNode extends AbstractNode {
         public @Override Image getIcon(int type) {
             Image img = super.getIcon(type);
 
-            if (files != null && files.iterator().hasNext()) {
+            if (logicalView && files != null && files.iterator().hasNext()) {
                 try {
                     FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
@@ -658,7 +727,7 @@ public class ProjectsRootNode extends AbstractNode {
         public @Override Image getOpenedIcon(int type) {
             Image img = super.getOpenedIcon(type);
 
-            if (files != null && files.iterator().hasNext()) {
+            if (logicalView && files != null && files.iterator().hasNext()) {
                 try {
                     FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
@@ -675,76 +744,7 @@ public class ProjectsRootNode extends AbstractNode {
                 fireDisplayNameChange( null, null );
             }
             if ( OpenProjectList.PROPERTY_REPLACE.equals(e.getPropertyName())) {
-                if (this instanceof ProjectsRootNode.BadgingNode) {
-                    OpenProjectList.log(Level.FINER, "replacing for {0}", ((ProjectsRootNode.BadgingNode) this).toStringForLog());
-                } else {
-                    OpenProjectList.log(Level.FINER, "replacing for {0}", this);
-                }
-                Project p = getLookup().lookup(Project.class);
-                if (p == null) {
-                    if (this instanceof ProjectsRootNode.BadgingNode) {
-                        OpenProjectList.log(Level.FINE, "no project in lookup {0}", ((ProjectsRootNode.BadgingNode) this).toStringForLog());
-                    } else {
-                        OpenProjectList.log(Level.FINE, "no project in lookup {0}", this);
-                    }
-                    return;
-                }
-                FileObject fo = p.getProjectDirectory();
-                Project newProj = (Project)e.getNewValue();
-                assert newProj != null;
-                if (newProj.getProjectDirectory().equals(fo)) {
-                    Node parentNode = getParentNode();
-                    if (parentNode != null) {
-                    ProjectChildren ch = (ProjectChildren) parentNode.getChildren();
-                    Node n = null;
-                    if (logicalView) {
-                        n = ch.logicalViewForProject(newProj, null);
-                        OpenProjectList.log(Level.FINER, "logical view {0}", n);
-                    } else {
-                        Node[] arr = PhysicalView.createNodesForProject(newProj);
-                        OpenProjectList.log(Level.FINER, "physical view {0}", Arrays.asList(arr));
-                        if (arr.length > 1) {
-                            pair.project = newProj;
-                            OpenProjectList.log(Level.FINER, "refreshing for {0}", newProj);
-                            ch.refresh(newProj);
-                            OpenProjectList.log(Level.FINER, "refreshed for {0}", newProj);
-                            return;
-                        }
-                        for (Node one : arr) {
-                            if (PhysicalView.isProjectDirNode(one)) {
-                                n = one;
-                                break;
-                            }
-                        }
-                        assert n != null : "newProject yields null node: " + newProj;
-                    }
-                    OpenProjectList.log(Level.FINER, "change original: {0}", n);
-                    OpenProjectList.log(Level.FINER, "children before change original: {0}", getChildren());
-                    OpenProjectList.log(Level.FINER, "delegate children before change original: {0}", getOriginal().getChildren());
-                    changeOriginal(n, true);
-                    OpenProjectList.log(Level.FINER, "delegate after change original: {0}", getOriginal());
-                    OpenProjectList.log(Level.FINER, "name after change original: {0}", getName());
-                    OpenProjectList.log(Level.FINER, "children after change original: {0}", getChildren());
-                    OpenProjectList.log(Level.FINER, "delegate children after change original: {0}", getOriginal().getChildren());
-
-                    BadgingLookup bl = (BadgingLookup)getLookup();
-                    if (bl.isSearchInfo()) {
-                        OpenProjectList.log(Level.FINER, "is search info {0}", bl);
-                        bl.setMyLookups(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(newProj)));
-                    } else {
-                        OpenProjectList.log(Level.FINER, "no search info {0}", bl);
-                        bl.setMyLookups(n.getLookup());
-                    }
-                    if (this instanceof ProjectsRootNode.BadgingNode) {
-                        OpenProjectList.log(Level.FINER, "done {0}", ((ProjectsRootNode.BadgingNode) this).toStringForLog());
-                    } else {
-                        OpenProjectList.log(Level.FINER, "done {0}", this);
-                    }
-                    }
-                    setProjectFiles();
-                } else {
-                    OpenProjectList.log(Level.FINE, "wrong directories. current: " + fo + " new " + newProj.getProjectDirectory());
-                }
+                replaceProject((Project)e.getNewValue());
             }
             if (SourceGroup.PROP_CONTAINERSHIP.equals(e.getPropertyName())) {
                 setProjectFiles();
@@ -766,7 +766,6 @@ public class ProjectsRootNode extends AbstractNode {
         }
 
     } // end of BadgingNode
-    
     private static final class BadgingLookup extends ProxyLookup {
         public BadgingLookup(Lookup... lkps) {
             super(lkps);

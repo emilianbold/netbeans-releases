@@ -537,7 +537,16 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
             targets2ConfPar = new HashMap<Artifact, Set<DependencyNode>>();
             DependencyNode curDn = null;
             DependencyNode parent = null;
-            for (DependencyNode dn : conflictNode.getDuplicatesOrConflicts()) {
+
+            List<DependencyNode> allDNs = new ArrayList<DependencyNode>(
+                    conflictNode.getDuplicatesOrConflicts());
+            
+            // prevent conflictNode itself to be included in exclusion targets
+            if (conflictNode.getPrimaryLevel() > 1) {
+                allDNs.add(conflictNode.getArtifact());
+            }
+
+            for (DependencyNode dn : allDNs) {
                 curDn = dn;
                 parent = curDn.getParent();
                 while (parent.getParent() != null) {
@@ -549,19 +558,15 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
                 if (confPar == null) {
                     confPar = new HashSet<DependencyNode>();
                     targets2ConfPar.put(curDn.getArtifact(), confPar);
-                    // add primary parent
-                    confPar.add(conflictNode.getArtifact().getParent());
                 }
                 confPar.add(dn.getParent());
 
-                if (dn.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                    Set<ArtifactVersion> versions = targets2Versions.get(curDn.getArtifact());
-                    if (versions == null) {
-                        versions = new HashSet<ArtifactVersion>();
-                        targets2Versions.put(curDn.getArtifact(), versions);
-                    }
-                    versions.add(new DefaultArtifactVersion(dn.getArtifact().getVersion()));
+                Set<ArtifactVersion> versions = targets2Versions.get(curDn.getArtifact());
+                if (versions == null) {
+                    versions = new HashSet<ArtifactVersion>();
+                    targets2Versions.put(curDn.getArtifact(), versions);
                 }
+                versions.add(new DefaultArtifactVersion(dn.getArtifact().getVersion()));
             }
         }
 

@@ -139,7 +139,7 @@ public class ChatNotifications {
     public synchronized  MessagingHandleImpl getMessagingHandle(String id) {
         MessagingHandleImpl handle=groupMessages.get(id);
         if (handle==null) {
-            handle =new MessagingHandleImpl();
+            handle =new MessagingHandleImpl(id);
             groupMessages.put(id, handle);
             handle.setMessageCount(0);
         }

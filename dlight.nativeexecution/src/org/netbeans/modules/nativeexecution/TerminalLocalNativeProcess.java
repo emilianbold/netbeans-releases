@@ -49,20 +49,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
-import org.netbeans.modules.nativeexecution.support.WindowsSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -70,51 +69,24 @@ import org.openide.util.Utilities;
 public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
-    private final static String shell;
-    private final static String dorunScript;
-    private final static boolean isWindows;
-    private final static boolean isMacOS;
+    private final static File dorunScript;
     private ExternalTerminal terminal;
     private InputStream processOutput;
     private InputStream processError;
     private File resultFile;
-
+    private final boolean isWindows;
+    private final boolean isMacOS;
 
     static {
-        isWindows = Utilities.isWindows();
-        isMacOS = Utilities.isMac();
-
-        String runScript = null;
         InstalledFileLocator fl = InstalledFileLocator.getDefault();
-        File file = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
-        if (file != null) {
-            runScript = file.toString();
+        dorunScript = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
 
-            if (!isWindows) {
-                try {
-                    ProcessBuilder pb = new ProcessBuilder("chmod", "+x", runScript); // NOI18N
-                    pb.environment().put("PATH", "/bin:/usr/bin"); // NOI18N
-                    pb.start().waitFor();
-                } catch (InterruptedException ex) {
-//                    Exceptions.printStackTrace(ex);
-                } catch (IOException ex) {
-//                    Exceptions.printStackTrace(ex);
-                }
-            } else {
-                runScript = runScript.replaceAll("\\\\", "/"); // NOI18N
-            }
+        if (dorunScript != null) {
+            CommonTasksSupport.chmod(ExecutionEnvironmentFactory.getLocal(),
+                    dorunScript.getAbsolutePath(), 0755, null);
+        } else {
+            log.severe("Unable to locate bin/nativeexecution/dorun.sh file!"); // NOI18N
         }
-
-        dorunScript = runScript;
-
-        String sh = null;
-
-        try {
-            sh = HostInfoUtils.getShell(ExecutionEnvironmentFactory.getLocal());
-        } catch (ConnectException ex) {
-        }
-
-        shell = sh;
     }
 
     public TerminalLocalNativeProcess(
@@ -123,6 +95,10 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         this.terminal = terminal;
         this.processOutput = new ByteArrayInputStream(
                 (loc("TerminalLocalNativeProcess.ProcessStarted.text") + '\n').getBytes()); // NOI18N
+
+        isWindows = hostInfo != null && hostInfo.getOSFamily() == OSFamily.WINDOWS;
+        isMacOS = hostInfo != null && hostInfo.getOSFamily() == OSFamily.MACOSX;
+
     }
 
     protected void create() throws Throwable {
@@ -131,7 +107,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 throw new IOException(loc("TerminalLocalNativeProcess.dorunNotFound.text")); // NOI18N
             }
 
-            if (Utilities.isWindows() && shell == null) {
+            if (isWindows && hostInfo.getShell() == null) {
                 throw new IOException(loc("NativeProcess.shellNotFound.text")); // NOI18N
             }
 
@@ -170,7 +146,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             List<String> command = terminalInfo.wrapCommand(
                     info.getExecutionEnvironment(),
                     terminal,
-                    dorunScript,
+                    dorunScript.getAbsolutePath(),
                     "-w", workingDirectory, // NOI18N
                     "-e", envFileName, // NOI18N
                     "-p", pidFileName, // NOI18N
@@ -215,7 +191,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     String path = env.get("PATH"); // NOI18N
                     env.put("PATH", WindowsSupport.getInstance().normalizeAllPaths(path)); // NOI18N
                 }
-                
+
                 // Always prepend /bin and /usr/bin to PATH
                 env.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
 
@@ -260,7 +236,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             List<String> command = new ArrayList<String>();
 
             if (isWindows) {
-                command.add(shell);
+                command.add(hostInfo.getShell());
                 command.add("-c"); // NOI18N
                 command.add("/bin/kill -" + signal + " " + getPID()); // NOI18N
             } else {

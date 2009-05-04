@@ -70,10 +70,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
@@ -138,7 +141,7 @@ import org.openidex.search.SearchInfo;
  */
 public class MakeLogicalViewProvider implements LogicalViewProvider {
 
-    private final Project project;
+    private final MakeProject project;
     private final SubprojectProvider spp;
     private static final Boolean ASYNC_ROOT_NODE = Boolean.getBoolean("cnd.async.root");// NOI18N
     private static final Logger log = Logger.getLogger("cnd.async.root");// NOI18N
@@ -149,7 +152,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     static StandardNodeAction renameAction = null;
     static StandardNodeAction deleteAction = null;
 
-    public MakeLogicalViewProvider(Project project, SubprojectProvider spp) {
+    public MakeLogicalViewProvider(MakeProject project, SubprojectProvider spp) {
         this.project = project;
         assert project != null;
         this.spp = spp;
@@ -456,11 +459,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     private String getShortDescription() {
         String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
-
-        MakeConfigurationDescriptor mkd = getMakeConfigurationDescriptor();
-        MakeConfiguration conf = (MakeConfiguration) mkd.getConfs().getActive();
-        final DevelopmentHostConfiguration devHost = conf.getDevelopmentHost();
-        if (devHost.isLocalhost()) {
+        DevelopmentHostConfiguration devHost = project.getDevelopmentHostConfiguration();
+        if (devHost == null || devHost.isLocalhost()) {
             return NbBundle.getMessage(MakeLogicalViewProvider.class,
                     "HINT_project_root_node", prjDirDispName); // NOI18N
         } else {
@@ -838,13 +838,22 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 if (folder.isProjectFiles()) {
                     //FileObject srcFileObject = project.getProjectDirectory().getFileObject("src");
                     FileObject srcFileObject = project.getProjectDirectory();
-                    DataObject srcDataObject;
+                    DataObject srcDataObject = null;
                     try {
-                        srcDataObject = DataObject.find(srcFileObject);
+                        if (srcFileObject.isValid()) {
+                            srcDataObject = DataObject.find(srcFileObject);
+                        }
                     } catch (DataObjectNotFoundException e) {
-                        throw new AssertionError(e);
+                        // Do not throw Exception.
+                        // It is normal use case when folder can be deleted at build time.
+                        //throw new AssertionError(e);
                     }
-                    node = new LogicalFolderNode(((DataFolder) srcDataObject).getNodeDelegate(), folder);
+                    if (srcDataObject != null) {
+                        node = new LogicalFolderNode(((DataFolder) srcDataObject).getNodeDelegate(), folder);
+                    } else {
+                        // Fix me. Create Broken Folder
+                        //node = new BrokenViewFolderNode(this, getFolder(), folder);
+                    }
                 } else {
                     node = new ExternalFilesNode(folder);
                 }
@@ -859,11 +868,44 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             } else if (key instanceof AbstractNode) {
                 node = (AbstractNode) key;
             }
+            if (node == null) {
+                return new Node[]{};
+            }
             return new Node[]{node};
         }
 
         protected Collection<Object> getKeys() {
-            Collection<Object> collection = getFolder().getElements();
+            Collection<Object> collection;
+            if (getFolder().isDiskFolder()) {
+                // Search disk folder for C/C++ files and add them to the view (not the project!).
+                ArrayList<Object> collection2 = new ArrayList<Object>(getFolder().getElements());
+                String absPath = IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), getFolder().getRootPath());
+                File folderFile = new File(absPath);
+                if (folderFile.isDirectory() && folderFile.exists()) {
+                    File[] children = folderFile.listFiles();
+                    for (File child : children) {
+                        if (!child.isFile()) {
+                            // it's a folder
+                            continue;
+                        }
+                        if (getFolder().findItemByName(child.getName()) != null) {
+                            // Already there
+                            continue;
+                        }
+                        if (!VisibilityQuery.getDefault().isVisible(child)) {
+                            // not visible
+                            continue;
+                        }
+                        // Add file to the view
+                        Item item = new Item(child.getAbsolutePath());
+                        Folder.insertItemElementInList(collection2, item);
+                    }
+                }
+                collection = collection2;
+            } else {
+                collection = getFolder().getElements();
+            }
+
             switch (getFolder().getConfigurationDescriptor().getState()) {
                 case READING:
                     if (collection.size() == 0) {
@@ -1574,7 +1616,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             // Replace PropertyAction with customizeProjectAction
             Action[] oldActions = super.getActions(false);
             List<Action> newActions = new ArrayList<Action>();
-            if (getItem().getFolder().isDiskFolder()) {
+            if (getItem().getFolder() == null) {
+                return oldActions;
+            }
+            else if (getItem().getFolder().isDiskFolder()) {
                 for (int i = 0; i < oldActions.length; i++) {
                     if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {
                         newActions.add(oldActions[i]);

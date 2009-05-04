@@ -76,7 +76,7 @@ public class JsTypeAnalyzerTest extends JsTestBase {
         indexFile(file);
 
         final JsTypeAnalyzer [] result = new JsTypeAnalyzer [] { null };
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
+        ParserManager.parseWhenScanFinished(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
                 JsParseResult jspr = AstUtilities.getParseResult(r);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,6 +43,7 @@ package org.netbeans.modules.mercurial;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.logging.Level;
@@ -50,6 +51,7 @@ import javax.swing.JComponent;
 import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -69,7 +71,7 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
     private String displayName = ""; // NOI18N
     private String originalDisplayName = ""; // NOI18N
     private OutputLogger logger;
-    private String repositoryRoot;
+    private HgURL repositoryRoot;
     private RequestProcessor.Task task;
     
     public HgProgressSupport() {
@@ -86,12 +88,22 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
         }
     }
     
-    public RequestProcessor.Task start(RequestProcessor rp, String repositoryRoot, String displayName) {
+    public RequestProcessor.Task start(RequestProcessor rp, String displayName) {
+        return start(rp, new File(""), displayName);                    //NOI18N
+    }
+
+    public RequestProcessor.Task start(RequestProcessor rp, File repositoryRoot, String displayName) {
+        HgURL hgUrl = (repositoryRoot != null) ? new HgURL(repositoryRoot)
+                                               : null;
+        return start(rp, hgUrl, displayName);
+    }
+
+    public RequestProcessor.Task start(RequestProcessor rp, HgURL repositoryRoot, String displayName) {
         setDisplayName(displayName);
         this.repositoryRoot = repositoryRoot;
         startProgress();
         setProgressQueued();
-        task = rp.post(this);   
+        task = rp.post(this);
         task.addTaskListener(new TaskListener() {
             public void taskFinished(org.openide.util.Task task) {
                 delegate = null;
@@ -110,9 +122,13 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
         return ProgressHandleFactory.createProgressComponent(getProgressHandle());
     }
 
-    public void setRepositoryRoot(String repositoryRoot) {
+    public void setRepositoryRoot(HgURL repositoryRoot) {
         this.repositoryRoot = repositoryRoot;
         logger = null;
+    }
+
+    protected HgURL getRepositoryRoot() {
+        return repositoryRoot;
     }
 
     public void run() {        
@@ -202,7 +218,10 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
     
     public OutputLogger getLogger() {
         if (logger == null) {
-            logger = Mercurial.getInstance().getLogger(repositoryRoot);
+            String loggerId = (repositoryRoot != null)
+                              ? repositoryRoot.toString()
+                              : null;
+            logger = Mercurial.getInstance().getLogger(loggerId);
         }
         return logger;
     }

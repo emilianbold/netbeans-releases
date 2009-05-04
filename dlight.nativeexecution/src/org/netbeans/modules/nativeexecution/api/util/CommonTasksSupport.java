@@ -68,6 +68,8 @@ import org.openide.windows.InputOutput;
  */
 public final class CommonTasksSupport {
 
+    private CommonTasksSupport() {}
+
     /**
      * Starts <tt>srcFileName</tt> file upload from the localhost to the host,
      * specified by the <tt>dstExecEnv</tt> saving it in the
@@ -194,6 +196,35 @@ public final class CommonTasksSupport {
     }
 
     /**
+     * Changes file permissions.
+     *
+     * @param execEnv  execution environment where the file is located
+     * @param file  file to change permissions for
+     * @param mode  new file permissions in octal form, e.g. <tt>0755</tt>
+     * @param error if not <tt>null</tt> and some error occurs,
+              an error message will be written to this <tt>Writer</tt>.
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
+     *         of the chmod task. <tt>0</tt> means success, any other value
+     *         means failure.
+     */
+    public static Future<Integer> chmod(final ExecutionEnvironment execEnv,
+            final String file, final int mode, final Writer error) {
+        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "chmod"); // NOI18N
+        npb = npb.setArguments(String.format("0%03o", mode), file); // NOI18N
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
+                InputOutput.NULL);
+
+        if (error != null) {
+            descriptor = descriptor.errProcessorFactory(
+                    new InputRedirectorFactory(error));
+        }
+
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "Changing permissions for " + file); // NOI18N
+        return execService.run();
+    }
+
+    /**
      * Creates a task for removing a directory <tt>dirname</tt> from the host
      * identified by the <tt>execEnv</tt>.
      * @param execEnv execution environment to delete the directory from
@@ -228,6 +259,34 @@ public final class CommonTasksSupport {
         ExecutionService execService = ExecutionService.newService(
                 npb, descriptor, "Remove directory " + dirname); // NOI18N
 
+        return execService.run();
+    }
+
+    /**
+     * Creates a directory (and parent directories if needed).
+     *
+     * @param execEnv  execution environment to create directory in
+     * @param dirname  absolute path of created directory
+     * @param error  if not <tt>null</tt> and some error occurs,
+     *        an error message will be written to this <tt>Writer</tt>
+     * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
+     *         of the mkdir task. <tt>0</tt> means success, any other value
+     *         means failure.
+     */
+    public static Future<Integer> mkDir(final ExecutionEnvironment execEnv,
+            final String dirname, final Writer error) {
+        NativeProcessBuilder npb = new NativeProcessBuilder(execEnv, "mkdir"); // NOI18N
+        npb = npb.setArguments("-p", dirname); // NOI18N
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(
+                InputOutput.NULL);
+
+        if (error != null) {
+            descriptor = descriptor.errProcessorFactory(
+                    new InputRedirectorFactory(error));
+        }
+
+        ExecutionService execService = ExecutionService.newService(
+                npb, descriptor, "Creating directory " + dirname); // NOI18N
         return execService.run();
     }
 

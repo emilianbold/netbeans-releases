@@ -47,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +55,7 @@ import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.netbeans.modules.hudson.impl.HudsonVersionImpl;
+import org.netbeans.modules.hudson.ui.nodes.HudsonRootNode;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -104,7 +103,7 @@ public class InstanceDialog extends DialogDescriptor {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    URL u = new URL(panel.getUrl());
+                    URL u = new URL(panel.getUrl() + "?checking=redirects"); // NOI18N
                     HttpURLConnection connection = new ConnectionBuilder().homeURL(u).url(u).httpConnection();
                     String sVersion = connection.getHeaderField("X-Hudson"); // NOI18N
                     connection.disconnect();
@@ -112,17 +111,17 @@ public class InstanceDialog extends DialogDescriptor {
                         problem(NbBundle.getMessage(InstanceDialog.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
                         return;
                     }
-                    HudsonVersion version = new HudsonVersionImpl(sVersion);
+                    HudsonVersion version = new HudsonVersion(sVersion);
                     if (!Utilities.isSupportedVersion(version)) {
                         problem(NbBundle.getMessage(InstanceDialog.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
                         return;
                     }
+                    if (!"checking=redirects".equals(connection.getURL().getQuery())) { // NOI18N
+                        problem(NbBundle.getMessage(InstanceDialog.class, "MSG_incorrect_redirects"));
+                        return;
+                    }
                 } catch (IOException x) {
                     LOG.log(Level.INFO, null, x);
-                    problem(NbBundle.getMessage(InstanceDialog.class, "MSG_FailedToConnect"));
-                    return;
-                } catch (IllegalArgumentException x) { // JRE #6797318
-                    LOG.log(Level.FINE, null, x);
                     problem(NbBundle.getMessage(InstanceDialog.class, "MSG_FailedToConnect"));
                     return;
                 }
@@ -130,6 +129,7 @@ public class InstanceDialog extends DialogDescriptor {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         dialog.dispose();
+                        HudsonRootNode.select(panel.getUrl());
                     }
                 });
             }

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -50,12 +50,15 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeClassifierProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 
 /**
@@ -64,6 +67,30 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver.class)
 public class ClassifierResolverImpl extends CsmClassifierResolver {
+    @Override
+    public CsmClassifier getTypeClassifier(CsmType type, CsmFile contextFile, int contextOffset, boolean resolveTypeChain) {
+        CsmProject project = contextFile.getProject();
+        // we'd prefer to start from real project, not artificial one
+        if (project != null && project.isArtificial()) {
+            for (CsmCompilationUnit cu : CsmFileInfoQuery.getDefault().getCompilationUnits(contextFile, contextOffset)) {
+                if (cu.getStartFile() != null) {
+                    contextFile = cu.getStartFile();
+                    break;
+                }
+            }
+        }
+        Resolver resolver = ResolverFactory.createResolver(contextFile, contextOffset);
+        CsmClassifier cls;
+        if (type instanceof SafeClassifierProvider) {
+            cls = ((SafeClassifierProvider)type).getClassifier(resolver);
+        } else {
+            cls = type.getClassifier();
+        }
+        if (resolveTypeChain) {
+            cls = resolver.getOriginalClassifier(cls);
+        }
+        return cls;
+    }
 
     @Override
     public CsmClassifier getOriginalClassifier(CsmClassifier orig, CsmFile contextFile) {
@@ -106,7 +133,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
         for (Iterator iter = libraries.iterator(); iter.hasNext();) {
             visible.set(false);
             CsmProject lib = (CsmProject) iter.next();
-            CsmClassifier visibleDecl = findVisibleDeclaration(lib, qualifiedName, file, visible, classesOnly);         
+            CsmClassifier visibleDecl = findVisibleDeclaration(lib, qualifiedName, file, visible, classesOnly);
             // we prefer to skip even visible class forward based classes
             if (!ForwardClass.isForwardClass(visibleDecl) && visible.get()) {
                 return visibleDecl;

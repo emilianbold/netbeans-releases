@@ -372,7 +372,69 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         shortTagsCheckBox = new javax.swing.JCheckBox();
         aspTagsCheckBox = new javax.swing.JCheckBox();
 
-        setFocusTraversalPolicy(null);
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return aspTagsCheckBox;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return aspTagsCheckBox;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return aspTagsCheckBox;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  shortTagsCheckBox){
+                    return aspTagsCheckBox;
+                }
+                if(aComponent ==  encodingComboBox){
+                    return shortTagsCheckBox;
+                }
+                if(aComponent ==  projectFolderTextField){
+                    return sourceFolderTextField;
+                }
+                if(aComponent ==  sourceFolderTextField){
+                    return testFolderTextField;
+                }
+                if(aComponent ==  testFolderTextField){
+                    return webRootTextField;
+                }
+                if(aComponent ==  webRootButton){
+                    return encodingComboBox;
+                }
+                if(aComponent ==  webRootTextField){
+                    return webRootButton;
+                }
+                return aspTagsCheckBox;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  aspTagsCheckBox){
+                    return shortTagsCheckBox;
+                }
+                if(aComponent ==  shortTagsCheckBox){
+                    return encodingComboBox;
+                }
+                if(aComponent ==  sourceFolderTextField){
+                    return projectFolderTextField;
+                }
+                if(aComponent ==  testFolderTextField){
+                    return sourceFolderTextField;
+                }
+                if(aComponent ==  webRootTextField){
+                    return testFolderTextField;
+                }
+                if(aComponent ==  encodingComboBox){
+                    return webRootButton;
+                }
+                if(aComponent ==  webRootButton){
+                    return webRootTextField;
+                }
+                return aspTagsCheckBox;//end getComponentBefore
+
+            }}
+        );
 
         projectFolderLabel.setLabelFor(projectFolderTextField);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/php/project/ui/customizer/Bundle"); // NOI18N
@@ -487,6 +549,10 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         sourceFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
         sourceFolderTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderTextField.AccessibleContext.accessibleName")); // NOI18N
         sourceFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        testFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderLabel.AccessibleContext.accessibleName")); // NOI18N
+        testFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        testFolderTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderTextField.AccessibleContext.accessibleName")); // NOI18N
+        testFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
         encodingComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSN_Encoding")); // NOI18N
         encodingComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSD_Encoding")); // NOI18N
         copyFilesPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.copyFilesPanel.AccessibleContext.accessibleName")); // NOI18N

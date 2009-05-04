@@ -159,8 +159,6 @@ class TabbedPane extends JPanel implements Constants {// , Scrollable {
         Dimension d = super.getPreferredSize();
         if( null != getParent() && null != getParent().getParent() ) {
             Component scroll = getParent().getParent();
-            if( scroll.getHeight() > 0 && scroll.getHeight() > d.height )
-                d.height = scroll.getHeight();
             if( scroll.getWidth() > 0 ) {
                 if( d.width > scroll.getWidth() ) {
                     d.width = Math.max(scroll.getWidth(), START_PAGE_MIN_WIDTH+(int)(((FONT_SIZE-11)/11.0)*START_PAGE_MIN_WIDTH));

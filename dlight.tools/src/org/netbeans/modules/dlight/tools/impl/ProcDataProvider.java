@@ -38,10 +38,11 @@
  */
 package org.netbeans.modules.dlight.tools.impl;
 
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import java.io.IOException;
-import java.net.ConnectException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -60,6 +61,8 @@ import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -76,6 +79,12 @@ import org.openide.windows.InputOutput;
 public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConfiguration> {
 
     private static final String NAME = "ProcReader"; // NOI18N
+    private static final DataTableMetadata TABLE = new DataTableMetadata(
+            NAME, Arrays.asList(
+            ProcDataProviderConfiguration.SYS_TIME,
+            ProcDataProviderConfiguration.USR_TIME,
+            ProcDataProviderConfiguration.THREADS));
+
     private List<ValidationListener> validationListeners;
     private ValidationStatus validationStatus;
     private Future<Integer> procReaderTask;
@@ -87,7 +96,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
 
     @Override
     public Collection<DataTableMetadata> getDataTablesMetadata() {
-        return Collections.singletonList(ProcDataProviderConfiguration.CPU_TABLE);
+        return Collections.singletonList(TABLE);
     }
 
     @Override
@@ -128,20 +137,7 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
 
     private ValidationStatus doValidation(DLightTarget target) {
         ExecutionEnvironment env = target.getExecEnv();
-        try {
-            String os = HostInfoUtils.getOS(env);
-            if (!"Linux".equals(os) && !"SunOS".equals(os)) { // NOI18N
-                return ValidationStatus.invalidStatus(getMessage("ValidationStatus.OSNotSupported")); // NOI18N
-            }
-            try {
-                if (!HostInfoUtils.fileExists(env, "/proc")) { // NOI18N
-                    return ValidationStatus.invalidStatus(getMessage("ValidationStatus.ProcNotFound")); // NOI18N
-                }
-            } catch (IOException ex) {
-                return ValidationStatus.invalidStatus(ex.getMessage());
-            }
-            return ValidationStatus.validStatus();
-        } catch (ConnectException ex) {
+        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             AsynchronousAction connectAction = ConnectionManager.getInstance().getConnectToAction(env, new Runnable() {
 
                 public void run() {
@@ -149,8 +145,31 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
                 }
             });
             return ValidationStatus.unknownStatus(
-                    getMessage("ValidationStatus.HostNotConnected"), connectAction); // NOI18N
+                    getMessage("ValidationStatus.HostNotConnected"), // NOI18N
+                    connectAction);
         }
+
+        OSFamily osFamily = OSFamily.UNKNOWN;
+
+        try {
+            osFamily = HostInfoUtils.getHostInfo(env).getOSFamily();
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        if (osFamily != OSFamily.LINUX && osFamily != OSFamily.SUNOS) {
+            return ValidationStatus.invalidStatus(getMessage("ValidationStatus.ProcReader.OSNotSupported")); // NOI18N
+        }
+
+        try {
+            if (!HostInfoUtils.fileExists(env, "/proc")) { // NOI18N
+                return ValidationStatus.invalidStatus(getMessage("ValidationStatus.ProcNotFound")); // NOI18N
+            }
+        } catch (IOException ex) {
+            return ValidationStatus.invalidStatus(ex.getMessage());
+        }
+
+        return ValidationStatus.validStatus();
     }
 
     /*
@@ -194,29 +213,38 @@ public class ProcDataProvider extends IndicatorDataProvider<ProcDataProviderConf
      * Synchronization protects procReaderTask.
      */
     private synchronized void targetStarted(DLightTarget target) {
+        ExecutionEnvironment env = target.getExecEnv();
+        HostInfo hostInfo = null;
         try {
-            ExecutionEnvironment env = target.getExecEnv();
-            NativeProcessBuilder npb = new NativeProcessBuilder(env, HostInfoUtils.getShell(env));
-            ExecutionDescriptor descr = new ExecutionDescriptor();
-            descr = descr.inputOutput(InputOutput.NULL);
-            int pid = ((AttachableTarget) target).getPID();
-            String os = HostInfoUtils.getOS(env);
-            Engine engine;
-            if ("Linux".equals(os)) { // NOI18N
+            hostInfo = HostInfoUtils.getHostInfo(env);
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        if (hostInfo == null) {
+            return;
+        }
+
+        NativeProcessBuilder npb = new NativeProcessBuilder(env, hostInfo.getShell());
+        ExecutionDescriptor descr = new ExecutionDescriptor();
+        descr = descr.inputOutput(InputOutput.NULL);
+        int pid = ((AttachableTarget) target).getPID();
+        Engine engine;
+        switch (hostInfo.getOSFamily()) {
+            case LINUX:
                 engine = new ProcDataProviderLinux(this);
-            } else if ("SunOS".equals(os)) { // NOI18N
+                break;
+            case SUNOS:
                 engine = new ProcDataProviderSolaris(this, env);
-            } else {
+                break;
+            default:
                 DLightLogger.instance.severe("Called ProcDataProvider.targetStarted() on unsupported OS"); // NOI18N
                 return;
-            }
-            npb = npb.setArguments("-c", engine.getCommand(pid)); // NOI18N
-            descr = descr.outProcessorFactory(engine);
-            ExecutionService service = ExecutionService.newService(npb, descr, "procreader"); // NOI18N
-            procReaderTask = service.run();
-        } catch (ConnectException ex) {
-            DLightLogger.instance.severe(ex.getMessage());
         }
+        npb = npb.setArguments("-c", engine.getCommand(pid)); // NOI18N
+        descr = descr.outProcessorFactory(engine);
+        ExecutionService service = ExecutionService.newService(npb, descr, "procreader"); // NOI18N
+        procReaderTask = service.run();
     }
 
     /*

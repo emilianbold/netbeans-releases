@@ -301,7 +301,12 @@ public final class Kenai {
             throw new KenaiException("Guest user is not allowed to create new domains");
         }
         ProjectData prj = impl.createProject(name, displayName, description, licenses, tags);
-        return KenaiProject.get(prj);
+        final KenaiProject result = KenaiProject.get(prj);
+        synchronized(this) {
+            if (myProjects!=null)
+                myProjects.add(result);
+        }
+        return result;
     }
 
     /**

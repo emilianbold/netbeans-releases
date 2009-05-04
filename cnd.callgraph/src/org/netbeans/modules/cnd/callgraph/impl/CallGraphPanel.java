@@ -64,6 +64,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
@@ -103,8 +104,8 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     private CallGraphScene scene;
     private static double dividerLocation = 0.5;
     FocusTraversalPolicy newPolicy;
-    private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID());
-    private static final Color macBackground = UIManager.getColor("NbExplorerView.background");
+    private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
+    private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
     
     /** Creates new form CallGraphPanel */
     public CallGraphPanel(boolean showGraph) {
@@ -550,6 +551,7 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
             setLayout(new java.awt.BorderLayout());
             add(listView, java.awt.BorderLayout.CENTER);
             listView.setFocusable(false);
+            listView.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         }
         
         public ExplorerManager getExplorerManager() {

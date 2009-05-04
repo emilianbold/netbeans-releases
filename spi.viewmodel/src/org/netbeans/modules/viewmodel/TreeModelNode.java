@@ -59,7 +59,6 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.Models;
@@ -101,7 +100,7 @@ public class TreeModelNode extends AbstractNode {
     private Object              object;
     
     private String              htmlDisplayName;
-    private Map<String, Object> properties = new HashMap<String, Object>();
+    private final Map<String, Object> properties = new HashMap<String, Object>();
 
     
     // init ....................................................................
@@ -170,6 +169,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
+    @Override
     public String getShortDescription () {
         try {
             String shortDescription = model.getShortDescription (object);
@@ -186,10 +186,12 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
+    @Override
     public String getHtmlDisplayName () {
         return htmlDisplayName;
     }
     
+    @Override
     public Action[] getActions (boolean context) {
         if (context) 
             return treeModelRoot.getRootNode ().getActions (false);
@@ -201,6 +203,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
+    @Override
     public Action getPreferredAction () {
         return new AbstractAction () {
             public void actionPerformed (ActionEvent e) {
@@ -213,6 +216,7 @@ public class TreeModelNode extends AbstractNode {
         };
     }
     
+    @Override
     public boolean canDestroy () {
         try {
             Action[] as = model.getActions (object);
@@ -231,6 +235,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
+    @Override
     public boolean canCopy () {
         try {
             return model.canCopy(object);
@@ -241,6 +246,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
+    @Override
     public boolean canCut () {
         try {
             return model.canCut(object);
@@ -251,6 +257,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
+    @Override
     public void destroy () {
         try {
             Action[] as = model.getActions (object);
@@ -402,6 +409,9 @@ public class TreeModelNode extends AbstractNode {
         if (name.startsWith ("<html>")) {
             htmlDisplayName = name;
             newDisplayName = removeHTML(name);
+        } else if (name.startsWith ("<_html>")) { //[TODO] use empty string as name in the case of <_html> tag
+            htmlDisplayName = '<' + name.substring(2);
+            newDisplayName = "";
         } else {
             htmlDisplayName = null;
             newDisplayName = name;
@@ -570,6 +580,7 @@ public class TreeModelNode extends AbstractNode {
     }
     
     
+    @Override
     public boolean canRename() {
         try {
             return model.canRename(object);
@@ -580,6 +591,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
 
+    @Override
     public void setName(String s) {
         try {
             model.setName(object, s);
@@ -590,6 +602,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
+    @Override
     public Transferable clipboardCopy() throws IOException {
         Transferable t;
         try {
@@ -606,6 +619,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
+    @Override
     public Transferable clipboardCut() throws IOException {
         Transferable t;
         try {
@@ -640,6 +654,7 @@ public class TreeModelNode extends AbstractNode {
     }
      */
     
+    @Override
     public void createPasteTypes(Transferable t, List<PasteType> l) {
         PasteType[] p;
         try {
@@ -761,7 +776,7 @@ public class TreeModelNode extends AbstractNode {
         private TreeModelRoot       treeModelRoot;
         private Object              object;
         private WeakHashMap<Object, WeakReference<TreeModelNode>> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
-        private int[]               evaluated = { 0 }; // 0 - not yet, 1 - evaluated, -1 - timeouted
+        private final int[]         evaluated = { 0 }; // 0 - not yet, 1 - evaluated, -1 - timeouted
         private Object[]            children_evaluated;
         private boolean refreshingSubNodes = true;
         private boolean refreshingStarted = true;
@@ -779,11 +794,13 @@ public class TreeModelNode extends AbstractNode {
             this.object = object;
         }
         
+        @Override
         protected void addNotify () {
             initialezed = true;
             refreshChildren (true);
         }
         
+        @Override
         protected void removeNotify () {
             initialezed = false;
             setKeys (Collections.emptySet());
@@ -986,7 +1003,7 @@ public class TreeModelNode extends AbstractNode {
         private ColumnModel columnModel;
         private boolean nodeColumn;
         private TreeModelRoot treeModelRoot;
-        private int[]       evaluated = { 0 }; // 0 - not yet, 1 - evaluated, -1 - timeouted
+        private final int[] evaluated = { 0 }; // 0 - not yet, 1 - evaluated, -1 - timeouted
         
         
         MyProperty (
@@ -1011,6 +1028,7 @@ public class TreeModelNode extends AbstractNode {
         * Returns the value passed into constructor.
         * @return <CODE>true</CODE> if the read of the value is supported
         */
+        @Override
         public boolean canWrite () {
             if (nodeColumn) return false;
             try {
@@ -1111,6 +1129,7 @@ public class TreeModelNode extends AbstractNode {
             return ret;
         }
         
+        @Override
         public Object getValue (String attributeName) {
             if (attributeName.equals ("htmlDisplayValue")) {
                 if (nodeColumn) {
@@ -1128,6 +1147,7 @@ public class TreeModelNode extends AbstractNode {
             return super.getValue (attributeName);
         }
 
+        @Override
         public String getShortDescription() {
             if (nodeColumn) {
                 return TreeModelNode.this.getShortDescription();
@@ -1186,6 +1206,7 @@ public class TreeModelNode extends AbstractNode {
             });
         }
         
+        @Override
         public PropertyEditor getPropertyEditor () {
             return columnModel.getPropertyEditor ();
         }

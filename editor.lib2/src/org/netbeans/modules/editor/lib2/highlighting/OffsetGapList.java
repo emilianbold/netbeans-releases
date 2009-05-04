@@ -121,13 +121,13 @@ public final class OffsetGapList<E extends OffsetGapList.Offset> extends Abstrac
             }
         }
         
-        private int attach(OffsetGapList list) {
+        int attach(OffsetGapList list) {
             assert this.list == null : "Offset instances can only be added to one OffsetGapList."; //NOI18N
             this.list = list;
             return originalOrRawOffset;
         }
 
-        private void detach(OffsetGapList list) {
+        void detach(OffsetGapList list) {
             assert this.list == list : "Can't detach from a foreign list."; //NOI18N
             this.list = null;
         }
@@ -136,11 +136,11 @@ public final class OffsetGapList<E extends OffsetGapList.Offset> extends Abstrac
             return this.list == list;
         }
         
-        private int getRawOffset() {
+        int getRawOffset() {
             return originalOrRawOffset;
         }
         
-        private void setRawOffset(int rawOffset) {
+        void setRawOffset(int rawOffset) {
             this.originalOrRawOffset = rawOffset;
         }
     } // End of Offset class

@@ -106,7 +106,7 @@ final class RubyMethodTypeInferencer {
             // -Possibly- ActiveRecord finders, very important
             if (receiverType.isSingleton() && getIndex() != null) {
                 IndexedClass superClass = getIndex().getSuperclass(receiverType.first());
-                if (superClass != null && "ActiveRecord::Base".equals(superClass.getFqn())) { // NOI18N
+                if (superClass != null && RubyIndex.ACTIVE_RECORD_BASE.equals(superClass.getFqn())) { // NOI18N
                     // Looks like a find method on active record The big
                     // question is whether this is going to return the type
                     // itself (receivedName) or an array of it; that depends on
@@ -129,7 +129,8 @@ final class RubyMethodTypeInferencer {
             Set<IndexedMethod> methods = getIndex().getInheritedMethods(receiverType, name, QuerySupport.Kind.EXACT);
             for (IndexedMethod indexedMethod : methods) {
                 RubyType type = indexedMethod.getType();
-                if (!type.isKnown()) {
+                // no point in searching rdoc for dynamic methods
+                if (!type.isKnown() && indexedMethod.getMethodType() != IndexedMethod.MethodType.DYNAMIC_FINDER) {
                     // fallback to the RDoc comment
                     IndexedElement match = RubyCodeCompleter.findDocumentationEntry(null, indexedMethod);
                     if (match != null) {

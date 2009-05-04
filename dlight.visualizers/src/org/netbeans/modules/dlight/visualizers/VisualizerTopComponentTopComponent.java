@@ -39,11 +39,14 @@
 package org.netbeans.modules.dlight.visualizers;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import javax.naming.event.EventDirContext;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.openide.util.NbBundle;
@@ -171,7 +174,8 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.viewComponent = viewComponent;
         this.performanceMonitorViewsArea.add(viewComponent);
-        this.setName(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "Details", toolName));//NOI18N
+        this.setName( toolName);
+        this.setToolTipText(toolName);
         validate();
         repaint();
     }
@@ -187,8 +191,17 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         requestActive();
     }
 
-    public void removeVisualizer(Visualizer v) {
-        closePerformanceMonitor(v);
+    public void removeVisualizer(final Visualizer v) {
+        if (EventQueue.isDispatchThread()){
+            closePerformanceMonitor(v);
+        }else{
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    closePerformanceMonitor(v);
+                }
+            });
+        }
     }
 
     public void addContent(String toolName, JComponent viewComponent) {
@@ -199,7 +212,8 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         }
         this.viewComponent = viewComponent;
         this.performanceMonitorViewsArea.add(viewComponent);
-        this.setName(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "Details", toolName));//NOI18N
+        this.setName( toolName);
+        this.setToolTipText(toolName);
         validate();
         repaint();
 
@@ -225,9 +239,13 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
     public void closePerformanceMonitor(Visualizer view) {
 //    view.stopMonitor();
-        JComponent viewComponent = view.getComponent();
 //        closePerformanceMonitor(viewComponent);
-        performanceMonitorViewsArea.remove(viewComponent);
+        if (viewComponent != view.getComponent()){//nothing to do
+            return;
+        }
+        performanceMonitorViewsArea.remove( view.getComponent());
+        setName(NbBundle.getMessage(VisualizerTopComponentTopComponent.class, "RunMonitorDetailes"));
+        repaint();
     }
 
 //    private void closePerformanceMonitor(JComponent viewComponent) {

@@ -40,14 +40,14 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,10 +66,9 @@ public class DevelopmentHostConfiguration {
     private boolean modified;
     private boolean dirty = false;
     private PropertyChangeSupport pcs;
-    private static ServerList serverList = null;
 
     public DevelopmentHostConfiguration(ExecutionEnvironment execEnv) {
-        servers = getServerEnvironments();
+        servers = ServerList.getEnvironments();
         value = 0;
         for (int i = 0; i < servers.size(); i++) {
             if (execEnv.equals(servers.get(i))) {
@@ -82,8 +81,8 @@ public class DevelopmentHostConfiguration {
     }
 
     /** TODO: deprecate and remove, see #158983 */
-    public String getName() {
-        return ExecutionEnvironmentFactory.toString(servers.get(value));
+    public String getHostKey() {
+        return ExecutionEnvironmentFactory.toUniqueID(servers.get(value));
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {
@@ -91,22 +90,22 @@ public class DevelopmentHostConfiguration {
     }
 
     public String getDisplayName(boolean displayIfNotFound) {
-        String out = getName();
-        if (displayIfNotFound && !isOnline()) {
+        String out = ServerList.get(getExecutionEnvironment()).getDisplayName();
+        if (displayIfNotFound && !isConfigured()) {
             out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
         }
         return out;
     }
 
     public String getHostDisplayName(boolean displayIfNotFound) {
-        String out = getExecutionEnvironment().getHost();
-        if (displayIfNotFound && !isOnline()) {
+        String out = ServerList.get(getExecutionEnvironment()).getServerDisplayName();
+        if (displayIfNotFound && !isConfigured()) {
             out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
         }
         return out;
     }
 
-    public boolean isOnline() {
+    public boolean isConfigured() {
         // localhost is always STATE_COMPLETE so isLocalhost() is assumed
         // keeping track of online status takes more efforts and can miss sometimes
         return !CompilerSetManager.getDefault(getExecutionEnvironment()).isUninitialized();
@@ -129,17 +128,32 @@ public class DevelopmentHostConfiguration {
         // User will be asked about connection after choosing action like build for this particular project
         // or after click on brand-new "..." button!
         addDevelopmentHost(v);
-        servers = getServerEnvironments();
+        servers = ServerList.getEnvironments();
         setValueImpl(v, firePC);
     }
 
-    private boolean setValueImpl(final String v, boolean firePC) {
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromString(v);
+    public boolean setHost(ExecutionEnvironment execEnv) {
+        CndUtils.assertTrue(execEnv != null);
         for (int i = 0; i < servers.size(); i++) {
-            if (servers.get(i).equals(env)) {
+            if (servers.get(i).equals(execEnv)) {
+                value = i;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean setValueImpl(final String v, boolean firePC) {
+        for (int i = 0; i < servers.size(); i++) {
+            final ExecutionEnvironment currEnv = servers.get(i);
+            final ServerRecord currRecord = ServerList.get(currEnv);
+            //TODO: could we use something straightforward here?
+            if (currRecord.getDisplayName().equals(v)) {
                 value = i;
                 if (firePC) {
-                    pcs.firePropertyChange(PROP_DEV_HOST, v, this);
+                    pcs.firePropertyChange(PROP_DEV_HOST, 
+                            ExecutionEnvironmentFactory.toUniqueID(currRecord.getExecutionEnvironment()),
+                            this);
                 }
                 return true;
             }
@@ -148,15 +162,12 @@ public class DevelopmentHostConfiguration {
     }
 
     private boolean addDevelopmentHost(String host) {
-        ServerList list = Lookup.getDefault().lookup(ServerList.class);
-        if (list != null) {
-            list.addServer(ExecutionEnvironmentFactory.fromString(host), false, false);
-        }
-        return list != null;
+        final ServerRecord record = ServerList.addServer(ExecutionEnvironmentFactory.fromUniqueID(host), null, RemoteSyncFactory.getDefault(), false, false);
+        return record != null;
     }
 
     public void reset() {
-        servers = getServerEnvironments();
+        servers = ServerList.getEnvironments();
         value = def;
     }
 
@@ -174,25 +185,25 @@ public class DevelopmentHostConfiguration {
 
     void assign(DevelopmentHostConfiguration conf) {
         boolean dirty2 = false;
-        String oldName = getName();
-        String newName = conf.getName();
+        ExecutionEnvironment oldEnv = getExecutionEnvironment();
+        ExecutionEnvironment newEnv = conf.getExecutionEnvironment();
 
         if (servers.size() != conf.servers.size()) {
-            servers = getServerEnvironments();
+            servers = ServerList.getEnvironments();
             dirty2 = true;
         }
-        if (!newName.equals(oldName)) {
+        if (!newEnv.equals(oldEnv)) {
             dirty2 = true;
         }
         setDirty(dirty2);
-        setValue(newName);
+        setHost(newEnv);
     }
 
     @Override
     public DevelopmentHostConfiguration clone() {
         DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration(getExecutionEnvironment());
         // FIXUP: left setValue call to leave old logic
-        clone.setValue(getName());
+        clone.setHost(getExecutionEnvironment());
         return clone;
     }
 
@@ -202,29 +213,6 @@ public class DevelopmentHostConfiguration {
 
     public void removePropertyChangeListener(PropertyChangeListener l) {
         pcs.removePropertyChangeListener(l);
-    }
-
-    public String[] getServerNames() {
-        List<String> l = new ArrayList<String>();
-        int pos = 0;
-        for (ExecutionEnvironment env : getServerEnvironments()) {
-            l.add(ExecutionEnvironmentFactory.toString(env));
-        }
-        return l.toArray(new String[l.size()]);
-    }
-
-    public List<ExecutionEnvironment> getServerEnvironments() {
-        if (getServerList() != null) {
-            return getServerList().getEnvironments();
-        }
-        return Arrays.asList(ExecutionEnvironmentFactory.getLocal());
-    }
-
-    private static ServerList getServerList() {
-        if (serverList == null) {
-            serverList = Lookup.getDefault().lookup(ServerList.class);
-        }
-        return serverList;
     }
 
     public boolean isLocalhost() {

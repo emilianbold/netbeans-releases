@@ -49,12 +49,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerListDisplayer;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -71,9 +71,9 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
     private static final String CONF = "org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration"; // NOI18N
     private static final String PROJECT = "org.netbeans.modules.cnd.makeproject.api.configurations.MakeProject"; // NOI18N
     private JMenu subMenu;
-    private Project project;
+    private MakeProject project;
 
-    public RemoteDevelopmentAction(Project project) {
+    public RemoteDevelopmentAction(MakeProject project) {
         super(NbBundle.getMessage(RemoteDevelopmentAction.class, "LBL_RemoteDevelopmentAction_Name"), // NOI18N
                 null);
         this.project = project;
@@ -100,24 +100,18 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         }
 
         subMenu.removeAll();
+        
+        MakeConfiguration mconf = project.getActiveConfiguration();
+        ExecutionEnvironment currExecEnv = project.getDevelopmentHostExecutionEnvironment();
+        if (mconf == null || currExecEnv == null) {
+            return;
+        }
+
         ActionListener jmiActionListener = new MenuItemActionListener();
-        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (pdp == null) {
-            return;
-        }
-
-        ConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
-        Configuration conf = projectDescriptor.getConfs().getActive();
-        if (!(conf instanceof MakeConfiguration)) {
-            return;
-        }
-        MakeConfiguration mconf = (MakeConfiguration) conf;
-        ExecutionEnvironment currExecEnv = mconf.getDevelopmentHost().getExecutionEnvironment();
-
-        for (ExecutionEnvironment execEnv : mconf.getDevelopmentHost().getServerEnvironments()) {
-            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(execEnv.getDisplayName(), currExecEnv.equals(execEnv));
+        for (ServerRecord record : ServerList.getRecords()) {
+            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(record.getServerDisplayName(), currExecEnv.equals(record.getExecutionEnvironment()));
             subMenu.add(jmi);
-            jmi.putClientProperty(HOST_ENV, execEnv);
+            jmi.putClientProperty(HOST_ENV, record.getExecutionEnvironment());
             jmi.putClientProperty(CONF, mconf);
             jmi.putClientProperty(PROJECT, project);
             jmi.addActionListener(jmiActionListener);

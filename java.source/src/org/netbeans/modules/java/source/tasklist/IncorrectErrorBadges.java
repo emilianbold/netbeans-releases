@@ -81,20 +81,25 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
 
     public void run(CompilationInfo info) {
         if (DISABLE) {
+            LOG.fine("Disabled");
             return ;
         }
         
         if (IndexingController.getDefault().isInProtectedMode()) {
+            LOG.fine("RepositoryUpdater in protected mode");
             return ;
         }
         
+        LOG.log(Level.FINE, "invocationCount={0}, file={1}", new Object [] { invocationCount, info.getFileObject() });
         if (invocationCount++ > 1) {
+            LOG.log(Level.FINE, "Too many invocations: {0}", invocationCount);
             return ;
         }
         
         try {
             for (Diagnostic d : info.getDiagnostics()) {
                 if (d.getKind() == Kind.ERROR) {
+                    LOG.log(Level.FINE, "File contains errors: {0}", info.getFileObject());
                     return ;
                 }
             }
@@ -103,15 +108,18 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             DataObject d = DataObject.find(file);
 
             if (d.isModified()) {
+                LOG.log(Level.FINE, "File is modified: {0}", info.getFileObject());
                 return;
             }
 
             if (!TaskCache.getDefault().isInError(file, false)) {
+                LOG.log(Level.FINE, "No TaskCache.isInError: {0}", info.getFileObject());
                 return ;
             }
             
             if (invocationCount == 1) {
                 timestamp = file.lastModified().getTime();
+                LOG.log(Level.FINE, "Capturing timestamp={0}, file={1}", new Object [] { timestamp, info.getFileObject() });
                 
                 //possibly incorrect badges. require to be re-run, to ensure RepositoryUpdater has finished its work:
                 WORKER.post(new Runnable() {
@@ -122,9 +130,12 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
                 
                 return ;
             }
-            
-            if (timestamp != file.lastModified().getTime()) {
+
+            long lastModified = file.lastModified().getTime();
+            if (timestamp != 0 && timestamp != lastModified) {
                 //modified since last check, ignore
+                LOG.log(Level.FINE, "File modified since last check: {0}, timestamp={1}, lastModified={2}, invocationCount={3}",
+                        new Object [] { info.getFileObject(), timestamp, lastModified, invocationCount });
                 return ;
             }
             

@@ -41,13 +41,13 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.ConnectException;
 import java.security.acl.NotOwnerException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -77,6 +77,7 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -244,19 +245,19 @@ public final class DtraceDataCollector
         } else {
             File script = new File(localScriptPath);
             try {
-                scriptPath = HostInfoUtils.getTempDir(execEnv) + "/" + script.getName(); // NOI18N
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                scriptPath = hostInfo.getTempDir() + "/" + script.getName(); // NOI18N
                 Future<Integer> copyResult = CommonTasksSupport.uploadFile(
                         localScriptPath, execEnv, scriptPath, 0777, null);
-                try {
-                    copyResult.get();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } catch (ConnectException ex) {
-                // should not happen as validation assures that host is connected
-                DLightLogger.instance.severe("Host must be connected at this stage"); // NOI18N
+                copyResult.get();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -322,11 +323,21 @@ public final class DtraceDataCollector
         boolean connected = true;
         String error = ""; // NOI18N
 
+        HostInfo hostInfo = null;
+
         try {
-            if (!HostInfoUtils.getOS(execEnv).equals("SunOS")) { // NOI18N
-                return ValidationStatus.invalidStatus(
-                        NbBundle.getMessage(DtraceDataCollector.class, "DtraceDataCollector.DtraceIsSupportedOnSunOSOnly")); // NOI18N
-            }
+            hostInfo = HostInfoUtils.getHostInfo(execEnv);
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+
+        if (hostInfo == null || hostInfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
+            return ValidationStatus.invalidStatus(
+                    NbBundle.getMessage(DtraceDataCollector.class,
+                    "DtraceDataCollector.DtraceIsSupportedOnSunOSOnly")); // NOI18N
+        }
+
+        try {
             fileExists = HostInfoUtils.fileExists(execEnv, command);
         } catch (IOException ex) {
             error = ex.getMessage();
@@ -368,7 +379,8 @@ public final class DtraceDataCollector
 
         if (sps == null) {
             return ValidationStatus.invalidStatus(
-                    NbBundle.getMessage(DtraceDataCollector.class, "DtraceDataCollector.NoPrivSupport", execEnv.toString()));//NOI18N
+                    NbBundle.getMessage(DtraceDataCollector.class,
+                    "DtraceDataCollector.NoPrivSupport", execEnv.toString())); // NOI18N
         }
 
         boolean status = sps.hasPrivileges(requiredPrivilegesList);

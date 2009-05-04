@@ -82,7 +82,7 @@ public class WadlUIPanel extends javax.swing.JPanel {
 
         lbServiceUrl.setLabelFor(tfServiceUrl);
         org.openide.awt.Mnemonics.setLocalizedText(lbServiceUrl, org.openide.util.NbBundle.getMessage(WadlUIPanel.class, "LBL_serviceUrl")); // NOI18N
-        lbServiceUrl.setToolTipText(org.openide.util.NbBundle.getMessage(WadlUIPanel.class, "HINT_serviceUrl")); // NOI18N
+        lbServiceUrl.setToolTipText(org.openide.util.NbBundle.getMessage(WadlUIPanel.class, "LBL_serviceUrl")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -92,7 +92,8 @@ public class WadlUIPanel extends javax.swing.JPanel {
         lbServiceUrl.getAccessibleContext().setAccessibleName("null");
         lbServiceUrl.getAccessibleContext().setAccessibleDescription("null");
 
-        tfServiceUrl.setToolTipText("null");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wadl/design/wizard/Bundle"); // NOI18N
+        tfServiceUrl.setToolTipText(bundle.getString("HINT_serviceUrl")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;

@@ -52,6 +52,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.openide.util.ImageUtilities;
@@ -65,6 +67,7 @@ import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.spi.server.ServerInstanceProvider;
+import org.openide.filesystems.FileUtil;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -179,7 +182,6 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     private static RunTimeDDCatalog javaEE6DDCatalog;
 
     private File platformRootDir=null;
-    private ServerInstanceProvider ip=null;
     private String displayNameKey;
     private String shortDescriptionKey;
     private boolean hasAdditionalMap = false;
@@ -189,7 +191,6 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     }
     
     public void setInstanceProvider(ServerInstanceProvider ip) {
-        this.ip = ip;
         if (ddCatalogMap.get(ip) == null) {
             ddCatalogMap.put(ip, this);
         }
@@ -215,7 +216,8 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     public static synchronized RunTimeDDCatalog getEE6RunTimeDDCatalog(){
         // FIXME -- avoid dereferencing the property.
         if ((javaEE6DDCatalog==null) &&
-                ("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures"))))  {
+                (("true".equals(System.getProperty("org.glassfish.v3.enableExperimentalFeatures"))) ||
+                null != FileUtil.getConfigFile("GlassFish v3/EnableExperimental Features")))  {
             javaEE6DDCatalog = new RunTimeDDCatalog();
             javaEE6DDCatalog.displayNameKey = "LBL_V3RunTimeDDCatalog"; // NOI18N
             javaEE6DDCatalog.shortDescriptionKey = "DESC_V3RunTimeDDCatalog"; // NOI18N
@@ -285,6 +287,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
                 try{
                     return file.toURI().toURL().toExternalForm();  
                 }catch(Exception e){
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, file.getAbsolutePath(), e); // NOI18N
                     return "";
                 }
             }
@@ -296,6 +299,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
                     try{
                         return file.toURI().toURL().toExternalForm();
                     }catch(Exception e){
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO, file.getAbsolutePath(), e); // NOI18N
                         return "";
                     }
                 }
@@ -322,6 +326,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
                     try{
                         return file.toURI().toURL().toExternalForm();
                     }catch(Exception e){
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO, file.getAbsolutePath(), e); // NOI18N
                         return "";
                     }
                 }
@@ -520,7 +525,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
             try{
                 SCHEMASLOCATION= file.toURI().toURL().toExternalForm();
             }catch(Exception e){
-                
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, file.getAbsolutePath(), e); // NOI18N
             }
 
             
@@ -577,7 +582,6 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     
     public Enumeration enabled(GrammarEnvironment ctx) {
         if (ctx.getFileObject() == null) return null;
-        InputSource is= ctx.getInputSource();
         Enumeration en = ctx.getDocumentChildren();
         while (en.hasMoreElements()) {
             Node next = (Node) en.nextElement();
@@ -780,7 +784,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         try{
             prefix= file.toURI().toURL().toExternalForm();
         }catch(Exception e){
-            
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, file.getAbsolutePath(), e); // NOI18N
         }
         if (name.equals("http://java.sun.com/xml/ns/jax-rpc/ri/config")){
             return prefix +"jax-rpc-ri-config.xsd";

@@ -270,7 +270,7 @@ public class UIDUtilities {
      * 	       first argument is less than, equal to, or greater 
      *         than the second.
      */
-    public static <T extends CsmOffsetableDeclaration> int compareWithinFile(CsmUID<T> d1, CsmUID<T> d2) {
+    public static <T extends CsmOffsetable> int compareWithinFile(CsmUID<T> d1, CsmUID<T> d2) {
 
         // by start offset
         int offset1 = getStartOffset(d1);
@@ -316,7 +316,7 @@ public class UIDUtilities {
         return out;
     }
 
-    public static <T extends CsmOffsetableDeclaration> void insertIntoSortedUIDList(CsmUID<T> uid, List<CsmUID<T>> list) {
+    public static <T extends CsmOffsetable> void insertIntoSortedUIDList(CsmUID<T> uid, List<CsmUID<T>> list) {
         int start = UIDUtilities.getStartOffset(uid);
         // start from the last, because most of the time we are in append, not insert mode
         boolean lessThanOthers = false;

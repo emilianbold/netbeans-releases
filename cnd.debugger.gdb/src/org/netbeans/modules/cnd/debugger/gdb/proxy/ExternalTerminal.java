@@ -85,8 +85,9 @@ public class ExternalTerminal implements PropertyChangeListener {
         this.debugger = debugger;
         debugger.addPropertyChangeListener(this);
         initGdbHelpers();
-        
-        ProcessBuilder pb = new ProcessBuilder(getTermOptions(termpath));
+
+        List<String> termOptions = getTermOptions(termpath);
+        ProcessBuilder pb = new ProcessBuilder(termOptions);
         
         // Set "DISPLAY" environment variable if not already set (Mac OSX only)
         if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
@@ -101,14 +102,26 @@ public class ExternalTerminal implements PropertyChangeListener {
                 map.put("DISPLAY", display); // NOI18N
             }
         }
-        
-        pb.start();
+
+        Process process = pb.start();
         
         int count = 0;
         String tty_line = null;
         String pid_line = null;
         try {
             while (count++ < RETRY_LIMIT) {
+                // first check for process termination
+                try {
+                    int rc = process.exitValue();
+                    // process already terminated - exit
+                    throw new IllegalStateException(NbBundle.getMessage(
+                            ExternalTerminal.class,
+                            "ERR_ExternalTerminalFailedMessageDetails", // NOI18N
+                            termOptions,
+                            rc));
+                } catch (IllegalThreadStateException e) {
+                    // do nothing
+                }
                 // TODO: it is not good to wait for the file to be filled with info this way
                 // need to find a better way to get pid later
                 BufferedReader fromTerm = new BufferedReader(new FileReader(gdbHelperLog));
@@ -198,6 +211,7 @@ public class ExternalTerminal implements PropertyChangeListener {
             if (state == GdbDebugger.State.EXITED) {
                 gdbHelperScript.delete();
                 gdbHelperLog.delete();
+                debugger.removePropertyChangeListener(this);
             }
 	} else if (ev.getPropertyName().equals(GdbDebugger.PROP_KILLTERM)) {
             if (pid == 0) {

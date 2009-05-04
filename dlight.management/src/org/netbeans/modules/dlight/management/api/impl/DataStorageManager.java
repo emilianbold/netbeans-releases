@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.management.api.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,6 +52,8 @@ import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorageFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Lookup;
 
@@ -58,6 +61,7 @@ public final class DataStorageManager {
 
     private Collection<? extends DataStorageFactory> dataStorageFactories;//this is to create new ones
     private Map<DLightSession, List<DataStorage>> activeDataStorages = new HashMap<DLightSession, List<DataStorage>>();
+   private Map<DLightSession, List<ServiceInfoDataStorage>> activeServiceInfoDataStorages = new HashMap<DLightSession, List<ServiceInfoDataStorage>>();
     private static final Logger log = DLightLogger.getLogger(DataStorageManager.class);
     private static final DataStorageManager instance = new DataStorageManager();
     private DLightSession lastSession;
@@ -71,9 +75,34 @@ public final class DataStorageManager {
         return instance;
     }
 
-     public List<DataStorage> closeSession(DLightSession session){
-         return activeDataStorages.remove(session);
-     }
+    public List<DataStorage> closeSession(DLightSession session) {
+        if (session == null) {
+            return null;
+        }
+        List<DataStorage> storages = activeDataStorages.get(session);
+        if (storages != null) {
+            for (DataStorage storage : storages) {
+                if (!storage.shutdown()) {
+                    log.finest("DataStorage " + storage + " is not closed");//NOI18N
+                } else {
+                    log.finest("DataStorage " + storage + " successfully closed");//NOI18N
+                }
+            }
+        }
+        List<ServiceInfoDataStorage> serviceInfoStorages = activeServiceInfoDataStorages.get(session);
+        if (serviceInfoStorages != null) {
+            for (ServiceInfoDataStorage storage : serviceInfoStorages) {
+                if (storages == null || !storages.contains(storage)){
+                    if (!storage.shutdown()) {
+                        log.finest("ServiceInfoDataStorage " + storage + " is not closed");//NOI18N
+                    } else {
+                        log.finest("ServiceInfoDataStorage " + storage + " successfully closed");//NOI18N
+                    }
+                }
+            }
+        }
+        return activeDataStorages.remove(session);
+    }
 
     public void clearActiveStorages(DLightSession session) {
         List<DataStorage> storages = activeDataStorages.get(session);
@@ -81,6 +110,30 @@ public final class DataStorageManager {
             storages.clear();
         }
         lastSession = session;
+    }
+
+    public ServiceInfoDataStorage getServiceInfoDataStorage(DLightSession session) {
+        if (session == null) {
+            return null;
+        }
+        List<ServiceInfoDataStorage> activeSessionInfoStorages = activeServiceInfoDataStorages.get(session);
+        if (activeSessionInfoStorages != null && activeSessionInfoStorages.size() > 0){
+            return activeSessionInfoStorages.get(0);
+        }
+        List<DataStorage> activeSessionStorages = activeDataStorages.get(session);
+        if (activeSessionStorages != null && activeSessionStorages.size() > 0) {
+            ServiceInfoDataStorage result = activeSessionStorages.get(0);
+            activeServiceInfoDataStorages.put(session, Arrays.asList(result));
+            return result;
+        }
+        //we can get any
+        ServiceInfoDataStorageFactory  serInfo = Lookup.getDefault().lookup(ServiceInfoDataStorageFactory.class);
+        if (serInfo == null){
+            return null;
+        }
+        ServiceInfoDataStorage result = serInfo.createStorage();
+        activeServiceInfoDataStorages.put(session, Arrays.asList(result));
+        return result;
     }
 
     /**
@@ -112,11 +165,11 @@ public final class DataStorageManager {
 //    if (activeDataStorages.contains(log))
 //  }
     private DataStorage getDataStorageFor(DLightSession session, DataStorageType storageType, List<DataTableMetadata> tableMetadatas) {
-        if (session == null){
+        if (session == null) {
             return null;
         }
         List<DataStorage> activeSessionStorages = activeDataStorages.get(session);
-        if (activeSessionStorages != null){
+        if (activeSessionStorages != null) {
             for (DataStorage storage : activeSessionStorages) {
                 if (storage.supportsType(storageType)) {
                     storage.createTables(tableMetadatas);
@@ -130,7 +183,7 @@ public final class DataStorageManager {
                 DataStorage newStorage = storage.createStorage();
                 if (newStorage != null) {
                     newStorage.createTables(tableMetadatas);
-                    if (activeSessionStorages == null){
+                    if (activeSessionStorages == null) {
                         activeSessionStorages = new ArrayList<DataStorage>();
                     }
                     activeSessionStorages.add(newStorage);

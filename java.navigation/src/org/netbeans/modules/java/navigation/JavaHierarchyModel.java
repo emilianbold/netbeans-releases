@@ -68,6 +68,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
@@ -183,7 +184,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                     (element.getKind() == ElementKind.ANNOTATION_TYPE)) {
                 if (JavaMembersAndHierarchyOptions.isShowSuperTypeHierarchy()) {
                     root.add(new TypeTreeNode(fileObject,
-                            ((TypeElement) element), compilationInfo));
+                            ((TypeElement) element), compilationInfo, null));
                 } else {
                     Types types = compilationInfo.getTypes();
                     TypeElement typeElement = ((TypeElement) element);
@@ -198,7 +199,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                     DefaultMutableTreeNode parent = root;
                     for(TypeElement superTypeElement:superClasses) {
                         FileObject fileObject = SourceUtils.getFile(ElementHandle.create(superTypeElement), compilationInfo.getClasspathInfo());
-                        DefaultMutableTreeNode child = new SimpleTypeTreeNode(fileObject, superTypeElement, compilationInfo, typeElement != superTypeElement || typeElement.getQualifiedName().equals(Object.class.getName()));
+                        DefaultMutableTreeNode child = new SimpleTypeTreeNode(fileObject, superTypeElement, compilationInfo, null, typeElement != superTypeElement || typeElement.getQualifiedName().equals(Object.class.getName()));
                         parent.insert(child, 0);
                         parent = child;
                     }
@@ -229,19 +230,21 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         private final ClasspathInfo cpInfo;
 
         private boolean loaded = false;
+        private AbstractHierarchyTreeNode owner;
 
         AbstractHierarchyTreeNode(FileObject fileObject,
-            Element element, CompilationInfo compilationInfo) {
-            this( fileObject, element, compilationInfo, false);
+            Element element, CompilationInfo compilationInfo, final AbstractHierarchyTreeNode owner) {
+            this( fileObject, element, compilationInfo, owner, false);
         }
 
         AbstractHierarchyTreeNode(FileObject fileObject,
-            Element element, CompilationInfo compilationInfo, boolean lazyLoadChildren) {
+            Element element, CompilationInfo compilationInfo, final AbstractHierarchyTreeNode owner, boolean lazyLoadChildren) {
             this.fileObject = fileObject;
             this.elementHandle = ElementHandle.create(element);
             this.elementKind = element.getKind();
             this.modifiers = element.getModifiers();
             this.cpInfo = compilationInfo.getClasspathInfo();
+            this.owner = owner;
 
             setName(element.getSimpleName().toString());
             setIcon(ElementIcons.getElementIcon(element.getKind(), element.getModifiers()));
@@ -256,6 +259,10 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                     loaded = true;
                 }
             }
+        }
+
+        public AbstractHierarchyTreeNode getOwningTreeNode () {
+            return this.owner;
         }
 
         @Override
@@ -419,13 +426,13 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         private boolean inSuperClassRole;
 
         TypeTreeNode(FileObject fileObject, TypeElement typeElement,
-            CompilationInfo compilationInfo) {
-            this(fileObject, typeElement, compilationInfo, false);
+            CompilationInfo compilationInfo, AbstractHierarchyTreeNode owner) {
+            this(fileObject, typeElement, compilationInfo, owner, false);
         }
 
         TypeTreeNode(FileObject fileObject, TypeElement typeElement,
-            CompilationInfo compilationInfo, boolean inSuperClassRole) {
-            super(fileObject, typeElement, compilationInfo);
+            CompilationInfo compilationInfo, AbstractHierarchyTreeNode owner, boolean inSuperClassRole) {
+            super(fileObject, typeElement, compilationInfo, owner);
             this.inSuperClassRole = inSuperClassRole;
         }
 
@@ -446,13 +453,17 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
             TypeElement superClass = (TypeElement) types.asElement(typeElement.getSuperclass());
             if (superClass != null && !superClass.getQualifiedName().toString().equals(Object.class.getName())) {
-                insert(new TypeTreeNode(getFileObject(), superClass, compilationInfo, true), index++);
+                if(!hasCycle(superClass)){
+                    insert(new TypeTreeNode(getFileObject(), superClass, compilationInfo, this, true), index++);
+                }
             }
             List<? extends TypeMirror> interfaces = typeElement.getInterfaces();
             for (TypeMirror interfaceMirror:interfaces) {
                 TypeElement interfaceElement = (TypeElement) types.asElement(interfaceMirror);
                 if (interfaceElement != null) {
-                    insert(new TypeTreeNode(getFileObject(), (TypeElement)interfaceElement, compilationInfo, true), index++);
+                    if(!hasCycle((TypeElement)interfaceElement)){
+                        insert(new TypeTreeNode(getFileObject(), (TypeElement)interfaceElement, compilationInfo, this, true), index++);
+                    }
                 }
             }
 
@@ -464,13 +475,29 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                             (childElement.getKind() == ElementKind.INTERFACE) ||
                             (childElement.getKind() == ElementKind.ENUM) ||
                             (childElement.getKind() == ElementKind.ANNOTATION_TYPE)) {
-                            node = new TypeTreeNode(getFileObject(), (TypeElement)childElement, compilationInfo, true);
-                            insert(node, index++);
+                            node = new TypeTreeNode(getFileObject(), (TypeElement)childElement, compilationInfo, this, true);
+                            if(!hasCycle((TypeElement) childElement)){
+                                insert(node, index++);
+                            }
                         }
                     }
                 }
             }
             return index;
+        }
+        private boolean hasCycle (final TypeElement type) {
+            final String binName = ElementUtilities.getBinaryName(type);
+            AbstractHierarchyTreeNode node = this;
+            while (node != null) {
+                if (node instanceof TypeTreeNode) {
+                    if (binName.equals(((TypeTreeNode)node).getElementHandle().getBinaryName())) {
+                        return true;
+                    }
+                }
+                //getParent cannot be used, ut's not yet filled.
+                node = node.getOwningTreeNode();
+            }
+            return false;
         }
     }
 
@@ -478,13 +505,13 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         private boolean inSuperClassRole;
 
         SimpleTypeTreeNode(FileObject fileObject, TypeElement typeElement,
-            CompilationInfo compilationInfo) {
-            this(fileObject, typeElement, compilationInfo, false);
+            CompilationInfo compilationInfo, AbstractHierarchyTreeNode owner) {
+            this(fileObject, typeElement, compilationInfo, owner, false);
         }
 
         SimpleTypeTreeNode(FileObject fileObject, TypeElement typeElement,
-            CompilationInfo compilationInfo, boolean inSuperClassRole) {
-            super(fileObject, typeElement, compilationInfo, inSuperClassRole);
+            CompilationInfo compilationInfo, AbstractHierarchyTreeNode owner, boolean inSuperClassRole) {
+            super(fileObject, typeElement, compilationInfo, owner, inSuperClassRole);
             this.inSuperClassRole = inSuperClassRole;
         }
 
@@ -571,7 +598,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                                                             compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
                                                             Element implementor = finalImplementorElementHandle.resolve(compilationController);
                                                             if (implementor instanceof TypeElement && ((TypeElement)implementor).getNestingKind() != NestingKind.ANONYMOUS) {
-                                                                insert(new SimpleTypeTreeNode(implementorfileObject, (TypeElement) implementor, compilationController), index[0]++);
+                                                                insert(new SimpleTypeTreeNode(implementorfileObject, (TypeElement) implementor, compilationController, SimpleTypeTreeNode.this), index[0]++);
                                                             }
                                                         }
                                                     }, true);

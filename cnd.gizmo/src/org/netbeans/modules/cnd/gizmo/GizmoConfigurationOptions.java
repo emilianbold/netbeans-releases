@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.gizmo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -100,6 +101,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     public void configure(Project project) {
+        areCollectorsTurnedOn = true;
         this.currentProject = project;
 //        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
         //set up as following:
@@ -114,7 +116,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             return;
         }
 
-        hkey = ((MakeConfiguration) activeConfiguration).getDevelopmentHost().getName();
+        hkey = ((MakeConfiguration) activeConfiguration).getDevelopmentHost().getHostKey();
         //if we have sun studio compiler along compiler collections presentedCompiler
         CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
         List<CompilerSet> compilers = compilerSetManager.getCompilerSets();
@@ -154,8 +156,9 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     }
 
     private boolean setForLinux() {
+        areCollectorsTurnedOn = false;
         String platform = ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName();
-        if (platform.indexOf("Linux") != -1 || platform.equals("MacOS")) {//NOI18N
+        if (platform.indexOf("Linux") != -1 || platform.indexOf("MacOS") != -1 || platform.indexOf("Windows") != -1) {//NOI18N
             DLightCollectorString = SUNSTUDIO;
             DLightIndicatorDPStrings = Arrays.asList(PROC_READER, LL_MONITOR);
             return true;

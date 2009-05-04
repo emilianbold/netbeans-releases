@@ -95,6 +95,10 @@ public final class RailsServerUiUtils {
         return !(server instanceof FakeGlassFishGem);
     }
 
+    public static boolean isGlassFishGem(Object server) {
+        return server instanceof FakeGlassFishGem || server instanceof GlassFishGem;
+    }
+
     public static void replaceFakeGlassFish(WizardDescriptor descriptor) {
         RubyInstance server = (RubyInstance) descriptor.getProperty(NewRailsProjectWizardIterator.SERVER_INSTANCE);
         if (!(server instanceof FakeGlassFishGem)) {

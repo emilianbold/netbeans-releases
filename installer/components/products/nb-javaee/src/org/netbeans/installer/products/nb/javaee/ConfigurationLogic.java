@@ -59,8 +59,6 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     //        "{visualweb-cluster}"; // NOI18N
     private static final String IDENTITY_CLUSTER =
             "{identity-cluster}"; // NOI18N
-    private static final String GROOVY_CLUSTER =
-            "{groovy-cluster}"; // NOI18N
     private static final String ID =
             "WEBEE"; // NOI18N
     private static final String MOBILITY_END_2_END_KIT =
@@ -76,8 +74,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         super(new String[]{
                     ENTERPRISE_CLUSTER,
                     //VISUALWEB_CLUSTER,
-                    IDENTITY_CLUSTER,
-                    GROOVY_CLUSTER}, ID);
+                    IDENTITY_CLUSTER}, ID);
     }
 
     @Override
