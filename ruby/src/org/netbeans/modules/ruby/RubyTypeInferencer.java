@@ -39,7 +39,6 @@
 package org.netbeans.modules.ruby;
 
 import java.util.List;
-import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.ReturnNode;
@@ -48,13 +47,19 @@ public final class RubyTypeInferencer {
 
     private final ContextKnowledge knowledge;
     private RubyTypeAnalyzer analyzer;
+    private final boolean fast;
 
-    RubyTypeInferencer() {
-        this.knowledge = new ContextKnowledge();
+    public static RubyTypeInferencer fast(ContextKnowledge knowledge) {
+        return new RubyTypeInferencer(knowledge, true);
     }
 
-    public RubyTypeInferencer(final ContextKnowledge knowledge) {
+    public static RubyTypeInferencer normal(ContextKnowledge knowledge) {
+        return new RubyTypeInferencer(knowledge, false);
+    }
+
+    private RubyTypeInferencer(final ContextKnowledge knowledge, boolean fast) {
         this.knowledge = knowledge;
+        this.fast = fast;
     }
 
     private void initializeAnalyzer() {
@@ -142,7 +147,7 @@ public final class RubyTypeInferencer {
                 break;
         }
         if (type == null && AstUtilities.isCall(node)) {
-            type = RubyMethodTypeInferencer.inferTypeFor(node, knowledge);
+            type = RubyMethodTypeInferencer.inferTypeFor(node, knowledge, fast);
         }
         if (type == null) {
             type = getTypeForLiteral(node);

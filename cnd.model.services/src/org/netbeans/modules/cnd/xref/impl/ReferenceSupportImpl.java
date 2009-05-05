@@ -144,8 +144,8 @@ public class ReferenceSupportImpl {
             }
             String strFqn = fqnCheck.toString().trim();
             // we consider const and not const methods as the same
-            if (strFqn.endsWith("const")) {
-                int cutConstInd = strFqn.lastIndexOf("const");
+            if (strFqn.endsWith("const")) { // NOI18N
+                int cutConstInd = strFqn.lastIndexOf("const"); // NOI18N
                 assert cutConstInd >= 0;
                 fqnCheck = CharSequenceKey.create(strFqn.substring(cutConstInd));
             }

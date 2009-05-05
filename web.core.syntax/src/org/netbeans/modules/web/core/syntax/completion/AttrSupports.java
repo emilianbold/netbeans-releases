@@ -58,7 +58,6 @@ import org.netbeans.modules.web.core.syntax.*;
 import org.netbeans.modules.web.core.syntax.completion.JavaJspCompletionProvider.CompletionQueryDelegatedToJava;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.util.ImageUtilities;
 
 
@@ -182,6 +181,7 @@ public class AttrSupports {
             super(tag, longName, attrName);
         }
         
+        @Override
         protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
             return new ArrayList();
         }
@@ -192,7 +192,7 @@ public class AttrSupports {
         
         /** Returns the complete result that contains elements from getCompletionItems.   */
         @Override
-        public void result(CompletionResultSet result, JTextComponent component, int offset,
+        public void result(JspCompletionQuery.CompletionResultSet result, JTextComponent component, int offset,
                 JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
             
             String fakedClassBody = getFakedClassBody(valuePart);
@@ -415,7 +415,7 @@ public class AttrSupports {
         
         /** Returns the complete result that contains elements from getCompletionItems.   */
         @Override
-        public void result(CompletionResultSet result, JTextComponent component, int offset,
+        public void result(JspCompletionQuery.CompletionResultSet result, JTextComponent component, int offset,
                 JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
             String path = "";   // NOI18N
             String fileNamePart = valuePart;

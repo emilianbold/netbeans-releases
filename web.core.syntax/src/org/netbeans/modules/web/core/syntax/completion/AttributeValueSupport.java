@@ -193,8 +193,8 @@ public abstract class AttributeValueSupport {
     public int hashCode() {
         return longName.hashCode() + attrName.hashCode();
     }
-
-    public abstract void result(CompletionResultSet result, JTextComponent component,
+   
+    public abstract void result(JspCompletionQuery.CompletionResultSet result, JTextComponent component,
             int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item,
             String valuePart);
 
@@ -243,7 +243,7 @@ public abstract class AttributeValueSupport {
          *  This implemantation uses createCompletionItems for obtaing of results but may be 
          *  overriden.
          */
-        public void result(CompletionResultSet result, JTextComponent component, int offset,
+        public void result(JspCompletionQuery.CompletionResultSet result, JTextComponent component, int offset,
                 JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
             List items = createCompletionItems(offset, sup, item, valuePart);
             result.addAllItems(items);

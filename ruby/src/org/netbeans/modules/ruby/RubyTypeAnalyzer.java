@@ -75,7 +75,6 @@ public final class RubyTypeAnalyzer {
     private ContextKnowledge knowledge;
     private boolean analyzed;
     private boolean targetReached;
-    private static final String[] COMPARISON_OPERATORS = {"==", "==="}; //NOI18N
 
     /**
      * Creates a new instance of RubyTypeAnalyzer for a given position. The
@@ -127,7 +126,7 @@ public final class RubyTypeAnalyzer {
             case CLASSVARDECLNODE:
             case CONSTDECLNODE:
             case DASGNNODE: {
-                RubyType type = new RubyTypeInferencer(knowledge).inferTypesOfRHS(node);
+                RubyType type = RubyTypeInferencer.normal(knowledge).inferTypesOfRHS(node);
 
                 // null element in types set means that we are not able to infer
                 // the expression
@@ -157,15 +156,6 @@ public final class RubyTypeAnalyzer {
                 analyze(child, typesForSymbols, override);
             }
         }
-    }
-
-    static boolean isTrueFalseCall(String methodName) {
-        for (String each : COMPARISON_OPERATORS) {
-            if (each.equals(methodName)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void analyzeIfNode(final IfNode ifNode, final Map<String, RubyType> typesForSymbols) {

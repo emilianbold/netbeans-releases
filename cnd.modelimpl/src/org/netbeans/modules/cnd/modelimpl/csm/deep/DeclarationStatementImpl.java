@@ -168,16 +168,16 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                                                 if (inner != null) {
                                                     String name = inner.getText();
                                                     if (isVariableLikeFunc(next)) {
-                                                        FunctionImpl fun = createFunction(next, getContainingFile(), type, getScope());
+                                                        /*FunctionImpl fun =*/ createFunction(next, getContainingFile(), type, getScope());
                                                     } else {
-                                                        VariableImpl var = createVariable(next, getContainingFile(), type, name, _static, _extern, currentNamespace, container, getScope());
+                                                        /*VariableImpl var =*/ createVariable(next, getContainingFile(), type, name, _static, _extern, currentNamespace, container, getScope());
                                                     }
                                                 }
                                             }
                                             if (next.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
                                                 AST nameAst = next.getFirstChild();
                                                 if (nameAst != null && nameAst.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
-                                                    VariableImpl var = createVariable(next, getContainingFile(), type, nameAst.getText(), _static, _extern, currentNamespace, container, getScope());
+                                                    /*VariableImpl var =*/ createVariable(next, getContainingFile(), type, nameAst.getText(), _static, _extern, currentNamespace, container, getScope());
                                                     next = next.getNextSibling();
                                                     if (next != null && next.getType() == CPPTokenTypes.COMMA) {
                                                         next = next.getNextSibling();

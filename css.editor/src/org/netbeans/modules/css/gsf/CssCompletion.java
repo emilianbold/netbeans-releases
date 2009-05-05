@@ -159,8 +159,10 @@ public class CssCompletion implements CodeCompletionHandler {
             all.addAll(wrapRAWValues(AT_RULES, CompletionItemKind.VALUE, caretOffset).getItems());
             //complete html selector names
             all.addAll(completeHtmlSelectors(prefix, caretOffset));
-
             return new DefaultCompletionResult(all, false);
+            
+        } else if(node.kind() == CssParserTreeConstants.JJTMEDIARULE) {
+            return new DefaultCompletionResult(completeHtmlSelectors(prefix, caretOffset), false);
             
         } else if (node.kind() == CssParserTreeConstants.JJTSKIP) {
             //complete at keywords with prefix - parse tree broken
@@ -676,9 +678,11 @@ public class CssCompletion implements CodeCompletionHandler {
             BufferedImage i = new BufferedImage(COLOR_ICON_SIZE, COLOR_ICON_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
             Graphics g = i.createGraphics();
             String colorCode = colors().get(getName());
-            
-            if(colorCode == null) {
-                return  null; //unknown colo code
+
+            boolean defaultIcon = colorCode == null;
+            if(defaultIcon) {
+                //unknown color code, we still want a generic icon
+                colorCode = colors().get("white"); //NOI18N
             }
             
             Color transparent = new Color( 0x00ffffff, true );
@@ -697,7 +701,13 @@ public class CssCompletion implements CodeCompletionHandler {
                     COLOR_RECT_SIZE, 
                     COLOR_RECT_SIZE);
             
-            
+            if(defaultIcon) {
+                //draw the X inside the icon
+                g.drawLine(COLOR_ICON_SIZE - COLOR_RECT_SIZE - 1,
+                        COLOR_ICON_SIZE - 2,
+                        COLOR_ICON_SIZE - 1,
+                        COLOR_ICON_SIZE - COLOR_RECT_SIZE - 2);
+            }
             
             return new ImageIcon(i);
         }
