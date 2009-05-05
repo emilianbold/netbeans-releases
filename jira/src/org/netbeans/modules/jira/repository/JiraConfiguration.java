@@ -111,8 +111,6 @@ public class JiraConfiguration extends JiraClientCache {
                     return;
                 }
                 configuration.initialize();
-                configuration.data.workDaysPerWeek = client.getConfiguration().getWorkDaysPerWeek();
-                configuration.data.workHoursPerDay = client.getConfiguration().getWorkHoursPerDay();
                 hackJiraCache(client);
             }
             private void hackJiraCache(JiraClient client) {
@@ -174,6 +172,9 @@ public class JiraConfiguration extends JiraClientCache {
         for (JiraStatus status : data.statuses) {
             data.statusesById.put(status.getId(), status);
         }
+
+        data.workDaysPerWeek = client.getConfiguration().getWorkDaysPerWeek();
+        data.workHoursPerDay = client.getConfiguration().getWorkHoursPerDay();
 
         data.initialized = true;
         // XXX what else do we need?
@@ -374,6 +375,7 @@ public class JiraConfiguration extends JiraClientCache {
         return data.workHoursPerDay;
     }
 
+    protected class ConfigurationData extends JiraClientData {
 	Group[] groups = new Group[0];
 	IssueType[] issueTypes = new IssueType[0];
 	Map<String, IssueType> issueTypesById = new HashMap<String, IssueType>();
