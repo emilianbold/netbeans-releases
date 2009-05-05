@@ -86,28 +86,30 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
                 return true;
             }
         };
+
+        final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
+        if(repo == null) return;
+
+        BugtrackingOwnerSupport.getInstance().setFirmAssociation(file, repo);
+
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(VcsHyperlinkProviderImpl.class, "MSG_Opening", new Object[] {issueId}), c); // NOI18N
         class IssueDisplayer implements Runnable {
             private Issue issue = null;
             public void run() {
-
-                final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
-                if(repo == null) return;
-
-                BugtrackingOwnerSupport.getInstance().setLooseAssociation(file, repo);
-
-                try {
-                    if (issue == null) {
+                if (issue == null) {
+                    /* (request processor thread) - find the issue */
+                    try {
                         issue = repo.getIssue(issueId);
-                        if (issue != null) {
-                            EventQueue.invokeLater(this);
-                        }
-                    } else {
-                        assert EventQueue.isDispatchThread();
-                        issue.open();
+                    } finally {
+                        handle.finish();
                     }
-                } finally {
-                    handle.finish();
+                    if (issue != null) {
+                        EventQueue.invokeLater(this);
+                    }
+                } else {
+                    /* (AWT event-dispatching thread) - display the issue */
+                    assert EventQueue.isDispatchThread();
+                    issue.open();
                 }
             }
         }

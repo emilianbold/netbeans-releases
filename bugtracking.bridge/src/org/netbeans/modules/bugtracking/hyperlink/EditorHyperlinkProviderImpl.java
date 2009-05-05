@@ -102,39 +102,39 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
                 return true;
             }
         };
+        DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        File file = null;
+        if (dobj != null) {
+            FileObject fileObject = dobj.getPrimaryFile();
+            if(fileObject != null) {
+                file = FileUtil.toFile(fileObject);
+            }
+        }
+        if(file == null) return;
+
+        final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
+        if(repo == null) return;
+
+        BugtrackingOwnerSupport.getInstance().setFirmAssociation(file, repo);
+
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(EditorHyperlinkProviderImpl.class, "MSG_Opening", new Object[] {issueId}), c); // NOI18N
         class IssueDisplayer implements Runnable {
             private Issue issue = null;
             public void run() {
-                try {
-                    
-
-                    DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-                    File file = null;
-                    if (dobj != null) {
-                        FileObject fileObject = dobj.getPrimaryFile();
-                        if(fileObject != null) {
-                            file = FileUtil.toFile(fileObject);
-                        }
-                    }
-                    if(file == null) return;
-
-                    final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
-                    if(repo == null) return;
-
-                    BugtrackingOwnerSupport.getInstance().setLooseAssociation(file, repo);
-
-                    if (issue == null) {
+                if (issue == null) {
+                    /* (request processor thread) - find the issue */
+                    try {
                         issue = repo.getIssue(issueId);
-                        if (issue != null) {
-                            EventQueue.invokeLater(this);
-                        }
-                    } else {
-                        assert EventQueue.isDispatchThread();
-                        issue.open();
+                    } finally {
+                        handle.finish();
                     }
-                } finally {
-                    handle.finish();
+                    if (issue != null) {
+                        EventQueue.invokeLater(this);
+                    }
+                } else {
+                    /* (AWT event-dispatching thread) - display the issue */
+                    assert EventQueue.isDispatchThread();
+                    issue.open();
                 }
             }
         }
