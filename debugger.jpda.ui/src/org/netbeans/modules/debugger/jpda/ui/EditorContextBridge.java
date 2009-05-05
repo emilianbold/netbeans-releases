@@ -461,7 +461,7 @@ public class EditorContextBridge {
             String s = null;
             try {
                 s = (String) cp1.getClass().getMethod(methodName).
-                        invoke(getContext(), new Object[] {});
+                        invoke(cp1, new Object[] {});
             } catch (java.lang.reflect.InvocationTargetException itex) {
                 Throwable tex = itex.getTargetException();
                 if (tex instanceof RuntimeException) {
@@ -477,7 +477,7 @@ public class EditorContextBridge {
             if ( (s == null) || (s.trim ().length () < 1)) {
                 try {
                     s = (String) cp2.getClass().getMethod(methodName).
-                            invoke(getContext(), new Object[] {});
+                            invoke(cp2, new Object[] {});
                 } catch (java.lang.reflect.InvocationTargetException itex) {
                     Throwable tex = itex.getTargetException();
                     if (tex instanceof RuntimeException) {

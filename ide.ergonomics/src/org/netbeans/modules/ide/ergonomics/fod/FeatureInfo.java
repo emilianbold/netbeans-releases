@@ -137,10 +137,6 @@ public final class FeatureInfo {
         return info;
     }
 
-    public String getProfilerAttachName() {
-        return properties.getProperty("profilerAttachName");
-    }
-
     public Object getProjectImporter() {
         return properties.getProperty("projectImporter");
     }
@@ -174,14 +170,16 @@ public final class FeatureInfo {
 
     public synchronized FileSystem getXMLFileSystem() {
         if (fs == null) {
-            URL url = delegateLayer;
-            if (url != null) {
-                try {
-                    fs = new XMLFileSystem(url);
-                    return fs;
-                } catch (SAXException ex) {
-                    FoDFileSystem.LOG.log(Level.SEVERE, "Cannot parse: " + url, ex);
-                    Exceptions.printStackTrace(ex);
+            if (doParseXML()) {
+                URL url = delegateLayer;
+                if (url != null) {
+                    try {
+                        fs = new XMLFileSystem(url);
+                        return fs;
+                    } catch (SAXException ex) {
+                        FoDFileSystem.LOG.log(Level.SEVERE, "Cannot parse: " + url, ex);
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
             fs = FileUtil.createMemoryFileSystem();
@@ -316,5 +314,9 @@ public final class FeatureInfo {
             }
         }
         return map;
+    }
+
+    static boolean doParseXML() {
+        return !Boolean.getBoolean("org.netbeans.modules.ide.ergonomics.noparse"); // NOI18N
     }
 }

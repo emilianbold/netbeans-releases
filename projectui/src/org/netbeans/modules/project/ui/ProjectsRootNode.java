@@ -513,7 +513,10 @@ public class ProjectsRootNode extends AbstractNode {
                             break;
                         }
                     }
-                    assert n != null : "newProject yields null node: " + newProj;
+                    if (n == null) {
+                        OpenProjectList.log(Level.WARNING, "newProject yields null node: " + newProj);
+                        n = Node.EMPTY;
+                    }
                 }
                 OpenProjectList.log(Level.FINER, "change original: {0}", n);
                 OpenProjectList.log(Level.FINER, "children before change original: {0}", getChildren());

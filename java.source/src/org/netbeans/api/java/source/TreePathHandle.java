@@ -399,44 +399,6 @@ public final class TreePathHandle {
                     debug.append(ex.getMessage());
                 }
 
-                try {
-                    debug.append("\n---------------------------------------------------\n");
-                    ClassLoader orig = Thread.currentThread().getContextClassLoader();
-                    ThreadGroup tg = Thread.currentThread().getThreadGroup();
-                    ClassLoader systemClassloader = orig;
-                    while(!systemClassloader.getClass().getName().endsWith("SystemClassLoader")) { // NOI18N
-                        tg = tg.getParent();
-                        if(tg == null) {
-                            throw new Exception("NetBeans SystemClassLoader not found!");
-                        }
-                        Thread[] list = new Thread[tg.activeCount()];
-                        tg.enumerate(list);
-                        systemClassloader = list[0].getContextClassLoader();
-                    }
-                    Class fileObjectFactoryClass = systemClassloader.loadClass("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory");
-                    Field allFactoriesField = fileObjectFactoryClass.getDeclaredField("AllFactories");
-                    Map<?, ?> factories = (Map<?, ?>) allFactoriesField.get(null);
-                    Class callerClass = systemClassloader.loadClass("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory$Caller");
-                    Method getValidFileObjectMethod = fileObjectFactoryClass.getMethod("getValidFileObject", File.class, callerClass);
-                    Object othersCaller = callerClass.getEnumConstants()[4];
-                    for (Map.Entry<?, ?> entry : factories.entrySet()) {
-                        File rootFile = (File) entry.getKey();
-                        Object fof = entry.getValue();
-                        debug.append("FileObjectFactory=" + fof);
-                        debug.append("\n");
-                        debug.append("RootFile=" + rootFile + ", hash=" + rootFile.hashCode());
-                        debug.append("\n");
-                        FileObject foMine = (FileObject) getValidFileObjectMethod.invoke(fof, FileUtil.toFile(mine), othersCaller);
-                        FileObject foRemote = (FileObject) getValidFileObjectMethod.invoke(fof, FileUtil.toFile(remote), othersCaller);
-                        debug.append("foMine: id=" + System.identityHashCode(foMine) + ", valid=" + foMine.isValid());
-                        debug.append("\n");
-                        debug.append("foRemote: id=" + System.identityHashCode(foRemote) + ", valid=" + foRemote.isValid());
-                        debug.append("\n---------------------------------------------------\n");
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    debug.append("Reflection failed: "+e.getMessage());
-                }
                 throw new IllegalArgumentException(debug.toString());
             }
             Element element = enclosingElement.resolve(compilationInfo);

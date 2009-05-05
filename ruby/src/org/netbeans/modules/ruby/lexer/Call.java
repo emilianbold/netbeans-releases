@@ -77,6 +77,30 @@ public class Call {
     private final boolean methodExpected;
     private final boolean constantExpected;
     private boolean isLHSConstant;
+    /**
+     * A token to use as LHS when we know the type already as a null
+     * LHS indicates the code completer to add all the local variables / methods
+     * from the current class, which we don't want since we already know the type,
+     * and it would be incorrect to include items from the current
+     * class. For example in the following example all instance vars from Foo would
+     * be listed in CC if LHS is null:
+     * <pre>
+     * class Foo
+     *  .. instance vars
+     *  def bar
+     *   "some string".|
+     *  end
+     * end
+     * </pre>
+     * Null was previously used in <code>tryLiteral</code> which caused the kind of
+     * problems described above.
+     * 
+     * Note that this is toked is never returned from <code>getLHS</code>.
+     * 
+     * TODO: Need to improve the infrastucture to have a better way of doing this.
+     *
+     */
+    private static final String EMPTY_LHS = "EMPTY_LHS";
 
     private Call(RubyType type, String lhs, boolean isStatic, boolean methodExpected) {
         this(type, lhs, isStatic, methodExpected, false);
@@ -104,6 +128,9 @@ public class Call {
     }
 
     public String getLhs() {
+        if (EMPTY_LHS.equals(lhs)) {
+            return "";
+        }
         return lhs;
     }
 
@@ -116,7 +143,7 @@ public class Call {
     }
 
     public boolean isSimpleIdentifier() {
-        if (lhs == null) {
+        if (lhs == null || lhs.equals(EMPTY_LHS)) {
             return false;
         }
         // TODO - replace with the new RubyUtil validations
@@ -434,29 +461,29 @@ public class Call {
         if (id == RubyTokenId.RBRACKET) {
             // Looks like we're operating on an array, e.g.
             //  [1,2,3].each|
-            return new Call(RubyType.ARRAY, null, false, methodExpected);
+            return new Call(RubyType.ARRAY, EMPTY_LHS, false, methodExpected);
         } else if (id == RubyTokenId.RBRACE) { // XXX uh oh, what about blocks?  {|x|printx}.| ? type="Proc"
             // Looks like we're operating on a hash, e.g.
             //  {1=>foo,2=>bar}.each|
-            return new Call(RubyType.HASH, null, false, methodExpected);
+            return new Call(RubyType.HASH, EMPTY_LHS, false, methodExpected);
         } else if ((id == RubyTokenId.STRING_END) || (id == RubyTokenId.QUOTED_STRING_END)) {
-            return new Call(RubyType.STRING, null, false, methodExpected);
+            return new Call(RubyType.STRING, EMPTY_LHS, false, methodExpected);
         } else if (id == RubyTokenId.REGEXP_END) {
-            return new Call(RubyType.REGEXP, null, false, methodExpected);
+            return new Call(RubyType.REGEXP, EMPTY_LHS, false, methodExpected);
         } else if (id == RubyTokenId.INT_LITERAL) {
-            return new Call(RubyType.FIXNUM, null, false, methodExpected); // Or Bignum?
+            return new Call(RubyType.FIXNUM, EMPTY_LHS, false, methodExpected); // Or Bignum?
         } else if (id == RubyTokenId.FLOAT_LITERAL) {
-            return new Call(RubyType.FLOAT, null, false, methodExpected);
+            return new Call(RubyType.FLOAT, EMPTY_LHS, false, methodExpected);
         } else if (id == RubyTokenId.TYPE_SYMBOL) {
-            return new Call(RubyType.SYMBOL, null, false, methodExpected);
+            return new Call(RubyType.SYMBOL, EMPTY_LHS, false, methodExpected);
         } else if (id == RubyTokenId.RANGE) {
-            return new Call(RubyType.RANGE, null, false, methodExpected);
+            return new Call(RubyType.RANGE, EMPTY_LHS, false, methodExpected);
         } else if ((id == RubyTokenId.ANY_KEYWORD) && "nil".equals(tokenText)) { // NOI18N
-            return new Call(RubyType.NIL_CLASS, null, false, methodExpected);
+            return new Call(RubyType.NIL_CLASS, EMPTY_LHS, false, methodExpected);
         } else if ((id == RubyTokenId.ANY_KEYWORD) && "true".equals(tokenText)) { // NOI18N
-            return new Call(RubyType.TRUE_CLASS, null, false, methodExpected);
+            return new Call(RubyType.TRUE_CLASS, EMPTY_LHS, false, methodExpected);
         } else if ((id == RubyTokenId.ANY_KEYWORD) && "false".equals(tokenText)) { // NOI18N
-            return new Call(RubyType.FALSE_CLASS, null, false, methodExpected);
+            return new Call(RubyType.FALSE_CLASS, EMPTY_LHS, false, methodExpected);
         } else {
             return null;
         }

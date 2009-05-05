@@ -58,6 +58,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalArgumentExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
@@ -214,6 +215,8 @@ ObjectVariable {
             }
             try {
                 ObjectReferenceWrapper.setValue(thisObject, field, value);
+            } catch (IllegalArgumentExceptionWrapper ex) {
+                throw new InvalidExpressionException (ex.getCause());
             } catch (InvalidTypeException ex) {
                 throw new InvalidExpressionException (ex);
             } catch (ClassNotLoadedException ex) {

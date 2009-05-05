@@ -1570,6 +1570,7 @@ public class RubyIndexer extends EmbeddingIndexer {
     }
     
     static boolean isPreindexing() {
-        return PREINDEXING || preindexingTest;
+        return true;
+//        return PREINDEXING || preindexingTest;
     }
 }

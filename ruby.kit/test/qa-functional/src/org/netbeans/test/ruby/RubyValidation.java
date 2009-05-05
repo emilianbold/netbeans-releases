@@ -56,6 +56,8 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator.JComboBoxFinder;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
@@ -207,6 +209,10 @@ public class RubyValidation extends JellyTestCase {
         NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(SAMPLE_RAILS_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
+
+        //select WEBrick server
+        JComboBoxOperator cb = new JComboBoxOperator(npnlso, 0);
+        cb.selectItem("WEBrick");
         npnlso.finish();
         // wait project appear in projects view
         // wait 30 second

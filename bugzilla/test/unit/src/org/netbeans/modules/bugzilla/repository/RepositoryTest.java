@@ -145,7 +145,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         // save query
         long lastRefresh = System.currentTimeMillis();
         String parameters = "&product=zaibatsu";
-        BugzillaQuery bq = new BugzillaQuery(QUERY_NAME, repo, parameters, lastRefresh);
+        BugzillaQuery bq = new BugzillaQuery(QUERY_NAME, repo, parameters, lastRefresh, false);
         repo.saveQuery(bq);
         queries = repo.getQueries();
         assertEquals(1, queries.length); // returns only saved queries
