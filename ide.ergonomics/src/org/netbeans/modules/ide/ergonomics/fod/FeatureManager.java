@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -61,13 +62,14 @@ import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Jirka Rechtacek
  */
 public final class FeatureManager
-implements PropertyChangeListener, LookupListener {
+implements PropertyChangeListener, LookupListener, Runnable {
     private static FeatureManager INSTANCE = new FeatureManager ();
     private static Logger UILOG = Logger.getLogger("org.netbeans.ui.ergonomics"); // NOI18N
     private final Lookup.Result<ModuleInfo> result;
@@ -76,7 +78,13 @@ implements PropertyChangeListener, LookupListener {
     private FeatureManager() {
         support = new ChangeSupport(this);
         result = Lookup.getDefault().lookupResult(ModuleInfo.class);
+        WindowManager.getDefault().invokeWhenUIReady(this);
+    }
+    
+    public void run() {
+        assert EventQueue.isDispatchThread();
         result.addLookupListener(this);
+        resultChanged(null);
     }
 
     public static FeatureManager getInstance () {
@@ -214,9 +222,6 @@ implements PropertyChangeListener, LookupListener {
     }
 
     public void addChangeListener(ChangeListener l) {
-        if (!support.hasListeners()) {
-            resultChanged(null);
-        }
         support.addChangeListener(l);
     }
     public void removeChangeListener(ChangeListener l) {
