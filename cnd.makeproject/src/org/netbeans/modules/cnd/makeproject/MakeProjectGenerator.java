@@ -134,7 +134,7 @@ public class MakeProjectGenerator {
         // work in a copy of confs
         MakeConfiguration[] copyConfs = new MakeConfiguration[confs.length];
         for (int i = 0; i < confs.length; i++) {
-            copyConfs[i] = (MakeConfiguration)confs[i].clone();
+            copyConfs[i] = (MakeConfiguration) confs[i].clone();
             copyConfs[i].setBaseDir(projectNameFile.getPath());
             RunProfile profile = (RunProfile) copyConfs[i].getAuxObject(RunProfile.PROFILE_ID);
             profile.setBuildFirst(false);
@@ -251,6 +251,7 @@ public class MakeProjectGenerator {
             projectDescriptor.setFolderVisibilityQuery(sourceFoldersFilter);
         }
         Runnable task = new Runnable() {
+
             public void run() {
                 projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems, mainFilePath); // FIXUP: need a better check whether logical folder should be ccreated or not.
                 projectDescriptor.save();
