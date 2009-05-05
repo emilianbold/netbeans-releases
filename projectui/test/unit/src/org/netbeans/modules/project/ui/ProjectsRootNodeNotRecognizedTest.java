@@ -119,13 +119,17 @@ public class ProjectsRootNodeNotRecognizedTest extends NbTestCase {
         }
 
         public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
-            //down.await();
-            if (refused.add(projectDirectory)) {
-                TestProject p = new TestSupport.TestProject(projectDirectory, state);
-                p.setLookup(new NullLVPLookup(p, projectDirectory, state));
-                return p;
+            try {
+                down.await();
+                if (refused.add(projectDirectory)) {
+                    TestProject p = new TestSupport.TestProject(projectDirectory, state);
+                    p.setLookup(new NullLVPLookup(p, projectDirectory, state));
+                    return p;
+                }
+                return null;
+            } catch (InterruptedException ex) {
+                throw new IOException();
             }
-            return null;
         }
 
         public void saveProject(Project project) throws IOException, ClassCastException {
