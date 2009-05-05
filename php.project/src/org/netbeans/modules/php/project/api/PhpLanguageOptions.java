@@ -44,7 +44,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Parameters;
 
 /**
  * Helper class to get PHP language properties like ASP tags supported etc.
@@ -65,23 +64,23 @@ public final class PhpLanguageOptions {
     }
 
     /**
-     * Get {@link Properties PHP language properties} for the given file. These properties are project specific.
-     * If no project is found for the file, then properties with the default values are returned.
-     * @param file a file which could belong to a project (if not, properties with the default values are returned).
+     * Get {@link Properties PHP language properties} for the given file (can be <code>null</code>).
+     * These properties are project specific. If no project is found for the file, then properties with the default values are returned.
+     * @param file a file which could belong to a project (if not or <code>null</code>, properties with the default values are returned).
      * @return <code>true</code> if short tags are supported, <code>false</code> otherwise.
      * @see #SHORT_TAGS_ENABLED
      * @see #ASP_TAGS_ENABLED
      */
     public static Properties getProperties(FileObject file) {
-        Parameters.notNull("file", file);
-
         boolean shortTagsEnabled = SHORT_TAGS_ENABLED;
         boolean aspTagsEnabled = ASP_TAGS_ENABLED;
 
-        PhpProject phpProject = getPhpProject(file);
-        if (phpProject != null) {
-            shortTagsEnabled = ProjectPropertiesSupport.areShortTagsEnabled(phpProject);
-            aspTagsEnabled = ProjectPropertiesSupport.areAspTagsEnabled(phpProject);
+        if (file != null) {
+            PhpProject phpProject = getPhpProject(file);
+            if (phpProject != null) {
+                shortTagsEnabled = ProjectPropertiesSupport.areShortTagsEnabled(phpProject);
+                aspTagsEnabled = ProjectPropertiesSupport.areAspTagsEnabled(phpProject);
+            }
         }
         return new Properties(shortTagsEnabled, aspTagsEnabled);
     }
