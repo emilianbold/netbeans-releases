@@ -76,8 +76,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     private static final String OPERATOR = "operator"; // NOI18N;
     
-    private static final CharSequence NULL = CharSequenceKey.create("<null>"); // NOI18N
-    private CharSequence name;
+    private final CharSequence name;
     private final CsmType returnType;
 //    private final Collection<CsmUID<CsmParameter>>  parameters;
     private final FunctionParameterListImpl parameterList;
@@ -113,8 +112,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         assert !CHECK_SCOPE || (scope != null);
         
         name = QualifiedNameCache.getManager().getString(initName(ast));
+        if (name.length()==0) {
+            throw new AstRendererException((FileImpl)file, this.getStartOffset(), "Empty function name."); // NOI18N
+        }
         rawName = AstUtil.getRawNameInChildren(ast);
-
         AST child = ast.getFirstChild();
         if (child != null) {
             setStatic(child.getType() == CPPTokenTypes.LITERAL_static);
@@ -162,16 +163,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             returnType = initReturnType(ast);
         }
 
-                
         // set parameters, do it in constructor to have final fields
         this.parameterList = createParameterList(ast, !global);
         if (this.parameterList == null || this.parameterList.isEmpty()) {
             setFlags(FLAGS_VOID_PARMLIST, isVoidParameter(ast));
         } else {
             setFlags(FLAGS_VOID_PARMLIST, false);
-        }
-        if( name == null ) {
-            name = NULL; // just to avoid NPE
         }
         if (name.toString().startsWith(OPERATOR) && 
                 (name.length() > OPERATOR.length()) &&
@@ -342,10 +339,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      */
     public CharSequence getName() {
         return name;
-    }
-    
-    protected final void setName(CharSequence name) {
-        this.name = QualifiedNameCache.getManager().getString(name);
     }
     
     public CharSequence getQualifiedName() {
