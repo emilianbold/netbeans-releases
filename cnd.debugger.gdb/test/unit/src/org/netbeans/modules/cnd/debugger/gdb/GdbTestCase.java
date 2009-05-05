@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.modules.cnd.test.BaseTestCase;
 
 /**
  * Base class for each gdb test case should extend this class. It provides a handle
@@ -59,7 +60,7 @@ import org.netbeans.spi.debugger.ContextProvider;
  *
  * @author gordonp
  */
-public abstract class GdbTestCase implements ContextProvider {
+public abstract class GdbTestCase extends BaseTestCase implements ContextProvider {
 
     protected ProjectActionEvent pae = null;
     protected Project project = null;
@@ -72,7 +73,8 @@ public abstract class GdbTestCase implements ContextProvider {
     protected GdbProxy gdb;
     protected static final Logger tlog = Logger.getLogger("gdb.testlogger"); // NOI18N
 
-    public GdbTestCase() {
+    public GdbTestCase(String name) {
+        super(name);
         System.setProperty("gdb.testsuite", "true");
         tlog.setLevel(Level.FINE);
         String workdir = System.getProperty("nbjunit.workdir"); // NOI18N
