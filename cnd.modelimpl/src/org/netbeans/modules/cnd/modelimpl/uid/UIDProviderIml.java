@@ -42,8 +42,12 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.spi.model.UIDProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
@@ -80,12 +84,18 @@ public final class UIDProviderIml implements UIDProvider {
                 Object object = uid.getObject();
                 if (object == null) {
                     // this could happen in clients delayed threads
-                    if (checkNull) {
+                    if (checkNull && CsmKindUtilities.isCsmObject(obj) && CsmBaseUtilities.isValid((CsmObject)obj)) {
                         String prefix = "no deref object for uid["; // NOI18N
                         if (Thread.currentThread().getName().contains("FileTaskFactory")) { // NOI18N
                             prefix = "it's OK to have invalidated object with uid["; // NOI18N
                         }
-                        new Exception(prefix + uid + "] of " + obj).printStackTrace(System.err); // NOI18N
+                        String line = ""; // NOI18N
+                        if (obj instanceof CsmOffsetable) {
+                            CsmOffsetable offsetable = (CsmOffsetable) obj;
+                            line = " ["+offsetable.getStartPosition().getLine()+":"+offsetable.getStartPosition().getColumn()+"-"+ // NOI18N
+                                    offsetable.getEndPosition().getLine()+":"+offsetable.getEndPosition().getColumn()+"]"; // NOI18N
+                        }
+                        new Exception(prefix + uid + "] of " + obj + line).printStackTrace(System.err); // NOI18N
                     }
                 } else {
                     // commented because method isAssignableFrom() is too expensive

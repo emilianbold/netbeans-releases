@@ -62,11 +62,9 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
     public MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register, boolean global) throws AstRendererException {
         super(ast, cls, visibility, false, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
-        boolean assertionCondition = body != null;
-        if (!assertionCondition) {
+        if (body == null) {
             throw new AstRendererException((FileImpl)getContainingFile(), getStartOffset(),
-                    "Null body in function definition."); // NOI18N
-            //assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + getContainingFile().getAbsolutePath();
+                    "Null body in method definition."); // NOI18N
         }
         if (register) {
             registerInProject();

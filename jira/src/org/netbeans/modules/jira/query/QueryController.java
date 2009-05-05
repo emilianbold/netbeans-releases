@@ -63,6 +63,7 @@ import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
+import javax.swing.ListModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -90,6 +91,7 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.QueryParameter.ListParameter;
 import org.netbeans.modules.jira.query.QueryParameter.ParameterValue;
 import org.netbeans.modules.jira.query.QueryParameter.TextFieldParameter;
+import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.DialogDisplayer;
@@ -342,8 +344,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
             JiraCommand cmd = new JiraCommand() {
                 @Override
                 public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-                    // XXX repository configuration
-                    Project[] projects = repository.getConfiguration().getProjects();
+                    JiraConfiguration jc = repository.getConfiguration();
+                    if(jc == null) {
+                        // XXX nice errro msg?
+                        return;
+                    }
+
+                    Project[] projects = jc.getProjects();
 
                     DefaultListModel model = new DefaultListModel();
                     for (Project project : projects) {
@@ -351,11 +358,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     }
                     panel.projectList.setModel(model);
 
-//                    JiraConfiguration bc = repository.getConfiguration();
-//                    if(bc == null) {
-//                        // XXX nice errro msg?
-//                        return;
-//                    }
 //                    productParameter.setParameterValues(toParameterValues(bc.getProducts()));
 //                    if (panel.productList.getModel().getSize() > 0) {
 //                        panel.productList.setSelectedIndex(0);
@@ -886,11 +888,31 @@ public class QueryController extends BugtrackingController implements DocumentLi
         return ret;
     }
 
-    private void setFilterDefinition(FilterDefinition filterDefinition) {
-        // XXX
-//        if(urlParameters == null) {
-//            return;
-//        }
+    private void setFilterDefinition(FilterDefinition fd) {
+        if(fd == null) {
+            return;
+        }
+        ProjectFilter pf = fd.getProjectFilter();
+        if(pf != null) {
+            Project[] projects = pf.getProjects();
+            if(projects != null) {
+                List<Integer> toSelect = new ArrayList<Integer>();
+                DefaultListModel model = (DefaultListModel) panel.projectList.getModel();
+                for (Project p : projects) {
+                    int idx = model.indexOf(p);
+                    if(idx > -1) {
+                        toSelect.add(idx);
+                    }
+                }
+                int[] idx = new int[toSelect.size()];
+                for (int i = 0; i < idx.length; i++) {
+                    idx[i] = toSelect.get(i);
+                }
+                panel.projectList.setSelectedIndices(idx);
+            }
+        }
+        // XXX finish me
+        
 //        String[] params = urlParameters.split("&"); // NOI18N
 //        if(params == null || params.length == 0) return;
 //        Map<String, List<ParameterValue>> normalizedParams = new HashMap<String, List<ParameterValue>>();

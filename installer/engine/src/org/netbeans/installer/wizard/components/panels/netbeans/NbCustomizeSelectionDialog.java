@@ -483,7 +483,9 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         if ((toInstall.size() == 0) && (toUninstall.size() == 0)) {
             if (isThereAnythingVisibleToInstall() &&
                     Boolean.getBoolean(Registry.SUGGEST_INSTALL_PROPERTY)) {
-                return panel.getProperty(panel.ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
+                return isVisibleNetBeansInstalled()?
+                    panel.getProperty(panel.ERROR_NO_RUNTIMES_INSTALL_ONLY_PROPERTY):
+                    panel.getProperty(panel.ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
             }
             if (isThereAnythingVisibleToUninstall() &&
                     Boolean.getBoolean(Registry.SUGGEST_UNINSTALL_PROPERTY)) {
@@ -644,6 +646,21 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         }
         
         return false;
+    }
+
+    private boolean isVisibleNetBeansInstalled() {
+        final Registry registry = Registry.getInstance();
+
+        final List<Product> toInstall = new LinkedList<Product>();
+        toInstall.addAll(registry.getProducts(Status.NOT_INSTALLED));
+        toInstall.addAll(registry.getProducts(Status.TO_BE_INSTALLED));
+
+        for (Product product: toInstall) {
+            if (product.getUid().startsWith("nb-") && product.isVisible()) {
+                return false;
+            }
+        }
+        return true;
     }
     
     /////////////////////////////////////////////////////////////////////////////////

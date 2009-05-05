@@ -209,10 +209,12 @@ public class FileObj extends BaseFileObj {
     }
 
     final void setLastModified(long lastModified) {
-        if (this.lastModified != -1 && !realLastModifiedCached) {
-            realLastModifiedCached = true;
+        if (this.lastModified != 0) { // #130998 - don't set when already invalidated
+            if (this.lastModified != -1 && !realLastModifiedCached) {
+                realLastModifiedCached = true;
+            }
+            this.lastModified = lastModified;
         }
-        this.lastModified = lastModified;
     }
     
     

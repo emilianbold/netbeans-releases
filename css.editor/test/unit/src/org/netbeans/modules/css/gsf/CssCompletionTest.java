@@ -67,7 +67,7 @@ public class CssCompletionTest extends TestBase {
     private static String[] AT_RULES = new String[]{"@charset", "@import", "@media", "@page", "@font-face"};
 
     public static enum Match {
-        EXACT, CONTAINS, EMPTY, NOT_EMPTY;
+        EXACT, CONTAINS, EMPTY, NOT_EMPTY, DOES_NOT_CONTAIN;
     }
 
     public CssCompletionTest() {
@@ -173,6 +173,16 @@ public class CssCompletionTest extends TestBase {
         checkCC("div { color: | }", arr("menu", "window"), Match.CONTAINS);
     }
 
+    public void testHtmlSelectorsInMedia() throws ParseException {
+        checkCC("@media page {  |   } ", arr("html"), Match.CONTAINS);
+        checkCC("@media page {  |   } ", arr("@media"), Match.DOES_NOT_CONTAIN); //media not supported here
+
+//        checkCC("@media page {  htm|   } ", arr("html"), Match.EXACT);
+//        checkCC("@media page {  html, |   } ", arr("body"), Match.CONTAINS);
+//        checkCC("@media page {  html, bo|   } ", arr("body"), Match.CONTAINS);
+//        checkCC("@media page {  html > bo|   } ", arr("body"), Match.CONTAINS);
+    }
+
     //--- utility methods ---
 
     private String[] arr(String... args) {
@@ -195,9 +205,26 @@ public class CssCompletionTest extends TestBase {
             assertEquals(0, real.size());
         } else if(type == Match.NOT_EMPTY) {
             assertTrue(real.size() > 0);
+        } else if (type == Match.DOES_NOT_CONTAIN) {
+            int originalRealSize = real.size();
+            real.removeAll(exp);
+            assertEquals("The unexpected element(s) '" + arrayToString(expected)+ "' are present in the completion items list", originalRealSize, real.size());
         }
 
     }
+
+    private String arrayToString(String[] elements) {
+        StringBuffer buf = new StringBuffer();
+        for(int i = 0; i < elements.length; i++) {
+            buf.append(elements[i]);
+            if(i < elements.length - 1) {
+                buf.append(',');
+                buf.append(' ');
+            }
+        }
+        return buf.toString();
+    }
+
 
     private static TestCodeCompletionContext createContext(int offset, ParserResult result, String prefix) {
         return new TestCodeCompletionContext(offset, result, prefix, QueryType.COMPLETION, false);

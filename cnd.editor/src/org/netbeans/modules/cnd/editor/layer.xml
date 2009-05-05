@@ -69,6 +69,11 @@
 					</folder>
 				</folder>
 			</folder>
+            <file name="EditorKit.instance">
+                <attr name="beaninfo" boolvalue="false"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.shell.ShellKit"/>
+                <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.shell.ShellKit"/>
+            </file>
 			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.sh.Bundle"/>
 		</folder>
 		<folder name="bat">

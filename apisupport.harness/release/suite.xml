@@ -43,7 +43,11 @@ made subject to such option by the copyright holder.
 <project name="suite" basedir=".">
 
     <import file="jdk.xml"/>
-
+    <condition property="testcoverage.import"
+        value="testcoverage-suite.xml" else="no-testcoverage.xml">
+        <available file="testcoverage-suite.xml" filepath="${harness.dir}"/>
+    </condition>
+    <import file="${testcoverage.import}"/>
 
     <target name="-taskdefs" unless="harness.taskdefs.done">
         <dirname property="harness.dir" file="${suite.file}"/>
@@ -505,5 +509,12 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
             <property name="cluster.path.evaluated" value="${cluster.path.evaluated}"/> <!-- Just for speed of pre-7.0 projects -->
         </subant>
     </target>
-    
+
+    <target name="display-coverage-report" depends="coverage-report"
+        description="Generates and displays test coverage report for entire suite">
+        <fail unless="testcoverage.report.dir">
+Property testcoverage.report.dir not set. Test coverage script may be missing in ${harness.dir}.
+        </fail>
+        <nbbrowse file="${testcoverage.report.dir}/index.html"/>
+    </target>
 </project>

@@ -324,7 +324,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 popupMenu.add(sceneZoomToFitAction);
             } else {
                 ArtifactGraphNode node = (ArtifactGraphNode)findObject(widget);
-                if (model != null && isFixCandidate(node)) {
+                if (isEditable() && isFixCandidate(node)) {
                     popupMenu.add(new FixVersionConflictAction(node));
                 }
                 popupMenu.add(highlitedZoomToFitAction);
@@ -490,6 +490,10 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             ftvl.invokeLayout();
         }
     };
+
+    boolean isEditable () {
+        return model != null;
+    }
 
     static boolean isFixCandidate (ArtifactGraphNode node) {
         Set<DependencyNode> conf = node.getDuplicatesOrConflicts();
