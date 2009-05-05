@@ -112,7 +112,7 @@ public class MultiFileObjectTestHid extends TestBaseHid {
         testFo = mfs.findResource("/fold20/fold21/fold22");
         fsAssert("/fold20/fold21/fold22 should not be present",testFo == null);
     }    
-    
+
     public void testBug19425 () throws IOException {
         String whereRes = "/fold10";
         String whatRes = "/fold20/fold23.txt";
