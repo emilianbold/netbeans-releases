@@ -93,11 +93,13 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
             ParseStatistics.getInstance().clear();
             ProjectBase project = getProject();
             //for (FileImpl fileImpl : project.getAllFileImpls()) {
+            ParserQueue.instance().suspend();
             for (int i = 0; i < filesToParse.length; i++) {
                 FileImpl fileImpl = findFile(filesToParse[i]);
                 fileImpl.markReparseNeeded(false);
                 DeepReparsingUtils.reparseOnEdit(fileImpl, project, true);
             }
+            ParserQueue.instance().resume();
             getProject().waitParse();
             assertParseCount(headerToCheck, exprectedReparseCount);
         }
@@ -172,7 +174,7 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
                 "smart_headers_simple_1e.cc",
                 "smart_headers_simple_1f.cc"
             }, 
-            "smart_headers_simple_1_multy", "smart_headers_simple_1.h", 5, 4);
+            "smart_headers_simple_1_multy", "smart_headers_simple_1.h", 5, 1);
     }
 
     public void testMixed_1() throws Exception {
