@@ -40,7 +40,6 @@
 package org.netbeans.modules.jira.repository;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.util.HashMap;
@@ -73,6 +72,7 @@ import org.netbeans.modules.jira.commands.JiraCommand;
  *
  * @author Tomas Stupka, Jan Stola
  */
+// XXX rename - it actually the cache, not the configuration
 public class JiraConfiguration extends JiraClientCache {
 
     private JiraClient client;
@@ -83,59 +83,10 @@ public class JiraConfiguration extends JiraClientCache {
     private static final Object USER_LOCK = new Object();
     private static final Object PROJECT_LOCK = new Object();
 
-    // XXX might be we want it private
-    protected JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
+    public JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
         super(jiraClient);
         this.client = jiraClient;
         this.repository = repository;        
-    }
-
-    public static <T extends JiraConfiguration> T create(final JiraRepository repository, final Class<T> clazz) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-
-        // XXX need logging incl. consumed time
-
-        class ConfigurationCommand extends JiraCommand {
-            private T configuration;
-            @Override
-            public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-
-                final JiraClient client = Jira.getInstance().getClient(repository.getTaskRepository());
-
-                try {
-                    Constructor<T> c = clazz.getDeclaredConstructor(JiraClient.class, JiraRepository.class);
-                    c.setAccessible(true);
-                    configuration = c.newInstance(client, repository);
-                } catch (Exception ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                    return;
-                }
-                configuration.initialize();
-                hackJiraCache(client);
-            }
-            private void hackJiraCache(JiraClient client) {
-                try {
-                    Field f = client.getClass().getDeclaredField("cache");      // NOI18N
-                    f.setAccessible(true);
-                    f.set(client, configuration);
-                } catch (IllegalArgumentException ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                } catch (IllegalAccessException ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                } catch (NoSuchFieldException ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                } catch (SecurityException ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                }
-            }
-        }
-        ConfigurationCommand cmd = new ConfigurationCommand();
-
-        repository.getExecutor().execute(cmd, true, false);
-        if(!cmd.hasFailed()) {
-            return cmd.configuration;
-        }
-        return null;
     }
 
     protected void initialize() throws JiraException {
@@ -180,6 +131,23 @@ public class JiraConfiguration extends JiraClientCache {
         // XXX what else do we need?
         // XXX issue types by project
 
+        hackJiraCache();
+    }
+
+    private void hackJiraCache() {
+        try {
+            Field f = client.getClass().getDeclaredField("cache");      // NOI18N
+            f.setAccessible(true);
+            f.set(client, this);
+        } catch (IllegalArgumentException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        } catch (NoSuchFieldException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override

@@ -47,7 +47,7 @@ import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.filter.CurrentUserFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
-import org.eclipse.mylyn.internal.jira.core.model.filter.UserFilter;
+import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
@@ -154,8 +154,8 @@ public class KenaiRepository extends JiraRepository {
     }
 
     @Override
-    protected JiraConfiguration createConfiguration() {
-        KenaiConfiguration c = KenaiConfiguration.create(this, KenaiConfiguration.class);
+    protected JiraConfiguration createConfiguration(JiraClient client) {
+        KenaiConfiguration c = new KenaiConfiguration(client, this);
         if(c != null) {
             c.addProject(projectName);
             return c;
