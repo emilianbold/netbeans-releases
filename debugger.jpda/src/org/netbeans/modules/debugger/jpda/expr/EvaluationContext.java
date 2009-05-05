@@ -315,6 +315,8 @@ public class EvaluationContext {
                     } else {
                         ((ClassType) field.declaringType()).setValue(field, value);
                     }
+                } catch (IllegalArgumentException iaex) {
+                    throw new IllegalStateException(new InvalidExpressionException (iaex));
                 } catch (InvalidTypeException itex) {
                     throw new IllegalStateException(new InvalidExpressionException (itex));
                 } catch (ClassNotLoadedException cnlex) {
