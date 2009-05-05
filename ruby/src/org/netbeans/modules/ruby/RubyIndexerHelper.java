@@ -431,21 +431,17 @@ public final class RubyIndexerHelper {
     }
 
     private static RubyType getReturnTypes(String line, List<String> callseq, String name) {
-        // Compute return types
-        if (name.equals("to_s")) { // NOI18N
-            return RubyType.STRING;
+        
+        RubyType result = RubyMethodTypeInferencer.fastCheckType(name);
+        if (result != null) {
+            return result;
         }
+
         if (callseq != null) {
             RubyType types = RDocAnalyzer.collectTypesFromComment(callseq);
             if (types.isKnown()) {
                 return types;
             }
-        }
-
-        // Methods ending with "?" are probably question methods returning a
-        // boolean
-        if (name.endsWith("?")) {
-            return RubyType.BOOLEAN;
         }
 
         return RubyType.createUnknown();

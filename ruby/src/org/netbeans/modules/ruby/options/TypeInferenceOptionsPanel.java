@@ -63,6 +63,14 @@ public class TypeInferenceOptionsPanel extends javax.swing.JPanel {
     boolean getMethods() {
         return methodsCheckBox.isSelected();
     }
+
+    void setRdoc(boolean enabled) {
+        rdocCheckBox.setSelected(enabled);
+    }
+
+    boolean getRdoc() {
+        return rdocCheckBox.isSelected();
+    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -75,23 +83,31 @@ public class TypeInferenceOptionsPanel extends javax.swing.JPanel {
         tiOptionsLabel = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         methodsCheckBox = new javax.swing.JCheckBox();
+        rdocCheckBox = new javax.swing.JCheckBox();
 
         tiOptionsLabel.setText(org.openide.util.NbBundle.getMessage(TypeInferenceOptionsPanel.class, "TypeInferenceOptionsPanel.tiOptionsLabel.text")); // NOI18N
 
         methodsCheckBox.setText(org.openide.util.NbBundle.getMessage(TypeInferenceOptionsPanel.class, "TypeInferenceOptionsPanel.methodsCheckBox.text")); // NOI18N
+
+        rdocCheckBox.setText(org.openide.util.NbBundle.getMessage(TypeInferenceOptionsPanel.class, "TypeInferenceOptionsPanel.rdocCheckBox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(methodsCheckBox)
                     .add(layout.createSequentialGroup()
-                        .add(tiOptionsLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)))
+                        .add(12, 12, 12)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(methodsCheckBox)
+                            .add(layout.createSequentialGroup()
+                                .add(tiOptionsLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE))))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(rdocCheckBox)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -106,7 +122,9 @@ public class TypeInferenceOptionsPanel extends javax.swing.JPanel {
                         .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(methodsCheckBox)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(rdocCheckBox)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -114,6 +132,7 @@ public class TypeInferenceOptionsPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JCheckBox methodsCheckBox;
+    private javax.swing.JCheckBox rdocCheckBox;
     private javax.swing.JLabel tiOptionsLabel;
     // End of variables declaration//GEN-END:variables
 

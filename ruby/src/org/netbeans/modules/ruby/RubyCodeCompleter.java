@@ -1301,6 +1301,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     Set<IndexedMethod> inheritedMethods =
                         index.getInheritedMethods(fqn, prefix, kind);
 
+                    inheritedMethods = RubyDynamicFindersCompleter.proposeDynamicMethods(inheritedMethods, proposals, request, anchor);
                     // Handle action view completion for RHTML and Markaby files
                     if (RubyUtils.isRhtmlFile(fileObject) || RubyUtils.isMarkabyFile(fileObject)) {
                         addActionViewMethods(inheritedMethods, fileObject, index, prefix, kind);
