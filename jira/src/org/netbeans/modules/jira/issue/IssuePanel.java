@@ -40,6 +40,7 @@ package org.netbeans.modules.jira.issue;
 
 import java.awt.Component;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -58,6 +59,7 @@ import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -195,6 +197,20 @@ public class IssuePanel extends javax.swing.JPanel {
         reloadField(createdField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true));
         reloadField(updatedField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true));
         reloadField(dueField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE), false));
+        String originalEstimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.INITIAL_ESTIMATE);
+        if (originalEstimateTxt.trim().length() == 0) {
+            // Derive original estimate from remaining estimate and time spent
+            String estimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE);
+            String timeSpentTxt = issue.getFieldValue(NbJiraIssue.IssueField.ACTUAL);
+            try {
+                int estimate = Integer.parseInt(estimateTxt);
+                int timeSpent = Integer.parseInt(timeSpentTxt);
+                originalEstimateTxt = Integer.toString(estimate + timeSpent);
+            } catch (NumberFormatException nfex) {}
+        }
+        reloadField(originalEstimateField, workBySeconds(originalEstimateTxt));
+        reloadField(remainingEstimateField, workBySeconds(issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE)));
+        reloadField(timeSpentField, workBySeconds(issue.getFieldValue(NbJiraIssue.IssueField.ACTUAL)));
     }
 
     private void reloadField(JComponent fieldComponent, Object fieldValue) {
@@ -237,10 +253,35 @@ public class IssuePanel extends javax.swing.JPanel {
     private String dateByMillis(String text, boolean includeTime) {
         if (text.trim().length() > 0) {
             try {
-
                 long millis = Long.parseLong(text);
                 DateFormat format = includeTime ? DateFormat.getDateTimeInstance() : DateFormat.getDateInstance();
                 return format.format(new Date(millis));
+            } catch (NumberFormatException nfex) {
+                nfex.printStackTrace();
+            }
+        }
+        return ""; // NOI18N
+    }
+
+    private String workBySeconds(String text) {
+        if (text.trim().length() > 0) {
+            try {
+                int seconds = Integer.parseInt(text);
+                int minutes = seconds/60;
+                int hours = minutes/60;
+                minutes = minutes%60;
+                JiraConfiguration config = issue.getRepository().getConfiguration();
+                int days = hours/config.getWorkHoursPerDay();
+                hours = hours%config.getWorkHoursPerDay();
+                int weeks = days/config.getWorkDaysPerWeek();
+                days = days%config.getWorkDaysPerWeek();
+                String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.workLog"); // NOI18N
+                String work = MessageFormat.format(format, weeks, days, hours, minutes);
+                // Removing trailing space
+                if (work.length() > 0 && work.charAt(work.length()-1) == ' ') {
+                    work = work.substring(0, work.length()-1);
+                }
+                return work;
             } catch (NumberFormatException nfex) {
                 nfex.printStackTrace();
             }
@@ -294,6 +335,12 @@ public class IssuePanel extends javax.swing.JPanel {
         updatedField = new javax.swing.JTextField();
         dueLabel = new javax.swing.JLabel();
         dueField = new javax.swing.JTextField();
+        originalEstimateLabel = new javax.swing.JLabel();
+        remainingEstimateLabel = new javax.swing.JLabel();
+        timeSpentLabel = new javax.swing.JLabel();
+        originalEstimateField = new javax.swing.JTextField();
+        remainingEstimateField = new javax.swing.JTextField();
+        timeSpentField = new javax.swing.JTextField();
 
         projectLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.projectLabel.text")); // NOI18N
 
@@ -358,6 +405,18 @@ public class IssuePanel extends javax.swing.JPanel {
         dueLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dueLabel.text")); // NOI18N
 
         dueField.setColumns(10);
+
+        originalEstimateLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.originalEstimateLabel.text")); // NOI18N
+
+        remainingEstimateLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.remainingEstimateLabel.text")); // NOI18N
+
+        timeSpentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.timeSpentLabel.text")); // NOI18N
+
+        originalEstimateField.setColumns(20);
+
+        remainingEstimateField.setColumns(20);
+
+        timeSpentField.setColumns(20);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -429,7 +488,19 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(dueLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(dueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(dueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(originalEstimateLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(originalEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(remainingEstimateLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(remainingEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(timeSpentLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(timeSpentField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(75, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -499,6 +570,18 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(dueLabel)
                     .add(dueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(originalEstimateLabel)
+                    .add(originalEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(remainingEstimateLabel)
+                    .add(remainingEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(timeSpentLabel)
+                    .add(timeSpentField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(29, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -553,10 +636,14 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane fixVersionScrollPane;
     private javax.swing.JComboBox issueTypeCombo;
     private javax.swing.JLabel issueTypeLabel;
+    private javax.swing.JTextField originalEstimateField;
+    private javax.swing.JLabel originalEstimateLabel;
     private javax.swing.JComboBox priorityCombo;
     private javax.swing.JLabel priorityLabel;
     private javax.swing.JComboBox projectCombo;
     private javax.swing.JLabel projectLabel;
+    private javax.swing.JTextField remainingEstimateField;
+    private javax.swing.JLabel remainingEstimateLabel;
     private javax.swing.JTextField reporterField;
     private javax.swing.JLabel reporterLabel;
     private javax.swing.JComboBox resolutionCombo;
@@ -565,6 +652,8 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel statusLabel;
     private javax.swing.JTextField summaryField;
     private javax.swing.JLabel summaryLabel;
+    private javax.swing.JTextField timeSpentField;
+    private javax.swing.JLabel timeSpentLabel;
     private javax.swing.JTextField updatedField;
     private javax.swing.JLabel updatedLabel;
     // End of variables declaration//GEN-END:variables
