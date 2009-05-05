@@ -43,8 +43,13 @@ package org.netbeans.modules.cnd.gizmo;
  *
  * @author mt154047
  */
-public interface GizmoServiceInfo {
-    String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder";//NOI18N
-    String GIZMO_PROJECT_EXECUTABLE = "GizmoProjectExecutable";//NOI18N
-    String GIZMO_DEMANGLE_UTILITY = "GizmoDemangleUtility";//NOI18N
+public final class GizmoServiceInfo {
+    public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder";//NOI18N
+    public static final String GIZMO_PROJECT_EXECUTABLE = "GizmoProjectExecutable";//NOI18N
+    public static final String GIZMO_DEMANGLE_UTILITY = "GizmoDemangleUtility";//NOI18N
+    public static final String PLATFORM = "gizmo.platform";//NOI18N
+
+    public static   boolean isPlatformSupported(String platform){
+        return platform != null &&  (platform.indexOf("Solaris") != -1 || platform.indexOf("Linux") != -1);//NOI18N
+    }
 }

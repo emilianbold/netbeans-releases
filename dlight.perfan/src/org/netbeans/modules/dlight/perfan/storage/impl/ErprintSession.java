@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 
@@ -55,6 +56,7 @@ public class ErprintSession {
         id = idCounter.incrementAndGet();
         String er_printCmd = sproHome + "/bin/er_print"; // NOI18N
         NativeProcessBuilder erProcessBuilder = new NativeProcessBuilder(execEnv, er_printCmd);
+        erProcessBuilder = erProcessBuilder.setWorkingDirectory(experimentDirectory);
         erProcessBuilder = erProcessBuilder.setArguments(experimentDirectory).unbufferOutput(true);
 
         npb = erProcessBuilder;
@@ -123,6 +125,15 @@ public class ErprintSession {
         final Erprint erp = restartAndLock(restart);
         try {
             return erp.getFunctionStatistic(functionName);
+        } finally {
+            erp.releaseLock();
+        }
+    }
+
+    public FunctionStatistic getFunctionStatistic(FunctionCall functionCall, boolean restart) throws IOException {
+        final Erprint erp = restartAndLock(restart);
+        try {
+            return erp.getFunctionStatistic(functionCall);
         } finally {
             erp.releaseLock();
         }
