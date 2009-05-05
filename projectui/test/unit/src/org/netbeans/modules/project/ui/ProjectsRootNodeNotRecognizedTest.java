@@ -97,7 +97,6 @@ public class ProjectsRootNodeNotRecognizedTest extends NbTestCase {
 
         Node logicalView = new ProjectsRootNode(ProjectsRootNode.PHYSICAL_VIEW);
         assertEquals("2 children", 2, logicalView.getChildren().getNodesCount());
-        Thread.sleep(500);
         assertNotNull("Still lazy project", logicalView.getChildren().getNodeAt(0).getLookup().lookup(LazyProject.class));
 
         // let project open code run
