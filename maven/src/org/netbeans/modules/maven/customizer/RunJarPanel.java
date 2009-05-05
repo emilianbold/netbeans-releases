@@ -416,7 +416,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         lblMainClass.setLabelFor(txtMainClass);
         org.openide.awt.Mnemonics.setLocalizedText(lblMainClass, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "LBL_MainClass")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnMainClass, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "BTN_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnMainClass, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "BTN_Browse_Main")); // NOI18N
 
         lblArguments.setLabelFor(txtArguments);
         org.openide.awt.Mnemonics.setLocalizedText(lblArguments, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "LBL_Arguments")); // NOI18N
@@ -424,7 +424,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         lblWorkDir.setLabelFor(txtWorkDir);
         org.openide.awt.Mnemonics.setLocalizedText(lblWorkDir, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "LBL_WorkDir")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnWorkDir, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "BTN_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnWorkDir, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "BTN_Browse_WorkingDir")); // NOI18N
         btnWorkDir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnWorkDirActionPerformed(evt);
@@ -436,7 +436,8 @@ public class RunJarPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "LBL_VMHint")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblConfiguration, "Configuration:");
+        lblConfiguration.setLabelFor(comConfiguration);
+        org.openide.awt.Mnemonics.setLocalizedText(lblConfiguration, "&Configuration:");
 
         comConfiguration.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -453,11 +454,11 @@ public class RunJarPanel extends javax.swing.JPanel {
                     .add(lblMainClass))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(txtVMOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
-                    .add(txtWorkDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
-                    .add(txtArguments, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
-                    .add(txtMainClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
-                    .add(comConfiguration, 0, 209, Short.MAX_VALUE))
+                    .add(txtVMOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .add(txtWorkDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .add(txtArguments, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .add(txtMainClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .add(comConfiguration, 0, 225, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(btnWorkDir)
@@ -495,6 +496,14 @@ public class RunJarPanel extends javax.swing.JPanel {
                 .add(lblHint)
                 .addContainerGap(139, Short.MAX_VALUE))
         );
+
+        txtMainClass.getAccessibleContext().setAccessibleDescription("Main class");
+        btnMainClass.getAccessibleContext().setAccessibleDescription("Browse main class");
+        txtArguments.getAccessibleContext().setAccessibleDescription("Arguments");
+        txtWorkDir.getAccessibleContext().setAccessibleDescription("Working directory");
+        btnWorkDir.getAccessibleContext().setAccessibleDescription("Browse working directory");
+        txtVMOptions.getAccessibleContext().setAccessibleDescription("VM options");
+        comConfiguration.getAccessibleContext().setAccessibleDescription("Configuration");
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnWorkDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnWorkDirActionPerformed
