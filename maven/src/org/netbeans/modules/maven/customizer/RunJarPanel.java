@@ -661,6 +661,9 @@ public class RunJarPanel extends javax.swing.JPanel {
     }
 
     private boolean checkDeprecatedMapping(NetbeansActionMapping map) {
+        if (map == null || map.getGoals() == null) {
+            return false; //#164323
+        }
         Iterator it = map.getGoals().iterator();
         while (it.hasNext()) {
             String goal = (String) it.next();
@@ -672,6 +675,9 @@ public class RunJarPanel extends javax.swing.JPanel {
     }
     
     private boolean checkNewMapping(NetbeansActionMapping map) {
+        if (map == null || map.getGoals() == null) {
+            return false; //#164323
+        }
         Iterator it = map.getGoals().iterator();
         while (it.hasNext()) {
             String goal = (String) it.next();
