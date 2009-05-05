@@ -157,12 +157,13 @@ public class LinkSupport {
                 reader.readFully(bytes);
                 if (!isLinkMagic(bytes)) {
                     if (isLinkMagic2(bytes)) {
-                        reader.readFully(bytes); // FF FE
-                        int length = (int)(reader.length() - 10)/2;
+                        reader.readShort(); // FF FE
+                        int length = (int)(reader.length() - 12)/2;
                         if (length < 512) {
                             StringBuilder buf = new StringBuilder();
                             while(true){
-                                char c = reader.readChar();
+                                char c = (char)reader.readByte();
+                                reader.readByte();
                                 if (c == 0) {
                                     break;
                                 }
@@ -182,6 +183,11 @@ public class LinkSupport {
                                 }
                                 if (i > 0){
                                     sourcePath = path.substring(0,i)+sourcePath;
+                                }
+                                i = sourcePath.indexOf("/usr/bin/");
+                                if (i > 0) {
+                                    sourcePath = sourcePath.substring(0,i+1) +
+                                            sourcePath.substring(i+5);
                                 }
                             }
                             return;
