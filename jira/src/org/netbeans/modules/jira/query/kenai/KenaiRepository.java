@@ -167,21 +167,20 @@ public class KenaiRepository extends JiraRepository {
         super.setTaskRepository(getDisplayName(), getUrl(), user, password, null, null);
     }
 
-    // XXX
-//    @Override
-//    public boolean authenticate(String errroMsg) {
-//        PasswordAuthentication pa = org.netbeans.modules.bugtracking.util.KenaiUtil.getPasswordAuthentication(true);
-//        if(pa == null) {
-//            return false;
-//        }
-//
-//        String user = pa.getUserName();
-//        char[] password = pa.getPassword();
-//
-//        setCredentials(user, new String(password));
-//
-//        return true;
-//    }
+    @Override
+    public boolean authenticate(String errroMsg) {
+        PasswordAuthentication pa = org.netbeans.modules.bugtracking.util.KenaiUtil.getPasswordAuthentication(true);
+        if(pa == null) {
+            return false;
+        }
+
+        String user = pa.getUserName();
+        char[] password = pa.getPassword();
+
+        setCredentials(user, new String(password));
+
+        return true;
+    }
 
     private static String getKenaiUser() {
         PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);

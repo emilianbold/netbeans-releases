@@ -322,9 +322,7 @@ public class JiraExecutor {
             }
             @Override
             protected boolean handle() {
-                // XXX
-//                boolean ret = repository.authenticate(errroMsg);
-                boolean ret = false;
+                boolean ret = repository.authenticate(errroMsg);                
                 if(!ret) {
                     notifyErrorMessage(NbBundle.getMessage(JiraExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                 }
