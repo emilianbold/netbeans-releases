@@ -47,7 +47,9 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -63,6 +65,7 @@ import org.netbeans.swing.outline.RowModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
@@ -112,7 +115,7 @@ public final class OptionsChooserPanel extends JPanel {
         final OptionsChooserPanel optionsChooserPanel = new OptionsChooserPanel();
         optionsChooserPanel.panelType = PanelType.EXPORT;
         optionsChooserPanel.setOptionsExportModel(new OptionsExportModel(sourceUserdir));
-        optionsChooserPanel.scrollPaneOptions.setViewportView(optionsChooserPanel.getOutline());
+        optionsChooserPanel.loadOptions();
         optionsChooserPanel.txtFile.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
@@ -204,6 +207,37 @@ public final class OptionsChooserPanel extends JPanel {
                 LifecycleManager.getDefault().exit();
             }
         }
+    }
+
+    /** Loading of available options for export/import moved from AWT thread
+     * and a message is shown in the meantime (see #163142). */
+    private void loadOptions() {
+        assert SwingUtilities.isEventDispatchThread() : "Should be called from AWT thread only.";  //NOI18N
+        JLabel loadingLabel = new JLabel(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.loading"));
+        loadingLabel.setHorizontalAlignment(JLabel.CENTER);
+        scrollPaneOptions.setViewportView(loadingLabel);
+        Thread loadingThread = new Thread("Export/import options loading") {  //NOI18N
+
+            @Override
+            public void run() {
+                OptionsExportModel model = getOptionsExportModel();
+                LOGGER.fine("Loading started: " + getOptionsExportModel());  //NOI18N
+                final Outline outline = getOutline();
+                LOGGER.fine("Loading finished: " + getOptionsExportModel());  //NOI18N
+                // change UI only if model not changed in between
+                if (model == getOptionsExportModel()) {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            LOGGER.fine("Changing options.");
+                            scrollPaneOptions.setViewportView(outline);
+                            dialogDescriptor.setValid(isPanelValid());
+                        }
+                    });
+                }
+            }
+        };
+        loadingThread.start();
     }
 
     /** Returns outline view for displaying options for export/import. */
@@ -362,10 +396,21 @@ public final class OptionsChooserPanel extends JPanel {
             fileChooserBuilder.setTitle(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.file.chooser.title"));
             File selectedFile = fileChooserBuilder.showOpenDialog();
             if (selectedFile != null) {
+                if (selectedFile.isDirectory() && !new File(selectedFile, "config").exists()) {  //NOI18N
+                    // #163142 - ask for confirmation when selected folder doesn't seem to be a valid userdir
+                    String message = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.invalid.userdir", selectedFile);
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                            message,
+                            NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.import.invalid.userdir.title"),
+                            NotifyDescriptor.YES_NO_OPTION);
+                    DialogDisplayer.getDefault().notify(nd);
+                    if (!NotifyDescriptor.YES_OPTION.equals(nd.getValue())) {
+                        return;
+                    }
+                }
                 txtFile.setText(selectedFile.getAbsolutePath());
                 setOptionsExportModel(new OptionsExportModel(selectedFile));
-                scrollPaneOptions.setViewportView(getOutline());
-                dialogDescriptor.setValid(isPanelValid());
+                loadOptions();
             }
         } else {
             fileChooserBuilder.setTitle(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.chooser.title"));

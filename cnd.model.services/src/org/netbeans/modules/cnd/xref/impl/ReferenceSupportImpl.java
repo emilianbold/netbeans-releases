@@ -57,12 +57,14 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -95,10 +97,10 @@ public class ReferenceSupportImpl {
                 CsmObject targetDecl = decDef[0];
                 CsmObject targetDef = decDef[1];        
                 kind = CsmReferenceKind.DIRECT_USAGE;
-                if (owner.equals(targetDecl)) {
-                    kind = CsmReferenceKind.DECLARATION;
-                } else if (owner.equals(targetDef)) {
+                if (owner.equals(targetDef)) {
                     kind = CsmReferenceKind.DEFINITION;
+                } else if (sameDeclaration(owner, targetDecl)) {
+                    kind = CsmReferenceKind.DECLARATION;
                 }
             } else {
                 kind = CsmReferenceKind.DECLARATION;
@@ -129,5 +131,26 @@ public class ReferenceSupportImpl {
     
     public <T extends CsmObject> CsmUID<T> getUID(T element) {
         return UIDs.get(element);
+    }
+
+    private boolean sameDeclaration(CsmObject checkDecl, CsmObject targetDecl) {
+        if (checkDecl.equals(targetDecl)) {
+            return true;
+        } else if (CsmKindUtilities.isQualified(checkDecl) && CsmKindUtilities.isQualified(targetDecl)) {
+            CharSequence fqnCheck = ((CsmQualifiedNamedElement)checkDecl).getQualifiedName();
+            CharSequence fqnTarget = ((CsmQualifiedNamedElement)targetDecl).getQualifiedName();
+            if (fqnCheck.equals(fqnTarget)) {
+                return true;
+            }
+            String strFqn = fqnCheck.toString().trim();
+            // we consider const and not const methods as the same
+            if (strFqn.endsWith("const")) {
+                int cutConstInd = strFqn.lastIndexOf("const");
+                assert cutConstInd >= 0;
+                fqnCheck = CharSequenceKey.create(strFqn.substring(cutConstInd));
+            }
+            return fqnCheck.equals(fqnTarget);
+        }
+        return false;
     }
 }
