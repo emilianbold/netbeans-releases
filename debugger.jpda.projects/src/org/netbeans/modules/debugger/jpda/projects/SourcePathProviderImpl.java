@@ -289,28 +289,31 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 }
                 logger.fine("SourcePathProviderImpl: all source roots = "+allSourceRoots+")");
             }
-            
-            originalSourcePath = ClassPathSupport.createClassPath (
-                allSourceRoots.toArray 
-                    (new FileObject [allSourceRoots.size()])
-            );
-            projectSourceRoots = getSourceRoots(originalSourcePath);
-
-            srcRootsToListenForArtifactsUpdates = new HashSet(allSourceRoots);
-
-            smartSteppingSourcePath = originalSourcePath;
 
             Set<String> disabledRoots = getRemoteDisabledSourceRoots();
-            if (disabledRoots != null && !disabledRoots.isEmpty()) {
-                List<FileObject> enabledSourcePath = new ArrayList<FileObject>(
-                        Arrays.asList(smartSteppingSourcePath.getRoots()));
-                for (FileObject fo : new HashSet<FileObject>(enabledSourcePath)) {
-                    if (disabledRoots.contains(getRoot(fo))) {
-                        enabledSourcePath.remove(fo);
+            
+            synchronized (this) {
+                originalSourcePath = ClassPathSupport.createClassPath (
+                    allSourceRoots.toArray
+                        (new FileObject [allSourceRoots.size()])
+                );
+                projectSourceRoots = getSourceRoots(originalSourcePath);
+
+                srcRootsToListenForArtifactsUpdates = new HashSet(allSourceRoots);
+
+                smartSteppingSourcePath = originalSourcePath;
+
+                if (disabledRoots != null && !disabledRoots.isEmpty()) {
+                    List<FileObject> enabledSourcePath = new ArrayList<FileObject>(
+                            Arrays.asList(smartSteppingSourcePath.getRoots()));
+                    for (FileObject fo : new HashSet<FileObject>(enabledSourcePath)) {
+                        if (disabledRoots.contains(getRoot(fo))) {
+                            enabledSourcePath.remove(fo);
+                        }
                     }
+                    smartSteppingSourcePath = ClassPathSupport.createClassPath(
+                            enabledSourcePath.toArray(new FileObject[0]));
                 }
-                smartSteppingSourcePath = ClassPathSupport.createClassPath(
-                        enabledSourcePath.toArray(new FileObject[0]));
             }
         }
         
@@ -473,22 +476,28 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     public String getURL (String relativePath, boolean global) {    if (verbose) System.out.println ("SPPI: getURL " + relativePath + " global " + global);
         FileObject fo;
         relativePath = normalize(relativePath);
-        if (originalSourcePath == null) {
-            fo = GlobalPathRegistry.getDefault().findResource(relativePath);
-        } else {
-            synchronized (this) {
-                fo = smartSteppingSourcePath.findResource(relativePath);
-                                                                if (verbose) System.out.println ("SPPI:   fo " + fo);
-                if (fo == null && global) {
-                    fo = originalSourcePath.findResource(relativePath);
-                                                                    if (verbose) System.out.println ("SPPI:   fo " + fo);
-                }
-                if (fo == null && global) {
-                    fo = GlobalPathRegistry.getDefault().findResource(relativePath);
-                                                                    if (verbose) System.out.println ("SPPI:   fo " + fo);
-                }
+        ClassPath ss = null;
+        ClassPath os = null;
+        synchronized (this) {
+            if (originalSourcePath != null) {
+                ss = smartSteppingSourcePath;
+                os = originalSourcePath;
             }
         }
+        if (ss != null) {
+            fo = ss.findResource(relativePath);
+            if (fo == null && global) {
+                fo = os.findResource(relativePath);
+            }
+            if (fo == null && global) {
+                fo = GlobalPathRegistry.getDefault().findResource(relativePath);
+            }
+        } else {
+            fo = GlobalPathRegistry.getDefault().findResource(relativePath);
+        }
+        
+        if (verbose) System.out.println ("SPPI:   fo " + fo);
+
         if (fo == null) return null;
         try {
             return fo.getURL ().toString ();
@@ -942,6 +951,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             }
             if (addedRoots.size() > 0) {
                 synchronized (SourcePathProviderImpl.this) {
+                    if (originalSourcePath == null) return ;
                     List<FileObject> sourcePaths = new ArrayList<FileObject>(
                             Arrays.asList(originalSourcePath.getRoots()));
                     sourcePaths.addAll(addedRoots);
@@ -969,6 +979,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             }
             if (removedRoots.size() > 0) {
                 synchronized (SourcePathProviderImpl.this) {
+                    if (originalSourcePath == null) return ;
                     List<FileObject> sourcePaths = new ArrayList<FileObject>(
                             Arrays.asList(originalSourcePath.getRoots()));
                     sourcePaths.removeAll(removedRoots);
@@ -993,6 +1004,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 getInstalledPlatforms ();
             boolean changed = false;
             synchronized (SourcePathProviderImpl.this) {
+                if (originalSourcePath == null) return ;
                 List<FileObject> sourcePaths = new ArrayList<FileObject>(
                         Arrays.asList(originalSourcePath.getRoots()));
                 for(JavaPlatform jp : platforms) {

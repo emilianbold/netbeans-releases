@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.hudson.ui.nodes;
 
+import java.beans.PropertyVetoException;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -56,6 +57,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -135,10 +137,16 @@ public class HudsonRootNode extends AbstractNode {
                         LOG.fine("ServicesTab does not contain " + HUDSON_NODE_NAME);
                         return;
                     }
+                    Node selected;
                     try {
-                        Node selected = NodeOp.findPath(hudson, path);
+                        selected = NodeOp.findPath(hudson, path);
+                    } catch (NodeNotFoundException x) {
+                        LOG.log(Level.FINE, "Could not find subnode", x);
+                        selected = x.getClosestNode();
+                    }
+                    try {
                         mgr.setSelectedNodes(new Node[] {selected});
-                    } catch (Exception x) {
+                    } catch (PropertyVetoException x) {
                         LOG.log(Level.FINE, "Could not select path", x);
                     }
                     return;
