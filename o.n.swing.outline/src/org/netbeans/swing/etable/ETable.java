@@ -778,7 +778,6 @@ public class ETable extends JTable {
         unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Event.SHIFT_MASK));
 
         InputMap imp = getInputMap(WHEN_FOCUSED);
-        InputMap imp2 = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap am = getActionMap();
         
         //Issue 37919, reinstate support for up/down cycle focus transfer.
@@ -848,7 +847,7 @@ public class ETable extends JTable {
 	boolean retValue = super.processKeyBinding(ks, e, condition, pressed);
         return retValue;
     }
-    
+
     /**
      * Make the column sorted. Value of columnIndex is in the model coordinates.
      * <strong>Be carefull</strong> with the columnIndes parameter: again, it
