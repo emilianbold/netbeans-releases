@@ -73,6 +73,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.impl.projects.J2eeModuleProviderAccessor;
 
 /** This object must be implemented by J2EE module support and an instance 
  * added into project lookup.
@@ -82,12 +83,23 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 public abstract class J2eeModuleProvider {
     
     private static final Logger LOGGER = Logger.getLogger(J2eeModuleProvider.class.getName());
-    
+
+    static {
+        J2eeModuleProviderAccessor.setDefault(new J2eeModuleProviderAccessor() {
+
+            @Override
+            public ConfigSupportImpl getConfigSupportImpl(J2eeModuleProvider impl) {
+                return impl.getConfigSupportImpl();
+            }
+        });
+    }
+
     private ConfigSupportImpl configSupportImpl;
-    final List listeners = new ArrayList();
+    private final List listeners = new ArrayList();
     private ConfigFilesListener configFilesListener = null;
     
     public J2eeModuleProvider () {
+        super();
     }
     
     public abstract J2eeModule getJ2eeModule ();

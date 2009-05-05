@@ -248,22 +248,17 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                     extractJavaScriptFromHtml(snapshot, ts, state, embeddings);
                 }
                 if (state.in_inlined_javascript || state.in_javascript) {
-                    int sourceStart = tokenSequence.offset();
-
                     //find end of the php code
-                    while (tokenSequence.moveNext()) {
-                        token = tokenSequence.token();
-                        if (token.id().name().equals(T_INLINE_HTML)) {
-                            //we are out of php code
-                            tokenSequence.movePrevious();
-                            int sourceEnd = sourceStart + token.length();
+                    boolean wasInPhp = false;
+                    while (tokenSequence.moveNext() && !tokenSequence.token().id().name().equals(T_INLINE_HTML)) {
+                        wasInPhp = true;
+                    }
 
-                            embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
-//                            embeddings.add(snapshot.create("/*", JsTokenId.JAVASCRIPT_MIME_TYPE));
-//                            embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, JsTokenId.JAVASCRIPT_MIME_TYPE));
-//                            embeddings.add(snapshot.create("*/", JsTokenId.JAVASCRIPT_MIME_TYPE));
-                            break;
-                        }
+                    //we are out of php code, lets move back to the previous token
+                    tokenSequence.movePrevious();
+
+                    if (wasInPhp) {
+                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
                     }
                 }
             }

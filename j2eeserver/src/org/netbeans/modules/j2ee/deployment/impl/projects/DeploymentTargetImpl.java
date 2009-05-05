@@ -61,6 +61,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /** 
@@ -216,12 +217,8 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         return urlString;
     }
     
-    private ConfigSupportImpl getConfigSupportImpl () {
-        return (ConfigSupportImpl) moduleProvider.getConfigSupport ();
-    }
-    
     public File getConfigurationFile() {
-        return getConfigSupportImpl ().getConfigurationFile ();
+        return J2eeModuleProviderAccessor.getDefault().getConfigSupportImpl(moduleProvider).getConfigurationFile();
     }
     
     public ServerString getServer() {
@@ -250,12 +247,15 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     public void setTargetModules(TargetModule[] targetModules) {
         this.targetModules = targetModules.clone();
         for (int i=0; i< targetModules.length; i++) {
-            targetModules[i].save(getTargetModuleFileName());
+            String fname = getTargetModuleFileName();
+            if (fname != null) {
+                targetModules[i].save(fname);
+            }
         }
     }
     
     public ModuleConfigurationProvider getModuleConfigurationProvider() {
-        return getConfigSupportImpl ();
+        return J2eeModuleProviderAccessor.getDefault().getConfigSupportImpl(moduleProvider);
     }
     
     public J2eeModuleProvider.ConfigSupport getConfigSupport () {
@@ -263,25 +263,32 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     }
 
     private String getTargetModuleFileName() {
-        String fileName = getDeploymentName();
-        if (fileName != null)
-            return fileName;
-        
-        File f = null;
+        ConfigSupportImpl config = J2eeModuleProviderAccessor.getDefault().getConfigSupportImpl(moduleProvider);
+        FileObject fo = config.getProjectDirectory();
+        if (fo != null) {
+            File file = FileUtil.toFile(fo);
+            if (file != null) {
+                // non-zero (but very low) probability of collision in names
+                return TargetModule.shortNameFromPath(file.getAbsolutePath());
+            }
+        }
+
         try {
             if (getModule().getContentDirectory() != null) {
-                f = FileUtil.toFile(getModule().getContentDirectory());
+                File file = FileUtil.toFile(getModule().getContentDirectory());
+                if (file != null) {
+                    return TargetModule.shortNameFromPath(file.getAbsolutePath());
+                }
             }
         } catch (IOException ioe) {
             Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
-        if (f == null) {
-            fileName = getConfigSupportImpl().getDeploymentName();
-        } else {
-            String pathName = f.getAbsolutePath();
-            fileName = TargetModule.shortNameFromPath(pathName);
+
+        String name = moduleProvider.getDeploymentName();
+        if (name != null) {
+            return name;
         }
-        return fileName;
+        return J2eeModuleProviderAccessor.getDefault().getConfigSupportImpl(moduleProvider).getDeploymentName();
     }
     
     public String getDeploymentName() {

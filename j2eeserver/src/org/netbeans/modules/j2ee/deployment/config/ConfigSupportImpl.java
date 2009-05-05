@@ -172,6 +172,14 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
     
     public String getDeploymentName() {
+        FileObject dir = getProjectDirectory();
+        if (dir != null) {
+            return dir.getNameExt();
+        }
+        return null;
+    }
+
+    public final FileObject getProjectDirectory() {
         try {
             FileObject fo = getProvider().getJ2eeModule().getContentDirectory();
             if (fo == null) {
@@ -181,18 +189,20 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                     fo = FileUtil.toFileObject(file);
                 }
             }
-            if (fo == null)
+            if (fo == null) {
                 return null;
+            }
             Project owner = FileOwnerQuery.getOwner(fo);
-            if (owner != null)
-                return owner.getProjectDirectory().getNameExt();
-            
+            if (owner != null) {
+                return owner.getProjectDirectory();
+            }
+
         } catch (IOException ioe) {
             Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         return null;
     }
-    
+
     /** dispose all created deployment configurations */
     public void dispose() {
         if (server != null) {

@@ -38,14 +38,14 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
@@ -55,29 +55,48 @@ import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.core.UiUtils;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.PHPCompletionItem;
+import org.netbeans.modules.php.editor.PredefinedSymbols;
+import org.netbeans.modules.php.editor.index.IndexedClass;
+import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author Radek Matous
  */
 public class IntroduceHint implements AstRule {
 
     public String getId() {
-        return "introduce.fix"; //NOI18N
+        return "Introduce.Hint";//NOI18N
     }
 
     public String getDescription() {
@@ -85,20 +104,15 @@ public class IntroduceHint implements AstRule {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintDisplayName");//NOI18N
-    }
-
-    public boolean showInTasklist() {
-        return false;
+        return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintDispName");//NOI18N
     }
 
     public JComponent getCustomizer(Preferences node) {
         return null;
     }
 
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.CURRENT_LINE_WARNING;
+    public boolean showInTasklist() {
+        return false;
     }
 
     void check(RuleContext context, List<Hint> hints) {
@@ -117,7 +131,8 @@ public class IntroduceHint implements AstRule {
             Exceptions.printStackTrace(ex);
         }
         if (lineBegin != -1 && lineEnd != -1) {
-            IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(doc, lineBegin, lineEnd);
+            Model model = ModelFactory.getModel(context.parserResult);
+            IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(model, doc, caretOffset, lineBegin, lineEnd);
             phpParseResult.getProgram().accept(introduceFixVisitor);
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
             if (variableFix != null) {
@@ -141,67 +156,465 @@ public class IntroduceHint implements AstRule {
         return true;
     }
 
-    private class IntroduceFixVisitor extends DefaultVisitor {
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.CURRENT_LINE_WARNING;
+    }
+
+    private class IntroduceFixVisitor extends DefaultTreePathVisitor {
 
         private int lineBegin;
         private int lineEnd;
         private BaseDocument doc;
         private IntroduceFix fix;
-        private List<Variable> variables;
+        private Model model;
+        private int caretOffset;
 
-        IntroduceFixVisitor(BaseDocument doc, int lineBegin, int lineEnd) {
+        IntroduceFixVisitor(Model model, BaseDocument doc, int caretOffset, int lineBegin, int lineEnd) {
             this.doc = doc;
             this.lineBegin = lineBegin;
             this.lineEnd = lineEnd;
-            this.variables = new ArrayList<Variable>();
+            this.model = model;
+            this.caretOffset = caretOffset;
         }
 
         @Override
         public void scan(ASTNode node) {
-            if (node != null && (isBefore(node.getStartOffset(), lineEnd) || fix != null)) {
+            if (node != null && (isBefore(node.getStartOffset(), lineEnd))) {
                 super.scan(node);
             }
         }
 
         @Override
-        public void visit(ExpressionStatement node) {
-            if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
-                Expression expression = node.getExpression();
-                if (expression instanceof ClassInstanceCreation) {
-                    fix = new InstanceCreationVariableFix(doc, (ClassInstanceCreation) expression);
-                } else if (expression instanceof MethodInvocation) {
-                    fix = new MethodInvocationVariableFix(doc, (MethodInvocation) expression);
-                } else if (expression instanceof FunctionInvocation) {
-                    fix = new FunctionInvocationVariableFix(doc, (FunctionInvocation) expression);
-                } else if (expression instanceof StaticMethodInvocation) {
-                    fix = new StaticMethodInvocationVariableFix(doc, (StaticMethodInvocation) expression);
+        public void visit(ClassInstanceCreation instanceCreation) {
+            if (isInside(instanceCreation.getStartOffset(), lineBegin, lineEnd)) {
+                String clzName = CodeUtils.extractClassName(instanceCreation.getClassName());
+                IndexedClass clz = clzName != null ? getIndexedClass(clzName) : null;
+                if (clz == null && clzName != null) {
+                    fix = IntroduceClassFix.getInstance(clzName, model, instanceCreation);
                 }
             }
-            super.visit(node);
+            super.visit(instanceCreation);
         }
 
         @Override
-        public void visit(Variable node) {
-            variables.add(node);
-            super.visit(node);
+        public void visit(MethodInvocation methodInvocation) {
+            if (isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
+                String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
+                if (methName != null) {
+                    Collection<? extends TypeScope> allTypes = ModelUtils.typeOfVariableBase(model, methodInvocation);
+                    if (allTypes.size() == 1) {
+                        TypeScope type = ModelUtils.getFirst(allTypes);
+                        PHPIndex index = model.getIndexScope().getIndex();
+                        Collection<IndexedFunction> allMethods = index.getAllMethods(null, type.getName(),
+                                methName, Kind.EXACT, PHPIndex.ANY_ATTR);
+                        if (allMethods.isEmpty()) {
+                            FileObject fileObject = type.getFileObject();
+                            BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
+                            if (document != null && fileObject.canWrite()) {
+                                fix = new IntroduceMethodFix(document, methodInvocation, type);
+                            }
+                        }
+                    }
+                }
+            }
+            super.visit(methodInvocation);
+        }
+
+        @Override
+        public void visit(StaticMethodInvocation methodInvocation) {
+            if (isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
+                String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
+                String clzName = methodInvocation.getClassName().getName();
+                IndexedClass clz = getIndexedClass(clzName);
+                if (clz != null && methName != null) {
+                    PHPIndex index = model.getIndexScope().getIndex();
+                    Collection<IndexedFunction> allMethods = index.getAllMethods(null, clz.getName(),
+                            methName, Kind.EXACT, PHPIndex.ANY_ATTR);
+                    if (allMethods.isEmpty()) {
+                        FileObject fileObject = clz.getFileObject();
+                        BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
+                        if (document != null && fileObject.canWrite()) {
+                            fix = new IntroduceStaticMethodFix(document, methodInvocation, clz);
+                        }
+                    }
+                }
+            }
+            super.visit(methodInvocation);
+        }
+
+        @Override
+        public void visit(FieldAccess fieldAccess) {
+            if (isInside(fieldAccess.getStartOffset(), lineBegin, lineEnd)) {
+                String fieldName = CodeUtils.extractVariableName(fieldAccess.getField());
+                if (fieldName != null) {
+                    Collection<? extends TypeScope> allTypes = ModelUtils.typeOfVariableBase(model, fieldAccess);
+                    if (allTypes.size() == 1) {
+                        TypeScope type = ModelUtils.getFirst(allTypes);
+                        PHPIndex index = model.getIndexScope().getIndex();
+                        Collection<IndexedConstant> allFields = index.getAllFields(null, type.getName(), fieldName, Kind.EXACT, PHPIndex.ANY_ATTR);
+                        if (allFields.isEmpty()) {
+                            FileObject fileObject = type.getFileObject();
+                            BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
+                            if (document != null && fileObject.canWrite()) {
+                                fix = new IntroduceFieldFix(document, fieldAccess, type);
+                            }
+                        }
+
+                    }
+                }
+            }
+            super.visit(fieldAccess);
+        }
+
+        @Override
+        public void visit(StaticFieldAccess staticFieldAccess) {
+            if (isInside(staticFieldAccess.getStartOffset(), lineBegin, lineEnd)) {
+                final Variable field = staticFieldAccess.getField();
+                String fieldName = CodeUtils.extractVariableName(field);
+                String clzName = staticFieldAccess.getClassName().getName();
+                IndexedClass clz = getIndexedClass(clzName);
+                if (clz != null && fieldName != null) {
+                    if (fieldName.startsWith("$")) {//NOI18N
+                        fieldName = fieldName.substring(1);
+                    }
+                    PHPIndex index = model.getIndexScope().getIndex();
+                    Collection<IndexedConstant> allConstants = index.getAllFields(null, clz.getName(), fieldName, Kind.EXACT, Modifier.STATIC);
+                    if (allConstants.isEmpty()) {
+                        FileObject fileObject = clz.getFileObject();
+                        BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
+                        if (document != null && fileObject.canWrite()) {
+                            fix = new IntroduceStaticFieldFix(document, staticFieldAccess, clz);
+                        }
+                    }
+                }
+            }
+            super.visit(staticFieldAccess);
+        }
+
+        @Override
+        public void visit(StaticConstantAccess staticConstantAccess) {
+            if (isInside(staticConstantAccess.getStartOffset(), lineBegin, lineEnd)) {
+                String constName = staticConstantAccess.getConstant().getName();
+                String clzName = staticConstantAccess.getClassName().getName();
+                IndexedClass clz = getIndexedClass(clzName);
+                if (clz != null && constName != null) {
+                    PHPIndex index = model.getIndexScope().getIndex();
+                    Collection<IndexedConstant> allConstants = index.getAllClassConstants(null, clz.getName(), constName, Kind.EXACT);
+                    if (allConstants.isEmpty()) {
+                        FileObject fileObject = clz.getFileObject();
+                        BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
+                        if (document != null && fileObject.canWrite()) {
+                            fix = new IntroduceClassConstantFix(document, staticConstantAccess, clz);
+                        }
+                    }
+                }
+            }
+
+            super.visit(staticConstantAccess);
         }
 
         /**
          * @return or null
          */
         public IntroduceFix getIntroduceFix() {
-            if (fix != null) {
-                fix.setVariables(variables);
-            }
             return fix;
+        }
+
+        private IndexedClass getIndexedClass(String name) {
+            IndexedClass retval = null;
+            PHPIndex index = model.getIndexScope().getIndex();
+            Collection<IndexedClass> classes = Collections.emptyList();
+            if ("self".equals(name) || "parent".equals(name)) {
+                //NOI18N
+                List<ASTNode> path = getPath();
+                for (ASTNode aSTNode : path) {
+                    if (aSTNode instanceof ClassDeclaration) {
+                        classes = index.getClasses(null, CodeUtils.extractClassName((ClassDeclaration) aSTNode), Kind.EXACT);
+                        break;
+                    }
+                }
+            } else {
+                classes = index.getClasses(null, name, Kind.EXACT);
+            }
+            if (classes.size() == 1) {
+                retval = classes.iterator().next();
+                if ("parent".equals(name)) {
+                    String superClassName = retval.getSuperClass();
+                    classes = index.getClasses(null, superClassName, Kind.EXACT);
+                    retval = (classes.size() == 1) ? classes.iterator().next() : null;
+                }
+            }
+            return retval;
         }
     }
 
-    public abstract class IntroduceFix implements HintFix {
+    private static class IntroduceClassFix extends IntroduceFix {
+
+        private Model model;
+        private String clsName;
+        private FileObject folder;
+        private FileObject template;
+
+        static IntroduceClassFix getInstance(String className, Model model, ClassInstanceCreation instanceCreation) {
+            FileObject currentFile = model.getFileScope().getFileObject();
+            FileObject folder = currentFile.getParent();
+            String templatePath = "Templates/Scripting/PHPClass";//NOI18N
+            FileObject template = FileUtil.getConfigFile(templatePath);
+            return (template != null && folder != null && folder.canWrite()) ?
+                new IntroduceClassFix(className, template, folder, model, instanceCreation) : null;
+        }
+
+        IntroduceClassFix(String className, FileObject template, FileObject folder,
+                Model model, ClassInstanceCreation instanceCreation) {
+            super(null, instanceCreation);
+            this.model = model;
+            this.clsName = className;
+            this.template = template;
+            this.folder = folder;
+        }
+
+        public void implement() throws Exception {
+            final DataFolder dataFolder = DataFolder.findFolder(folder);
+            final DataObject configDataObject = DataObject.find(template);
+            final FileObject[] clsFo = new FileObject[1];
+            FileUtil.runAtomicAction(new Runnable() {
+
+                public void run() {
+                    try {
+                        DataObject clsDataObject = configDataObject.createFromTemplate(dataFolder, clsName);
+                        clsFo[0] = clsDataObject.getPrimaryFile();
+                        FileObject fo = clsFo[0];
+                        FileLock lock = fo.lock();
+                        try {
+                            fo.rename(lock, fo.getName(), "php"); //NOI18N
+                        } finally {
+                            lock.releaseLock();
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+            if (clsFo[0] != null) {
+                UiUtils.open(clsFo[0], 0);
+            }
+        }
+
+        @Override
+        public String getDescription() {
+            String fileName = FileUtil.getFileDisplayName(folder);
+            int length = fileName.length();
+            if (length > 30) {
+                fileName = fileName.substring(length - 30);
+                final int indexOf = fileName.indexOf("/");
+                if (indexOf != -1) {//NOI18N
+                    fileName = fileName.substring(indexOf);
+                }
+                fileName = String.format("...%s/%s.php", fileName, clsName);//NOI18N
+            }
+            return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintClassDesc",
+                    clsName, fileName);//NOI18N
+        }
+    }
+
+    private static class IntroduceMethodFix extends IntroduceFix {
+
+        private TypeScope type;
+        private MethodDeclarationItem item;
+
+        public IntroduceMethodFix(BaseDocument doc, MethodInvocation node, TypeScope type) {
+            super(doc, node);
+            this.type = type;
+            this.item = createMethodDeclarationItem(node);
+        }
+
+        public void implement() throws Exception {
+            int templateOffset = getOffset();
+            EditList edits = new EditList(doc);
+            edits.replace(templateOffset, 0, "\n" + item.getCustomInsertTemplate(), true, 0);//NOI18N
+            edits.apply();
+            templateOffset = Utilities.getRowEnd(doc, templateOffset + 1);
+            UiUtils.open(type.getFileObject(), Utilities.getRowEnd(doc, templateOffset + 1) - 1);
+        }
+
+        @Override
+        public String getDescription() {
+            String clsName = type.getName();
+            String fileName = type.getFileObject().getNameExt();
+            return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintMethodDesc",
+                    item.getFunction().getFunctionSignature(), clsName, fileName);//NOI18N
+
+        }
+
+        static MethodDeclarationItem createMethodDeclarationItem(MethodInvocation node) {
+            return new MethodDeclarationItem((MethodInvocation) node, 0);
+        }
+
+        int getOffset() throws BadLocationException {
+            return Utilities.getRowEnd(doc, type.getOffset());
+        }
+    }
+
+    private static class IntroduceStaticMethodFix extends IntroduceFix {
+
+        private IndexedClass clz;
+        private MethodDeclarationItem item;
+
+        public IntroduceStaticMethodFix(BaseDocument doc, StaticMethodInvocation node, IndexedClass clz) {
+            super(doc, node);
+            this.clz = clz;
+            this.item = createMethodDeclarationItem(node);
+        }
+
+        public void implement() throws Exception {
+            int templateOffset = getOffset();
+            EditList edits = new EditList(doc);
+            edits.replace(templateOffset, 0, "\n" + item.getCustomInsertTemplate(), true, 0);//NOI18N
+            edits.apply();
+            templateOffset = Utilities.getRowEnd(doc, templateOffset + 1);
+            UiUtils.open(clz.getFileObject(), Utilities.getRowEnd(doc, templateOffset + 1) - 1);
+        }
+
+        @Override
+        public String getDescription() {
+            String clsName = clz.getName();
+            String fileName = clz.getFileObject().getNameExt();
+            return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintStaticMethodDesc",
+                    item.getFunction().getFunctionSignature(), clsName, fileName);//NOI18N
+        }
+
+        static MethodDeclarationItem createMethodDeclarationItem(StaticMethodInvocation node) {
+            return new MethodDeclarationItem(node, Modifier.STATIC);
+        }
+
+        int getOffset() throws BadLocationException {
+            return Utilities.getRowEnd(doc, clz.getOffset());
+        }
+    }
+
+    private static class IntroduceFieldFix extends IntroduceFix {
+
+        private TypeScope type;
+        private String templ;
+        private String fieldName;
+
+        public IntroduceFieldFix(BaseDocument doc, FieldAccess node, TypeScope type) {
+            super(doc, node);
+            this.type = type;
+            this.templ = createTemplate();//NOI18N
+        }
+
+        public void implement() throws Exception {
+            int templateOffset = getOffset();
+            EditList edits = new EditList(doc);
+            edits.replace(templateOffset, 0, "\n" + templ, true, 0);//NOI18N
+            edits.apply();
+            templateOffset = Utilities.getRowEnd(doc, templateOffset + 1) - 2;
+            UiUtils.open(type.getFileObject(), templateOffset);
+        }
+
+        @Override
+        public String getDescription() {
+            String clsName = type.getName();
+            String fileName = type.getFileObject().getNameExt();
+            return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintFieldDesc",
+                    templ, clsName, fileName);//NOI18N
+        }
+
+        int getOffset() throws BadLocationException {
+            return Utilities.getRowEnd(doc, type.getOffset());
+        }
+
+        private String createTemplate() {
+            Variable fieldVar = ((FieldAccess) node).getField();
+            this.fieldName = CodeUtils.extractVariableName(fieldVar);
+            if (!fieldVar.isDollared()) {
+                this.fieldName = "$" + this.fieldName;//NOI18N
+            }
+            return String.format("public %s = \"\";", fieldName);
+        }
+    }
+
+    private static class IntroduceStaticFieldFix extends IntroduceFix {
+
+        private IndexedClass clz;
+        private String templ;
+        private String fieldName;
+
+        public IntroduceStaticFieldFix(BaseDocument doc, StaticFieldAccess node, IndexedClass clz) {
+            super(doc, node);
+            this.clz = clz;
+            this.templ = createTemplate();
+        }
+
+        public void implement() throws Exception {
+            int templateOffset = getOffset();
+            EditList edits = new EditList(doc);
+            edits.replace(templateOffset, 0, "\n" + templ, true, 0);//NOI18N
+            edits.apply();
+            templateOffset = Utilities.getRowEnd(doc, templateOffset + 1) - 2;
+            UiUtils.open(clz.getFileObject(), templateOffset);
+        }
+
+        @Override
+        public String getDescription() {
+            String clsName = clz.getName();
+            String fileName = clz.getFileObject().getNameExt();
+            return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintStaticFieldDesc",
+                    fieldName, clsName, fileName);//NOI18N
+
+        }
+
+        int getOffset() throws BadLocationException {
+            return Utilities.getRowEnd(doc, clz.getOffset());
+        }
+
+        private String createTemplate() {
+            Variable fieldVar = ((StaticFieldAccess) node).getField();
+            fieldName = CodeUtils.extractVariableName(fieldVar);
+            if (!fieldVar.isDollared()) {
+                fieldName = "$" + fieldName;//NOI18N
+            }
+            return String.format("static %s = \"\";", fieldName);
+        }
+    }
+
+    private static class IntroduceClassConstantFix extends IntroduceFix {
+
+        private IndexedClass clz;
+        private String templ;
+        private String constantName;
+
+        public IntroduceClassConstantFix(BaseDocument doc, StaticConstantAccess node, IndexedClass clz) {
+            super(doc, node);
+            this.clz = clz;
+            this.constantName = ((StaticConstantAccess) node).getConstant().getName();
+            this.templ = String.format("const %s = \"\";", constantName);
+        }
+
+        public void implement() throws Exception {
+            int templateOffset = Utilities.getRowEnd(doc, clz.getOffset());
+            EditList edits = new EditList(doc);
+            edits.replace(templateOffset, 0, "\n" + templ, true, 0);//NOI18N
+            edits.apply();
+            templateOffset = Utilities.getRowEnd(doc, templateOffset + 1) - 2;
+            UiUtils.open(clz.getFileObject(), templateOffset);
+        }
+
+        @Override
+        public String getDescription() {
+            String clsName = clz.getName();
+            String fileName = clz.getFileObject().getNameExt();
+            return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintClassConstDesc",
+                    constantName, clsName, fileName);//NOI18N
+        }
+    }
+
+    abstract static class IntroduceFix implements HintFix {
 
         BaseDocument doc;
         ASTNode node;
-        List<Variable> variables;
 
         public IntroduceFix(BaseDocument doc, ASTNode node) {
             this.doc = doc;
@@ -219,134 +632,6 @@ public class IntroduceHint implements AstRule {
         public boolean isSafe() {
             return true;
         }
-
-        public void setVariables(List<Variable> variables) {
-            this.variables = variables;
-        }
-
-        public String getDescription() {
-            return IntroduceHint.this.getDescription();
-        }
-
-        public void implement() throws Exception {
-            int textOffset = getTextOffset();
-            String variableName = getVariableName();
-            EditList edits = new EditList(doc);
-            edits.replace(textOffset, 0, String.format("$%s = ", variableName), true, 0);//NOI18N
-            edits.apply();
-            JTextComponent target = GsfUtilities.getOpenPane();
-            if (target != null) {
-                int selectStart = textOffset + 1;//after $
-                int selectEnd = selectStart + variableName.length();
-                target.select(selectStart, selectEnd);
-            }
-        }
-
-        protected int getTextOffset() {
-            return node.getStartOffset();
-        }
-
-        abstract String getVariableName();
-
-        String adjustName(String name) {
-            if (name == null) {
-                return null;
-            }
-
-            String shortName = null;
-
-            if (name.startsWith("get") && name.length() > 3) {
-                shortName = name.substring(3);
-            }
-
-            if (name.startsWith("is") && name.length() > 2) {
-                shortName = name.substring(2);
-            }
-
-            if (shortName != null) {
-                return firstToLower(shortName);
-            }
-
-            return name;
-        }
-
-        String getVariableName(String guessName) {
-            guessName = adjustName(firstToLower(guessName));
-            String proposedName = guessName;
-            int incr = -1;
-            boolean cont = true;
-            while (cont) {
-                if (incr != -1) {
-                    proposedName = String.format("%s%d", guessName, incr); //NOI18N
-                }
-                cont = false;
-                for (Variable variable : variables) {
-                    String varName = CodeUtils.extractVariableName(variable);
-                    if (varName != null) {
-                        if (variable.isDollared()) {
-                            varName = varName.substring(1);
-                            if (proposedName.equals(varName)) {
-                                incr++;
-                                cont = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            return proposedName;
-        }
-    }
-
-    private class InstanceCreationVariableFix extends IntroduceFix {
-
-        InstanceCreationVariableFix(BaseDocument doc, ClassInstanceCreation instanceCreation) {
-            super(doc, instanceCreation);
-        }
-
-        protected String getVariableName() {
-            ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
-            String guessName = CodeUtils.extractClassName(instanceCreation.getClassName());
-            return getVariableName(guessName);
-        }
-    }
-
-    private class StaticMethodInvocationVariableFix extends IntroduceFix {
-        StaticMethodInvocationVariableFix(BaseDocument doc, StaticMethodInvocation methodInvocation) {
-            super(doc, methodInvocation);
-        }
-
-        protected String getVariableName() {
-            StaticMethodInvocation methodInvocation = (StaticMethodInvocation) node;
-            String guessName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
-            return getVariableName(guessName);
-        }
-    }
-
-    private class MethodInvocationVariableFix extends IntroduceFix {
-
-        MethodInvocationVariableFix(BaseDocument doc, MethodInvocation methodInvocation) {
-            super(doc, methodInvocation);
-        }
-
-        protected String getVariableName() {
-            MethodInvocation methodInvocation = (MethodInvocation) node;
-            String guessName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
-            return getVariableName(guessName);
-        }
-    }
-
-    private class FunctionInvocationVariableFix extends IntroduceFix {
-
-        FunctionInvocationVariableFix(BaseDocument doc, FunctionInvocation functionInvocation) {
-            super(doc, functionInvocation);
-        }
-
-        protected String getVariableName() {
-            FunctionInvocation functionInvocation = (FunctionInvocation) node;
-            String guessName = CodeUtils.extractFunctionName(functionInvocation);
-            return getVariableName(guessName);
-        }
     }
 
     private static boolean isInside(int carret, int left, int right) {
@@ -357,16 +642,40 @@ public class IntroduceHint implements AstRule {
         return carret <= margin;
     }
 
-    private static String firstToLower(String name) {
-        if (name.length() == 0) {
-            return null;
+    private static String getParameters(final List<Expression> parameters) {
+        StringBuilder paramNames = new StringBuilder();
+        for (int i = 0; i < parameters.size(); i++) {
+            Expression expression = parameters.get(i);
+            String varName = null;
+            if (expression instanceof Variable) {
+                varName = CodeUtils.extractVariableName((Variable) expression);
+            }
+            if (varName == null) {
+                varName = String.format("$param%d", i);//NOI18N
+            }
+            if (i > 0) {
+                paramNames.append(", ");
+            }
+            paramNames.append(varName);
+        }
+        return paramNames.toString();
+    }
+
+    private static class MethodDeclarationItem extends PHPCompletionItem.FunctionDeclarationItem {
+
+        MethodDeclarationItem(MethodInvocation methodInvocation, int flags) {
+            super(PredefinedSymbols.createMagicFunction(CodeUtils.extractFunctionName(methodInvocation.getMethod()),
+                    getParameters(methodInvocation.getMethod().getParameters()), 0), null, flags, false);
         }
 
-        String cand = Character.toLowerCase(name.charAt(0)) + name.substring(1);
+        MethodDeclarationItem(StaticMethodInvocation methodInvocation, int flags) {
+            super(PredefinedSymbols.createMagicFunction(CodeUtils.extractFunctionName(methodInvocation.getMethod()),
+                    getParameters(methodInvocation.getMethod().getParameters()), flags), null, 0, false);
+        }
 
-        /*if (isKeyword(cand)) {
-        cand = "a" + name;
-        }*/
-        return cand;
+        @Override
+        protected String getFunctionBodyForTemplate() {
+            return ";\n";//NOI18N
+        }
     }
 }
