@@ -304,13 +304,22 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         boolean existingPathsChanged = false;
+        boolean containsRelevantChanges = false;
         for(PathRegistryEvent.Change c : event.getChanges()) {
+            if (c.getPathKind() == PathKind.UNKNOWN_SOURCE) {
+                continue;
+            }
+
+            containsRelevantChanges = true;
             if (c.getEventKind() == EventKind.PATHS_CHANGED || c.getEventKind() == EventKind.INCLUDES_CHANGED) {
                 existingPathsChanged = true;
                 break;
             }
         }
-        scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries, !existingPathsChanged), false);
+
+        if (containsRelevantChanges) {
+            scheduleWork(new RootsWork(scannedRoots2Dependencies, scannedBinaries, !existingPathsChanged), false);
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -662,6 +671,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         }
                     }
                 }, false);
+
+                if (work instanceof RootsWork) {
+                    // if the work is the initial RootsWork it's superseeded
+                    // by the RootsWork we've just scheduled and so we can quit now.
+                    return;
+                }
             }
         }
 
@@ -1987,6 +2002,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         @Override
         public Map<URL, List<URL>> getRootDependencies() {
             return new HashMap<URL, List<URL>>(RepositoryUpdater.this.scannedRoots2Dependencies);
+        }
+
+        @Override
+        public int getFileLocksDelay() {
+            return FILE_LOCKS_DELAY;
         }
 
     } // End of Controller class
