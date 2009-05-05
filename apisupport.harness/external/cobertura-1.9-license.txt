@@ -1,8 +1,8 @@
 Name: Cobertura
 Version: 1.9
 Description: Library for measuring and reporting code coverage of tests.
-License: Mostly GPL 2.0/Ant Tasks are ASL 1.1 (see http://cobertura.sourceforge.net/license.html)
-OSR: No idea what to put here, or even what an OSR is
+License: cobertura
+OSR: 10710
 Origin: http://prdownloads.sourceforge.net/cobertura/cobertura-1.9-bin.zip?download
 Files: cobertura-1.9.jar
 Source: http://prdownloads.sourceforge.net/cobertura/cobertura-1.9-src.zip?download

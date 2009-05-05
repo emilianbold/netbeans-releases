@@ -4,7 +4,7 @@ Description: Library for bytecode manipulation
 License: BSD
 OSR: 10906
 Origin: http://download.forge.objectweb.org/asm/asm-2.2.1-bin.zip
-File: asm-2.2.1.jar
+File: asm-tree-2.2.1.jar
 Comment: See issue 145107
 
 Use of is ASM 2.2.1 is governed by the terms of the license below:

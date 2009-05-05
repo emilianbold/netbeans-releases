@@ -75,9 +75,13 @@
             <isset property="nbjdk.home.defaulted"/>
         </condition>
         <fail if="nbjdk.valid">
-Test coverage tasks can be currently run only with default java platform,
-that is with property nbjdk.active unset or set to 'default' and
-with property nbjdk.home unset.
+Test coverage tasks can be currently run only with default java platform, that is
+with property nbjdk.active unset or set to 'default' and with property nbjdk.home
+unset.
+
+For NB.org module, run from command line:
+ant -Dnbjdk.home.defaulted=true -Dpermit.jdk6.builds=true display-coverage-report
+
 Current java platform setup is:
   nbjdk.active:         ${nbjdk.active.print}
   nbjdk.home:           ${nbjdk.home.print}

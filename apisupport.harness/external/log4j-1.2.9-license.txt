@@ -1,8 +1,8 @@
 Name: Log4J
 Version: 1.2.9
 Description: Library for logging in Java
-License: Apache_V11
-OSR: 
+License: Apache-1.1
+OSR:   5415
 Origin: http://archive.apache.org/dist/logging/log4j/1.2.9/logging-log4j-1.2.9.zip
 Files: log4j-1.2.9.jar
 Comment: See issue #145107

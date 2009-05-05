@@ -1,8 +1,8 @@
 Name: Jakarta Oro
 Version: 2.0.8
 Description: Library for handling regular expressions
-License: Apache_V11
-OSR: 
+License: Apache-1.1
+OSR: 7796
 Origin: http://jakarta.apache.org/site/downloads/downloads_oro.cgi
 Files: jakarta-oro-2.0.8.jar
 Source: http://mirrors.isc.org/pub/apache/jakarta/oro/source/jakarta-oro-2.0.8.zip
