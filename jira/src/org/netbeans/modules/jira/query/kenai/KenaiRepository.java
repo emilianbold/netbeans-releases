@@ -62,7 +62,7 @@ public class KenaiRepository extends JiraRepository {
 
     static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/kenai-small.png"; // NOI18N
     private Image icon;
-    private String project;
+    private String projectName;
     private KenaiQuery myIssues;
     private KenaiQuery allIssues;
     private String host;
@@ -70,7 +70,7 @@ public class KenaiRepository extends JiraRepository {
     public KenaiRepository(String repoName, String url, String host, String project) {
         super(repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
         icon = ImageUtilities.loadImage(ICON_PATH, true);
-        this.project = project;
+        this.projectName = project;
         this.host = host;
     }
 
@@ -81,7 +81,10 @@ public class KenaiRepository extends JiraRepository {
 
     @Override
     public Query createQuery() {
-        KenaiQuery q = new KenaiQuery(null, this, null, project, false, false);
+        FilterDefinition fd = new FilterDefinition();
+        Project project = getConfiguration().getProjectByKey(projectName);
+        fd.setProjectFilter(new ProjectFilter(project));
+        KenaiQuery q = new KenaiQuery(null, this, fd, projectName, false, false);
         return q;
     }
 
@@ -132,7 +135,7 @@ public class KenaiRepository extends JiraRepository {
 
         // all issues
         if(allIssues == null) {
-            Project p = getConfiguration().getProjectByKey(project);
+            Project p = getConfiguration().getProjectByKey(projectName);
             if(p != null) {
                 FilterDefinition fd = new FilterDefinition();
                 fd.setProjectFilter(new ProjectFilter(p));
@@ -141,7 +144,7 @@ public class KenaiRepository extends JiraRepository {
                         NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), // NOI18N
                         this,
                         fd,
-                        project,
+                        projectName,
                         true,
                         true);
             } else {
@@ -156,7 +159,7 @@ public class KenaiRepository extends JiraRepository {
     protected JiraConfiguration createConfiguration() {
         KenaiConfiguration c = KenaiConfiguration.create(this, KenaiConfiguration.class);
         if(c != null) {
-            c.setProject(project);
+            c.setProject(projectName);
             return c;
         }
         return null;        
