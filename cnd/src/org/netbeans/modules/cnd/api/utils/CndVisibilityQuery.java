@@ -60,7 +60,7 @@ public class CndVisibilityQuery  implements VisibilityQueryImplementation2 {
             pattern = Pattern.compile(regex);
             cs.fireChange();
         }
-        else if (regex != null) {
+        else if (pattern == null && regex != null) {
             pattern = Pattern.compile(regex);
             cs.fireChange();
         }
