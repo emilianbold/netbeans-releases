@@ -138,6 +138,8 @@ public class Utilities {
             List<UnitCategory> fcCats = makeFirstClassUpdateCategories ();
             if (! fcCats.isEmpty ()) {
                 return fcCats;
+            } else if(hasPendingFirstClassModules()) {
+                return new ArrayList <UnitCategory>();
             }
         }
         List<UnitCategory> res = new ArrayList<UnitCategory> ();
@@ -209,7 +211,25 @@ public class Utilities {
         logger.log(Level.FINER, "makeFirstClassUpdateCategories (" + units.size () + ") returns " + res.size ());
         return res;
     }
-
+    
+    private static boolean hasPendingFirstClassModules () {
+        Collection<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
+        final Collection <String> firstClass = getFirstClassModules ();
+        for (UpdateUnit u : units) {
+            UpdateElement el = u.getInstalled ();
+            if (u.isPending() && el != null) {
+                List<UpdateElement> updates = u.getAvailableUpdates ();
+                if (updates.isEmpty()) {
+                    continue;
+                }
+                if (firstClass.contains (el.getCodeName ())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public static List<UnitCategory> makeAvailableCategories (final List<UpdateUnit> units, boolean isNbms) {
         List<UnitCategory> res = new ArrayList<UnitCategory> ();
         List<String> names = new ArrayList<String> ();
