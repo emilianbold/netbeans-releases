@@ -144,6 +144,10 @@ public class Generate {
         InterfaceTypeExceptions.put("superinterfaces", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.InterfaceType.class.getName(), InterfaceTypeExceptions);
 
+        Map<String, Set<Class>> ObjectReferenceExceptions = new LinkedHashMap<String, Set<Class>>();
+        ObjectReferenceExceptions.put("setValue", Collections.singleton((Class) java.lang.IllegalArgumentException.class));
+        EXCEPTIONS_BY_METHODS.put(com.sun.jdi.ObjectReference.class.getName(), ObjectReferenceExceptions);
+
         Map<String, Set<Class>> ThreadReferenceExceptions = new LinkedHashMap<String, Set<Class>>();
         // IllegalThreadStateException is thrown through JDWPException when INVALID_THREAD is received from JDWP.
         ThreadReferenceExceptions.put("*", Collections.singleton((Class) IllegalThreadStateException.class));

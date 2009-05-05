@@ -564,7 +564,10 @@ final class JUnitOutputReader {
                                 for(OutputLine l: tc.getOutput()){
                                     output.add(l.getLine());
                                 }
-                                findTest(reportSuite, tc.getName()).addOutputLines(output);
+                                Testcase rtc = findTest(reportSuite, tc.getName());
+
+                                if (rtc != null)
+                                    rtc.addOutputLines(output);
                             }
                         }
                         if (!reportSuite.getTestcases().isEmpty()){
