@@ -57,6 +57,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
@@ -297,6 +298,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 
     private void ajaxifyCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ajaxifyCheckboxActionPerformed
         // TODO add your handling code here:
+        changeSupport.fireChange();
 }//GEN-LAST:event_ajaxifyCheckboxActionPerformed
         
     
@@ -393,6 +395,14 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
                 if (!SourceGroups.isFolderWritable(getLocationValue(), packageNames[i])) {
                     wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
                     return false;
+                }
+            }
+
+            if (ajaxifyCheckbox.isSelected()) {
+                if (LibraryManager.getDefault().getLibrary("jsf-extensions") == null) { //NOI18N
+                    wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                        NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "MSG_JsfExtensionsLibraryRequired"));
+                    return true;
                 }
             }
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
