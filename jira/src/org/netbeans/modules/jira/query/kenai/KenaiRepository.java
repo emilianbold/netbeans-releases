@@ -154,14 +154,12 @@ public class KenaiRepository extends JiraRepository {
 
     @Override
     protected JiraConfiguration createConfiguration() {
-        // XXX
-//        KenaiConfiguration c = KenaiConfiguration.create(this);
-//        if(c != null) {
-//            c.setProducts(product);
-//            return c;
-//        }
-//        return null;
-        return super.createConfiguration();
+        KenaiConfiguration c = KenaiConfiguration.create(this, KenaiConfiguration.class);
+        if(c != null) {
+            c.setProject(project);
+            return c;
+        }
+        return null;        
     }
 
     protected void setCredentials(String user, String password) {
