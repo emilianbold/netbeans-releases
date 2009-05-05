@@ -219,7 +219,7 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
     public OutputLogger getLogger() {
         if (logger == null) {
             String loggerId = (repositoryRoot != null)
-                              ? repositoryRoot.toString()
+                              ? repositoryRoot.toHgCommandUrlStringWithoutUserInfo()
                               : null;
             logger = Mercurial.getInstance().getLogger(loggerId);
         }

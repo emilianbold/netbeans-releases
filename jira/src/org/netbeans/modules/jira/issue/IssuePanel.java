@@ -39,15 +39,20 @@
 package org.netbeans.modules.jira.issue;
 
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.ListModel;
 import javax.swing.text.JTextComponent;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
+import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 
 /**
@@ -103,6 +108,17 @@ public class IssuePanel extends javax.swing.JPanel {
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
         });
+
+        // Component list
+        componentList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value instanceof org.eclipse.mylyn.internal.jira.core.model.Component) {
+                    value = ((org.eclipse.mylyn.internal.jira.core.model.Component)value).getName();
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
     }
 
     private void initProjectCombo() {
@@ -118,11 +134,18 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void reloadForm() {
-        JiraConfiguration config =  issue.getRepository().getConfiguration();
-        reloadField(projectCombo, config.getProjectById(issue.getFieldValue(NbJiraIssue.IssueField.PROJECT)));
+        JiraConfiguration config = issue.getRepository().getConfiguration();
+        String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
+        reloadField(projectCombo, config.getProjectById(projectId));
         reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)));
         reloadField(summaryField, issue.getFieldValue(NbJiraIssue.IssueField.SUMMARY));
         reloadField(priorityCombo, config.getPriorityById(issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY)));
+        List<String> componentIds = issue.getFieldValues(NbJiraIssue.IssueField.COMPONENT);
+        reloadField(componentList, componentsByIds(projectId, componentIds));
+        List<String> affectsVersionIds = issue.getFieldValues(NbJiraIssue.IssueField.AFFECTSVERSIONS);
+        reloadField(affectsVersionList, versionsByIds(projectId, affectsVersionIds));
+        List<String> fixVersionIds = issue.getFieldValues(NbJiraIssue.IssueField.FIXVERSIONS);
+        reloadField(fixVersionList, versionsByIds(projectId, fixVersionIds));
     }
 
     private void reloadField(JComponent fieldComponent, Object fieldValue) {
@@ -130,7 +153,36 @@ public class IssuePanel extends javax.swing.JPanel {
             ((JComboBox)fieldComponent).setSelectedItem(fieldValue);
         } else if (fieldComponent instanceof JTextComponent) {
             ((JTextComponent)fieldComponent).setText(fieldValue.toString());
+        } else if (fieldComponent instanceof JList) {
+            JList list = (JList)fieldComponent;
+            list.clearSelection();
+            ListModel model = list.getModel();
+            for (Object value : (List)fieldValue) {
+                for (int i=0; i<model.getSize(); i++) {
+                    if (model.getElementAt(i).equals(value)) {
+                        list.getSelectionModel().addSelectionInterval(i, i);
+                    }
+                }
+            }
         }
+    }
+
+    private List<org.eclipse.mylyn.internal.jira.core.model.Component> componentsByIds(String projectId, List<String> componentIds) {
+        JiraConfiguration config = issue.getRepository().getConfiguration();
+        List<org.eclipse.mylyn.internal.jira.core.model.Component> components = new ArrayList(componentIds.size());
+        for (String id : componentIds) {
+            components.add(config.getComponentById(projectId, id));
+        }
+        return components;
+    }
+
+    private List<Version> versionsByIds(String projectId, List<String> versionIds) {
+        JiraConfiguration config = issue.getRepository().getConfiguration();
+        List<Version> versions = new ArrayList(versionIds.size());
+        for (String id : versionIds) {
+            versions.add(config.getVersionById(projectId, id));
+        }
+        return versions;
     }
 
     /** This method is called from within the constructor to
@@ -150,6 +202,15 @@ public class IssuePanel extends javax.swing.JPanel {
         summaryField = new javax.swing.JTextField();
         priorityLabel = new javax.swing.JLabel();
         priorityCombo = new javax.swing.JComboBox();
+        componentLabel = new javax.swing.JLabel();
+        componentScrollPane = new javax.swing.JScrollPane();
+        componentList = new javax.swing.JList();
+        affectsVersionLabel = new javax.swing.JLabel();
+        affectsVersionScrollPane = new javax.swing.JScrollPane();
+        affectsVersionList = new javax.swing.JList();
+        fixVersionLabel = new javax.swing.JLabel();
+        fixVersionScrollPane = new javax.swing.JScrollPane();
+        fixVersionList = new javax.swing.JList();
 
         projectLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.projectLabel.text")); // NOI18N
 
@@ -166,6 +227,18 @@ public class IssuePanel extends javax.swing.JPanel {
         summaryField.setColumns(30);
 
         priorityLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.priorityLabel.text")); // NOI18N
+
+        componentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.componentLabel.text")); // NOI18N
+
+        componentScrollPane.setViewportView(componentList);
+
+        affectsVersionLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.affectsVersionLabel.text")); // NOI18N
+
+        affectsVersionScrollPane.setViewportView(affectsVersionList);
+
+        fixVersionLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.fixVersionLabel.text")); // NOI18N
+
+        fixVersionScrollPane.setViewportView(fixVersionList);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -189,8 +262,20 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(priorityLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(priorityCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(169, Short.MAX_VALUE))
+                        .add(priorityCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(componentLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(componentScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(affectsVersionLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(affectsVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(fixVersionLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(fixVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(117, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -211,7 +296,19 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(priorityLabel)
                     .add(priorityCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(173, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(componentLabel)
+                    .add(componentScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(affectsVersionLabel)
+                    .add(affectsVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(fixVersionLabel)
+                    .add(fixVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(62, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -221,12 +318,36 @@ public class IssuePanel extends javax.swing.JPanel {
         Project project = (Project)value;
         JiraConfiguration config =  issue.getRepository().getConfiguration();
 
-        // PENDING JiraConfiguration doesn't provide project-specific info
-        // Reload dependent combos
+        // --- Reload dependent combos
+        // PENDING JiraConfiguration doesn't provide project-specific info for issue-type
         issueTypeCombo.setModel(new DefaultComboBoxModel(config.getIssueTypes()));
+
+        // Reload components
+        DefaultListModel componentModel = new DefaultListModel();
+        for (org.eclipse.mylyn.internal.jira.core.model.Component component : config.getComponents(project)) {
+            componentModel.addElement(component);
+        }
+        componentList.setModel(componentModel);
+
+        // Reload versions
+        DefaultListModel versionModel = new DefaultListModel();
+        for (Version version : config.getVersions(project)) {
+            versionModel.addElement(version);
+        }
+        affectsVersionList.setModel(versionModel);
+        fixVersionList.setModel(versionModel);
     }//GEN-LAST:event_projectComboActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel affectsVersionLabel;
+    private javax.swing.JList affectsVersionList;
+    private javax.swing.JScrollPane affectsVersionScrollPane;
+    private javax.swing.JLabel componentLabel;
+    private javax.swing.JList componentList;
+    private javax.swing.JScrollPane componentScrollPane;
+    private javax.swing.JLabel fixVersionLabel;
+    private javax.swing.JList fixVersionList;
+    private javax.swing.JScrollPane fixVersionScrollPane;
     private javax.swing.JComboBox issueTypeCombo;
     private javax.swing.JLabel issueTypeLabel;
     private javax.swing.JComboBox priorityCombo;
