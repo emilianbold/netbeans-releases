@@ -39,6 +39,7 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -62,6 +63,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 
 /**
  *
@@ -144,7 +147,7 @@ public class ModelUtils {
             }
         }
     }
-
+    private static final Set<CsmReferenceKind> FUN_DECLARATION_KINDS = EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION);
     /*package*/ static class FunctionReferenceCollector extends AbstractReferenceCollector {
         public String getEntityName() {
             return "functions-names"; // NOI18N
@@ -156,33 +159,9 @@ public class ModelUtils {
         }
         private boolean isWanted(CsmReference ref, CsmFile file) {
             CsmObject csmObject = ref.getReferencedObject();
-            if (CsmKindUtilities.isFunctionDeclaration(csmObject)) {
+            if (CsmKindUtilities.isFunction(csmObject)) {
                 // check if we are in the function declaration
-                CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) csmObject;
-                if (decl.getContainingFile().equals(file) &&
-                        decl.getStartOffset() <= ref.getStartOffset() &&
-                        decl.getEndOffset() >= ref.getEndOffset()) {
-                    return true;
-                }
-                // check if we are in function definition name => go to declaration
-                // else it is more useful to jump to definition of function
-                CsmFunctionDefinition definition = ((CsmFunction) csmObject).getDefinition();
-                if (definition != null) {
-                    if (file.equals(definition.getContainingFile()) &&
-                            definition.getStartOffset() <= ref.getStartOffset() &&
-                            ref.getStartOffset() <= definition.getBody().getStartOffset()) {
-                        // it is ok to jump to declaration
-                        return true;
-                    }
-                }
-            } else if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
-                CsmFunctionDefinition definition = (CsmFunctionDefinition) csmObject;
-                if (file.equals(definition.getContainingFile()) &&
-                        definition.getStartOffset() <= ref.getStartOffset() &&
-                        ref.getStartOffset() <= definition.getBody().getStartOffset()) {
-                    // it is ok to jump to declaration
-                    return true;
-                }
+                return CsmReferenceResolver.getDefault().isKindOf(ref, FUN_DECLARATION_KINDS);
             }
             return false;
         }
