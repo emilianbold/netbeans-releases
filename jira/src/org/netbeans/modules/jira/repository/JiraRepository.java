@@ -354,7 +354,7 @@ public class JiraRepository extends Repository {
     }
 
     protected JiraConfiguration createConfiguration() {
-        return JiraConfiguration.create(this);
+        return JiraConfiguration.create(this, JiraConfiguration.class);
     }
 
     // XXX spi

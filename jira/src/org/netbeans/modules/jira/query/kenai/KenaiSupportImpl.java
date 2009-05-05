@@ -102,7 +102,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                     url = "https" + url.substring(4);                           // NOI18N
                 }
 
-                String product = location.substring(idx + "/browse/".length());
+                String product = location.substring(idx + "/browse/".length()); // NOI18N
 
                 KenaiRepository repo = new KenaiRepository(project.getDisplayName(), url, host, product);
                 synchronized (repositories) {
