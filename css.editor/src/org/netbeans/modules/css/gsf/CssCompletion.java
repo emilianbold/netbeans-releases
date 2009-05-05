@@ -159,8 +159,10 @@ public class CssCompletion implements CodeCompletionHandler {
             all.addAll(wrapRAWValues(AT_RULES, CompletionItemKind.VALUE, caretOffset).getItems());
             //complete html selector names
             all.addAll(completeHtmlSelectors(prefix, caretOffset));
-
             return new DefaultCompletionResult(all, false);
+            
+        } else if(node.kind() == CssParserTreeConstants.JJTMEDIARULE) {
+            return new DefaultCompletionResult(completeHtmlSelectors(prefix, caretOffset), false);
             
         } else if (node.kind() == CssParserTreeConstants.JJTSKIP) {
             //complete at keywords with prefix - parse tree broken
