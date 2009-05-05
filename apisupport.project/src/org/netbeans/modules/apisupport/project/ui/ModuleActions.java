@@ -395,21 +395,21 @@ public final class ModuleActions implements ActionProvider {
 //                }
 //            }
                     String clazz = getMainClass(context);
-                    if (clazz == null) {
-                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(ModuleActions.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                        DialogDisplayer.getDefault().notify(nd);
-                        return;
+                    if (clazz != null) {
+                        targetNames = setupRunMain(p, testSources, context, clazz);
+                    } else {
+                        // fallback to "old" run tests behavior
+                        targetNames = setupTestSingle(p, testSources);
                     }
-                    targetNames = setupRunMain(p, testSources, context, clazz);
                 } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
                     TestSources testSources = findTestSources(context, false);
                     String clazz = getMainClass(context);
-                    if (clazz == null) {
-                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(ModuleActions.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                        DialogDisplayer.getDefault().notify(nd);
-                        return ;
+                    if (clazz != null) {
+                        targetNames = setupDebugMain(p, testSources, context, clazz);
+                    } else {
+                        // fallback to "old" debug tests behavior
+                        targetNames = setupDebugTestSingle(p, testSources);
                     }
-                    targetNames = setupDebugMain(p, testSources, context, clazz);
                 } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
                     FileObject[] files = findSources(context);
                     String path = null;
