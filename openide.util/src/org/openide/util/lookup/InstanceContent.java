@@ -86,7 +86,17 @@ public final class InstanceContent extends AbstractLookup.Content {
         addPair(new SimpleItem<Object>(inst));
     }
 
-    /** The method to add instance to the lookup with.
+    /** Adds a convertible instance into the lookup. The <code>inst</code>
+     * argument is just a key, not the actual value to appear in the lookup.
+     * The value will be created on demand, later when it is really needed
+     * by calling <code>convertor</code> methods.
+     * <p>
+     * This method is useful to delay creation of heavy weight objects.
+     * Instead just register lightweight key and a convertor.
+     * <p>
+     * To remove registered object from lookup use {@link #remove(java.lang.Object, org.openide.util.lookup.InstanceContent.Convertor)}
+     * with the same arguments.
+     *
      * @param inst instance
      * @param conv convertor which postponing an instantiation,
      * if <code>conv==null</code> then the instance is registered directly.
