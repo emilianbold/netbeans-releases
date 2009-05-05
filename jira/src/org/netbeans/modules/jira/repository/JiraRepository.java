@@ -59,6 +59,7 @@ import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
@@ -460,6 +461,10 @@ public class JiraRepository extends Repository {
         }
     }
 
+    public boolean authenticate(String errroMsg) {
+        return BugtrackingUtil.editRepository(this, errroMsg);
+    }
+    
     private RequestProcessor getRefreshProcessor() {
         if(refreshProcessor == null) {
             refreshProcessor = new RequestProcessor("Jira refresh - " + name); // NOI18N
