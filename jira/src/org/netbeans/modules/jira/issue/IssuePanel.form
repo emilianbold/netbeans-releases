@@ -59,6 +59,11 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="statusCombo" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="resolutionLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="resolutionCombo" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace pref="117" max="32767" attributes="0"/>
           </Group>
@@ -107,7 +112,12 @@
                   <Component id="statusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="statusCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="123" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="resolutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="resolutionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace pref="95" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -217,6 +227,15 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="statusCombo">
+    </Component>
+    <Component class="javax.swing.JLabel" name="resolutionLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.resolutionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="resolutionCombo">
     </Component>
   </SubComponents>
 </Form>

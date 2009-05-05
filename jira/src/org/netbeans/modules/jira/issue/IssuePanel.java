@@ -53,6 +53,7 @@ import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
+import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 
@@ -73,6 +74,7 @@ public class IssuePanel extends javax.swing.JPanel {
         initProjectCombo();
         initPriorityCombo();
         initStatusCombo();
+        initResolutionCombo();
 
         reloadForm();
     }
@@ -132,6 +134,17 @@ public class IssuePanel extends javax.swing.JPanel {
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
         });
+
+        // Resolution combo
+        resolutionCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value instanceof Resolution) {
+                    value = ((Resolution)value).getName();
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
     }
 
     private void initProjectCombo() {
@@ -152,6 +165,12 @@ public class IssuePanel extends javax.swing.JPanel {
         statusCombo.setModel(model);
     }
 
+    private void initResolutionCombo() {
+        Resolution[] resolution = issue.getRepository().getConfiguration().getResolutions();
+        DefaultComboBoxModel model = new DefaultComboBoxModel(resolution);
+        resolutionCombo.setModel(model);
+    }
+
     private void reloadForm() {
         JiraConfiguration config = issue.getRepository().getConfiguration();
         String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
@@ -166,6 +185,7 @@ public class IssuePanel extends javax.swing.JPanel {
         List<String> fixVersionIds = issue.getFieldValues(NbJiraIssue.IssueField.FIXVERSIONS);
         reloadField(fixVersionList, versionsByIds(projectId, fixVersionIds));
         reloadField(statusCombo, config.getStatusById(issue.getFieldValue(NbJiraIssue.IssueField.STATUS)));
+        reloadField(resolutionCombo, config.getResolutionById(issue.getFieldValue(NbJiraIssue.IssueField.RESOLUTION)));
     }
 
     private void reloadField(JComponent fieldComponent, Object fieldValue) {
@@ -233,6 +253,8 @@ public class IssuePanel extends javax.swing.JPanel {
         fixVersionList = new javax.swing.JList();
         statusLabel = new javax.swing.JLabel();
         statusCombo = new javax.swing.JComboBox();
+        resolutionLabel = new javax.swing.JLabel();
+        resolutionCombo = new javax.swing.JComboBox();
 
         projectLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.projectLabel.text")); // NOI18N
 
@@ -263,6 +285,8 @@ public class IssuePanel extends javax.swing.JPanel {
         fixVersionScrollPane.setViewportView(fixVersionList);
 
         statusLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.statusLabel.text")); // NOI18N
+
+        resolutionLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolutionLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -302,7 +326,11 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(statusLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(statusCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(statusCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(resolutionLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(117, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -340,7 +368,11 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(statusLabel)
                     .add(statusCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(123, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(resolutionLabel)
+                    .add(resolutionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(95, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -386,6 +418,8 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel priorityLabel;
     private javax.swing.JComboBox projectCombo;
     private javax.swing.JLabel projectLabel;
+    private javax.swing.JComboBox resolutionCombo;
+    private javax.swing.JLabel resolutionLabel;
     private javax.swing.JComboBox statusCombo;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JTextField summaryField;
