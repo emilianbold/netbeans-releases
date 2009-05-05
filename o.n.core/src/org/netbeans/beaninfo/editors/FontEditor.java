@@ -172,7 +172,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             fm = g.getFontMetrics (paintFont);
         }
         g.setFont (paintFont);
-        g.drawString (fontName == null ? "null" : fontName, // NOI18N
+        g.drawString (NbBundle.getMessage(FontEditor.class, "MSG_Preview"), // NOI18N
                       rectangle.x,
                       rectangle.y + (rectangle.height - fm.getHeight ()) / 2 + fm.getAscent ());
         g.setFont (originalFont);
@@ -367,6 +367,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             JScrollPane sp = new JScrollPane (lFont);
             sp.setVerticalScrollBarPolicy (JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             la.setConstraints (sp, c);
+            positionScrollPaneOnSelected(sp, lFont);
             add (sp);
 
             lStyle.setVisibleRowCount (5);
@@ -385,6 +386,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             sp.setVerticalScrollBarPolicy (JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             c.insets = new Insets (5, 5, 0, 0);
             la.setConstraints (sp, c);
+            positionScrollPaneOnSelected(sp, lStyle);
             add (sp);
 
             c.gridwidth = GridBagConstraints.REMAINDER;
@@ -405,10 +407,11 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             sp.setVerticalScrollBarPolicy (JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             c.insets = new Insets (5, 5, 0, 0);
             la.setConstraints (sp, c);
+            positionScrollPaneOnSelected(sp, lSize);
             add (sp);
 
             c.gridwidth = GridBagConstraints.REMAINDER;
-            c.weighty = 2.0;
+            c.weighty = 0.0;
             JPanel p = new JPanel (new BorderLayout());
             p.setBorder (new TitledBorder (" " + NbBundle.getMessage(FontEditor.class, "CTL_Preview") + " "));
 
@@ -432,7 +435,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
         @Override
         public Dimension getPreferredSize () {
-            return new Dimension (400, 250);
+            return new Dimension (400, 300);
         }
 
         private void updateSizeList(int size) {
@@ -477,6 +480,14 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
                 p.validate();
             } 
             repaint();
+        }
+
+        private void positionScrollPaneOnSelected(JScrollPane scroll, JList list) {
+            if (list.getSelectedIndex() != -1) {
+                int start = list.getSelectedIndex() - list.getVisibleRowCount() / 2;
+                Rectangle selected = list.getCellBounds(start < 0 ? 0 : start, list.getSelectedIndex());
+                scroll.getViewport().setViewPosition(new Point(selected.x, selected.y));
+            }
         }
     }
 
