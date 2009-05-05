@@ -39,7 +39,9 @@
 package org.netbeans.modules.jira.issue;
 
 import java.awt.Component;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -190,6 +192,9 @@ public class IssuePanel extends javax.swing.JPanel {
         reloadField(reporterField, config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName());
         reloadField(environmentArea, issue.getFieldValue(NbJiraIssue.IssueField.ENVIRONMENT));
         reloadField(descriptionArea, issue.getFieldValue(NbJiraIssue.IssueField.DESCRIPTION));
+        reloadField(createdField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true));
+        reloadField(updatedField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true));
+        reloadField(dueField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE), false));
     }
 
     private void reloadField(JComponent fieldComponent, Object fieldValue) {
@@ -227,6 +232,20 @@ public class IssuePanel extends javax.swing.JPanel {
             versions.add(config.getVersionById(projectId, id));
         }
         return versions;
+    }
+
+    private String dateByMillis(String text, boolean includeTime) {
+        if (text.trim().length() > 0) {
+            try {
+
+                long millis = Long.parseLong(text);
+                DateFormat format = includeTime ? DateFormat.getDateTimeInstance() : DateFormat.getDateInstance();
+                return format.format(new Date(millis));
+            } catch (NumberFormatException nfex) {
+                nfex.printStackTrace();
+            }
+        }
+        return ""; // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -269,6 +288,12 @@ public class IssuePanel extends javax.swing.JPanel {
         descriptionLabel = new javax.swing.JLabel();
         descriptionScrollPane = new javax.swing.JScrollPane();
         descriptionArea = new javax.swing.JTextArea();
+        createdLabel = new javax.swing.JLabel();
+        createdField = new javax.swing.JTextField();
+        updatedLabel = new javax.swing.JLabel();
+        updatedField = new javax.swing.JTextField();
+        dueLabel = new javax.swing.JLabel();
+        dueField = new javax.swing.JTextField();
 
         projectLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.projectLabel.text")); // NOI18N
 
@@ -321,6 +346,18 @@ public class IssuePanel extends javax.swing.JPanel {
         descriptionArea.setColumns(40);
         descriptionArea.setRows(5);
         descriptionScrollPane.setViewportView(descriptionArea);
+
+        createdLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.createdLabel.text")); // NOI18N
+
+        createdField.setColumns(15);
+
+        updatedLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.updatedLabel.text")); // NOI18N
+
+        updatedField.setColumns(15);
+
+        dueLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dueLabel.text")); // NOI18N
+
+        dueField.setColumns(10);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -380,7 +417,19 @@ public class IssuePanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(descriptionLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(descriptionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(descriptionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(createdLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(createdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(updatedLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(updatedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(dueLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(dueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(75, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -438,7 +487,19 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(descriptionLabel)
                     .add(descriptionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(69, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(createdLabel)
+                    .add(createdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(updatedLabel)
+                    .add(updatedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(dueLabel)
+                    .add(dueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(29, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -477,9 +538,13 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel componentLabel;
     private javax.swing.JList componentList;
     private javax.swing.JScrollPane componentScrollPane;
+    private javax.swing.JTextField createdField;
+    private javax.swing.JLabel createdLabel;
     private javax.swing.JTextArea descriptionArea;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JScrollPane descriptionScrollPane;
+    private javax.swing.JTextField dueField;
+    private javax.swing.JLabel dueLabel;
     private javax.swing.JTextArea environmentArea;
     private javax.swing.JLabel environmentLabel;
     private javax.swing.JScrollPane environmentScrollPane;
@@ -500,6 +565,8 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel statusLabel;
     private javax.swing.JTextField summaryField;
     private javax.swing.JLabel summaryLabel;
+    private javax.swing.JTextField updatedField;
+    private javax.swing.JLabel updatedLabel;
     // End of variables declaration//GEN-END:variables
 
 }

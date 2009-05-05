@@ -129,9 +129,10 @@ public class NbJiraIssue extends Issue {
 //        BLOCKS(JiraAttribute.BLOCKED.getName()),
 //        URL(JiraAttribute.BUG_FILE_LOC.getName()),
 //        KEYWORDS(JiraAttribute.KEYWORDS.getName()),
-        TYPE(JiraAttribute.TYPE.id());
-//        CREATION(TaskAttribute.DATE_CREATION),
-//        MODIFICATION(TaskAttribute.DATE_MODIFICATION),
+        TYPE(JiraAttribute.TYPE.id()),
+        CREATION(JiraAttribute.CREATION_DATE.id()),
+        MODIFICATION(JiraAttribute.MODIFICATION_DATE.id()),
+        DUE(JiraAttribute.DUE_DATE.id());
 //        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, false),
 //        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false);
 
