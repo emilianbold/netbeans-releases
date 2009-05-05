@@ -186,6 +186,10 @@ public class PHPIndex {
                     if (!constName.startsWith(name)) {
                         continue;
                     }
+                } else if (kind == QuerySupport.Kind.EXACT) {
+                    if (!constName.toLowerCase().equals(name.toLowerCase())) {
+                        continue;
+                    }
                 }
                 int offset = sig.integer(2);
                 IndexedConstant constant = new IndexedConstant(constName, null, this, map.getUrl().toString(), offset, 0, null);
