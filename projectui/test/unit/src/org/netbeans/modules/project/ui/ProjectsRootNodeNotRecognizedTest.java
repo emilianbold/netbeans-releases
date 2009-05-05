@@ -46,11 +46,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
-import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.modules.project.ui.actions.TestSupport.TestProject;
 import org.netbeans.spi.project.ProjectFactory;
@@ -71,6 +70,7 @@ public class ProjectsRootNodeNotRecognizedTest extends NbTestCase {
         super(testName);
     }            
 
+    @RandomlyFails
     public void testBadgingNodeIsOKIfProjectIsNoLongerRecognized() throws Exception{
         //prepearing project
         MockLookup.setInstances(new TestFactory());
