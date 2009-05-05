@@ -57,6 +57,7 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.util.IssueCache;
@@ -123,7 +124,18 @@ public class JiraRepository extends Repository {
             // invalid connection data?
             return null;
         }
-        throw new UnsupportedOperationException();
+        TaskAttributeMapper attributeMapper =
+                Jira.getInstance()
+                    .getRepositoryConnector()
+                    .getTaskDataHandler()
+                    .getAttributeMapper(taskRepository);
+        TaskData data =
+                new TaskData(
+                    attributeMapper,
+                    taskRepository.getConnectorKind(),
+                    taskRepository.getRepositoryUrl(),
+                    ""); // NOI18N
+        return new NbJiraIssue(data, this);
     }
 
     public String getDisplayName() {
@@ -148,7 +160,7 @@ public class JiraRepository extends Repository {
     public Issue getIssue(String key) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
-        TaskData taskData = JiraUtils.getTaskData(JiraRepository.this, key);
+        TaskData taskData = JiraUtils.getTaskDataByKey(JiraRepository.this, key);
         if(taskData == null) {
             return null;
         }
@@ -243,7 +255,7 @@ public class JiraRepository extends Repository {
 
         if(keywords.length == 1) {
             // only one search criteria -> might be we are looking for the bug with id=keywords[0]
-            TaskData taskData = JiraUtils.getTaskData(this, keywords[0], false);
+            TaskData taskData = JiraUtils.getTaskDataByKey(this, keywords[0], false);
             if(taskData != null) {
                 NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
                 issues.add(issue); // we don't cache this issues
