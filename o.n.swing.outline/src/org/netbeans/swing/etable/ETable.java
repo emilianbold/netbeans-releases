@@ -1986,7 +1986,7 @@ public class ETable extends JTable {
         @Override
         public void mouseClicked(MouseEvent me) {
             if (me.getButton() == MouseEvent.BUTTON3) {
-                ColumnSelectionPanel.showColumnSelectionDialog(ETable.this);
+                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), ETable.this);
                 return;
             }
             TableColumn resColumn = getResizingColumn(me.getPoint());
