@@ -44,11 +44,15 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Abstraction which might represent none, one or more real Ruby Types.
  */
 public final class RubyType {
+
+    private static final Logger LOGGER = Logger.getLogger(RubyType.class.getName());
 
     /* Core Types */
     public static final RubyType ARRAY = new RubyType("Array");
@@ -64,6 +68,7 @@ public final class RubyType {
     public static final RubyType STRING = new RubyType("String");
     public static final RubyType SYMBOL = new RubyType("Symbol");
     public static final RubyType TRUE_CLASS = new RubyType("TrueClass");
+    public static final RubyType INTEGER = new RubyType("Integer");
 
     /**
      * Union type for {{@link #TRUE_CLASS}, {@link #FALSE_CLASS}}. Value of this
@@ -90,6 +95,7 @@ public final class RubyType {
     }
 
     public static RubyType create(final String realType) {
+        checkType(realType);
         RubyType coreType = CORE_TYPES.get(realType);
         return coreType == null ? new RubyType(realType) : coreType;
     }
@@ -123,6 +129,7 @@ public final class RubyType {
 
     private RubyType(final String realType) {
         assert realType != null : "cannot add null realType";
+        checkType(realType);
         this.realTypes = Collections.singleton(realType);
     }
 
@@ -150,7 +157,14 @@ public final class RubyType {
 
     void add(String realType) {
         assert realType != null : "cannot add null realType";
+        checkType(realType);
         realTypes.add(realType);
+    }
+
+    private static void checkType(String realType) {
+        if (Character.isLowerCase(realType.charAt(0))) {
+            LOGGER.log(Level.FINE, "Likely not a valid type {0}", realType);
+        }
     }
 
     /**
