@@ -160,32 +160,93 @@ public abstract class Issue {
     public abstract BugtrackingController getController();
 
     /**
+     * Opens the issue with the given issueId in the IDE
+     *
+     * @param repository
+     * @param issueId 
+     */
+    public static void open(final Repository repository, final String issueId) {
+        final ProgressHandle[] handle = new ProgressHandle[1];
+        handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[] {issueId}));
+        handle[0].start();
+        final IssueTopComponent tc = IssueTopComponent.find(issueId);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                final Issue issue = tc.getIssue();
+                if(issue == null) {
+                    tc.initNoIssue();
+                }
+                tc.open();
+                tc.requestActive();
+
+                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                    public void run() {
+                        try {
+                            if(issue != null) {
+                                handle[0].finish();
+                                handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[] {issueId}));
+                                handle[0].start();
+                                issue.refresh();
+                            } else {
+                                final Issue refIssue = repository.getIssue(issueId);
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        tc.setIssue(refIssue);
+                                    }
+                                });
+                                try {
+                                    refIssue.setSeen(true);
+                                } catch (IOException ex) {
+                                    BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        } finally {
+                            handle[0].finish();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    /**
      * Opens this issue in the IDE
      */
     final public void open() {
+        open(false);
+    }
+
+    /**
+     * Opens this issue in the IDE
+     * @param refresh also refreshes the issue after opening
+     * 
+     */
+    final public void open(final boolean refresh) {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[] {getID()}));
-        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+        handle.start();
+        SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                handle.start();
-                try {
-                    try {
-                        if(!Issue.this.refresh()) {
-                            return;
+                IssueTopComponent tc = IssueTopComponent.find(Issue.this);
+
+                tc.open();
+                tc.requestActive();
+
+                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                    public void run() {
+                        try {
+                            try {
+                                if(refresh && !Issue.this.refresh()) {
+                                    return;
+                                }
+                                Issue.this.setSeen(true);
+                            } catch (IOException ex) {
+                                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                            }
+                        } finally {
+                            handle.finish();
                         }
-                        Issue.this.setSeen(true);
-                    } catch (IOException ex) {
-                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
                     }
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            final IssueTopComponent tc = IssueTopComponent.find(Issue.this);
-                            tc.open();
-                            tc.requestActive();
-                        }
-                    });
-                } finally {
-                    handle.finish();
-                }
+                });
             }
         });
     }

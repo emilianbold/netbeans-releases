@@ -263,9 +263,12 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         if (ajaxify) {
             progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Add_Ajax_Lib"); //NOI18N
             progressContributor.progress(progressMsg, progressIndex++);
-            progressPanel.setText(progressMsg); 
-            Library[] libraries = { LibraryManager.getDefault().getLibrary("jsf-extensions") };
-            ProjectClassPathModifier.addLibraries(libraries, getSourceRoot(project), ClassPath.COMPILE);
+            progressPanel.setText(progressMsg);
+            Library jsfExtensionsLib = LibraryManager.getDefault().getLibrary("jsf-extensions"); //NOI18N
+            if (jsfExtensionsLib != null) {
+                ProjectClassPathModifier.addLibraries(new Library[] {jsfExtensionsLib},
+                        getSourceRoot(project), ClassPath.COMPILE);
+            }
         }
         
         for (int i = 0; i < controllerFileObjects.length; i++) {

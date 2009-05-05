@@ -64,7 +64,7 @@ public abstract class IssueNode extends AbstractNode {
     private String htmlDisplayName;
     private Action preferedAction = new AbstractAction() {
         public void actionPerformed(ActionEvent e) {
-            issue.open();
+            issue.open(true);
         }
     };
 

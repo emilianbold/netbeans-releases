@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,50 +37,23 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.query.kenai;
-
-import org.eclipse.mylyn.internal.jira.core.model.Project;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
-import org.netbeans.modules.jira.repository.JiraConfiguration;
-import org.netbeans.modules.jira.repository.JiraRepository;
+package org.netbeans.modules.debugger.jpda.jdi;
 
 /**
- *
- * @author Tomas Stupka
+ * Wrapper for IllegalArgumentException JDI exception.
+ * The calling code must count with this exception being thrown.
  */
-public class KenaiConfiguration extends JiraConfiguration {
+public final class IllegalArgumentExceptionWrapper extends Exception {
 
-    private Project[] projects;
-    private String projectName;
-
-    protected KenaiConfiguration(JiraClient jiraClient, JiraRepository repository) {
-        super(jiraClient, repository);
-    }
-
-    // XXX share for kenai. the same for bugzilla
-    // XXX setup only with one project. no need to initialize all projects on the repository for kenai
-        
-    void setProject(String projectName) {
-        this.projectName = projectName;
+    public IllegalArgumentExceptionWrapper(java.lang.IllegalArgumentException ex) {
+        super(ex);
     }
 
     @Override
-    public Project[] getProjects() {
-        if(projects == null) {
-            Project[] allProjects = super.getProjects();
-            for (Project p : allProjects) {
-                if(projectName.equals(p.getKey())) {
-                    projects = new Project[] {p};
-                }
-            }
-        }
-        return projects;
+    public java.lang.IllegalArgumentException getCause() {
+        return (java.lang.IllegalArgumentException) super.getCause();
     }
 
 }
