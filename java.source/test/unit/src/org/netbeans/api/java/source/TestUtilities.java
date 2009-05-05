@@ -61,7 +61,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.java.source.classpath.GlobalSourcePathTestUtil;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
@@ -119,15 +118,17 @@ public final class TestUtilities {
         return false;
     }
     
-    /**
-     * Disables use of {@link LibraryManager} in the {@link GlobalSourcePath}. The tests
-     * which don't register {@link LibraryProvider} or {@link LibraryTypeProvider} may
-     * use this method to disable use of {@link LibraryManager} in the {@link GlobalSourcePath}.
-     * @param use false value disables use of {@link LibraryManager}
-     */
-    public static void setUseLibraries (final boolean use) {
-        GlobalSourcePathTestUtil.setUseLibraries(use);
-    }
+//    /**
+//     * Disables use of {@link LibraryManager} in the {@link GlobalSourcePath}. The tests
+//     * which don't register {@link LibraryProvider} or {@link LibraryTypeProvider} may
+//     * use this method to disable use of {@link LibraryManager} in the {@link GlobalSourcePath}.
+//     * @param use false value disables use of {@link LibraryManager}
+//     */
+//    public static void setUseLibraries (final boolean use) {
+//        //GlobalSourcePathTestUtil.setUseLibraries(use);
+//        // IMO this in fact did nothing... If your tests are failing due to this
+//        // please file a defect on editor/parsing & indexing and we will try to help.
+//    }
     
     /**
      * Sets a root folder of the java source caches. This method may be used by tests

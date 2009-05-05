@@ -102,15 +102,17 @@ public final class Util {
         return true;
     }
 
-    public static StackTraceElement findCaller(StackTraceElement[] elements, Class... classesToFilterOut) {
+    public static StackTraceElement findCaller(StackTraceElement[] elements, Object... classesToFilterOut) {
         loop: for (StackTraceElement e : elements) {
             if (e.getClassName().equals(Util.class.getName()) || e.getClassName().startsWith("java.lang.")) { //NOI18N
                 continue;
             }
 
             if (classesToFilterOut != null && classesToFilterOut.length > 0) {
-                for(Class c : classesToFilterOut) {
-                    if (e.getClassName().startsWith(c.getName())) {
+                for(Object c : classesToFilterOut) {
+                    if (c instanceof Class && e.getClassName().startsWith(((Class) c).getName())) {
+                        continue loop;
+                    } else if (c instanceof String && e.getClassName().startsWith((String) c)) {
                         continue loop;
                     }
                 }
