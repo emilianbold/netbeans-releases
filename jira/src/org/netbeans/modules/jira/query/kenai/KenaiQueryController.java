@@ -53,19 +53,19 @@ import org.netbeans.modules.jira.repository.JiraRepository;
  */
 public class KenaiQueryController extends QueryController
 {
-    private String product;
+    private String projectName; // XXX don't need this - already set in filterDef
     private boolean predefinedQuery;
 
-    public KenaiQueryController(JiraRepository repository, JiraQuery query, JiraFilter jf, String product, boolean predefinedQuery) {
+    public KenaiQueryController(JiraRepository repository, JiraQuery query, JiraFilter jf, String projectName, boolean predefinedQuery) {
         super(repository, query, jf);
-        this.product = product;
+        this.projectName = projectName;
         this.predefinedQuery = predefinedQuery;
     }
 
     @Override
     public void populate(FilterDefinition filterDefinition) {
         super.populate(filterDefinition);
-        disableProduct(product);
+        disableProduct(projectName);
     }
 
     @Override

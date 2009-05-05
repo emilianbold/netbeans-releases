@@ -284,6 +284,7 @@ public class SourcesPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(comSourceLevel, gridBagConstraints);
         comSourceLevel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(SourcesPanel.class).getString("AN_SourceLevel")); // NOI18N
+        comSourceLevel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.comSourceLevel.AccessibleContext.accessibleDescription")); // NOI18N
 
         lblEncoding.setLabelFor(comEncoding);
         org.openide.awt.Mnemonics.setLocalizedText(lblEncoding, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "TXT_Encoding")); // NOI18N
@@ -303,6 +304,8 @@ public class SourcesPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanel1.add(comEncoding, gridBagConstraints);
+        comEncoding.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.comEncoding.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -322,9 +325,9 @@ public class SourcesPanel extends JPanel {
                     .add(lblTestSrc))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(txtTestSrc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
-                    .add(txtSrc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
-                    .add(txtProjectFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)))
+                    .add(txtTestSrc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
+                    .add(txtSrc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
+                    .add(txtProjectFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)))
             .add(lblGenerated, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -346,6 +349,10 @@ public class SourcesPanel extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 148, Short.MAX_VALUE)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        txtProjectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.txtProjectFolder.AccessibleContext.accessibleDescription")); // NOI18N
+        txtSrc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.txtSrc.AccessibleContext.accessibleDescription")); // NOI18N
+        txtTestSrc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.txtTestSrc.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

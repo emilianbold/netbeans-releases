@@ -125,7 +125,7 @@ public class UnitTable extends JTable {
     
     void setEnableRenderer (TableCellRenderer renderer) {
         enableRenderer = renderer;
-        columnModel.getColumn(3).setCellRenderer(renderer);
+        columnModel.getColumn(columnModel.getColumnCount() - 1).setCellRenderer(renderer);
     }
     
     void resortByDefault () {

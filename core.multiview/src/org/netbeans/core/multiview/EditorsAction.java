@@ -51,6 +51,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -90,54 +91,60 @@ public class EditorsAction extends AbstractAction
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             return getMenuPresenters();
         }
-
+        
         public JComponent[] getMenuPresenters() {
-            Mode mode = null;
-            if (EventQueue.isDispatchThread()) {
-                mode = WindowManager.getDefault().findMode(CloneableEditorSupport.EDITOR_MODE);
-                removeAll();
-            }
-            if (mode != null) {
-                TopComponent tc = mode.getSelectedTopComponent();
-                if (tc != null) {
-                    setEnabled(true);
-                    MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
-                    if (handler != null) {
-                        final WeakReference<MultiViewHandler> handlerRef = new WeakReference<MultiViewHandler>(handler);
-                        ButtonGroup group = new ButtonGroup();
-                        MultiViewPerspective[] pers = handler.getPerspectives();
-                        for (int i = 0; i < pers.length; i++) {
-                            MultiViewPerspective thisPers = pers[i];
-                            final WeakReference<MultiViewPerspective> persRef = new WeakReference<MultiViewPerspective>(thisPers);
-                            
-                            JRadioButtonMenuItem item = new JRadioButtonMenuItem();
-                            Mnemonics.setLocalizedText(item, thisPers.getDisplayName());
-                            item.addActionListener(new ActionListener() {
-                                public void actionPerformed(ActionEvent event) {
-                                    //#88626 prevent a memory leak
-                                    MultiViewHandler handler = handlerRef.get();
-                                    MultiViewPerspective thisPers = persRef.get();
-                                    if (handler != null && thisPers != null) {
-                                        handler.requestActive(thisPers);
+            assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT";
+            removeAll();
+            final TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
+            if (tc != null) {
+                setEnabled(true);
+                MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
+                if (handler != null) {
+                    ButtonGroup group = new ButtonGroup();
+                    MultiViewPerspective[] pers = handler.getPerspectives();
+                    final String [] names = new String [pers.length];
+                    for (int i = 0; i < pers.length; i++) {
+                        MultiViewPerspective thisPers = pers[i];
+
+                        JRadioButtonMenuItem item = new JRadioButtonMenuItem();
+                        names[i] = thisPers.getDisplayName();
+                        Mnemonics.setLocalizedText(item, thisPers.getDisplayName());
+                        item.setActionCommand(thisPers.getDisplayName());
+                        item.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent event) {
+                                MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
+                                if (handler == null) {
+                                    return;
+                                }
+                                MultiViewPerspective thisPers = null;
+                                MultiViewPerspective[] pers = handler.getPerspectives();
+                                assert pers.length == names.length : "Arrays must have the same length";
+                                for (int i = 0; i < pers.length; i++) {
+                                    if (event.getActionCommand().equals(names[i])) {
+                                        thisPers = pers[i];
+                                        break;
                                     }
                                 }
-                            });
-                            if (thisPers.getDisplayName().equals(handler.getSelectedPerspective().getDisplayName())) {
-                                item.setSelected(true);
+                                if (thisPers != null) {
+                                    handler.requestActive(thisPers);
+                                }
                             }
-                            group.add(item);
-                            add(item);
+                        });
+                        if (thisPers.getDisplayName().equals(handler.getSelectedPerspective().getDisplayName())) {
+                            item.setSelected(true);
                         }
-                    } else { // handler == null
-                        JRadioButtonMenuItem but = new JRadioButtonMenuItem();
-                        Mnemonics.setLocalizedText(but, NbBundle.getMessage(EditorsAction.class, "EditorsAction.source"));
-                        but.setSelected(true);
-                        add(but);
+                        group.add(item);
+                        add(item);
                     }
-                } else { // tc == null
+                } else { // handler == null
+                    //No reason to enable action on any TC because now it was enabled even for Welcome page
                     setEnabled(false);
+                    /*JRadioButtonMenuItem but = new JRadioButtonMenuItem();
+                    Mnemonics.setLocalizedText(but, NbBundle.getMessage(EditorsAction.class, "EditorsAction.source"));
+                    but.setSelected(true);
+                    add(but);*/
                 }
-            } else { // mode == null
+            } else { // tc == null
                 setEnabled(false);
             }
             return new JComponent[] {this};

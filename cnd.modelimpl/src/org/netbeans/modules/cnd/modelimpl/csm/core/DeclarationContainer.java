@@ -205,7 +205,9 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
         assert uid != null;
         if (!(uid instanceof SelfPersistent)) {
-            new Exception("attempt to put local declaration " + decl).printStackTrace(); // NOI18N
+            String line = " ["+decl.getStartPosition().getLine()+":"+decl.getStartPosition().getColumn()+"-"+ // NOI18N
+                          decl.getEndPosition().getLine()+":"+decl.getEndPosition().getColumn()+"]"; // NOI18N
+            new Exception("attempt to put local declaration " + decl + line).printStackTrace(); // NOI18N
         }
         try {
             declarationsLock.writeLock().lock();

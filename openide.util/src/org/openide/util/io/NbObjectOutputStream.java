@@ -197,13 +197,14 @@ public class NbObjectOutputStream extends ObjectOutputStream {
             Logger.getLogger(NbObjectOutputStream.class.getName()).warning(b.toString());
         }
     }
-
-    private static boolean isSerialVersionUIDDeclared(Class clazz) {
+    
+    /* Package private for testing */
+    static boolean isSerialVersionUIDDeclared(Class clazz) {
         String classname = clazz.getName();
         Boolean okay = examinedClasses.get(classname);
-
+        
         if (okay == null) {
-            if (classname.equals("java.util.HashSet") || classname.equals("java.util.ArrayList")) { // NOI18N
+            if (classname.equals("java.util.HashSet") || classname.equals("java.util.ArrayList") || clazz.isEnum()) { // NOI18N
                 okay = Boolean.TRUE;
             } else {
                 okay = Boolean.FALSE;

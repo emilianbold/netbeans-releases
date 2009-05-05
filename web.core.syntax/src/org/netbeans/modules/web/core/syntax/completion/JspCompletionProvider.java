@@ -54,6 +54,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -98,7 +99,11 @@ public class JspCompletionProvider implements CompletionProvider {
         }
         
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            JspCompletionQuery.instance().query(resultSet, component, caretOffset);
+            JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet();
+            JspCompletionQuery.instance().query(jspResultSet, component, caretOffset);
+
+            resultSet.addAllItems(jspResultSet.getItems());
+            resultSet.setAnchorOffset(jspResultSet.getAnchor());
         }
         
     }
@@ -125,7 +130,10 @@ public class JspCompletionProvider implements CompletionProvider {
                 }
             } else {
                 //called directly by infrastructure - run query
-                JspCompletionQuery.instance().query(resultSet, component, caretOffset);
+                JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet();
+                JspCompletionQuery.instance().query(jspResultSet, component, caretOffset);
+                resultSet.addAllItems(jspResultSet.getItems());
+                resultSet.setAnchorOffset(jspResultSet.getAnchor());
             }
             
             
