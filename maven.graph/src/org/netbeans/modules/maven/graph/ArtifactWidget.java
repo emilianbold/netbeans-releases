@@ -293,7 +293,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         }
 
         // fix hint
-        if (DependencyGraphScene.isFixCandidate(node)) {
+        if (scene.isEditable() && DependencyGraphScene.isFixCandidate(node)) {
             Widget rootW = new Widget(scene);
             rootW.setLayout(LayoutFactory.createOverlayLayout());
             fixHintW = new ImageWidget(scene, bulbImg);

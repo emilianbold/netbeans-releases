@@ -81,7 +81,7 @@ public class IssueFinder {
 
     public static String getIssueNumber(String issueHyperlinkText) {
         int pos = issueHyperlinkText.length() - 1;
-        while (isHexaDigit(issueHyperlinkText.charAt(pos))) {
+        while ((pos >= 0) && isHexaDigit(issueHyperlinkText.charAt(pos))) {
             pos--;
         }
         return issueHyperlinkText.substring(pos + 1);

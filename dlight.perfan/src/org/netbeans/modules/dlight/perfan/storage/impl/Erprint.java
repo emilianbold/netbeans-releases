@@ -222,61 +222,65 @@ final class Erprint {
     }
 
     FunctionStatistic getFunctionStatistic(FunctionCall functionCall) throws IOException {
-        String functionName = functionCall.getFunction().getName();
-        String[] stat = exec("fsingle " + functionName); // NOI18N
+        synchronized (this) {
+            String functionName = functionCall.getFunction().getName();
+            String[] stat = exec("fsingle " + functionName); // NOI18N
 
-        if (stat != null && stat.length > 0 && choiceMarker.equals(stat[0])) { // NOI18N
-            String choice = "1"; // NOI18N
+            if (stat != null && stat.length > 0 && choiceMarker.equals(stat[0])) { // NOI18N
+                String choice = "1"; // NOI18N
 
-            FunctionCallImpl fci = (functionCall instanceof FunctionCallImpl)
-                    ? (FunctionCallImpl) functionCall : null;
+                FunctionCallImpl fci = (functionCall instanceof FunctionCallImpl)
+                        ? (FunctionCallImpl) functionCall : null;
 
-            String fname = (fci == null) ? null : fci.getFileName();
+                String fname = (fci == null) ? null : fci.getFileName();
 
-            if (fname != null) {
-                for (String line : stat) {
-                    Matcher m = choicePattern.matcher(line);
-                    String cfname;
-                    if (m.matches()) {
-                        choice = m.group(1);
-                        cfname = m.group(2);
+                if (fname != null) {
+                    for (String line : stat) {
+                        Matcher m = choicePattern.matcher(line);
+                        String cfname;
+                        if (m.matches()) {
+                            choice = m.group(1);
+                            cfname = m.group(2);
 
-                        if (cfname.endsWith(fname)) {
-                            break;
+                            if (cfname.endsWith(fname)) {
+                                break;
+                            }
                         }
                     }
                 }
+
+                post(choice);
+                stat = outProcessor.getOutput();
             }
 
-            post(choice);
-            stat = outProcessor.getOutput();
+            return new FunctionStatistic(stat);
         }
-
-        return new FunctionStatistic(stat);
     }
 
-    private synchronized String[] exec(String command) throws IOException {
-        long startTime = System.currentTimeMillis();
+    private String[] exec(String command) throws IOException {
+        synchronized (this) {
+            long startTime = System.currentTimeMillis();
 
-        try {
-            log.finest("> " + command + "'"); // NOI18N
-            post(command);
-        } catch (IOException ex) {
-            Throwable cause = ex.getCause();
-            if (cause != null && cause instanceof InterruptedIOException) {
-                throw (InterruptedIOException) cause;
-            } else {
-                throw ex;
+            try {
+                log.finest("> " + command + "'"); // NOI18N
+                post(command);
+            } catch (IOException ex) {
+                Throwable cause = ex.getCause();
+                if (cause != null && cause instanceof InterruptedIOException) {
+                    throw (InterruptedIOException) cause;
+                } else {
+                    throw ex;
+                }
             }
+
+            String[] output = outProcessor.getOutput();
+
+            log.finest("Command '" + command + "' done in " + // NOI18N
+                    (System.currentTimeMillis() - startTime) / 1000 +
+                    " secs. Response is " + output.length + " lines."); // NOI18N
+
+            return output;
         }
-
-        String[] output = outProcessor.getOutput();
-
-        log.finest("Command '" + command + "' done in " + // NOI18N
-                (System.currentTimeMillis() - startTime) / 1000 +
-                " secs. Response is " + output.length + " lines."); // NOI18N
-
-        return output;
     }
 
     private class OutputProcessor {

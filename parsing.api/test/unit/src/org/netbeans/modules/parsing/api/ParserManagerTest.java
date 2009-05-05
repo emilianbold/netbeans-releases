@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.parsing.api;
 
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
@@ -58,9 +61,13 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -166,6 +173,57 @@ public class ParserManagerTest extends NbTestCase {
         final Future<Void> future4 = ParserManager.parseWhenScanFinished(sources, tt4);
         assertEquals(1, tt4.called);
         assertTrue(future4.isDone());
+    }
+
+    public void testParseDoesNotScheduleTasks () throws Exception {
+        final CountDownLatch l = new CountDownLatch(1);
+        MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
+        MockMimeLookup.setInstances (
+            MimePath.get ("text/foo"), new FooParserFactory(),
+                        new TaskFactory () {
+                public Collection<SchedulerTask> create (Snapshot snapshot) {
+                    return Arrays.asList (new SchedulerTask[] {
+                        new ParserResultTask() {
+                            @Override
+                            public void run(Result result, SchedulerEvent event) {
+                                l.countDown();
+                            }
+                            @Override
+                            public int getPriority() {
+                                return 100;
+                            }
+                            @Override
+                            public Class<? extends Scheduler> getSchedulerClass() {
+                                return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+                            }
+                            @Override
+                            public void cancel() {}
+                        }
+                    });
+                }
+        });
+
+        clearWorkDir ();
+        //Collection c = MimeLookup.getLookup("text/boo").lookupAll (ParserFactory.class);
+        FileObject workDir = FileUtil.toFileObject (getWorkDir ());
+        FileObject testFile = FileUtil.createData (workDir, "bla.foo");
+        FileUtil.setMIMEType ("foo", "text/foo");
+        OutputStream outputStream = testFile.getOutputStream ();
+        OutputStreamWriter writer = new OutputStreamWriter (outputStream);
+        writer.append ("Toto je testovaci file, na kterem se budou delat hnusne pokusy!!!");
+        writer.close ();
+        Source source = Source.create (testFile);
+
+        TimedWeakReference.TIMEOUT = 5000;
+        ParserManager.parse (Collections.singleton(source), new UserTask () {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+            }
+        });
+
+        DataObject.find(testFile).getLookup().lookup(EditorCookie.class).openDocument();
+
+        assertFalse("Should not schedule the task", l.await(2, TimeUnit.SECONDS));
     }
 
     private static class TestTask extends UserTask {

@@ -51,6 +51,7 @@ public final class TypeInferenceSettings {
     
     private static final TypeInferenceSettings INSTANCE = new TypeInferenceSettings();
     private static final String METHODS = "ruby.type.inference.methods"; //NOI18N
+    private static final String RDOC = "ruby.type.inference.rdoc"; //NOI18N
 
     private TypeInferenceSettings() {
     }
@@ -69,6 +70,14 @@ public final class TypeInferenceSettings {
 
     public boolean getMethodTypeInference() {
         return getPreferences().getBoolean(METHODS, true);
+    }
+
+    void setRdocTypeInference(boolean enabled) {
+        getPreferences().putBoolean(RDOC, enabled);
+    }
+
+    public boolean getRdocTypeInference() {
+        return getPreferences().getBoolean(RDOC, true);
     }
 
 }
