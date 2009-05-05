@@ -132,7 +132,10 @@ public class NbJiraIssue extends Issue {
         TYPE(JiraAttribute.TYPE.id()),
         CREATION(JiraAttribute.CREATION_DATE.id()),
         MODIFICATION(JiraAttribute.MODIFICATION_DATE.id()),
-        DUE(JiraAttribute.DUE_DATE.id());
+        DUE(JiraAttribute.DUE_DATE.id()),
+        ESTIMATE(JiraAttribute.ESTIMATE.id()),
+        INITIAL_ESTIMATE(JiraAttribute.INITIAL_ESTIMATE.id()),
+        ACTUAL(JiraAttribute.ACTUAL.id());
 //        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, false),
 //        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false);
 
