@@ -246,7 +246,6 @@ public class JiraExecutor {
                 RepositoryStatus rs = (RepositoryStatus) status;
                 String html = rs.getHtmlMessage();
                 if(html != null && !html.trim().equals("")) {                   // NOI18N
-                    html = parseHtmlMessage(html);
                     final HtmlPanel p = new HtmlPanel();
                     String label = NbBundle.getMessage(JiraExecutor.class, "MSG_ServerResponse", new Object[] {repository.getDisplayName()}); // NOI18N
                     p.setHtml(repository.getUrl(), html, label);
@@ -267,37 +266,6 @@ public class JiraExecutor {
             }
             String msg = getMessage(ce);
             notifyErrorMessage(msg);
-        }
-
-        @SuppressWarnings("empty-statement")
-        private static String parseHtmlMessage(String html) {
-            // XXX
-            int idxS = html.indexOf("<div id=\"bugzilla-body\">");              // NOI18N
-            if(idxS < 0) {
-                return html;
-            }
-            int idx = idxS;
-            int idxE = html.indexOf("</div>", idx);                             // NOI18N
-            int levels = 1;
-            while(true) {
-                idx = html.indexOf("<div", idx + 1);                            // NOI18N
-                if(idx < 0 || idx > idxE) {
-                    break;
-                }
-                levels++;
-            }
-
-            idxE = idxS;
-            for (int i = 0; i < levels; i++) {
-                idxE = html.indexOf("</div>", idxE + 1);                        // NOI18N
-            }
-            idxE = idxE > 6 ? idxE + 6 : html.length();
-            html = html.substring(idxS, idxE);
-
-            // very nice
-            html = html.replaceAll("Please press \\<b\\>Back\\</b\\> and try again.", ""); // NOI18N
-
-            return html;
         }
 
         static void notifyErrorMessage(String msg) {
