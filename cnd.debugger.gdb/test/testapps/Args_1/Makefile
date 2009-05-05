@@ -29,7 +29,7 @@
 
 
 args: args.c
-	$(CC) -g args.c -o args
+	gcc -g args.c -o args
 
 clean:
 	rm -f args.o args
