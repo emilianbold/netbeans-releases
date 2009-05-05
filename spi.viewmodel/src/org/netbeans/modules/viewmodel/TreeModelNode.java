@@ -100,6 +100,8 @@ public class TreeModelNode extends AbstractNode {
     private Object              object;
     
     private String              htmlDisplayName;
+    private String              shortDescription;
+    private final Object        shortDescriptionLock = new Object();
     private final Map<String, Object> properties = new HashMap<String, Object>();
 
     
@@ -171,12 +173,20 @@ public class TreeModelNode extends AbstractNode {
     
     @Override
     public String getShortDescription () {
-        try {
-            String shortDescription = model.getShortDescription (object);
+        synchronized (shortDescriptionLock) {
             if (shortDescription != null) {
-                shortDescription = adjustHTML(shortDescription);
+                return shortDescription;
             }
-            return shortDescription;
+        }
+        try {
+            String sd = model.getShortDescription (object);
+            if (sd != null) {
+                sd = adjustHTML(sd);
+            }
+            synchronized (shortDescriptionLock) {
+                shortDescription = sd;
+            }
+            return sd;
         } catch (UnknownTypeException e) {
             if (!(object instanceof String)) {
                 Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
@@ -184,6 +194,13 @@ public class TreeModelNode extends AbstractNode {
             }
             return null;
         }
+    }
+
+    private void doFireShortDescriptionChange() {
+        synchronized (shortDescriptionLock) {
+            shortDescription = null;
+        }
+        fireShortDescriptionChange(null, null);
     }
     
     @Override
@@ -314,7 +331,7 @@ public class TreeModelNode extends AbstractNode {
             task = getRequestProcessor ().create (new Runnable () {
                 public void run () {
                     refreshNode ();
-                    fireShortDescriptionChange(null, null);
+                    doFireShortDescriptionChange();
                     
                     // 3) refresh children
                     refreshTheChildren(true);
@@ -363,7 +380,7 @@ public class TreeModelNode extends AbstractNode {
             refreshed = true;
         }
         if ((ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK & changeMask) != 0) {
-            fireShortDescriptionChange(null, null);
+            doFireShortDescriptionChange();
             refreshed = true;
         }
         if ((ModelEvent.NodeChanged.CHILDREN_MASK & changeMask) != 0) {
