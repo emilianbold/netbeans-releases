@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 
     <import file="common.xml"/>
     <import file="jdk.xml"/>
-
+    
     <target name="taskdefs" unless="harness.taskdefs.done">
         <dirname property="harness.dir" file="${harness.file}"/>
         <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
