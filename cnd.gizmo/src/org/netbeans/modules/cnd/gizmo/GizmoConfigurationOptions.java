@@ -99,19 +99,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         }
         return result;
     }
-
-    public String getDLightIndicatorDPStrings(){
-        StringBuilder result = new StringBuilder();
-        for (String str : DLightIndicatorDPStrings){
-            result.append(str + ":");//NOI18N
-        }
-        String strResult = result.toString();
-        if (!DLightIndicatorDPStrings.isEmpty()){
-            strResult = strResult.substring(0, strResult.length() - 1);
-        }
-        return strResult;
-    }
-
+    
     public void configure(Project project) {
         areCollectorsTurnedOn = true;
         this.currentProject = project;

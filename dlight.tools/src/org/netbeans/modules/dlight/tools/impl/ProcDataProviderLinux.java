@@ -73,7 +73,9 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
     public ProcDataProviderLinux(ProcDataProvider provider, ServiceInfoDataStorage serviceInfoStorage) {
         this.provider = provider;
         this.serviceInfoStorage = serviceInfoStorage;
-        String[] idps = this.serviceInfoStorage == null || serviceInfoStorage.getValue("idps") == null? null : serviceInfoStorage.getValue("idps").split(":");//NOI18N
+        String[] idps = this.serviceInfoStorage == null || 
+                serviceInfoStorage.getValue(ServiceInfoDataStorage.IDP_NAMES) == null? null :
+                    serviceInfoStorage.getValue(ServiceInfoDataStorage.IDP_NAMES).split(ServiceInfoDataStorage.DELIMITER);//NOI18N
         List<String> idpsList = idps == null ? null : Arrays.asList(idps);
         decreaseThreads = idpsList == null ? false : idpsList.contains(LLDataCollectorConfigurationAccessor.getDefault().getName());
     }

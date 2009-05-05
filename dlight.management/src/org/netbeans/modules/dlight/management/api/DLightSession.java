@@ -346,11 +346,11 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         context.validateTools(context.getDLightConfiguration().getConfigurationOptions(false).validateToolsRequiredUserInteraction());
 
         List<DLightTool> validTools = new ArrayList<DLightTool>();
+        StringBuilder toolNames = new StringBuilder();
 
         for (DLightTool tool : context.getTools()) {
-//            if (tool.getValidationStatus().isValid()) {//it is not quite correct, should run anyway
             validTools.add(tool);
-        //          }
+            toolNames.append(tool.getName() + ServiceInfoDataStorage.DELIMITER);        
         }
 
         if (validTools.isEmpty()) {
@@ -378,7 +378,8 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
             collectors.clear();
         }
         Collection<IndicatorDataProvider> idproviders = new ArrayList();
-        
+        StringBuilder idpsNames = new StringBuilder();
+        StringBuilder collectorNames = new StringBuilder();
         //if we have IDP which are collectors add them into the list of collectors
         for (DLightTool tool : validTools) {
             // Try to subscribe every IndicatorDataProvider to every Indicator
@@ -402,6 +403,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
                         }else{
                             idproviders.add(idp);
                         }
+                        idpsNames.append(idp.getName() + ServiceInfoDataStorage.DELIMITER);
                         List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
                         for (Indicator i : indicators) {
                             target.addTargetListener(i);
@@ -427,6 +429,7 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
 
         if (collectors != null && collectors.size() > 0){
             for (DataCollector toolCollector : collectors) {
+                collectorNames.append(toolCollector.getName() + ServiceInfoDataStorage.DELIMITER);
                 DataStorage storage = DataStorageManager.getInstance().getDataStorageFor(this, toolCollector);
                 if (toolCollector instanceof DLightTarget.ExecutionEnvVariablesProvider) {
                     context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) toolCollector);
@@ -476,8 +479,21 @@ public final class DLightSession implements DLightTargetListener, DLightSessionI
         //We should init IDPs with the ServiceInfoDataStorage
         ServiceInfoDataStorage storage = null;
         if (storages != null && !storages.isEmpty()){
+            for (DataStorage st : storages){
+                st.put(ServiceInfoDataStorage.TOOL_NAMES, toolNames.toString());
+                st.put(ServiceInfoDataStorage.CONFIFURATION_NAME, context.getDLightConfiguration().getConfigurationName());
+                st.put(ServiceInfoDataStorage.IDP_NAMES, idpsNames.toString());
+                st.put(ServiceInfoDataStorage.COLLECTOR_NAMES, collectorNames.toString());
+
+            }
             storage = storages.get(0);//I need any, no matter what it is if it contains info needed
         }else if (serviceInfoDataStorages != null && !serviceInfoDataStorages.isEmpty()){
+            for (ServiceInfoDataStorage st : serviceInfoDataStorages){
+                st.put(ServiceInfoDataStorage.TOOL_NAMES, toolNames.toString());
+                st.put(ServiceInfoDataStorage.CONFIFURATION_NAME, context.getDLightConfiguration().getConfigurationName());
+                st.put(ServiceInfoDataStorage.IDP_NAMES, idpsNames.toString());
+                st.put(ServiceInfoDataStorage.COLLECTOR_NAMES, collectorNames.toString());
+            }
             storage = serviceInfoDataStorages.get(0);
         }
         if (storage != null){
