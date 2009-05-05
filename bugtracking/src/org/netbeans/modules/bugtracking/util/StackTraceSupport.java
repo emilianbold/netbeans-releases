@@ -138,6 +138,7 @@ public class StackTraceSupport {
                StackTraceElement[] stArray = st.toArray(new StackTraceElement[0]);
                // Ignore zero line and one line stacktraces
                if ( stArray.length > 1 ) {
+                   start = adjustFirstLinePosition(text, start);
                    result.add( new StackTracePosition(stArray, start, last) );
 //                   if (result.size() > 50) {
 //                       result.removeFirst(); // XXX WTF
@@ -155,6 +156,7 @@ public class StackTraceSupport {
            last = m.end();
        }
        if ( !st.isEmpty() ) {
+           start = adjustFirstLinePosition(text, start);
            result.add( new StackTracePosition(st.toArray(new StackTraceElement[st.size()]), start, last) );
        }
 
@@ -207,6 +209,26 @@ public class StackTraceSupport {
            }
            return true;
        }
+   }
+
+   private static int adjustFirstLinePosition(String text, int start) {
+       // Adjust the start index so the first line of the stacktrace also
+       // includes 'at' or '[catch]'.
+       if (start > 0) {
+           int startOfLine = start - 1;
+           while (startOfLine > 0) {
+               if (text.charAt(startOfLine) == '\n') {
+                   startOfLine++;
+                   break;
+               } else {
+                   startOfLine--;
+               }
+           }
+           if (isStacktraceContinuation(text, startOfLine, start)) {
+               return startOfLine;
+           }
+       }
+       return start;
    }
 
    private static StackTraceElement createStackTraceElement(String method, String file, String line) {

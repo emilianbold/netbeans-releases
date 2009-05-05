@@ -277,12 +277,37 @@ public class CommentsPanel extends JPanel {
                 int start = stp.getStartOffset();
                 int end = stp.getEndOffset();
 
-                String st = comment.substring(start, end);
-                try {
-                    doc.insertString(doc.getLength(), comment.substring(last, start), defStyle);
-                    doc.insertString(doc.getLength(), st, hlStyle);
-                } catch (BadLocationException ex) {
-                    Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                if (last < start) {
+                    try {
+                        doc.insertString(doc.getLength(), comment.substring(last, start), defStyle);
+                    } catch (BadLocationException ex) {
+                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+                last = start;
+
+                // for each line skip leading whitespaces (look bad underlined)
+                boolean inStackTrace = (comment.charAt(start) > ' ');
+                for (int i=start; i < end; i++) {
+                    char ch = comment.charAt(i);
+                    if ((inStackTrace && ch == '\n')
+                        || (!inStackTrace && ch > ' ')) {
+                        try {
+                            doc.insertString(doc.getLength(), comment.substring(last, i), inStackTrace? hlStyle : defStyle);
+                        } catch (BadLocationException ex) {
+                            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                        }
+                        inStackTrace = !inStackTrace;
+                        last = i;
+                    }
+                }
+
+                if (last < end) {
+                    try {
+                        doc.insertString(doc.getLength(), comment.substring(last, end), inStackTrace? hlStyle : defStyle);
+                    } catch (BadLocationException ex) {
+                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                    }
                 }
                 last = end;
             }
