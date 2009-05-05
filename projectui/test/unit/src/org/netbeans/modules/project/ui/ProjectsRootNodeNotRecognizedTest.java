@@ -65,16 +65,16 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.util.test.MockLookup;
 
 public class ProjectsRootNodeNotRecognizedTest extends NbTestCase {
+    private static CountDownLatch down;
     
     public ProjectsRootNodeNotRecognizedTest(String testName) {
         super(testName);
     }            
 
-    @RandomlyFails
     public void testBadgingNodeIsOKIfProjectIsNoLongerRecognized() throws Exception{
         //prepearing project
         MockLookup.setInstances(new TestFactory());
-        CountDownLatch down = new CountDownLatch(1);
+        down = new CountDownLatch(1);
         clearWorkDir();
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         FileObject foMain = TestSupport.createTestProject(workDir, "prj_1");
@@ -97,6 +97,7 @@ public class ProjectsRootNodeNotRecognizedTest extends NbTestCase {
 
         Node logicalView = new ProjectsRootNode(ProjectsRootNode.PHYSICAL_VIEW);
         assertEquals("2 children", 2, logicalView.getChildren().getNodesCount());
+        Thread.sleep(500);
         assertNotNull("Still lazy project", logicalView.getChildren().getNodeAt(0).getLookup().lookup(LazyProject.class));
 
         // let project open code run
@@ -118,6 +119,7 @@ public class ProjectsRootNodeNotRecognizedTest extends NbTestCase {
         }
 
         public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
+            //down.await();
             if (refused.add(projectDirectory)) {
                 TestProject p = new TestSupport.TestProject(projectDirectory, state);
                 p.setLookup(new NullLVPLookup(p, projectDirectory, state));
