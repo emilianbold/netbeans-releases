@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.jira.query.kenai;
 
-import java.util.ArrayList;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -51,22 +50,31 @@ import org.netbeans.modules.jira.repository.JiraRepository;
  */
 public class KenaiConfiguration extends JiraConfiguration {
 
-    // XXX share for kenai. the same for bugzilla
-    // XXX setup only with one project. no need to initialize all projects on the repository for kenai
-    public KenaiConfiguration(JiraClient jiraClient, JiraRepository repository) {
+    private Project[] projects;
+    private String projectName;
+
+    protected KenaiConfiguration(JiraClient jiraClient, JiraRepository repository) {
         super(jiraClient, repository);
     }
+
+    // XXX share for kenai. the same for bugzilla
+    // XXX setup only with one project. no need to initialize all projects on the repository for kenai
         
-    void setProducts(String product) {
-        // XXX check if product exists
-        ArrayList<String> l = new ArrayList<String>();
-        l.add(product);
-//        this.products = Collections.unmodifiableList(l);
+    void setProject(String projectName) {
+        this.projectName = projectName;
     }
 
     @Override
     public Project[] getProjects() {
-        return super.getProjects();
+        if(projects == null) {
+            Project[] allProjects = super.getProjects();
+            for (Project p : allProjects) {
+                if(projectName.equals(p.getKey())) {
+                    projects = new Project[] {p};
+                }
+            }
+        }
+        return projects;
     }
 
 }

@@ -3,3 +3,4 @@ org.netbeans.modules.debugger.jpda.ui.breakpoints.ExceptionBreakpointType
 org.netbeans.modules.debugger.jpda.ui.breakpoints.MethodBreakpointType
 org.netbeans.modules.debugger.jpda.ui.breakpoints.ThreadBreakpointType
 org.netbeans.modules.debugger.jpda.ui.breakpoints.FieldBreakpointType
+org.netbeans.modules.debugger.jpda.ui.breakpoints.LineBreakpointType
