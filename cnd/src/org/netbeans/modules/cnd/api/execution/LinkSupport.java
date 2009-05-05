@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -54,6 +55,38 @@ public class LinkSupport {
 
     public static String getOriginalFile(String linkPath) {
         return getOriginalFile(linkPath, 10);
+    }
+
+    public static String resolveWindowsLinkik(String linkPath) {
+        if (Utilities.isWindows()){
+            File file = new File(linkPath);
+            if (file.exists()){
+                if (!isLinkFile(linkPath)) {
+                    return linkPath;
+                }
+            } else {
+                file = new File(linkPath+".lnk");
+                if (!file.exists()) {
+                    return linkPath;
+                }
+            }
+            String resolved = getOriginalFile(file.getAbsolutePath());
+            if (resolved != null) {
+                return resolved;
+            }
+        }
+        return linkPath;
+    }
+
+    public static boolean isLinkFile(String linkPath) {
+        try {
+            LinkReader lr = new LinkReader(linkPath);
+            return true;
+        } catch (FileNotFoundException ex) {
+            return false;
+        } catch (IOException ex) {
+            return false;
+        }
     }
 
     private static String getOriginalFile(String linkPath, int level) {
@@ -75,6 +108,8 @@ public class LinkSupport {
         }
         if (new File(linkPath).exists()) {
             if (linkPath.endsWith(".lnk")) { // NOI18N
+                return getOriginalFile(linkPath, level);
+            } else if (isLinkFile(linkPath)) {
                 return getOriginalFile(linkPath, level);
             }
             return linkPath;
