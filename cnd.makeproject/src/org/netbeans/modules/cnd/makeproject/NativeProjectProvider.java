@@ -543,8 +543,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             ccInheritMacros = makeConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
             items = getMakeConfigurationDescriptor().getProjectItems();
             projectChanged = true;
-            cFiles = true;
-            ccFiles = true;
+//            cFiles = true;
+//            ccFiles = true;
         }
 
         if (cIncludeDirectories != null &&
