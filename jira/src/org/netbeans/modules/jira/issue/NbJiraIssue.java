@@ -333,7 +333,7 @@ public class NbJiraIssue extends Issue {
 
     @Override
     public String getRecentChanges() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return ""; // XXX implement me
     }
 
     @Override
