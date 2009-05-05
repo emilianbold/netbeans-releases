@@ -156,6 +156,37 @@ public class LinkSupport {
 //1 dword 	Reserved 	Always 0
                 reader.readFully(bytes);
                 if (!isLinkMagic(bytes)) {
+                    if (isLinkMagic2(bytes)) {
+                        reader.readFully(bytes); // FF FE
+                        int length = (int)(reader.length() - 10)/2;
+                        if (length < 512) {
+                            StringBuilder buf = new StringBuilder();
+                            while(true){
+                                char c = reader.readChar();
+                                if (c == 0) {
+                                    break;
+                                }
+                                buf.append(c);
+                            }
+                            sourcePath = buf.toString();
+                            if (sourcePath.startsWith("/")) { // NOI18N
+                                int i = path.indexOf("\\bin\\"); // NOI18N
+                                if (i < 0) {
+                                    i = path.indexOf("/bin/"); // NOI18N
+                                }
+                                if (i < 0) {
+                                    i = path.indexOf("\\etc\\"); // NOI18N
+                                }
+                                if (i < 0) {
+                                    i = path.indexOf("/etc/"); // NOI18N
+                                }
+                                if (i > 0){
+                                    sourcePath = path.substring(0,i)+sourcePath;
+                                }
+                            }
+                            return;
+                        }
+                    }
                     throw new IOException(); // NOI18N
                 }
                 // skip GUID
@@ -220,6 +251,21 @@ public class LinkSupport {
 
         private boolean isLinkMagic(byte[] bytes) {
             return bytes[0] == 'L' && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0;
+        }
+
+        private boolean isLinkMagic2(byte[] bytes) throws IOException {
+            //First symbol is '!'
+            //Then follow string '<symlink>'
+            //Then follow path
+            //Last symbol is '\0'
+            if (bytes[0] == '!' && bytes[1] == '<' && bytes[2] == 's' && bytes[3] == 'y'){
+                bytes = new byte[6];
+                reader.readFully(bytes);
+                if (bytes[0] == 'm' && bytes[1] == 'l' && bytes[2] == 'i' && bytes[3] == 'n' && bytes[4] == 'k' && bytes[5] == '>'){
+                    return true;
+                }
+            }
+            return false;
         }
         private boolean isShellItemPresent;
         //private boolean isFileLocationItemPresent;
