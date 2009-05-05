@@ -267,7 +267,7 @@ public class ModulesInstaller {
         String sep = "";
         for (UpdateElement el : elems) {
             sb.append(sep);
-            sb.append(el.getDisplayName());
+            sb.append(el.getCategory());
             if (sb.length() > 30) {
                 sb.append("..."); // NOI18N
                 break;
