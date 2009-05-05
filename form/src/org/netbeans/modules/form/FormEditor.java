@@ -589,6 +589,9 @@ public class FormEditor {
                 public void run() {
                     // for some reason this would be displayed before the
                     // ErrorManager if not invoked later
+                    if (!isFormLoaded()) {
+                        return; // issue #164444
+                    }
                     
                     JButton viewOnly = new JButton(FormUtils.getBundleString("CTL_ViewOnly"));		// NOI18N
                     JButton allowEditing = new JButton(FormUtils.getBundleString("CTL_AllowEditing"));	// NOI18N                                        

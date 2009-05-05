@@ -91,7 +91,7 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
                 final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
                 if(repo == null) return;
 
-                BugtrackingOwnerSupport.getInstance().setLooseAssociation(file, repo);
+                BugtrackingOwnerSupport.getInstance().setFirmAssociation(file, repo);
                 Issue.open(repo, issueId);
             }
         }

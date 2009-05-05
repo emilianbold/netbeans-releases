@@ -396,7 +396,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                         // up and do it a bit more cleverly
                         ContextKnowledge knowledge = new ContextKnowledge(
                                 index, root, method, astOffset, lexOffset, doc, RubyUtils.getFileObject(parserResult));
-                        RubyTypeInferencer inferencer = new RubyTypeInferencer(knowledge);
+                        RubyTypeInferencer inferencer = RubyTypeInferencer.normal(knowledge);
                         type = inferencer.inferType(lhs);
                     }
                 }
@@ -1164,7 +1164,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     // up and do it a bit more cleverly
                     ContextKnowledge knowledge = new ContextKnowledge(
                             index, root, method, astOffset, lexOffset, (BaseDocument) doc, RubyUtils.getFileObject(parserResult));
-                    RubyTypeInferencer inferencer = new RubyTypeInferencer(knowledge);
+                    RubyTypeInferencer inferencer = RubyTypeInferencer.normal(knowledge);
                     type = inferencer.inferType(lhs);
                 }
             }

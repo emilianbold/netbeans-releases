@@ -41,20 +41,32 @@
 
 package org.netbeans.test.web.core.syntax;
 
+import java.io.IOException;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.html.editor.HtmlKit;
 import org.netbeans.modules.web.core.syntax.JspKit;
+import org.netbeans.modules.web.core.syntax.gsf.JspLanguage;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  * Common ancestor for all test classes.
  *
  * @author Andrei Badea
  */
-public class TestBase extends NbTestCase {
+public class TestBase extends CslTestBase {
 
     static {
         MockServices.setServices(new Class[] {RepositoryImpl.class});
@@ -66,13 +78,54 @@ public class TestBase extends NbTestCase {
         super(name);
     }
 
+
+//    protected Document createDocument(String text) {
+//        try {
+//            FileSystem memFS = FileUtil.createMemoryFileSystem();
+//            FileObject fo = memFS.getRoot().createData("test", "jsp");
+//            assertNotNull(fo);
+//            DataObject dobj = DataObject.find(fo);
+//            assertNotNull(dobj);
+//            EditorCookie cookie = dobj.getCookie(EditorCookie.class);
+//            assertNotNull(cookie);
+//            Document document = cookie.openDocument();
+//            assertEquals(0, document.getLength());
+//            document.insertString(0, text, null);
+//            return document;
+//        } catch (BadLocationException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } catch (IOException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//        return null;
+//    }
+
+    protected BaseDocument createDocument(String text) {
+        try {
+            BaseDocument bdoc = createDocument();
+            bdoc.insertString(0, text, null);
+            return bdoc;
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+
     protected BaseDocument createDocument() {
-        BaseKit kit = BaseKit.getKit(HtmlKit.class);
-        System.out.println("KIT = " + kit);
-        NbEditorDocument doc = new NbEditorDocument(JspKit.class);
-        doc.putProperty(PROP_MIME_TYPE, "text/x-jsp");
-        
+        NbEditorDocument doc = new NbEditorDocument(JspKit.JSP_MIME_TYPE);
+        doc.putProperty(PROP_MIME_TYPE, JspKit.JSP_MIME_TYPE);
+        doc.putProperty(Language.class, JspTokenId.language());
         return doc;
+    }
+
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new JspLanguage();
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return JspKit.JSP_MIME_TYPE;
     }
     
 }

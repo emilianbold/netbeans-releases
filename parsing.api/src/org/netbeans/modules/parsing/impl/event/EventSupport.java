@@ -58,6 +58,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
@@ -317,10 +318,12 @@ public final class EventSupport {
                 if (lastEditor != null) {
                     lastEditor.removeCaretListener(this);
                     lastEditor.removePropertyChangeListener(this);
-                    final Document doc = lastEditor.getDocument();
+                    final Document document = lastEditor.getDocument();
                     Source source = null;
-                    if (doc != null) {
-                        source = Source.create(doc);
+                    if (document != null) {
+                        String mimeType = NbEditorUtilities.getMimeType (document);
+                        if (mimeType != null)
+                            source = Source.create (document);
                     }
                     if (source != null) {
                         SourceAccessor.getINSTANCE().getEventSupport(source).k24 = false;
