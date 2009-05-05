@@ -767,7 +767,17 @@ public class PHPIndex {
         
         Collection<? extends IndexResult> idIndexResult =search(PHPIndexer.FIELD_IDENTIFIER, identifierName.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_BASE);
         for (IndexResult indexResult : idIndexResult) {
-            result.add(FileUtil.toFileObject(new File(URI.create(indexResult.getUrl().toString()))));
+            URL url = indexResult.getUrl();
+            FileObject fo = null;
+            try {
+                fo = "file".equals(url.getProtocol()) ? //NOI18N
+                    FileUtil.toFileObject(new File(url.toURI())) : URLMapper.findFileObject(url);
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (fo != null) {
+                result.add(fo);
+            }
         }
         return result;
     }
