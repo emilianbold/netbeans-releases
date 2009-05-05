@@ -44,8 +44,10 @@ import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
+import org.eclipse.mylyn.internal.jira.core.model.filter.CurrentUserFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.UserFilter;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
@@ -106,31 +108,27 @@ public class KenaiRepository extends JiraRepository {
     private Query[] getDefinedQueries() {
         List<Query> queries = new ArrayList<Query>();
 
-        // my issues - only if username provided
+        // my issues - only if logged in
         if(KenaiUtil.isLoggedIn()) {
-//            if(myIssues == null) {
-//                StringBuffer url = new StringBuffer();
-//                url.append(urlParam);
-//
-//                // XXX escape @?
-//                // XXX what if user already mail address?
-//                String user = getKenaiUser();
-//                if(user == null) {
-//                    user = "";                                                  // NOI18N
-//                }
-//                String userMail = user + "@"+ host;                             // NOI18N
-//                url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, product, userMail));
-//
-//                myIssues =
-//                    new KenaiQuery(
-//                        NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
-//                        this,
-//                        url.toString(),
-//                        product,
-//                        true,
-//                        true);
-//            }
-//            queries.add(myIssues);
+            if(myIssues == null) {
+                Project p = getConfiguration().getProjectByKey(projectName);
+                if(p != null) {
+                    FilterDefinition fd = new FilterDefinition();
+                    fd.setAssignedToFilter(new CurrentUserFilter());
+                    fd.setProjectFilter(new ProjectFilter(p));
+                    myIssues =
+                        new KenaiQuery(
+                            NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
+                            this,
+                            fd,
+                            projectName,
+                            true,
+                            true);
+                } else {
+                    // XXX warning
+                }
+            }
+            queries.add(myIssues);
         }
 
         // all issues
