@@ -187,6 +187,7 @@ public class Utilities {
         Collection<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
         List<UnitCategory> res = new ArrayList<UnitCategory> ();
         List<String> names = new ArrayList<String> ();
+        final Collection <String> firstClass = getFirstClassModules();
         for (UpdateUnit u : units) {
             UpdateElement el = u.getInstalled ();
             if (! u.isPending() && el != null) {
@@ -194,7 +195,7 @@ public class Utilities {
                 if (updates.isEmpty()) {
                     continue;
                 }
-                if (getFirstClassModules ().contains (el.getCodeName ())) {
+                if (firstClass.contains (el.getCodeName ())) {
                     String catName = el.getCategory();
                     if (names.contains (catName)) {
                         UnitCategory cat = res.get (names.indexOf (catName));
