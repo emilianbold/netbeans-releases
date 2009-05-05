@@ -40,11 +40,14 @@ package org.netbeans.modules.php.editor.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -53,6 +56,20 @@ import org.openide.filesystems.FileObject;
 public class ModelUtils {
 
     private ModelUtils() {
+    }
+
+    @NonNull
+    public static Collection<? extends TypeScope> typeOfVariableBase(Model model, VariableBase varBase) {
+        Collection<? extends TypeScope> retval = Collections.emptyList();
+        VariableScope scp = model.getVariableScope(varBase.getStartOffset());
+        if (scp != null) {
+            String vartype = VariousUtils.extractTypeFroVariableBase(varBase);
+            if (vartype != null) {
+                FileScope fileScope = ModelUtils.getFileScope(scp);
+                retval = VariousUtils.getType(fileScope, scp, vartype, varBase.getStartOffset(), true);
+            }
+        }
+        return retval;
     }
 
     @CheckForNull
