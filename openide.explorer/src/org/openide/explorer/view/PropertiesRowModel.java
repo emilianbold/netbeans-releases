@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.WeakHashMap;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -74,19 +75,23 @@ class PropertiesRowModel implements RowModel {
     private PropertyChangeListener pcl = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
             //fireTableDataChanged();
-            int row = rowForNode((Node)evt.getSource());
+            final int row = rowForNode((Node)evt.getSource());
             if (row == -1) {
                 return;
             }
 
-            int column = columnForProperty(evt.getPropertyName());
-            if (column == -1) {
-                outline.tableChanged(new TableModelEvent(outline.getModel(), row, row,
-                             TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE));
-            } else {
-                outline.tableChanged(new TableModelEvent(outline.getModel(), row, row,
-                             column+1, TableModelEvent.UPDATE));
-            }
+            final int column = columnForProperty(evt.getPropertyName());
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    if (column == -1) {
+                        outline.tableChanged(new TableModelEvent(outline.getModel(), row, row,
+                                     TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE));
+                    } else {
+                        outline.tableChanged(new TableModelEvent(outline.getModel(), row, row,
+                                     column+1, TableModelEvent.UPDATE));
+                    }
+                }
+            });
         }
     };
     

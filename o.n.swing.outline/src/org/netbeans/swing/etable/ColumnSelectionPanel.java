@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -109,7 +109,13 @@ class ColumnSelectionPanel extends JPanel {
         for (int col = 0; col < columns.size (); col++) {
             ETableColumn etc = (ETableColumn) columns.get (col);
             JCheckBox checkBox = new JCheckBox();
-            String dName = table.transformValue (etc).toString ();
+            Object transformed = table.transformValue (etc);
+            String dName;
+            if (transformed == etc) {
+                dName = etc.getHeaderValue ().toString ();
+            } else {
+                dName = table.transformValue (etc).toString ();
+            }
             checkBox.setText(dName);
             checkBox = (JCheckBox) table.transformValue (checkBox);
             checkBoxes.put(etc, checkBox);
