@@ -317,8 +317,10 @@ public final class FileReferencesImpl extends CsmFileReferences  {
                     if (!skip && !deadBlocks.isEmpty()) {
                         skip = isInDeadBlock(tokenOffset, deadBlocks);
                     }
+                    // do not use CsmReferenceKind.AFTER_DEREFERENCE_USAGE, because it could be fun definition like
+                    // void AAA::foo() {
                     ReferenceImpl ref = ReferencesSupport.createReferenceImpl(
-                            csmFile, doc, tokenOffset, CndTokenUtilities.createTokenItem(token, tokenOffset), derefToken == null ? null : CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
+                            csmFile, doc, tokenOffset, CndTokenUtilities.createTokenItem(token, tokenOffset), derefToken == null ? null : null /*CsmReferenceKind.AFTER_DEREFERENCE_USAGE*/);
                     contextBuilder.reference(ref, derefToken);
                     ref.setFileReferencesContext(fileReferncesContext);
                     derefToken = null;
