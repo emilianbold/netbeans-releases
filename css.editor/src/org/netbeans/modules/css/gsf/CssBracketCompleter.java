@@ -47,6 +47,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -54,6 +55,7 @@ import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.css.editor.LexerUtils;
+import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -184,6 +186,20 @@ public class CssBracketCompleter implements KeystrokeHandler {
 
     @Override
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+        if ('}' != ch) {
+            return false;
+        }
+        int lineStart = Utilities.getRowFirstNonWhite((BaseDocument)doc, caretOffset);
+        if (lineStart != caretOffset) {
+            return false;
+        }
+        final Indent indent = Indent.get(doc);
+        indent.lock();
+        try {
+            indent.reindent(lineStart, caretOffset);
+        } finally {
+            indent.unlock();
+        }
         return false;
     }
 
