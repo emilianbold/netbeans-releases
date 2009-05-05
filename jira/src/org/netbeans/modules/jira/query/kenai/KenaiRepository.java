@@ -159,7 +159,7 @@ public class KenaiRepository extends JiraRepository {
     protected JiraConfiguration createConfiguration() {
         KenaiConfiguration c = KenaiConfiguration.create(this, KenaiConfiguration.class);
         if(c != null) {
-            c.setProject(projectName);
+            c.addProject(projectName);
             return c;
         }
         return null;        
