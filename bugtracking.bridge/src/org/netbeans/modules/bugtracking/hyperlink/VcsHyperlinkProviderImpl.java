@@ -86,32 +86,15 @@ public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
                 return true;
             }
         };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(VcsHyperlinkProviderImpl.class, "MSG_Opening", new Object[] {issueId}), c); // NOI18N
         class IssueDisplayer implements Runnable {
-            private Issue issue = null;
             public void run() {
-
                 final Repository repo = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
                 if(repo == null) return;
 
                 BugtrackingOwnerSupport.getInstance().setLooseAssociation(file, repo);
-
-                try {
-                    if (issue == null) {
-                        issue = repo.getIssue(issueId);
-                        if (issue != null) {
-                            EventQueue.invokeLater(this);
-                        }
-                    } else {
-                        assert EventQueue.isDispatchThread();
-                        issue.open();
-                    }
-                } finally {
-                    handle.finish();
-                }
+                Issue.open(repo, issueId);
             }
         }
-        handle.start();
         t[0] = RequestProcessor.getDefault().post(new IssueDisplayer());
     }
 
