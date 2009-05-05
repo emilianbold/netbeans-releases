@@ -162,14 +162,16 @@ public class LinkSupport {
                         if (length < 512) {
                             StringBuilder buf = new StringBuilder();
                             while(true){
-                                char c = (char)reader.readByte();
-                                reader.readByte();
-                                if (c == 0) {
+                                int ch1 = reader.readByte();
+                                int ch2 = reader.readByte();
+                                if (ch1 == 0 &&  ch2 == 0) {
                                     break;
                                 }
+                                char c = (char)(ch1 + (ch2 << 8));
                                 buf.append(c);
                             }
                             sourcePath = buf.toString();
+                            // Resolve cygwin path to windows file path
                             if (sourcePath.startsWith("/")) { // NOI18N
                                 int i = path.indexOf("\\bin\\"); // NOI18N
                                 if (i < 0) {
@@ -184,7 +186,7 @@ public class LinkSupport {
                                 if (i > 0){
                                     sourcePath = path.substring(0,i)+sourcePath;
                                 }
-                                i = sourcePath.indexOf("/usr/bin/");
+                                i = sourcePath.indexOf("/usr/bin/"); // NOI18N
                                 if (i > 0) {
                                     sourcePath = sourcePath.substring(0,i+1) +
                                             sourcePath.substring(i+5);
