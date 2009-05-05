@@ -51,6 +51,7 @@ import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
@@ -59,6 +60,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
@@ -134,6 +137,27 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         indentContinuationWithinStatement(node);
         // do not call super.visit()
         // to avoid reccurency!
+    }
+
+    @Override
+    public void visit(Program node) {
+        for (Comment comment : node.getComments()) {
+            // TODO: optimize performance by checking bounds
+            if (comment instanceof PHPDocBlock) {
+                try {
+                    int endOfFirstLine = Utilities.getRowEnd(doc, comment.getStartOffset());
+
+                    if (endOfFirstLine < comment.getEndOffset()) {
+                        addIndentLevel(endOfFirstLine, 1);
+                        addIndentLevel(comment.getEndOffset(), -1);
+                    }
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        super.visit(node);
     }
 
     @Override
