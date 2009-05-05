@@ -116,7 +116,8 @@ public abstract class Scheduler {
     protected final void schedule (
         SchedulerEvent      event
     ) {
-        schedule (source, event);
+        if (source != null)
+            schedule (source, event);
     }
 
     private RequestProcessor 
