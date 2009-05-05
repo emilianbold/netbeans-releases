@@ -37,33 +37,28 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.storage;
+package org.netbeans.modules.cnd.editor.shell;
 
-import java.util.Map;
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.NbEditorKit;
 
 /**
- * This interface is intended to keep service information about DLightSession
- * This SPI will be used to
+ * @author Alexey Vladykin
  */
-public interface ServiceInfoDataStorage {
-    static final String EXECUTION_ENV_KEY = "service.storage.execution.env.key";//NOI18N
-    static final String HOST_NAME = "service.storage.hostname";//NOI18N
-    static final String USER_NAME = "service.storage.username";//NOI18N
-    static final String PORT = "service.storage.port";//NOI18N
-    static final String TOOL_NAMES  = "service.storage.tools";//NOI18N
-    static final String COLLECTOR_NAMES  = "service.storage.collector.names";//NOI18N
-    static final String IDP_NAMES  = "service.storage.idp.names";//NOI18N
-    static final String DELIMITER  = ":";//NOI18N
-    static final String CONFIFURATION_NAME  = "service.storage.configuration.name";//NOI18N
-    
-    Map<String, String> getInfo();
-    String getValue(String name);
-    String put(String name, String value);
-    
-    /**
-     * Close storage
-     * @return <code>true</code> if succeeded, <code>false</code> otherwise
-     */
-    boolean shutdown();
+public class ShellKit extends NbEditorKit {
+
+    @Override
+    public Document createDefaultDocument() {
+        Document doc = super.createDefaultDocument();
+        doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
+        return doc;
+    }
+
+    @Override
+    public String getContentType() {
+        return MIMENames.SHELL_MIME_TYPE;
+    }
 
 }
