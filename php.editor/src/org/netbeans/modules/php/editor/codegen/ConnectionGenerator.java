@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.codegen;
@@ -62,7 +62,7 @@ public class ConnectionGenerator implements CodeGenerator {
             "if (!$$${CONN}) {\n" + // NOI18N
             "    die('Could not connect to MySQL: ' . mysqli_connect_error());\n" +  // NOI18N
             "}\n" +  // NOI18N
-            "mysqli_query($$${CONN}, 'SET NAMES \\\'UTF-8\\\'');\n" +  // NOI18N
+            "mysqli_query($$${CONN}, 'SET NAMES \\\'utf8\\\'');\n" +  // NOI18N
             "${cursor}// TODO: insert your code here.\n" +  // NOI18N
             "mysqli_close($$${CONN});"; // NOI18N
 

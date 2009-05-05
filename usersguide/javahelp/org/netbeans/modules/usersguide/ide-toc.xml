@@ -56,6 +56,7 @@
           <tocitem text="About Collaborative Development" target="collab_about" />
           <tocitem text="Working With Kenai Projects">
               <tocitem text="About Kenai Projects" target="kenai_projects" />
+              <tocitem text="Sharing a Local Project" target="kenai_share" />
               <tocitem text="Creating a Kenai Project" target="kenai_create" />
               <tocitem text="Kenai Project Tasks: Quick Reference" target="kenai_quickref" />
               <tocitem text="Opening a Kenai Project" target="kenai_opening" />

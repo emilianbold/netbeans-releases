@@ -146,7 +146,7 @@ public class TreeTableView152857Test extends NbTestCase {
         d.setVisible (false);
     }
 
-    static class StringKeys extends Keys<String> {
+    private static class StringKeys extends Keys<String> {
 
         public StringKeys (boolean lazy) {
             super (lazy);
@@ -188,7 +188,7 @@ public class TreeTableView152857Test extends NbTestCase {
 
     }
 
-    static class TestNode extends AbstractNode {
+    private static class TestNode extends AbstractNode {
 
         public TestNode (String name) {
             super (Children.LEAF);
@@ -247,7 +247,7 @@ public class TreeTableView152857Test extends NbTestCase {
             return s;
         }
 
-        class DummyProperty extends Property<String> {
+        private class DummyProperty extends Property<String> {
 
             public DummyProperty (String val) {
                 super (String.class);

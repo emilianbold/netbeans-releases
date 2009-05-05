@@ -51,6 +51,7 @@ import java.util.*;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.windows.TopComponent;
@@ -113,7 +114,9 @@ public class SearchHistoryAction extends ContextAction {
 
     private static void outputSearchContextTab(VCSContext context, String title, boolean bRootOnly) {
         File root = HgUtils.getRootFile(context);
-        OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
+        String loggerId = (root != null) ? new HgURL(root).toHgCommandUrlStringWithoutUserInfo()
+                                               : null;
+        OutputLogger logger = OutputLogger.getLogger(loggerId);
         logger.outputInRed(
                 NbBundle.getMessage(SearchHistoryAction.class,
                 title));

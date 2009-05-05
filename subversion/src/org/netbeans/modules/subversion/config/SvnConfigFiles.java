@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.subversion.config;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -63,6 +64,7 @@ import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -304,12 +306,21 @@ public class SvnConfigFiles implements PreferenceChangeListener {
     }
     
     private void storeIni(Ini ini, String iniFile) {
+        BufferedOutputStream bos = null;
         try {
             File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + iniFile));   // NOI18N
             file.getParentFile().mkdirs();
-            ini.store(FileUtils.createOutputStream(file));
+            ini.store(bos = FileUtils.createOutputStream(file));
         } catch (IOException ex) {
             Subversion.LOG.log(Level.INFO, null, ex);            
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (IOException ex) {
+                    Subversion.LOG.log(Level.INFO, null, ex);
+                }
+            }
         }
     }    
 
@@ -481,11 +492,20 @@ public class SvnConfigFiles implements PreferenceChangeListener {
         patcher.patch(systemIniFile);
 
         File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + fileName)); // NOI18N
+        BufferedOutputStream bos = null;
         try {
             file.getParentFile().mkdirs();
-            systemIniFile.store(FileUtils.createOutputStream(file));
+            systemIniFile.store(bos = FileUtils.createOutputStream(file));
         } catch (IOException ex) {
             Subversion.LOG.log(Level.INFO, null, ex)     ; // should not happen
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (IOException ex) {
+                    Subversion.LOG.log(Level.INFO, null, ex);
+                }
+            }
         }
         return systemIniFile;
     }

@@ -289,7 +289,8 @@ public final class ClasspathInfo {
      * @param listener The listener to remove.
      */
     public synchronized void removeChangeListener(ChangeListener listener) {
-        listenerList.remove (ChangeListener.class, listener);
+        if (listenerList != null)
+            listenerList.remove (ChangeListener.class, listener);
     }
 
     public ClassPath getClassPath (@NonNull PathKind pathKind) {
