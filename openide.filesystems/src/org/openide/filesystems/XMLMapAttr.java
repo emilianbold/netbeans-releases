@@ -1203,8 +1203,9 @@ final class XMLMapAttr implements Map {
             return new AttrFileSet(fo);
         }
 
-        public Object get(String key) {
-            return fo.getAttribute(key);
+        @Override
+        public Object get(Object key) {
+            return key instanceof String ? fo.getAttribute((String)key) : null;
         }
 
         @Override

@@ -39,6 +39,8 @@
 
 package org.openide.filesystems;
 
+import java.util.Map;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -47,7 +49,11 @@ public class Count implements Runnable {
     static int cnt;
 
     public Count() {
-        cnt++;
+        this(1);
+    }
+
+    private Count(int add) {
+        cnt += add;
     }
 
     public static Count create() {
@@ -56,6 +62,10 @@ public class Count implements Runnable {
 
     public static Runnable exec() {
         return new Count();
+    }
+
+    public static Count createFromAttribs(Map m) {
+        return new Count((Integer)m.get("add")); // NOI18N
     }
 
     public void run() {

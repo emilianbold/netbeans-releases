@@ -111,12 +111,19 @@ public class ChildFactoryTest extends TestCase {
         synchronized (factory.lock) {
             factory.lock.wait(300);
         }
-        Thread.currentThread().yield();
+        Thread.yield();
         new NL(node);
         Node[] n = kids.getNodes(true);
         assertEquals(4, n.length);
     }
-    
+
+    public void testFindChildWaits() throws Exception {
+        System.out.println("testFindChildWaits");
+        factory.wait = false;
+        Node n = kids.findChild("D");
+        assertNotNull(n);
+    }
+
     public void testGetNodesWaitsFirstTime() {
         System.out.println("testGetNodesWaits");
         factory.wait = false;
@@ -139,7 +146,7 @@ public class ChildFactoryTest extends TestCase {
         }
         for (int i = 0; i < 5 && n.length != 4; i++) {
             n = kids.getNodes(true);
-            Thread.currentThread().yield();
+            Thread.yield();
         }
         assertEquals(4, n.length);
     }
@@ -147,7 +154,7 @@ public class ChildFactoryTest extends TestCase {
     public void testBatch() throws Exception {
         System.out.println("testBatch");
         kids2.addNotify();
-        Thread.currentThread().yield();
+        Thread.yield();
         synchronized (factory2.lock) {
             factory2.lock.notifyAll();
         }
@@ -180,15 +187,15 @@ public class ChildFactoryTest extends TestCase {
         factory.assertCreateKeysCalled();
         factory.assertCreateNodesForKeyCalled();
         Node[] nodes = nd.getChildren().getNodes(true);
-        assertEquals(factory.CONTENTS1.size(), nodes.length);
+        assertEquals(SynchProviderImpl.CONTENTS1.size(), nodes.length);
         int ix = 0;
-        for (String s : factory.CONTENTS1) {
+        for (String s : SynchProviderImpl.CONTENTS1) {
             assertEquals(s, nodes[ix].getName());
             ix++;
         }
         factory.switchChildren();
         nodes = nd.getChildren().getNodes(true);
-        assertEquals(factory.CONTENTS2.size(), nodes.length);
+        assertEquals(SynchProviderImpl.CONTENTS2.size(), nodes.length);
         ix = 0;
         for (String s : factory.CONTENTS2) {
             assertEquals(s, nodes[ix].getName());
@@ -254,12 +261,13 @@ public class ChildFactoryTest extends TestCase {
 
 
     static final class ProviderImpl extends ChildFactory <String> {
-        Object lock = new Object();
+        final Object lock = new Object();
         volatile boolean wait = false;
         
         public @Override Node[] createNodesForKey(String key) {
             AbstractNode nd = new AbstractNode(Children.LEAF);
             nd.setDisplayName(key);
+            nd.setName(key);
             return new Node[] { nd };
         }
         
@@ -267,7 +275,7 @@ public class ChildFactoryTest extends TestCase {
         public boolean createKeys(List <String> result) {
             try {
                 while (wait) {
-                    Thread.currentThread().yield();
+                    Thread.yield();
                 }
                 synchronized (lock) {
                     lock.notifyAll();
@@ -301,7 +309,7 @@ public class ChildFactoryTest extends TestCase {
             return new Node[] { nd };
         }
         
-        Object lock = new Object();
+        final Object lock = new Object();
         int callCount = 0;
         public boolean createKeys(List <String> result) {
             callCount++;
