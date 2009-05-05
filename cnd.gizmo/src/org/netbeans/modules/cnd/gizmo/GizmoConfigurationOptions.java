@@ -162,10 +162,10 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         String platform = ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName();
         if (platform.indexOf("Linux") != -1 || platform.indexOf("MacOS") != -1 || platform.indexOf("Windows") != -1) {//NOI18N
             areCollectorsTurnedOn = false;
-            if (platform.indexOf("Linux") != -1){
+            if (platform.indexOf("Linux") != -1){//NOI18N
                 DLightCollectorString = SUNSTUDIO;
             }else{
-                DLightCollectorString = "";
+                DLightCollectorString = "";//NOI18N
             }
 
             DLightIndicatorDPStrings = Arrays.asList(PROC_READER, LL_MONITOR);

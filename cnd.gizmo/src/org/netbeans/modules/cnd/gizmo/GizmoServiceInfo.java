@@ -50,6 +50,6 @@ public final class GizmoServiceInfo {
     public static final String PLATFORM = "gizmo.platform";//NOI18N
 
     public static   boolean isPlatformSupported(String platform){
-        return platform != null &&  (platform.indexOf("Solaris") != -1 || platform.indexOf("Linux") != -1);
+        return platform != null &&  (platform.indexOf("Solaris") != -1 || platform.indexOf("Linux") != -1);//NOI18N
     }
 }
