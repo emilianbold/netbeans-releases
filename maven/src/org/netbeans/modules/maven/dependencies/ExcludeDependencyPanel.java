@@ -65,6 +65,7 @@ import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.NotificationLineSupport;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -182,7 +183,7 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
             return;
         }
         if (trTrans.isFocusOwner() && trTrans.getSelectionPath() != null) {
-            lineSupport.setInformationMessage("Exclude from all by pressing 'SPACE' key.");
+            lineSupport.setInformationMessage(NbBundle.getMessage(ExcludeDependencyPanel.class, "TXT_Exclude_all"));
         } else {
             lineSupport.clearMessages();
         }
@@ -192,7 +193,7 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(null, true);
         ChangeListener list = new Listener();
         List<CheckNode> s = new ArrayList<CheckNode>();
-        Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/DependencyIcon.png", true));
+        Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/DependencyIcon.png", true)); //NOI18N
         change2Trans.put(list, trans);
         change2Refs.put(list, s);
         for (DependencyNode nd : nds) {
@@ -210,7 +211,7 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(null, true);
         @SuppressWarnings("unchecked")
         Set<Artifact> artifacts = project.getArtifacts();
-        Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/TransitiveDependencyIcon.png", true));
+        Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/TransitiveDependencyIcon.png", true)); //NOI18N
         for (Artifact a : artifacts) {
             if (a.getDependencyTrail().size() > 2) {
                 String label = a.getGroupId() + ":" + a.getArtifactId();

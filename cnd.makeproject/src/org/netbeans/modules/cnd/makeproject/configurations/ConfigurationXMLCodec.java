@@ -545,6 +545,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentList = null;
         } else if (element.equals(LINKER_DYN_SERCH_ELEMENT)) {
             currentList = null;
+        } else if (element.equals(SOURCE_FOLDERS_FILTER_ELEMENT)) {
+            ((MakeConfigurationDescriptor) projectDescriptor).setFolderVisibilityQuery(currentText);
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
             Iterator iter = currentList.iterator();
             while (iter.hasNext()) {

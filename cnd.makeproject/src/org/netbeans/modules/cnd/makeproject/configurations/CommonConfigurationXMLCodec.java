@@ -74,6 +74,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V62 - NB 6.7
+ *   SOURCE_FOLDER_FILTER_ELEMENT
  * V61 - NB 6.7
  *   Store only C/C++ files in disk file list. Other files are dynamically added to view.
  * V60 - NB 6.7
@@ -177,7 +179,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 61;
+    public final static int CURRENT_VERSION = 62;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -198,6 +200,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String PROJECT_MAKEFILE_ELEMENT = "projectmakefile"; // NOI18N
     protected final static String REQUIRED_PROJECTS_ELEMENT = "requiredProjects"; // NOI18N
     protected final static String SOURCE_ROOT_LIST_ELEMENT = "sourceRootList"; // NOI18N
+    protected final static String SOURCE_FOLDERS_FILTER_ELEMENT = "sourceFolderFilter"; // NOI18N
     protected final static String SOURCE_ENCODING_ELEMENT = "sourceEncoding"; // NOI18N
     // Tools Set (Compiler set and platform)
     protected final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
@@ -563,11 +566,15 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     private void writeSourceRoots(XMLEncoderStream xes) {
-        writeSourceRoots(xes, ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots());
-    }
-
-    private void writeSourceRoots(XMLEncoderStream xes, List<String> list) {
+        MakeConfigurationDescriptor makeProjectDescriptor = (MakeConfigurationDescriptor) projectDescriptor;
+        List<String> list = makeProjectDescriptor.getSourceRoots();
         if (list.size() > 0) {
+            // Filter
+            if (!makeProjectDescriptor.getFolderVisibilityQuery().getRegEx().equals(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN)) {
+                xes.element(SOURCE_FOLDERS_FILTER_ELEMENT, makeProjectDescriptor.getFolderVisibilityQuery().getRegEx());
+            }
+
+            // Source Root
             xes.elementOpen(SOURCE_ROOT_LIST_ELEMENT);
             for (String l : list) {
                 xes.element(LIST_ELEMENT, l);
