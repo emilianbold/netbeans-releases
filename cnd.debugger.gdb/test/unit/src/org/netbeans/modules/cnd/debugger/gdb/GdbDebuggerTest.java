@@ -69,6 +69,10 @@ public class GdbDebuggerTest extends GdbTestCase {
     public void tearDown() {
     }
 
+    public GdbDebuggerTest(String name) {
+        super(name);
+    }
+
     /** Test of startDebugger method, of class GdbDebugger */
     @Test
     public void testStartDebugger1() {

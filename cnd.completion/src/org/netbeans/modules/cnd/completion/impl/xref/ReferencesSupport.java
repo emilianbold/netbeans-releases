@@ -103,10 +103,12 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -564,10 +566,10 @@ public final class ReferencesSupport {
                 assert targetDecl != null;
                 kind = CsmReferenceKind.DIRECT_USAGE;
                 if (owner != null) {
-                    if (owner.equals(targetDecl)) {
-                        kind = CsmReferenceKind.DECLARATION;
-                    } else if (owner.equals(targetDef)) {
+                    if (owner.equals(targetDef)) {
                         kind = CsmReferenceKind.DEFINITION;
+                    } else if (sameDeclaration(owner, targetDecl)) {
+                        kind = CsmReferenceKind.DECLARATION;
                     } else {
                         kind = getReferenceUsageKind(ref);
                     }
@@ -575,6 +577,27 @@ public final class ReferencesSupport {
             }
         }
         return kind;
+    }
+
+    private static boolean sameDeclaration(CsmObject checkDecl, CsmObject targetDecl) {
+        if (checkDecl.equals(targetDecl)) {
+            return true;
+        } else if (CsmKindUtilities.isQualified(checkDecl) && CsmKindUtilities.isQualified(targetDecl)) {
+            CharSequence fqnCheck = ((CsmQualifiedNamedElement) checkDecl).getQualifiedName();
+            CharSequence fqnTarget = ((CsmQualifiedNamedElement) targetDecl).getQualifiedName();
+            if (fqnCheck.equals(fqnTarget)) {
+                return true;
+            }
+            String strFqn = fqnCheck.toString().trim();
+            // we consider const and not const methods as the same
+            if (strFqn.endsWith("const")) {
+                int cutConstInd = strFqn.lastIndexOf("const");
+                assert cutConstInd >= 0;
+                fqnCheck = CharSequenceKey.create(strFqn.substring(cutConstInd));
+            }
+            return fqnCheck.equals(fqnTarget);
+        }
+        return false;
     }
 
     static CsmReferenceKind getReferenceUsageKind(final CsmReference ref) {

@@ -113,6 +113,14 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
     public void testPreproc6() throws Exception {
         performTest(SOURCE, 42, 5);
     }
+
+    public void testSeveralDeclarations() throws Exception {
+        performTest(SOURCE, 48, 10);
+    }
+
+    public void testConstAndNonConstMethods() throws Exception {
+        performTest(SOURCE, 57, 15);
+    }
     
     protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset) {
         BaseDocument doc;
