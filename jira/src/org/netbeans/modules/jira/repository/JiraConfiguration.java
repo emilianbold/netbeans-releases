@@ -133,6 +133,8 @@ public class JiraConfiguration extends JiraClientCache {
                 for (JiraStatus status : cache[0].data.statuses) {
                     cache[0].data.statusesById.put(status.getId(), status);
                 }
+                cache[0].data.workDaysPerWeek = client.getConfiguration().getWorkDaysPerWeek();
+                cache[0].data.workHoursPerDay = client.getConfiguration().getWorkHoursPerDay();
                 // XXX what else do we need?
                 // XXX issue types by project
 
@@ -346,6 +348,14 @@ public class JiraConfiguration extends JiraClientCache {
         return null;
     }
 
+    public int getWorkDaysPerWeek() {
+        return data.workDaysPerWeek;
+    }
+
+    public int getWorkHoursPerDay() {
+        return data.workHoursPerDay;
+    }
+
     private class LazyData extends JiraClientData {
 	Group[] groups = new Group[0];
 	IssueType[] issueTypes = new IssueType[0];
@@ -362,6 +372,8 @@ public class JiraConfiguration extends JiraClientCache {
 	Map<String, JiraStatus> statusesById = new HashMap<String, JiraStatus>();
 	User[] users = new User[0];
 	Map<String, User> usersByName = new HashMap<String, User>();
+        int workDaysPerWeek;
+        int workHoursPerDay;
 	long lastUpdate;
     }
 
