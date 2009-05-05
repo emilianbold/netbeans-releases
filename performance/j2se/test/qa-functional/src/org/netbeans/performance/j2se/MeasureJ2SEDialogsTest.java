@@ -98,9 +98,14 @@ public class MeasureJ2SEDialogsTest {
         .addTest(RefactorRenameDialogTest.class)
         .addTest(RuntimeWindowTest.class)
         .addTest(SelectProfilingTaskDialogTest.class)
-        //  needs to be fixed      .addTest(TemplateManagerTest.class)
+        // needs to be fixed .addTest(TemplateManagerTest.class)
         // needs to be fixed .addTest(ToDoWindowTest.class)
         .addTest(VersioningWindowTest.class)
+        .addTest(KenaiLoginTest.class)
+        .addTest(NewKenaiProjectTest.class)
+        .addTest(OpenKenaiProjectTest.class)
+        .addTest(ShareKenaiProjectTest.class)
+        .addTest(GetKenaiSourcesTest.class)
         .enableModules(".*").clusters("websvccommon[0-9]|apisupport[0-9]|profiler[0-9]").reuseUserDir(true)));
   
         return suite;
