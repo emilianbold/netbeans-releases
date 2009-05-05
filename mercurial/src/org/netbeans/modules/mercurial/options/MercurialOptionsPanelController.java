@@ -74,6 +74,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import static org.netbeans.modules.mercurial.util.HgCommand.HG_COMMAND;
 
 final class MercurialOptionsPanelController extends OptionsPanelController implements ActionListener {
     
@@ -170,12 +171,17 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
             return false;
         }
         String execpath = panel.executablePathTextField.getText();
-        if(Utilities.isWindows() && execpath.endsWith(HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE)){
-            execpath = execpath.substring(0, execpath.length() - (HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE).length());
-        }else  if(execpath.endsWith(HgCommand.HG_COMMAND)){
-            execpath = execpath.substring(0, execpath.length() - HgCommand.HG_COMMAND.length());            
+        String hgExecutableParent = null;
+        if (Utilities.isWindows()) {
+            hgExecutableParent = getHgWindowsExecutableParent(execpath);
+        }
+        if ((hgExecutableParent == null) && execpath.endsWith(HG_COMMAND)) {
+            hgExecutableParent = execpath.substring(0, execpath.length() - HG_COMMAND.length());
         }   
-        if (!HgModuleConfig.getDefault().isExecPathValid(execpath)) {
+        if (hgExecutableParent == null) {
+            hgExecutableParent = execpath;
+        }
+        if (!HgModuleConfig.getDefault().isExecPathValid(hgExecutableParent)) {
             JOptionPane.showMessageDialog(null,
                                           NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_EXEC_PATH_TEXT"), // NOI18N
                                           NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_FIELD_TITLE"), // NOI18N
@@ -190,6 +196,16 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
             return false;
         }
         return true;
+    }
+
+    private static String getHgWindowsExecutableParent(String pathToCheck) {
+        for (String hgExecutable : HgCommand.HG_WINDOWS_EXECUTABLES) {
+            if (pathToCheck.endsWith(hgExecutable)) {
+                return pathToCheck.substring(0, pathToCheck.length()
+                                                - hgExecutable.length());
+            }
+        }
+        return null;
     }
 
     private void onExportFilenameBrowseClick() {

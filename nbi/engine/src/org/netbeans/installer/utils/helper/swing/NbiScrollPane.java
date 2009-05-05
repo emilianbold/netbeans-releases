@@ -49,9 +49,7 @@ import org.netbeans.installer.utils.SystemUtils;
  */
 public class NbiScrollPane extends JScrollPane {
     public NbiScrollPane(final JComponent component) {
-        super(component);
-        
-        setFocusable(true);
+        super(component);               
         
         setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);

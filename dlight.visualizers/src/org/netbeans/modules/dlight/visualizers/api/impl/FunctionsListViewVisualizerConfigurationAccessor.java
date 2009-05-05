@@ -42,6 +42,7 @@ package org.netbeans.modules.dlight.visualizers.api.impl;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
+import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
 
 /**
@@ -78,6 +79,12 @@ public abstract class FunctionsListViewVisualizerConfigurationAccessor {
     public abstract FunctionDatatableDescription getFunctionDatatableDescription(FunctionsListViewVisualizerConfiguration configuration);
     
     public abstract List<Column> getMetricsList(FunctionsListViewVisualizerConfiguration configuration);
+
+    public abstract ColumnsUIMapping getColumnsUIMapping(FunctionsListViewVisualizerConfiguration configuration);
+
+    public abstract String getEmptyRunningMessage(FunctionsListViewVisualizerConfiguration configuration);
+
+    public abstract String getEmptyAnalyzeMessage(FunctionsListViewVisualizerConfiguration configuration);
 
     public abstract String getID();
 }

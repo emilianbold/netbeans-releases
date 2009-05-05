@@ -40,23 +40,20 @@
 package org.netbeans.modules.cnd.api.compilers;
 
 import java.util.List;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- *
  * @author gordonp
+ * @author vkvashin
  */
 public interface CompilerSetProvider {
-    
-    public void init(ExecutionEnvironment env);
-    
-    public int getPlatform();
 
-    public boolean hasMoreCompilerSets();
-    
-    public String getNextCompilerSetData();
+    int getPlatform();
 
-    public String[] getCompilerSetData(ExecutionEnvironment env, String path);
+    boolean hasMoreCompilerSets();
 
-    public Runnable createCompilerSetDataLoader(List<CompilerSet> sets);
+    String getNextCompilerSetData();
+
+    String[] getCompilerSetData(String path);
+
+    Runnable createCompilerSetDataLoader(List<CompilerSet> sets);
 }

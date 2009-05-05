@@ -159,11 +159,14 @@ public class NbWagonManager extends DefaultWagonManager {
     {
         boolean cont;
         synchronized (letGoes) {
-            cont = letGoes2.contains(artifact.getGroupId() + ":" + artifact.getArtifactId());
+            cont = letGoes2.contains(artifact.getGroupId() + ":" + artifact.getArtifactId()) || letGoes.contains(artifact);
         }
         if (cont) {
             LOG.fine("               downloading2=" + artifact);
             super.getArtifact(artifact, repository, forceUpdateCheck);
+            synchronized (letGoes) {
+                letGoes.remove(artifact);
+            }
         } else {
             artifact.setResolved(true);
         }
@@ -185,14 +188,21 @@ public class NbWagonManager extends DefaultWagonManager {
             try {
                 super.getArtifact(artifact, remoteRepositories, forceUpdateCheck);
             } catch (TransferFailedException exc) {
+                if (NbArtifactResolver.isParentPomArtifact(artifact)) { //#163919
+                    throw exc;
+                }
                 //ignore, we will just pretend it didn't happen.
                 artifact.setResolved(true);
             } catch (ResourceDoesNotExistException exc) {
+                if (NbArtifactResolver.isParentPomArtifact(artifact)) { //#163919
+                    throw exc;
+                }
                 //ignore, we will just pretend it didn't happen.
                 artifact.setResolved(true);
-            }
-            synchronized (letGoes) {
-                letGoes.remove(artifact);
+            } finally {
+                synchronized (letGoes) {
+                    letGoes.remove(artifact);
+                }
             }
         } else {
             artifact.setResolved(true);

@@ -1,12 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
             "http://www.w3.org/TR/html4/loose.dtd">
 <!--
-*     Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
 <head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Subversion: Commit Dialog Box</title>
         <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
             rel="StyleSheet" type="text/css">
@@ -18,48 +18,77 @@
         <p><small><a href="#seealso">See Also</a></small></p>
         
         <p>The Subversion Commit dialog box enables you to commit local changes in 
-            version-controlled files to the repository.</p>
+            version-controlled files to the repository. If you have an <a href="#">issue
+            tracker</a> set up with your repository, the commit dialog box lets you
+            associate your commit action with an existing issue.</p>
             
-        <p>You access this dialog box by right-clicking a version-controlled file or folder
-            that contain local changes and choosing Subversion &gt; Commit. You can 
-            also access this dialog box by selecting the commit button 
+        <p>You access this dialog box by right-clicking a version-controlled file or
+            folder that contain local changes and choosing Subversion &gt; Commit. You
+            can also access this dialog box by selecting the commit button
             (<img src="../images/commit.png" alt="commit button">) in the 
             <a href="../svn_diff.html">Diff Viewer</a> or the 
             <a href="svn_versioning_window.html">Versioning window</a>.</p>
-        
-        <p>The dialog box enables you to do the following:</p>
-        
+                
         <ul>
-	    <li><strong>Add a message to your commit</strong>. Use the Commit Message 
-                text area to add text describing the commit.</li>
-            <li><strong>View files in the commit</strong>. The files included in the 
-                commit are listed in the bottom pane of the dialog box.</li>
-            <li><strong>Exclude individual files from the commit</strong>. You can 
-                choose to exclude any of the listed files from the commit by selecting 
-                the file and then choosing Exclude from Commit from the drop-down list 
-                in the Commit Action column.</li>
-            <li><strong>Set the MIME type for new files</strong>. You can set new files 
-                (displayed in green text) to be committed as either textual or binary 
-                data. To do so, select the file and choose Add as Text or Add as Binary 
-                from the drop-down list in the Commit Action column.</li>                
-        </ul>   
-            
-        <ul class="note">
-            <li>When entering a commit message, you can view previous messages by clicking 
-                the Recent Messages button (<img src="../images/recent_msgs.png" 
-                alt="recent messages button">) located in the upper right corner of the 
-                dialog. A dialog displays, listing recent commit messages.</li>
-<!--        <li>If you know you will be repeatedly making commits for the same purpose, 
-                you can set text to be included as a template for commit messages. Click 
-                the Load Template icon (<img src="images/load_template.png"
-                alt="load templates icon">) in the upper right corner of the dialog to
-                load text from Template file directly into the Commit Message text area.</li>   -->                
+            <li><strong>Commit Message</strong>: Type in a message describing your commit action.
+
+                <ul class="note">
+                    <li>When entering a commit message, you can view previous messages by clicking 
+                        the Recent Messages button (<img src="../images/recent_msgs.png" 
+                        alt="recent messages button">) located in the upper right corner of the 
+                        dialog. A dialog displays, listing recent commit messages.</li>
+               <!-- <li>If you know you will be repeatedly making commits for the same purpose, 
+                        you can set text to be included as a template for commit messages. Click 
+                        the Load Template icon (<img src="images/load_template.png"
+                        alt="load templates icon">) in the upper right corner of the dialog to
+                        load text from Template file directly into the Commit Message text area.</li> -->                
+                </ul></li>
+
+            <li><strong>Files to Commit</strong>: View files that will be included in the commit action.
+                
+                <p>When you click on a field in the Commit Action column, you can specify additional
+                    actions by choosing from the drop-down list:</p>
+
+                <ul>
+                    <li><strong>Exclude from Commit</strong>: Exclude the selected file from the
+                        commit action.</li>
+                    <li><strong>Add as Text</strong>: Set the MIME type for the file as textual data.
+                        (For new files only. New files are displayed in green text.)</li>
+                    <li><strong>Add as Binary</strong>: Set the MIME type for the file as binary
+                        data. (For new files only. New files are displayed in green text.)</li>
+                </ul></li>
+
+            <li><strong>Update Issue</strong>: Update an issue by associating your commit action
+                with an existing issue in your repository's issue tracker.
+
+                <ul>
+                    <li><strong>Issue Tracker</strong>: Specify the issue tracker that your repository
+                        uses, by selecting an issue tracker from the drop-down list. The drop-down
+                        provides you with a list of all issue trackers registered with the IDE. If
+                        your repository's issue tracker is not registered, click the <strong>New</strong>
+                        button to register it.</li>
+                    <li><strong>Issue</strong>: Specify the issue ID. You can do this by typing in
+                        the ID, or part of the description.</li>
+                </ul>
+
+                <p>You can also specify the following options:</p>
+
+                <ul>
+                    <li><strong>Resolve as FIXED</strong>: Sets the issue's status as FIXED.</li>
+                    <li><strong>Add Commit Message from Above</strong>: Includes your above commit
+                        description in the update.</li>
+                    <li><strong>Add Revision Information to the Issue</strong>: Includes revision
+                        information, such as...</li>
+                    <li><strong>Add Issue Information to Commit Message</strong>: Appends issue
+                        information to the above commit description.</li>
+                </ul></li>
         </ul>
         
         <dl>
-            <dt>
-            <a name="seealso">See Also</a></dt>
-            <dd> <a href="../svn_checkout.html">Checking Out Files from a Subversion Repository</a></dd> 
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="#">About Issue Trackers</a></dd>
+            <dd><a href="#">Adding an Issue Tracker</a></dd>
+            <dd><a href="../svn_checkout.html">Checking Out Files from a Subversion Repository</a></dd>
         </dl>
         
         <hr>

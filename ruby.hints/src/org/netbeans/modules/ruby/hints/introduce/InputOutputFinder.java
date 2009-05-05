@@ -47,12 +47,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jruby.nb.ast.ArgsNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.MultipleAsgnNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.ArgsNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.MultipleAsgnNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.INameNode;
 
 /** 
  * This visitor computes the set of input and output variables required by
@@ -132,7 +132,7 @@ class InputOutputVarFinder implements ParseTreeVisitor {
         if (node == startNode) {
             when = WHEN_DURING;
         } 
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
         case ARGSNODE: {
             assert when == WHEN_BEFORE; // Is this true when I extract a whole method? I can't do that, right?
 
@@ -141,7 +141,7 @@ class InputOutputVarFinder implements ParseTreeVisitor {
             // However, I've gotta find the parameter nodes themselves too!
             ArgsNode an = (ArgsNode)node;
 
-            if (an.getRequiredArgsCount() > 0) {
+            if (an.getRequiredCount() > 0) {
                 List<Node> args = an.childNodes();
 
                 for (Node arg : args) {
@@ -149,9 +149,9 @@ class InputOutputVarFinder implements ParseTreeVisitor {
                         List<Node> args2 = arg.childNodes();
 
                         for (Node arg2 : args2) {
-                            if (arg2.nodeId == NodeType.ARGUMENTNODE) {
+                            if (arg2.getNodeType() == NodeType.ARGUMENTNODE) {
                                 methodScope.write(((INameNode)arg2).getName());
-                            } else if (arg2.nodeId == NodeType.LOCALASGNNODE) {
+                            } else if (arg2.getNodeType() == NodeType.LOCALASGNNODE) {
                                 methodScope.write(((INameNode)arg2).getName());
                             }
                         }
@@ -160,14 +160,14 @@ class InputOutputVarFinder implements ParseTreeVisitor {
             }
 
             // Rest args
-            if (an.getRestArgNode() != null) {
-                String name = an.getRestArgNode().getName();
+            if (an.getRest() != null) {
+                String name = an.getRest().getName();
                 methodScope.write(name);
             }
 
             // Block args
-            if (an.getBlockArgNode() != null) {
-                String name = an.getBlockArgNode().getName();
+            if (an.getBlock() != null) {
+                String name = an.getBlock().getName();
                 methodScope.write(name);
             }
 
@@ -226,7 +226,7 @@ class InputOutputVarFinder implements ParseTreeVisitor {
     }
 
     public boolean unvisit(Node node) {
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
         case ITERNODE: {
             blockStack.remove(blockStack.size()-1);
             currentBlock = blockStack.size() > 0 ? blockStack.get(blockStack.size()-1) : null;

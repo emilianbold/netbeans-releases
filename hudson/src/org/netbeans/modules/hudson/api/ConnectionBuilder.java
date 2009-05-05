@@ -267,7 +267,14 @@ public final class ConnectionBuilder {
             for (Map.Entry<String,String> header : requestHeaders.entrySet()) {
                 conn.setRequestProperty(header.getKey(), header.getValue());
             }
-            conn.connect();
+            try {
+                conn.connect();
+            } catch (IOException x) {
+                throw x;
+            } catch (Exception x) {
+                // JRE #6797318, etc.; various bugs in JRE networking code; see e.g. #163555
+                throw (IOException) new IOException("Connecting to " + curr + ": " + x.toString()).initCause(x);
+            }
             if (postData != null) {
                 OutputStream os = conn.getOutputStream();
                 try {
@@ -291,9 +298,6 @@ public final class ConnectionBuilder {
             case HttpURLConnection.HTTP_MOVED_PERM:
             case HttpURLConnection.HTTP_MOVED_TEMP:
                 URL redirect = new URL(conn.getHeaderField("Location")); // NOI18N
-                if (!"delay=0sec".equals(curr.getQuery()) && !Utilities.compareObjects(curr.getQuery(), redirect.getQuery())) { // NOI18N
-                    LOG.warning("Warning: possibly incorrect redirect from " + curr + " to " + redirect); // #160508
-                }
                 conn = redirect.openConnection();
                 continue RETRY;
             case HttpURLConnection.HTTP_FORBIDDEN:

@@ -72,6 +72,13 @@ public class CreateFieldTest extends ErrorHintsTestBase {
                        "CreateFieldFix:ww:test.Test:java.io.Writer:[private, static]",
                        "package test;import java.io.Writer;public class Test { private static Writer ww; public static void main(String[] args) {ww = new Writer() {public void write(char[] cbuf, int off, int len) {}public void close() {}public void flush() {}};}}");
     }
+
+    public void testFinalFromCtor() throws Exception {
+        performFixTest("test/Test.java",
+                "package test;public class Test {public Test() { i|i = 1; }}",
+                "CreateFieldFix:ii:test.Test:int:[private, final]",
+                "package test;public class Test { private final int ii; public Test() { ii = 1; }}");
+    }
     
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);

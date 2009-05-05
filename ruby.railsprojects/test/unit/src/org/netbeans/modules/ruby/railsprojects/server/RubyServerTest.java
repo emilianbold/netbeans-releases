@@ -55,6 +55,7 @@ public class RubyServerTest extends RubyTestBase {
         String mongrel_with_version_nro2 = "** Mongrel 1.1.3 available at 0.0.0.0:3000";
         String mongrel_dos_line_end = "** Mongrel 1.1.3 available at 0.0.0.0:3000\r\n";
         String mongrel_unix_line_end = "** Mongrel 1.1.3 available at 0.0.0.0:3000\n";
+        String mongrel_rails232 = "=> Ctrl-C to shutdown server";
 
         Mongrel mongrelInstance = new Mongrel(setUpPlatformWithRubyGems(), "1.1.3");
         
@@ -63,6 +64,7 @@ public class RubyServerTest extends RubyTestBase {
         assertTrue(mongrelInstance.isStartupMsg(mongrel_with_version_nro2));
         assertTrue(mongrelInstance.isStartupMsg(mongrel_dos_line_end));
         assertTrue(mongrelInstance.isStartupMsg(mongrel_unix_line_end));
+        assertTrue(mongrelInstance.isStartupMsg(mongrel_rails232));
     }
 
     public void testWebrickStartup() throws Exception {
@@ -71,6 +73,7 @@ public class RubyServerTest extends RubyTestBase {
         String webBrick_dos_line_end = "=> Rails application started on http://localhost:3000 \r\n";
         String webBrick_unix_line_end = "=> Rails application started on http://localhost:3000\n";
         String webBrick_rails210 = "=> Rails 2.1.0 application started on http://0.0.0.0:3000";
+        String webBrick_rails232 = "[2009-04-09 12:19:16] INFO  WEBrick::HTTPServer#start: pid=15603 port=3000";
         
         WEBrick webrickInstance = new WEBrick(setUpPlatformWithRubyGems());
 
@@ -79,6 +82,7 @@ public class RubyServerTest extends RubyTestBase {
         assertTrue(webrickInstance.isStartupMsg(webBrick_dos_line_end));
         assertTrue(webrickInstance.isStartupMsg(webBrick_unix_line_end));
         assertTrue(webrickInstance.isStartupMsg(webBrick_rails210));
+        assertTrue(webrickInstance.isStartupMsg(webBrick_rails232));
     }
 
     public void testIsAddressInUseMsg(){

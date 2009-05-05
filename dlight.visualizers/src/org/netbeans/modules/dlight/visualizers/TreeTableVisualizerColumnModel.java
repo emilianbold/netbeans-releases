@@ -39,17 +39,20 @@
 package org.netbeans.modules.dlight.visualizers;
 
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.spi.viewmodel.ColumnModel;
 
 class TreeTableVisualizerColumnModel extends ColumnModel {
     private final Column column;
+    private final ColumnsUIMapping columnsUIMapping;
     boolean isVisible = true;
     boolean isSorted = false;
     boolean isSortedDescending = false;
     int currentOrderNumber = -1;
 
-    TreeTableVisualizerColumnModel(Column column) {
+    TreeTableVisualizerColumnModel(Column column, ColumnsUIMapping columnsUIMapping) {
         this.column = column;
+        this.columnsUIMapping = columnsUIMapping;
     }
 
     public String getID() {
@@ -57,8 +60,21 @@ class TreeTableVisualizerColumnModel extends ColumnModel {
     }
 
     public String getDisplayName() {
-        return column.getColumnUName();
+        if (columnsUIMapping == null || columnsUIMapping.getDisplayedName(column.getColumnName()) == null){
+            return column.getColumnUName();
+        }
+        return columnsUIMapping.getDisplayedName(column.getColumnName());
     }
+
+    @Override
+    public String getShortDescription() {
+        if (columnsUIMapping == null || columnsUIMapping.getTooltip(column.getColumnName()) == null){
+            return column.getColumnLongUName();
+        }
+        return columnsUIMapping.getTooltip(column.getColumnName());        
+    }
+
+
 
     public Class getType() {
         return column.getColumnClass();

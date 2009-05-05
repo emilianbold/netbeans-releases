@@ -134,6 +134,9 @@ public class FtpClient implements RemoteClient {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Remote system is " + ftpClient.getSystemName());
             }
+
+            LOGGER.fine("Setting data timeout");
+            ftpClient.setDataTimeout(timeout);
         } catch (IOException ex) {
             if (ftpClient.isConnected()) {
                 try {

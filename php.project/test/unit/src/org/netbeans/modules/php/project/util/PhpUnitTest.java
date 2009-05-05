@@ -92,5 +92,10 @@ public class PhpUnitTest extends NbTestCase {
 
     public void testLinePatternOutput() {
         assertTrue(PhpUnit.LINE_PATTERN.matcher("/home/gapon/test/Calculator.php:635").matches());
+
+        Matcher matcher = PhpUnit.LINE_PATTERN.matcher("0.1077    6609264   6. PHPUnit_Util_Fileloader::checkAndLoad() /usr/share/php/PHPUnit/Framework/TestSuite.php:385");
+        assertTrue(matcher.matches());
+        assertEquals("/usr/share/php/PHPUnit/Framework/TestSuite.php", matcher.group(1));
+        assertEquals("385", matcher.group(2));
     }
 }

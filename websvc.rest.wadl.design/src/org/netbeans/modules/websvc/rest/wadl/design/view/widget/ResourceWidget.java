@@ -114,6 +114,8 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
             addResource
         })));
         initUI();
+        if(ExpanderWidget.isExpanded(this, false))
+            setExpanded(true);
     }
     
     public Resource getResource() {
@@ -228,11 +230,13 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
+        boolean expand = false;
         if(evt.getPropertyName().equals(AddMethodAction.ADD_METHOD)) {
             try {
                 Method m = (Method) evt.getNewValue();
                 MethodWidget methodWidget = new MethodWidget(getObjectScene(), this, m, getModel());
                 getContentWidget().addChild(methodWidget);
+                expand = true;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -241,6 +245,7 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
                 Resource r = (Resource) evt.getNewValue();
                 ResourceWidget resourceWidget = new ResourceWidget(getObjectScene(), this, r, getModel());
                 getContentWidget().addChild(resourceWidget);
+                expand = true;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -257,6 +262,7 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
                 }
             }
             getContentWidget().removeChildren(removeList);
+            expand = true;
         } else if(evt.getPropertyName().equals(RemoveResourceAction.REMOVE_RESOURCES)) {
             List<Widget> childs = getContentWidget().getChildren();
             Set<Resource> resources = (Set<Resource>) evt.getOldValue();
@@ -268,8 +274,12 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
                 }
             }
             getContentWidget().removeChildren(removeList);
+            expand = true;
         }
         getScene().validate();
+        if(expand) {
+            expandWidget();
+        }
     }
 
 }

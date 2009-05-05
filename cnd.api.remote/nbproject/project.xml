@@ -14,6 +14,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -29,8 +37,11 @@
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
+                <friend>com.sun.cloud.cnd</friend>
                 <package>org.netbeans.modules.cnd.api.remote</package>
                 <package>org.netbeans.modules.cnd.spi.remote</package>
+                <package>org.netbeans.modules.cnd.spi.remote.setup</package>
+                <package>org.netbeans.modules.cnd.spi.remote.setup.support</package>
             </friend-packages>
         </data>
     </configuration>

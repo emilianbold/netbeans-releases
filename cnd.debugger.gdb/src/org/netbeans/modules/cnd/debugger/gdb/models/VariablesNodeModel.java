@@ -80,12 +80,12 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
     
     // Localizable messages
-    private String LC_NoInfo = NbBundle.getMessage(VariablesNodeModel.class, "CTL_No_Info"); // NOI18N
-    private String LC_NoCurrentThreadVar = NbBundle.getMessage(VariablesNodeModel.class,
+    private final String LC_NoInfo = NbBundle.getMessage(VariablesNodeModel.class, "CTL_No_Info"); // NOI18N
+    private final String LC_NoCurrentThreadVar = NbBundle.getMessage(VariablesNodeModel.class,
             "NoCurrentThreadVar"); // NOI18N
-    private String LC_LocalsModelColumnNameName = NbBundle.getMessage(VariablesNodeModel.class,
+    private final String LC_LocalsModelColumnNameName = NbBundle.getMessage(VariablesNodeModel.class,
             "CTL_LocalsModel_Column_Name_Name"); // NOI18N
-    private String LC_LocalsModelColumnNameDesc = NbBundle.getMessage(VariablesNodeModel.class,
+    private final String LC_LocalsModelColumnNameDesc = NbBundle.getMessage(VariablesNodeModel.class,
             "CTL_LocalsModel_Column_Name_Desc"); // NOI18N
     
     // Non-localized magic strings

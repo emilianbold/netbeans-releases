@@ -42,10 +42,12 @@ package org.netbeans.modules.csl.api;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
@@ -61,6 +63,8 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class EditList {
+    private static final Logger LOG = Logger.getLogger(EditList.class.getName());
+    
     private BaseDocument doc;
     private List<Edit> edits;
     private boolean formatAll;
@@ -73,7 +77,7 @@ public class EditList {
   
     @Override
     public String toString() {
-        return "EditList(" + edits + ")";
+        return "EditList(" + edits + ")"; //NOI18N
     }
 
     /**
@@ -135,58 +139,83 @@ public class EditList {
         Collections.sort(edits);
         Collections.reverse(edits);
 
-        doc.runAtomic(new Runnable() {
+        final Position [] lastPos = new Position [] { null };
+        
+        // Apply edits in reverse order (to keep offsets accurate)
+        for (Edit edit : edits) {
+            final Edit fEdit = edit;
+            final int [] fEnd = new int [] { -1 };
 
-            public void run() {
-                try {
-                    int lastOffset = edits.get(0).offset;
-                    Position lastPos = doc.createPosition(lastOffset, Position.Bias.Forward);
-
-                    // Apply edits in reverse order (to keep offsets accurate)
-                    for (Edit edit : edits) {
-                        if (edit.removeLen > 0) {
-                            doc.remove(edit.offset, edit.removeLen);
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    try {
+                        if (lastPos[0] == null) {
+                            lastPos[0] = doc.createPosition(edits.get(0).offset, Position.Bias.Forward);
                         }
-                        if (edit.getInsertText() != null) {
-                            doc.insertString(edit.offset, edit.insertText, null);
-                            int end = edit.offset + edit.insertText.length();
+
+                        if (fEdit.removeLen > 0) {
+                            doc.remove(fEdit.offset, fEdit.removeLen);
+                            LOG.fine("Remove text: <" + fEdit.offset + ", " + (fEdit.offset + fEdit.removeLen) + ">"); //NOI18N
+                        }
+                        if (fEdit.getInsertText() != null) {
+                            doc.insertString(fEdit.offset, fEdit.insertText, null);
+                            LOG.fine("Insert text: offset=" + fEdit.offset + ", text='" + fEdit.insertText + "'\n"); //NOI18N
+
+                            fEnd[0] = fEdit.offset + fEdit.insertText.length();
                             for (int i = 0; i < positions.size(); i++) {
                                 DelegatedPosition pos = positions.get(i);
                                 int positionOffset = pos.originalOffset;
-                                if (edit.getOffset() <= positionOffset && end >= positionOffset) {
+                                if (fEdit.getOffset() <= positionOffset && fEnd[0] >= positionOffset) {
                                     pos.delegate = doc.createPosition(positionOffset, pos.bias); // Position of the comment
                                 }
                             }
-                            if (edit.format) {
-                                @SuppressWarnings("deprecation")
-                                final org.netbeans.editor.Formatter f = doc.getFormatter();
-                                try {
-                                    f.reformatLock();
-                                    f.reformat(doc, edit.offset, end);
-                                } finally {
-                                    f.reformatUnlock();
-                                }
+                        }
+                    } catch (BadLocationException ble) {
+                        Exceptions.printStackTrace(ble);
+                    }
+                }
+            });
+
+            if (edit.format) {
+                final Reformat r = Reformat.get(doc);
+                r.lock();
+                try {
+                    doc.runAtomic(new Runnable() {
+                        public void run() {
+                            try {
+                                r.reformat(fEdit.offset, fEnd[0]);
+                                LOG.fine("Formatting: <" + fEdit.offset + ", " + (fEnd[0]) + ">"); //NOI18N
+                            } catch (BadLocationException ble) {
+                                Exceptions.printStackTrace(ble);
                             }
                         }
-                    }
-
-                    if (formatAll) {
-                        int firstOffset = edits.get(edits.size() - 1).offset;
-                        lastOffset = lastPos.getOffset();
-                        @SuppressWarnings("deprecation")
-                        final org.netbeans.editor.Formatter f = doc.getFormatter();
-                        try {
-                            f.reformatLock();
-                            f.reformat(doc, firstOffset, lastOffset);
-                        } finally {
-                            f.reformatUnlock();
-                        }
-                    }
-                } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
+                    });
+                } finally {
+                    r.unlock();
                 }
             }
-        });
+        }
+
+        if (formatAll) {
+            final int firstOffset = edits.get(edits.size() - 1).offset;
+            final int lastOffset = lastPos[0].getOffset();
+            final Reformat r = Reformat.get(doc);
+            r.lock();
+            try {
+                doc.runAtomic(new Runnable() {
+                    public void run() {
+                        try {
+                            r.reformat(firstOffset, lastOffset);
+                            LOG.fine("Formatting all: <" + firstOffset + ", " + lastOffset + ">"); //NOI18N
+                        } catch (BadLocationException ble) {
+                            Exceptions.printStackTrace(ble);
+                        }
+                    }
+                });
+            } finally {
+                r.unlock();
+            }
+        }
     }
     
     public OffsetRange getRange() {
@@ -260,7 +289,7 @@ public class EditList {
 
         @Override
         public String toString() {
-            return "Edit(pos=" + offset + ",delete=" + removeLen + ",insert="+insertText+")";
+            return "Edit(pos=" + offset + ",delete=" + removeLen + ",insert="+insertText+")"; //NOI18N
         }
     }
     

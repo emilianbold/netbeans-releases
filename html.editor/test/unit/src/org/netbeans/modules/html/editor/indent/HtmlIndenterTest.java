@@ -116,7 +116,7 @@ public class HtmlIndenterTest extends TestBase2 {
         // misc broken HTML:
         format(
             "<html>\n<xbody>\n<h1>Hello World!</h1>\n<p>text\n</body>",
-            "<html>\n    <xbody>\n        <h1>Hello World!</h1>\n        <p>text\n    </body>", null);
+            "<html>\n    <xbody>\n        <h1>Hello World!</h1>\n        <p>text\n            </body>", null);
         format("<html>\n<body>\n<div>\nSome text\n<!--\n     Some comment\n       * bullet\n       * bullet2\n-->\n</div>\n</body>\n</html>\n",
                "<html>\n    <body>\n        <div>\n            Some text\n            <!--\n                 Some comment\n                   * bullet\n                   * bullet2\n            -->\n        </div>\n    </body>\n</html>\n", null);
         format("<html>\n<body>\n<pre>Some\ntext which\n  should not be formatted.\n \n </pre>\n</body>\n</html>\n",
@@ -165,6 +165,11 @@ public class HtmlIndenterTest extends TestBase2 {
         format(
             "<div style=\"\"",
             "<div style=\"\"", null);
+
+        // #162199
+        format(
+            "</body>",
+            "</body>", null);
     }
 
     public void testFormattingHTML() throws Exception {
@@ -181,6 +186,18 @@ public class HtmlIndenterTest extends TestBase2 {
 
     public void testFormattingHTML03() throws Exception {
         reformatFileContents("testfiles/simple03.html",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingHTML04() throws Exception {
+        reformatFileContents("testfiles/simple04.html",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingHTML05() throws Exception {
+        reformatFileContents("testfiles/simple05.html",new IndentPrefs(4,4));
+    }
+
+    public void testFormattingHTML06() throws Exception {
+        reformatFileContents("testfiles/simple06.html",new IndentPrefs(4,4));
     }
 
     public void testIndentation() throws Exception {
@@ -222,7 +239,7 @@ public class HtmlIndenterTest extends TestBase2 {
         // misc invalid HTML doc formatting:
         insertNewline(
             "<html>\n    <xbody>\n        <h1>Hello World!</h1>\n        <p>text\n^</body>",
-            "<html>\n    <xbody>\n        <h1>Hello World!</h1>\n        <p>text\n\n    ^</body>", null);
+            "<html>\n    <xbody>\n        <h1>Hello World!</h1>\n        <p>text\n\n            ^</body>", null);
 
         // #149719
         insertNewline(
@@ -283,6 +300,21 @@ public class HtmlIndenterTest extends TestBase2 {
         insertNewline(
             "<html>\n    <body>\n        <table>\n            <tr>\n                <td><table></table><p>text^",
             "<html>\n    <body>\n        <table>\n            <tr>\n                <td><table></table><p>text\n                        ^", null);
+
+        //#162945
+        insertNewline(
+            "<style>^</style>",
+            "<style>\n    ^\n</style>", null);
+
+        //#162913
+        insertNewline(
+            "<Table>\n    <tr><td></td></tr>\n</table>^",
+            "<Table>\n    <tr><td></td></tr>\n</table>\n^", null);
+
+        //#163238
+        insertNewline(
+            "<table width = '100%'><tr><td id='picture'>^</a></td></tr></table>",
+            "<table width = '100%'><tr><td id='picture'>\n            ^</a></td></tr></table>", null);
     }
 
 }

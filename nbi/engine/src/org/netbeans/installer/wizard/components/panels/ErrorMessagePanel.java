@@ -284,8 +284,7 @@ public class ErrorMessagePanel extends WizardPanel {
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
             // errorLabel ///////////////////////////////////////////////////////////
-            errorLabel = new NbiLabel();
-            errorLabel.setFocusable(true);
+            errorLabel = new NbiLabel();           
             
             // this /////////////////////////////////////////////////////////////////
             add(errorLabel, new GridBagConstraints(

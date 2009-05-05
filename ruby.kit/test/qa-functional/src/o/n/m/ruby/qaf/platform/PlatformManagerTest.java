@@ -44,13 +44,15 @@ import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -68,6 +70,11 @@ public class PlatformManagerTest extends JellyTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+//        if (isMacOsX()) {
+//            System.err.println(">>> set dispatch model to ROBOT_MODEL_MASK for Mac OS X");
+            JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+//        }
+        System.out.println("##### "+getName()+" #####");
         rpm = getPlatformManager();
         platforms = new JListOperator(rpm);
     }
@@ -79,10 +86,13 @@ public class PlatformManagerTest extends JellyTestCase {
     }
 
     public void testRemove() {
+        sleep(2000);
         int listSize = platforms.getModel().getSize();
         assertTrue("at least one platform",  listSize > 0);
         //Built-in JRuby 1.1.4
         String bundledJRuby = Bundle.getStringTrimmed("org.netbeans.api.ruby.platform.Bundle", "RubyPlatformManager.CTL_BundledJRubyLabel");
+        // XXX this call close the dialog on Mac OS X with default dispatchig model
+        // to reproduce just comment out the testInit()
         platforms.selectItem(bundledJRuby);
         //Remove
         String remove = Bundle.getStringTrimmed("org.netbeans.modules.ruby.platform.Bundle", "RubyPlatformCustomizer.removeButton.text");
@@ -113,7 +123,7 @@ public class PlatformManagerTest extends JellyTestCase {
         //Add Platform
         String addPlf = Bundle.getStringTrimmed("org.netbeans.modules.ruby.platform.Bundle", "RubyPlatformCustomizer.addButton.text");
         JButtonOperator jbo = new JButtonOperator(rpm, addPlf);
-        jbo.pushNoBlock();
+        jbo.push();
         new JFileChooserOperator().chooseFile(binPath);
         new JProgressBarOperator(rpm).waitComponentShowing(false);
         assertEquals("not added", listSize + 1, platforms.getModel().getSize());
@@ -135,7 +145,9 @@ public class PlatformManagerTest extends JellyTestCase {
         String toolsMenu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Actions/Tools");
         //Ruby Platforms
         String rp = Bundle.getStringTrimmed("org.netbeans.modules.ruby.platform.Bundle", "CTL_RubyPlatformAction");
-        new ActionNoBlock(toolsMenu + "|" + rp, null).perform();
+        String menuPath = toolsMenu + "|" + rp;
+        System.err.println(">>> menuPath='" + menuPath + "'");
+        new Action(menuPath, null).perform();
         //Ruby Platform Manager
         String mgrTitle = Bundle.getStringTrimmed("org.netbeans.modules.ruby.platform.Bundle", "CTL_RubyPlatformManager_Title");
         return new NbDialogOperator(mgrTitle);
@@ -143,6 +155,18 @@ public class PlatformManagerTest extends JellyTestCase {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(PlatformManagerTest.class).enableModules(".*").clusters("ruby")); //NOI18N
+                NbModuleSuite.createConfiguration(PlatformManagerTest.class).enableModules(".*").clusters(".*")); //NOI18N
+    }
+
+    private void sleep(long milis) {
+        try {
+            Thread.sleep(milis);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private boolean isMacOsX() {
+        return System.getProperty("os.name").toLowerCase().startsWith("mac os x");
     }
 }

@@ -45,6 +45,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.openide.util.Mutex;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 
 /**
  * SharabilityQueryImplementation for j2seproject with multiple sources
@@ -55,8 +57,10 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
     private String baseDir;
     private int baseDirLength;
     private boolean privateShared;
+    private ConfigurationDescriptorProvider projectDescriptorProvider;
 
-    MakeSharabilityQuery(File baseDirFile) {
+    MakeSharabilityQuery(ConfigurationDescriptorProvider projectDescriptorProvider, File baseDirFile) {
+        this.projectDescriptorProvider = projectDescriptorProvider;
         this.baseDirFile = baseDirFile;
         this.baseDir = baseDirFile.getPath();
         this.baseDirLength = this.baseDir.length();
@@ -72,6 +76,12 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
      * @return one of {@link org.netbeans.api.queries.SharabilityQuery}'s constants
      */
     public int getSharability(final File file) {
+        //ConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+        //if (configurationDescriptor != null && configurationDescriptor.getModified()) {
+        //    // Make sure all sharable files are saved on disk
+        //    // See IZ http://www.netbeans.org/issues/show_bug.cgi?id=153504
+        //    configurationDescriptor.save();
+        //}
         Integer ret = ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
 
             public Integer run() {
@@ -114,10 +124,10 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
                     } else if (subString.startsWith("nbproject" + File.separator + "qt-")) // NOI18N
                     {
                         return Integer.valueOf(subString.endsWith(".pro")? SharabilityQuery.SHARABLE : SharabilityQuery.NOT_SHARABLE); // NOI18N
-                    } else if (subString.equals("build")) // NOI18N
+                    } else if (subString.startsWith("build" + File.separator)) // NOI18N
                     {
                         return Integer.valueOf(SharabilityQuery.NOT_SHARABLE);
-                    } else if (subString.equals("dist")) // NOI18N
+                    } else if (subString.startsWith("dist" + File.separator)) // NOI18N
                     {
                         return Integer.valueOf(SharabilityQuery.NOT_SHARABLE);
                     }

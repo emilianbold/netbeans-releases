@@ -76,8 +76,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     protected String name;
     protected String type;
     protected String value;
-    protected String ovalue;
-    protected String derefValue;
+//    protected String derefValue;
     protected Field[] fields;
     protected TypeInfo tinfo;
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
@@ -99,7 +98,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         assert !SwingUtilities.isEventDispatchThread();
         this.name = name;
         type = getDebugger().requestWhatis(name);
-        ovalue = null;
         fields = new Field[0];
         tinfo = TypeInfo.getTypeInfo(getDebugger(), this);
         getDebugger().addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
@@ -111,11 +109,11 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             this.value = GdbUtils.mackHack(value);
         }
 
-        if (GdbUtils.isSinglePointer(type)) {
-            derefValue = getDebugger().requestValue('*' + name);
-        } else {
-            derefValue = null;
-        }
+//        if (GdbUtils.isSinglePointer(type)) {
+//            derefValue = getDebugger().requestValue('*' + name);
+//        } else {
+//            derefValue = null;
+//        }
     }
 
     protected AbstractVariable() { // used by AbstractField instantiation...
@@ -170,7 +168,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             int count = 20;
 
             // this can get called while var is waiting for its type to be returned
-            while (type == null && count-- > 0 && debugger.getState() == GdbDebugger.State.STOPPED) {
+            while (type == null && count-- > 0 && debugger.isStopped()) {
                 if (log.isLoggable(Level.FINE) && count == 19) {
                     log.fine("AV.waitForType: Waiting on type for " + name);
                 }
@@ -286,13 +284,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 if (this instanceof GdbWatchVariable) {
                     fullname = ((GdbWatchVariable) this).getWatch().getExpression();
                 } else {
-                    if (this instanceof AbstractField) {
-                        fullname = ((AbstractField) this).getFullName(false);
-                    } else {
-                        fullname = name;
-                    }
+                    fullname = getFullName();
                 }
-                ovalue = this.value;
                 if (!debugger.isCplusPlus() && rt.equals("_Bool") && !isNumber(value)) { // NOI18N
                     value = value.equals("true") ? "1" : "0"; // NOI18N - gdb doesn't handle
                 }
@@ -324,15 +317,11 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
     }
 
-    public void restoreOldValue() {
-        value = ovalue;
-    }
-
     public synchronized void setModifiedValue(String value) {
         this.value = value;
         if (fields.length > 0) {
             emptyFields();
-            derefValue = null;
+//            derefValue = null;
             if (value.length() > 0) {
                 expandChildren();
             }
@@ -441,7 +430,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     * @return 0 if the variable shouldn't have a turner and fields.length if it should
     */
     public int getFieldsCount() {
-        if (getDebugger() == null || getDebugger().getState() != GdbDebugger.State.STOPPED) {
+        if (getDebugger() == null || !getDebugger().isStopped()) {
             return 0;
         } else if (fields.length > 0) {
             return fields.length;
@@ -463,21 +452,18 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         if (rt != null && rt.length() > 0) {
             if (GdbUtils.isArray(rt) && !isCharString(rt)) {
                 return true;
-            } else if (rt != null && rt.length() > 0) {
-                if (isValidPointerAddress()) {
-                    if (GdbUtils.isFunctionPointer(rt) || rt.equals("void *") || // NOI18N
-                            (isCharString(rt) && !GdbUtils.isMultiPointer(rt))) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                } else if (value != null && value.length() > 0 &&
-                        (value.charAt(0) == '{' || value.charAt(value.length() - 1) == '}')) {
+            } else if (isValidPointerAddress()) {
+                if (GdbUtils.isFunctionPointer(rt) || rt.equals("void *") || // NOI18N
+                        (isCharString(rt) && !GdbUtils.isMultiPointer(rt))) {
+                    return false;
+                } else {
                     return true;
                 }
             }
         }
-        return false;
+        // check if value like {...}
+        return value != null && value.length() > 0 &&
+            (value.charAt(0) == '{' || value.charAt(value.length() - 1) == '}');
     }
 
     /**
@@ -564,15 +550,15 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return fields;
     }
 
-    /**
-     * In the JPDA implementation a value isn't always a String. We're (currently)
-     * storing the value as a String so no conversion is done. However, keeping
-     * this method makes it possible for us to change at a later date...
-     *
-     * @return The value of this instance
-     */
-    public String getToStringValue () throws InvalidExpressionException {
-        return getValue();
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof AbstractVariable &&
+                    getFullName(true).equals(((AbstractVariable) o).getFullName(true));
+    }
+
+    @Override
+    public int hashCode() {
+        return getFullName(true).hashCode();
     }
 
     public String getName() {
@@ -623,9 +609,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             } else {
                 Map<String, Object> map = getTypeInfo().getMap();
                 if (map != null) { // a null map means we never got type information
-                    if (map.isEmpty() && v.charAt(0) != '{') {
+                    // see issues 162747 and 163290
+                    if (v.indexOf('{') == -1) {
                         // an empty map means its a pointer to a non-struct/class/union
-                        createChildrenForPointer(t, v);
+                        addField(new AbstractField(this, '*' + getName(), t, v));
                     } else if (v.equals("<incomplete type>")) { // NOI18N
                         addField(new AbstractField(this, "", t, v)); // NOI18N
                     } else if (v.length() > 0) {
@@ -648,10 +635,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 }
             }
         }
-    }
-
-    private void createChildrenForPointer(String t, String v) {
-            addField(new AbstractField(this, '*' + getName(), t, v));
     }
 
     private void createChildrenForMultiPointer(String t) {
@@ -950,7 +933,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return "[" + data + "]"; // NOI18N
     }
 
-    private static int log10(int n) {
+    static int log10(int n) {
         int l = 1;
         while ((n = n / 10) > 0) {
             l++;
@@ -962,6 +945,11 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     private static final String ZEROS = "            "; // NOI18N
 
     static String zeros(int n) {
+        // Perf & mem optimization
+        switch (n) {
+            case 1 : return " "; // NOI18N
+            case 2 : return "  "; // NOI18N
+        }
         if (n < ZEROS.length()) {
             return ZEROS.substring(0, n);
         } else {
@@ -1021,10 +1009,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
 
     private void updateVariable() {
         value = getDebugger().requestValue("\"" + getName() + "\""); // NOI18N
-        String rt = getTypeInfo().getResolvedType(this);
-        if (GdbUtils.isPointer(rt)) {
-            derefValue = getDebugger().requestValue('*' + getName());
-        }
+//        String rt = getTypeInfo().getResolvedType(this);
+//        if (GdbUtils.isPointer(rt)) {
+//            derefValue = getDebugger().requestValue('*' + getName());
+//        }
         setModifiedValue(value);
     }
 
@@ -1051,20 +1039,15 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
     }
 
-    public String getFullName() {
+    public final String getFullName() {
         return getFullName(false);
     }
 
-    public String getFullName(boolean showBase) {
-        if (this instanceof AbstractField) {
-            return ((AbstractField) this).getFullName(showBase);
-        } else {
-            return getName();
-        }
+    protected String getFullName(boolean showBase) {
+        return name;
     }
 
     private static class AbstractField extends AbstractVariable implements Field {
-
         private AbstractVariable parent;
 
         public AbstractField(AbstractVariable parent, String name, String type, String value) {
@@ -1087,7 +1070,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             }
             this.parent = parent;
             fields = new Field[0];
-            derefValue = null;
+//            derefValue = null;
             tinfo = null;
 
             if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
@@ -1110,7 +1093,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
 
         @Override
-        public String getFullName(boolean showBaseClass) {
+        protected String getFullName(boolean showBaseClass) {
             String pname; // parent part of name
             String fullname;
             int pos;

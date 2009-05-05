@@ -264,6 +264,45 @@ public class FilesAndAttributesCheck extends NbTestCase {
         }
     }
 
+    public void testTemplateHTMLDescriptions() throws Exception {
+        FileObject orig = FileUtil.getConfigFile("Templates");
+
+        Enumeration<? extends FileObject> allTemplates = orig.getChildren(true);
+        StringBuilder errors = new StringBuilder();
+
+        while (allTemplates.hasMoreElements()) {
+            FileObject fo = allTemplates.nextElement();
+            if (fo.isFolder()) {
+                continue;
+            }
+
+            Object attr = fo.getAttribute("instantiatingWizardURL");
+            if (attr == null) {
+                continue;
+            }
+
+            URL u = (URL) attr;
+            byte[] arr = new byte[1024 * 8];
+            int len = 0;
+            InputStream is = u.openStream();
+            for (;;) {
+                int r = is.read(arr, len, arr.length - len);
+                if (r == -1) {
+                    break;
+                }
+                len += r;
+            }
+            String s = new String(arr, 0, len);
+            if (!s.contains("This feature is not yet enabled")) {
+                errors.append("The HTML description shall contain ergonomics warning for " + fo + " at " + u + ":\n" + s + "\n");
+            }
+        }
+
+        if (errors.length() > 0) {
+            fail(errors.toString());
+        }
+    }
+
     private static String getDisplayName(FileObject f) throws FileStateInvalidException {
         return f.getFileSystem().getStatus().annotateName(
             f.getNameExt(), Collections.<FileObject>singleton(f)

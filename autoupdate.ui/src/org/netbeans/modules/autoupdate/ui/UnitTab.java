@@ -126,6 +126,7 @@ public class UnitTab extends javax.swing.JPanel {
     private RowTabAction moreAction;
     private RowTabAction lessAction;
     private RowTabAction removeLocallyDownloaded;
+    private static final String ADVANCED_VIEW_SELECTED_PROP = "plugin.manager.advanced.view.selected";//NOI18N
 
     private static Boolean isWaitingForExternal = false;
     
@@ -324,6 +325,7 @@ public class UnitTab extends javax.swing.JPanel {
     private Collection<Unit> oldUnits = Collections.emptySet ();
     
     public void refreshState () {
+        advView.setVisible(this.model.supportsTwoViews());
         final Collection<Unit> units = model.getMarkedUnits ();
         if (oldUnits.equals (units)) {
             return ;
@@ -587,6 +589,7 @@ public class UnitTab extends javax.swing.JPanel {
         spTab = new javax.swing.JSplitPane();
         topButton = new javax.swing.JButton();
         lWarning = new javax.swing.JLabel();
+        advView = new javax.swing.JCheckBox();
 
         lSearch.setLabelFor(tfSearch);
         org.openide.awt.Mnemonics.setLocalizedText(lSearch, org.openide.util.NbBundle.getMessage(UnitTab.class, "lSearch1.text")); // NOI18N
@@ -597,6 +600,14 @@ public class UnitTab extends javax.swing.JPanel {
         spTab.setOneTouchExpandable(true);
 
         org.openide.awt.Mnemonics.setLocalizedText(topButton, "jButton1");
+
+        advViewInit();
+        org.openide.awt.Mnemonics.setLocalizedText(advView, org.openide.util.NbBundle.getBundle(UnitTab.class).getString("UnitTab.advView.text")); // NOI18N
+        advView.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                advViewItemStateChanged(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -611,14 +622,15 @@ public class UnitTab extends javax.swing.JPanel {
                         .add(lSearch)
                         .add(4, 4, 4)
                         .add(tfSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 689, Short.MAX_VALUE)
+                    .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 712, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(bTabAction)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lSelectionInfo)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(lWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 653, Short.MAX_VALUE)))
+                        .add(lWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(advView)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -630,12 +642,13 @@ public class UnitTab extends javax.swing.JPanel {
                     .add(lSearch)
                     .add(topButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)
+                .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 41, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER, false)
                     .add(bTabAction)
                     .add(lSelectionInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(lWarning))
+                    .add(lWarning)
+                    .add(advView))
                 .addContainerGap())
         );
 
@@ -645,7 +658,21 @@ public class UnitTab extends javax.swing.JPanel {
         topButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UnitTab.class, "ACN_Reload")); // NOI18N
         topButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UnitTab.class, "ACD_Reload")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
+
+    private void advViewItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_advViewItemStateChanged
+        if (this.model.supportsTwoViews()) {
+            manager.setAdvancedView(advView.isSelected());
+            manager.updateUnitsChanged();
+            System.setProperty(ADVANCED_VIEW_SELECTED_PROP, "" + advView.isSelected());
+        }
+    }//GEN-LAST:event_advViewItemStateChanged
+
+    private void advViewInit() {
+        advView.setVisible(this.model.supportsTwoViews());
+        if (this.model.supportsTwoViews()) {            
+            advView.setSelected(Boolean.getBoolean(ADVANCED_VIEW_SELECTED_PROP));
+        }
+    }
     
     private LocalDownloadSupport getLocalDownloadSupport () {
         return (model instanceof LocallyDownloadedTableModel) ? ((LocallyDownloadedTableModel)model).getLocalDownloadSupport () : null;
@@ -1803,6 +1830,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
     }    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox advView;
     private javax.swing.JButton bTabAction;
     private javax.swing.JLabel lSearch;
     private javax.swing.JLabel lSelectionInfo;

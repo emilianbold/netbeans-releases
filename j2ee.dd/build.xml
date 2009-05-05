@@ -99,6 +99,19 @@ made subject to such option by the copyright holder.
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>
+    <replace file="${s2b_root_2_5}/ServletMapping.java" summary="true">
+        <replacetoken>public java.lang.String[] getUrlPattern() {</replacetoken>
+        <replacevalue>public java.lang.String[] getUrlPatterns() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_2_5}/ServletMapping.java" summary="true">
+        <replacetoken>public void setUrlPattern(java.lang.String[] value) {</replacetoken>
+        <replacevalue>public void setUrlPatterns(java.lang.String[] value) {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_2_5}/WebApp.java" summary="true">
+        <replacetoken>org.netbeans.modules.j2ee.dd.api.web.ServletMapping25</replacetoken>
+        <replacevalue>org.netbeans.modules.j2ee.dd.api.web.ServletMapping</replacevalue>
+    </replace>
+
 	<schema2beans schema="${s2b_res_root}/ejb-jar_1_1.dtd"
  	  mddFile="${s2b_res_root}/ejb-jar_1_1.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_1_1"

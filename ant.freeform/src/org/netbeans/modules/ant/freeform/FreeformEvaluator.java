@@ -73,6 +73,7 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
     private PropertyEvaluator delegate;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final Set<PropertyEvaluator> intermediateEvaluators = new HashSet<PropertyEvaluator>();
+    private final Object privateLock = new Object();
     
     public FreeformEvaluator(FreeformProject project) throws IOException {
         this.project = project;
@@ -81,11 +82,14 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
     }
     
     private void init() throws IOException {
-        if (delegate != null) {
-            delegate.removePropertyChangeListener(this);
+        PropertyEvaluator newDelegate = initEval();
+        synchronized (privateLock) {
+            if (delegate != null) {
+                delegate.removePropertyChangeListener(this);
+            }
+            newDelegate.addPropertyChangeListener(this);
+            delegate = newDelegate;
         }
-        delegate = initEval();
-        delegate.addPropertyChangeListener(this);
         if (org.netbeans.modules.ant.freeform.Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
             org.netbeans.modules.ant.freeform.Util.err.log("properties for " + project.getProjectDirectory() + ": " + delegate.getProperties());
         }

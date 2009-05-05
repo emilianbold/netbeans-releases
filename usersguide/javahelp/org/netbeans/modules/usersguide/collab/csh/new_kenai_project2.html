@@ -14,39 +14,60 @@
         
         <p><small><a href="#seealso">See Also</a></small></p>
         
-        <p>The New Kenai Project wizard enables you to create a new project on Kenai.com.
+        <p>The New Kenai Project wizard enables you to create a new project on Kenai.
             You open the wizard by choosing Kenai &gt; New Kenai Project from the Team menu.
             </p>
-           <!--
-        <ul class="note">
-            <li> You can view all of your project contents in a directory-based view in 
-                the <a href="proj_files_window.html">Files window</a>. To open the Files 
-                window, choose Window &gt; Files (Ctrl-2).</li>
-        </ul>
-        
-        <h4>To view documentation specific to the type of project you are working 
-            in, see the following pages:</h4>
-            
-        <ul>
-            <li><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/proj_window.html">Java Projects</a></li>
-            <li><a href="nbdocs://org.netbeans.modules.cnd/org/netbeans/modules/cnd/help/GettingStarted/ProjectsWindow.html">C/C++ Projects</a></li>
-            <li><a href="nbdocs://org.netbeans.modules.ruby.help/org/netbeans/modules/ruby/help/docs/rubyprojectnode.html">Ruby Projects</a></li>
-        </ul>
-            
-        <h3>Context-Sensitive Menu</h3>
-        
-        <p>Each node in the projects window has a context-sensitive pop-up menu listing 
-            commands that you can run on that node. You open a node's pop-up menu by 
-            right-clicking the node. The pop-up menu for project nodes contains all of 
-            the major project commands. The pop-up menu also contains a Properties 
-            command, which you can use to configure your project.</p>
-        
+
+            <p>The Source Code and Issues page enables you to set the properties related to
+                the version control system and issue tracking system for the project.
+            </p>
+
+            <p>In the Source Code and Issues page you need to set the following properties.</p>
+
+            <ul>
+                <li><strong>Source Code Repository.</strong> Select the version control system for the project
+                    from the drop-down menu.
+                    <ul>
+                        <li><strong>Subversion</strong> or <strong>Mercurial.</strong> Select Subversion or Mercurial
+                        to create the repository on Kenai.
+                        If you already have a Subversion or Mercurial repository but it is not on Kenai, select External.
+                        If you select Subversion or Mercurial, you need to specify an empty folder to contain the local repository.
+                        The IDE initializes the local repository when you finish the wizard.</li>
+                        <li><strong>External.</strong> Select External to specify an existing remote repository.
+                        If you select External, you need to specify the URL of the remote repository.
+                        The IDE will not create a local repository.</li>
+                        <li><strong>None.</strong> Select None if you do not want to specify or create a
+                        remote repository for the project at this time.
+                        You can create or specify the repository later.</li>
+                    </ul>
+
+                </li>
+                <li><strong>Repository Name.</strong> (Subversion or Mercurial only) This field is used to generate the URL of the remote repository.
+                You do not need to modify the default name.</li>
+                <li><strong>Repository URL.</strong> (External only) Specify the URL of the remote repository when using an external version control system.</li>
+                <li><strong>Local Repository Folder.</strong> (Subversion or Mercurial only) Specify an empty local directory for the local repository.
+                The local repository is created when you finish the wizard.</li>
+                <li><strong>Issue Tracking.</strong>
+                Select the issue tracker for the project from the drop-down menu.
+                    <ul>
+                        <li><strong>Bugzilla</strong> or <strong>JIRA.</strong>
+                        If you select Bugzilla or JIRA, an issue tracker for the project is created on Kenai.</li>
+                        <li><strong>External.</strong> Select External to specify an existing issue tracker.
+                        If you select External, you need to specify the URL of the issue tracker.</li>
+                        <li><strong>None.</strong> Select None if you do not want to specify or create an
+                        issue tracker for the project.
+                        You can create or specify the issue tracker later.</li>
+                    </ul>
+                </li>
+
+            </ul>
+           
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="proj_files_window.html">Files Window</a></dd>
-            <dd><a href="proj_fav_window.html">Favorites Window</a></dd>            
+            <dd><a href="../kenai_create.html">Creating a Kenai Project</a></dd>
+            <dd><a href="../kenai_quickref.html">Kenai Project Tasks: Quick Reference</a></dd>
         </dl>
-        -->
+        
         <hr>
         <small><a href="../../credits.html">Legal Notices</a></small>
         <table border="0" cellpadding="50">

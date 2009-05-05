@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -70,7 +70,7 @@ class SearchExecutor implements Runnable {
     };
     
     private final SearchHistoryPanel    master;
-    private Map<String, Set<File>>      workFiles;
+    private Map<File, Set<File>>        workFiles;
     private Map<String,File>            pathToRoot;
     private final SearchCriteriaPanel   criteria;
     
@@ -82,22 +82,17 @@ class SearchExecutor implements Runnable {
         criteria = master.getCriteria();
         
         pathToRoot = new HashMap<String, File>(); 
-        if (searchingUrl()) {
-            String rootPath = Mercurial.getInstance().getRepositoryRoot(master.getRoots()[0]).toString();
-            pathToRoot.put(rootPath, master.getRoots()[0]);
-        } else {
-             workFiles = new HashMap<String, Set<File>>();
-            for (File file : master.getRoots()) {
-                String rootPath = Mercurial.getInstance().getRepositoryRoot(file).toString();
+        workFiles = new HashMap<File, Set<File>>();
+        for (File file : master.getRoots()) {
+            File root = Mercurial.getInstance().getRepositoryRoot(file);
 
-                Set<File> set = workFiles.get(rootPath);
-                if (set == null) {
-                    set = new HashSet<File>(2);
-                    workFiles.put(rootPath, set);
-                }
-                set.add(file);
+            Set<File> set = workFiles.get(root);
+            if (set == null) {
+                set = new HashSet<File>(2);
+                workFiles.put(root, set);
             }
-        } 
+            set.add(file);
+        }
 
     }    
         
@@ -105,35 +100,25 @@ class SearchExecutor implements Runnable {
 
         final String fromRevision = criteria.getFrom();
         final String toRevision = criteria.getTo();
+        final int limitRevisions = criteria.getLimit();
 
         completedSearches = 0;
-        if (searchingUrl()) {
-            RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(master.getRepositoryUrl());
+        for (Map.Entry<File, Set<File>> entry : workFiles.entrySet()) {
+            final File root = entry.getKey();
+            final Set<File> files = entry.getValue();
+            RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
             HgProgressSupport support = new HgProgressSupport() {
-                public void perform() {                    
+                public void perform() {
                     OutputLogger logger = getLogger();
-                    search(master.getRepositoryUrl(), null, fromRevision, toRevision, this, logger);
+                    search(root, files, fromRevision, toRevision, limitRevisions, this, logger);
                 }
             };
-            support.start(rp, master.getRepositoryUrl(), NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
-        } else {
-            for (Iterator i = workFiles.keySet().iterator(); i.hasNext();) {
-                final String rootUrl = (String) i.next();
-                final Set<File> files = workFiles.get(rootUrl);
-                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(rootUrl);
-                HgProgressSupport support = new HgProgressSupport() {
-                    public void perform() {                    
-                        OutputLogger logger = getLogger();                        
-                        search(rootUrl, files, fromRevision, toRevision, this, logger);
-                    }
-                };
-                support.start(rp, rootUrl, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
-            }
+            support.start(rp, root, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
         }
     }
 
-    private void search(String rootUrl, Set<File> files, String fromRevision, 
-            String toRevision, HgProgressSupport progressSupport, OutputLogger logger) {
+    private void search(File root, Set<File> files, String fromRevision,
+            String toRevision, int limitRevisions, HgProgressSupport progressSupport, OutputLogger logger) {
         if (progressSupport.isCanceled()) {
             searchCanceled = true;
             return;
@@ -141,27 +126,27 @@ class SearchExecutor implements Runnable {
         
         HgLogMessage[] messages;
         if (master.isIncomingSearch()) {
-            messages = HgCommand.getIncomingMessages(rootUrl, toRevision, master.isShowMerges(), logger);
+            messages = HgCommand.getIncomingMessages(root, toRevision, master.isShowMerges(), logger);
         }else if (master.isOutSearch()) {
-            messages = HgCommand.getOutMessages(rootUrl, toRevision, master.isShowMerges(), logger);
+            messages = HgCommand.getOutMessages(root, toRevision, master.isShowMerges(), logger);
         } else {
             if(!master.isShowInfo()) {
-                messages = HgCommand.getLogMessagesNoFileInfo(rootUrl, files, fromRevision, toRevision, master.isShowMerges(), logger);
+                messages = HgCommand.getLogMessagesNoFileInfo(root, files, fromRevision, toRevision, master.isShowMerges(), limitRevisions, logger);
             } else {
-                messages = HgCommand.getLogMessages(rootUrl, files, fromRevision, toRevision, master.isShowMerges(), logger);
+                messages = HgCommand.getLogMessages(root, files, fromRevision, toRevision, master.isShowMerges(), true, limitRevisions, logger, true);
             }
         }
-        appendResults(rootUrl, messages);
+        appendResults(root, messages);
     }
   
     
     /**
      * Processes search results from a single repository. 
      * 
-     * @param rootUrl repository root URL
+     * @param root repository root
      * @param logMessages events in chronological order
      */ 
-    private synchronized void appendResults(String rootUrl, HgLogMessage[] logMessages) {
+    private synchronized void appendResults(File root, HgLogMessage[] logMessages) {
         Map<String, String> historyPaths = new HashMap<String, String>();
         List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
         // traverse in reverse chronological order
@@ -171,7 +156,7 @@ class SearchExecutor implements Runnable {
             if (username != null && logMessage.getAuthor().indexOf(username) == -1) continue;
             String msg = criteria.getCommitMessage();
             if (msg != null && logMessage.getMessage().indexOf(msg) == -1) continue;
-            RepositoryRevision rev = new RepositoryRevision(logMessage, rootUrl);
+            RepositoryRevision rev = new RepositoryRevision(logMessage, root);
             for (RepositoryRevision.Event event : rev.getEvents()) {
                 if (event.getChangedPath().getAction() == 'A' && event.getChangedPath().getCopySrcPath() != null) {
                     // TBD: Need to handle Copy status
@@ -191,7 +176,7 @@ class SearchExecutor implements Runnable {
                         break;
                     }
                 }
-                File file = new File(rootUrl + File.separator + originalFilePath);
+                File file = new File(root, originalFilePath);
                 event.setFile(file);
             }
             results.add(rev);
@@ -199,13 +184,9 @@ class SearchExecutor implements Runnable {
         checkFinished(results);
     }
 
-    private boolean searchingUrl() {
-        return master.getRepositoryUrl() != null;
-    }
-    
     private void checkFinished(final List<RepositoryRevision> results) {
         completedSearches++;
-        if (searchingUrl() && completedSearches >= 1 || workFiles.size() == completedSearches) {
+        if (workFiles.size() == completedSearches) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     if(results.isEmpty()) {
@@ -213,11 +194,10 @@ class SearchExecutor implements Runnable {
                     } else {
                         master.setResults(results);
                     }
-                    
+
                 }
             });
         }
     }
-
   
 }

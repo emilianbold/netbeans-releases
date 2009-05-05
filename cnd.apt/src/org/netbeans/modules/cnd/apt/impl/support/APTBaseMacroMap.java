@@ -121,7 +121,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
             } while (defNode.accept(next)); 
             // special check for macros without values, we must set it to be 1
             List<APTToken> body = defNode.getBody();
-            if (body.isEmpty()) {
+            if (body.isEmpty() && look4Equal) {
                 body = APTUtils.DEF_MACRO_BODY;
             }
             if (isSystem) {

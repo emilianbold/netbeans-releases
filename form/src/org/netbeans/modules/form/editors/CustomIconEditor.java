@@ -375,10 +375,13 @@ public class CustomIconEditor extends javax.swing.JPanel {
         Icon icon = null;
         if (isClassPathSelected()) {
             if (selectedCPFile != null) {
-                type = IconEditor.TYPE_CLASSPATH;
                 name = FileUtil.getRelativePath(packageRoot, selectedCPFile);
                 try {
-                    icon = new ImageIcon(ImageIO.read(selectedCPFile.getURL()));
+                    Image image = ImageIO.read(selectedCPFile.getURL());
+                    if (image != null) {
+                        icon = new ImageIcon(image);
+                        type = IconEditor.TYPE_CLASSPATH;
+                    } // no NbImageIcon will be created for invalid file
                 } catch (IOException ex) { // should not happen
                     Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
                 }
@@ -386,10 +389,13 @@ public class CustomIconEditor extends javax.swing.JPanel {
         }
         else if (isExternalSelected()) {
             if (selectedExternalFile != null) {
-                type = IconEditor.TYPE_FILE;
                 name = selectedExternalFile.getAbsolutePath();
                 try {
-                    icon = new ImageIcon(ImageIO.read(new File(name)));
+                    Image image = ImageIO.read(new File(name));
+                    if (image != null) {
+                        icon = new ImageIcon(image);
+                        type = IconEditor.TYPE_FILE;
+                    } // no NbImageIcon will be created for invalid file
                 } catch (IOException ex) {
                     Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
                 }
@@ -398,7 +404,11 @@ public class CustomIconEditor extends javax.swing.JPanel {
                 type = IconEditor.TYPE_URL;
                 name = selectedURL;
                 try {
-                    icon = new ImageIcon(ImageIO.read(new URL(selectedURL)));
+                    Image image = ImageIO.read(new URL(selectedURL));
+                    if (image != null) {
+                        icon = new ImageIcon(image);
+                    }
+                    // for URL-based icon create NbImageIcon even if no icon can be loaded from the URL
                 } catch (IOException ex) {
                     Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
                 }

@@ -90,6 +90,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     
     protected static int SMART_TYPE = 1000;
     private static final String GENERATE_TEXT = NbBundle.getMessage(JavaCompletionItem.class, "generate_Lbl");
+    private static final Logger LOGGER = Logger.getLogger(JavaCompletionItem.class.getName());
 
     public static final JavaCompletionItem createKeywordItem(String kwd, String postfix, int substitutionOffset, boolean smartType) {
         return new KeywordItem(kwd, 0, postfix, substitutionOffset, smartType);
@@ -1518,7 +1519,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 });
             }
             try {
-                ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
+                ModificationResult mr = ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
@@ -1544,9 +1545,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 GeneratorUtils.generateMethodOverride(copy, tp, ee, idx);
                         }
                     }
-                }).commit();
+                });
+                GeneratorUtils.guardedCommit(c, mr);
             } catch (Exception ex) {
-                Logger.getLogger("global").log(Level.WARNING, null, ex);
+                LOGGER.log(Level.FINE, null, ex);
             }
         }
 
@@ -1679,7 +1681,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 });
             }
             try {
-                ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
+                ModificationResult mr = ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
@@ -1708,9 +1710,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             }
                         }
                     }
-                }).commit();
+                });
+                GeneratorUtils.guardedCommit(c, mr);
             } catch (Exception ex) {
-                Logger.getLogger("global").log(Level.WARNING, null, ex);
+                LOGGER.log(Level.FINE, null, ex);
             }
         }
 
@@ -1951,7 +1954,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (isAbstract && text.length() > 3) {
                 try {
                     final int off = offset + text.indexOf('{') + 1;
-                    ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
+                    ModificationResult mr = ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
                             WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
@@ -1968,8 +1971,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 path = path.getParentPath();
                             }
                         }
-                    }).commit();
+                    });
+                    GeneratorUtils.guardedCommit(c, mr);
                 } catch (Exception ex) {
+                    LOGGER.log(Level.FINE, null, ex);
                 }
             }
             if (!params.isEmpty() && text.trim().length() > 1) {
@@ -2149,7 +2154,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     if (position [0] != null)
                         offset2 [0] = position [0].getOffset();
                     final int off = offset2 [0] + text.indexOf('{') + 1;
-                    ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
+                    ModificationResult mr = ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
                             WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
@@ -2166,8 +2171,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 path = path.getParentPath();
                             }
                         }
-                    }).commit();
+                    });
+                    GeneratorUtils.guardedCommit(c, mr);
                 } catch (Exception ex) {
+                    LOGGER.log(Level.FINE, null, ex);
                 }
             }
         }
@@ -2966,7 +2973,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 });
             }
             try {
-                ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
+                ModificationResult mr = ModificationResult.runModificationTask(Collections.singletonList(Source.create(doc)), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
@@ -2994,11 +3001,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             copy.rewrite(clazz, decl);
                         }
                     }
-                }).commit();
+                });
+                GeneratorUtils.guardedCommit(c, mr);
             } catch (Exception ex) {
+                LOGGER.log(Level.FINE, null, ex);
             }
         }
 
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append("public "); //NOI18N

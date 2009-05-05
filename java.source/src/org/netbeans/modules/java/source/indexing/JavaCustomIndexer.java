@@ -115,7 +115,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 public Void run() throws IOException, InterruptedException {
                     return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
                         public Void run() throws Exception {
-                            final JavaParsingContext javaContext = new JavaParsingContext(root, bootPath, compilePath, sourcePath);
+                            final JavaParsingContext javaContext = new JavaParsingContext(root, bootPath, compilePath, sourcePath, context.checkForEditorModifications());
                             if (javaContext.uq == null)
                                 return null; //IDE is exiting, indeces are already closed.
                             final List<URL> errUrls = context.isSupplementaryFilesIndexing() ? null : TaskCache.getDefault().getAllFilesInError(context.getRootURI());
@@ -242,7 +242,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
             file.delete();
         }
-        if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.CLASS)).exists()) {
+        if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.SIG)).exists()) {
             String fileName = file.getName();
             fileName = fileName.substring(0, fileName.lastIndexOf('.'));
             final String[] patterns = new String[] {fileName + '.', fileName + '$'}; //NOI18N
@@ -308,7 +308,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 Exceptions.printStackTrace(ioe);
             }
         }
-        if (cont && (file = new File(classFolder, path + '.' + FileObjects.CLASS)).exists()) {
+        if (cont && (file = new File(classFolder, path + '.' + FileObjects.SIG)).exists()) {
             String fileName = file.getName();
             fileName = fileName.substring(0, fileName.lastIndexOf('.'));
             final String[] patterns = new String[] {fileName + '.', fileName + '$'}; //NOI18N

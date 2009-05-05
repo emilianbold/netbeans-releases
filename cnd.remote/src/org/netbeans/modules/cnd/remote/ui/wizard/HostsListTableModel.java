@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -119,7 +120,7 @@ class HostsListTableModel extends AbstractTableModel {
             case 0:
                 return record.name;
             case 1:
-                return CreateHostWizardIterator.getString(record.ssh ? "HostAvailable" : "HostUnavailable"); //NOI18N
+                return NbBundle.getMessage(getClass(), record.ssh ? "HostAvailable" : "HostUnavailable"); //NOI18N
             case 2:
                 return null;
             default:
@@ -183,8 +184,12 @@ class HostsListTableModel extends AbstractTableModel {
             log.fine("Hosts Lookup thread started");
             try {
                 byte[] ip = InetAddress.getLocalHost().getAddress();
-                if (ip.length == 0) {
+                if (ip.length < 4) {
                     // let's be paranoiac
+                    return;
+                }
+                if (ip[0] == 127 && ip[1] == 0 && ip[2] == 0 && ip[3] == 1) {
+                    // a workaround for #160258
                     return;
                 }
                 int idxLast = ip.length - 1; // FF.FF.FF.0

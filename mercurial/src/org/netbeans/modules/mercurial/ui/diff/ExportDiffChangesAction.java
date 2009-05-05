@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -112,13 +112,12 @@ public class ExportDiffChangesAction extends ContextAction {
     }
 
     public void performAction(ActionEvent e) {
-        File [] files = null;
         boolean noop;
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
         } else {
-            files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+            File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
             noop = files.length == 0;
         }
         if (noop) {
@@ -127,19 +126,19 @@ public class ExportDiffChangesAction extends ContextAction {
             return;
         }
 
-        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(files, HgModuleConfig.getDefault().getPreferences()) {
+        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(new File[] {HgUtils.getRootFile(context)}, HgModuleConfig.getDefault().getPreferences()) {
             @Override
             public void writeDiffFile(final File toFile) {
                 HgModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", toFile.getParent()); // NOI18N
                 File root = HgUtils.getRootFile(context);
-                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
+                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport ps = new HgProgressSupport() {
                     protected void perform() {
                         OutputLogger logger = getLogger();
                         async(this, context, toFile, logger);
                     }
                 };
-                ps.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffChangesAction.class, "LBL_ExportChanges_Progress")).waitFinished();
+                ps.start(rp, root, org.openide.util.NbBundle.getMessage(ExportDiffChangesAction.class, "LBL_ExportChanges_Progress")).waitFinished();
             }
         };
         exportDiffSupport.export();

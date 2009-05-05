@@ -426,6 +426,9 @@ public class TreeModelNode extends AbstractNode {
         if (name.startsWith ("<html>")) {
             htmlDisplayName = name;
             newDisplayName = removeHTML(name);
+        } else if (name.startsWith ("<_html>")) { //[TODO] use empty string as name in the case of <_html> tag
+            htmlDisplayName = '<' + name.substring(2);
+            newDisplayName = "";
         } else {
             htmlDisplayName = null;
             newDisplayName = name;

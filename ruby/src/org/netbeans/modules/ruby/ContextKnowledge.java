@@ -40,7 +40,7 @@ package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.jruby.nb.ast.Node;
+import org.jrubyparser.ast.Node;
 import org.netbeans.editor.BaseDocument;
 import org.openide.filesystems.FileObject;
 

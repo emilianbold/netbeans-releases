@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,6 +41,7 @@
 package org.netbeans.modules.mercurial.ui.clone;
 
 import java.io.IOException;
+import java.net.PasswordAuthentication;
 import java.util.MissingResourceException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
@@ -55,6 +56,7 @@ import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.HgKenaiSupport;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -64,7 +66,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
-import org.netbeans.modules.mercurial.ui.properties.HgProperties;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
@@ -73,6 +75,9 @@ import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import static org.netbeans.modules.mercurial.ui.properties.HgProperties.HGPROPNAME_DEFAULT_PULL;
+import static org.netbeans.modules.mercurial.ui.properties.HgProperties.HGPROPNAME_DEFAULT_PUSH;
+import static org.netbeans.modules.mercurial.ui.properties.HgProperties.HGPROPNAME_USERNAME;
 
 /**
  * Clone action for mercurial: 
@@ -111,41 +116,23 @@ public class CloneAction extends ContextAction {
         if (!clone.showDialog()) {
             return;
         }
-        performClone(root.getAbsolutePath(), clone.getOutputFileName(), projIsRepos, projFile, true, null, null);
+        performClone(new HgURL(root), clone.getTargetDir(), projIsRepos, projFile, true, null, null);
     }
 
-    public static RequestProcessor.Task performClone(final String source, final String target, boolean projIsRepos,
-            File projFile, final String pullPath, final String pushPath) {
+    public static RequestProcessor.Task performClone(final HgURL source, final File target, boolean projIsRepos,
+            File projFile, final HgURL pullPath, final HgURL pushPath) {
         return performClone(source, target, projIsRepos, projFile, false, pullPath, pushPath);
     }
 
-    private static RequestProcessor.Task performClone(final String source, final String target,
-            final boolean projIsRepos, final File projFile, final boolean isLocalClone, final String pullPath, final String pushPath) {
+    private static RequestProcessor.Task performClone(final HgURL source, final File target,
+            final boolean projIsRepos, final File projFile, final boolean isLocalClone, final HgURL pullPath, final HgURL pushPath) {
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(source);
         final HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
-                Mercurial hg = Mercurial.getInstance();
-                ProjectManager projectManager = ProjectManager.getDefault();
-                File prjFile = projFile;
-                Boolean prjIsRepos = projIsRepos;
-                File cloneFolder = new File (target);
-                File normalizedCloneFolder = FileUtil.normalizeFile(cloneFolder);
-                String projName = null;
-                if (projFile != null) projName = HgProjectUtils.getProjectName(projFile);
-                String prjName = projName;
-                File cloneProjFile;
-                if (!prjIsRepos) {
-                    String name = null;
-                    if(prjFile != null)
-                        name = prjFile.getAbsolutePath().substring(source.length() + 1);
-                    else
-                        name = target;
-                    cloneProjFile = new File (normalizedCloneFolder, name);
-                } else {
-                    cloneProjFile = normalizedCloneFolder;
-                }
-                final File clonePrjFile = cloneProjFile;
+                String projName = (projFile != null)
+                                  ? HgProjectUtils.getProjectName(projFile)
+                                  : null;
 
                 OutputLogger logger = getLogger();
                 try {
@@ -159,16 +146,16 @@ public class CloneAction extends ContextAction {
                             "MSG_CLONE_TITLE_SEP")); // NOI18N
                     List<String> list = HgCommand.doClone(source, target, logger);
                     if(list != null && !list.isEmpty()){
-                        HgUtils.createIgnored(cloneFolder);
+                        HgUtils.createIgnored(target);
                         logger.output(list);
                
-                        if (prjName != null) {
+                        if (projName != null) {
                             logger.outputInRed(
                                     NbBundle.getMessage(CloneAction.class,
-                                    "MSG_CLONE_FROM", prjName, source)); // NOI18N
+                                    "MSG_CLONE_FROM", projName, source)); // NOI18N
                             logger.outputInRed(
                                     NbBundle.getMessage(CloneAction.class,
-                                    "MSG_CLONE_TO", prjName, target)); // NOI18N
+                                    "MSG_CLONE_TO", projName, target)); // NOI18N
                         } else {
                             logger.outputInRed(
                                     NbBundle.getMessage(CloneAction.class,
@@ -181,9 +168,21 @@ public class CloneAction extends ContextAction {
                         logger.output(""); // NOI18N
 
                         if (isLocalClone){
-                            openProject(clonePrjFile, projectManager, hg);
+                            Mercurial hg = Mercurial.getInstance();
+                            ProjectManager projectManager = ProjectManager.getDefault();
+                            File normalizedCloneFolder = FileUtil.normalizeFile(target);
+                            File cloneProjFile;
+                            if (!projIsRepos) {
+                                String name = (projFile != null)
+                                              ? projFile.getAbsolutePath().substring(source.getPath().length() + 1)
+                                              : target.getAbsolutePath();
+                                cloneProjFile = new File (normalizedCloneFolder, name);
+                            } else {
+                                cloneProjFile = normalizedCloneFolder;
+                            }
+                            openProject(cloneProjFile, projectManager, hg);
                         } else if (HgModuleConfig.getDefault().getShowCloneCompleted()) {
-                            CloneCompleted cc = new CloneCompleted(cloneFolder);
+                            CloneCompleted cc = new CloneCompleted(target);
                             if (isCanceled()) {
                                 return;
                             }
@@ -194,22 +193,17 @@ public class CloneAction extends ContextAction {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 }finally {
-                    //#121581: Work around for ini4j bug on Windows not handling single '\' correctly
-                    // hg clone creates the default hgrc, we just overwrite it's contents with 
-                    // default path contianing '\\'
-                    if(isLocalClone && Utilities.isWindows()){ 
-                        fixLocalPullPushPathsOnWindows(cloneFolder.getAbsolutePath());
-                    }
-                    // #125835 - Push to default was not being set automatically by hg after Clone
-                    // but was after you opened the Mercurial -> Properties, inconsistent
-                    HgConfigFiles hgConfigFiles = new HgConfigFiles(cloneFolder);
-                    String defaultPull = hgConfigFiles.getDefaultPull(false);
-                    String defaultPush = hgConfigFiles.getDefaultPush(false);
-                    if(pullPath != null && !pullPath.equals("")) defaultPull = pullPath;
-                    if(pushPath != null && !pushPath.equals("")) defaultPush = pushPath;
+                    HgConfigFiles hgConfigFiles = new HgConfigFiles(target);
                     if (hgConfigFiles.getException() == null) {
-                        hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PULL, defaultPull);
-                        hgConfigFiles.setProperty(HgProperties.HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                        if (source.isKenaiURL()) {
+                            initializeDefaultPullPushUrlForKenai(hgConfigFiles);
+                            String kenaiUserName = getKenaiUserName();
+                            if (kenaiUserName != null) {
+                                hgConfigFiles.setProperty(HGPROPNAME_USERNAME, kenaiUserName);
+                            }
+                        } else {
+                            initializeDefaultPullPushUrl(hgConfigFiles);
+                        }
                     } else {
                         Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot set default push and pull path"); // NOI18N
                         Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
@@ -220,6 +214,79 @@ public class CloneAction extends ContextAction {
                         logger.output(""); // NOI18N
                     }
                 }
+            }
+
+            private void initializeDefaultPullPushUrl(HgConfigFiles hgConfigFiles) {
+                /*
+                 * Mercurial itself sets just "default" in 'hgrc' file.
+                 * We make sure that "default-push" is set, too - see
+                 * bug #125835 ("default-push should be set
+                 * automatically").
+                 */
+                if ((pullPath == null) && (pushPath == null)) {
+                    String defaultPull = hgConfigFiles.getDefaultPull(false);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
+
+                } else if ((pullPath != null) && (pushPath == null)) {
+                    String defaultPull = pullPath.toHgCommandUrlString();
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
+
+                } else if ((pullPath == null) && (pushPath != null)) {
+                    String defaultPush = pushPath.toHgCommandUrlString();
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+
+                } else if ((pullPath != null) && (pushPath != null)) {
+                    String defaultPull = pullPath.toHgCommandUrlString();
+                    String defaultPush = pushPath.toHgCommandUrlString();
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                }
+            }
+
+            private void initializeDefaultPullPushUrlForKenai(HgConfigFiles hgConfigFiles) {
+                /*
+                 * Mercurial itself sets just "default" in 'hgrc' file.
+                 * We make sure that "default-push" is set, too - see
+                 * bug #125835 ("default-push should be set
+                 * automatically"). Because Kenai username and password
+                 * should not be saved, we also modify the "default" - we
+                 * strip the userdata (username and password) if any.
+                 */
+                if ((pullPath == null) && (pushPath == null)) {
+                    String defaultPull = hgConfigFiles.getDefaultPull(false);
+                    String modifiedPullUrl = HgURL.stripUserInfo(defaultPull);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, modifiedPullUrl);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, modifiedPullUrl);
+
+                } else if ((pullPath != null) && (pushPath == null)) {
+                    String defaultPull = pullPath.toHgCommandUrlStringWithoutUserInfo();
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
+
+                } else if ((pullPath == null) && (pushPath != null)) {
+                    String defaultPull = hgConfigFiles.getDefaultPull(false);
+                    String modifiedPullUrl = HgURL.stripUserInfo(defaultPull);
+                    String defaultPush = pushPath.toHgCommandUrlStringWithoutUserInfo();
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, modifiedPullUrl);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+
+                } else if ((pullPath != null) && (pushPath != null)) {
+                    String defaultPull = pullPath.toHgCommandUrlStringWithoutUserInfo();
+                    String defaultPush = pushPath.toHgCommandUrlStringWithoutUserInfo();
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                }
+            }
+
+            private String getKenaiUserName() {
+                PasswordAuthentication passwordAuthentication
+                        = HgKenaiSupport.getInstance().getPasswordAuthentication(
+                                            source.toUrlStringWithoutUserInfo(),
+                                            false);
+                return (passwordAuthentication != null)
+                       ? passwordAuthentication.getUserName()
+                       : null;
             }
 
             private void openProject(final File clonePrjFile, final ProjectManager projectManager, final Mercurial hg) throws MissingResourceException {
@@ -274,14 +341,14 @@ public class CloneAction extends ContextAction {
     }
    
     private static final String HG_PATHS_SECTION_ENCLOSED = "[" + HgConfigFiles.HG_PATHS_SECTION + "]";// NOI18N
-    private static void fixLocalPullPushPathsOnWindows(String root) {
+    private static void fixLocalPullPushPathsOnWindows(File root) {
         File hgrcFile = null;
         File tempFile = null;
         BufferedReader br = null;
         PrintWriter pw = null;
         
         try {
-            hgrcFile = new File(root + File.separator + HgConfigFiles.HG_REPO_DIR, HgConfigFiles.HG_RC_FILE);
+            hgrcFile = new File(new File(root, HgConfigFiles.HG_REPO_DIR), HgConfigFiles.HG_RC_FILE);
             if (!hgrcFile.isFile() || !hgrcFile.canWrite()) return;
             
             tempFile = new File(hgrcFile.getAbsolutePath() + ".tmp"); // NOI18N

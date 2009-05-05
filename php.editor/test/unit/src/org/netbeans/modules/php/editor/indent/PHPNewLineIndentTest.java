@@ -94,7 +94,11 @@ public class PHPNewLineIndentTest extends PHPTestBase {
     public void testArrays3() throws Exception{
         testIndentInFile("testfiles/indent/arrays3.php");
     }
-
+    
+    public void test157137() throws Exception{
+        testIndentInFile("testfiles/indent/issue157137.php");
+    }
+    
     @Override
     protected boolean runInEQ() {
         return true;

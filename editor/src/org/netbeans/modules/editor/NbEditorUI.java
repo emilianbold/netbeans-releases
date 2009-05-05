@@ -85,6 +85,7 @@ import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
 import org.netbeans.modules.editor.impl.SearchBar;
 import org.netbeans.modules.editor.impl.StatusLineFactories;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ContextAwareAction;
@@ -134,19 +135,19 @@ public class NbEditorUI extends EditorUI {
                     }
                 }
 
-                // Check if editor is docked and if so then use global status bar.
-                JTextComponent component = getComponent();
-                // Check if component is inside main window
-                boolean underMainWindow = (SwingUtilities.isDescendingFrom(component,
-                WindowManager.getDefault().getMainWindow()));
-                getStatusBar().setVisible(!underMainWindow); // Note: no longer checking the preferences settting
+//                // Check if editor is docked and if so then use global status bar.
+//                JTextComponent component = getComponent();
+//                // Check if component is inside main window
+//                boolean underMainWindow = (SwingUtilities.isDescendingFrom(component,
+//                WindowManager.getDefault().getMainWindow()));
+//                getStatusBar().setVisible(!underMainWindow); // Note: no longer checking the preferences settting
             }
 
-            @Override
-            public void focusLost(FocusEvent e) {
-                // Clear global panel
-                StatusLineFactories.clearStatusLine();
-            }
+//            @Override
+//            public void focusLost(FocusEvent e) {
+//                // Clear global panel
+//                StatusLineFactories.clearStatusLine();
+//            }
 
 
         };
@@ -195,7 +196,20 @@ public class NbEditorUI extends EditorUI {
 
         c.removeFocusListener(focusL);
     }
-    
+
+    @Override
+    protected int textLimitWidth() {
+        Document doc = getDocument();
+        if (doc != null) {
+            int textLimit = CodeStylePreferences.get(doc).getPreferences().
+                    getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
+            if (textLimit > 0) {
+                return textLimit;
+            }
+        }
+        return super.textLimitWidth();
+    }
+
     @Override
     protected JComponent createExtComponent() {
 

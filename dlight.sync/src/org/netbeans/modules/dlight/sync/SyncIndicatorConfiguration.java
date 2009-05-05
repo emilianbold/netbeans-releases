@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.sync;
 
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 
@@ -47,13 +49,23 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
  * @author Vladimir Kvashin
  */
 public class SyncIndicatorConfiguration extends IndicatorConfiguration {
-
-    static final String ID = "SyncIndicatorConfigurationID";
+    private final List<String> threadColumnNames;
+    static final String ID = "SyncIndicatorConfigurationID"; // NOI18N
 //  private final String colName;
 
     public SyncIndicatorConfiguration(IndicatorMetadata metadata, int position) {
-        super(metadata, position);
+        this(metadata, Arrays.asList("threads"), position);//NOI18N
     }
+
+    public SyncIndicatorConfiguration(IndicatorMetadata metadata, List<String> threadsColumnNames, int position) {
+        super(metadata, position);
+        this.threadColumnNames = threadsColumnNames;
+    }
+
+    List<String> getThreadColumnNames(){
+        return threadColumnNames;
+    }
+
 
     @Override
     public String getID() {

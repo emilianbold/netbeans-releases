@@ -155,7 +155,7 @@ made subject to such option by the copyright holder.
             <!-- JSF Managed Bean --> 
             <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="position" intvalue="50"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>
@@ -175,12 +175,6 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/jsp16.gif"/>
             </file>
         </folder>
-    </folder>
-    
-    <folder name="org-netbeans-api-project-libraries">
-        <folder name="Libraries">
-            <file name="jsf-extensions.xml" url="/org/netbeans/modules/web/jsf/libraries/jsf-extensions.xml"/>
-         </folder>
     </folder>
 
     <folder name="JSPPalette">

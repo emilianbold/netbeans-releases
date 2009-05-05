@@ -36,10 +36,10 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.kenai.api;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -47,54 +47,130 @@ import java.util.logging.Logger;
 import org.codeviation.pojson.PojsonLoad;
 
 /**
- *
+ * Exception representing error connecting to kenai or internal kenai server
+ * error
  * @author Jan Becicka
  */
 public class KenaiException extends IOException {
-    private String errorResponse;
-    private String status;
-    private HashMap<String,String> errors;
 
+    private String errorResponse = "";
+    private String status;
+    private HashMap<String, String> errors;
+
+    /**
+     * Constructs an {@code KenaiException} with the specified detail message.
+     *
+     * @param msg
+     *        The detail message (which is saved for later retrieval
+     *        by the {@link #getMessage()} method)
+     */
     public KenaiException(String msg) {
         super(msg);
     }
 
+    /**
+     * Constructs an {@code KenaiException} with the specified cause and a
+     * detail message of {@code (cause==null ? null : cause.toString())}
+     * (which typically contains the class and detail message of {@code cause}).
+     *
+     * @param cause
+     *        The cause (which is saved for later retrieval by the
+     *        {@link #getCause()} method).  (A null value is permitted,
+     *        and indicates that the cause is nonexistent or unknown.)
+     */
     public KenaiException(Throwable cause) {
         super();
         initCause(cause);
     }
 
+    /**
+     * Constructs an {@code KenaiException} with the specified detail message,
+     * cause and errorResponse.
+     *
+     * <p> Note that the detail message associated with {@code cause} is
+     * <i>not</i> automatically incorporated into this exception's detail
+     * message.
+     *
+     * @param message
+     *        The detail message (which is saved for later retrieval
+     *        by the {@link #getMessage()} method)
+     *
+     * @param cause
+     *        The cause (which is saved for later retrieval by the
+     *        {@link #getCause()} method).  (A null value is permitted,
+     *        and indicates that the cause is nonexistent or unknown.)
+     *
+     * @param errorResponse
+     *         String response from server (which is saved for later
+     *         retrieval by the {@link #getAsString()} method).  (A null value
+     *         is permitted, and indicates that the errorResponse is nonexistent
+     *         or unknown.)
+     *
+     */
     public KenaiException(String message, Throwable cause, String errorResponse) {
         super(message);
         initCause(cause);
         this.errorResponse = errorResponse;
     }
 
+    /**
+     * Constructs an {@code KenaiException} with the specified detail message
+     * and errorResponse.
+     *
+     * <p> Note that the detail message associated with {@code cause} is
+     * <i>not</i> automatically incorporated into this exception's detail
+     * message.
+     *
+     * @param message
+     *        The detail message (which is saved for later retrieval
+     *        by the {@link #getMessage()} method)
+     *
+     * @param errorResponse
+     *         String response from server (which is saved for later
+     *         retrieval by the {@link #getAsString()} method).  (A null value
+     *         is permitted, and indicates that the errorResponse is nonexistent
+     *         or unknown.)
+     *
+     */
     public KenaiException(String message, String errorResponse) {
         this(message);
         this.errorResponse = errorResponse;
     }
-    
+
     public <T> T getKenaiError(Class<T> clazz) {
         PojsonLoad load = PojsonLoad.create();
-        return load.load(errorResponse, clazz);
+        return load.load(errorResponse==null?"":errorResponse, clazz);
     }
 
     private void fillErrorData() {
-        PojsonLoad load =PojsonLoad.create();
+        PojsonLoad load = PojsonLoad.create();
         try {
-            final HashMap toCollections = (HashMap) load.toCollections(errorResponse);
-            status = (String) toCollections.get("status");
-            errors = (HashMap<String, String>) toCollections.get("errors");
+            if (errorResponse==null) {
+                status = "unknown"; //NOI18N
+                errors = new HashMap<String, String>();
+            } else {
+                final HashMap toCollections = (HashMap) load.toCollections(errorResponse);
+                if (toCollections == null) {
+                    status = "unknown"; //NOI18N
+                    errors = new HashMap<String, String>();
+                    errors.put("generic", errorResponse); //NOI18N
+                } else {
+                    status = (String) toCollections.get("status");
+                    errors = (HashMap<String, String>) toCollections.get("errors");
+                }
+            }
         } catch (IOException ex) {
             Logger.getLogger(KenaiException.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalArgumentException e) {
+            status = "unknown"; //NOI18N
+            errors = new HashMap<String, String>();
+            errors.put("generic", errorResponse); //NOI18N
         }
     }
 
-
     /**
      * get error response as string
-     * @return
+     * @return returns string representation of server response
      */
     public String getAsString() {
         return errorResponse;
@@ -103,22 +179,28 @@ public class KenaiException extends IOException {
     /**
      * get status according to
      * <a href="http://kenai.com/projects/kenai/pages/API#Errors">spec</a>
-     * @return
+     * @return status
      */
     public String getStatus() {
-        if (status==null)
+        if (errorResponse==null)
+            return null;
+        if (status == null) {
             fillErrorData();
+        }
         return status;
     }
 
     /**
      * get errors according to
      * <a href="http://kenai.com/projects/kenai/pages/API#Errors">spec</a>
-     * @return
+     * @return keay-value map of errors
      */
-    public Map<String,String> getErrors() {
-        if (errors==null)
+    public Map<String, String> getErrors() {
+        if (errorResponse==null)
+            return Collections.emptyMap();
+        if (errors == null) {
             fillErrorData();
+        }
         return errors;
     }
 }

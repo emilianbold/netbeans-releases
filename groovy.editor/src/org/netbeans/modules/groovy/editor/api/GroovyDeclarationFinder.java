@@ -602,7 +602,10 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             }
 
             ASTNode node = AstUtilities.getForeignNode(candidate);
-            int nodeOffset = node != null ? AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber()) : 0;
+            // negative line/column can happen due to bugs in groovy parser
+            int nodeOffset = (node != null && node.getLineNumber() > 0 && node.getColumnNumber() > 0)
+                    ? AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber())
+                    : 0;
 
             DeclarationLocation loc = new DeclarationLocation(
                 fileObject, nodeOffset, candidate);

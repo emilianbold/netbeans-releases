@@ -148,9 +148,25 @@ if [ -z "$jdkhome" ] ; then
 
     case "`uname`" in
         Darwin*)
-        if [ -x /System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home/bin/java ] ; then
-            jdkhome=/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home
+        jdkhome="/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home"
+        java_bin=`which java 2>&1`
+        if [ $? -ne 0 ] || [ -n "`echo \"$java_bin\" | grep \"no java in\"`" ] ; then
+            # no java in path... strange
+            java_bin=/usr/bin/java
         fi
+        if [ -f "$java_bin" ] ; then
+            java_version=`"$java_bin" -fullversion 2>&1`
+            if [ $? -eq 0 ] && [ -n "`echo \"$java_version\" | grep 1.6.0`" ] ; then
+                # don`t use Developer Preview versions
+                if [ -z "`echo \"$java_version\" | grep \"1.6.0_b\|1.6.0-b\|1.6.0_01\|1.6.0_04\|-dp\"`" ] ; then
+                    if [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home/bin/java" ] ; then
+                        jdkhome="/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home"
+                    elif [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/bin/java" ] ; then
+                        jdkhome="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home"
+                    fi
+                fi
+            fi
+        fi     
         ;;
         *) javac=`which javac`
         if [ -z "$javac" ] ; then
@@ -174,7 +190,10 @@ fi
 
 # if heap dump on OOME is supported enable it
 if "${jdkhome}/bin/java" -XX:+HeapDumpOnOutOfMemoryError > /dev/null ; then
-   jargs="$jargs -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=\"${userdir}/var/log/heapdump.hprof\""
+   jargs="$jargs -XX:+HeapDumpOnOutOfMemoryError"
+   if ! echo $jargs | grep -- "-XX:HeapDumpPath=" > /dev/null ; then
+      jargs="$jargs -XX:HeapDumpPath=\"${userdir}/var/log/heapdump.hprof\""
+   fi
 fi
 
 jargs_without_clusters="$jargs"

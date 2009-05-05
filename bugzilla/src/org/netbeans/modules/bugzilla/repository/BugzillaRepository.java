@@ -25,7 +25,7 @@
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
+ * single choiceget of license, a recipient has the option to distribute
  * your version of this file under either the CDDL, the GPL Version 2 or
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
@@ -293,7 +293,8 @@ public class BugzillaRepository extends Repository {
 
     @Override
     public Query[] getQueries() {
-        return getQueriesIntern().toArray(new Query[queries.size()]);
+        Set<Query> l = getQueriesIntern();
+        return l.toArray(new Query[l.size()]);
     }
 
     public IssueCache getIssueCache() {
@@ -339,7 +340,7 @@ public class BugzillaRepository extends Repository {
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
-        TaskRepository repository = new TaskRepository(name, url);
+        TaskRepository repository = new TaskRepository(Bugzilla.getInstance().getRepositoryConnector().getConnectorKind(), url);
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
         
