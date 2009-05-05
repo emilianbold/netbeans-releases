@@ -65,7 +65,7 @@ public class LinkSupport {
                     return linkPath;
                 }
             } else {
-                file = new File(linkPath+".lnk");
+                file = new File(linkPath+".lnk"); // NOI18N
                 if (!file.exists()) {
                     return linkPath;
                 }
