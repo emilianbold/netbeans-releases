@@ -424,11 +424,7 @@ public class BugzillaRepository extends Repository {
         BugzillaCommand cmd = new BugzillaCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
-                rc[0] = Bugzilla.getInstance()
-                                .getRepositoryConnector()
-                                .getClientManager()
-                                .getClient(getTaskRepository(), new NullProgressMonitor())
-                                .getRepositoryConfiguration(new NullProgressMonitor());
+                rc[0] = Bugzilla.getInstance().getRepositoryConfiguration(BugzillaRepository.this);
             }
         };
         getExecutor().execute(cmd);

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla;
 
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClientManager;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
 import java.util.HashSet;
@@ -49,6 +50,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
+import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.openide.util.RequestProcessor;
 
@@ -67,9 +69,13 @@ public class Bugzilla {
     public static Logger LOG = Logger.getLogger("org.netbeans.modules.bugzilla.Bugzilla"); // NOI18N
 
     private RequestProcessor rp;
+    private BugzillaCorePlugin bcp;
+    private BugzillaClientManager clientManager;
 
     private Bugzilla() {
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
+        bcp = new BugzillaCorePlugin();
+        brc = new BugzillaRepositoryConnector();
+        clientManager = getRepositoryConnector().getClientManager();
         try {
             bcp.start(null);
         } catch (Exception ex) {
@@ -86,9 +92,14 @@ public class Bugzilla {
 
     public BugzillaRepositoryConnector getRepositoryConnector() {
         if(brc == null) {
-            brc = new BugzillaRepositoryConnector();
+            
         }
         return brc;
+    }
+
+    public RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository) throws CoreException, MalformedURLException {
+        getClient(repository); // XXX mylyn 3.1.1 workaround. initialize the client, otherwise the configuration will be downloaded twice
+        return BugzillaCorePlugin.getRepositoryConfiguration(repository.getTaskRepository(), false, new NullProgressMonitor());
     }
 
     /**
@@ -99,7 +110,7 @@ public class Bugzilla {
      * @throws org.eclipse.core.runtime.CoreException
      */
     public BugzillaClient getClient(BugzillaRepository repository) throws MalformedURLException, CoreException {
-        return getRepositoryConnector().getClientManager().getClient(repository.getTaskRepository(), new NullProgressMonitor());
+        return clientManager.getClient(repository.getTaskRepository(), new NullProgressMonitor());
     }
 
     /**
