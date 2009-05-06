@@ -240,7 +240,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.RELEASE_MODE);
             MakeConfiguration[] confs = new MakeConfiguration[]{debug, release};
-            MakeProjectGenerator.createProject(dirF, projectName, makefileName, confs, null, null, mainFile);
+            MakeProjectGenerator.createProject(dirF, projectName, makefileName, confs, null, null, null, mainFile);
             FileObject dir = FileUtil.toFileObject(dirF);
             resultSet.add(dir);
         }
