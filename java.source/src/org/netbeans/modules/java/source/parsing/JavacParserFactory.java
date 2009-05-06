@@ -47,6 +47,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Lookup;
 
 /**
@@ -61,6 +63,16 @@ public class JavacParserFactory extends ParserFactory {
     @Override
     public JavacParser createParser(final Collection<Snapshot> snapshots) {
         assert snapshots != null;
+        if (snapshots.size() == 1) {
+            final FileObject fo = snapshots.iterator().next().getSource().getFileObject();
+            try {
+                if (fo != null && fo.getFileSystem().isDefault() && fo.getAttribute("javax.script.ScriptEngine") != null //NOI18N
+                        && fo.getAttribute("template") == Boolean.TRUE) { //NOI18N
+                    // Do not create javac parser for templates
+                    return null;
+                }
+            } catch (FileStateInvalidException fsie) {}
+        }
         JavacParser parser = new JavacParser(snapshots, false);
         if (TIMER.isLoggable(Level.FINE)) {
             LogRecord rec = new LogRecord(Level.FINE, "JavacParser");

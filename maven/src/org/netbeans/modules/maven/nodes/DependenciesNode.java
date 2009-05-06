@@ -341,6 +341,7 @@ public class DependenciesNode extends AbstractNode {
             String typeString = type == TYPE_RUNTIME ? "runtime" : (type == TYPE_TEST ? "test" : "compile"); //NOI18N
             pnl.setSelectedScope(typeString);
         
+            pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DependenciesNode.class, "TIT_Add_Library"));
             DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(DependenciesNode.class, "TIT_Add_Library"));
             dd.setClosingOptions(new Object[] {
                 pnl.getOkButton(),

@@ -112,7 +112,6 @@ class ShLexer implements Lexer<ShTokenId> {
         keywords.add ("continue"); // NOI18N
         keywords.add ("dirs"); // NOI18N
         keywords.add ("disown"); // NOI18N
-        keywords.add ("echo"); // NOI18N
         keywords.add ("enable"); // NOI18N
         keywords.add ("eval"); // NOI18N
         keywords.add ("exec"); // NOI18N
@@ -485,9 +484,16 @@ class ShLexer implements Lexer<ShTokenId> {
     }
 
     private LexerRestartInfo<ShTokenId> info;
+    private boolean afterSeparator;
 
     ShLexer (LexerRestartInfo<ShTokenId> info) {
         this.info = info;
+        Object state = info.state();
+        if (state instanceof Boolean) {
+            afterSeparator = (Boolean) state;
+        } else {
+            afterSeparator = true;
+        }
     }
 
     public Token<ShTokenId> nextToken () {
@@ -521,23 +527,30 @@ class ShLexer implements Lexer<ShTokenId> {
             case '.':
             case '`':
             case '%':
-            case '\\':
             case '$':
-                return info.tokenFactory ().createToken (ShTokenId.OPERATOR);
+                afterSeparator = i == ';';
+                return info.tokenFactory().createToken(ShTokenId.OPERATOR);
+            case '\\':
+                i = input.read();
+                afterSeparator = false;
+                return info.tokenFactory().createToken(ShTokenId.OPERATOR);
             case ' ':
             case '\n':
             case '\r':
             case '\t':
+                afterSeparator |= i == '\n' || i == '\r';
                 do {
                     i = input.read ();
+                    afterSeparator |= i == '\n' || i == '\r';
                 } while (
                     i == ' ' ||
                     i == '\n' ||
                     i == '\r' ||
                     i == '\t'
                 );
-                if (i != LexerInput.EOF)
-                    input.backup (1);
+                if (i != LexerInput.EOF) {
+                    input.backup(1);
+                }
                 return info.tokenFactory ().createToken (ShTokenId.WHITESPACE);
             case '#':
                 do {
@@ -547,6 +560,7 @@ class ShLexer implements Lexer<ShTokenId> {
                     i != '\r' &&
                     i != LexerInput.EOF
                 );
+                afterSeparator = true;
                 return info.tokenFactory ().createToken (ShTokenId.COMMENT);
             case '0':
             case '1':
@@ -573,6 +587,7 @@ class ShLexer implements Lexer<ShTokenId> {
                     );
                 }
                 input.backup (1);
+                afterSeparator = false;
                 return info.tokenFactory ().createToken (ShTokenId.NUMBER);
             case '"':
                 do {
@@ -587,6 +602,7 @@ class ShLexer implements Lexer<ShTokenId> {
                     i != '\r' &&
                     i != LexerInput.EOF
                 );
+                afterSeparator = false;
                 return info.tokenFactory ().createToken (ShTokenId.STRING);
             case '\'':
                 do {
@@ -601,6 +617,7 @@ class ShLexer implements Lexer<ShTokenId> {
                     i != '\r' &&
                     i != LexerInput.EOF
                 );
+                afterSeparator = false;
                 return info.tokenFactory ().createToken (ShTokenId.STRING);
             default:
                 if (
@@ -620,22 +637,24 @@ class ShLexer implements Lexer<ShTokenId> {
                     input.backup (1);
                     String id = input.readText ().toString ();
                     String lcid = id.toLowerCase ();
-                    if (commands.contains (lcid))
-                        return info.tokenFactory ().createToken (ShTokenId.KEYWORD);
-                    if (commands.contains (lcid))
-                        return info.tokenFactory ().createToken (ShTokenId.COMMAND);
+                    if (afterSeparator) {
+                        afterSeparator = false;
+                        if (keywords.contains(lcid)) {
+                            return info.tokenFactory().createToken(ShTokenId.KEYWORD);
+                        } else if (commands.contains(lcid)) {
+                            return info.tokenFactory().createToken(ShTokenId.COMMAND);
+                        }
+                    }
                     return info.tokenFactory ().createToken (ShTokenId.IDENTIFIER);
                 }
                 return info.tokenFactory ().createToken (ShTokenId.ERROR);
         }
     }
 
-    public Object state () {
-        return null;
+    public Object state() {
+        return afterSeparator;
     }
 
-    public void release () {
+    public void release() {
     }
 }
-
-

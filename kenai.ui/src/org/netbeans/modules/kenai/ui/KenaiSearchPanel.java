@@ -47,6 +47,7 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -64,7 +65,9 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.api.progress.ProgressHandle;
@@ -190,8 +193,10 @@ public class KenaiSearchPanel extends JPanel {
         setPreferredSize(new Dimension(700, 500));
         setLayout(new BorderLayout());
 
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
         kenaiProjectsList.setSelectionMode(getListSelMode());
-        kenaiProjectsList.setCellRenderer(new KenaiProjectsListRenderer());
+        kenaiProjectsList.setCellRenderer(new KenaiProjectsListRenderer2());
         scrollPane.setViewportView(kenaiProjectsList);
 
         kenaiProjectsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleName")); // NOI18N
@@ -289,7 +294,13 @@ public class KenaiSearchPanel extends JPanel {
     private void createNewProjectButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_createNewProjectButtonActionPerformed
         new NewKenaiProjectAction().actionPerformed(evt);
     }//GEN-LAST:event_createNewProjectButtonActionPerformed
-    
+
+    private class KenaiProjectsListRenderer2 implements ListCellRenderer {
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            return new KenaiProjectsListRenderer(list, value, index, isSelected, cellHasFocus);
+        }
+    }
+
     private void invokeSearch() {
 
         if (getListModel() != null) {
