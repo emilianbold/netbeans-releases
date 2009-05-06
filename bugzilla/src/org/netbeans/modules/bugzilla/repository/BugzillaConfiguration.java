@@ -39,18 +39,10 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
-import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 
 /**
  *
@@ -59,33 +51,8 @@ import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 public class BugzillaConfiguration {
     private RepositoryConfiguration rc;
 
-    public BugzillaConfiguration(RepositoryConfiguration rc) {
+    protected BugzillaConfiguration(RepositoryConfiguration rc) {
         this.rc = rc;
-    }
-
-    public static <T extends BugzillaConfiguration> T create(final BugzillaRepository repository, Class<T> clazz) {
-        final RepositoryConfiguration[] rc = new RepositoryConfiguration[1];
-        BugzillaCommand cmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                rc[0] = Bugzilla.getInstance()
-                                .getRepositoryConnector()
-                                .getClientManager()
-                                .getClient(repository.getTaskRepository(), new NullProgressMonitor())
-                                .getRepositoryConfiguration(new NullProgressMonitor());
-            }
-        };
-        repository.getExecutor().execute(cmd);
-        if(!cmd.hasFailed()) {
-            try {
-                Constructor<T> c = clazz.getConstructor(RepositoryConfiguration.class);
-                return c.newInstance(rc[0]);
-            } catch (Exception ex) {
-                Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                return null;
-            } 
-        }
-        return null;
     }
 
     /**

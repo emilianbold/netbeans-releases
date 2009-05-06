@@ -48,6 +48,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -55,6 +57,10 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 
 final class Erprint {
 
+    private static final Pattern specPattern = Pattern.compile("[^:]*: (.*)"); // NOI18N
+    private static final Pattern sortPattern = Pattern.compile(".* \\( (.*) \\)"); // NOI18N
+    private static final Pattern choicePattern = Pattern.compile("^[ \t]+([0-9]+)\\) .* \\((.*)\\)"); // NOI18N
+    private static final String choiceMarker = "Available name list:"; // NOI18N
     private final Logger log = DLightLogger.getLogger(ErprintSession.class);
     private final AtomicInteger locks = new AtomicInteger();
     private final NativeProcess process;
@@ -65,8 +71,6 @@ final class Erprint {
     private int currentLimit = -1;
     private boolean stopped = false;
     private final String logPrefix;
-    private static final Pattern specPattern = Pattern.compile("[^:]*: (.*)"); // NOI18N
-    private static final Pattern sortPattern = Pattern.compile(".* \\( (.*) \\)"); // NOI18N
 
     Erprint(NativeProcessBuilder npb, int sessionID) throws IOException {
         process = npb.call();
@@ -213,32 +217,70 @@ final class Erprint {
     }
 
     FunctionStatistic getFunctionStatistic(String functionName) throws IOException {
-        String[] stat = exec("fsingle " + functionName + " 1"); // NOI18N
+        String[] stat = exec("fsingle \"" + functionName + "\" 1"); // NOI18N
         return new FunctionStatistic(stat);
     }
 
-    private synchronized String[] exec(String command) throws IOException {
-        long startTime = System.currentTimeMillis();
+    FunctionStatistic getFunctionStatistic(FunctionCall functionCall) throws IOException {
+        synchronized (this) {
+            String functionName = functionCall.getFunction().getName();
+            String[] stat = exec("fsingle \"" + functionName + "\""); // NOI18N
 
-        try {
-            log.finest("> " + command + "'"); // NOI18N
-            post(command);
-        } catch (IOException ex) {
-            Throwable cause = ex.getCause();
-            if (cause != null && cause instanceof InterruptedIOException) {
-                throw (InterruptedIOException) cause;
-            } else {
-                throw ex;
+            if (stat != null && stat.length > 0 && choiceMarker.equals(stat[0])) { // NOI18N
+                String choice = "1"; // NOI18N
+
+                FunctionCallImpl fci = (functionCall instanceof FunctionCallImpl)
+                        ? (FunctionCallImpl) functionCall : null;
+
+                String fname = (fci == null) ? null : fci.getFileName();
+
+                if (fname != null) {
+                    for (String line : stat) {
+                        Matcher m = choicePattern.matcher(line);
+                        String cfname;
+                        if (m.matches()) {
+                            choice = m.group(1);
+                            cfname = m.group(2);
+
+                            if (cfname.endsWith(fname)) {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                post(choice);
+                stat = outProcessor.getOutput();
             }
+
+            return new FunctionStatistic(stat);
         }
+    }
 
-        String[] output = outProcessor.getOutput();
+    private String[] exec(String command) throws IOException {
+        synchronized (this) {
+            long startTime = System.currentTimeMillis();
 
-        log.finest("Command '" + command + "' done in " + // NOI18N
-                (System.currentTimeMillis() - startTime) / 1000 +
-                " secs. Response is " + output.length + " lines."); // NOI18N
+            try {
+                log.finest("> " + command + "'"); // NOI18N
+                post(command);
+            } catch (IOException ex) {
+                Throwable cause = ex.getCause();
+                if (cause != null && cause instanceof InterruptedIOException) {
+                    throw (InterruptedIOException) cause;
+                } else {
+                    throw ex;
+                }
+            }
 
-        return output;
+            String[] output = outProcessor.getOutput();
+
+            log.finest("Command '" + command + "' done in " + // NOI18N
+                    (System.currentTimeMillis() - startTime) / 1000 +
+                    " secs. Response is " + output.length + " lines."); // NOI18N
+
+            return output;
+        }
     }
 
     private class OutputProcessor {
@@ -246,6 +288,7 @@ final class Erprint {
         private final ArrayList<String> resultBuffer = new ArrayList<String>();
         private final StringBuilder lineBuffer = new StringBuilder();
         private final char[] prompt;
+        private final char[] enterSelectionPrompt = "Enter selection: ".toCharArray(); // NOI18N
         private final InputStream pis;
 
         public OutputProcessor() throws IOException {
@@ -255,6 +298,8 @@ final class Erprint {
 
         public String[] getOutput() throws IOException {
             int promptPos = 0;
+            int enterSelectionPromptPos = 0;
+
             resultBuffer.clear();
             lineBuffer.setLength(0);
 
@@ -280,6 +325,15 @@ final class Erprint {
                     }
                 } else {
                     promptPos = 0;
+                }
+
+                if (enterSelectionPrompt[enterSelectionPromptPos] == c) {
+                    enterSelectionPromptPos++;
+                    if (enterSelectionPromptPos == enterSelectionPrompt.length) {
+                        break;
+                    }
+                } else {
+                    enterSelectionPromptPos = 0;
                 }
             }
 

@@ -45,6 +45,9 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import java.awt.Image;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -52,16 +55,22 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ContentFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
+import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
+import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.commands.JiraExecutor;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
@@ -123,7 +132,18 @@ public class JiraRepository extends Repository {
             // invalid connection data?
             return null;
         }
-        throw new UnsupportedOperationException();
+        TaskAttributeMapper attributeMapper =
+                Jira.getInstance()
+                    .getRepositoryConnector()
+                    .getTaskDataHandler()
+                    .getAttributeMapper(taskRepository);
+        TaskData data =
+                new TaskData(
+                    attributeMapper,
+                    taskRepository.getConnectorKind(),
+                    taskRepository.getRepositoryUrl(),
+                    ""); // NOI18N
+        return new NbJiraIssue(data, this);
     }
 
     public String getDisplayName() {
@@ -148,7 +168,7 @@ public class JiraRepository extends Repository {
     public Issue getIssue(String key) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
-        TaskData taskData = JiraUtils.getTaskData(JiraRepository.this, key);
+        TaskData taskData = JiraUtils.getTaskDataByKey(JiraRepository.this, key);
         if(taskData == null) {
             return null;
         }
@@ -243,7 +263,7 @@ public class JiraRepository extends Repository {
 
         if(keywords.length == 1) {
             // only one search criteria -> might be we are looking for the bug with id=keywords[0]
-            TaskData taskData = JiraUtils.getTaskData(this, keywords[0], false);
+            TaskData taskData = JiraUtils.getTaskDataByKey(this, keywords[0], false);
             if(taskData != null) {
                 NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
                 issues.add(issue); // we don't cache this issues
@@ -348,13 +368,36 @@ public class JiraRepository extends Repository {
      */
     public synchronized JiraConfiguration getConfiguration() {
         if(configuration == null) {
-            configuration = createConfiguration();
+            configuration = getConfigurationIntern();
         }
         return configuration;
     }
 
-    protected JiraConfiguration createConfiguration() {
-        return JiraConfiguration.create(this, JiraConfiguration.class);
+    protected JiraConfiguration createConfiguration(JiraClient client) {
+        return new JiraConfiguration(client, JiraRepository.this);
+    }
+
+    private JiraConfiguration getConfigurationIntern() {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+
+        // XXX need logging incl. consumed time
+
+        class ConfigurationCommand extends JiraCommand {
+            JiraConfiguration configuration;
+            @Override
+            public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+                final JiraClient client = Jira.getInstance().getClient(getTaskRepository());
+                configuration = createConfiguration(client);
+                configuration.initialize();
+            }
+        }
+        ConfigurationCommand cmd = new ConfigurationCommand();
+
+        getExecutor().execute(cmd, true, false);
+        if(!cmd.hasFailed()) {
+            return cmd.configuration;
+        }
+        return null;
     }
 
     // XXX spi
@@ -460,6 +503,10 @@ public class JiraRepository extends Repository {
         }
     }
 
+    public boolean authenticate(String errroMsg) {
+        return BugtrackingUtil.editRepository(this, errroMsg);
+    }
+    
     private RequestProcessor getRefreshProcessor() {
         if(refreshProcessor == null) {
             refreshProcessor = new RequestProcessor("Jira refresh - " + name); // NOI18N

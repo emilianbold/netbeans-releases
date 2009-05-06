@@ -95,15 +95,20 @@ public class PluginManagerUI extends javax.swing.JPanel  {
 
     public static final String[] TAB_NAMES = { "update", "available", "local", "installed" }; //NOI18N
     private int initialTabToSelect;
-    private boolean advancedView;
+    private boolean detailView;
+    public static final String DETAIL_VIEW_SELECTED_PROP = "plugin.manager.detail.view.selected";//NOI18N
     
     public PluginManagerUI (JButton closeButton ) {
         this(closeButton, null, true);
     }
+
+    public PluginManagerUI (JButton closeButton, Object initialTab) {
+        this(closeButton, initialTab, Boolean.getBoolean(DETAIL_VIEW_SELECTED_PROP));
+    }
     
     /** Creates new form PluginManagerUI */
-    public PluginManagerUI (JButton closeButton, Object initialTab, boolean advancedView) {
-        this.advancedView = advancedView;
+    public PluginManagerUI (JButton closeButton, Object initialTab, boolean detailView) {
+        this.detailView = detailView;
         this.closeButton = closeButton;
         int selIndex = -1;
         for( int i=0; i<TAB_NAMES.length; i++ ) {
@@ -126,12 +131,12 @@ public class PluginManagerUI extends javax.swing.JPanel  {
         });
     }
 
-    boolean isAdvancedView() {
-        return advancedView;
+    boolean isDetailView() {
+        return detailView;
     }
 
-    void setAdvancedView(boolean advancedView) {
-        this.advancedView = advancedView;
+    void setDetailView(boolean detailView) {
+        this.detailView = detailView;
     }
 
     private Window findWindowParent () {
@@ -582,7 +587,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             
             updateTableModel.setUnits(units);
             List<UpdateUnit> features = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.FEATURE);
-            if (isAdvancedView() && !features.isEmpty()) {
+            if (isDetailView() && !features.isEmpty()) {
                 installTableModel.setUnits(units);
             } else {
                 installTableModel.setUnits(units, features);

@@ -71,6 +71,8 @@ public final class EAVisualPanel extends JPanel implements DocumentListener {
         tfEar.getDocument().addDocumentListener(this);
         tfEjb.getDocument().addDocumentListener(this);
         tfWeb.getDocument().addDocumentListener(this);
+
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EAVisualPanel.class, "LBL_EESettings"));
     }
 
     @Override
@@ -262,6 +264,7 @@ public final class EAVisualPanel extends JPanel implements DocumentListener {
             }
         });
 
+        lblEar.setLabelFor(tfEar);
         org.openide.awt.Mnemonics.setLocalizedText(lblEar, org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.lblEar.text")); // NOI18N
 
         tfWeb.setText(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.tfWeb.text")); // NOI18N
@@ -312,6 +315,15 @@ public final class EAVisualPanel extends JPanel implements DocumentListener {
                     .add(lblEar))
                 .addContainerGap(174, Short.MAX_VALUE))
         );
+
+        cmbEEVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.cmbEEVersion.AccessibleContext.accessibleDescription")); // NOI18N
+        chkEjb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.chkEjb.AccessibleContext.accessibleDescription")); // NOI18N
+        chkWeb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.chkWeb.AccessibleContext.accessibleDescription")); // NOI18N
+        tfWeb.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.tfWeb.AccessibleContext.accessibleName")); // NOI18N
+        tfWeb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.tfWeb.AccessibleContext.accessibleDescription")); // NOI18N
+        tfEjb.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.tfEjb.AccessibleContext.accessibleName")); // NOI18N
+        tfEjb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.tfEjb.AccessibleContext.accessibleDescription")); // NOI18N
+        tfEar.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EAVisualPanel.class, "EAVisualPanel.tfEar.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void chkEjbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkEjbActionPerformed

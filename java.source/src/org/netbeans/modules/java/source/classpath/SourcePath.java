@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
@@ -54,7 +55,6 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -89,9 +89,8 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         }
         
         List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>();
-        final GlobalSourcePath gsp = GlobalSourcePath.getDefault();        
         for (ClassPath.Entry entry : delegate.entries()) {
-            if (forcePrefSources || !gsp.isLibrary(entry.getURL())) {
+            if (forcePrefSources || !JavaIndex.isLibrary(entry.getURL())) {
                 res.add(new FR (entry));
             }
         }

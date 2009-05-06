@@ -54,7 +54,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation.EntityMappingsMetadataModelFactory;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -99,7 +99,7 @@ public class EntityAssociationResolverTest extends SourceTestSupport {
     
     private MetadataModel<EntityMappingsMetadata> createModel() throws IOException, InterruptedException{
         FileObject src = FileUtil.toFileObject(new File(getPath()));
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(src, src).await();
+        IndexingManager.getDefault().refreshIndexAndWait(src.getURL(), null);
         return  EntityMappingsMetadataModelFactory.createMetadataModel(
                 ClassPath.getClassPath(src, ClassPath.BOOT),
                 ClassPath.getClassPath(src, ClassPath.COMPILE),

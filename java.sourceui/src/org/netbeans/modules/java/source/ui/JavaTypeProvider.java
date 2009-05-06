@@ -66,7 +66,7 @@ import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
@@ -148,36 +148,46 @@ public class JavaTypeProvider implements TypeProvider {
             Set<CacheItem> sources = null;
 
             if (cpInfo == null) {
-                // Sources
-                ClassPath scp = RepositoryUpdater.getDefault().getScannedSources();
-                List<ClassPath.Entry> entries = scp.entries();
-                sources = new HashSet<CacheItem>(entries.size());
-                for (ClassPath.Entry entry : entries) {
-                    ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(entry.getURL()));
+                // XXX: sources will in fact contain not only java related roots, but also roots
+                // defined by other languages. Ideally PathRegistry should allow filtering roots by their ID.
+
+                // Sources - ClassPath.SOURCE
+                sources = new HashSet<CacheItem>();
+                for (URL url : PathRegistry.getDefault().getSources()) {
+                    ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(url));
                     if ( isCanceled ) {
                         return;
                     }
                     else {
-                        sources.add( new CacheItem( entry.getURL(), ci, false ) );
+                        sources.add( new CacheItem( url, ci, false ) );
                     }
                 }
 
-                // Binaries
-                scp = RepositoryUpdater.getDefault().getScannedBinaries();
-                entries = scp.entries();
-                for (ClassPath.Entry entry : entries) {
+                // Translated ClassPath.COMPILE & ClassPath.BOOT
+                for (URL url : PathRegistry.getDefault().getLibraries()) {
+                    ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(url));
+                    if ( isCanceled ) {
+                        return;
+                    }
+                    else {
+                        sources.add( new CacheItem( url, ci, false ) );
+                    }
+                }
+                
+                // Binaries - not translated ClassPath.COMPILE & ClassPath.BOOT
+                for (URL url : PathRegistry.getDefault().getBinaryLibraries()) {
                     try {
                         if ( isCanceled ) {
                             return;
                         }
                         if (!hasBinaryOpen) {
-                        SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(entry.getURL());
-                        if ( result.getRoots().length == 0 ) {
-                            continue;
+                            SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(url);
+                            if ( result.getRoots().length == 0 ) {
+                                continue;
+                            }
                         }
-                        }
-                        ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(entry.getURL()), EMPTY_CLASSPATH, EMPTY_CLASSPATH );//create(roots[i]);
-                        sources.add( new CacheItem( entry.getURL(), ci, true ) );
+                        ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(url), EMPTY_CLASSPATH, EMPTY_CLASSPATH );//create(roots[i]);
+                        sources.add( new CacheItem( url, ci, true ) );
                     }
                     finally {
                         if ( isCanceled ) {
@@ -237,9 +247,9 @@ public class JavaTypeProvider implements TypeProvider {
 
         }
 
-        Set<CacheItem> cache = getCache();
-        if (cache == null) return;
-        ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(cache.size() * 20);
+        Set<CacheItem> c = getCache();
+        if (c == null) return;
+        ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(c.size() * 20);
 
         // is scan in progress? If so, provide a message to user.
         boolean scanInProgress = SourceUtils.isScanInProgress();
@@ -265,9 +275,9 @@ public class JavaTypeProvider implements TypeProvider {
         }
         LOGGER.fine("Text For Query '" + text + "'.");
         if (customizer != null) {
-            cache = getCache();
-            if (cache != null) {
-                for (final CacheItem ci : cache) {
+            c = getCache();
+            if (c != null) {
+                for (final CacheItem ci : c) {
                     Set<ElementHandle<TypeElement>> names = customizer.query(
                             ci.classpathInfo, textForQuery, nameKind,
                             EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
@@ -295,8 +305,8 @@ public class JavaTypeProvider implements TypeProvider {
                 }
             });
             do {
-                cache = getCache();
-                if (cache == null) return;
+                c = getCache();
+                if (c == null) return;
                 for (final CacheItem ci : getCache()) {
                     @SuppressWarnings("unchecked")
                     final Set<ElementHandle<TypeElement>> names = ci.classpathInfo.getClassIndex().getDeclaredTypes(

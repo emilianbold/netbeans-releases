@@ -53,7 +53,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 
 /**
  *
@@ -80,7 +80,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                 "       stringValue2 = @SuppressWarnings(\"error\")" +
                 "public class Annotated {" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         helper.runJavaSourceTask(new Runnable() {
@@ -119,7 +119,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                 "@Annotation(classValue = Object.class, classValue2 = \"error\")" +
                 "public class Annotated {" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         helper.runJavaSourceTask(new Runnable() {
@@ -149,7 +149,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                 "@Annotation(enumValue = RetentionPolicy.CLASS, enumValue2 = ElementType.TYPE)" +
                 "public class Annotated {" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         helper.runJavaSourceTask(new Runnable() {
@@ -180,7 +180,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                 "@Annotation(annValue = @SuppressWarnings(\"unchecked\"), annValue2 = \"error\")" +
                 "public class Annotated {" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         helper.runJavaSourceTask(new Runnable() {
@@ -220,7 +220,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                 "@Annotation(arrayValue = { \"foo\", \"bar\" }, arrayValue2 = @Error)" +
                 "public class Annotated {" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         helper.runJavaSourceTask(new Runnable() {
@@ -266,7 +266,7 @@ public class AnnotationParserTest extends JavaSourceTestCase {
                 "@Annotation(annotationValue = { @SuppressWarnings(\"foo\"), @SuppressWarnings({\"bar\", \"baz\"}) }, annotationValue2 = @Retention(RetentionPolicy.SOURCE), annotationValue3 = null)" +
                 "public class Annotated {" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         helper.runJavaSourceTask(new Runnable() {

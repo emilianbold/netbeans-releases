@@ -281,6 +281,7 @@ private void cbProfilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
 private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
     NewConfigurationPanel pnl = new NewConfigurationPanel();
+    pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigurationsPanel.class, "ACSD_Add_Config"));
     DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(ConfigurationsPanel.class, "TIT_Add_Config"));
     pnl.attachDescriptor(dd);
     Object ret = DialogDisplayer.getDefault().notify(dd);
@@ -299,6 +300,7 @@ private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
     ModelHandle.Configuration conf = (ModelHandle.Configuration) lstConfigurations.getSelectedValue();
     if (conf != null) {
         NewConfigurationPanel pnl = new NewConfigurationPanel();
+        pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigurationsPanel.class, "ACSD_Edit_Config"));
         pnl.setConfigurationId(conf.getId());
         pnl.setProfiles(conf.getActivatedProfiles());
         pnl.setShared(conf.isShared());

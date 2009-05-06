@@ -188,6 +188,7 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
         org.openide.awt.Mnemonics.setLocalizedText(jLabelFrameworks, org.openide.util.NbBundle.getMessage(WebFrameworksPanel.class, "LBL_UsedFrameworks")); // NOI18N
 
         jScrollPane1.setViewportView(jListFrameworks);
+        jListFrameworks.getAccessibleContext().setAccessibleDescription("Used Frameworks");
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonAdd, org.openide.util.NbBundle.getMessage(WebFrameworksPanel.class, "LBL_AddFramework")); // NOI18N
         jButtonAdd.addActionListener(new java.awt.event.ActionListener() {
@@ -214,7 +215,7 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabelFrameworks)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(jButtonAdd)
@@ -246,6 +247,9 @@ public class WebFrameworksPanel extends javax.swing.JPanel implements ListSelect
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
         );
+
+        jButtonAdd.getAccessibleContext().setAccessibleDescription("Add Framework");
+        btnRemoveAdded.getAccessibleContext().setAccessibleDescription("Remove framework");
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddActionPerformed

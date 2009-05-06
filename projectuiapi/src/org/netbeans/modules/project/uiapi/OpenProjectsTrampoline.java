@@ -53,7 +53,7 @@ public interface OpenProjectsTrampoline {
 
     public Project[] getOpenProjectsAPI();
 
-    public void openAPI (Project[] projects, boolean openRequiredProjects);
+    public void openAPI (Project[] projects, boolean openRequiredProjects, boolean showProgress);
 
     public void closeAPI (Project[] projects);
 

@@ -296,7 +296,7 @@ public class JiraQuery extends Query {
                 issues.add(issue.getID());
                 
                 try {
-                    // XXX dummy
+                    // XXX hack to force mylyns clients side caching
                     Jira.getInstance().storeTaskData(repository, taskData);
                 } catch (CoreException ex) {
                     Jira.LOG.log(Level.SEVERE, null, ex); 

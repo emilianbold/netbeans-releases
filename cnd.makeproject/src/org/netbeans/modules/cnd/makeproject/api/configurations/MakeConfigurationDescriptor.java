@@ -132,7 +132,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      */
     public void closed() {
         ToolsPanel.removeCompilerSetModifiedListener(this);
-        for(Item item : getProjectItems()){
+        for (Item item : getProjectItems()) {
             DataObject dao = item.getDataObject();
             if (dao != null) {
                 dao.removePropertyChangeListener(item);
@@ -141,20 +141,20 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         closed(rootFolder);
     }
 
-    private void closed(Folder folder){
-        if (folder != null){
-            for(Folder f : folder.getAllFolders(false)){
+    private void closed(Folder folder) {
+        if (folder != null) {
+            for (Folder f : folder.getAllFolders(false)) {
                 closed(f);
             }
             folder.detachListener();
         }
     }
 
-    public void clean(){
+    public void clean() {
         Configurations confs = getConfs();
         if (confs != null) {
-            for(Configuration conf : confs.getConfs()){
-                if (conf != null){
+            for (Configuration conf : confs.getConfs()) {
+                if (conf != null) {
                     conf.setAuxObjects(Collections.<ConfigurationAuxObject>emptyList());
                 }
             }
@@ -508,7 +508,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setProjectItemsMap(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsChangeListeners());
         setSourceRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceRootsRaw());
-        setFolderVisibilityQuery(((MakeConfigurationDescriptor)clonedConfigurationDescriptor).getFolderVisibilityQuery().getRegEx());
+        setFolderVisibilityQuery(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getFolderVisibilityQuery().getRegEx());
     }
 
     public ConfigurationDescriptor cloneProjectDescriptor() {
@@ -582,8 +582,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public void setFolderVisibilityQuery(String regex) {
         if (folderVisibilityQuery == null) {
             folderVisibilityQuery = new CndVisibilityQuery(regex);
-        }
-        else {
+        } else {
             folderVisibilityQuery.setPattern(regex);
         }
     }

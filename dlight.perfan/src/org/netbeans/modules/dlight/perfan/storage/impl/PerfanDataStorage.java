@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -157,6 +158,21 @@ public final class PerfanDataStorage extends DataStorage {
 
         return result;
     }
+
+    public FunctionStatistic getFunctionStatistic(FunctionCall functionCall) {
+        FunctionStatistic result = null;
+
+        try {
+            result = er_print.getFunctionStatistic(functionCall, true);
+        } catch (InterruptedIOException ex) {
+            // it was terminated while getting functions list...
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return result;
+    }
+
 
     public ExperimentStatistics fetchSummaryData() {
         ExperimentStatistics result = null;

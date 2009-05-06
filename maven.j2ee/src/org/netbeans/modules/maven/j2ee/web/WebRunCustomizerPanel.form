@@ -27,7 +27,7 @@
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="lblHint2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="191" max="32767" attributes="0"/>
+                              <EmptySpace pref="222" max="32767" attributes="0"/>
                           </Group>
                           <Component id="txtRelativeUrl" pref="329" max="32767" attributes="0"/>
                       </Group>
@@ -40,9 +40,9 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="comServer" alignment="1" pref="325" max="32767" attributes="0"/>
-                          <Component id="txtJ2EEVersion" alignment="1" pref="325" max="32767" attributes="0"/>
-                          <Component id="txtContextPath" alignment="0" pref="325" max="32767" attributes="0"/>
+                          <Component id="comServer" alignment="1" pref="331" max="32767" attributes="0"/>
+                          <Component id="txtJ2EEVersion" alignment="1" pref="331" max="32767" attributes="0"/>
+                          <Component id="txtContextPath" alignment="0" pref="331" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -99,6 +99,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="lblJ2EEVersion">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="txtJ2EEVersion"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/maven/j2ee/web/Bundle.properties" key="LBL_J2EE_Version" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -108,6 +111,11 @@
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/j2ee/web/Bundle.properties" key="WebRunCustomizerPanel.txtJ2EEVersion.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblContextPath">
       <Properties>
@@ -120,6 +128,11 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtContextPath">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/j2ee/web/Bundle.properties" key="WebRunCustomizerPanel.txtContextPath.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbBrowser">
       <Properties>
@@ -127,6 +140,11 @@
           <ResourceString bundle="org/netbeans/modules/maven/j2ee/web/Bundle.properties" key="LBL_Display_on_Run" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/j2ee/web/Bundle.properties" key="WebRunCustomizerPanel.cbBrowser.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblHint1">
       <Properties>
@@ -146,6 +164,11 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtRelativeUrl">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/j2ee/web/Bundle.properties" key="WebRunCustomizerPanel.txtRelativeUrl.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblHint2">
       <Properties>
