@@ -134,6 +134,9 @@ public final class ImageUtilities {
      * 
      * <p>Caching of loaded images can be used internally to improve performance.
      * 
+     * @param resource resource path of the image (no initial slash)
+     * @param localized true for localized search
+     * @return icon's Image or null if the icon cannot be loaded
      */
     public static final Image loadImage(String resource, boolean localized) {
         return getIcon(resource, localized);
@@ -149,7 +152,7 @@ public final class ImageUtilities {
      */
     public static final ImageIcon loadImageIcon(String resource, boolean localized) {
         Image image = getIcon(resource, localized);
-        return (ImageIcon) image2Icon(image);
+        return image == null ? null : (ImageIcon) image2Icon(image);
     }
 
     /** This method merges two images into the new one. The second image is drawn

@@ -60,6 +60,14 @@ import org.openide.util.actions.CallableSystemAction;
 * @author   Jan Jancura, Ian Formanek
 */
 public final class SaveAllAction extends CallableSystemAction {
+
+    public SaveAllAction () {
+        // listen to the changes
+        chl = new ModifiedListL();
+        DataObject.getRegistry().addChangeListener(
+            (org.openide.util.WeakListeners.change(chl, DataObject.getRegistry())));
+    }
+
     static final long serialVersionUID = 333L;
 
     /** to make sure only one instance of this class can run at a time */
@@ -121,7 +129,7 @@ public final class SaveAllAction extends CallableSystemAction {
             
         }
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return true;

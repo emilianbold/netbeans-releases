@@ -329,6 +329,7 @@ public class JavaEditorWarmUpTask implements Runnable{
                         + (System.currentTimeMillis()-startTime));
                     startTime = System.currentTimeMillis();
                 }
+                status = STATUS_INIT;
                 break;
                 
             default:
