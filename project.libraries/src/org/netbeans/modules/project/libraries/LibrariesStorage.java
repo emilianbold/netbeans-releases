@@ -212,6 +212,8 @@ implements WritableLibraryProvider<LibraryImplementation>, TaskListener {
             this.storage.addFileChangeListener (this);
             LibraryTypeRegistry.getDefault().addTaskListener(this);
             initialized = true;
+        } else {
+            LibraryTypeRegistry.getDefault().waitFinished();
         }
     }
 
