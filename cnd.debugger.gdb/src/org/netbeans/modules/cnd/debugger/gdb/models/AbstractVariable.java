@@ -129,14 +129,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return tinfo;
     }
 
-    protected void resetVariable() {
-        tinfo = null;
-        type = "";
-        value = "";
-        emptyFields();
-    }
-
-    private void emptyFields() {
+    protected void emptyFields() {
         int i, k = fields.length;
         for (i=0; i < k; i++) {
             Field field = fields[i];
@@ -180,10 +173,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             }
         }
         return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     /**
