@@ -46,11 +46,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
-import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.modules.project.ui.actions.TestSupport.TestProject;
 import org.netbeans.spi.project.ProjectFactory;
@@ -66,6 +65,7 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.util.test.MockLookup;
 
 public class ProjectsRootNodeNotRecognizedTest extends NbTestCase {
+    private static CountDownLatch down;
     
     public ProjectsRootNodeNotRecognizedTest(String testName) {
         super(testName);
@@ -74,7 +74,7 @@ public class ProjectsRootNodeNotRecognizedTest extends NbTestCase {
     public void testBadgingNodeIsOKIfProjectIsNoLongerRecognized() throws Exception{
         //prepearing project
         MockLookup.setInstances(new TestFactory());
-        CountDownLatch down = new CountDownLatch(1);
+        down = new CountDownLatch(1);
         clearWorkDir();
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         FileObject foMain = TestSupport.createTestProject(workDir, "prj_1");
@@ -118,12 +118,17 @@ public class ProjectsRootNodeNotRecognizedTest extends NbTestCase {
         }
 
         public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
-            if (refused.add(projectDirectory)) {
-                TestProject p = new TestSupport.TestProject(projectDirectory, state);
-                p.setLookup(new NullLVPLookup(p, projectDirectory, state));
-                return p;
+            try {
+                down.await();
+                if (refused.add(projectDirectory)) {
+                    TestProject p = new TestSupport.TestProject(projectDirectory, state);
+                    p.setLookup(new NullLVPLookup(p, projectDirectory, state));
+                    return p;
+                }
+                return null;
+            } catch (InterruptedException ex) {
+                throw new IOException();
             }
-            return null;
         }
 
         public void saveProject(Project project) throws IOException, ClassCastException {

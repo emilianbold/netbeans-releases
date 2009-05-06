@@ -63,7 +63,7 @@ import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -101,7 +101,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.SOURCE) });
         GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.COMPILE) });
         GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.BOOT) });
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final MockChangeListener changeListener = new MockChangeListener();
@@ -279,7 +279,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
     }
 
     public void testChangedFiles() throws Exception {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final MockChangeListener changeListener = new MockChangeListener();

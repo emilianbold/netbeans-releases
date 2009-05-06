@@ -8,6 +8,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
+                <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <package>org.netbeans.modules.cnd.dwarfdump</package>
                 <package>org.netbeans.modules.cnd.dwarfdump.dwarf</package>

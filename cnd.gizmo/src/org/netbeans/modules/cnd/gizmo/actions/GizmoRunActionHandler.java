@@ -112,6 +112,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
 
         targetConf.putInfo(ServiceInfoDataStorage.EXECUTION_ENV_KEY, ExecutionEnvironmentFactory.toUniqueID(execEnv));
+        targetConf.putInfo(GizmoServiceInfo.PLATFORM, pae.getConfiguration().getPlatform().getName());
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath());//NOI18N
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, runDirectory + File.separator + pae.getExecutable());
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();

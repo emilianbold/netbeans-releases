@@ -109,12 +109,7 @@ public class NativeExecutor implements Runnable {
             boolean unbuffer) {
         this.execEnv = execEnv;
         this.runDir = runDir;
-        if (!new File(executable).exists() && new File(executable+".lnk").exists()) { // NOI18N
-            String resolved = LinkSupport.getOriginalFile(executable+".lnk"); // NOI18N
-            if (resolved != null){
-                executable = resolved;
-            }
-        }
+        executable = LinkSupport.resolveWindowsLinkik(executable);
         this.executable = executable;
         this.arguments = arguments;
         this.envp = envp;

@@ -119,6 +119,8 @@ final class NbInstaller extends ModuleInstaller {
     private final Map<Module,Set<String>> kosherPackages = new HashMap<Module,Set<String>>(100);
     /** classpath ~ JRE packages to be hidden from a module */
     private final Map<Module,List<Module.PackageExport>> hiddenClasspathPackages = new  HashMap<Module,List<Module.PackageExport>>();
+    /** #164510: similar to {@link #hiddenClasspathPackages} but backwards for efficiency */
+    private final Map<Module.PackageExport,List<Module>> hiddenClasspathPackagesReverse = new HashMap<Module.PackageExport,List<Module>>();
         
     /** Create an NbInstaller.
      * You should also call {@link #registerManager} and if applicable
@@ -275,6 +277,13 @@ final class NbInstaller extends ModuleInstaller {
         if (!hiddenPackages.isEmpty()) {
             synchronized (hiddenClasspathPackages) {
                 hiddenClasspathPackages.put(m, hiddenPackages);
+                for (Module.PackageExport pkg : hiddenPackages) {
+                    List<Module> ms = hiddenClasspathPackagesReverse.get(pkg);
+                    if (ms == null) {
+                        hiddenClasspathPackagesReverse.put(pkg, ms = new LinkedList<Module>());
+                    }
+                    ms.add(m);
+                }
             }
         }
     }
@@ -293,6 +302,10 @@ final class NbInstaller extends ModuleInstaller {
         kosherPackages.remove(m);
         synchronized (hiddenClasspathPackages) {
             hiddenClasspathPackages.remove(m);
+            for (List<Module> ms : hiddenClasspathPackagesReverse.values()) {
+                ms.remove(m);
+                // could also delete entry if ms.isEmpty()
+            }
         }
     }
     
@@ -847,17 +860,16 @@ final class NbInstaller extends ModuleInstaller {
 
     public @Override boolean shouldDelegateClasspathResource(String pkg) {
         synchronized (hiddenClasspathPackages) {
-            for (Map.Entry<Module,List<Module.PackageExport>> entry : hiddenClasspathPackages.entrySet()) {
-                Module m = entry.getKey();
-                if (!m.isEnabled()) {
-                    continue;
-                }
-                for (Module.PackageExport hidden : entry.getValue()) {
-                    if (hidden.recursive ? pkg.startsWith(hidden.pkg) : pkg.equals(hidden.pkg)) {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("Refusing to load classpath package " + pkg + " because of " + m.getCodeNameBase());
+            for (Map.Entry<Module.PackageExport,List<Module>> entry : hiddenClasspathPackagesReverse.entrySet()) {
+                Module.PackageExport hidden = entry.getKey();
+                if (hidden.recursive ? pkg.startsWith(hidden.pkg) : pkg.equals(hidden.pkg)) {
+                    for (Module m : entry.getValue()) {
+                        if (m.isEnabled()) {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("Refusing to load classpath package " + pkg + " because of " + m.getCodeNameBase());
+                            }
+                            return false;
                         }
-                        return false;
                     }
                 }
             }

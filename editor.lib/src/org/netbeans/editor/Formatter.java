@@ -574,12 +574,18 @@ public class Formatter {
             try {
                 CharArrayWriter cw = new CharArrayWriter();
                 Writer w = createWriter(doc, startOffset, cw);
-                w.write(doc.getChars(startOffset, endOffset - startOffset));
+                String originalString = doc.getText(startOffset, endOffset - startOffset);
+                w.write(originalString);
                 w.close();
                 String out = new String(cw.toCharArray());
-                doc.remove(startOffset, endOffset - startOffset);
-                doc.insertString(startOffset, out, null);
-                return out.length();
+                if(!out.equals(originalString)){
+                    doc.remove(startOffset, endOffset - startOffset);
+                    doc.insertString(startOffset, out, null);
+                    return out.length();
+                }else{
+                    //nothing changed
+                    return 0;
+                }
             } catch (IOException e) {
                 Utilities.annotateLoggable(e);
                 return 0;

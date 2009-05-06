@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author Vladimir Voskresenskky
  */
 public final class FilePreprocessorConditionState {
+    public static final FilePreprocessorConditionState PARSING = new FilePreprocessorConditionState("PARSING", new int[]{0, Integer.MAX_VALUE}); // NOI18N
 
     /** a SORTED array of blocks [start-end] for which conditionals were evaluated to false */
     private final int[] offsets;
@@ -118,6 +119,9 @@ public final class FilePreprocessorConditionState {
     }
 
     /*package*/ static String toStringBrief(FilePreprocessorConditionState state) {
+        if (state == FilePreprocessorConditionState.PARSING) {
+            return FilePreprocessorConditionState.PARSING.fileName.toString();
+        }
         if (state == null) {
             return "null"; // NOI18N
         }

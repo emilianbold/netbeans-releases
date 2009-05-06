@@ -51,51 +51,51 @@ public class FunctionCallImpl extends FunctionCall {
     private String fileName;
     private String sourceFile;
     private final Map<FunctionMetric, Object> metrics;
+    private final StringBuilder displayedName = new StringBuilder();
 
     public FunctionCallImpl(
-        final Function function,
-        final Map<FunctionMetric, Object> metrics) {
+            final Function function,
+            final Map<FunctionMetric, Object> metrics) {
         super(function);
         this.metrics = metrics;
     }
 
     public FunctionCallImpl(
-        final Function function, long offset,
-        final Map<FunctionMetric, Object> metrics) {
+            final Function function, long offset,
+            final Map<FunctionMetric, Object> metrics) {
         super(function, offset);
         this.metrics = metrics;
+        updateDisplayedName();
     }
 
-
-    public void setFileName(String fileName){
+    public void setFileName(String fileName) {
         this.fileName = fileName;
+        updateDisplayedName();
     }
 
-    public String getFileName(){
+    public String getFileName() {
         return fileName;
     }
 
-    public void setSourceFile(String sourceFile){
+    public void setSourceFile(String sourceFile) {
         this.sourceFile = sourceFile;
+        updateDisplayedName();
     }
 
-    public boolean hasSourceFileDefined(){
+    public boolean hasSourceFileDefined() {
         return sourceFile != null;
     }
 
-    public String getSourceFile(){
+    public String getSourceFile() {
         return sourceFile;
     }
 
     @Override
     public String getDisplayedName() {
-        if (fileName == null || !hasOffset()){
-            return super.getDisplayedName();
+        synchronized (displayedName) {
+            return displayedName.toString();
         }
-        return getFunction().getName() + ", " +  fileName + ":" + getOffset();//NOI18N
     }
-
-
 
     public Object getMetricValue(FunctionMetric metric) {
         return metrics.get(metric);
@@ -134,5 +134,30 @@ public class FunctionCallImpl extends FunctionCall {
             }
         }
         return null;
+    }
+
+    private void updateDisplayedName() {
+        synchronized (displayedName) {
+            displayedName.setLength(0);
+
+            Function f = getFunction();
+
+            if (f != null) {
+                displayedName.append(f.getName());
+            } else {
+                displayedName.append("<unknown>"); // NOI18N
+            }
+
+            if (fileName != null) {
+                displayedName.append(", " + fileName); // NOI18N
+                if (hasOffset()) {
+                    displayedName.append(":").append(getOffset()); // NOI18N
+                }
+            }
+
+            if (displayedName.length() == 0) {
+                displayedName.append(super.getDisplayedName());
+            }
+        }
     }
 }

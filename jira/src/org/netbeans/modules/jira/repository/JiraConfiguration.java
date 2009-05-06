@@ -40,7 +40,6 @@
 package org.netbeans.modules.jira.repository;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.util.HashMap;
@@ -73,108 +72,84 @@ import org.netbeans.modules.jira.commands.JiraCommand;
  *
  * @author Tomas Stupka, Jan Stola
  */
+// XXX rename - it actually the cache, not the configuration
 public class JiraConfiguration extends JiraClientCache {
 
     private JiraClient client;
     private JiraRepository repository;
-    protected LazyData data;
+    private ConfigurationData data;
     private Set<String> loadedProjects = new HashSet<String>();
 
     private static final Object USER_LOCK = new Object();
     private static final Object PROJECT_LOCK = new Object();
 
-    // XXX might be we want it private
-    protected JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
+    public JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
         super(jiraClient);
         this.client = jiraClient;
-        this.repository = repository;
-        data = new LazyData();
+        this.repository = repository;        
     }
 
-    public static <T extends JiraConfiguration> T create(final JiraRepository repository, final Class<T> clazz) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+    protected void initialize() throws JiraException {
+        NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
 
-        // XXX need logging incl. consumed time
-
-        class ConfigurationCommand extends JiraCommand {
-
-            private T configuration;
-
-            @Override
-            public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-
-                final JiraClient client = Jira.getInstance().getClient(repository.getTaskRepository());
-
-                try {
-                    Constructor<T> c = clazz.getDeclaredConstructor(JiraClient.class, JiraRepository.class);
-                    c.setAccessible(true);
-                    configuration = c.newInstance(client, repository);
-                } catch (Exception ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                    return;
-                }
-
-                NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
-
-                configuration.data.projects = client.getProjects(nullProgressMonitor);
-                configuration.data.projectsById = new HashMap<String, Project>(configuration.data.projects.length);
-                configuration.data.projectsByKey = new HashMap<String, Project>(configuration.data.projects.length);
-                for (Project project : configuration.data.projects) {
-                    configuration.data.projectsById.put(project.getId(), project);
-                    configuration.data.projectsByKey.put(project.getKey(), project);
-                }
-                configuration.data.priorities = client.getPriorities(nullProgressMonitor);
-                configuration.data.prioritiesById = new HashMap<String, Priority>(configuration.data.priorities.length);
-                for (Priority priority : configuration.data.priorities) {
-                    configuration.data.prioritiesById.put(priority.getId(), priority);
-                }
-                configuration.data.resolutions = client.getResolutions(nullProgressMonitor);
-                configuration.data.resolutionsById = new HashMap<String, Resolution>(configuration.data.resolutions.length);
-                for (Resolution resolution : configuration.data.resolutions) {
-                    configuration.data.resolutionsById.put(resolution.getId(), resolution);
-                }
-                configuration.data.issueTypes = client.getIssueTypes(nullProgressMonitor);
-                configuration.data.issueTypesById = new HashMap<String, IssueType>(configuration.data.issueTypes.length);
-                for (IssueType type : configuration.data.issueTypes) {
-                    configuration.data.issueTypesById.put(type.getId(), type);
-                }
-                configuration.data.statuses = client.getStatuses(nullProgressMonitor);
-                configuration.data.statusesById = new HashMap<String, JiraStatus>(configuration.data.statuses.length);
-                for (JiraStatus status : configuration.data.statuses) {
-                    configuration.data.statusesById.put(status.getId(), status);
-                }
-                configuration.data.workDaysPerWeek = client.getConfiguration().getWorkDaysPerWeek();
-                configuration.data.workHoursPerDay = client.getConfiguration().getWorkHoursPerDay();
-                // XXX what else do we need?
-                // XXX issue types by project
-
-                hackJiraCache(client);
-            }
-
-            private void hackJiraCache(JiraClient client) {
-                try {
-                    Field f = client.getClass().getDeclaredField("cache");      // NOI18N
-                    f.setAccessible(true);
-                    f.set(client, configuration);
-                } catch (IllegalArgumentException ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                } catch (IllegalAccessException ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                } catch (NoSuchFieldException ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                } catch (SecurityException ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                }
-            }
+        data = (ConfigurationData) getData();
+        if(data.initialized) {
+            return;
         }
-        ConfigurationCommand cmd = new ConfigurationCommand();
-
-        repository.getExecutor().execute(cmd, true, false);
-        if(!cmd.hasFailed()) {
-            return cmd.configuration;
+        data.projects = client.getProjects(nullProgressMonitor);
+        data.projectsById = new HashMap<String, Project>(data.projects.length);
+        data.projectsByKey = new HashMap<String, Project>(data.projects.length);
+        for (Project project : data.projects) {
+            data.projectsById.put(project.getId(), project);
+            data.projectsByKey.put(project.getKey(), project);
         }
-        return null;
+        data.priorities = client.getPriorities(nullProgressMonitor);
+        data.prioritiesById = new HashMap<String, Priority>(data.priorities.length);
+        for (Priority priority : data.priorities) {
+            data.prioritiesById.put(priority.getId(), priority);
+        }
+        data.resolutions = client.getResolutions(nullProgressMonitor);
+        data.resolutionsById = new HashMap<String, Resolution>(data.resolutions.length);
+        for (Resolution resolution : data.resolutions) {
+            data.resolutionsById.put(resolution.getId(), resolution);
+        }
+        data.issueTypes = client.getIssueTypes(nullProgressMonitor);
+        data.issueTypesById = new HashMap<String, IssueType>(data.issueTypes.length);
+        for (IssueType type : data.issueTypes) {
+            data.issueTypesById.put(type.getId(), type);
+        }
+        data.statuses = client.getStatuses(nullProgressMonitor);
+        data.statusesById = new HashMap<String, JiraStatus>(data.statuses.length);
+        for (JiraStatus status : data.statuses) {
+            data.statusesById.put(status.getId(), status);
+        }
+
+        data.workDaysPerWeek = client.getConfiguration().getWorkDaysPerWeek();
+        data.workHoursPerDay = client.getConfiguration().getWorkHoursPerDay();
+
+        data.initialized = true;
+        // XXX what else do we need?
+        // XXX issue types by project
+
+        hackJiraCache();
     }
+
+    private void hackJiraCache() {
+        try {
+            Field f = client.getClass().getDeclaredField("cache");      // NOI18N
+            f.setAccessible(true);
+            f.set(client, this);
+        } catch (IllegalArgumentException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        } catch (NoSuchFieldException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
     @Override
     public boolean hasDetails() {
         return true; // always
@@ -183,7 +158,7 @@ public class JiraConfiguration extends JiraClientCache {
     @Override
     public JiraClientData getData() {
         if(data == null) {
-             data = new LazyData();
+             data = new ConfigurationData();
         }
         return data;
     }
@@ -269,7 +244,7 @@ public class JiraConfiguration extends JiraClientCache {
 
     @Override
     public void setData(JiraClientData data) {
-        this.data = (LazyData) data;
+        this.data = (ConfigurationData) data;
     }
 
     @Override
@@ -368,7 +343,7 @@ public class JiraConfiguration extends JiraClientCache {
         return data.workHoursPerDay;
     }
 
-    protected class LazyData extends JiraClientData {
+    protected class ConfigurationData extends JiraClientData {
 	Group[] groups = new Group[0];
 	IssueType[] issueTypes = new IssueType[0];
 	Map<String, IssueType> issueTypesById = new HashMap<String, IssueType>();
@@ -387,6 +362,7 @@ public class JiraConfiguration extends JiraClientCache {
         int workDaysPerWeek;
         int workHoursPerDay;
 	long lastUpdate;
+        boolean initialized = false;
     }
 
 }

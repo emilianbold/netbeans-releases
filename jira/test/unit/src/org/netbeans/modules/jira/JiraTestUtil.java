@@ -54,6 +54,7 @@ import org.eclipse.mylyn.internal.jira.core.JiraClientFactory;
 import org.eclipse.mylyn.internal.jira.core.JiraRepositoryConnector;
 import org.eclipse.mylyn.internal.jira.core.model.Component;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
+import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
 import org.eclipse.mylyn.internal.jira.core.model.JiraIssue;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
@@ -145,7 +146,7 @@ public class JiraTestUtil {
         issue.setDescription(desc);
         issue.setType(getIssueTypeByName(client, typeName));
         issue.setProject(getProject(client));
-		issue.setPriority(getPriorityByName(client, "Blocker"));
+        issue.setPriority(getPriorityByName(client, "Blocker"));
         issue.setReporter(JiraTestUtil.REPO_USER);
         issue.setInitialEstimate(60 * 10);
 
@@ -169,13 +170,13 @@ public class JiraTestUtil {
         return rc.getTaskDataHandler().getTaskData(repository, taskId, JiraTestUtil.nullProgressMonitor);
     }
 
-    public static TestTaskDataCollector list(JiraRepositoryConnector rc, TaskRepository repository, FilterDefinition fd) {
-        return list(rc, repository, fd, null);
+    public static TestTaskDataCollector list(JiraRepositoryConnector rc, TaskRepository repository, JiraFilter jf) {
+        return list(rc, repository, jf, null);
     }
 
-    public static TestTaskDataCollector list(JiraRepositoryConnector rc, TaskRepository repository, FilterDefinition fd, ISynchronizationSession session) {
+    public static TestTaskDataCollector list(JiraRepositoryConnector rc, TaskRepository repository, JiraFilter jf, ISynchronizationSession session) {
         final RepositoryQuery repositoryQuery = new RepositoryQuery(rc.getConnectorKind(), "query");
-        JiraUtil.setQuery(repository, repositoryQuery, fd);
+        JiraUtil.setQuery(repository, repositoryQuery, jf);
         TestTaskDataCollector tdc = new TestTaskDataCollector();
         rc.performQuery(repository, repositoryQuery, tdc, session, JiraTestUtil.nullProgressMonitor);
         return tdc;

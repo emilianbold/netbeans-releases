@@ -90,7 +90,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         }
 
         ContextKnowledge knowledge = new ContextKnowledge(index, root, node, caretOffset, caretOffset, doc, fo);
-        return new RubyTypeInferencer(knowledge);
+        return RubyTypeInferencer.normal(knowledge);
     }
 
     private void assertTypes(final RubyType actualTypes, final String... expectedTypes) {

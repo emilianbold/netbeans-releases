@@ -596,7 +596,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         public boolean workCancelled = false;
 
         public testShuttdown_TimedWork() {
-            super(false, false);
+            super(false, false, false);
         }
 
         protected @Override void getDone() {

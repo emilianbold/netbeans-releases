@@ -43,6 +43,8 @@ import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Constructor;
+import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -50,8 +52,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -64,6 +69,7 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueCache;
+import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
@@ -406,7 +412,30 @@ public class BugzillaRepository extends Repository {
     }
 
     protected BugzillaConfiguration createConfiguration() {
-        return BugzillaConfiguration.create(this, BugzillaConfiguration.class);
+        RepositoryConfiguration rc = getRepositoryConfiguration();
+        if(rc != null) {
+            return new BugzillaConfiguration(rc);
+        }
+        return null;
+    }
+
+    protected RepositoryConfiguration getRepositoryConfiguration() {
+        final RepositoryConfiguration[] rc = new RepositoryConfiguration[1];
+        BugzillaCommand cmd = new BugzillaCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+                rc[0] = Bugzilla.getInstance()
+                                .getRepositoryConnector()
+                                .getClientManager()
+                                .getClient(getTaskRepository(), new NullProgressMonitor())
+                                .getRepositoryConfiguration(new NullProgressMonitor());
+            }
+        };
+        getExecutor().execute(cmd);
+        if(!cmd.hasFailed()) {
+            return rc[0];
+        }
+        return null;
     }
 
     private void setupIssueRefreshTask() {
