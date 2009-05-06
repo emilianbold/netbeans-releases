@@ -692,7 +692,7 @@ public class Commit extends GeneralPHP
         false,
         false,
         6,
-        2
+        1
       );
 
     endTest( );
