@@ -132,30 +132,46 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         return instance;
     }
 
-    public synchronized void start(boolean force) {
-        if (state == State.CREATED) {
-            state = State.STARTED;
-            LOGGER.fine("Initializing..."); //NOI18N
-            this.indexingActivityInterceptors = Lookup.getDefault().lookupResult(IndexingActivityInterceptor.class);
-            PathRegistry.getDefault().addPathRegistryListener(this);
-            FileUtil.addFileChangeListener(this);
-            EditorRegistry.addPropertyChangeListener(this);
+    public void start(boolean force) {
+        boolean schedule = false;
 
-            if (force) {
-                scheduleWork(null, false);
+        synchronized (this) {
+            if (state == State.CREATED) {
+                state = State.STARTED;
+                LOGGER.fine("Initializing..."); //NOI18N
+                this.indexingActivityInterceptors = Lookup.getDefault().lookupResult(IndexingActivityInterceptor.class);
+                PathRegistry.getDefault().addPathRegistryListener(this);
+                FileUtil.addFileChangeListener(this);
+                EditorRegistry.addPropertyChangeListener(this);
+
+                if (force) {
+                    schedule = true;
+                }
             }
+        }
+
+        if (schedule) {
+            scheduleWork(null, false);
         }
     }
 
-    public synchronized void stop() {
-        if (state != State.STOPPED) {
-            state = State.STOPPED;
-            LOGGER.fine("Closing..."); //NOI18N
+    public void stop() {
+        boolean cancel = false;
 
-            PathRegistry.getDefault().removePathRegistryListener(this);
-            FileUtil.removeFileChangeListener(this);
-            EditorRegistry.removePropertyChangeListener(this);
+        synchronized (this) {
+            if (state != State.STOPPED) {
+                state = State.STOPPED;
+                LOGGER.fine("Closing..."); //NOI18N
 
+                PathRegistry.getDefault().removePathRegistryListener(this);
+                FileUtil.removeFileChangeListener(this);
+                EditorRegistry.removePropertyChangeListener(this);
+
+                cancel = true;
+            }
+        }
+
+        if (cancel) {
             getWorker().cancelAll();
         }
     }
@@ -641,42 +657,48 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     /* test */ void scheduleWork(final Work work, boolean wait) {
         recordCaller();
 
+        boolean scheduleExtraWork = false;
+
         synchronized (this) {
             if (state == State.STARTED) {
                 state = State.INITIAL_SCAN_RUNNING;
-                getWorker().schedule(new RootsWork(scannedRoots2Dependencies, scannedBinaries, true) {
-                    public @Override void getDone() {
-                        try {
-                            if (work != null) {
-                                try {
-                                    long tm = System.currentTimeMillis();
-                                    LOGGER.fine("Initial scan waiting for projects"); //NOI18N
-                                    OpenProjects.getDefault().openProjects().get();
-                                    LOGGER.log(Level.FINE, "Initial scan blocked for {0} ms", System.currentTimeMillis() - tm); //NOI18N
-                                } catch (Exception ex) {
-                                    // ignore
-                                    LOGGER.log(Level.FINE, "Waiting for projects before initial scan timed out", ex); // NOI18N
-                                }
-                            } // else forced (eg. from tests) so don't wait for projects
+                scheduleExtraWork = true;
+            }
+        }
 
-                            super.getDone();
-                        } finally {
-                            if (state == State.INITIAL_SCAN_RUNNING) {
-                                synchronized (RepositoryUpdater.this) {
-                                    if (state == State.INITIAL_SCAN_RUNNING) {
-                                        state = State.ACTIVE;
-                                    }
+        if (scheduleExtraWork) {
+            getWorker().schedule(new RootsWork(scannedRoots2Dependencies, scannedBinaries, true) {
+                public @Override void getDone() {
+                    try {
+                        if (work != null) {
+                            try {
+                                long tm = System.currentTimeMillis();
+                                LOGGER.fine("Initial scan waiting for projects"); //NOI18N
+                                OpenProjects.getDefault().openProjects().get();
+                                LOGGER.log(Level.FINE, "Initial scan blocked for {0} ms", System.currentTimeMillis() - tm); //NOI18N
+                            } catch (Exception ex) {
+                                // ignore
+                                LOGGER.log(Level.FINE, "Waiting for projects before initial scan timed out", ex); // NOI18N
+                            }
+                        } // else forced (eg. from tests) so don't wait for projects
+
+                        super.getDone();
+                    } finally {
+                        if (state == State.INITIAL_SCAN_RUNNING) {
+                            synchronized (RepositoryUpdater.this) {
+                                if (state == State.INITIAL_SCAN_RUNNING) {
+                                    state = State.ACTIVE;
                                 }
                             }
                         }
                     }
-                }, false);
-
-                if (work instanceof RootsWork) {
-                    // if the work is the initial RootsWork it's superseeded
-                    // by the RootsWork we've just scheduled and so we can quit now.
-                    return;
                 }
+            }, false);
+
+            if (work instanceof RootsWork) {
+                // if the work is the initial RootsWork it's superseeded
+                // by the RootsWork we've just scheduled and so we can quit now.
+                return;
             }
         }
 

@@ -209,6 +209,7 @@ public class RepositoryNode extends AbstractNode {
 
         public void actionPerformed(ActionEvent e) {
             final RepositoryRegisterUI rrui = new RepositoryRegisterUI();
+            rrui.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RepositoryNode.class, "LBL_Add_Repo"));
             rrui.modify(RepositoryNode.this.info);
             DialogDescriptor dd = new DialogDescriptor(rrui, NbBundle.getMessage(RepositoryNode.class, "LBL_Add_Repo"));
             dd.setClosingOptions(new Object[]{

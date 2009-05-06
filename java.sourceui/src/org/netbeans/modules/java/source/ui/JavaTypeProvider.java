@@ -175,7 +175,7 @@ public class JavaTypeProvider implements TypeProvider {
                 }
                 
                 // Binaries - not translated ClassPath.COMPILE & ClassPath.BOOT
-                for (URL url : PathRegistry.getDefault().getLibraries()) {
+                for (URL url : PathRegistry.getDefault().getBinaryLibraries()) {
                     try {
                         if ( isCanceled ) {
                             return;
