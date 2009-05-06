@@ -90,7 +90,6 @@ import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.options.DontShowAgainSettings;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -541,8 +540,9 @@ public class ActionMappings extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     
-private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
-    NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine(org.openide.util.NbBundle.getMessage(ActionMappings.class, "TIT_Add_action"), org.openide.util.NbBundle.getMessage(ActionMappings.class, "LBL_AddAction"));//GEN-HEADEREND:event_btnAddActionPerformed
+//GEN-FIRST:event_btnAddActionPerformed
+private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADEREND:event_btnAddActionPerformed
+    NotifyDescriptor.InputLine nd = new NonEmptyInputLine(org.openide.util.NbBundle.getMessage(ActionMappings.class, "TIT_Add_action"), org.openide.util.NbBundle.getMessage(ActionMappings.class, "LBL_AddAction"));
     Object ret = DialogDisplayer.getDefault().notify(nd);
     if (ret == NotifyDescriptor.OK_OPTION) {
         NetbeansActionMapping nam = new NetbeansActionMapping();
@@ -1257,4 +1257,31 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         }
 
     }
+
+    private static class NonEmptyInputLine extends NotifyDescriptor.InputLine implements DocumentListener {
+
+        public NonEmptyInputLine(String text, String title) {
+            super(text, title);
+            textField.getDocument().addDocumentListener(this);
+            checkValid();
+        }
+
+        public void insertUpdate(DocumentEvent arg0) {
+            checkValid();
+        }
+
+        public void removeUpdate(DocumentEvent arg0) {
+            checkValid();
+        }
+
+        public void changedUpdate(DocumentEvent arg0) {
+            checkValid();
+        }
+
+        private void checkValid () {
+            setValid(textField.getText() != null && textField.getText().trim().length() > 0);
+        }
+
+    }
+
 }
