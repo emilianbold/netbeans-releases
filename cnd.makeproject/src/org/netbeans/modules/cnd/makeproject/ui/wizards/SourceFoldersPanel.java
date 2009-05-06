@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
 import java.util.ArrayList;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -77,6 +78,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
             //sourceFilesPanel.setSeed(workingdir, workingdir);
             File wd = new File(workingdir);
             sourceFilesPanel.getListData().add(new FolderEntry(wd, wd.getPath()));
+            sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN);
             firstTime = false;
         }
     }
@@ -84,6 +86,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
     void store(WizardDescriptor wizardDescriptor) {
         wizardDescriptor.putProperty("sourceFolders", sourceFilesPanel.getListData().iterator()); // NOI18N
         wizardDescriptor.putProperty("sourceFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getListData())); // NOI18N
+        wizardDescriptor.putProperty("sourceFoldersFilter", sourceFilesPanel.getFoldersFilter());
     }
     
     boolean valid(WizardDescriptor settings) {
