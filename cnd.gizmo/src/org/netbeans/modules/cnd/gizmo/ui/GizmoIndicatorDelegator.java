@@ -18,7 +18,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mt154047
  */
-@ServiceProvider(service = IndicatorComponentDelegator.class,  position = 10)
+@ServiceProvider(service = IndicatorComponentDelegator.class, position = 10)
 public final class GizmoIndicatorDelegator implements IndicatorComponentDelegator {
 
     public void activeSessionChanged(DLightSession oldSession, final DLightSession newSession) {
@@ -31,7 +31,7 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
         if (newSession != null && newSession.getState() != SessionState.CLOSED) {
             newSession.addSessionStateListener(this);
         }
-        if (newSession != null && newSession.getState() == SessionState.CLOSED){
+        if (newSession != null && newSession.getState() == SessionState.CLOSED) {
             return;
         }
 ////        if (newSession.getState() != SessionState.CONFIGURATION)
@@ -56,10 +56,35 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
             }
         }
         List<ServiceInfoDataStorage> serviceInfoStorages = session.getServiceInfoDataStorages();
-        if (serviceInfoStorages != null){
-            for (ServiceInfoDataStorage storage : serviceInfoStorages){
+        if (serviceInfoStorages != null) {
+            for (ServiceInfoDataStorage storage : serviceInfoStorages) {
                 if (storage.getValue(GizmoServiceInfo.GIZMO_PROJECT_FOLDER) != null) {
                     return storage.getValue(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
+                }
+            }
+        }
+
+        return projectFolder;
+    }
+
+    private String getPlatform(DLightSession session) {
+        if (session == null) {
+            return null;
+        }
+        String projectFolder = null;
+        List<DataStorage> storages = session.getStorages();
+        if (storages != null) {
+            for (DataStorage storage : storages) {
+                if (storage.getValue(GizmoServiceInfo.PLATFORM) != null) {
+                    return storage.getValue(GizmoServiceInfo.PLATFORM);
+                }
+            }
+        }
+        List<ServiceInfoDataStorage> serviceInfoStorages = session.getServiceInfoDataStorages();
+        if (serviceInfoStorages != null) {
+            for (ServiceInfoDataStorage storage : serviceInfoStorages) {
+                if (storage.getValue(GizmoServiceInfo.PLATFORM) != null) {
+                    return storage.getValue(GizmoServiceInfo.PLATFORM);
                 }
             }
         }
@@ -70,12 +95,21 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
     private GizmoIndicatorsTopComponent getComponent(DLightSession newSession) {
         String projectFolder = getProjectFolder(newSession);
         //get all opened
-        if (GizmoIndicatorTopComponentRegsitry.getRegistry().getOpened().isEmpty()){
-            return GizmoIndicatorsTopComponent.findInstance();
+        GizmoIndicatorsTopComponent topComponent = GizmoIndicatorsTopComponent.findInstance();
+        if (GizmoIndicatorTopComponentRegsitry.getRegistry().getOpened().isEmpty()) {
+            return topComponent;
+        }
+        //if default is opened for unsupported platform and current platform is also unsupported do not open it again
+        boolean isCurrentPlatformSupported = GizmoServiceInfo.isPlatformSupported(getPlatform(newSession));
+        if (!isCurrentPlatformSupported && !GizmoServiceInfo.isPlatformSupported(getPlatform(topComponent.getSession()))) {
+            return topComponent;
         }
         for (GizmoIndicatorsTopComponent tc : GizmoIndicatorTopComponentRegsitry.getRegistry().getOpened()) {
-            //
             DLightSession tcSession = tc.getSession();
+            if (!isCurrentPlatformSupported && !GizmoServiceInfo.isPlatformSupported(getPlatform(tcSession))) {
+                //can return even if it is different project as both platfortms are not supported and the same message will be displayed
+                return tc;
+            }
             String sessionPF = getProjectFolder(tcSession);
             if (sessionPF != null && sessionPF.equals(projectFolder)) {
                 ///and old session is finished
@@ -83,7 +117,7 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
                     //reuse
                     return tc;
                 }
-                if (tcSession == null){
+                if (tcSession == null) {
                     return tc;
                 }
             }
@@ -94,11 +128,15 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
     public void sessionStateChanged(final DLightSession session, SessionState oldState, SessionState newState) {
         if (newState == SessionState.STARTING) {
             UIThread.invoke(new Runnable() {
+
                 public void run() {
                     GizmoIndicatorsTopComponent indicators = getComponent(session);
                     indicators.setSession(session);
                     indicators.open();
-                    indicators.requestActive();
+                    //invoke requestActive only once per IDE session
+                    if (GizmoServiceInfo.isPlatformSupported(getPlatform(session)) || !GizmoIndicatorTopComponentRegsitry.getRegistry().getOpened().contains(indicators)){
+                        indicators.requestActive();
+                    }
                 }
             });
         }

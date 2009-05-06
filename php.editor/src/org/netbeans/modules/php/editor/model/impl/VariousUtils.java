@@ -98,6 +98,10 @@ public class VariousUtils {
     public static final String STATIC_FIELD__TYPE_PREFIX = "static.fld:";
     public static final String VAR_TYPE_PREFIX = "var:";
 
+    public static String extractTypeFroVariableBase(VariableBase varBase) {
+        return extractTypeFroVariableBase(varBase, Collections.<String, AssignmentImpl>emptyMap());
+    }
+
     static String extractTypeFroVariableBase(VariableBase varBase, Map<String, AssignmentImpl> allAssignments) {
         Stack<VariableBase> stack = new Stack<VariableBase>();
         String typeName = null;

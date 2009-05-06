@@ -252,8 +252,10 @@ public class SimplifiedJspServlet {
 
         final Collection<String> processedFiles = new TreeSet<String>(Collections.singleton(fobj.getPath()));
 
-        for (String preludePath : (List<String>)pageInfo.getIncludePrelude()){
-            processIncludedFile(preludePath, processedFiles);
+        if (pageInfo.getIncludePrelude() != null){
+            for (String preludePath : (List<String>)pageInfo.getIncludePrelude()){
+                processIncludedFile(preludePath, processedFiles);
+            }
         }
 
         Visitor visitor = new Visitor() {

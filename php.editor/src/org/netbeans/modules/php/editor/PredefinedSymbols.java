@@ -72,7 +72,7 @@ public class PredefinedSymbols {
 
     public  static final Map<String,IndexedFunction> MAGIC_METHODS = new HashMap<String, IndexedFunction>();
 
-    private static IndexedFunction createMagicFunction(String fncName, String arguments, int flags) {
+    public static IndexedFunction createMagicFunction(String fncName, String arguments, int flags) {
         IndexedFunction ifnc = new MagicIndexedFunction(fncName, 
                 NbBundle.getMessage(PredefinedSymbols.class, "MagicMethod"), //NOI18N
                 null, null, arguments, 0, flags, ElementKind.METHOD);

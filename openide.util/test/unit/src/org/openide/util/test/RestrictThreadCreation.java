@@ -78,7 +78,6 @@ public class RestrictThreadCreation {
                 "org.netbeans.core.startup.preferences.NbPreferences.<clinit>",
                 "org.openide.loaders.FolderInstance.waitFinished",
                 "org.openide.loaders.FolderInstance.postCreationTask",
-                "org.netbeans.modules.java.source.usages.RepositoryUpdater.getDefault",
                 "org.netbeans.modules.masterfs.filebasedfs.fileobjects.LockForFile.<clinit>",
                 "org.netbeans.api.java.source.JavaSource.<clinit>",
                 "org.netbeans.api.java.source.JavaSourceTaskFactory.fileObjectsChanged",

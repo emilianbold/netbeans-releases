@@ -191,7 +191,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
      */
     public void putPreprocState(File file, APTPreprocHandler.State state) {
         MyFile f = getMyFile(file, false, true);
-        f.setState(state, null);
+        f.setState(state, FilePreprocessorConditionState.PARSING);
         put();
     }
 
@@ -577,25 +577,28 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         
 //        int size();
 
-        /**
-         * Gets mod count; mod count allows to understand whether the entry was changed:
-         * each modification changes mod count
-         */
-        int getModCount();
+//        /**
+//         * Gets mod count; mod count allows to understand whether the entry was changed:
+//         * each modification changes mod count
+//         */
+//        int getModCount();
         
         public Object getLock();
 
-        /**
-         * Used to sync between ProjectBase.onFileIncluded concerning the same file 
-         * that run simultaneously on different threads.
-         * Set to true in ProjectBase.onFileIncluded in the case it removes some of 
-         * the previous state => decides that the file should be REparsed
-         * Should be used ONLY WHEN LOCKED (see getLock() method) !!!
-         */
-        public boolean isPendingReparse();
+//        /**
+//         * Used to sync between ProjectBase.onFileIncluded concerning the same file
+//         * that run simultaneously on different threads.
+//         * Set to true in ProjectBase.onFileIncluded in the case it removes some of
+//         * the previous state => decides that the file should be REparsed
+//         * Should be used ONLY WHEN LOCKED (see getLock() method) !!!
+//         */
+//        public boolean isPendingReparse();
+//
+//        /** See comments to isPendingReparse */
+//        public void setPendingReparse(boolean pendingReparse);
 
-        /** See comments to isPendingReparse */
-        public void setPendingReparse(boolean pendingReparse);
+        /** sets pc state for preproc state if needed */
+        public boolean setParsedPCState(State ppState, FilePreprocessorConditionState pcState);
     }
 
     // package access for unit tests only
@@ -635,7 +638,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         
         private MyFile(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey) {
             this.fileNew = fileNew;
-            this.data = new StatePair(state, null);
+            this.data = new StatePair(state, FilePreprocessorConditionState.PARSING);
             this.canonical = getCanonicalKey(fileKey);
             this.modCount = 0;
         }
@@ -670,6 +673,8 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 FilePreprocessorConditionState pcState = null;
                 if (input.readBoolean()){
                     pcState = new FilePreprocessorConditionState(input);
+                } else {
+                    pcState = FilePreprocessorConditionState.PARSING;
                 }
                 return new StatePair(state, pcState);
             }
@@ -685,8 +690,8 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 if (pair.state != null) {
                     PersistentUtils.writePreprocState(pair.state, output);
                 }
-                output.writeBoolean(pair.pcState != null);
-                if (pair.pcState != null) {
+                output.writeBoolean(pair.pcState != FilePreprocessorConditionState.PARSING);
+                if (pair.pcState != FilePreprocessorConditionState.PARSING) {
                     pair.pcState.write(output);
                 }
             }
@@ -781,49 +786,39 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             data = new StatePair(state, pcState);
         }
         
-//        private static int countValidStates(Collection<StatePair> states) {
-//            int cnt = 0;
-//            for (StatePair pair : states) {
-//                if (pair.state != null && pair.state.isValid()) {
-//                    cnt++;
-//                }
-//            }
-//            return cnt;
-//        }
-        
         /**
          * Sets (replaces) new conditions state for the existent pair
          * @return true in the case of success, otherwise (if no ppState found) false
          */
-//        public synchronized boolean setPCState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
-//            assert state != null : "state should not be null"; //NOI18N
-//            if (state == null) {
-//                return false;
-//            }
-//            if( state != null && ! state.isCleaned() ) {
-//                state = APTHandlersSupport.createCleanPreprocState(state);
-//            }
-//            if (data instanceof StatePair) {
-//                StatePair pair = (StatePair) data;
-//                if (state.equals(pair.state)) {
-//                    data = new StatePair(state, new FilePreprocessorConditionState(pcState));
-//                    return true;
-//                } else {
-//                    return false;
-//                }
-//
-//            } else {
-//                List<StatePair> list = (List<StatePair>) data;
-//                for (int i = 0; i < list.size(); i++) {
-//                    StatePair pair = list.get(i);
-//                    if (state.equals(pair.state)) {
-//                        list.set(i, new StatePair(state, new FilePreprocessorConditionState(pcState)));
-//                        return true;
-//                    }
-//                }
-//                return false;
-//            }
-//        }
+        public boolean setParsedPCState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
+            assert state != null : "state should not be null"; //NOI18N
+            if (state == null) {
+                return false;
+            }
+            assert pcState != null && pcState != FilePreprocessorConditionState.PARSING;
+            if (data instanceof StatePair) {
+                StatePair pair = (StatePair) data;
+                if (state.equals(pair.state)) {
+                    data = new StatePair(pair.state, pcState);
+                    incrementModCount();
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                @SuppressWarnings("unchecked")
+                List<StatePair> list = (List<StatePair>) data;
+                for (int i = 0; i < list.size(); i++) {
+                    StatePair pair = list.get(i);
+                    if (state.equals(pair.state)) {
+                        list.set(i, new StatePair(pair.state, pcState));
+                        incrementModCount();
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
         
 //        public synchronized void setStates(Collection<StatePair> pairs) {
 //            incrementModCount();
@@ -922,7 +917,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 if (pair.state == null) {
                     return pair;
                 } else {
-                    return new StatePair(APTHandlersSupport.createInvalidPreprocState(pair.state), pair.pcState);
+                    return new StatePair(APTHandlersSupport.createInvalidPreprocState(pair.state), FilePreprocessorConditionState.PARSING);
                 }
             }
         }

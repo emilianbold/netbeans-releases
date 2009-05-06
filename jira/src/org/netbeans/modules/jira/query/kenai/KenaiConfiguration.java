@@ -41,6 +41,7 @@ package org.netbeans.modules.jira.query.kenai;
 
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
+import org.eclipse.mylyn.internal.jira.core.service.JiraClientData;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
@@ -53,14 +54,16 @@ public class KenaiConfiguration extends JiraConfiguration {
     private Project[] projects;
     private String projectName;
 
+    /**
+     * One instance for all kenai projects
+     */
+    private static ConfigurationData kenaiData;
+
     protected KenaiConfiguration(JiraClient jiraClient, JiraRepository repository) {
         super(jiraClient, repository);
     }
 
-    // XXX share for kenai. the same for bugzilla
-    // XXX setup only with one project. no need to initialize all projects on the repository for kenai
-        
-    void setProject(String projectName) {
+    void addProject(String projectName) {
         this.projectName = projectName;
     }
 
@@ -75,6 +78,14 @@ public class KenaiConfiguration extends JiraConfiguration {
             }
         }
         return projects;
+    }
+
+    @Override
+    public JiraClientData getData() {
+        if(kenaiData == null) {
+            kenaiData = new ConfigurationData() {};
+        }
+        return kenaiData;
     }
 
 }

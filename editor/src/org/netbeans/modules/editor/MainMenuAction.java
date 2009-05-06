@@ -59,12 +59,14 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Registry;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
+import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -216,13 +218,21 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
         Action presenterAction = presenter.getAction();
         if (presenterAction == null){
             if (action != null){
-                presenter.setAction(action);
+                if (!(action instanceof BaseAction)) {
+                    Actions.connect(presenter, action, false);
+                } else {
+                    presenter.setAction(action);
+                }
                 presenter.setToolTipText(null); /* bugfix #62872 */ 
                 menuInitialized = false;
             }
         }else{
             if ((action!=null && !action.equals(presenterAction))){
-                presenter.setAction(action);
+                if (!(action instanceof BaseAction)) {
+                    Actions.connect(presenter, action, false);
+                } else {
+                    presenter.setAction(action);
+                }
                 presenter.setToolTipText(null); /* bugfix #62872 */
                 menuInitialized = false;
             }

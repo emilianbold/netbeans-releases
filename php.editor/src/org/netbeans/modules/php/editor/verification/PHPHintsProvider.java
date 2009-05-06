@@ -163,10 +163,13 @@ public class PHPHintsProvider implements HintsProvider {
         List<? extends AstRule> modelHints = allHints.get(INTRODUCE_HINT);
         if (modelHints != null) {
             for (AstRule astRule : modelHints) {
-                if (astRule instanceof IntroduceHint) {
-                    if (mgr.isEnabled(astRule)) {
-                        IntroduceHint introduceFix = (IntroduceHint) astRule;
+                if (mgr.isEnabled(astRule)) {
+                    if (astRule instanceof AssignVariableHint) {
+                        AssignVariableHint introduceFix = (AssignVariableHint) astRule;
                         introduceFix.check(context, suggestions);
+                    } else if (astRule instanceof IntroduceHint) {
+                        IntroduceHint icm = (IntroduceHint) astRule;
+                        icm.check(context, suggestions);
                     }
                 }
             }

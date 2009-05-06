@@ -613,6 +613,16 @@ public abstract class Module extends ModuleInfo {
         public @Override String toString() {
             return "PackageExport[" + pkg + (recursive ? "**/" : "") + "]"; // NOI18N
         }
+        public @Override boolean equals(Object obj) {
+            if (!(obj instanceof PackageExport)) {
+                return false;
+            }
+            final PackageExport other = (PackageExport) obj;
+            return pkg.equals(other.pkg) && recursive == other.recursive;
+        }
+        public @Override int hashCode() {
+            return pkg.hashCode();
+        }
     }
 
     /** Initializes dependencies of this module

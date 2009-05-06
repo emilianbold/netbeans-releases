@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.util.test.MockChangeListener;
 
 /**
@@ -65,7 +65,7 @@ public class PersistentObjectManagerEventTest extends PersistenceTestCase {
      * initializes the model, etc.
      */
     public void testNoEventsIfTemporary() throws Exception {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final MockChangeListener listener = new MockChangeListener();

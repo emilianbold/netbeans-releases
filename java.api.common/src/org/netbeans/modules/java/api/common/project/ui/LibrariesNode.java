@@ -60,11 +60,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.JarFile;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -718,13 +721,13 @@ public final class LibrariesNode extends AbstractNode {
                     Exceptions.printStackTrace(ex);
                     return;
                 }
-                addJarFiles( filePaths, chooser.getSelectedPathVariables(), fileFilter, FileUtil.toFile(helper.getProjectDirectory()));
+                addJarOrFolder ( filePaths, chooser.getSelectedPathVariables(), fileFilter, FileUtil.toFile(helper.getProjectDirectory()));
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                 EditMediator.setLastUsedClassPathFolder(curDir);
             }
         }
 
-        private void addJarFiles (String[] filePaths, final String[] pathBasedVariables, FileFilter fileFilter, File base) {
+        private void addJarOrFolder (String[] filePaths, final String[] pathBasedVariables, FileFilter fileFilter, File base) {
             for (int i=0; i<filePaths.length;i++) {
                 try {
                     //Check if the file is acceted by the FileFilter,
@@ -752,6 +755,17 @@ public final class LibrariesNode extends AbstractNode {
                             }
                         }
                         if (isArchiveFile) {
+                            try {
+                                new JarFile (fl);
+                            } catch (IOException ex) {
+                                JOptionPane.showMessageDialog (
+                                    WindowManager.getDefault ().getMainWindow (),
+                                    NbBundle.getMessage (LibrariesNode.class, "LBL_Corrupted_JAR", fl),
+                                    NbBundle.getMessage (LibrariesNode.class, "LBL_Corrupted_JAR_title"),
+                                    JOptionPane.WARNING_MESSAGE
+                                );
+                                continue;
+                            }
                             u = LibrariesSupport.getArchiveRoot(u);
                         } else if (!u.toString().endsWith("/")) { // NOI18N
                             try {
