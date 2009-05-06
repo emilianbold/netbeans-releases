@@ -56,7 +56,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 
 /**
  *
@@ -69,7 +69,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
     }
 
     public void testUserActionTask() throws Exception {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final String expected = "foo";
@@ -101,7 +101,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
                 "       return 0;" +
                 "   }" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         helper.runJavaSourceTask(new Runnable() {
@@ -115,7 +115,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
     }
 
     public void testJavaContextListener() throws Exception {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final boolean[] contextLeft = { false };
@@ -143,7 +143,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
     }
 
     public void testRecursiveUserActionTask() throws Exception {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         helper.runJavaSourceTask(new Callable<Void>() {
@@ -162,7 +162,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
     }
 
     public void testGetCompilationControllerFromAnotherThread() throws Exception {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final CountDownLatch latch1 = new CountDownLatch(1);
@@ -193,7 +193,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
     }
 
     public void testUserActionTaskSingleThread() throws Exception {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final CountDownLatch latch = new CountDownLatch(1);
@@ -266,7 +266,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
             }
         });
         t.start();
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         TestUtilities.copyStringToFileObject(srcFO, "Person.java",
                 "public interface Person {" +
                 "   String getName();" +

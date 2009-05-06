@@ -99,19 +99,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         }
         return result;
     }
-
-    public String getDLightIndicatorDPStrings(){
-        StringBuilder result = new StringBuilder();
-        for (String str : DLightIndicatorDPStrings){
-            result.append(str + ":");//NOI18N
-        }
-        String strResult = result.toString();
-        if (!DLightIndicatorDPStrings.isEmpty()){
-            strResult = strResult.substring(0, strResult.length() - 1);
-        }
-        return strResult;
-    }
-
+    
     public void configure(Project project) {
         areCollectorsTurnedOn = true;
         this.currentProject = project;
@@ -174,7 +162,12 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         String platform = ((MakeConfiguration) getActiveConfiguration()).getPlatform().getName();
         if (platform.indexOf("Linux") != -1 || platform.indexOf("MacOS") != -1 || platform.indexOf("Windows") != -1) {//NOI18N
             areCollectorsTurnedOn = false;
-            DLightCollectorString = SUNSTUDIO;
+            if (platform.indexOf("Linux") != -1){//NOI18N
+                DLightCollectorString = SUNSTUDIO;
+            }else{
+                DLightCollectorString = "";//NOI18N
+            }
+
             DLightIndicatorDPStrings = Arrays.asList(PROC_READER, LL_MONITOR);
             return true;
         }

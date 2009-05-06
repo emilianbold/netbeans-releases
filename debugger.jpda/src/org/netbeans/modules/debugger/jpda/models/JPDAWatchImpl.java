@@ -59,6 +59,7 @@ import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalArgumentExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
@@ -229,8 +230,8 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
                         throw new InvalidExpressionException ("no instance context.");
                     }
                     ObjectReferenceWrapper.setValue(thisObject, field, value);
-                } catch (IllegalArgumentException iaex) {
-                    throw new InvalidExpressionException (iaex);
+                } catch (IllegalArgumentExceptionWrapper ex) {
+                    throw new InvalidExpressionException (ex.getCause());
                 } catch (ObjectCollectedExceptionWrapper ocex) {
                     throw new InvalidExpressionException (ocex);
                 }

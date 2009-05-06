@@ -1651,6 +1651,59 @@ public class AbstractLookupBaseHid extends NbTestCase {
         assertTrue("Listener called", listener.ok);
     }
 
+    public void testObjectFromInstanceContentConverterDisappearsIfNotReferenced() {
+        Conv converter = new Conv("foo");
+        ic.add (converter, converter);
+        Lookup lkp = instanceLookup;
+        StringBuilder sb = lookup.lookup (StringBuilder.class);
+        assertNotNull (sb);
+        int hash = System.identityHashCode(sb);
+        assertEquals ("foo", sb.toString());
+        Reference<StringBuilder> r = new WeakReference<StringBuilder>(sb);
+        sb = null;
+        assertGC("Lookup held onto object", r);
+        sb = lookup.lookup (StringBuilder.class);
+        assertNotSame(hash, System.identityHashCode(sb));
+        r = new WeakReference<StringBuilder>(sb);
+        sb = null;
+        assertGC("Lookup held onto object", r);
+        ic.remove (converter, converter);
+        Reference <InstanceContent.Convertor> cref = new WeakReference<InstanceContent.Convertor>(converter);
+        converter = null;
+        assertGC("Converter still referenced", cref); 
+
+        sb = lkp.lookup(StringBuilder.class);
+        assertNull ("Converter removed from lookup, but object it " +
+                "created still present:'" + sb +"'", sb);
+        converter = new Conv("bar");
+        ic.add (converter, converter);
+        assertNotNull (lkp.lookup(StringBuilder.class));
+        assertEquals ("bar", lkp.lookup(StringBuilder.class).toString());
+    }
+
+    private static class Conv implements InstanceContent.Convertor<Conv, StringBuilder> {
+        private final String str;
+        private Conv (String str) {
+            this.str = str;
+        }
+
+        public StringBuilder convert(Conv obj) {
+            return new StringBuilder (str);
+        }
+
+        public Class<? extends StringBuilder> type(Conv obj) {
+            return StringBuilder.class;
+        }
+
+        public String id(Conv obj) {
+            return "Foo";
+        }
+
+        public String displayName(Conv obj) {
+            return "Foo";
+        }
+    } // end of Conv
+
     public void testCanGCResults() throws Exception {
         class L implements LookupListener {
             int cnt;

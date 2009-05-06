@@ -354,10 +354,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         Collection<StatePair> preprocStatePairs = getProjectImpl(true).getPreprocStatePairs(this.getFile());
         // select the best based on context offsets
         for (FileContainer.StatePair statePair : preprocStatePairs) {
-            if (statePair.pcState != null) {
-                if (statePair.pcState.isInActiveBlock(startContext, endContext)) {
-                    return statePair;
-                }
+            if (statePair.pcState.isInActiveBlock(startContext, endContext)) {
+                return statePair;
             }
         }
         return null;
@@ -773,7 +771,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     "\n while getting TS of file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
             return null;
         }
-        FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(apt.getPath());
+        FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
         APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, pcBuilder);
         outPcState.set(pcBuilder.build());
         if(filtered) {
@@ -944,7 +942,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         try {
             APTFile aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
-            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler);
+            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, null);
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
             parser.setErrorDelegate(delegate);
             parser.setLazyCompound(false);
@@ -1028,8 +1026,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         "\n while parsing file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
                 return null;
             }
-            // We don't need to remember conditional state here - we do this in ProjectBase.onInclude
-            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler);
+            // We gather conditional state here as well, because sources are not included anywhere
+            FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
+            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, pcBuilder);
             walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
@@ -1049,6 +1048,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 //            }
 
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
+            FilePreprocessorConditionState pcState = pcBuilder.build();
+            startProject.setParsedPCState(this, ppState, pcState);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             try {
                 parser.translation_unit();

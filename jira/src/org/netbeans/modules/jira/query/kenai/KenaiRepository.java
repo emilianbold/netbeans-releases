@@ -44,8 +44,10 @@ import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
+import org.eclipse.mylyn.internal.jira.core.model.filter.CurrentUserFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
+import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
@@ -62,7 +64,7 @@ public class KenaiRepository extends JiraRepository {
 
     static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/kenai-small.png"; // NOI18N
     private Image icon;
-    private String project;
+    private String projectName;
     private KenaiQuery myIssues;
     private KenaiQuery allIssues;
     private String host;
@@ -70,7 +72,7 @@ public class KenaiRepository extends JiraRepository {
     public KenaiRepository(String repoName, String url, String host, String project) {
         super(repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
         icon = ImageUtilities.loadImage(ICON_PATH, true);
-        this.project = project;
+        this.projectName = project;
         this.host = host;
     }
 
@@ -81,7 +83,10 @@ public class KenaiRepository extends JiraRepository {
 
     @Override
     public Query createQuery() {
-        KenaiQuery q = new KenaiQuery(null, this, null, project, false, false);
+        FilterDefinition fd = new FilterDefinition();
+        Project project = getConfiguration().getProjectByKey(projectName);
+        fd.setProjectFilter(new ProjectFilter(project));
+        KenaiQuery q = new KenaiQuery(null, this, fd, projectName, false, false);
         return q;
     }
 
@@ -103,36 +108,32 @@ public class KenaiRepository extends JiraRepository {
     private Query[] getDefinedQueries() {
         List<Query> queries = new ArrayList<Query>();
 
-        // my issues - only if username provided
+        // my issues - only if logged in
         if(KenaiUtil.isLoggedIn()) {
-//            if(myIssues == null) {
-//                StringBuffer url = new StringBuffer();
-//                url.append(urlParam);
-//
-//                // XXX escape @?
-//                // XXX what if user already mail address?
-//                String user = getKenaiUser();
-//                if(user == null) {
-//                    user = "";                                                  // NOI18N
-//                }
-//                String userMail = user + "@"+ host;                             // NOI18N
-//                url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, product, userMail));
-//
-//                myIssues =
-//                    new KenaiQuery(
-//                        NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
-//                        this,
-//                        url.toString(),
-//                        product,
-//                        true,
-//                        true);
-//            }
-//            queries.add(myIssues);
+            if(myIssues == null) {
+                Project p = getConfiguration().getProjectByKey(projectName);
+                if(p != null) {
+                    FilterDefinition fd = new FilterDefinition();
+                    fd.setAssignedToFilter(new CurrentUserFilter());
+                    fd.setProjectFilter(new ProjectFilter(p));
+                    myIssues =
+                        new KenaiQuery(
+                            NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
+                            this,
+                            fd,
+                            projectName,
+                            true,
+                            true);
+                } else {
+                    // XXX warning
+                }
+            }
+            queries.add(myIssues);
         }
 
         // all issues
         if(allIssues == null) {
-            Project p = getConfiguration().getProjectByKey(project);
+            Project p = getConfiguration().getProjectByKey(projectName);
             if(p != null) {
                 FilterDefinition fd = new FilterDefinition();
                 fd.setProjectFilter(new ProjectFilter(p));
@@ -141,7 +142,7 @@ public class KenaiRepository extends JiraRepository {
                         NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), // NOI18N
                         this,
                         fd,
-                        project,
+                        projectName,
                         true,
                         true);
             } else {
@@ -153,36 +154,33 @@ public class KenaiRepository extends JiraRepository {
     }
 
     @Override
-    protected JiraConfiguration createConfiguration() {
-        // XXX
-//        KenaiConfiguration c = KenaiConfiguration.create(this);
-//        if(c != null) {
-//            c.setProducts(product);
-//            return c;
-//        }
-//        return null;
-        return super.createConfiguration();
+    protected JiraConfiguration createConfiguration(JiraClient client) {
+        KenaiConfiguration c = new KenaiConfiguration(client, this);
+        if(c != null) {
+            c.addProject(projectName);
+            return c;
+        }
+        return null;        
     }
 
     protected void setCredentials(String user, String password) {
         super.setTaskRepository(getDisplayName(), getUrl(), user, password, null, null);
     }
 
-    // XXX
-//    @Override
-//    public boolean authenticate(String errroMsg) {
-//        PasswordAuthentication pa = org.netbeans.modules.bugtracking.util.KenaiUtil.getPasswordAuthentication(true);
-//        if(pa == null) {
-//            return false;
-//        }
-//
-//        String user = pa.getUserName();
-//        char[] password = pa.getPassword();
-//
-//        setCredentials(user, new String(password));
-//
-//        return true;
-//    }
+    @Override
+    public boolean authenticate(String errroMsg) {
+        PasswordAuthentication pa = org.netbeans.modules.bugtracking.util.KenaiUtil.getPasswordAuthentication(true);
+        if(pa == null) {
+            return false;
+        }
+
+        String user = pa.getUserName();
+        char[] password = pa.getPassword();
+
+        setCredentials(user, new String(password));
+
+        return true;
+    }
 
     private static String getKenaiUser() {
         PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);

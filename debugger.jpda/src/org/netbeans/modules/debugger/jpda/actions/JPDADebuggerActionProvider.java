@@ -92,6 +92,7 @@ implements PropertyChangeListener {
     
     protected abstract void checkEnabled (int debuggerState);
     
+    @Override
     public boolean isEnabled (Object action) {
         if (!disabled) {
             checkEnabled (debugger.getState ());

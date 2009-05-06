@@ -98,7 +98,9 @@ import org.openide.util.Lookup;
 class SSStackDataProvider implements StackDataProvider {
 
     private static final Logger log = DLightLogger.getLogger(SSStackDataProvider.class);
-    private static Pattern linesCommandPattern = Pattern.compile("^([a-zA-Z_][^,]*), line ([0-9]+) in \"(.*)\""); // NOI18N
+    private static Pattern fullInfoPattern = Pattern.compile("^(.*), line ([0-9]+) in \"(.*)\""); // NOI18N
+    private static Pattern noLineInfoPattern = Pattern.compile("^<Function: (.*), instructions from source file (.*)>"); // NOI18N
+    private static Pattern noDebugInfoPattern = Pattern.compile("^<Function: (.*), instructions without line numbers>"); // NOI18N
     private final Computable<HotSpotFunctionsFetcherParams, List<FunctionCall>> hotSpotFunctionsFetcher =
             new TasksCachedProcessor<HotSpotFunctionsFetcherParams, List<FunctionCall>>(new HotSpotFunctionsFetcher(), true);
     private final List<FunctionMetric> metricsList = Arrays.asList(
@@ -231,16 +233,16 @@ class SSStackDataProvider implements StackDataProvider {
             FunctionCallImpl functionCallImpl = (FunctionCallImpl) functionCall;
             if (functionCallImpl.hasOffset()) {
                 if (!functionCallImpl.hasSourceFileDefined()) {
-                    FunctionStatistic fStatistic = storage.getFunctionStatistic(functionCall.getFunction().getName());
+                    FunctionStatistic fStatistic = storage.getFunctionStatistic(functionCall);
                     if (fStatistic != null) {
                         functionCallImpl.setSourceFile(fStatistic.getSourceFile());
                     }
                 }
                 if (functionCallImpl.hasSourceFileDefined()) {
                     PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
-                    if (provider != null){
+                    if (provider != null) {
                         PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromUniqueID(storage.getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY)));
-                        if (pathMapper != null){
+                        if (pathMapper != null) {
                             return new SourceFileInfo(pathMapper.getLocalPath(functionCallImpl.getSourceFile()), (int) functionCallImpl.getOffset(), 0);
                         }
                     }
@@ -369,20 +371,30 @@ class SSStackDataProvider implements StackDataProvider {
                     //parse
                     if ("lines".equals(taskArguments.command)) { // NOI18N
                         //if name.startsWith< will skip
-                        if (name.startsWith("<")) { // NOI18N
-                            continue;
-                        }
-                        Matcher match = linesCommandPattern.matcher(name);
+                        Matcher match;
+
+                        match = fullInfoPattern.matcher(name);
                         if (match.matches()) {
                             name = match.group(1);
                             lineNumber = Integer.valueOf(match.group(2));
                             fileName = match.group(3);
+                        } else {
+                            match = noLineInfoPattern.matcher(name);
+                            if (match.matches()) {
+                                name = match.group(1);
+                                fileName = match.group(2);
+                            } else {
+                                match = noDebugInfoPattern.matcher(name);
+                                if (match.matches()) {
+                                    name = match.group(1);
+                                } else {
+                                    continue;
+                                }
+                            }
                         }
-
                     }
-
-
                 }
+                
                 Function f = new FunctionImpl(name, name.hashCode());
 
                 Map<FunctionMetric, Object> metricsValues =

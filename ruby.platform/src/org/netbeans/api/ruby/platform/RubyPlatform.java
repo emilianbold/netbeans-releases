@@ -1007,7 +1007,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
     private void possiblyNotifyUser(boolean warn, boolean valid, String cmd) {
         if (warn && !valid) {
-            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", cmd, getLabel());
+            String msg = NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.NotInstalledCmd", cmd, getLabel());
             NotifyDescriptor nd =
                     new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);

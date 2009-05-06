@@ -119,15 +119,9 @@ public class NbJiraIssue extends Issue {
         COMPONENT(JiraAttribute.COMPONENTS.id()),
         AFFECTSVERSIONS(JiraAttribute.AFFECTSVERSIONS.id()),
         FIXVERSIONS(JiraAttribute.FIXVERSIONS.id()),
-//        PLATFORM(JiraAttribute.REP_PLATFORM.getName()),
-//        OS(JiraAttribute.OP_SYS.getName()),
-//        MILESTONE(JiraAttribute.TARGET_MILESTONE.getName()),
-//        REPORTER(JiraAttribute.REPORTER.getName()),
-//        REPORTER_NAME(JiraAttribute.REPORTER_NAME.getName()),
-//        ASSIGNED_TO(JiraAttribute.ASSIGNED_TO.getName()),
-//        ASSIGNED_TO_NAME(JiraAttribute.ASSIGNED_TO_NAME.getName()),
-//        QA_CONTACT(JiraAttribute.QA_CONTACT.getName()),
-//        QA_CONTACT_NAME(JiraAttribute.QA_CONTACT_NAME.getName()),
+        ENVIRONMENT(JiraAttribute.ENVIRONMENT.id()),
+        REPORTER(JiraAttribute.USER_REPORTER.id()),
+        ASSIGNEE(JiraAttribute.USER_ASSIGNED.id()),
 //        NEWCC(JiraAttribute.NEWCC.getName()),
 //        REMOVECC(JiraAttribute.REMOVECC.getName()),
 //        CC(JiraAttribute.CC.getName()),
@@ -135,9 +129,13 @@ public class NbJiraIssue extends Issue {
 //        BLOCKS(JiraAttribute.BLOCKED.getName()),
 //        URL(JiraAttribute.BUG_FILE_LOC.getName()),
 //        KEYWORDS(JiraAttribute.KEYWORDS.getName()),
-        TYPE(JiraAttribute.TYPE.id());
-//        CREATION(TaskAttribute.DATE_CREATION),
-//        MODIFICATION(TaskAttribute.DATE_MODIFICATION),
+        TYPE(JiraAttribute.TYPE.id()),
+        CREATION(JiraAttribute.CREATION_DATE.id()),
+        MODIFICATION(JiraAttribute.MODIFICATION_DATE.id()),
+        DUE(JiraAttribute.DUE_DATE.id()),
+        ESTIMATE(JiraAttribute.ESTIMATE.id()),
+        INITIAL_ESTIMATE(JiraAttribute.INITIAL_ESTIMATE.id()),
+        ACTUAL(JiraAttribute.ACTUAL.id());
 //        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, false),
 //        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, false);
 
@@ -338,7 +336,7 @@ public class NbJiraIssue extends Issue {
 
     @Override
     public String getRecentChanges() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return ""; // XXX implement me
     }
 
     @Override

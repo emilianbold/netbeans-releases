@@ -49,7 +49,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 
 /**
  * Test for {@link ResourceImpl}.
@@ -67,7 +67,7 @@ public class ResourceImplTest extends CommonTestCase {
                 "   @javax.annotation.Resource" +
                 "   private javax.sql.DataSource myResource;" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper annotationModelHelper = AnnotationModelHelper.create(cpi);
         annotationModelHelper.runJavaSourceTask(new Runnable() {
@@ -96,7 +96,7 @@ public class ResourceImplTest extends CommonTestCase {
                 "       mappedName=\"myMappedName\", description=\"myDescription\")" +
                 "   private javax.sql.DataSource myResource;" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper annotationModelHelper = AnnotationModelHelper.create(cpi);
         annotationModelHelper.runJavaSourceTask(new Runnable() {
@@ -123,7 +123,7 @@ public class ResourceImplTest extends CommonTestCase {
                 "   private void setMyResource(javax.sql.DataSource dataSource) {" +
                 "   }" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper annotationModelHelper = AnnotationModelHelper.create(cpi);
         annotationModelHelper.runJavaSourceTask(new Runnable() {
@@ -153,7 +153,7 @@ public class ResourceImplTest extends CommonTestCase {
                 "   private void setMyResource(javax.sql.DataSource dataSource) {" +
                 "   }" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper annotationModelHelper = AnnotationModelHelper.create(cpi);
         annotationModelHelper.runJavaSourceTask(new Runnable() {
@@ -178,7 +178,7 @@ public class ResourceImplTest extends CommonTestCase {
                 "@javax.annotation.Resource(name=\"myAnnotatedClass\")" +
                 "public class MyClass {" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper annotationModelHelper = AnnotationModelHelper.create(cpi);
         annotationModelHelper.runJavaSourceTask(new Runnable() {
@@ -203,7 +203,7 @@ public class ResourceImplTest extends CommonTestCase {
                 "   mappedName=\"myMappedName\", description=\"myDescription\")" +
                 "public class MyClass {" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper annotationModelHelper = AnnotationModelHelper.create(cpi);
         annotationModelHelper.runJavaSourceTask(new Runnable() {

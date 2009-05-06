@@ -84,41 +84,14 @@ public class JiraIssueNode extends IssueNode {
 
     private Integer getTypeSortKey(String type) {
         // XXX sorting !!!
-//        BugzillaConfiguration bc = getNbJiraIssue().getRepository().getConfiguration();
-//        if(bc == null) {
-//            return null;
-//        }
-//        List<String> s = bc.getSeverities();
-//        if(s == null) {
-//            return null;
-//        }
-//        return s.indexOf(severity);
         return 1;
     }
 
     private Integer getPrioritySortKey(String priority) {
-//        BugzillaConfiguration bc = getNbJiraIssue().getRepository().getConfiguration();
-//        if(bc == null) {
-//            return null;
-//        }
-//        List<String> p = bc.getPriorities();
-//        if(p == null) {
-//            return null;
-//        }
-//        return p.indexOf(priority);
         return 1;
     }
 
     private Integer getResolutionSortKey(String resolution) {
-//        BugzillaConfiguration bc = getNbJiraIssue().getRepository().getConfiguration();
-//        if(bc == null) {
-//            return null;
-//        }
-//        List<String> r = bc.getResolutions();
-//        if(r == null) {
-//            return null;
-//        }
-//        return r.indexOf(resolution);
         return 1;
     }
 

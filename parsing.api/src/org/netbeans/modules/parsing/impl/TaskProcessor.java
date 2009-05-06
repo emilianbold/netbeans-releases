@@ -168,7 +168,7 @@ public class TaskProcessor {
         boolean a = false;
         assert a = true;
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement stackTraceElement = Util.findCaller(Thread.currentThread().getStackTrace(), TaskProcessor.class, ParserManager.class);
+            StackTraceElement stackTraceElement = Util.findCaller(Thread.currentThread().getStackTrace(), TaskProcessor.class, ParserManager.class, "org.netbeans.api.java.source.JavaSource"); //NOI18N
             if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
                 LOGGER.warning("ParserManager.parse called in AWT event thread by: " + stackTraceElement); // NOI18N
             }
