@@ -97,7 +97,7 @@ public class HtmlPanel extends javax.swing.JPanel {
         pane = new javax.swing.JTextPane();
         label = new javax.swing.JLabel();
 
-        pane.setContentType(org.openide.util.NbBundle.getMessage(HtmlPanel.class, "HtmlPanel.pane.contentType")); // NOI18N
+        pane.setContentType("text/html");
         pane.setEditable(false);
         jScrollPane1.setViewportView(pane);
 
