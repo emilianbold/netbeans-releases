@@ -62,7 +62,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.java.source.usages.IndexUtil;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -164,7 +164,7 @@ public class TestBase extends NbTestCase {
         classPathProvider.setClassPath(sources);
         try {
             for (FileObject fileObject : testModule.sources) {
-                RepositoryUpdater.getDefault().scheduleCompilationAndWait(fileObject, fileObject).await();
+                IndexingManager.getDefault().refreshIndexAndWait(fileObject.getURL(), null);
             }
         } catch (Exception e) {
             e.printStackTrace();

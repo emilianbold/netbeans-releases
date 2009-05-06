@@ -282,7 +282,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     public String getUrlParameters() {
-        if(panel.urlTextField.isVisible()) {
+        if(panel.urlPanel.isVisible()) {
             return panel.urlTextField.getText();
         } else {
             StringBuffer sb = new StringBuffer();

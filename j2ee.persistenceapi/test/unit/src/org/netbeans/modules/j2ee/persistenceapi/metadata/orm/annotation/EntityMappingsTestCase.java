@@ -52,7 +52,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -80,7 +80,7 @@ public class EntityMappingsTestCase extends JavaSourceTestCase {
     }
 
     protected MetadataModel<EntityMappingsMetadata> createModel() throws IOException, InterruptedException {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         return EntityMappingsMetadataModelFactory.createMetadataModel(
                 ClassPath.getClassPath(srcFO, ClassPath.BOOT),
                 ClassPath.getClassPath(srcFO, ClassPath.COMPILE),

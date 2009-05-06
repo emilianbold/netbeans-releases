@@ -343,17 +343,19 @@ is divided into following sections:
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">sourcepath</xsl:attribute>
-                        <xsl:attribute name="default">/does/not/exist</xsl:attribute>
+                        <xsl:attribute name="default">${empty.dir}</xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">gensrcdir</xsl:attribute>
-                        <xsl:attribute name="default">/does/not/exist</xsl:attribute>
+                        <xsl:attribute name="default">${empty.dir}</xsl:attribute>
                     </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
+                        <property name="empty.dir" location="${{build.dir}}/empty"/><!-- #157692 -->
+                        <mkdir dir="${{empty.dir}}"/>
                         <javac>
                             <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
                             <xsl:attribute name="sourcepath">@{sourcepath}</xsl:attribute>

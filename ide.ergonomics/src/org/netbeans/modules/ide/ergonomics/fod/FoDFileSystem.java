@@ -49,6 +49,7 @@ import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Exceptions;
@@ -109,7 +110,11 @@ implements Runnable, ChangeListener, LookupListener {
     private FileSystem getDefaultLayer() {
         if (def == null) {
             try {
-                def = new XMLFileSystem(FoDFileSystem.class.getResource("default.xml"));
+                if (FeatureInfo.doParseXML()) {
+                    def = new XMLFileSystem(FoDFileSystem.class.getResource("default.xml"));
+                    return def;
+                }
+                def = FileUtil.createMemoryFileSystem();
             } catch (SAXException ex) {
                 Exceptions.printStackTrace(ex);
             }

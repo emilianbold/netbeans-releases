@@ -52,10 +52,10 @@ import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 public class KenaiConfiguration extends BugzillaConfiguration {
     private List<String> products;
 
-    public KenaiConfiguration(RepositoryConfiguration rc) {
+    protected KenaiConfiguration(RepositoryConfiguration rc) {
         super(rc);
     }
-    
+
     void setProducts(String product) {
         // XXX check if product exists
         ArrayList<String> l = new ArrayList<String>();
