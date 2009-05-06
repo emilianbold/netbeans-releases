@@ -62,7 +62,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.embedder.NbArtifact;
 import org.netbeans.modules.maven.nodes.DependenciesNode;
-import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
