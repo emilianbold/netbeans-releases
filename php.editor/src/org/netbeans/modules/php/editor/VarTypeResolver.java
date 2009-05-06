@@ -345,12 +345,14 @@ public final class VarTypeResolver {
         if (retval == null) {
             Model model = ModelFactory.getModel(info);
             VariableScope varScope = model.getVariableScope(anchor);
-            List<? extends VariableName> variables = ModelUtils.filter(varScope.getDeclaredVariables(), varName);
-            VariableName var = ModelUtils.getFirst(variables);
-            if (var != null) {
-                TypeScope typeScope = ModelUtils.getFirst(var.getTypes(anchor));
-                if (typeScope != null) {
-                    retval = typeScope.getName();
+            if (varScope != null) {
+                List<? extends VariableName> variables = ModelUtils.filter(varScope.getDeclaredVariables(), varName);
+                VariableName var = ModelUtils.getFirst(variables);
+                if (var != null) {
+                    TypeScope typeScope = ModelUtils.getFirst(var.getTypes(anchor));
+                    if (typeScope != null) {
+                        retval = typeScope.getName();
+                    }
                 }
             }
         }
