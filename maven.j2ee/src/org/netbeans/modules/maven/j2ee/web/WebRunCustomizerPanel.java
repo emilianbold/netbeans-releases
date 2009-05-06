@@ -194,6 +194,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         lblServer.setLabelFor(comServer);
         org.openide.awt.Mnemonics.setLocalizedText(lblServer, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Server")); // NOI18N
 
+        lblJ2EEVersion.setLabelFor(txtJ2EEVersion);
         org.openide.awt.Mnemonics.setLocalizedText(lblJ2EEVersion, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_J2EE_Version")); // NOI18N
 
         txtJ2EEVersion.setEditable(false);
@@ -202,7 +203,6 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblContextPath, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Context_Path")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbBrowser, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Display_on_Run")); // NOI18N
-        cbBrowser.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(lblHint1, org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "LBL_Hint1")); // NOI18N
 
@@ -226,8 +226,8 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(layout.createSequentialGroup()
                                 .add(lblHint2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 186, Short.MAX_VALUE))
-                            .add(txtRelativeUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 222, Short.MAX_VALUE))
+                            .add(txtRelativeUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblContextPath)
@@ -235,9 +235,9 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                             .add(lblServer))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, comServer, 0, 323, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, txtJ2EEVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
-                            .add(txtContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE))))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, comServer, 0, 331, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, txtJ2EEVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
+                            .add(txtContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -267,6 +267,11 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                 .add(lblHint2)
                 .addContainerGap(102, Short.MAX_VALUE))
         );
+
+        txtJ2EEVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.txtJ2EEVersion.AccessibleContext.accessibleDescription")); // NOI18N
+        txtContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.txtContextPath.AccessibleContext.accessibleDescription")); // NOI18N
+        cbBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.cbBrowser.AccessibleContext.accessibleDescription")); // NOI18N
+        txtRelativeUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "WebRunCustomizerPanel.txtRelativeUrl.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private boolean checkMapping(NetbeansActionMapping map) {
