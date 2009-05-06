@@ -67,7 +67,12 @@ public class BugzillaConfiguration {
         BugzillaCommand cmd = new BugzillaCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
-                conf[0] = Bugzilla.getInstance().getRepositoryConfiguration(repository, forceRefresh);
+                boolean refresh = forceRefresh;
+                String b = System.getProperty("org.netbeans.modules.bugzilla.persistentRepositoryConfiguration", "false"); // NOI18N
+                if("true".equals(b)) {
+                    refresh = true;
+                }
+                conf[0] = Bugzilla.getInstance().getRepositoryConfiguration(repository, refresh);
             }
         };
         repository.getExecutor().execute(cmd);
