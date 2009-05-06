@@ -135,12 +135,13 @@ final class ChildrenArray extends NodeAdapter {
     * @param info the info
     * @return the nodes
     */
-    public synchronized Collection<Node> nodesFor(Info info) {
+    public synchronized Collection<Node> nodesFor(Info info, boolean hasToExist) {
         final boolean IS_LOG = LOG_NODES_FOR.isLoggable(Level.FINE);
         if (IS_LOG) {
             LOG_NODES_FOR.finer("nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
         }
         if (map == null) {
+            assert !hasToExist : "Should be already initialized";
             map = new WeakHashMap<Info, Collection<Node>>(7);
         }
         Collection<Node> nodes = map.get(info);
@@ -150,6 +151,7 @@ final class ChildrenArray extends NodeAdapter {
         }
 
         if (nodes == null) {
+            assert !hasToExist : "Cannot find nodes for " + info + " in " + map;
             nodes = info.entry.nodes(null);
             info.length = nodes.size();
             map.put(info, nodes);
