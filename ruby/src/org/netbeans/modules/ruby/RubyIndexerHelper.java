@@ -31,10 +31,10 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
-import org.jruby.nb.ast.FCallNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
+import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.ruby.elements.AstElement;
@@ -431,21 +431,17 @@ public final class RubyIndexerHelper {
     }
 
     private static RubyType getReturnTypes(String line, List<String> callseq, String name) {
-        // Compute return types
-        if (name.equals("to_s")) { // NOI18N
-            return RubyType.STRING;
+        
+        RubyType result = RubyMethodTypeInferencer.fastCheckType(name);
+        if (result != null) {
+            return result;
         }
+
         if (callseq != null) {
             RubyType types = RDocAnalyzer.collectTypesFromComment(callseq);
             if (types.isKnown()) {
                 return types;
             }
-        }
-
-        // Methods ending with "?" are probably question methods returning a
-        // boolean
-        if (name.endsWith("?")) {
-            return RubyType.BOOLEAN;
         }
 
         return RubyType.createUnknown();
@@ -537,7 +533,7 @@ public final class RubyIndexerHelper {
         case 'b':
             if ("base".equals(n)) { // NOI18N
                 String clz = clz(root,method);
-                if ("ActiveRecord::Base".equals(clz)) { // NOI18N
+                if (RubyIndex.ACTIVE_RECORD_BASE.equals(clz)) { // NOI18N
                      String sig = sig(method);
                      if (sig.startsWith("find(")) { // NOI18N
                          return "args(:first|:all),args(=>conditions|order|group|limit|offset|joins|readonly:bool|include|select|from|readonly:bool|lock:bool)"; // NOI18N

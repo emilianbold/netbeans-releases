@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.lang.model.element.*;
-import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -55,6 +54,7 @@ import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.Par
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -298,7 +298,10 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         }
         
         if (!RetoucheUtils.isElementInOpenProject(fo)) {
-            preCheckProblem =new Problem(true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ProjectNotOpened"));
+            preCheckProblem =new Problem(true, NbBundle.getMessage(
+                    ChangeParametersPlugin.class,
+                    "ERR_ProjectNotOpened",
+                    FileUtil.getFileDisplayName(fo)));
             return preCheckProblem;
         }
         

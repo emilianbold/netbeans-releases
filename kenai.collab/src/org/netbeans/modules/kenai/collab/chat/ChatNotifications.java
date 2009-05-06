@@ -63,7 +63,7 @@ import org.openide.util.RequestProcessor;
  */
 public class ChatNotifications {
     
-    private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.gif"));
+    private static ImageIcon NEWMSG = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/newmessage.png"));
     private static ChatNotifications instance;
     private RequestProcessor notificationsAdder = new RequestProcessor();
 
@@ -114,8 +114,9 @@ public class ChatNotifications {
                 final ActionListener l = new ActionListener() {
 
                     public void actionPerformed(ActionEvent arg0) {
-                        ChatTopComponent.openAction(ChatTopComponent.getDefault(), "", "", false).actionPerformed(arg0); // NOI18N
-                        ChatTopComponent.getDefault().setActive(chatRoomName);
+                        final ChatTopComponent chatTc = ChatTopComponent.findInstance();
+                        ChatTopComponent.openAction(chatTc, "", "", false).actionPerformed(arg0); // NOI18N
+                        chatTc.setActive(chatRoomName);
                     }
                 };
 
@@ -138,7 +139,7 @@ public class ChatNotifications {
     public synchronized  MessagingHandleImpl getMessagingHandle(String id) {
         MessagingHandleImpl handle=groupMessages.get(id);
         if (handle==null) {
-            handle =new MessagingHandleImpl();
+            handle =new MessagingHandleImpl(id);
             groupMessages.put(id, handle);
             handle.setMessageCount(0);
         }
@@ -155,7 +156,7 @@ public class ChatNotifications {
     }
 
     private Icon getIcon() {
-        return ONLINE;
+        return NEWMSG;
     }
 }
 

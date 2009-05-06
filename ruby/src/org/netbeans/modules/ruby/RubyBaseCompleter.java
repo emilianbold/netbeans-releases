@@ -43,7 +43,7 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 
 abstract class RubyBaseCompleter {
 
-    private final List<? super CompletionProposal> proposals;
+    protected final List<? super CompletionProposal> proposals;
     final CompletionRequest request;
     final boolean caseSensitive;
     final int anchor;

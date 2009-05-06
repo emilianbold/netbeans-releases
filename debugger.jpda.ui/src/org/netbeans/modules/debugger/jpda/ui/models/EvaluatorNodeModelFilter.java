@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
@@ -167,7 +166,16 @@ public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
         if (node == CodeEvaluator.getResult()) {
             String str = CodeEvaluator.getExpressionText();
             if (str != null) {
-                return str;
+                StringBuffer buf = new StringBuffer();
+                buf.append("<html>");
+                str = str.replaceAll ("&", "&amp;");
+                str = str.replaceAll ("<", "&lt;");
+                str = str.replaceAll (">", "&gt;");
+                str = str.replaceAll ("\n", "<br/>");
+                str = str.replaceAll ("\r", "");
+                buf.append(str);
+                buf.append("</html>");
+                return buf.toString();
             }
         }
         if (shouldIgnore(node)) {

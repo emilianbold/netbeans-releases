@@ -273,6 +273,9 @@ public final class EditorFindSupport {
     public void putFindProperties(Map<String, Object> propsToAdd) {
         if (!getFindProperties().equals(propsToAdd)) {
             getFindProperties().putAll(propsToAdd);
+        }
+        //highlight will not be updated on empty properties
+        if (propsToAdd.get(FIND_BLOCK_SEARCH_END)!=null) {
             firePropertyChange(null, null, null);
         }
     }
@@ -587,6 +590,9 @@ public final class EditorFindSupport {
             if (blockEndPos == -1) {
                 blockEndPos = docLen;
             }
+            if (startPos == -1) {
+                startPos = docLen;
+            }
 
             int retFind[];
             while (true) {
@@ -772,14 +778,14 @@ public final class EditorFindSupport {
                 
                 int actualPos = wrapSearch ? 0 : c.getCaret().getDot();
                 
-                int pos = (blockSearch && blockSearchStart > -1) ? ( backSearch ? blockSearchEnd : blockSearchStart) : actualPos; // actual position
+                int pos = (blockSearch && blockSearchStart > -1) ? ( backSearch ? blockSearchEnd : blockSearchStart) : (backSearch? -1 : actualPos); // actual position
                 
                 while (true) {
                     blockSearchEnd = getBlockEndOffset();
                     FindReplaceResult result = findReplaceInBlock(replaceWithOriginal, c, pos, 
                             (blockSearch && blockSearchStart > -1) ? blockSearchStart : startPosWholeSearch, 
                             (blockSearch && blockSearchEnd > 0) ? blockSearchEnd : endPosWholeSearch, 
-                            props, false);
+                            props, backSearch);
                     if (result == null){
                         break;
                     }

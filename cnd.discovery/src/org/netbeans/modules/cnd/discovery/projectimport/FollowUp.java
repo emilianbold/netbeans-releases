@@ -134,6 +134,12 @@ public class FollowUp extends JPanel {
             //State macros = map.get(Step.FixMacros);
             codeAssistance.setText(getString("CodeAssistanceFailedText")); // NOI18N
             codeAssistance.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/discovery/wizard/resources/error.png"))); // NOI18N
+        } else {
+            State stateMake = map.get(Step.Make);
+            if (stateMake == stateMake.Fail) {
+                codeAssistance.setText(getString("CodeAssistanceInfoText")); // NOI18N
+                codeAssistance.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/discovery/wizard/resources/info.png"))); // NOI18N
+            }
         }
     }
 
@@ -199,8 +205,14 @@ public class FollowUp extends JPanel {
             title = getString("Configure_Fail"); // NOI18N
             icon  = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/discovery/wizard/resources/info.png", false); // NOI18N
         } else {
-            title = getString("Configure_Success"); // NOI18N
-            icon  = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/discovery/wizard/resources/check.png", false); // NOI18N
+            State stateMake = importer.getImportResult().get(Step.Make);
+            if (stateMake == stateMake.Fail) {
+                title = getString("Configure_Info"); // NOI18N
+                icon  = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/discovery/wizard/resources/info.png", false); // NOI18N
+            } else {
+                title = getString("Configure_Success"); // NOI18N
+                icon  = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/discovery/wizard/resources/check.png", false); // NOI18N
+            }
         }
         final Notification notification = NotificationDisplayer.getDefault().notify(title, icon,
                 getString("Dialog_Action"), onClickAction, NotificationDisplayer.Priority.HIGH); // NOI18N

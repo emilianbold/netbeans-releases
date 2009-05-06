@@ -89,6 +89,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     public IssueTopComponent() {
         initComponents();
         BugtrackingManager.getInstance().addPropertyChangeListener(this);
+        preparingLabel.setVisible(false);
     }
 
     /**
@@ -160,6 +161,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         setNameAndTooltip();
     }
 
+    public void initNoIssue() {
+        preparingLabel.setVisible(true);
+        repoPanel.setVisible(false);
+        setNameAndTooltip();
+    }
+
     /**
      * Sets issue displayed by this top-component.
      *
@@ -168,6 +175,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     public void setIssue(Issue issue) {
         assert (this.issue == null);
         this.issue = issue;
+        preparingLabel.setVisible(false);
         issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
         repoPanel.setVisible(false);
         setNameAndTooltip();
@@ -189,6 +197,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         jPanel1 = new javax.swing.JPanel();
         newButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         issuePanel = new javax.swing.JPanel();
+        preparingLabel = new javax.swing.JLabel();
 
         repoPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -248,6 +257,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         issuePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
         issuePanel.setLayout(new java.awt.BorderLayout());
 
+        preparingLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        org.openide.awt.Mnemonics.setLocalizedText(preparingLabel, org.openide.util.NbBundle.getMessage(IssueTopComponent.class, "IssueTopComponent.preparingLabel.text")); // NOI18N
+        issuePanel.add(preparingLabel, java.awt.BorderLayout.CENTER);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -290,6 +303,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             public void run() {
                 try {
                     handle.start();
+                    preparingLabel.setVisible(true);
                     Repository repo = (Repository) repositoryComboBox.getSelectedItem();
                     if (repo == null) {
                         return;
@@ -316,6 +330,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                         }
                     });
                 } finally {
+                    preparingLabel.setVisible(false);
                     handle.finish();
                     prepareTask = null;
                 }
@@ -338,6 +353,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private javax.swing.JPanel issuePanel;
     private javax.swing.JPanel jPanel1;
     private org.netbeans.modules.bugtracking.util.LinkButton newButton;
+    private javax.swing.JLabel preparingLabel;
     private javax.swing.JLabel repoLabel;
     private javax.swing.JPanel repoPanel;
     private javax.swing.JComboBox repositoryComboBox;
@@ -382,6 +398,22 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         }
         IssueTopComponent tc = new IssueTopComponent();
         tc.setIssue(issue);
+        return tc;
+    }
+
+    /**
+     * Returns top-component that should display the issue with the given issueId.
+     *
+     * @param issueId
+     * @return
+     */
+    public static synchronized IssueTopComponent find(String issueId) {
+        for (IssueTopComponent tc : openIssues) {
+            if (issueId.equals(tc.getIssue().getID())) {
+                return tc;
+            }
+        }
+        IssueTopComponent tc = new IssueTopComponent();
         return tc;
     }
 
@@ -450,6 +482,15 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        if (issue == null) {
+            return repositoryComboBox.requestFocusInWindow();
+        } else {
+            return issue.getController().getComponent().requestFocusInWindow();
+        }
     }
 
 }

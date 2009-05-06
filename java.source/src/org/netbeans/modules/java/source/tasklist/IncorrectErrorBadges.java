@@ -51,7 +51,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -79,20 +80,25 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
 
     public void run(CompilationInfo info) {
         if (DISABLE) {
+            LOG.fine("Disabled");
             return ;
         }
         
-        if (RepositoryUpdater.getDefault().isRULocked()) {
+        if (IndexingController.getDefault().isInProtectedMode()) {
+            LOG.fine("RepositoryUpdater in protected mode");
             return ;
         }
         
+        LOG.log(Level.FINE, "invocationCount={0}, file={1}", new Object [] { invocationCount, info.getFileObject() });
         if (invocationCount++ > 1) {
+            LOG.log(Level.FINE, "Too many invocations: {0}", invocationCount);
             return ;
         }
         
         try {
             for (Diagnostic d : info.getDiagnostics()) {
                 if (d.getKind() == Kind.ERROR) {
+                    LOG.log(Level.FINE, "File contains errors: {0}", info.getFileObject());
                     return ;
                 }
             }
@@ -101,28 +107,34 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             DataObject d = DataObject.find(file);
 
             if (d.isModified()) {
+                LOG.log(Level.FINE, "File is modified: {0}", info.getFileObject());
                 return;
             }
 
             if (!TaskCache.getDefault().isInError(file, false)) {
+                LOG.log(Level.FINE, "No TaskCache.isInError: {0}", info.getFileObject());
                 return ;
             }
             
             if (invocationCount == 1) {
                 timestamp = file.lastModified().getTime();
+                LOG.log(Level.FINE, "Capturing timestamp={0}, file={1}", new Object [] { timestamp, info.getFileObject() });
                 
                 //possibly incorrect badges. require to be re-run, to ensure RepositoryUpdater has finished its work:
                 WORKER.post(new Runnable() {
                     public void run() {
                         factory.rescheduleImpl(file);
                     }
-                }, 2 * RepositoryUpdater.getDelay());
+                }, 2 * IndexingController.getDefault().getFileLocksDelay());
                 
                 return ;
             }
-            
-            if (timestamp != file.lastModified().getTime()) {
+
+            long lastModified = file.lastModified().getTime();
+            if (timestamp != 0 && timestamp != lastModified) {
                 //modified since last check, ignore
+                LOG.log(Level.FINE, "File modified since last check: {0}, timestamp={1}, lastModified={2}, invocationCount={3}",
+                        new Object [] { info.getFileObject(), timestamp, lastModified, invocationCount });
                 return ;
             }
             
@@ -140,7 +152,8 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             LOG.log(Level.WARNING, "Going to recompute root={0}, files in error={1}.",
                     new Object[] {FileUtil.getFileDisplayName(root), TaskCache.getDefault().getAllFilesInError(root.getURL())});
 
-            RepositoryUpdater.getDefault().rebuildRoot(root.getURL(), true);
+// XXX:            RepositoryUpdater.getDefault().rebuildRoot(root.getURL(), true);
+            IndexingManager.getDefault().refreshIndex(root.getURL(), null);
         } catch (IOException ex) {
             LOG.log(Level.FINE, null, ex);
         }

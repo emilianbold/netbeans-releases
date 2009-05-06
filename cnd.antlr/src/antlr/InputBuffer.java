@@ -41,7 +41,12 @@ public class InputBuffer {
     public static final int INITIAL_BUFFER_SIZE = 2048;
     public static final int READ_BUFFER_SIZE = INITIAL_BUFFER_SIZE;
     private char[] data = new char[INITIAL_BUFFER_SIZE];
-    
+
+    public InputBuffer(char[] data) {
+        this.data = data;
+        this.size = data.length;
+    }
+
     public InputBuffer(Reader input) { // SAS: for proper text i/o
         try{
             int numRead=0;

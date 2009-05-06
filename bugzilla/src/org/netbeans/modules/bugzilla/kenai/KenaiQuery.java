@@ -79,6 +79,11 @@ public class KenaiQuery extends BugzillaQuery {
             count,
             true,
             autoRefresh);
-}
+    }
+
+    @Override
+    protected String getStoredQueryName() {
+        return super.getStoredQueryName() + "-" + product;
+    }
 
 }

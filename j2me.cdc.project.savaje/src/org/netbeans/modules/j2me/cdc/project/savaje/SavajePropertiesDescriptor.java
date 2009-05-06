@@ -84,7 +84,7 @@ public class SavajePropertiesDescriptor implements ProjectPropertiesDescriptor {
             set.add(new PropertyDescriptor(SAVAJE_APPLICATION_UID, true, DefaultPropertyParsers.STRING_PARSER,  "TBD")); //NOI18N
             ref = new WeakReference(set);
         }
-        return set;
+        return new HashSet(set);
     }
 
 }

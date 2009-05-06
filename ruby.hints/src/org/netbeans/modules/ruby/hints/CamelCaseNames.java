@@ -35,10 +35,10 @@ import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.INameNode;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
@@ -98,7 +98,7 @@ public class CamelCaseNames extends RubyAstRule {
 
         for (int i = 0; i < name.length(); i++) {
             if (Character.isUpperCase(name.charAt(i))) {
-                String key =  node.nodeId == NodeType.LOCALASGNNODE ? "InvalidLocalName" : "InvalidMethodName"; // NOI18N
+                String key =  node.getNodeType() == NodeType.LOCALASGNNODE ? "InvalidLocalName" : "InvalidMethodName"; // NOI18N
                 String displayName = NbBundle.getMessage(CamelCaseNames.class, key);
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(info, range);
@@ -106,7 +106,7 @@ public class CamelCaseNames extends RubyAstRule {
                     List<HintFix> fixList = new ArrayList<HintFix>(2);
                     Node root = AstUtilities.getRoot(info);
                     AstPath childPath = new AstPath(root, node); // TODO - make a simple clone method to clone AstPath path
-                    if (node.nodeId == NodeType.LOCALASGNNODE) {
+                    if (node.getNodeType() == NodeType.LOCALASGNNODE) {
                         fixList.add(new RenameFix(context, childPath, RubyUtils.camelToUnderlinedName(name)));
                     }
                     fixList.add(new RenameFix(context, childPath, null));
@@ -168,7 +168,7 @@ public class CamelCaseNames extends RubyAstRule {
         
         private Set<OffsetRange> getRanges() {
             Node node = path.leaf();
-            assert node.nodeId == NodeType.LOCALASGNNODE;
+            assert node.getNodeType() == NodeType.LOCALASGNNODE;
             String oldName = ((INameNode)node).getName();
 
             Node scope = AstUtilities.findLocalScope(node, path);
@@ -180,7 +180,7 @@ public class CamelCaseNames extends RubyAstRule {
         
         private String getOldName() {
             Node node = path.leaf();
-            assert node.nodeId == NodeType.LOCALASGNNODE;
+            assert node.getNodeType() == NodeType.LOCALASGNNODE;
             String oldName = ((INameNode)node).getName();
             return oldName;
         }
@@ -243,19 +243,19 @@ public class CamelCaseNames extends RubyAstRule {
         }
         
         private void addLocalRegions(Node node, String name, Set<OffsetRange> ranges, boolean isParameter) {
-            if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
+            if ((node.getNodeType() == NodeType.LOCALASGNNODE || node.getNodeType() == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(context.parserResult, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
-            } else if (isParameter && (node.nodeId == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()))) {
+            } else if (isParameter && (node.getNodeType() == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()))) {
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(context.parserResult, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
-            } else if (node.nodeId == NodeType.ARGSNODE) {
+            } else if (node.getNodeType() == NodeType.ARGSNODE) {
                 isParameter = true;
             }
 

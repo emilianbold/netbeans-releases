@@ -41,12 +41,8 @@
 
 package org.openide.util.lookup;
 
-import org.openide.util.*;
-
-import java.lang.ref.WeakReference;
 import java.util.*;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import org.openide.util.Lookup;
 
 /** Runs all NbLookupTest tests on ProxyLookup and adds few additional.
  */

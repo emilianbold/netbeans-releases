@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -154,7 +154,7 @@ public class ETable extends JTable {
     private int editing = DEFAULT;
     
     /** 
-     * Array with size exactly sama as the number of rows in the data model
+     * Array with size exactly same as the number of rows in the data model
      * or null. If it is not null the row originally at index i will be
      * displayed on index sortingPermutation[i].
      */
@@ -205,7 +205,6 @@ public class ETable extends JTable {
     String selectVisibleColumnsLabel = "Select Visible Columns";
 
     private boolean inEditRequest = false;
-    private boolean inEditorChangeRequest=false;
     private boolean inRemoveRequest=false;
     
     private static String COMPUTING_TOOLTIP = "ComputingTooltip";
@@ -685,8 +684,7 @@ public class ETable extends JTable {
     public void setQuickFilter(int column, Object filterObject) {
         quickFilterColumn = column;
         quickFilterObject = filterObject;
-        sortingPermutation = null;
-        inverseSortingPermutation = null;
+        resetPermutation ();
         filteredRowCount = -1; // force to recompute the rowCount
         super.tableChanged(new TableModelEvent(getModel()));
     }
@@ -699,8 +697,7 @@ public class ETable extends JTable {
         quickFilterObject = null;
         quickFilterColumn = -1;
         filteredRowCount = -1;
-        sortingPermutation = null;
-        inverseSortingPermutation = null;
+        resetPermutation ();
         super.tableChanged(new TableModelEvent(getModel()));
     }
     
@@ -715,8 +712,7 @@ public class ETable extends JTable {
         
         // force recomputation
         filteredRowCount = -1;
-        sortingPermutation = null;
-        inverseSortingPermutation = null;
+        resetPermutation ();
         quickFilterColumn = -1;
         quickFilterObject = null;
         
@@ -782,7 +778,6 @@ public class ETable extends JTable {
         unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Event.SHIFT_MASK));
 
         InputMap imp = getInputMap(WHEN_FOCUSED);
-        InputMap imp2 = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap am = getActionMap();
         
         //Issue 37919, reinstate support for up/down cycle focus transfer.
@@ -852,7 +847,7 @@ public class ETable extends JTable {
 	boolean retValue = super.processKeyBinding(ks, e, condition, pressed);
         return retValue;
     }
-    
+
     /**
      * Make the column sorted. Value of columnIndex is in the model coordinates.
      * <strong>Be carefull</strong> with the columnIndes parameter: again, it
@@ -875,8 +870,7 @@ public class ETable extends JTable {
                 int wasSelectedRows[] = getSelectedRowsInModel();
                 int wasSelectedColumn = getSelectedColumn();
                 etcm.setColumnSorted(etc, ascending, rank);
-                sortingPermutation = null;
-                inverseSortingPermutation = null;
+                resetPermutation ();
                 ETable.super.tableChanged(new TableModelEvent(getModel(), 0, getRowCount()));
                 if (wasSelectedRows.length > 0) {
                     changeSelectionInModel(wasSelectedRows, wasSelectedColumn);
@@ -1018,8 +1012,7 @@ public class ETable extends JTable {
     public void tableChanged(TableModelEvent e) {
         boolean needsTotalRefresh = true;
         if (e == null || e.getFirstRow() == TableModelEvent.HEADER_ROW) {
-            sortingPermutation = null;
-            inverseSortingPermutation = null;
+            resetPermutation ();
             filteredRowCount = -1;
             super.tableChanged(e);
             return;
@@ -1029,8 +1022,7 @@ public class ETable extends JTable {
             int wasSelectedRows[] = getSelectedRowsInModel();
             int wasSelectedColumn = getSelectedColumn();
             clearSelection();
-            sortingPermutation = null;
-            inverseSortingPermutation = null;
+            resetPermutation ();
             filteredRowCount = -1;
             super.tableChanged(e);
             if (wasSelectedRows.length > 0) {
@@ -1052,8 +1044,7 @@ public class ETable extends JTable {
             int wasSelectedRows[] = getSelectedRowsInModel();
             int wasSelectedColumn = getSelectedColumn();
             clearSelection();
-            sortingPermutation = null;
-            inverseSortingPermutation = null;
+            resetPermutation ();
             filteredRowCount = -1;
             super.tableChanged(e);
             if (wasSelectedRows.length > 0) {
@@ -1098,8 +1089,7 @@ public class ETable extends JTable {
             int wasSelectedRows[] = getSelectedRowsInModel();
             int wasSelectedColumn = getSelectedColumn();
         
-            sortingPermutation = null;
-            inverseSortingPermutation = null;
+            resetPermutation ();
             filteredRowCount = -1;
             super.tableChanged(new TableModelEvent(getModel()));
             if (wasSelectedRows.length > 0) {
@@ -1111,6 +1101,12 @@ public class ETable extends JTable {
                 0, getModel().getRowCount(), modelColumn);
             super.tableChanged(tme);
         }
+    }
+
+    private void resetPermutation () {
+        assert SwingUtilities.isEventDispatchThread () : "Do resetting of permutation only in AWT queue!";
+        sortingPermutation = null;
+        inverseSortingPermutation = null;
     }
 
     /**
@@ -1500,8 +1496,7 @@ public class ETable extends JTable {
             }
         }
         filteredRowCount = -1;
-        sortingPermutation = null;
-        inverseSortingPermutation = null;
+        resetPermutation ();
         super.tableChanged(new TableModelEvent(getModel()));
     }
 
@@ -1991,7 +1986,7 @@ public class ETable extends JTable {
         @Override
         public void mouseClicked(MouseEvent me) {
             if (me.getButton() == MouseEvent.BUTTON3) {
-                ColumnSelectionPanel.showColumnSelectionDialog(ETable.this);
+                ColumnSelectionPanel.showColumnSelectionPopup (me.getComponent (), ETable.this);
                 return;
             }
             TableColumn resColumn = getResizingColumn(me.getPoint());
@@ -2012,8 +2007,7 @@ public class ETable extends JTable {
                         clearSelection();
                         boolean clear = ((me.getModifiers() & InputEvent.SHIFT_MASK) != InputEvent.SHIFT_MASK);
                         etcm.toggleSortedColumn(etc, clear);
-                        sortingPermutation = null;
-                        inverseSortingPermutation = null;
+                        resetPermutation ();
                         ETable.super.tableChanged(new TableModelEvent(getModel(), 0, getRowCount()));
                         if (wasSelectedRows.length > 0) {
                             changeSelectionInModel(wasSelectedRows, wasSelectedColumn);
@@ -2046,13 +2040,8 @@ public class ETable extends JTable {
         }
         
         if (isEditing()) {
-            inEditorChangeRequest = true;
-            try {
-                removeEditor();
-                changeSelection(row, column, false, false);
-            } finally {
-                inEditorChangeRequest = false;
-            }
+            removeEditor();
+            changeSelection(row, column, false, false);
         }
         
         try {

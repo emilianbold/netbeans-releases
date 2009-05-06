@@ -160,7 +160,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
             URLConnection conn = new ConnectionBuilder().job(job).url(url).timeout(TIMEOUT).connection();
             String contentType = conn.getContentType();
             if (contentType == null || !contentType.startsWith("text/plain")) { // NOI18N
-                // Missing workspace, or Hudson prior to SVN 13601 (i.e. 1.264).
+                // Missing workspace.
                 LOG.log(Level.FINE, "non-plain dir listing: {0}", url);
                 return new String[0];
             }
@@ -203,7 +203,12 @@ final class RemoteFileSystem extends AbstractFileSystem implements
             assert Thread.holdsLock(nonDirs);
             lastModified.put(name, conn.getLastModified());
             int contentLength = conn.getContentLength();
-            size.put(name, Math.max(0, contentLength));
+            if (contentLength == -1) {
+                LOG.warning("unknown content length for " + name + " in " + baseURL);
+                size.put(name, 0);
+            } else {
+                size.put(name, contentLength);
+            }
             if (contentLength >= 0) {
                 byte[] buf = new byte[Math.min(contentLength, /* BufferedInputStream.defaultBufferSize */ 8192)];
                 InputStream is = conn.getInputStream();

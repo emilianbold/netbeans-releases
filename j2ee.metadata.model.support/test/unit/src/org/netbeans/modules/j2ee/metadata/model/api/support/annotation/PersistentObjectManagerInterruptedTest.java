@@ -43,7 +43,7 @@ package org.netbeans.modules.j2ee.metadata.model.api.support.annotation;
 
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 
 /**
  *
@@ -56,7 +56,7 @@ public class PersistentObjectManagerInterruptedTest extends PersistenceTestCase 
     }
 
     public void testInterrupted() throws Exception {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         helper.runJavaSourceTask(new Runnable() {

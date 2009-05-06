@@ -46,8 +46,8 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import org.openide.util.NbBundle;
-import org.netbeans.lib.richexecution.Command;
-import org.netbeans.lib.richexecution.Program;
+import org.netbeans.lib.richexecution.program.Command;
+import org.netbeans.lib.richexecution.program.Program;
 
 /**
  * Action which runs a command under a shell under a Term component.

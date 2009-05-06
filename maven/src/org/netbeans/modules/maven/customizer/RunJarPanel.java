@@ -56,7 +56,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -113,21 +112,30 @@ public class RunJarPanel extends javax.swing.JPanel {
     private static final String DEPRECATED_RUN_PARAMS = "netbeans.jar.run.params"; //NOI18N
     private static final String DEPRECATED_RUN_WORKDIR = "netbeans.jar.run.workdir"; //NOI18N
     private static final String DEPRECATED_RUN_JVM_PARAMS = "netbeans.jar.run.jvmparams"; //NOI18N
+
     private boolean isDeprecatedRun = false;
     private boolean isDeprecatedDebug = false;
+    private boolean isDeprecatedProfile = false;
     private org.netbeans.modules.maven.model.pom.Plugin jarPlugin;
     private org.netbeans.modules.maven.model.pom.Plugin assemblyPlugin;
     
     private boolean isCurrentRun = true;
     private boolean isCurrentDebug = true;
+    private boolean isCurrentProfile = true;
     private static final String RUN_PARAMS = "exec.args"; //NOI18N
     private static final String RUN_WORKDIR = "exec.workingdir"; //NOI18N
-    private static final String DEFAULT_DEBUG_PARAMS = "-Xdebug -Djava.compiler=none -Xnoagent -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}"; //NOI18N
+    private static final String DEFAULT_DEBUG_PARAMS = "-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}"; //NOI18N
+    private static final String DEFAULT_PROFILE_PARAMS = "${profiler.args}"; // NOI18N
+    private static final String DEFAULT_PROFILER_EXEC = "${profiler.java}"; // NOI18N
+    private static final String RUN_EXEC = "exec.executable"; // NOI18N
+
+    private static final String PROFILE_CMD = "profile"; // NOI18N
     
     private ModelHandle handle;
     private NbMavenProjectImpl project;
     private NetbeansActionMapping run;
     private NetbeansActionMapping debug;
+    private NetbeansActionMapping profile;
     private String oldMainClass;
     private String oldParams;
     private String oldVMParams;
@@ -243,6 +251,7 @@ public class RunJarPanel extends javax.swing.JPanel {
     private void initValues() {
         run = null;
         debug = null;
+        profile = null;
         if (handle.isConfigurationsEnabled()) {
             ActionToGoalMapping mapp = handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
             @SuppressWarnings("unchecked")
@@ -254,6 +263,9 @@ public class RunJarPanel extends javax.swing.JPanel {
                 if (ActionProvider.COMMAND_DEBUG.equals(m.getActionName())) {
                     debug = m;
                 }
+                if (PROFILE_CMD.equals(m.getActionName())) {
+                    profile = m;
+                }
             }
         }
         if (run == null) {
@@ -262,16 +274,26 @@ public class RunJarPanel extends javax.swing.JPanel {
         if (debug == null) {
             debug = ModelHandle.getActiveMapping(ActionProvider.COMMAND_DEBUG, project);
         }
+        if (profile == null) {
+            profile = ModelHandle.getActiveMapping(PROFILE_CMD, project);
+        }
         isCurrentRun = checkNewMapping(run);
         isCurrentDebug = checkNewMapping(debug);
-        if (isCurrentDebug || isCurrentRun) {
+        isCurrentProfile = checkNewMapping(profile);
+        if (isCurrentDebug || isCurrentRun || isCurrentProfile) {
             oldWorkDir = run.getProperties().getProperty(RUN_WORKDIR);
             if (oldWorkDir == null) {
                 oldWorkDir = debug.getProperties().getProperty(RUN_WORKDIR);
             }
+            if (oldWorkDir == null) {
+                oldWorkDir = profile.getProperties().getProperty(RUN_WORKDIR);
+            }
             String params = run.getProperties().getProperty(RUN_PARAMS);
             if (params == null) {
                 params = debug.getProperties().getProperty(RUN_PARAMS);
+            }
+            if (params == null) {
+                params = profile.getProperties().getProperty(RUN_PARAMS);
             }
             if (params != null) {
                 oldAllParams = params;
@@ -290,7 +312,8 @@ public class RunJarPanel extends javax.swing.JPanel {
         } else {
             isDeprecatedRun = checkDeprecatedMapping(run);
             isDeprecatedDebug = checkDeprecatedMapping(debug);
-            if (isDeprecatedDebug || isDeprecatedRun) {
+            isDeprecatedProfile = checkDeprecatedMapping(profile);
+            if (isDeprecatedDebug || isDeprecatedRun || isDeprecatedProfile) {
                 org.netbeans.modules.maven.model.pom.Profile publicProfile = handle.getNetbeansPublicProfile(false);
                 jarPlugin = null;
                 assemblyPlugin = null;
@@ -319,12 +342,19 @@ public class RunJarPanel extends javax.swing.JPanel {
                         }
                     }
                 }
-                oldParams = isDeprecatedRun ? run.getProperties().getProperty(DEPRECATED_RUN_PARAMS) :
-                                          debug.getProperties().getProperty(DEPRECATED_RUN_PARAMS);
-                oldWorkDir = isDeprecatedRun ? run.getProperties().getProperty(DEPRECATED_RUN_WORKDIR) :
-                                          debug.getProperties().getProperty(DEPRECATED_RUN_WORKDIR);
-                oldVMParams = isDeprecatedRun ? run.getProperties().getProperty(DEPRECATED_RUN_JVM_PARAMS) :
-                                            debug.getProperties().getProperty(DEPRECATED_RUN_JVM_PARAMS);
+                if (isDeprecatedRun) {
+                    oldParams = run.getProperties().getProperty(DEPRECATED_RUN_PARAMS);
+                    oldWorkDir = run.getProperties().getProperty(DEPRECATED_RUN_WORKDIR);
+                    oldVMParams = run.getProperties().getProperty(DEPRECATED_RUN_JVM_PARAMS);
+                } else if (isDeprecatedDebug) {
+                    oldParams = debug.getProperties().getProperty(DEPRECATED_RUN_PARAMS);
+                    oldWorkDir = debug.getProperties().getProperty(DEPRECATED_RUN_WORKDIR);
+                    oldVMParams = debug.getProperties().getProperty(DEPRECATED_RUN_JVM_PARAMS);
+                } else if (isDeprecatedProfile) {
+                    oldParams = profile.getProperties().getProperty(DEPRECATED_RUN_PARAMS);
+                    oldWorkDir = profile.getProperties().getProperty(DEPRECATED_RUN_WORKDIR);
+                    oldVMParams = profile.getProperties().getProperty(DEPRECATED_RUN_JVM_PARAMS);
+                }
             }
         }
         
@@ -386,7 +416,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         lblMainClass.setLabelFor(txtMainClass);
         org.openide.awt.Mnemonics.setLocalizedText(lblMainClass, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "LBL_MainClass")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnMainClass, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "BTN_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnMainClass, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "BTN_Browse_Main")); // NOI18N
 
         lblArguments.setLabelFor(txtArguments);
         org.openide.awt.Mnemonics.setLocalizedText(lblArguments, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "LBL_Arguments")); // NOI18N
@@ -394,7 +424,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         lblWorkDir.setLabelFor(txtWorkDir);
         org.openide.awt.Mnemonics.setLocalizedText(lblWorkDir, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "LBL_WorkDir")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnWorkDir, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "BTN_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnWorkDir, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "BTN_Browse_WorkingDir")); // NOI18N
         btnWorkDir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnWorkDirActionPerformed(evt);
@@ -406,7 +436,8 @@ public class RunJarPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "LBL_VMHint")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblConfiguration, "Configuration:");
+        lblConfiguration.setLabelFor(comConfiguration);
+        org.openide.awt.Mnemonics.setLocalizedText(lblConfiguration, "&Configuration:");
 
         comConfiguration.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -423,11 +454,11 @@ public class RunJarPanel extends javax.swing.JPanel {
                     .add(lblMainClass))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(txtVMOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
-                    .add(txtWorkDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
-                    .add(txtArguments, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
-                    .add(txtMainClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
-                    .add(comConfiguration, 0, 209, Short.MAX_VALUE))
+                    .add(txtVMOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .add(txtWorkDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .add(txtArguments, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .add(txtMainClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .add(comConfiguration, 0, 225, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(btnWorkDir)
@@ -465,6 +496,14 @@ public class RunJarPanel extends javax.swing.JPanel {
                 .add(lblHint)
                 .addContainerGap(139, Short.MAX_VALUE))
         );
+
+        txtMainClass.getAccessibleContext().setAccessibleDescription("Main class");
+        btnMainClass.getAccessibleContext().setAccessibleDescription("Browse main class");
+        txtArguments.getAccessibleContext().setAccessibleDescription("Arguments");
+        txtWorkDir.getAccessibleContext().setAccessibleDescription("Working directory");
+        btnWorkDir.getAccessibleContext().setAccessibleDescription("Browse working directory");
+        txtVMOptions.getAccessibleContext().setAccessibleDescription("VM options");
+        comConfiguration.getAccessibleContext().setAccessibleDescription("Configuration");
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnWorkDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnWorkDirActionPerformed
@@ -506,7 +545,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         } else {
             a2gm = handle.getActionMappings();
         }
-        if (isCurrentRun || isCurrentDebug) {
+        if (isCurrentRun || isCurrentDebug || isCurrentProfile) {
             String newAllParams = newVMParams + " -classpath %classpath "; //NOI18N
             if (newMainClass.trim().length() > 0) {
                 newAllParams = newAllParams + newMainClass + " "; //NOI18N
@@ -545,7 +584,23 @@ public class RunJarPanel extends javax.swing.JPanel {
                     handle.markAsModified(a2gm);
                 }
             }
-        } else if (isDeprecatedRun || isDeprecatedDebug) {
+            if (isCurrentProfile) {
+                boolean changed = false;
+                if (!oldAllParams.equals(newAllParams)) {
+                    profile.getProperties().setProperty(RUN_PARAMS, DEFAULT_PROFILE_PARAMS + " " + newAllParams);
+                    changed = true;
+                }
+                if (!oldWorkDir.equals(newWorkDir)) {
+                    profile.getProperties().setProperty(RUN_WORKDIR, newWorkDir);
+                    changed = true;
+                }
+                profile.getProperties().setProperty(RUN_EXEC, DEFAULT_PROFILER_EXEC);
+                if (changed) {
+                    ModelHandle.setUserActionMapping(profile, a2gm);
+                    handle.markAsModified(a2gm);
+                }
+            }
+        } else if (isDeprecatedRun || isDeprecatedDebug || isDeprecatedProfile) {
             if (!newMainClass.equals(oldMainClass)) {
                 jarPlugin = checkJarPlugin(jarPlugin, newMainClass);
                 assemblyPlugin = checkAssemblyPlugin(assemblyPlugin);
@@ -562,6 +617,11 @@ public class RunJarPanel extends javax.swing.JPanel {
                     ModelHandle.setUserActionMapping(debug, a2gm);
                     handle.markAsModified(a2gm);
                 }
+                if (isDeprecatedProfile) {
+                    profile.getProperties().setProperty(DEPRECATED_RUN_PARAMS, newParams);
+                    ModelHandle.setUserActionMapping(profile, a2gm);
+                    handle.markAsModified(a2gm);
+                }
             }
             if (!newVMParams.equals(oldVMParams)) {
                 if (isDeprecatedRun) {
@@ -574,6 +634,11 @@ public class RunJarPanel extends javax.swing.JPanel {
                     ModelHandle.setUserActionMapping(debug, a2gm);
                     handle.markAsModified(a2gm);
                 }
+                if (isDeprecatedProfile) {
+                    profile.getProperties().setProperty(DEPRECATED_RUN_JVM_PARAMS, newVMParams);
+                    ModelHandle.setUserActionMapping(profile, a2gm);
+                    handle.markAsModified(a2gm);
+                }
             }
             if (!newWorkDir.equals(oldWorkDir)) {
                 if (isDeprecatedRun) {
@@ -584,6 +649,11 @@ public class RunJarPanel extends javax.swing.JPanel {
                 if (isDeprecatedDebug) {
                     debug.getProperties().setProperty(DEPRECATED_RUN_WORKDIR, newWorkDir);
                     ModelHandle.setUserActionMapping(debug, a2gm);
+                    handle.markAsModified(a2gm);
+                }
+                if (isDeprecatedProfile) {
+                    profile.getProperties().setProperty(DEPRECATED_RUN_WORKDIR, newWorkDir);
+                    ModelHandle.setUserActionMapping(profile, a2gm);
                     handle.markAsModified(a2gm);
                 }
                 //MEVENIDE-599

@@ -53,7 +53,6 @@ import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -67,6 +66,7 @@ public class PHPHintsProvider implements HintsProvider {
     public static final String FIRST_PASS_HINTS = "1st pass"; //NOI18N
     public static final String SECOND_PASS_HINTS = "2nd pass"; //NOI18N
     public static final String MODEL_HINTS = "model"; //NOI18N
+    public static final String INTRODUCE_HINT = "introduce.hint"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PHPHintsProvider.class.getName());
 
     public void computeHints(HintsManager mgr, RuleContext context, List<Hint> hints) {
@@ -158,7 +158,22 @@ public class PHPHintsProvider implements HintsProvider {
         }
     }
 
-    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
+    public void computeSuggestions(HintsManager mgr, RuleContext context, List<Hint> suggestions, int caretOffset) {
+        Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(true, context);
+        List<? extends AstRule> modelHints = allHints.get(INTRODUCE_HINT);
+        if (modelHints != null) {
+            for (AstRule astRule : modelHints) {
+                if (mgr.isEnabled(astRule)) {
+                    if (astRule instanceof AssignVariableHint) {
+                        AssignVariableHint introduceFix = (AssignVariableHint) astRule;
+                        introduceFix.check(context, suggestions);
+                    } else if (astRule instanceof IntroduceHint) {
+                        IntroduceHint icm = (IntroduceHint) astRule;
+                        icm.check(context, suggestions);
+                    }
+                }
+            }
+        }
         
     }
 

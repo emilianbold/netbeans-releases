@@ -104,7 +104,7 @@ public class SourceAccessorImpl extends SourceAccessor {
         for (KenaiFeature feature : features) {
             SourceHandle srcHandle = new SourceHandleImpl(prjHandle, feature);
             handlesList.add(srcHandle);
-            handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getId(), feature));
+            handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getId(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
         }
 
         return handlesList.isEmpty() ? Collections.EMPTY_LIST : handlesList;
@@ -127,10 +127,13 @@ public class SourceAccessorImpl extends SourceAccessor {
 
             public void actionPerformed(ActionEvent e) {
                 Project project = ((NbProjectHandleImpl) prj).getProject();
-                if (project!=null)
+                if (project == null) {
+                    ((NbProjectHandleImpl) prj).remove();
+                } else {
                     OpenProjects.getDefault().open(new Project[]{project}, false);
-                WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive();
-                selectProject(project);
+                    WindowManager.getDefault().findTopComponent("projectTabLogical_tc").requestActive();
+                    selectProject(project);
+                }
             }
 
             private void selectProject(final Project p) {
@@ -212,10 +215,12 @@ public class SourceAccessorImpl extends SourceAccessor {
 
         public String projectName;
         public KenaiFeature feature;
+        public String externalScmType;
 
-        public ProjectAndFeature(String name, KenaiFeature ftr) {
+        public ProjectAndFeature(String name, KenaiFeature ftr, String externalScmType) {
             projectName = name;
             feature = ftr;
+            this.externalScmType=externalScmType;
         }
     }
 

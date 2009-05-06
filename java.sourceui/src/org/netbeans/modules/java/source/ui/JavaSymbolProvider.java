@@ -40,6 +40,7 @@
 package org.netbeans.modules.java.source.ui;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -59,7 +60,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.SimpleTypeVisitor6;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -72,12 +72,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
-import org.netbeans.modules.java.source.usages.Pair;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
+import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -148,14 +148,24 @@ public class JavaSymbolProvider implements SymbolProvider {
             final boolean caseSensitive = _caseSensitive;
             try {
                 final ClassIndexManager manager = ClassIndexManager.getDefault();
-                final ClassPath cp = RepositoryUpdater.getDefault().getScannedSources();
-                final FileObject[] roots = cp.getRoots();
-                for (final FileObject root : roots) {
+
+                // XXX: rootUrls will in fact contain not only java related roots, but also roots
+                // defined by other languages. Ideally PathRegistry should allow filtering roots by their ID.
+                final Set<URL> rootUrls = new HashSet<URL>();
+                rootUrls.addAll(PathRegistry.getDefault().getSources()); // ClassPath.SOURCE
+                rootUrls.addAll(PathRegistry.getDefault().getLibraries()); // Translated ClassPath.COMPILE & ClassPath.BOOT
+
+                for (URL url : rootUrls) {
                     if (canceled) {
                         return;
                     }
+                    final FileObject root = URLMapper.findFileObject(url);
+                    if (root == null) {
+                        continue;
+                    }
+
                     final Project project = FileOwnerQuery.getOwner(root);
-                    final ClassIndexImpl impl = manager.getUsagesQuery(root.getURL());                                                
+                    final ClassIndexImpl impl = manager.getUsagesQuery(root.getURL());
                     if (impl != null) {
                         final Map<ElementHandle<TypeElement>,Set<String>> r = new HashMap<ElementHandle<TypeElement>,Set<String>>();
                         impl.getDeclaredElements(ident, kind, ResultConvertor.elementHandleConvertor(),r);

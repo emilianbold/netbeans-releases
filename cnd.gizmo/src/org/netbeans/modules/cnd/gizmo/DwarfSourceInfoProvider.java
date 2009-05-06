@@ -38,9 +38,16 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
+import java.io.IOException;
 import java.util.Map;
-import org.netbeans.modules.cnd.gizmo.addr2line.Dwarf2NameFinder;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -55,14 +62,43 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         }
         String executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
         if (executable != null) {
-            Dwarf2NameFinder finder = new Dwarf2NameFinder(executable);
-            finder.lookup(offset);
-            String sourceFile = finder.getSourceFile();
-            int lineNumber = finder.getLineNumber();
-            if (sourceFile != null && 0 <= lineNumber) {
-                return new SourceFileInfo(sourceFile, lineNumber, 0);
+            try {
+                Dwarf dwarf = new Dwarf(executable);
+                try {
+                    OUTER:
+                    for (CompilationUnit compilationUnit : dwarf.getCompilationUnits()) {
+                        for (DwarfEntry entry : compilationUnit.getDeclarations()) {
+                            if (entry.getKind().equals(TAG.DW_TAG_subprogram) &&
+                                    functionName.equals(entry.getQualifiedName())) {
+                                return new SourceFileInfo(
+                                        toAbsolutePath(serviceInfo, entry.getDeclarationFilePath()),
+                                        entry.getLine(), 0);
+                            }
+                        }
+                    }
+                } finally {
+                    dwarf.dispose();
+                }
+            } catch (IOException ex) {
+                DLightLogger.instance.log(Level.WARNING, null, ex);
             }
+
+//            Dwarf2NameFinder finder = new Dwarf2NameFinder(executable);
+//            finder.lookup(offset);
+//            String sourceFile = finder.getSourceFile();
+//            int lineNumber = finder.getLineNumber();
+//            if (sourceFile != null && 0 <= lineNumber) {
+//                return new SourceFileInfo(sourceFile, lineNumber, 0);
+//            }
         }
         throw new SourceFileInfoCannotBeProvided();
+    }
+
+    private static String toAbsolutePath(Map<String, String> serviceInfo, String path) {
+        String projectPath = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
+        if (projectPath != null) {
+            path = IpeUtils.toAbsolutePath(projectPath, path);
+        }
+        return path;
     }
 }

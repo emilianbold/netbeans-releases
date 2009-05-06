@@ -43,17 +43,15 @@ package org.netbeans.modules.refactoring.java;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.diff.LineDiff;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 
 
 
@@ -108,7 +106,7 @@ public class LogTestCase extends NbTestCase {
         
         FileObject fo = FileUtil.toFileObject(classPathWorkDir);
         if (initProjects) {
-            RepositoryUpdater.getDefault().scheduleCompilationAndWait(fo, fo);
+            IndexingManager.getDefault().refreshIndexAndWait(fo.getURL(), null);
             initProjects=false;
         }
         

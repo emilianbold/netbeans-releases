@@ -185,6 +185,10 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
+                        <recursive/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <public-packages>

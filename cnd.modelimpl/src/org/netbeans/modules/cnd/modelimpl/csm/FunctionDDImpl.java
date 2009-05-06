@@ -67,11 +67,9 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     public FunctionDDImpl(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
         super(ast, file, scope, false, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
-        boolean assertionCondition = body != null;
-        if (!assertionCondition) {
+        if (body == null) {
             throw new AstRendererException((FileImpl)file, getStartOffset(),
                     "Null body in function definition."); // NOI18N
-            //assert assertionCondition : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
         }
         if (global) {
             registerInProject();
@@ -135,13 +133,14 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         if( decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION ) {
             return (CsmFunction) decl;
         }
-        if (!getParameterList().isEmpty()) {
+        FunctionParameterListImpl parameterList = getParameterList();
+        if (parameterList != null && !parameterList.isEmpty()) {
             CsmFile file = getContainingFile();
             if (!ProjectBase.isCppFile(file)){
                 uname = uname.substring(0,uname.indexOf('('))+"()"; // NOI18N
                 decl = prj.findDeclaration(uname);
-                if( (decl instanceof FunctionImpl) &&
-                        !((FunctionImpl)decl).isVoidParameterList()) {
+                if( (decl instanceof FunctionImpl<?>) &&
+                        !((FunctionImpl<?>)decl).isVoidParameterList()) {
                     return (CsmFunction) decl;
                 }
             }

@@ -122,6 +122,19 @@ public class FileStatusCache {
      * @return File [] array of interesting files
      */
     public synchronized File [] listFiles(VCSContext context, int includeStatus) {
+        return listFiles(context, includeStatus, false);
+    }
+
+    /**
+     * Lists <b>interesting files</b> that are known to be inside given folders.
+     * <p>This method returns both folders and files.
+     *
+     * @param context context to examine. If null all files applying to the given status will be returned
+     * @param includeStatus limit returned files to those having one of supplied statuses (if exactStatusConformity is false)
+     * @param exactStatusConformity if true only files with an equal status as includeStatus will be returned, otherwise bitwise comparison is used
+     * @return File [] array of interesting files
+     */
+    public synchronized File [] listFiles(VCSContext context, int includeStatus, boolean exactIncludeStatusConformity) {
         Set<File> set = new HashSet<File>();        
         
         // XXX this is crap. check for files from context
@@ -131,7 +144,8 @@ public class FileStatusCache {
             for (Iterator i = map.keySet().iterator(); i.hasNext();) {                
                 File file = (File) i.next();                                   
                 FileInformation info = (FileInformation) map.get(file);
-                if ((info.getStatus() & includeStatus) == 0) {                    
+                if (!exactIncludeStatusConformity && (info.getStatus() & includeStatus) == 0
+                        || exactIncludeStatusConformity && info.getStatus() != includeStatus) {
                     continue;
                 }
                 

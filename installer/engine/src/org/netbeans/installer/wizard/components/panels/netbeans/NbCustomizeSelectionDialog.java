@@ -45,6 +45,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -88,6 +90,7 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiDialog;
+import org.netbeans.installer.utils.helper.swing.NbiFrame;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiList;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
@@ -132,9 +135,11 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     private Icon emptyIcon;
     
     public NbCustomizeSelectionDialog(
+            final NbiFrame parent,
             final NbWelcomePanel panel,
             final Runnable callback,
             final List<RegistryNode> registryNodes) {
+        super(parent);
         this.panel = panel;
         this.callback = callback;
         this.registryNodes = registryNodes;
@@ -145,29 +150,29 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 getClass().getClassLoader().getResource(WARNING_ICON));
         emptyIcon = new ImageIcon(
                 getClass().getClassLoader().getResource(EMPTY_ICON));
-        
-        initComponents();
+                
         setDefaultMinimumSize();
+        initComponents();
     }
 	
     private void setDefaultMinimumSize(){
         switch (UiUtils.getLAF()) {
             case WINDOWS_CLASSIC :
             case WINDOWS_XP :
-                setMinimumSize(new Dimension(560, 420));
+                setMinimumSize(new Dimension(560, 420 + EXTRA_SIZE));
                 break;
             case GTK:
-                setMinimumSize(new Dimension(660, 500));
+                setMinimumSize(new Dimension(660, 500 + EXTRA_SIZE));
                 break;
             case AQUA:
-                setMinimumSize(new Dimension(550,410));
+                setMinimumSize(new Dimension(550,410 + EXTRA_SIZE));
                 break;
             case MOTIF:
             case METAL:
-                setMinimumSize(new Dimension(620,460));
+                setMinimumSize(new Dimension(620,460 + EXTRA_SIZE));
                 break;
             default:
-                setMinimumSize(new Dimension(560,420));
+                setMinimumSize(new Dimension(560,420 + EXTRA_SIZE));
                 break;
         }
     }
@@ -183,6 +188,14 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     
     // private //////////////////////////////////////////////////////////////////////
     private void initComponents() {
+        //workaround with minimum size for JDK5
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                setSize(Math.max(getSize().width, getMinimumSize().width),
+                        Math.max(getSize().height, getMinimumSize().height));
+            }
+        });
         // messageLabel /////////////////////////////////////////////////////////////
         messageLabel = new NbiLabel();
         
@@ -242,13 +255,14 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         // componentsScrollPane /////////////////////////////////////////////////////
         componentsScrollPane = new NbiScrollPane(componentsList);
         componentsScrollPane.setVerticalScrollBarPolicy(
-                NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+                NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);       
+
         messageLabel.setLabelFor(componentsScrollPane);
         
         // descriptionPane //////////////////////////////////////////////////////////
         descriptionPane = new NbiTextPane();
         descriptionPane.setBorder(
-                new EmptyBorder(5, 5, 5, 5));
+                new EmptyBorder(5, 5, 5, 5));        
         
         // descriptionScrollPane ////////////////////////////////////////////////////
         descriptionScrollPane = new NbiScrollPane(descriptionPane);
@@ -256,7 +270,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         descriptionScrollPane.setBorder(
                 new TitledBorder(FEATURE_DESCRIPTION_TITLE));
-        descriptionScrollPane.setPreferredSize(new Dimension(200, 10));
+        descriptionScrollPane.setPreferredSize(new Dimension(200, 10));     
         
         // componentPanel ///////////////////////////////////////////////////////////
         componentPanel = new NbiPanel();
@@ -266,7 +280,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         
         // sizesLabel ///////////////////////////////////////////////////////////////
         sizesLabel = new NbiLabel();
-        sizesLabel.setFocusable(true);
+        //sizesLabel.setFocusable(true);
         
         // errorMessageLabel ////////////////////////////////////////////////////////
         errorLabel = new NbiLabel();
@@ -355,7 +369,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                okButtonPressed();
+                cancelButtonPressed();
             }
         });
         getRootPane().setDefaultButton(okButton);
@@ -469,7 +483,9 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         if ((toInstall.size() == 0) && (toUninstall.size() == 0)) {
             if (isThereAnythingVisibleToInstall() &&
                     Boolean.getBoolean(Registry.SUGGEST_INSTALL_PROPERTY)) {
-                return panel.getProperty(panel.ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
+                return isVisibleNetBeansInstalled()?
+                    panel.getProperty(panel.ERROR_NO_RUNTIMES_INSTALL_ONLY_PROPERTY):
+                    panel.getProperty(panel.ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
             }
             if (isThereAnythingVisibleToUninstall() &&
                     Boolean.getBoolean(Registry.SUGGEST_UNINSTALL_PROPERTY)) {
@@ -630,6 +646,21 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         }
         
         return false;
+    }
+
+    private boolean isVisibleNetBeansInstalled() {
+        final Registry registry = Registry.getInstance();
+
+        final List<Product> toInstall = new LinkedList<Product>();
+        toInstall.addAll(registry.getProducts(Status.NOT_INSTALLED));
+        toInstall.addAll(registry.getProducts(Status.TO_BE_INSTALLED));
+
+        for (Product product: toInstall) {
+            if (product.getUid().startsWith("nb-") && product.isVisible()) {
+                return false;
+            }
+        }
+        return true;
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -886,4 +917,5 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             "evaluate.cancel"; // NOI18N
     private static final String NB_IDE_GROUP_UID = 
             "nb-ide-group";//NOI18N
+    private static final int EXTRA_SIZE = 15;
 }

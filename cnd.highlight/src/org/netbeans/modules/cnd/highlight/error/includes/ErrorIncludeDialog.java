@@ -68,12 +68,12 @@ import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -313,7 +313,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     private ErrorIncludesModel model;
     private JList leftList;
     private JList rightList;
-    private JTextArea guessList;
+    private JEditorPane guessList;
     private Map<String, List<String>> searchBase;
     private JComponent createIncludesPane(/*List<CsmInclude> includes*/) {
         leftList = new JList();
@@ -324,7 +324,8 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         rightList.setBorder(BorderFactory.createEmptyBorder());
         rightList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
-        guessList = new JTextArea();
+        guessList = new JEditorPane();
+        guessList.setContentType("text/html");  // NOI18N
         guessList.setEditable(false);
         
         JSplitPane pane = new JSplitPane();
@@ -574,63 +575,71 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             if (result != null){
                 for (Iterator it = result.iterator(); it.hasNext();) {
                     String elem = (String) it.next();
-                    buf.append(elem+"\n"); // NOI18N
+                    buf.append(elem+"\n<br>"); // NOI18N
                 }
             }
         } else {
-            buf.append(error.getText()).append("\n"); // NOI18N
+            buf.append(error.getText()).append("\n<br>"); // NOI18N
         }
-        guessList.setText(buf.toString());
+
         CsmFile file = error.getContainingFile();
         if (handleIncludeError) {
-            getObjectFile(found, file.getAbsolutePath().toString());
+            getObjectFile(found, file.getAbsolutePath().toString(), buf);
         }
         if (file.isHeaderFile()){
             List<CsmInclude> list = CsmFileInfoQuery.getDefault().getIncludeStack(file);
             if (list.size()>0) {
-                buf = new StringBuilder();
                 buf.append(i18n("PathToHeader"));  // NOI18N
                 file = list.get(0).getContainingFile();
                 for (CsmInclude inc : list){
-                    buf.append('\n').append('\t');
+                    buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
                     buf.append(inc.getContainingFile().getAbsolutePath());
                     buf.append(i18n("PathToHeaderLine", inc.getStartPosition().getLine()));  // NOI18N
                 }
-                buf.append('\n');
-                guessList.setText(guessList.getText()+buf.toString());
+                buf.append("\n<br>"); // NOI18N
             } else {
-                return;
+                file = null;
             }
         }
         if (file != null){
             List<String> list = CsmFileInfoQuery.getDefault().getUserIncludePaths(file);
             if (list.size()>0) {
-                buf = new StringBuilder();
                 buf.append(i18n("SourceUserPaths"));  // NOI18N
                 for (String path : list){
-                    buf.append('\n');
-                    buf.append('\t');
-                    buf.append(path);
+                    buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
+                    File f = new File(path);
+                    if (f.exists() && f.isDirectory()) {
+                        buf.append(path);
+                    } else {
+                        buf.append("<font color='red'>");  // NOI18N
+                        buf.append(path);
+                        buf.append("</font>");  // NOI18N
+                    }
                 }
-                buf.append('\n');
-                guessList.setText(guessList.getText()+buf.toString());
+                buf.append("\n<br>"); // NOI18N
             }
             list = CsmFileInfoQuery.getDefault().getSystemIncludePaths(file);
             if (list.size()>0) {
-                buf = new StringBuilder();
                 buf.append(i18n("SourceSystemPaths"));  // NOI18N
                 for (String path : list){
-                    buf.append('\n');
-                    buf.append('\t');
-                    buf.append(path);
+                    buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
+                    File f = new File(path);
+                    if (f.exists() && f.isDirectory()) {
+                        buf.append(path);
+                    } else {
+                        buf.append("<font color='red'>");  // NOI18N
+                        buf.append(path);
+                        buf.append("</font>");  // NOI18N
+                    }
                 }
-                buf.append('\n');
-                guessList.setText(guessList.getText()+buf.toString());
+                buf.append("\n<br>"); // NOI18N
             }
         }
+        guessList.setText("<html><head></head><body>"+buf.toString()+"</body></html>"); // NOI18N
+        //System.err.println(guessList.getText());
     }
     
-    private void getObjectFile(String searchFor, String in){
+    private void getObjectFile(String searchFor, String in, StringBuilder buf){
         String source = in.replace("<",""); // NOI18N
         source = source.replace(">",""); // NOI18N
         source = source.replace("\"",""); // NOI18N
@@ -642,16 +651,14 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             source = source.substring(0,source.lastIndexOf('.'))+".o";  // NOI18N
             List result = (List)searchBase.get(source);
             if (result != null){
-                StringBuilder buf = new StringBuilder();
                 for (Iterator it = result.iterator(); it.hasNext();) {
                     String elem = (String) it.next();
-                    buf.append(elem+"\n"); // NOI18N
+                    buf.append(elem+"\n<br>"); // NOI18N
                     String path = trace(searchFor, elem, in);
                     if (path != null){
-                        buf.append(path+"\n"); // NOI18N
+                        buf.append(path+"\n<br>"); // NOI18N
                     }
                 }
-                guessList.setText(guessList.getText()+buf.toString());
             }
         }
     }

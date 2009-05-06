@@ -92,6 +92,11 @@ implements PropertyChangeListener, LookupListener {
         UILOG.log(rec);
     }
 
+    static boolean showInAU(ModuleInfo mi) {
+        final Object show = mi.getAttribute("AutoUpdate-Show-In-Client"); // NOI18N
+        return show == null || "true".equals(show); // NOI18N
+    }
+
 
     public static Map<String,String> nbprojectTypes() {
         return FeatureInfo.nbprojectTypes();
@@ -123,10 +128,11 @@ implements PropertyChangeListener, LookupListener {
             return -1;
         }
         int cnt = 0;
+        Collection<? extends ModuleInfo> allModules = Lookup.getDefault().lookupAll(ModuleInfo.class);
         for (FeatureInfo info : features()) {
             Set<String> enabled = new TreeSet<String>();
             Set<String> disabled = new TreeSet<String>();
-            for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            for (ModuleInfo m : allModules) {
                 if (info.getCodeNames().contains(m.getCodeNameBase())) {
                     if (m.isEnabled()) {
                         enabled.add(m.getCodeNameBase());
@@ -134,6 +140,10 @@ implements PropertyChangeListener, LookupListener {
                         disabled.add(m.getCodeNameBase());
                     }
                 }
+            }
+            if (enabled.isEmpty() && disabled.isEmpty()) {
+                FoDFileSystem.LOG.log(withLevel, info.clusterName + " not present"); // NOTICES
+                continue;
             }
             if (enabled.isEmpty()) {
                 FoDFileSystem.LOG.log(withLevel, info.clusterName + " disabled"); // NOTICES

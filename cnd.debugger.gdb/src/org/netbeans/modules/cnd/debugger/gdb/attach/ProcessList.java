@@ -88,6 +88,7 @@ final class ProcessList {
                 argsSimple.add("/bin/ps"); // NOI18N
                 argsSimple.add("-a"); // NOI18N
                 argsSimple.add("-o"); // NOI18N
+                // Used only localy, so we can use Utilities.getOperatingSystem()
                 if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                     argsSimple.add("user,pid,ppid,stime,time,command"); // NOI18N
                 } else {

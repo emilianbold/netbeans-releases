@@ -50,6 +50,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.EnumSet;
@@ -59,9 +60,11 @@ import java.util.Set;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
@@ -154,6 +157,55 @@ public class Utilities {
             return sb.toString();
     }
     
+    /**
+     * @param tp tested {@link TreePath}
+     * @return true if <code>tp</code> is an IDENTIFIER in a VARIABLE in an ENHANCED_FOR_LOOP
+     */
+    public static boolean isEnhancedForLoopIdentifier(TreePath tp) {
+        if (tp == null || tp.getLeaf().getKind() != Kind.IDENTIFIER)
+            return false;
+        TreePath parent = tp.getParentPath();
+        if (parent == null || parent.getLeaf().getKind() != Kind.VARIABLE)
+            return false;
+        TreePath context = parent.getParentPath();
+        if (context == null || context.getLeaf().getKind() != Kind.ENHANCED_FOR_LOOP)
+            return false;
+        return true;
+    }
+
+    /**
+     *
+     * @param info context {@link CompilationInfo}
+     * @param iterable tested {@link TreePath}
+     * @return generic type of an {@link Iterable} or {@link ArrayType} at a TreePath
+     */
+    public static TypeMirror getIterableGenericType(CompilationInfo info, TreePath iterable) {
+        TypeElement iterableElement = info.getElements().getTypeElement("java.lang.Iterable"); //NOI18N
+        if (iterableElement == null) {
+            return null;
+        }
+        TypeMirror iterableType = info.getTrees().getTypeMirror(iterable);
+        if (iterableType == null) {
+            return null;
+        }
+        TypeMirror designedType = null;
+        if (iterableType.getKind() == TypeKind.DECLARED) {
+            DeclaredType declaredType = (DeclaredType) iterableType;
+            if (!info.getTypes().isSubtype(info.getTypes().erasure(declaredType), info.getTypes().erasure(iterableElement.asType()))) {
+                return null;
+            }
+            ExecutableElement iteratorMethod = (ExecutableElement) iterableElement.getEnclosedElements().get(0);
+            ExecutableType iteratorMethodType = (ExecutableType) info.getTypes().asMemberOf(declaredType, iteratorMethod);
+            designedType = ((DeclaredType) iteratorMethodType.getReturnType()).getTypeArguments().get(0);
+        } else if (iterableType.getKind() == TypeKind.ARRAY) {
+            designedType = ((ArrayType) iterableType).getComponentType();
+        }
+        if (designedType == null) {
+            return null;
+        }
+        return resolveCapturedType(info, designedType);
+    }
+
     public static String getName(TypeMirror tm) {
         if (tm.getKind().isPrimitive()) {
             return "" + Character.toLowerCase(tm.getKind().name().charAt(0));

@@ -72,6 +72,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -167,7 +168,7 @@ public class TaskProcessor {
         boolean a = false;
         assert a = true;
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
+            StackTraceElement stackTraceElement = Util.findCaller(Thread.currentThread().getStackTrace(), TaskProcessor.class, ParserManager.class, "org.netbeans.api.java.source.JavaSource"); //NOI18N
             if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
                 LOGGER.warning("ParserManager.parse called in AWT event thread by: " + stackTraceElement); // NOI18N
             }
@@ -543,20 +544,6 @@ public class TaskProcessor {
         return false;
     }
 
-    /* test */ static StackTraceElement findCaller(StackTraceElement[] elements) {
-        for (StackTraceElement e : elements) {
-            if (TaskProcessor.class.getName().equals(e.getClassName()) ||
-                e.getClassName().startsWith(ParserManager.class.getName()) ||
-                e.getClassName().startsWith("java.lang.") //NOI18N
-            ) {
-                continue;
-            }
-
-            return e;
-        }        
-        return null;
-    }
-       
     //Private classes
     /**
      * SchedulerTask scheduler loop

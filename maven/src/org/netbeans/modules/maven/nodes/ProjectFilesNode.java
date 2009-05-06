@@ -82,7 +82,7 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
     private NbMavenProjectImpl project;
     /** Creates a new instance of ProjectFilesNode */
     public ProjectFilesNode(NbMavenProjectImpl project) {
-        super(new ProjectFilesChildren(project), Lookups.fixed(project.getProjectDirectory()));
+        super(new ProjectFilesChildren(project), Lookups.fixed(project.getProjectDirectory(), new OthersRootNode.ChildDelegateFind()));
         setName("projectfiles"); //NOI18N
         setDisplayName(org.openide.util.NbBundle.getMessage(ProjectFilesNode.class, "LBL_Project_Files"));
         this.project = project;

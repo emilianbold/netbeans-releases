@@ -86,37 +86,37 @@
             <file name="DefaultResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/DefaultResource.template">
                 <attr name="position" intvalue="0"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="GenericResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GenericResource.template">
                 <attr name="position" intvalue="0"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="UriResolver.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template">
                 <attr name="position" intvalue="0"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="PersistenceService.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceService.template">
                 <attr name="position" intvalue="0"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="PersistenceServiceNoJTA.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceServiceNoJTA.template">
                 <attr name="position" intvalue="0"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="RestConnection.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RestConnection.template">
                 <attr name="position" intvalue="0"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="RefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RefConverter.template">
                 <attr name="position" intvalue="0"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="JsProjectStub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsProjectStub.template">
                 <attr name="position" intvalue="0"/>

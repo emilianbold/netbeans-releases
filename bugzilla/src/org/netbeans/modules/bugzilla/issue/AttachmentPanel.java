@@ -137,12 +137,15 @@ public class AttachmentPanel extends javax.swing.JPanel {
             }
         });
 
+        descriptionLabel.setLabelFor(descriptionField);
         descriptionLabel.setText(org.openide.util.NbBundle.getMessage(AttachmentPanel.class, "AttachmentPanel.descriptionLabel.text")); // NOI18N
 
+        fileTypeLabel.setLabelFor(fileTypeCombo);
         fileTypeLabel.setText(org.openide.util.NbBundle.getMessage(AttachmentPanel.class, "AttachmentPanel.fileTypeLabel.text")); // NOI18N
 
         fileTypeCombo.setEditable(true);
 
+        patchLabel.setLabelFor(patchChoice);
         patchLabel.setText(org.openide.util.NbBundle.getMessage(AttachmentPanel.class, "AttachmentPanel.patchLabel.text")); // NOI18N
 
         patchChoice.setBorder(null);
@@ -197,6 +200,15 @@ public class AttachmentPanel extends javax.swing.JPanel {
                     .add(patchLabel)
                     .add(patchChoice)))
         );
+
+        fileField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AttachmentPanel.class, "AttachmentPanel.fileField.AccessibleContext.accessibleName")); // NOI18N
+        fileField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AttachmentPanel.class, "AttachmentPanel.fileField.AccessibleContext.accessibleDescription")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AttachmentPanel.class, "AttachmentPanel.browseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        deleteButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AttachmentPanel.class, "AttachmentPanel.deleteButton.AccessibleContext.accessibleDescription")); // NOI18N
+        descriptionField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AttachmentPanel.class, "AttachmentPanel.descriptionField.AccessibleContext.accessibleDescription")); // NOI18N
+        fileTypeCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AttachmentPanel.class, "AttachmentPanel.fileTypeCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        patchChoice.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AttachmentPanel.class, "AttachmentPanel.patchChoice.AccessibleContext.accessibleName")); // NOI18N
+        patchChoice.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AttachmentPanel.class, "AttachmentPanel.patchChoice.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed

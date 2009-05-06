@@ -73,7 +73,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -217,7 +216,8 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
         int wildcard = containsWildCard(text);
         
         if (exact) {
-            nameKind = isCaseSensitive ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
+            //nameKind = isCaseSensitive ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
+            nameKind = SearchType.EXACT_NAME;
         }
         else if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
             nameKind = SearchType.CAMEL_CASE;

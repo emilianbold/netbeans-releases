@@ -52,8 +52,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.SharedClassObject;
 import org.openide.util.test.MockPropertyChangeListener;
 
 /** Test SharedClassObject singletons: esp. initialization semantics.
@@ -189,6 +189,23 @@ public class SharedClassObjectTest extends NbTestCase {
         
         assertEquals ("Result should be the string", String.class, result.getClass());
         
+    }
+
+    public void testOneInstanceIsLookedUp() throws Exception {
+        MockServices.setServices(Instance.class);
+        Instance i1 = Lookup.getDefault().lookup(Instance.class);
+        assertNotNull("Really found", i1);
+        MockServices.setServices();
+        Instance i10 = Lookup.getDefault().lookup(Instance.class);
+        assertNull("Now it returns null", i10);
+        MockServices.setServices(Instance.class);
+        Instance i2 = Lookup.getDefault().lookup(Instance.class);
+        assertSame("Only one instance is created", i1, i2);
+    }
+
+    public static final class Instance extends SharedClassObject {
+        public Instance() {
+        }
     }
     
     /** Create a fresh Class object from one of this test's inner classes.

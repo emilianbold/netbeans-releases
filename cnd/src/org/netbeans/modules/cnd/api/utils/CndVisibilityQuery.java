@@ -40,43 +40,34 @@
 package org.netbeans.modules.cnd.api.utils;
 
 import java.io.File;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbPreferences;
 
-/**
- *
- * @author Alexander Simon
- */
 public class CndVisibilityQuery  implements VisibilityQueryImplementation2 {
-
     private final ChangeSupport cs = new ChangeSupport(this);
 
-    private static CndVisibilityQuery INSTANCE = new CndVisibilityQuery();
+    private Pattern pattern = null;
 
-    /**
-     * Keep it synchronized with IgnoredFilesPreferences.PROP_IGNORED_FILES
-     */
-    private static final String PROP_IGNORED_FILES = "IgnoredFiles"; // NOI18N
-    private Pattern ignoreFilesPattern = null;
-
-    /** Default instance for lookup. */
-    private CndVisibilityQuery() {
+    public CndVisibilityQuery(String regex){
+        pattern = Pattern.compile(regex);
     }
 
-    public static CndVisibilityQuery getDefault(){
-        return INSTANCE;
+    public void setPattern(String regex) {
+        if (pattern != null && regex != null && !pattern.pattern().equals(regex)) {
+            pattern = Pattern.compile(regex);
+            cs.fireChange();
+        }
+        else if (pattern == null && regex != null) {
+            pattern = Pattern.compile(regex);
+            cs.fireChange();
+        }
     }
 
-
-    private Preferences getPreferences() {
-        return NbPreferences.forModule(getClass());
+    public String getRegEx() {
+        return pattern.pattern();
     }
 
     public boolean isVisible(FileObject file) {
@@ -87,10 +78,8 @@ public class CndVisibilityQuery  implements VisibilityQueryImplementation2 {
         return isVisible(file.getName());
     }
 
-
-    boolean isVisible(final String fileName) {
-        Pattern pattern = getIgnoreFilesPattern();
-        return (pattern != null) ? !(pattern.matcher(fileName).find()) : true;
+    public boolean isVisible(final String fileName) {
+        return pattern.matcher(fileName).find();
     }
 
     /**
@@ -107,27 +96,5 @@ public class CndVisibilityQuery  implements VisibilityQueryImplementation2 {
      */
     public void removeChangeListener(ChangeListener l) {
         cs.removeChangeListener(l);
-    }
-
-    private Pattern getIgnoreFilesPattern() {
-        if (ignoreFilesPattern == null) {
-            String ignoredFiles = getIgnoredFiles();
-            ignoreFilesPattern = (ignoredFiles != null && ignoredFiles.length() > 0) ? Pattern.compile(ignoredFiles) : null;
-        }
-        return ignoreFilesPattern;
-    }
-
-    protected String getIgnoredFiles() {
-        String retval = getPreferences().get(PROP_IGNORED_FILES, ".*\\.(o|lo|la|Po|Plo)$");//NOI18N;
-        getPreferences().addPreferenceChangeListener(new PreferenceChangeListener() {
-            public void preferenceChange(PreferenceChangeEvent evt) {
-                if (PROP_IGNORED_FILES.equals(evt.getKey())) {
-                    ignoreFilesPattern = null;
-                    cs.fireChange();
-                }
-
-            }
-        });
-        return retval;
     }
 }

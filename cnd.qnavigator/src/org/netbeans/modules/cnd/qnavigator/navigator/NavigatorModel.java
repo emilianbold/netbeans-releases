@@ -519,6 +519,30 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             return menuItem;
         }
     }
+
+    private class ShowFieldAction extends AbstractAction implements Presenter.Popup {
+        private JCheckBoxMenuItem menuItem;
+        public ShowFieldAction() {
+            putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowFieldText")); // NOI18N
+            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
+            menuItem.setAction(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            fileModel.getFilter().setShowField(!fileModel.getFilter().isShowField());
+            int selection = storeSelection();
+            update(getCsmFile());
+            if (selection >= 0) {
+                setSelection(selection);
+            }
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(fileModel.getFilter().isShowField());
+            return menuItem;
+        }
+    }
+
     private class ShowUsingAction extends AbstractAction implements Presenter.Popup {
         private JCheckBoxMenuItem menuItem;
         public ShowUsingAction() {
@@ -656,6 +680,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             menu.add(new ShowIncludeAction().getPopupPresenter());
             menu.add(new ShowTypedefAction().getPopupPresenter());
             menu.add(new ShowVariableAction().getPopupPresenter());
+            menu.add(new ShowFieldAction().getPopupPresenter());
             menu.add(new ShowUsingAction().getPopupPresenter());
             return menu;
         }

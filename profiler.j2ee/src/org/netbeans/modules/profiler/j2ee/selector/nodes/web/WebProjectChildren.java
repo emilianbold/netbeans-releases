@@ -47,6 +47,11 @@ import org.netbeans.modules.profiler.j2ee.selector.nodes.web.listener.ListenersN
 import org.netbeans.modules.profiler.j2ee.selector.nodes.web.servlet.ServletsNode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.profiler.j2ee.WebProjectUtils;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
@@ -71,28 +76,35 @@ public class WebProjectChildren extends SelectorChildren<ProjectNode> {
 
     protected List<SelectorNode> prepareChildren(ProjectNode parent) {
         List<SelectorNode> contents = new ArrayList<SelectorNode>();
-        SelectorNode content = new ServletsNode(parent);
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            if (provider.getServerInstanceID() != null && !provider.getServerInstanceID().equals("DEV-NULL")) { // NOI18N
+                SelectorNode content = new ServletsNode(parent);
 
-        if (!content.isLeaf()) {
-            contents.add(content);
-        }
+                if (!content.isLeaf()) {
+                    contents.add(content);
+                }
 
-        content = new FiltersNode(parent);
+                content = new FiltersNode(parent);
 
-        if (!content.isLeaf()) {
-            contents.add(content);
-        }
+                if (!content.isLeaf()) {
+                    contents.add(content);
+                }
 
-        content = new ListenersNode(parent);
+                content = new ListenersNode(parent);
 
-        if (!content.isLeaf()) {
-            contents.add(content);
-        }
+                if (!content.isLeaf()) {
+                    contents.add(content);
+                }
 
-        content = new JspsNode(parent);
+                content = new JspsNode(parent);
 
-        if (!content.isLeaf()) {
-            contents.add(content);
+                if (!content.isLeaf()) {
+                    contents.add(content);
+                }
+            } else {
+                Logger.getLogger(WebProjectChildren.class.getName()).warning(java.util.ResourceBundle.getBundle("org/netbeans/modules/profiler/j2ee/selector/Bundle").getString("ROOT_METHODS_NOT_AVAILABLE"));
+            }
         }
 
         return contents;

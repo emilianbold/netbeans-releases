@@ -43,29 +43,49 @@
 	<script type="text/javascript">
 
 		var PAGE_ARTIFACTS_LOCATION = "";
+		var ADDITIONAL_PAGE_ARTIFACTS_LOCATION = "";
 
 	</script>
 
 	<script type="text/javascript">
-		var JS_LOCATION  = PAGE_ARTIFACTS_LOCATION + "js/";
-		var IMG_LOCATION = PAGE_ARTIFACTS_LOCATION + "img/";
-		var CSS_LOCATION = PAGE_ARTIFACTS_LOCATION + "css/";
+	        var currentLocation = PAGE_ARTIFACTS_LOCATION;
 
-		function load_page_js(script_filename) {
-		    document.write('<' + 'script ' + 'language="javascript" type="text/javascript" src="' + JS_LOCATION + script_filename + '"><' + '/' + 'script' + '>');
+		function getPageArtifactsLocation(another) {
+	            return anotherLocation(another) ? (ADDITIONAL_PAGE_ARTIFACTS_LOCATION !="" ? ADDITIONAL_PAGE_ARTIFACTS_LOCATION : get_build_info(true).ADDITIONAL_BUILD_LOCATION) : PAGE_ARTIFACTS_LOCATION;
+		}
+
+		function getJSLocation(another) {
+                    return getPageArtifactsLocation(another) + "js/";
+                }
+		function getCSSLocation() {
+                    return getPageArtifactsLocation() + "css/";
+                }
+		function getImagesLocation() {
+                    return getPageArtifactsLocation(useAnotherLocation()) + "img/";
+                }
+                function anotherLocation(another) {
+                    return another ? (another == "true" || another == true) :  false;
+                }
+
+		function load_page_js(script_filename, another) {
+                    currentLocation = getPageArtifactsLocation(another);
+                    var page_location = getJSLocation(another) + script_filename;
+		    document.write('<' + 'script ' + 'language="javascript" type="text/javascript" src="' + page_location + '"><' + '/' + 'script' + '>');
 		}
 	</script>
 
         <script src="http://www.netbeans.org/images/js/companion-projects.js" type="text/javascript"></script>
 	<script type="text/javascript">load_page_js("common.js")</script>
-        <script type="text/javascript">load_page_js("languages.js")</script>
+        <script type="text/javascript">load_build_info(false)</script>
+        <script type="text/javascript">load_build_info(true)</script>
+	<script type="text/javascript">load_languages(false)</script>
+	<script type="text/javascript">load_languages(true)</script>
 	<script type="text/javascript">load_page_js_locale("common_strings",".js")</script>
         <script type="text/javascript">load_page_js_locale("start_strings",".js")</script>
-        <script type="text/javascript">load_page_js("build_info.js")</script>
 	<script type="text/javascript">load_page_js("start.js")</script>
-	<script type="text/javascript">load_page_js("files.js")</script>
-        <script type="text/javascript">set_page_title(NETBEANS_DOWNLOAD_STARTED_PAGE_TITLE.replace('{0}',BUILD_DISPLAY_VERSION))</script>
-        <script type="text/javascript">set_page_description(NETBEANS_DOWNLOAD_STARTED_PAGE_DESCRIPTION.replace('{0}',BUILD_DISPLAY_VERSION))</script>
+	<script type="text/javascript">load_files_information("files.js")</script>
+        <script type="text/javascript">set_page_title(NETBEANS_DOWNLOAD_STARTED_PAGE_TITLE.replace('{0}',get_build_info(true).BUILD_DISPLAY_VERSION))</script>
+        <script type="text/javascript">set_page_description(NETBEANS_DOWNLOAD_STARTED_PAGE_DESCRIPTION.replace('{0}',get_build_info(true).BUILD_DISPLAY_VERSION))</script>
 
         <link rel="stylesheet" type="text/css" href="http://www.netbeans.org/netbeans.css" media="screen"/>
         <script type="text/javascript">load_page_css("start.css")</script>
@@ -125,7 +145,7 @@
                         <div class="bg-white">                            
                             <table class="top_header">
                                 <tr>
-                                    <td class="title"><script type="text/javascript">message(NETBEANS_DOWNLOAD_STARTED_HEADER.replace('{0}',BUILD_DISPLAY_VERSION))</script></td>
+                                    <td class="title"><script type="text/javascript">message(NETBEANS_DOWNLOAD_STARTED_HEADER.replace('{0}',get_build_info(true).BUILD_DISPLAY_VERSION))</script></td>
                                 </tr>
                             </table>
                             <div class="bg-white f-page-cell" style="padding-left: 15px">
@@ -212,13 +232,13 @@
 		if(option_id!="" && platform_id!="" && lang_id!="") {
 			var s_pageName = "Download Netbeans IDE Started";
 			var s_events = "event7";
-			var s_products = "Downloaded Products;NetBeans IDE " + BUILD_DISPLAY_VERSION_SHORT + " | " + platform_id + " | " + option_id;
+			var s_products = "Downloaded Products;NetBeans IDE " + get_build_info(isMainLanguage(lang_id)).BUILD_DISPLAY_VERSION_SHORT + " | " + platform_id + " | " + option_id;
 			var s_eVar3 = "netbeans";
 			var s_eVar8 = option_id;
 			var s_prop19 = platform_id;
 			var s_prop20 = lang_id;
-			var s_prop21 = BUILD_DISPLAY_VERSION_SHORT;
-			if(LOAD_OMNITURE_CODE==1) {
+			var s_prop21 = get_build_info(isMainLanguage(lang_id)).BUILD_DISPLAY_VERSION_SHORT;
+			if(get_build_info(isMainLanguage(lang_id)).LOAD_OMNITURE_CODE==1) {
 				load_js(OMNITURE_CODE_JS);
 			}
 		}
@@ -226,12 +246,13 @@
 
 	<!-- Begin Google webtracking analytics -->
 	<script type="text/javascript">
-		if(LOAD_GOOGLE_ANALYTICS_CODE==1) {
+		if(get_build_info(isMainLanguage(lang_id)).LOAD_GOOGLE_ANALYTICS_CODE==1) {
 			load_js(GOOGLE_ANALYTICS_JS);
 		}
 	</script>
 	<script type="text/javascript">
-		if(LOAD_GOOGLE_ANALYTICS_CODE==1) {
+
+		if(get_build_info(isMainLanguage(lang_id)).LOAD_GOOGLE_ANALYTICS_CODE==1) {
 			var pageTracker = _gat._getTracker("UA-2149007-1");
 			pageTracker._setDomainName("netbeans.org");
 			pageTracker._initData();

@@ -373,6 +373,7 @@ public class LogReader {
                 pkg = pkg.substring(PKG_CONFIG_PATTERN.length());
                 StringTokenizer st = new StringTokenizer(pkg);
                 boolean readFlags = false;
+                String findPkg = null;
                 while(st.hasMoreTokens()) {
                     String aPkg = st.nextToken();
                     if (aPkg.equals("--cflags")) { //NOI18N
@@ -383,17 +384,18 @@ public class LogReader {
                         readFlags = false;
                         continue;
                     }
-                    if (readFlags && pkgConfig != null) {
-                        PackageConfiguration pc = pkgConfig.getPkgConfig(aPkg);
-                        if (pc != null) {
-                            for(String p : pc.getIncludePaths()){
-                                out.append(" -I"+p); //NOI18N
-                            }
-                            for(String p : pc.getMacros()){
-                                out.append(" -D"+p); //NOI18N
-                            }
-                            out.append(" "); //NOI18N
+                    findPkg = aPkg;
+                }
+                if (readFlags && pkgConfig != null && findPkg != null) {
+                    PackageConfiguration pc = pkgConfig.getPkgConfig(findPkg);
+                    if (pc != null) {
+                        for(String p : pc.getIncludePaths()){
+                            out.append(" -I"+p); //NOI18N
                         }
+                        for(String p : pc.getMacros()){
+                            out.append(" -D"+p); //NOI18N
+                        }
+                        out.append(" "); //NOI18N
                     }
                 }
             } else if (pkg.startsWith(ECHO_PATTERN)){

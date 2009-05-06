@@ -153,7 +153,7 @@ public abstract class AbstractHgTest extends NbTestCase {
 
     protected File clone(File file) throws HgException, IOException {
         String path = file.getAbsolutePath() + "_cloned";
-        HgCommand.doClone(getWorkDir(), path, null);
+        HgCommand.doClone(getWorkDir(), new File(path), null);
         return new File(path);
     }
     

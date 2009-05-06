@@ -87,8 +87,27 @@ class NbSuiteRunner
       end
       $stdout.print "%TEST_FAILED% time=#{elapsed_time} testname=#{result.test_name} message=#{result.message.to_s.gsub($/, " ")} location=#{location}\n"
     else
-      stacktrace = result.exception.backtrace.join("%BR%")
-      $stdout.print "%TEST_ERROR% time=#{elapsed_time} testname=#{result.test_name} message=#{result.message.to_s.gsub($/, " ")} location=#{stacktrace}\n"
+      backtrace = []
+      # in certain cases the whole stacktrace is just
+      # a single string with newlines - see e.g. IZ 158581
+      if result.exception.backtrace.size == 1
+        result.exception.backtrace[0].split("\n").each do |line|
+          # preserve indendation for (r)html things in the error stack trace
+          # that are of the following format:
+          #    1: <p>
+          #    2:   <b>Foo:</b>
+          #    3:   <%=h @bar.foo %>
+          #    4: </p>
+          #    5:
+          unless line =~ /\s*\d:\s.*/
+            line = line.lstrip
+          end
+          backtrace << line
+        end
+      else
+        backtrace = result.exception.backtrace
+      end
+      $stdout.print "%TEST_ERROR% time=#{elapsed_time} testname=#{result.test_name} message=#{result.message.to_s.gsub($/, " ")} location=#{backtrace.join("%BR%")}\n"
     end
   end
 

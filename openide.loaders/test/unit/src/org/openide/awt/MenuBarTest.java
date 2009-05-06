@@ -89,7 +89,7 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
     protected Level logLevel() {
         return Level.WARNING;
     }
-
+    
     @Override
     protected void setUp() throws Exception {
         CreateOnlyOnceAction.instancesCount = 0;
@@ -173,7 +173,11 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         }
         JMenu m1 = (JMenu)o1;
         // simulate expansion in the menu
-        m1.setSelected(true);
+        if (Utilities.isMac()) {
+            m1.setSelected(true);
+        } else {
+            m1.setPopupMenuVisible(true);
+        }
         java.awt.Component[] content = m1.getPopupMenu().getComponents();
         assertEquals("Now it has one child", 1, content.length);
         
@@ -213,7 +217,11 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         assertEquals("We have the menu, but the content is still not computed", 0, MyAction.counter);
         
         // simulate expansion in the menu
-        m1.setSelected(true);
+        if (Utilities.isMac()) {
+            m1.setSelected(true);
+        } else {
+            m1.setPopupMenuVisible(true);
+        }
         java.awt.Component[] content = m1.getPopupMenu().getComponents();
         assertEquals("Now it has one child", 1, content.length);
         

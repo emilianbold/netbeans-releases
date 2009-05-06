@@ -181,7 +181,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                 //get document model for the file
                 try {
                     final DocumentModel model;
-                    if(cachedPanel == null)
+                    if(cachedPanel == null && bdoc.getLength() != 0)
                         model = DocumentModel.getDocumentModel(bdoc);
                     else
                         model = null; //if the panel is cached it holds a refs to the model - not need to init it again

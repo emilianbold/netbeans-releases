@@ -84,6 +84,33 @@ public final class StartEntry implements Persistent, SelfPersistent{
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final StartEntry other = (StartEntry) obj;
+        if (this.startFile != other.startFile && (this.startFile == null || !this.startFile.equals(other.startFile))) {
+            return false;
+        }
+        if (this.startFileProject != other.startFileProject && (this.startFileProject == null || !this.startFileProject.equals(other.startFileProject))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + (this.startFile != null ? this.startFile.hashCode() : 0);
+        hash = 89 * hash + (this.startFileProject != null ? this.startFileProject.hashCode() : 0);
+        return hash;
+    }
+
+    
+    @Override
     public String toString() {
         StringBuilder out = new StringBuilder();
         out.append("Start Entry: from file=" + startFile + "\nof project="+startFileProject); //NOI18N

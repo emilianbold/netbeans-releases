@@ -227,6 +227,9 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
                        systemIncludeDirectoriesList.addUnique(normalizePath(line));
                    } else {
                        line = cutIncludePrefix(line);
+                       if (line.endsWith(" (framework directory)")) { // NOI18N
+                           line = line.substring(0, line.lastIndexOf('(')).trim();
+                       }
                        systemIncludeDirectoriesList.addUnique(applyPathPrefix(line));
                        if (getDescriptor().getRemoveIncludePathPrefix()!=null && line.startsWith("/usr/lib")) { // NOI18N
                            // TODO: if we are fixing cygwin's include location (C:\Cygwin\lib) it seems

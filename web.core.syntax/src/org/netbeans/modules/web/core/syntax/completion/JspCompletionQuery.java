@@ -46,9 +46,13 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.TagAttributeInfo;
+import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.*;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.modules.web.core.syntax.*;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -64,7 +68,8 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 
 public class JspCompletionQuery {
    
-    private static final List<String> JSP_DELIMITERS = Arrays.asList(new String[]{"<%", "<%=", "<%!"});
+    private static final String JSP_COMMENT_END_DELIMITER = "--%>"; //NOI18N
+    private static final List<String> JSP_DELIMITERS = Arrays.asList(new String[]{"<%", "<%=", "<%!", "<%--"}); //NOI18N
     
     private static final JspCompletionQuery JSP_COMPLETION_QUERY = new JspCompletionQuery();
     
@@ -81,6 +86,17 @@ public class JspCompletionQuery {
             if (elem == null)
                 // this is a legal option, when I don't have anything to say just return null
                 return;
+
+            //do not use SyntaxElements for determining comments, it doesn't work well
+            TokenHierarchy th = TokenHierarchy.get(doc);
+            TokenSequence<JspTokenId> ts = th.tokenSequence(JspTokenId.language());
+            ts.move(offset);
+            if (ts.moveNext() || ts.movePrevious()) {
+                if (ts.token().id() == JspTokenId.COMMENT ||
+                        (ts.token().id() == JspTokenId.EOL && ts.movePrevious() && ts.token().id() == JspTokenId.COMMENT)) {
+                    queryJspCommentContent(result, offset, doc);
+                }
+            }
 
             switch (elem.getCompletionContext()) {
                 // TAG COMPLETION
@@ -507,7 +523,7 @@ public class JspCompletionQuery {
             result.setAnchorOffset(anchor);
             addTagPrefixItems(result, anchor, sup, sup.getTagPrefixes(tokenPart));
         }
-
+ 
     }
     
     private void queryJspDirectiveInContent(CompletionResultSet result, JTextComponent component, int offset, JspSyntaxSupport sup, BaseDocument doc) throws BadLocationException {
@@ -528,6 +544,56 @@ public class JspCompletionQuery {
         
         addDirectiveItems(result, offset - tokenPart.length(), sup.getDirectives("")); // NOI18N
         
+    }
+
+    private void queryJspCommentContent(CompletionResultSet result, int offset, BaseDocument doc) throws BadLocationException {
+        // find the current item
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence<JspTokenId> ts = th.tokenSequence(JspTokenId.language());
+        int diff = ts.move(offset);
+
+        boolean boundary = diff == 0 && ts.movePrevious();
+        if(boundary /* use previous token if on boundary */ || ts.moveNext() || ts.movePrevious()) {
+            Token t = ts.token();
+            if(boundary) {
+                diff = t.length();
+            }
+            assert t != null;
+            assert t.id() == JspTokenId.COMMENT || t.id() == JspTokenId.EOL;
+            CharSequence pretext = t.text().subSequence(Math.max(0, diff - 3), diff);
+            int match = postfixMatch(pretext, JSP_COMMENT_END_DELIMITER);
+            if(match > 0 && match < JSP_COMMENT_END_DELIMITER.length()) { //do not complete the end delimiter without any prefix
+                result.addItem(JspCompletionItem.createDelimiter(JSP_COMMENT_END_DELIMITER, offset - match));
+            }
+        }
+    }
+
+    /**
+     * Returns number of identical characters of the given postfix with the end of the source text
+     * postfixMatch("abc", "x") == 0;
+     * postfixMatch("abc", "a") == 0;
+     * postfixMatch("abc", "c") == 1;
+     * postfixMatch("abc", "bc") == 2;
+     * postfixMatch("abc", "abc") == 3;
+     *
+     * @param text source text
+     * @param postfix postfix we try to match
+     * @return length of the match
+     */
+    int postfixMatch(CharSequence text, CharSequence postfix) {
+        if (text.length() > postfix.length()) {
+            //limit the searched text size according to the postfix
+            text = text.subSequence(text.length() - postfix.length(), text.length());
+        }
+        int match = 0;
+        for (int i = text.length() - 1; i >= 0; i--) {
+            CharSequence subtext = text.subSequence(i, text.length());
+            CharSequence subpattern = postfix.subSequence(0, subtext.length());
+            if (CharSequenceUtilities.equals(subtext, subpattern)) {
+                match = subtext.length();
+            }
+        }
+        return match;
     }
     
     private boolean isBlank(char c) {
@@ -655,6 +721,38 @@ public class JspCompletionQuery {
                         result.addItem(JspCompletionItem.createAttribute((String)item, offset));
             }
         }
+    }
+ 
+    public static class CompletionResultSet<T extends CompletionItem> {
+
+        private List<T> items;
+        private int anchor;
+
+        public CompletionResultSet() {
+            items = new ArrayList<T>();
+            anchor = -1;
+        }
+
+        public int getAnchor() {
+            return anchor;
+        }
+
+        public List<? extends CompletionItem> getItems() {
+            return items;
+        }
+
+        public void setAnchorOffset(int anchor) {
+            this.anchor = anchor;
+        }
+
+        public void addItem(T item) {
+            items.add(item);
+        }
+
+        public void addAllItems(Collection<T> items) {
+            this.items.addAll(items);
+        }
+ 
     }
     
 }

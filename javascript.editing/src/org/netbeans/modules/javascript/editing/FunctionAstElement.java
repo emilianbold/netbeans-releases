@@ -135,7 +135,7 @@ public class FunctionAstElement extends AstElement implements FunctionElement {
     @Override
     public ElementKind getKind() {
         if (kind == null) {
-            if (Character.isUpperCase(getName().charAt(0))) {
+            if (getName().length() > 0 && Character.isUpperCase(getName().charAt(0))) {
                 kind = ElementKind.CONSTRUCTOR;
             } else if (getName().equals("initialize")) { // NOI18N
                 kind = ElementKind.CONSTRUCTOR;

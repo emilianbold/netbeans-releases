@@ -32,61 +32,42 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
-                    <folder name="Refactoring">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.refactoring.Bundle"/>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
                         <attr name="position" intvalue="1250"/>
-                        <file name="RenameAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.renameAction"/>
-                            <attr name="position" intvalue="100"/>
-                        </file>
-                        <file name="LastSeparator.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="1100"/>
-                        </file>
-                        <file name="org-netbeans-modules-cnd-refactoring-actions-ChangeParametersAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
-                            <attr name="position" intvalue="1200"/>
-                        </file>
-                        <!--
-                        <file name="EncapsulateFieldsAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
-                            <attr name="position" intvalue="1300"/>
-                        </file>
-                        -->
-                        <file name="IntroduceSeparator.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="1500"/>
-                        </file>
-                        <file name="IntroduceVariableAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariable"/>
-                            <attr name="position" intvalue="1600"/>
-                        </file>
-                        <file name="IntroduceConstantAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createConstant"/>
-                            <attr name="position" intvalue="1650"/>
-                        </file>
-                        <file name="IntroduceFieldAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createField"/>
-                            <attr name="position" intvalue="1700"/>
-                        </file>
-                        <file name="IntroduceMethodAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
-                            <attr name="position" intvalue="1750"/>
-                        </file>
-                        <file name="UndoSeparator.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="1900"/>
-                        </file>
-                        <file name="UndoAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-UndoAction.instance"/>
-                            <attr name="position" intvalue="2000"/>
-                        </file>
-                        <file name="RedoAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-RedoAction.instance"/>
-                            <attr name="position" intvalue="2100"/>
-                        </file>
-                    </folder>
+                    </file>
                 </folder>
+                <folder name="RefactoringActions">
+                    <file name="ChangeParametersAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="EncapsulateFieldsAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="IntroduceSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="IntroduceVariableAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariable"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    <file name="IntroduceConstantAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createConstant"/>
+                        <attr name="position" intvalue="1650"/>
+                    </file>
+                    <file name="IntroduceFieldAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createField"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="IntroduceMethodAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
+                        <attr name="position" intvalue="1750"/>
+                    </file>
+                </folder>
+
                 <folder name="CodeGeneratorContextProviders">
                     <file name="org-netbeans-modules-cnd-refactoring-codegen-ContextProvider.instance"/>
                 </folder>
@@ -134,59 +115,42 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
-                    <folder name="Refactoring">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.refactoring.Bundle"/>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
                         <attr name="position" intvalue="1250"/>
-                        <file name="RenameAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.renameAction"/>
-                            <attr name="position" intvalue="100"/>
-                        </file>
-                        <file name="LastSeparator.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="1100"/>
-                        </file>
-                        <file name="ChangeParametersAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
-                            <attr name="position" intvalue="1200"/>
-                        </file>
-                        <file name="EncapsulateFieldsAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
-                            <attr name="position" intvalue="1300"/>
-                        </file>
-                        <file name="IntroduceSeparator.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="1500"/>
-                        </file>
-                        <file name="IntroduceVariableAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariable"/>
-                            <attr name="position" intvalue="1600"/>
-                        </file>
-                        <file name="IntroduceConstantAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createConstant"/>
-                            <attr name="position" intvalue="1650"/>
-                        </file>
-                        <file name="IntroduceFieldAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createField"/>
-                            <attr name="position" intvalue="1700"/>
-                        </file>
-                        <file name="IntroduceMethodAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
-                            <attr name="position" intvalue="1750"/>
-                        </file>
-                        <file name="UndoSeparator.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="1900"/>
-                        </file>
-                        <file name="UndoAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-UndoAction.instance"/>
-                            <attr name="position" intvalue="2000"/>
-                        </file>
-                        <file name="RedoAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-RedoAction.instance"/>
-                            <attr name="position" intvalue="2100"/>
-                        </file>
-                    </folder>
+                    </file>
                 </folder>
+                <folder name="RefactoringActions">
+                    <file name="ChangeParametersAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="EncapsulateFieldsAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="IntroduceSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="IntroduceVariableAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariable"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    <file name="IntroduceConstantAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createConstant"/>
+                        <attr name="position" intvalue="1650"/>
+                    </file>
+                    <file name="IntroduceFieldAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createField"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="IntroduceMethodAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
+                        <attr name="position" intvalue="1750"/>
+                    </file>
+                </folder>
+
                 <folder name="CodeGeneratorContextProviders">
                     <file name="org-netbeans-modules-cnd-refactoring-codegen-ContextProvider.instance"/>
                 </folder>
@@ -226,59 +190,42 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
-                    <folder name="Refactoring">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.refactoring.Bundle"/>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
                         <attr name="position" intvalue="1250"/>
-                        <file name="RenameAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.renameAction"/>
-                            <attr name="position" intvalue="100"/>
-                        </file>
-                        <file name="LastSeparator.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="1100"/>
-                        </file>
-                        <file name="ChangeParametersAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
-                            <attr name="position" intvalue="1200"/>
-                        </file>
-                        <file name="EncapsulateFieldsAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
-                            <attr name="position" intvalue="1300"/>
-                        </file>
-                        <file name="IntroduceSeparator.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="1500"/>
-                        </file>
-                        <file name="IntroduceVariableAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariable"/>
-                            <attr name="position" intvalue="1600"/>
-                        </file>
-                        <file name="IntroduceConstantAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createConstant"/>
-                            <attr name="position" intvalue="1650"/>
-                        </file>
-                        <file name="IntroduceFieldAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createField"/>
-                            <attr name="position" intvalue="1700"/>
-                        </file>
-                        <file name="IntroduceMethodAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
-                            <attr name="position" intvalue="1750"/>
-                        </file>
-                        <file name="UndoSeparator.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="1900"/>
-                        </file>
-                        <file name="UndoAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-UndoAction.instance"/>
-                            <attr name="position" intvalue="2000"/>
-                        </file>
-                        <file name="RedoAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-spi-impl-RedoAction.instance"/>
-                            <attr name="position" intvalue="2100"/>
-                        </file>
-                    </folder>
+                    </file>
                 </folder>
+                <folder name="RefactoringActions">
+                    <file name="ChangeParametersAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="EncapsulateFieldsAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="IntroduceSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="IntroduceVariableAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariable"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    <file name="IntroduceConstantAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createConstant"/>
+                        <attr name="position" intvalue="1650"/>
+                    </file>
+                    <file name="IntroduceFieldAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createField"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="IntroduceMethodAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
+                        <attr name="position" intvalue="1750"/>
+                    </file>
+                </folder>
+
                 <folder name="CodeGeneratorContextProviders">
                     <file name="org-netbeans-modules-cnd-refactoring-codegen-ContextProvider.instance"/>
                 </folder>

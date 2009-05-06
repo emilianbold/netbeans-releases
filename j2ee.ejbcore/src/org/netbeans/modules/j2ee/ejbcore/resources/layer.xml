@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/CachingServiceLocator.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.patterns.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="ServiceLocator.java" url="ServiceLocator.template">
                 <attr name="position" intvalue="1300"/>
@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/ServiceLocator.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.patterns.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
         </folder>
         <folder name="J2EE">
@@ -95,28 +95,28 @@ made subject to such option by the copyright holder.
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="SessionLocalHome.java" url="templates/EJB21SessionLocalHome.template">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="SessionRemote.java" url="templates/EJB21SessionRemote.template">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="SessionRemoteHome.java" url="templates/EJB21SessionRemoteHome.template">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="MessageDrivenEjbClass.java" url="templates/EJB21MessageDrivenEjbClass.template">
                     <attr name="template" boolvalue="true"/>
@@ -137,35 +137,35 @@ made subject to such option by the copyright holder.
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="CmpLocalHome.java" url="templates/EJB21CmpLocalHome.template">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="CmpRemote.java" url="templates/EJB21CmpRemote.template">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="CmpRemoteHome.java" url="templates/EJB21CmpRemoteHome.template">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="CmpPrimaryKey.java" url="templates/EJB21CmpPrimaryKey.template">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="BmpEjbClass.java" url="templates/EJB21BmpEjbClass.template">
                     <attr name="template" boolvalue="true"/>
@@ -179,28 +179,28 @@ made subject to such option by the copyright holder.
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="BmpLocalHome.java" url="templates/EJB21BmpLocalHome.template">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="BmpRemote.java" url="templates/EJB21BmpRemote.template">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="BmpRemoteHome.java" url="templates/EJB21BmpRemoteHome.template">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
             </folder>
 
@@ -226,14 +226,14 @@ made subject to such option by the copyright holder.
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="SessionRemote.java" url="templates/EJB30SessionRemote.template">
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateCategory" stringvalue="ejb-templates"/>
                     <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 </file>
                 <file name="MessageDrivenQueueEjbClass.java" url="templates/EJB30MessageDrivenQueueEjbClass.template">
                     <attr name="template" boolvalue="true"/>
@@ -260,7 +260,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="ejb-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/SessionEJB.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
 
             <file name="Message">
@@ -270,7 +270,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="ejb-types-server"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/MessageEJB.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
 
             <file name="Entity">
@@ -280,7 +280,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="ejb-types_2_1"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/EntityEJB.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
 
             <file name="CachingServiceLocator.java" url="CachingServiceLocator.template">
@@ -291,7 +291,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="j2ee-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/CachingServiceLocator.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.patterns.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
 
             <file name="RelatedCMP">
@@ -301,7 +301,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard.createForCMP"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/CMPDatabase.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
 
             <file name="ServiceLocator.java" url="ServiceLocator.template">
@@ -312,7 +312,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="j2ee-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/ServiceLocator.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.patterns.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
 
             <file name="ejbJarXml">

@@ -2846,6 +2846,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     EditorCookie.Observable.PROP_MODIFIED, ev.getOldValue(), ev.getNewValue()
                 );
             }
+
+            // #129178 - update title if read-only state is externally changed
+            if ("DataEditorSupport.read-only.changing".equals(ev.getPropertyName())) {  //NOI18N
+                updateTitles();
+            }
         }
 
         /** Initialization of the document.
