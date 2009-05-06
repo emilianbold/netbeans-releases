@@ -42,9 +42,9 @@ package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.jruby.nb.ast.IfNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
+import org.jrubyparser.ast.IfNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 
 /**
  * Perform type analysis on a given AST tree, attempting to provide a type
@@ -118,7 +118,7 @@ public final class RubyTypeAnalyzer {
 
         // Algorithm: walk AST and look for assignments and such.
         // Attempt to compute the type of each expression and
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
             case LOCALASGNNODE:
             case INSTASGNNODE:
             case GLOBALASGNNODE:
@@ -126,7 +126,7 @@ public final class RubyTypeAnalyzer {
             case CLASSVARDECLNODE:
             case CONSTDECLNODE:
             case DASGNNODE: {
-                RubyType type = new RubyTypeInferencer(knowledge).inferTypesOfRHS(node);
+                RubyType type = RubyTypeInferencer.normal(knowledge).inferTypesOfRHS(node);
 
                 // null element in types set means that we are not able to infer
                 // the expression
@@ -146,7 +146,7 @@ public final class RubyTypeAnalyzer {
 //        }
         }
 
-        if (node.nodeId == NodeType.IFNODE) {
+        if (node.getNodeType() == NodeType.IFNODE) {
             analyzeIfNode((IfNode) node, typesForSymbols);
         } else {
             for (Node child : node.childNodes()) {

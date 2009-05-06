@@ -44,7 +44,9 @@ package org.netbeans.modules.cnd.apt.support;
 import antlr.RecognitionException;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
+import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  *
@@ -71,6 +73,7 @@ public class APTMacroExpandedStream extends APTExpandedStream {
         private final APTToken expandedFrom;
         private final APTTokenStream expandedMacros;
         private final APTToken endOffsetToken;
+        private boolean firstToken = true;
         
         public MacroExpandWrapper(APTToken expandedFrom, APTTokenStream expandedMacros, APTToken endOffsetToken) {
             this.expandedFrom = expandedFrom;
@@ -81,6 +84,12 @@ public class APTMacroExpandedStream extends APTExpandedStream {
         
         public APTToken nextToken() {
             APTToken expandedTo = expandedMacros.nextToken();
+            if (firstToken && APTUtils.isEOF(expandedTo)) {
+                // adding empty comment as expansion of empty macro
+                expandedTo = new APTCommentToken();
+                expandedTo.setType(APTTokenTypes.COMMENT);
+            }
+            firstToken = false;
             APTToken outToken = new MacroExpandedToken(expandedFrom, expandedTo, endOffsetToken);
             return outToken;
         }        

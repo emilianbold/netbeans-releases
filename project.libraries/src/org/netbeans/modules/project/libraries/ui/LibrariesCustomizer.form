@@ -28,14 +28,13 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel2" alignment="0" min="-2" pref="103" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="createButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="deleteButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" attributes="0">
-                      <Component id="libsPanel" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="libsPanel" min="-2" max="-2" attributes="1"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
@@ -45,16 +44,16 @@
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="libraryLocation" pref="358" max="32767" attributes="0"/>
-                                  <Component id="libraryName" alignment="0" pref="358" max="32767" attributes="0"/>
+                                  <Component id="libraryLocation" pref="371" max="32767" attributes="0"/>
+                                  <Component id="libraryName" alignment="0" pref="371" max="32767" attributes="0"/>
                               </Group>
                           </Group>
-                          <Component id="properties" pref="465" max="32767" attributes="0"/>
+                          <Component id="properties" pref="455" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="jLabel2" alignment="0" min="-2" pref="186" max="-2" attributes="1"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -62,7 +61,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -75,7 +74,7 @@
                           <Component id="libraryLocation" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="properties" pref="294" max="32767" attributes="0"/>
+                      <Component id="properties" pref="302" max="32767" attributes="0"/>
                   </Group>
                   <Component id="libsPanel" max="32767" attributes="0"/>
               </Group>

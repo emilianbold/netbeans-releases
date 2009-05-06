@@ -108,7 +108,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     }
     
     public TopComponent getTopComponentAt(int index) {
-        if (index == -1) {
+        if (index == -1 || index >= getModel().size()) {
             return null;
         }
         return (TopComponent)getModel().getTab(index).getComponent();

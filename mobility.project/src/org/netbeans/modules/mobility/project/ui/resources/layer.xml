@@ -314,6 +314,14 @@ made subject to such option by the copyright holder.
     </folder>
         
     <folder name="Buildsystem">
+        <folder name="ApplicationDescriptor">
+            <folder name="Attributes"/>
+            <folder name="Permissions">
+                <file name="basepermissions" url="basepermissions.txt">
+                    <attr name="position" intvalue="0"/>
+                </file>
+            </folder>
+        </folder>
         <folder name="org.netbeans.modules.kjava.j2meproject">
             <file name="build.xml" url="/org/netbeans/modules/mobility/project/resources/build.xsl"/>
             <folder name="nbproject">

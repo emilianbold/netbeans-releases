@@ -95,8 +95,8 @@ public final class Kenai {
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     /**
-     * Singleton instance
-     * @return
+     * Singleton instance of Kenai
+     * @return singleton instance
      */
      public static synchronized Kenai getDefault() {
         if (instance == null) {
@@ -221,8 +221,8 @@ public final class Kenai {
     }
 
     /**
-     *
-     * @return
+     * Getter for collection of available licences
+     * @return lazy collection of available licences
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
     public Collection<KenaiLicense> getLicenses() throws KenaiException {
@@ -231,8 +231,8 @@ public final class Kenai {
     }
 
     /**
-     * 
-     * @return
+     * Getter for collection of available services
+     * @return lazy collection of available services
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
     public Collection<KenaiService> getServices() throws KenaiException {
@@ -301,7 +301,12 @@ public final class Kenai {
             throw new KenaiException("Guest user is not allowed to create new domains");
         }
         ProjectData prj = impl.createProject(name, displayName, description, licenses, tags);
-        return KenaiProject.get(prj);
+        final KenaiProject result = KenaiProject.get(prj);
+        synchronized(this) {
+            if (myProjects!=null)
+                myProjects.add(result);
+        }
+        return result;
     }
 
     /**
@@ -350,7 +355,8 @@ public final class Kenai {
      * is currently logged user authorized for given activity on given project?
      * @param project
      * @param activity
-     * @return
+     * @return true if author is authorized to perform given activity,
+     * false otherwise
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
     public boolean isAuthorized(KenaiProject project, KenaiActivity activity) throws KenaiException {
@@ -358,7 +364,9 @@ public final class Kenai {
     }
 
     /**
-     * @return instance of PasswordAuthentication class holding current name 
+     * Getter for PasswordAuthentication of logged in user. Returns null of user
+     * is not logged in. 
+     * @return instance of PasswordAuthentication class holding current name
      * and passord. If user is not logged in, method returns null;
      */
     public PasswordAuthentication getPasswordAuthentication() {

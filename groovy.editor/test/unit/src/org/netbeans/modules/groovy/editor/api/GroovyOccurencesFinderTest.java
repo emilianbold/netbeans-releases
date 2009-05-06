@@ -80,7 +80,7 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
     }
 
-    public void testClassVariable() throws Exception {
+    public void testClassVariable1() throws Exception {
         String caretLine = "    Map par^ams = [:]";
         checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
     }
@@ -95,9 +95,14 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
     }
 
-    public void testVariable2() throws Exception {
+    public void testVariable() throws Exception {
         String caretLine = "        this.fi^eld1 = 77";
         checkOccurrences("testfiles/Hello.groovy", caretLine, true);
+    }
+
+    public void testAbstractClass() throws Exception {
+        String caretLine = "abstract class Mini^Class3 {";
+        checkOccurrences("testfiles/MiniClass3.groovy", caretLine, true);
     }
 
     /* now test some stuff from GroovyScopeTestcase.groovy */

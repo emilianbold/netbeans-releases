@@ -46,7 +46,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -89,20 +88,21 @@ public final class EAVisualPanel extends JPanel implements DocumentListener {
         File parent = (File) d.getProperty("projdir");
         String earText = tfEar.getText().trim();
         d.putProperty("ear_projdir", new File(parent, earText));
-        d.putProperty("ear_versionInfo", new NBVersionInfo(
-                null, (String)d.getProperty("groupId"), earText,
-                (String)d.getProperty("version"), null, null, null, null, null)
-        );
+        ProjectInfo pi = new ProjectInfo();
+        pi.groupId = (String)d.getProperty("groupId");
+        pi.artifactId = earText;
+        pi.version = (String)d.getProperty("version");
+        d.putProperty("ear_versionInfo", pi);
         d.putProperty("ear_archetype", ArchetypeWizardUtils.EAR_ARCHS[eeLevelIdx]);
 
         if (chkEjb.isSelected()) {
             String ejbText = tfEjb.getText().trim();
             d.putProperty("ejb_projdir", new File(parent, ejbText));
-            d.putProperty("ejb_versionInfo", new NBVersionInfo(
-                    null, (String)d.getProperty("groupId"), ejbText,
-                    (String)d.getProperty("version"),
-                    "ejb", null, null, null, null)
-            );
+            pi = new ProjectInfo();
+            pi.groupId = (String)d.getProperty("groupId");
+            pi.artifactId = ejbText;
+            pi.version = (String)d.getProperty("version");
+            d.putProperty("ejb_versionInfo", pi);
             d.putProperty("ejb_archetype", ArchetypeWizardUtils.EJB_ARCHS[eeLevelIdx]);
         } else {
             d.putProperty("ejb_projdir", null);
@@ -113,11 +113,11 @@ public final class EAVisualPanel extends JPanel implements DocumentListener {
         if (chkWeb.isSelected()) {
             String webText = tfWeb.getText().trim();
             d.putProperty("web_projdir", new File(parent, webText));
-            d.putProperty("web_versionInfo", new NBVersionInfo(
-                    null, (String)d.getProperty("groupId"), webText,
-                    (String)d.getProperty("version"),
-                    "war", null, null, null, null)
-            );
+            pi = new ProjectInfo();
+            pi.groupId = (String)d.getProperty("groupId");
+            pi.artifactId = webText;
+            pi.version = (String)d.getProperty("version");
+            d.putProperty("web_versionInfo", pi);
             d.putProperty("web_archetype", ArchetypeWizardUtils.WEB_APP_ARCHS[eeLevelIdx]);
 
         } else {
@@ -131,21 +131,27 @@ public final class EAVisualPanel extends JPanel implements DocumentListener {
         tfEar.setForeground(origEarC);
         tfEjb.setForeground(origEjbC);
         tfWeb.setForeground(origWebC);
-        if (!validateProjDir(tfEar.getText(), wizDesc)
-                || !validateCoordinate(tfEar.getText(), wizDesc)) {
+        final String earTxt = tfEar.getText();
+        if (!validateProjDir(earTxt,wizDesc)
+                || !validateCoordinate(earTxt,wizDesc) ||
+                BasicPanelVisual.containsMultiByte(earTxt, wizDesc)) {
             tfEar.setForeground(Color.RED);
             return false;
         }
         if (chkEjb.isSelected()) {
-            if (!validateProjDir(tfEjb.getText(), wizDesc) ||
-                !validateCoordinate(tfEjb.getText(), wizDesc)) {
+            final String ejbText = tfEjb.getText();
+            if (!validateProjDir(ejbText,wizDesc) ||
+                !validateCoordinate(ejbText,wizDesc) ||
+                BasicPanelVisual.containsMultiByte(ejbText, wizDesc)) {
                 tfEjb.setForeground(Color.RED);
                 return false;
             }
         }
         if (chkWeb.isSelected()) {
-            if (!validateProjDir(tfWeb.getText(), wizDesc) ||
-                !validateCoordinate(tfWeb.getText(), wizDesc)) {
+            final String webText = tfWeb.getText();
+            if (!validateProjDir(webText,wizDesc) ||
+                !validateCoordinate(webText,wizDesc) ||
+                BasicPanelVisual.containsMultiByte(webText, wizDesc)) {
                 tfWeb.setForeground(Color.RED);
                 return false;
             }

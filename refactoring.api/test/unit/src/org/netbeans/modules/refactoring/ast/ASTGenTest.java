@@ -36,13 +36,11 @@ import java.io.PrintWriter;
 import junit.framework.Test;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
-import org.netbeans.modules.project.ui.ProjectUtilities;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
@@ -123,7 +121,7 @@ public class ASTGenTest extends NbTestCase {
             if(project.isFile()) continue; //only directories
             log.println("Opening project "+project.getAbsolutePath());
             FileObject srcRoot = FileUtil.toFileObject(new File(project,"src"));
-            RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcRoot, srcRoot).await();
+            IndexingManager.getDefault().refreshIndexAndWait(srcRoot.getURL(), null);
             openedProject = openProject(project);
             String testClass = "A";
             if(System.getProperty("test.class")!= null) {

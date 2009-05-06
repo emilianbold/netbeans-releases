@@ -88,7 +88,7 @@ import org.netbeans.modules.glassfish.eecommon.api.UrlData;
 public class Hk2DatasourceManager implements DatasourceManager {
 
     private static final TimeUnit TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
-    private static final int TIMEOUT = 1000;
+    private static final int TIMEOUT = 2000;
     
     private static final String DOMAIN_XML_PATH = "config/domain.xml";
     
@@ -154,20 +154,20 @@ public class Hk2DatasourceManager implements DatasourceManager {
                     succeeded = true;
                 }
             } catch (TimeoutException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 throw new ConfigurationException(ex.getLocalizedMessage(), ex);
             } catch (InterruptedException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 throw new ConfigurationException(ex.getLocalizedMessage(), ex);
             } catch (ExecutionException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 throw new ConfigurationException(ex.getLocalizedMessage(), ex);
             }
         }
         return succeeded;
     }
     
-    private static final class AddResourcesCommand extends ServerCommand {
+    public static final class AddResourcesCommand extends ServerCommand {
 
         public AddResourcesCommand(String sunResourcesXmlPath) {
             super("add-resources"); // NOI18N
@@ -406,7 +406,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
     public static Datasource createDataSource(String jndiName, String url, 
             String username, String password, String driver, File resourceDir) 
             throws ConfigurationException, DatasourceAlreadyExistsException {
-        SunDatasource ds = null;
+        SunDatasource ds;
         DuplicateJdbcResourceFinder jdbcFinder = new DuplicateJdbcResourceFinder(jndiName);
         ConnectionPoolFinder cpFinder = new ConnectionPoolFinder();
         
@@ -423,7 +423,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
                             jndiName, url, username, password, driver));
                 }
             } catch(IllegalStateException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 throw new ConfigurationException(ex.getLocalizedMessage(), ex);
             }
         }
@@ -468,7 +468,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
 
             ds = new SunDatasource(jndiName, url, username, password, driver, resourceDir);
         } catch(IOException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
             throw new ConfigurationException(ex.getLocalizedMessage(), ex);
         }
         

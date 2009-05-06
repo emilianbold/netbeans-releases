@@ -1,7 +1,7 @@
 /*+
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -66,6 +66,7 @@ import org.openide.util.NbBundle;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Lookup;
@@ -125,7 +126,7 @@ public class Mercurial {
     private MercurialAnnotator   mercurialAnnotator;
     private MercurialInterceptor mercurialInterceptor;
     private FileStatusCache     fileStatusCache;
-    private HashMap<String, RequestProcessor>   processorsToUrl;
+    private HashMap<HgURL, RequestProcessor>   processorsToUrl;
     private boolean goodVersion;
     private String version;
     private String runVersion;
@@ -179,7 +180,7 @@ public class Mercurial {
         }else if (Utilities.isWindows()) { // NOI18N
             String defaultPath = HgModuleConfig.getDefault().getExecutableBinaryPath ();
             if (defaultPath == null || defaultPath.length() == 0) {
-                String path = HgUtils.findInUserPath(HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE);
+                String path = HgUtils.findInUserPath(HgCommand.HG_WINDOWS_EXECUTABLES);
                 if (path != null && !path.equals("")) { // NOI18N
                     HgModuleConfig.getDefault().setExecutableBinaryPath (path); // NOI18N
                 }
@@ -489,37 +490,35 @@ public class Mercurial {
      * Serializes all Hg requests (moves them out of AWT).
      */
     public RequestProcessor getRequestProcessor() {
-        return getRequestProcessor((String)null);
+        return getRequestProcessor((HgURL) null);
     }
 
     /**
      * Serializes all Hg requests (moves them out of AWT).
      */
     public RequestProcessor getRequestProcessor(File file) {
-        return getRequestProcessor(file.getAbsolutePath());
+        return getRequestProcessor(new HgURL(file));
     }
 
-    public RequestProcessor getRequestProcessor(String url) {
+    /**
+     * @param  url  URL or {@code null}
+     */
+    public RequestProcessor getRequestProcessor(HgURL url) {
         if(processorsToUrl == null) {
-            processorsToUrl = new HashMap<String, RequestProcessor>();
+            processorsToUrl = new HashMap<HgURL, RequestProcessor>();
         }
 
-        String key;
-        if(url != null) {
-            key = url;
-        } else {
-            key = "ANY_URL"; // NOI18N
-        }
-
-        RequestProcessor rp = processorsToUrl.get(key);
-        if(rp == null) {
-            rp = new RequestProcessor("Mercurial - " + key, 1, true); // NOI18N
-            processorsToUrl.put(key, rp);
+        RequestProcessor rp = processorsToUrl.get(url);   //'url' can be null
+        if (rp == null) {
+            String rpName = "Mercurial - "                              //NOI18N
+                           + (url != null ? url.toString() : "ANY_KEY");//NOI18N
+            rp = new RequestProcessor(rpName, 1, true);
+            processorsToUrl.put(url, rp);
         }
         return rp;
     }
 
-    public void clearRequestProcessor(String url) {
+    public void clearRequestProcessor(HgURL url) {
         if(processorsToUrl != null & url != null) {
              processorsToUrl.remove(url);
         }

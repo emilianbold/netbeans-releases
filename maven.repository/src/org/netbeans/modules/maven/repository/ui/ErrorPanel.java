@@ -39,6 +39,17 @@
 
 package org.netbeans.modules.maven.repository.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 
 /**
@@ -145,8 +156,21 @@ public class ErrorPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnStackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStackActionPerformed
-        // TODO add your handling code here:
-        Exceptions.printStackTrace(exception);
+        StringWriter sw = new StringWriter();
+        exception.printStackTrace(new PrintWriter(sw));
+        JPanel pnl = new JPanel();
+        pnl.setLayout(new BorderLayout());
+        pnl.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+        JTextArea ta = new JTextArea();
+        ta.setText(sw.toString());
+        ta.setEditable(false);
+        JScrollPane pane = new JScrollPane(ta);
+        pnl.add(pane);
+        pnl.setMaximumSize(new Dimension(600, 300));
+        pnl.setPreferredSize(new Dimension(600, 300));
+        NotifyDescriptor.Message nd = new NotifyDescriptor.Message(pnl);
+        DialogDisplayer.getDefault().notify(nd);
+
     }//GEN-LAST:event_btnStackActionPerformed
 
 

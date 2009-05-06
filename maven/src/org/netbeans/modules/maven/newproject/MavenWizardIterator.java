@@ -108,8 +108,8 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
     }
     
     public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty("projdir",null); //NOI18N
-        this.wiz.putProperty("name",null); //NOI18N
+        wiz.putProperty("projdir",null); //NOI18N
+        wiz.putProperty("name",null); //NOI18N
         this.wiz = null;
         panels = null;
         listeners.clear();

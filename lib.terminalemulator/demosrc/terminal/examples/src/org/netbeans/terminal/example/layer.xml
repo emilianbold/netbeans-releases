@@ -3,10 +3,10 @@
 <filesystem>
     <folder name="Actions">
         <folder name="Other">
-            <file name="org-netbeans-terminal-example-listenio-ListenIOAction.instance">
+            <file name="org-netbeans-terminal-example-iofeatures-IOFeaturesAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.terminal.example.Bundle"/>
-                <attr name="delegate" newvalue="org.netbeans.terminal.example.listenio.ListenIOAction"/>
-                <attr name="displayName" bundlevalue="org.netbeans.terminal.example.listenio.Bundle#CTL_ListenIOAction"/>
+                <attr name="delegate" newvalue="org.netbeans.terminal.example.iofeatures.IOFeaturesAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.terminal.example.iofeatures.Bundle#CTL_IOFeaturesAction"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" stringvalue="false"/>
             </file>
@@ -39,8 +39,8 @@
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-terminal-example-dedicatedtc-CommandAction.instance"/>
                 <attr name="position" intvalue="2"/>
             </file>
-            <file name="org-netbeans-terminal-example-listenio-ListenIOAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Other/org-netbeans-terminal-example-listenio-ListenIOAction.instance"/>
+            <file name="org-netbeans-terminal-example-iofeatures-IOfeaturesAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Other/org-netbeans-terminal-example-iofeatures-IOFeaturesAction.instance"/>
                 <attr name="position" intvalue="-100"/>
             </file>
             <file name="org-netbeans-terminal-example-termdirect-CommandTermDirectAction.shadow">

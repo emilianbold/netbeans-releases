@@ -52,6 +52,12 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         //System.setProperty("cnd.modelimpl.trace.registration", "true");
     }
 
+    public void testScopeInTypeAfterConst() throws Exception {
+        performTest("boost_in_type_after_scope.cpp", 14, 15, "boost_in_type_after_scope.cpp", 1, 1);
+        performTest("boost_in_type_after_scope.cpp", 14, 25, "boost_in_type_after_scope.cpp", 2, 5);
+        performTest("boost_in_type_after_scope.cpp", 14, 35, "boost_in_type_after_scope.cpp", 3, 9);
+    }
+
     public void testTypeIdName() throws Exception {
         // IZ#162160: typeid(obj).name is not resolved
         performTest("typeid.cpp", 24, 25, "typeinfo.h", 21, 5);
@@ -274,10 +280,15 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         // We make sure that hyperlink does not link to iz150915_1.cc.
     }
 
+    public void testIZ159242() throws Exception {
+        // IZ#159242 : Unresolved using of variable from unnamed namespace
+        performTest("iz159242.cc", 33, 7, "iz159242.cc", 19, 9);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
-        protected Class getTestCaseDataClass() {
+        protected Class<?> getTestCaseDataClass() {
             return NamespacesHyperlinkTestCase.class;
         }
 

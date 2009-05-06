@@ -40,16 +40,28 @@
  */
 package org.netbeans.modules.cnd.loaders;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.Date;
 import java.util.Map;
 import java.text.DateFormat;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.UniFileLoader;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.CreateFromTemplateAttributesProvider;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 
 /**
  * DataLoader for recognising C/C++/Fortran (C-C-F) source files.
@@ -154,6 +166,20 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
             }
             map.put("NBDIR", nbHome); // NOI18N
             map.put("QUOTES", "\""); // NOI18N
+
+            for (CreateFromTemplateAttributesProvider provider :
+                    Lookup.getDefault().lookupAll(CreateFromTemplateAttributesProvider.class)) {
+                Map<String, ?> attrs = provider.attributesFor(getDataObject(),
+                        DataFolder.findFolder(target), name);
+                if (attrs != null) {
+                    Object username = attrs.get("user"); // NOI18N
+                    if (username instanceof String) {
+                        map.put("USER", (String) username); // NOI18N
+                        break;
+                    }
+                }
+            }
+
             org.openide.util.MapFormat format = new org.openide.util.MapFormat(map);
 
             // Use "%<%" and "%>%" instead of "__" (which most other templates
@@ -165,5 +191,76 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
             format.setRightBrace("%>%"); // NOI18N
             return format;
         }
+
+        /**
+         * Creates dataobject from template. Copies the file and applies
+         * substitutions provided by the createFormat method.
+         *
+         * Overriding parent implementation to add encoding conversion (IZ 163832).
+         * Copied with minor modifications from IndentFileEntry (java.source module).
+         *
+         * @param f  the folder to create instance in
+         * @param name  name of the file or null if it should be choosen automaticly
+         * @return  created file
+         * @throws java.io.IOException
+         */
+        @Override
+        public FileObject createFromTemplate(FileObject f, String name) throws IOException {
+            String ext = getFile().getExt();
+            if (name == null) {
+                name = FileUtil.findFreeFileName(f, getFile().getName(), ext);
+            }
+
+            FileObject fo = f.createData(name, ext);
+            java.text.Format frm = createFormat(f, name, ext);
+
+            BufferedReader r = new BufferedReader(new InputStreamReader(
+                    getFile().getInputStream(), FileEncodingQuery.getEncoding(getFile())));
+            try {
+                FileLock lock = fo.lock();
+                try {
+                    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
+                            fo.getOutputStream(lock), FileEncodingQuery.getEncoding(fo)));
+                    try {
+                        String current;
+                        while ((current = r.readLine()) != null) {
+                            w.write(frm.format(current));
+                            w.newLine();
+                        }
+                    } finally {
+                        w.close();
+                    }
+                } finally {
+                    lock.releaseLock();
+                }
+            } finally {
+                r.close();
+            }
+
+            // copy attributes
+            FileUtil.copyAttributes(getFile(), fo);
+
+            // unmark template state
+            setTemplate(fo, false);
+
+            return fo;
+        }
     }
+
+    protected static boolean setTemplate(FileObject fo, boolean newTempl) throws IOException {
+        boolean oldTempl = false;
+
+        Object o = fo.getAttribute(DataObject.PROP_TEMPLATE);
+        if ((o instanceof Boolean) && ((Boolean) o).booleanValue()) {
+            oldTempl = true;
+        }
+        if (oldTempl == newTempl) {
+            return false;
+        }
+
+        fo.setAttribute(DataObject.PROP_TEMPLATE, (newTempl ? Boolean.TRUE : null));
+
+        return true;
+    }
+
 }

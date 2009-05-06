@@ -443,8 +443,8 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblHint1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE)
-                    .add(lblHint2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE)
+                    .add(lblHint1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
+                    .add(lblHint2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
                     .add(cbDebug)
                     .add(cbDeprecate)
                     .add(layout.createSequentialGroup()
@@ -453,12 +453,12 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                             .add(lblJavaPlatform))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(comJavaPlatform, 0, 252, Short.MAX_VALUE)
-                            .add(comCompileOnSave, 0, 252, Short.MAX_VALUE))
+                            .add(comJavaPlatform, 0, 302, Short.MAX_VALUE)
+                            .add(comCompileOnSave, 0, 302, Short.MAX_VALUE))
                         .add(16, 16, 16)
                         .add(btnMngPlatform))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(lblWarnPlatform, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
+                        .add(lblWarnPlatform, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(btnSetupHome)))
                 .addContainerGap())
@@ -482,12 +482,15 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                 .add(cbDebug)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbDeprecate)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 64, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 109, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(btnSetupHome)
                     .add(lblWarnPlatform))
                 .addContainerGap())
         );
+
+        btnMngPlatform.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnMngPlatform.AccessibleContext.accessibleDescription")); // NOI18N
+        btnSetupHome.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompilePanel.class, "CompilePanel.btnSetupHome.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnMngPlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMngPlatformActionPerformed

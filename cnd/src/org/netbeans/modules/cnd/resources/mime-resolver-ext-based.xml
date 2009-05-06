@@ -127,4 +127,39 @@ made subject to such option by the copyright holder.
         <ext name="pro"/>
         <resolver mime="text/x-qtproject"/>
     </file>
+    <file>
+	    <ext name="sh"/>
+	    <ext name="bash"/>
+	    <ext name="csh"/>
+	    <ext name="ksh"/>
+	    <ext name="sh"/>
+	    <ext name="zsh"/>  
+	    <resolver mime="text/sh"/>
+    </file>
+    <file>
+	    <!-- Only files without extension. -->
+	    <ext name=""/>
+	    <!-- Pattern #! in first 2 bytes and one of patterns in first 40 bytes.  -->
+	    <pattern value="#!" range="2">
+		    <pattern value="/bin/bash" range="40"/>
+	    </pattern>
+	    <pattern value="#!" range="2">
+		    <pattern value="/bin/sh" range="40"/>
+	    </pattern>
+	    <pattern value="#!" range="2">
+		    <pattern value="/bin/ksh" range="40"/>
+	    </pattern>
+	    <pattern value="#!" range="2">
+		    <pattern value="/bin/csh" range="40"/>
+	    </pattern>
+	    <pattern value="#!" range="2">
+		    <pattern value="/usr/bin/perl" range="40"/>
+	    </pattern>
+	    <resolver mime="text/sh"/>
+    </file>
+    <file>
+	    <ext name="bat"/>
+	    <ext name="cmd"/>
+	    <resolver mime="text/bat"/>
+    </file>
 </MIME-resolver>

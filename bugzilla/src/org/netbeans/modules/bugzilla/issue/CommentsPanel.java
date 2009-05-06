@@ -197,7 +197,7 @@ public class CommentsPanel extends JPanel {
         } catch (ParseException pex) {
             Bugzilla.LOG.log(Level.INFO, null, pex);
         }
-        addSection(layout, issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER), creationTxt, horizontalGroup, verticalGroup, true);
+        addSection(layout, issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME), creationTxt, horizontalGroup, verticalGroup, true);
         for (BugzillaIssue.Comment comment : issue.getComments()) {
             String when = format.format(comment.getWhen());
             addSection(layout, comment.getText(), comment.getWho(), when, horizontalGroup, verticalGroup, false);
@@ -227,9 +227,11 @@ public class CommentsPanel extends JPanel {
         String rightFormat = bundle.getString("CommentsPanel.rightLabel.format"); // NOI18N
         String rightTxt = MessageFormat.format(rightFormat, dateTimeString, author);
         rightLabel.setText(rightTxt);
+        rightLabel.setLabelFor(textPane);
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N
         replyButton.addActionListener(getReplyListener());
         replyButton.putClientProperty(REPLY_TO_PROPERTY, textPane);
+        replyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.replyButton.AccessibleContext.accessibleDescription")); // NOI18N
         setupTextPane(textPane, text);
 
         // Layout
@@ -275,12 +277,37 @@ public class CommentsPanel extends JPanel {
                 int start = stp.getStartOffset();
                 int end = stp.getEndOffset();
 
-                String st = comment.substring(start, end);
-                try {
-                    doc.insertString(doc.getLength(), comment.substring(last, start), defStyle);
-                    doc.insertString(doc.getLength(), st, hlStyle);
-                } catch (BadLocationException ex) {
-                    Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                if (last < start) {
+                    try {
+                        doc.insertString(doc.getLength(), comment.substring(last, start), defStyle);
+                    } catch (BadLocationException ex) {
+                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+                last = start;
+
+                // for each line skip leading whitespaces (look bad underlined)
+                boolean inStackTrace = (comment.charAt(start) > ' ');
+                for (int i=start; i < end; i++) {
+                    char ch = comment.charAt(i);
+                    if ((inStackTrace && ch == '\n')
+                        || (!inStackTrace && ch > ' ')) {
+                        try {
+                            doc.insertString(doc.getLength(), comment.substring(last, i), inStackTrace? hlStyle : defStyle);
+                        } catch (BadLocationException ex) {
+                            Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                        }
+                        inStackTrace = !inStackTrace;
+                        last = i;
+                    }
+                }
+
+                if (last < end) {
+                    try {
+                        doc.insertString(doc.getLength(), comment.substring(last, end), inStackTrace? hlStyle : defStyle);
+                    } catch (BadLocationException ex) {
+                        Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                    }
                 }
                 last = end;
             }
@@ -318,6 +345,8 @@ public class CommentsPanel extends JPanel {
         textPane.setEditable(false);
         textPane.addMouseListener(listener);
         textPane.addMouseMotionListener(listener);
+        textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
+        textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
     }
 
     private ActionListener replyListener;

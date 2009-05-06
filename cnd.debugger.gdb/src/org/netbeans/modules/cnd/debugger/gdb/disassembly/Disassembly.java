@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.CloseCookie;
@@ -579,6 +580,10 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public static void open() {
         try {
             DataObject dobj = DataObject.find(getFileObject());
+            ReadOnlySupport ro = dobj.getLookup().lookup(ReadOnlySupport.class);
+            if (ro != null) {
+                ro.setReadOnly(true);
+            }
             dobj.getNodeDelegate().setDisplayName(NbBundle.getMessage(Disassembly.class, "LBL_Disassembly_Window")); // NOI18N
             final EditorCookie editorCookie = dobj.getCookie(EditorCookie.class);
             if (editorCookie instanceof EditorCookie.Observable) {

@@ -3,6 +3,7 @@
 <Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -24,11 +25,11 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="txtVMOptions" alignment="0" pref="209" max="32767" attributes="0"/>
-                  <Component id="txtWorkDir" alignment="0" pref="209" max="32767" attributes="2"/>
-                  <Component id="txtArguments" alignment="0" pref="209" max="32767" attributes="2"/>
-                  <Component id="txtMainClass" alignment="0" pref="209" max="32767" attributes="2"/>
-                  <Component id="comConfiguration" alignment="0" pref="209" max="32767" attributes="0"/>
+                  <Component id="txtVMOptions" alignment="0" pref="225" max="32767" attributes="0"/>
+                  <Component id="txtWorkDir" alignment="0" pref="225" max="32767" attributes="2"/>
+                  <Component id="txtArguments" alignment="0" pref="225" max="32767" attributes="2"/>
+                  <Component id="txtMainClass" alignment="0" pref="225" max="32767" attributes="2"/>
+                  <Component id="comConfiguration" alignment="0" pref="225" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -91,13 +92,19 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtMainClass">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Main class"/>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JButton" name="btnMainClass">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="BTN_Browse" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="BTN_Browse_Main" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Browse main class"/>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblArguments">
       <Properties>
@@ -110,6 +117,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtArguments">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Arguments"/>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblWorkDir">
       <Properties>
@@ -122,13 +132,19 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtWorkDir">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Working directory"/>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JButton" name="btnWorkDir">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="BTN_Browse" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="BTN_Browse_WorkingDir" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Browse working directory"/>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnWorkDirActionPerformed"/>
       </Events>
@@ -144,6 +160,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtVMOptions">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="VM options"/>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblHint">
       <Properties>
@@ -154,7 +173,10 @@
     </Component>
     <Component class="javax.swing.JLabel" name="lblConfiguration">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Configuration:"/>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="comConfiguration"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="&amp;Configuration:"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="comConfiguration">
@@ -168,6 +190,9 @@
           </StringArray>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Configuration"/>
+      </AccessibilityProperties>
     </Component>
   </SubComponents>
 </Form>

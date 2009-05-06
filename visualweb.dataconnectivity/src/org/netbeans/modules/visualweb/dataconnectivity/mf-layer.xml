@@ -74,11 +74,11 @@ migration -->
           
           <attr name="org-netbeans-modules-visualweb-dataconnectivity-actions-AddDataSourceAliasAction.instance/org-netbeans-modules-visualweb-dataconnectivity-actions-ImportDataSourceAction.instance" boolvalue="true"/>
          <file name="org-netbeans-modules-visualweb-dataconnectivity-actions-ImportDataSourceAction.instance">
-              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>
+              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
               </file>
           <attr name="org-netbeans-modules-visualweb-dataconnectivity-actions-ImportDataSourceAction.instance/org-netbeans-modules-visualweb-dataconnectivity-actions-ExportAllDataSourcesAction.instance" boolvalue="true"/>
          <file name="org-netbeans-modules-visualweb-dataconnectivity-actions-ExportAllDataSourcesAction.instance">
-              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>
+              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
               </file>
           <attr name="org-netbeans-modules-visualweb-dataconnectivity-actions-ExportAllDataSourcesAction.instance/org-netbeans-modules-visualweb-dataconnectivity-actions-EditServerTypeAction.instance" boolvalue="false"/>
          <attr name="org-netbeans-modules-visualweb-dataconnectivity-actions-EditServerTypeAction.instance/Separator1.instance" boolvalue="true"/>
@@ -91,7 +91,7 @@ migration -->
           <file name="org-netbeans-modules-visualweb-dataconnectivity-actions-StopDbAction.instance"/>
          <attr name="org-netbeans-modules-visualweb-dataconnectivity-actions-ExportAllDataSourcesAction.instance/org-netbeans-modules-visualweb-dataconnectivity-actions-EditJdbcDriverInfosAction.instance" boolvalue="false"/>
           <file name="org-netbeans-modules-visualweb-dataconnectivity-actions-EditJdbcDriversAction.instance">
-              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>
+              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
               </file>
             <attr name="org-netbeans-modules-visualweb-dataconnectivity-actions-ExportAllDataSourcesAction.instance/org-netbeans-modules-visualweb-dataconnectivity-actions-EditJdbcDriversAction.instance" boolvalue="true"/>
         </folder>

@@ -513,7 +513,7 @@ public class Utils {
         long t = System.currentTimeMillis();
         File repository = new File(folder, CvsVersioningSystem.FILENAME_CVS_REPOSITORY);
         File entries = new File(folder, CvsVersioningSystem.FILENAME_CVS_ENTRIES);
-        boolean ret = repository.canRead() && entries.canRead();
+        boolean ret = repository.exists() && entries.exists();
         if(CvsVersioningSystem.LOG.isLoggable(Level.FINER)) {
             CvsVersioningSystem.LOG.log(Level.FINER, " containsMetadata returns {0} after {1} millis", new Object[] { ret, System.currentTimeMillis() - t });
         }
@@ -578,6 +578,7 @@ public class Utils {
         
     /** Like mkdirs but but using openide filesystems (firing events) */
     public static FileObject mkfolders(File file) throws IOException {
+        file = FileUtil.normalizeFile(file);
         if (file.isDirectory()) return FileUtil.toFileObject(file);
 
         File parent = file.getParentFile();

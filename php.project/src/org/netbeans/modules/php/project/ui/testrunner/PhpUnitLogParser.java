@@ -47,7 +47,6 @@ import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -216,7 +215,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
             } else if (!stacktraceStarted) {
                 buffer.append(line + "\n"); // NOI18N
             } else {
-                testCase.addStacktrace(NbBundle.getMessage(PhpUnitLogParser.class, "LBL_At", line.trim()));
+                testCase.addStacktrace(line.trim());
             }
         }
         // #157846

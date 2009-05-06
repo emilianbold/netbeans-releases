@@ -63,6 +63,7 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -77,6 +78,7 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -177,7 +179,12 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         // XXX here will be some condition ???
         showRepoOnKenaiGUI();
         showIssuesOnKenaiGUI();
-
+        createChatRoom.setVisible(false);
+        chatSeparator.setVisible(false);
+        if (!System.getProperty("kenai.com.url", "https://kenai.com").endsWith("testkenai.com")) {
+            createChatRoom.setSelected(false);
+        }
+        setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
     }
 
     @Override
@@ -352,6 +359,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         localRepoFolderLabel = new JLabel();
         repoNamePreviewLabel = new JLabel();
         localFolderTextField = new JTextField();
+        chatSeparator = new JSeparator();
+        createChatRoom = new JCheckBox();
         localFolderBrowseButton = new JButton();
         spacerPanel = new JPanel();
         repoUrlLabel = new JLabel();
@@ -363,15 +372,16 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         issuesSpacerPanel = new JPanel();
         repoSpacerPanel = new JPanel();
 
-        setPreferredSize(new Dimension(700, 450));
         setLayout(new GridBagLayout());
 
-        sourceCodeLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.sourceCodeLabel.text")); // NOI18N
+        sourceCodeLabel.setLabelFor(repoComboBox);
+        Mnemonics.setLocalizedText(sourceCodeLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.sourceCodeLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 4, 0);
         add(sourceCodeLabel, gridBagConstraints);
 
+        sourceCodeLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.sourceCodeLabel.AccessibleContext.accessibleDescription")); // NOI18N
         repoComboBox.setEnabled(false);
         repoComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -385,7 +395,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(0, 4, 4, 0);
         add(repoComboBox, gridBagConstraints);
 
-        issueTrackingLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issueTrackingLabel.text")); // NOI18N
+        repoComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoComboBox.AccessibleContext.accessibleName")); // NOI18N
+        repoComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        issueTrackingLabel.setLabelFor(issuesComboBox);
+        Mnemonics.setLocalizedText(issueTrackingLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issueTrackingLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -393,6 +406,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(4, 0, 4, 0);
         add(issueTrackingLabel, gridBagConstraints);
 
+        issueTrackingLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issueTrackingLabel.AccessibleContext.accessibleDescription")); // NOI18N
         issuesComboBox.setEnabled(false);
         issuesComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -408,59 +422,63 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(4, 4, 4, 0);
         add(issuesComboBox, gridBagConstraints);
 
-        otherFeaturesLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.otherFeaturesLabel.text")); // NOI18N
+        issuesComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issuesComboBox.AccessibleContext.accessibleName")); // NOI18N
+        issuesComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issuesComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(otherFeaturesLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.otherFeaturesLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(otherFeaturesLabel, gridBagConstraints);
 
+        otherFeaturesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.otherFeaturesLabel.AccessibleContext.accessibleDescription")); // NOI18N
         downloadsLabel.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/dot.png"))); // NOI18N
-        downloadsLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.downloadsLabel.text")); // NOI18N
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 13;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 8, 0, 0);
-        add(downloadsLabel, gridBagConstraints);
-
-        forumsLabel.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/dot.png"))); // NOI18N
-        forumsLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.forumsLabel.text")); // NOI18N
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 14;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 8, 0, 0);
-        add(forumsLabel, gridBagConstraints);
-
-        mListsLabel.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/dot.png"))); // NOI18N
-        mListsLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.mListsLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(downloadsLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.downloadsLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 8, 0, 0);
-        add(mListsLabel, gridBagConstraints);
+        add(downloadsLabel, gridBagConstraints);
 
-        wikiLabel.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/dot.png"))); // NOI18N
-        wikiLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.wikiLabel.text")); // NOI18N
+        forumsLabel.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/dot.png"))); // NOI18N
+        Mnemonics.setLocalizedText(forumsLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.forumsLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 16;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 8, 0, 0);
-        add(wikiLabel, gridBagConstraints);
+        add(forumsLabel, gridBagConstraints);
 
-        featuresDescLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.featuresDescLabel.text")); // NOI18N
+        mListsLabel.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/dot.png"))); // NOI18N
+        Mnemonics.setLocalizedText(mListsLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.mListsLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 17;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 8, 0, 0);
+        add(mListsLabel, gridBagConstraints);
+
+        wikiLabel.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/dot.png"))); // NOI18N
+        Mnemonics.setLocalizedText(wikiLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.wikiLabel.text"));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 18;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 8, 0, 0);
+        add(wikiLabel, gridBagConstraints);
+        Mnemonics.setLocalizedText(featuresDescLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.featuresDescLabel.text"));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 19;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new Insets(8, 8, 0, 0);
         add(featuresDescLabel, gridBagConstraints);
+
+        featuresDescLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.featuresDescLabel.AccessibleContext.accessibleDescription")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -472,15 +490,16 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         add(scSeparator, gridBagConstraints);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
-        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(4, 0, 4, 0);
         add(itSeparator, gridBagConstraints);
 
-        repoNameLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNameLabel.text")); // NOI18N
+        repoNameLabel.setLabelFor(repoNameTextField);
+        Mnemonics.setLocalizedText(repoNameLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNameLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -488,6 +507,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(8, 0, 0, 0);
         add(repoNameLabel, gridBagConstraints);
 
+        repoNameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
         repoNameTextField.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNameTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -498,14 +518,18 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(8, 4, 0, 0);
         add(repoNameTextField, gridBagConstraints);
 
-        localRepoFolderLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localRepoFolderLabel.text")); // NOI18N
+        repoNameTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNameTextField.AccessibleContext.accessibleName")); // NOI18N
+        repoNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        localRepoFolderLabel.setLabelFor(localFolderTextField);
+        Mnemonics.setLocalizedText(localRepoFolderLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localRepoFolderLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(localRepoFolderLabel, gridBagConstraints);
 
-        repoNamePreviewLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNamePreviewLabel.text")); // NOI18N
+        localRepoFolderLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localRepoFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(repoNamePreviewLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNamePreviewLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -516,6 +540,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(0, 8, 16, 0);
         add(repoNamePreviewLabel, gridBagConstraints);
 
+        repoNamePreviewLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNamePreviewLabel.AccessibleContext.accessibleName")); // NOI18N
+        repoNamePreviewLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNamePreviewLabel.AccessibleContext.accessibleDescription")); // NOI18N
         localFolderTextField.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderTextField.text")); // NOI18N
         localFolderTextField.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent evt) {
@@ -531,7 +557,25 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(localFolderTextField, gridBagConstraints);
 
-        localFolderBrowseButton.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderBrowseButton.text")); // NOI18N
+        localFolderTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderTextField.AccessibleContext.accessibleName")); // NOI18N
+        localFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new Insets(4, 0, 4, 0);
+        add(chatSeparator, gridBagConstraints);
+
+        createChatRoom.setSelected(true);
+        Mnemonics.setLocalizedText(createChatRoom, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.createChatRoom.text"));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        add(createChatRoom, gridBagConstraints);
+
+        createChatRoom.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.createChatRoom.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(localFolderBrowseButton, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderBrowseButton.text"));
         localFolderBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 localFolderBrowseButtonActionPerformed(evt);
@@ -544,6 +588,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(localFolderBrowseButton, gridBagConstraints);
+
+        localFolderBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -551,7 +597,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         add(spacerPanel, gridBagConstraints);
 
-        repoUrlLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoUrlLabel.text")); // NOI18N
+        repoUrlLabel.setLabelFor(repoUrlTextField);
+        Mnemonics.setLocalizedText(repoUrlLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoUrlLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -559,6 +606,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(8, 0, 0, 0);
         add(repoUrlLabel, gridBagConstraints);
 
+        repoUrlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoUrlLabel.AccessibleContext.accessibleDescription")); // NOI18N
         repoUrlTextField.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoUrlTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -570,7 +618,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(8, 4, 0, 0);
         add(repoUrlTextField, gridBagConstraints);
 
-        noneRepoDescLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.noneRepoDescLabel.text")); // NOI18N
+        repoUrlTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoUrlTextField.AccessibleContext.accessibleName")); // NOI18N
+        repoUrlTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoUrlTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(noneRepoDescLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.noneRepoDescLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -581,7 +631,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(0, 8, 0, 0);
         add(noneRepoDescLabel, gridBagConstraints);
 
-        issueTrackingUrlLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issueTrackingUrlLabel.text")); // NOI18N
+        noneRepoDescLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.noneRepoDescLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        issueTrackingUrlLabel.setLabelFor(issuesUrlTextField);
+        Mnemonics.setLocalizedText(issueTrackingUrlLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issueTrackingUrlLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
@@ -589,6 +641,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(8, 0, 0, 0);
         add(issueTrackingUrlLabel, gridBagConstraints);
 
+        issueTrackingUrlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issueTrackingUrlLabel.AccessibleContext.accessibleDescription")); // NOI18N
         issuesUrlTextField.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issuesUrlTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -600,7 +653,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(8, 4, 0, 0);
         add(issuesUrlTextField, gridBagConstraints);
 
-        noIssueTrackingDescLabel.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.noIssueTrackingDescLabel.text")); // NOI18N
+        issuesUrlTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issuesUrlTextField.AccessibleContext.accessibleName")); // NOI18N
+        issuesUrlTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issuesUrlTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(noIssueTrackingDescLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.noIssueTrackingDescLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
@@ -610,6 +665,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(0, 8, 0, 0);
         add(noIssueTrackingDescLabel, gridBagConstraints);
+
+        noIssueTrackingDescLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.noIssueTrackingDescLabel.AccessibleContext.accessibleDescription")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
@@ -622,6 +679,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         add(repoSpacerPanel, gridBagConstraints);
+
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void repoComboBoxActionPerformed(ActionEvent evt) {//GEN-FIRST:event_repoComboBoxActionPerformed
@@ -689,6 +749,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     }//GEN-LAST:event_localFolderTextFieldKeyTyped
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JSeparator chatSeparator;
+    private JCheckBox createChatRoom;
     private JLabel downloadsLabel;
     private JLabel featuresDescLabel;
     private JLabel forumsLabel;
@@ -724,6 +786,12 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         panel.fireChangeEvent();
     }
 
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        this.putClientProperty(NewKenaiProjectWizardIterator.PROP_EXC_ERR_MSG, null);
+    }
+
     public boolean valid() {
 
         String message = checkForErrors();
@@ -755,6 +823,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     }
 
     private String checkForErrors() {
+        String excErrMsg = (String) this.getClientProperty(NewKenaiProjectWizardIterator.PROP_EXC_ERR_MSG);
+        if (excErrMsg != null) {
+            return excErrMsg;
+        }
         // invalid repo name
         // invalid local repo path
         // invalid ext repo URL
@@ -827,6 +899,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
             setRepoUrl(issuesUrl);
         }
 
+        Boolean createChat = (Boolean) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_CREATE_CHAT);
+        if (createChat!=null) {
+            createChatRoom.setSelected(createChat);
+        }
     }
 
     public void store(WizardDescriptor settings) {
@@ -836,6 +912,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_LOCAL, getRepoLocal());
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES, getIssuesType());
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES_URL, getIssuesUrl());
+        settings.putProperty(NewKenaiProjectWizardIterator.PROP_CREATE_CHAT, createChatRoom.isSelected());
     }
 
     private void setRepoType(String repo) {

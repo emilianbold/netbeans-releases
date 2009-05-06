@@ -370,6 +370,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             // What else can we do?
             firePropertiesChanged(getMakeConfigurationDescriptor().getProjectItems(), true, true, true);
             MakeLogicalViewProvider.checkForChangedItems(getMakeConfigurationDescriptor().getProject(), null, null);
+            MakeLogicalViewProvider.checkForChangedName(getMakeConfigurationDescriptor().getProject());
             return;
         }
 
@@ -378,6 +379,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 !oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
             fireFilesPropertiesChanged(); // firePropertiesChanged(getAllFiles(), true);
             MakeLogicalViewProvider.checkForChangedItems(getMakeConfigurationDescriptor().getProject(), null, null);
+            if (!oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
+                MakeLogicalViewProvider.checkForChangedName(getMakeConfigurationDescriptor().getProject());
+            }
             return;
         }
 
@@ -539,8 +543,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             ccInheritMacros = makeConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
             items = getMakeConfigurationDescriptor().getProjectItems();
             projectChanged = true;
-            cFiles = true;
-            ccFiles = true;
+//            cFiles = true;
+//            ccFiles = true;
         }
 
         if (cIncludeDirectories != null &&

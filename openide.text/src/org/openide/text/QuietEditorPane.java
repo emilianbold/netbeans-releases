@@ -43,6 +43,7 @@ package org.openide.text;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Frame;
@@ -68,6 +69,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
@@ -260,18 +262,6 @@ final class QuietEditorPane extends JEditorPane {
         return lastPosition;
     }
 
-    /*
-    public void setDocument(Document doc) {
-      if (working) {
-        super.setDocument(doc);
-      }
-    }
-
-    public void setUI(javax.swing.plaf.TextUI ui) {
-      if (working) {
-        super.setUI(ui);
-      }
-    }*/
     @Override
     public void revalidate() {
         if ((working & PAINT) != 0) {
@@ -284,6 +274,23 @@ final class QuietEditorPane extends JEditorPane {
         if ((working & PAINT) != 0) {
             super.repaint();
         }
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        //Avoid always typing at the bottom of the screen by
+        //adding some virtual height, so the last line of the file
+        //can always be scrolled up to the middle of the viewport
+        Dimension result = super.getPreferredSize();
+        JViewport port = (JViewport) SwingUtilities.getAncestorOfClass(
+                JViewport.class, this);
+        if (port != null) {
+            int viewHeight = port.getExtentSize().height;
+            if (result.height > viewHeight) {
+                result.height += viewHeight / 2;
+            }
+        }
+        return result;
     }
 
     /**

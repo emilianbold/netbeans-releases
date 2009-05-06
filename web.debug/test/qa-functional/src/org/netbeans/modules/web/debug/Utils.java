@@ -57,7 +57,6 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
@@ -68,9 +67,7 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.jemmy.operators.ButtonOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
@@ -168,10 +165,9 @@ public class Utils {
 
     /** Finishes debugger and wait until it finishes. */
     public static void finishDebugger() {
-        ContainerOperator debugToolbarOper = getDebugToolbar();
         new FinishDebuggerAction().perform();
         // wait until Debug toolbar dismiss
-        debugToolbarOper.waitComponentVisible(false);
+        waitDebuggerFinished();
         // wait until server is not in transient state
         J2eeServerNode serverNode = new J2eeServerNode(DEFAULT_SERVER);
         serverNode.waitFinished();
@@ -186,6 +182,16 @@ public class Utils {
     stt.waitText(programFinishedLabel);
     stt.stop();
      */
+    }
+
+    private static void waitDebuggerFinished(){
+        for (int i = 0; i < 10; i++) {
+            if(!MainWindowOperator.getDefault().menuBar().showMenuItem("Debug|Finish Debugger Session").isEnabled()) {
+                break;
+            }
+            MainWindowOperator.getDefault().menuBar().closeSubmenus();
+            new EventTool().waitNoEvent(300);
+        }
     }
 
     /** Returns ContainerOperator representing Debug toolbar.
@@ -224,7 +230,7 @@ public class Utils {
             public Object actionProduced(Object editorOper) {
                 Object[] annotations = ((EditorOperator)editorOper).getAnnotations(line);
                 for (int i = 0; i < annotations.length; i++) {
-                    if("Breakpoint".equals(((EditorOperator)editorOper).getAnnotationType(annotations[i]))) { // NOI18N
+                    if("Breakpoint".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
                         return Boolean.TRUE;
                     }
                 }

@@ -39,21 +39,27 @@
 package org.netbeans.modules.ruby;
 
 import java.util.List;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.ReturnNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.ReturnNode;
 
 public final class RubyTypeInferencer {
 
     private final ContextKnowledge knowledge;
     private RubyTypeAnalyzer analyzer;
+    private final boolean fast;
 
-    RubyTypeInferencer() {
-        this.knowledge = new ContextKnowledge();
+    public static RubyTypeInferencer fast(ContextKnowledge knowledge) {
+        return new RubyTypeInferencer(knowledge, true);
     }
 
-    public RubyTypeInferencer(final ContextKnowledge knowledge) {
+    public static RubyTypeInferencer normal(ContextKnowledge knowledge) {
+        return new RubyTypeInferencer(knowledge, false);
+    }
+
+    private RubyTypeInferencer(final ContextKnowledge knowledge, boolean fast) {
         this.knowledge = knowledge;
+        this.fast = fast;
     }
 
     private void initializeAnalyzer() {
@@ -85,7 +91,7 @@ public final class RubyTypeInferencer {
             // Handle migrations. This needs better flow analysis of block
             // variables but do quickfix for 6.0 which will work in most
             // migrations files.
-            if ("t".equals(symbol) && knowledge.getRoot().nodeId == NodeType.DEFSNODE) { // NOI18N
+            if ("t".equals(symbol) && knowledge.getRoot().getNodeType() == NodeType.DEFSNODE) { // NOI18N
                 String n = AstUtilities.getName(knowledge.getRoot());
                 if ("up".equals(n) || ("down".equals(n))) { // NOI18N
                     return RubyType.create("ActiveRecord::ConnectionAdapters::TableDefinition"); // NOI18N
@@ -126,7 +132,7 @@ public final class RubyTypeInferencer {
         if (!knowledge.wasAnalyzed()) {
             new RubyTypeAnalyzer(knowledge).analyze();
         }
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
             case LOCALVARNODE:
             case DVARNODE:
             case INSTVARNODE:
@@ -141,7 +147,7 @@ public final class RubyTypeInferencer {
                 break;
         }
         if (type == null && AstUtilities.isCall(node)) {
-            type = RubyMethodTypeInferencer.inferTypeFor(node, knowledge);
+            type = RubyMethodTypeInferencer.inferTypeFor(node, knowledge, fast);
         }
         if (type == null) {
             type = getTypeForLiteral(node);
@@ -164,7 +170,7 @@ public final class RubyTypeInferencer {
      *   <code>Array</code>,  <code>Hash</code>,  <code>Regexp</code>, ...
      */
     static RubyType getTypeForLiteral(final Node node) {
-        switch (node.nodeId) {
+        switch (node.getNodeType()) {
             case ARRAYNODE:
             case ZARRAYNODE:
                 return RubyType.ARRAY; // NOI18N

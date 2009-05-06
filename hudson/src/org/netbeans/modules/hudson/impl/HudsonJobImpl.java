@@ -211,9 +211,6 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         return set;
     }
 
-    /**
-     * Requires Hudson 1.264 or later.
-     */
     public FileSystem getRemoteWorkspace() {
         return instance.getRemoteWorkspace(this);
     }

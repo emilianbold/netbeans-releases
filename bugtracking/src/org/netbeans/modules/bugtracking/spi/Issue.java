@@ -50,6 +50,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
+import org.openide.util.NbBundle;
 
 /**
  * Represens a bugtracking Issue
@@ -159,32 +160,93 @@ public abstract class Issue {
     public abstract BugtrackingController getController();
 
     /**
+     * Opens the issue with the given issueId in the IDE
+     *
+     * @param repository
+     * @param issueId 
+     */
+    public static void open(final Repository repository, final String issueId) {
+        final ProgressHandle[] handle = new ProgressHandle[1];
+        handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[] {issueId}));
+        handle[0].start();
+        final IssueTopComponent tc = IssueTopComponent.find(issueId);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                final Issue issue = tc.getIssue();
+                if(issue == null) {
+                    tc.initNoIssue();
+                }
+                tc.open();
+                tc.requestActive();
+
+                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                    public void run() {
+                        try {
+                            if(issue != null) {
+                                handle[0].finish();
+                                handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[] {issueId}));
+                                handle[0].start();
+                                issue.refresh();
+                            } else {
+                                final Issue refIssue = repository.getIssue(issueId);
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        tc.setIssue(refIssue);
+                                    }
+                                });
+                                try {
+                                    refIssue.setSeen(true);
+                                } catch (IOException ex) {
+                                    BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        } finally {
+                            handle[0].finish();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    /**
      * Opens this issue in the IDE
      */
     final public void open() {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle("Opening Issue..." + getID());
-        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+        open(false);
+    }
+
+    /**
+     * Opens this issue in the IDE
+     * @param refresh also refreshes the issue after opening
+     * 
+     */
+    final public void open(final boolean refresh) {
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[] {getID()}));
+        handle.start();
+        SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                handle.start();
-                try {
-                    try {
-                        if(!Issue.this.refresh()) {
-                            return;
+                IssueTopComponent tc = IssueTopComponent.find(Issue.this);
+
+                tc.open();
+                tc.requestActive();
+
+                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                    public void run() {
+                        try {
+                            try {
+                                if(refresh && !Issue.this.refresh()) {
+                                    return;
+                                }
+                                Issue.this.setSeen(true);
+                            } catch (IOException ex) {
+                                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                            }
+                        } finally {
+                            handle.finish();
                         }
-                        Issue.this.setSeen(true);
-                    } catch (IOException ex) {
-                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
                     }
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            final IssueTopComponent tc = IssueTopComponent.find(Issue.this);
-                            tc.open();
-                            tc.requestActive();
-                        }
-                    });
-                } finally {
-                    handle.finish();
-                }
+                });
             }
         });
     }
@@ -208,7 +270,8 @@ public abstract class Issue {
     public abstract String getSummary();
 
     /**
-     * 
+     * Returns a description summarizing the changes made
+     * in this issues since the last time it was set as seen.
      */
     public abstract String getRecentChanges();
 
@@ -230,6 +293,10 @@ public abstract class Issue {
         fireSeenChanged(oldValue, seen);
     }
 
+    /**
+     * Returns this issues attributes. 
+     * @return
+     */
     public abstract Map<String, String> getAttributes();
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {

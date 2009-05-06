@@ -48,9 +48,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
+import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -1889,13 +1889,13 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
             Node node = it.next();
 
             // Filter out some uninteresting nodes
-            if (node.nodeId == NodeType.NEWLINENODE) {
+            if (node.getNodeType() == NodeType.NEWLINENODE) {
                 continue;
             }
 
             OffsetRange range = AstUtilities.getRange(node);
 
-            if (node.nodeId == NodeType.CALLNODE && ranges.size() == 0 && node == path.leaf()) {
+            if (node.getNodeType() == NodeType.CALLNODE && ranges.size() == 0 && node == path.leaf()) {
                 // Try to handle scenarios like issue 111941 - in a call like
                 //  foo.bar.snark
                 // there's no AST node for the "bar" part - only a CallNode for "foo.bar",

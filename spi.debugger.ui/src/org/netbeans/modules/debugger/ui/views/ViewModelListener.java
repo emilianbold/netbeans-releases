@@ -642,8 +642,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 } else {
                     Object[] wChildren = treeModel.getChildren(parent, from, to);
                     Object[] union = new Object[children.length + wChildren.length];
-                    System.arraycopy(children, 0, union, 0, children.length);
-                    System.arraycopy(wChildren, 0, union, children.length, wChildren.length);
+                    System.arraycopy(wChildren, 0, union, 0, wChildren.length);
+                    System.arraycopy(children, 0, union, wChildren.length, children.length);
                     children = union;
                 }
                 return children;
@@ -687,27 +687,42 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+            boolean canRename = false;
             try {
-                return original.canRename(node);
+                canRename |= original.canRename(node);
             } catch (UnknownTypeException e) {
-                return nodeModel.canRename(node);
             }
+            try {
+                canRename |= nodeModel.canRename(node);
+            } catch (UnknownTypeException e) {
+            }
+            return canRename;
         }
 
         public boolean canCopy(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+            boolean canCopy = false;
             try {
-                return original.canCopy(node);
+                canCopy |= original.canCopy(node);
             } catch (UnknownTypeException e) {
-                return nodeModel.canCopy(node);
             }
+            try {
+                canCopy |= nodeModel.canCopy(node);
+            } catch (UnknownTypeException e) {
+            }
+            return canCopy;
         }
 
         public boolean canCut(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+            boolean canCut = false;
             try {
-                return original.canCut(node);
+                canCut |= original.canCut(node);
             } catch (UnknownTypeException e) {
-                return nodeModel.canCut(node);
             }
+            try {
+                canCut |= nodeModel.canCut(node);
+            } catch (UnknownTypeException e) {
+            }
+            return canCut;
         }
 
         public Transferable clipboardCopy(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
@@ -739,14 +754,18 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 original.setName(node, name);
             } catch (UnknownTypeException e) {
                 nodeModel.setName(node, name);
+            } catch (UnsupportedOperationException e) {
+                nodeModel.setName(node, name);
             }
         }
 
         public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
             try {
-                return original.getIconBaseWithExtension(node);
+                String iconBase = nodeModel.getIconBaseWithExtension(node);
+                return iconBase;
             } catch (UnknownTypeException e) {
-                return nodeModel.getIconBaseWithExtension(node);
+                String iconBase = original.getIconBaseWithExtension(node);
+                return iconBase;
             }
         }
 
@@ -760,9 +779,11 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         public String getIconBase(NodeModel original, Object node) throws UnknownTypeException {
             try {
-                return original.getIconBase(node);
+                String iconBase = nodeModel.getIconBase(node);
+                return iconBase;
             } catch (UnknownTypeException e) {
-                return nodeModel.getIconBase(node);
+                String iconBase = original.getIconBase(node);
+                return iconBase;
             }
         }
 

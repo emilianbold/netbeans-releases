@@ -393,8 +393,8 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     @Override
-    public Object clone() {
-        ItemConfiguration i = new ItemConfiguration(getConfiguration(), getItem());
+    public ItemConfiguration clone(Configuration conf) {
+        ItemConfiguration i = new ItemConfiguration(conf, getItem());
 
         i.setExcluded(getExcluded().clone());
         i.setTool(getTool());

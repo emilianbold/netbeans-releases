@@ -98,7 +98,7 @@ public final class ShareAction extends CookieAction {
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
-                "NewKenaiProjectAction.dialogTitle"));
+                "ShareAction.dialogTitle"));
 
         DialogDisplayer.getDefault().notify(wizardDescriptor);
 
@@ -111,7 +111,7 @@ public final class ShareAction extends CookieAction {
     }
 
     private static void showDashboard(Set<CreatedProjectInfo> projects) {
-        final KenaiTopComponent kenaiTc = KenaiTopComponent.getDefault();
+        final KenaiTopComponent kenaiTc = KenaiTopComponent.findInstance();
         kenaiTc.open();
         kenaiTc.requestActive();
         DashboardImpl.getInstance().selectAndExpand(projects.iterator().next().project);

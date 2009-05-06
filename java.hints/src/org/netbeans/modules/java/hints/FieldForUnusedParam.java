@@ -55,12 +55,14 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
@@ -71,7 +73,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
-import org.netbeans.modules.java.hints.spi.TreeRule;
+import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -82,10 +84,25 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Jan Lahoda
+ * @author Sam Halliday
  */
-public class FieldForUnusedParam implements TreeRule {
+public class FieldForUnusedParam extends AbstractHint {
 
-    private AtomicBoolean cancel = new AtomicBoolean();
+    private static final String FINAL_FIELDS = "final-fields";
+
+    public static boolean isFinalFields() {
+        return new FieldForUnusedParam().getPreferences(null).getBoolean(FINAL_FIELDS, true);
+    }
+
+    static void setFinalFields(Preferences p, boolean selected) {
+        p.putBoolean(FINAL_FIELDS, selected);
+    }
+
+    public FieldForUnusedParam() {
+        super(true, true, HintSeverity.CURRENT_LINE_WARNING);
+    }
+
+    private final AtomicBoolean cancel = new AtomicBoolean();
     
     public Set<Kind> getTreeKinds() {
         return EnumSet.of(Kind.VARIABLE);
@@ -181,8 +198,18 @@ public class FieldForUnusedParam implements TreeRule {
         return NbBundle.getMessage(FieldForUnusedParam.class, "DN_FieldUnusedParam");
     }
 
+    @Override
+    public JComponent getCustomizer(Preferences node) {
+        return new FieldForUnusedParamCustomizer(node);
+    }
+
     public void cancel() {
         cancel.set(true);
+    }
+
+    @Override
+    public String getDescription() {
+        return NbBundle.getMessage(FieldForUnusedParam.class, "DSC_FieldUnusedParam");
     }
 
     static final class FixImpl implements Fix {
@@ -232,7 +259,11 @@ public class FieldForUnusedParam implements TreeRule {
                     }
                     
                     if (!existing) {
-                        VariableTree field = make.Variable(make.Modifiers(EnumSet.of(Modifier.PRIVATE)), vt.getName(), vt.getType(), null);
+                        Set<Modifier> modifiers = EnumSet.of(Modifier.PRIVATE);
+                        if (isFinalFields()) {
+                            modifiers.add(Modifier.FINAL);
+                        }
+                        VariableTree field = make.Variable(make.Modifiers(modifiers), vt.getName(), vt.getType(), null);
                         int insertPlace = -1;
                         
                         index = 0;

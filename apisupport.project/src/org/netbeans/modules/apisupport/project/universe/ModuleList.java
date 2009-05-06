@@ -690,8 +690,6 @@ public final class ModuleList {
                 File prjDir = FileUtil.toFile(prj.getProjectDirectory());
                 if (SuiteUtils.isSuite(prjDir)) {
                     // non-recursive for suites
-                    PropertyEvaluator eval = parseSuiteProperties(prjDir);
-                    File nbdestdir = resolveNbDestDir(prjDir, customNbDestDir, eval);
                     lists.add(findOrCreateModuleListFromSuiteWithoutBinaries(prjDir, customNbDestDir));
                 } else {
                     // should be standalone module
@@ -739,6 +737,13 @@ public final class ModuleList {
         } else {
             nbdestdir = customNbDestDir;
         }
+        if (! nbdestdir.exists()) {
+            LOG.log(Level.INFO, "Project in " + root // NOI18N
+                    + " is missing its platform '" + eval.getProperty("nbplatform.active") + "', switching to default platform");    // NOI18N
+            NbPlatform p2 = NbPlatform.getDefaultPlatform();
+            if (p2 != null)
+                nbdestdir = p2.getDestDir();
+        }
         return nbdestdir;
     }
 
@@ -754,7 +759,11 @@ public final class ModuleList {
     }
     
     private static PropertyEvaluator parseSuiteProperties(File root) throws IOException {
-        Map<String,String> predefs = NbCollections.checkedMapByCopy(System.getProperties(), String.class, String.class, false);
+        Properties p = System.getProperties();
+        Map<String,String> predefs;
+        synchronized (p) {
+            predefs = NbCollections.checkedMapByCopy(p, String.class, String.class, false);
+        }
         predefs.put("basedir", root.getAbsolutePath()); // NOI18N
         PropertyProvider predefsProvider = PropertyUtils.fixedPropertyProvider(predefs);
         List<PropertyProvider> providers = new ArrayList<PropertyProvider>();
@@ -1021,7 +1030,11 @@ public final class ModuleList {
      */
     static PropertyEvaluator parseProperties(File basedir, File root, boolean suiteComponent, boolean standalone, String cnb) throws IOException {
         assert !(suiteComponent && standalone) : basedir;
-        Map<String,String> predefs = NbCollections.checkedMapByFilter((Map) System.getProperties()./* #118190 */clone(), String.class, String.class, false);
+        Properties p = System.getProperties();
+        Map<String,String> predefs;
+        synchronized (p) {
+            predefs = NbCollections.checkedMapByCopy(p, String.class, String.class, false);
+        }
         predefs.put("basedir", basedir.getAbsolutePath()); // NOI18N
         PropertyProvider predefsProvider = PropertyUtils.fixedPropertyProvider(predefs);
         List<PropertyProvider> providers = new ArrayList<PropertyProvider>();
@@ -1194,7 +1207,7 @@ public final class ModuleList {
      */
     private static String findClusterLocation(File basedir, File nbroot) throws IOException {
         String path = PropertyUtils.relativizeFile(nbroot, basedir);
-        assert path.indexOf("..") == -1 : path;
+// #163744: can happen with symlinks       assert path.indexOf("..") == -1 : path;
         Map<String,String> clusterLocationsHere = clusterLocations.get(nbroot);
         if (clusterLocationsHere == null) {
             clusterLocationsHere = new HashMap<String,String>();

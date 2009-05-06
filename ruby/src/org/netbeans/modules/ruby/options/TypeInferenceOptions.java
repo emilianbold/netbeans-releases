@@ -77,12 +77,14 @@ public final class TypeInferenceOptions extends AdvancedOption {
         public void update() {
             TypeInferenceSettings settings = TypeInferenceSettings.getDefault();
             component.setMethods(settings.getMethodTypeInference());
+            component.setRdoc(settings.getRdocTypeInference());
         }
 
         @Override
         public void applyChanges() {
             TypeInferenceSettings settings = TypeInferenceSettings.getDefault();
             settings.setMethodTypeInference(component.getMethods());
+            settings.setRdocTypeInference(component.getRdoc());
         }
 
         @Override

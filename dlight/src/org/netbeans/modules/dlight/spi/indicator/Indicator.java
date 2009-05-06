@@ -41,7 +41,7 @@ package org.netbeans.modules.dlight.spi.indicator;
 import java.awt.Cursor;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.spi.impl.IndicatorActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -130,31 +130,29 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         if (indicatorRepairActionProvider == null || e.getSource() != indicatorRepairActionProvider){
             return;
         }
-        boolean needRepair = indicatorRepairActionProvider.needRepair();
+        boolean needRepair = indicatorRepairActionProvider.needRepair() || !indicatorRepairActionProvider.getValidationStatus().isValid();
         if (!needRepair){
             indicatorRepairActionProvider.removeChangeListener(this);
         }
-        repairNeeded(indicatorRepairActionProvider.needRepair());
+        repairNeeded(needRepair);
     }
 
-
-
-    public void targetStateChanged(DLightTarget source, State oldState, State newState) {
-        switch (newState) {
+    public void targetStateChanged(DLightTargetChangeEvent event) {
+        switch (event.state) {
             case RUNNING:
-                targetStarted(source);
+                targetStarted(event.target);
                 return;
             case FAILED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case TERMINATED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case DONE:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
             case STOPPED:
-                targetFinished(source);
+                targetFinished(event.target);
                 return;
         }
     }

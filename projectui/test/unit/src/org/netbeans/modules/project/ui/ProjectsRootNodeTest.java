@@ -293,11 +293,11 @@ public class ProjectsRootNodeTest extends NbTestCase {
         });
         Project prj = ProjectManager.getDefault().findProject(root);
         assertNotNull(prj);
-        ProjectsRootNode.BadgingNode node = new ProjectsRootNode.BadgingNode(new ProjectsRootNode.ProjectChildren.Pair(prj),
+        ProjectsRootNode.BadgingNode node = new ProjectsRootNode.BadgingNode(null, new ProjectsRootNode.ProjectChildren.Pair(prj),
                 new AbstractNode(Children.LEAF, Lookups.singleton(prj)) {
                     public @Override String getDisplayName() {return "Prj";}
                     public @Override String getHtmlDisplayName() {return "Prj";}
-                }, false, false);
+                }, false, true);
         final AtomicInteger nameChanges = new AtomicInteger();
         final AtomicInteger iconChanges = new AtomicInteger();
         node.addNodeListener(new NodeAdapter() {

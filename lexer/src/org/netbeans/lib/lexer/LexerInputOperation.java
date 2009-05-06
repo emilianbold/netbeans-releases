@@ -398,22 +398,21 @@ public abstract class LexerInputOperation<T extends TokenId> {
      * lexer input operation.
      */
     private void checkLexerInputFinished() {
-        if (read() != LexerInput.EOF) {
-            throw new IllegalStateException(
-                "Lexer " + lexer + // NOI18N
-                " returned null token" + // NOI18N
-                " but EOF was not read from lexer input yet." + // NOI18N
-                " Fix the lexer."// NOI18N
-            );
-        }
-        if (readLength() > 0) {
-            throw new IllegalStateException(
-                "Lexer " + lexer + // NOI18N
-                " returned null token but lexerInput.readLength()=" + // NOI18N
-                readLength() +
-                " - these characters need to be tokenized." + // NOI18N
-                " Fix the lexer." // NOI18N
-            );
+        if (read() != LexerInput.EOF || readLength() > 0) {
+            StringBuilder sb = new StringBuilder(100);
+            int readLen = readLength();
+            sb.append("Lexer ").append(lexer); // NOI18N
+            sb.append("\n  returned null token but lexerInput.readLength()="); // NOI18N
+            sb.append(readLen);
+            sb.append("\n  lexer-state: ").append(lexer.state());
+            sb.append("\n  ").append(this); // NOI18N
+            sb.append("\n  Chars: \"");
+            for (int i = 0; i < readLen; i++) {
+                sb.append(CharSequenceUtilities.debugChar(readExistingAtIndex(i)));
+            }
+            sb.append("\" - these characters need to be tokenized."); // NOI18N
+            sb.append("\nFix the lexer to not return null token in this state."); // NOI18N
+            throw new IllegalStateException(sb.toString());
         }
     }
 

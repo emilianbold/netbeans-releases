@@ -96,7 +96,7 @@ class RemoteNativeExecution extends NativeExecution {
     public void stop() {
     }
 
-    private Map<String, String> envToMap(String[] envp) {
+    private static Map<String, String> envToMap(String[] envp) {
         Map<String, String> map = new HashMap<String, String>(envp.length);
         for (int i = 0; i < envp.length; i++) {
             String line = envp[i];

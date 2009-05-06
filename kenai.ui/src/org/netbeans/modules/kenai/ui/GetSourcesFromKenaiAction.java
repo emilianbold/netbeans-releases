@@ -43,6 +43,9 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
@@ -50,11 +53,13 @@ import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.GetSourcesInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.netbeans.modules.versioning.system.cvss.api.CVS;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 public final class GetSourcesFromKenaiAction implements ActionListener {
 
@@ -73,6 +78,10 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
+        if (prjAndFeature!=null && KenaiService.Names.EXTERNAL_REPOSITORY.equals(prjAndFeature.feature.getService())) {
+            tryExternalCheckout(prjAndFeature.feature.getLocation());
+            return;
+        }
 
         Object options[] = new Object[2];
         options[0] = getOption;
@@ -95,16 +104,16 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
 
             final KenaiFeature feature = sourcesInfo.feature;
 
-            if (KenaiService.Names.SUBVERSION.equals(feature.getService())) { // XXX service or name
+            if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
 
                             if (passwdAuth != null) {
-                                Subversion.checkoutRepositoryFolder(feature.getLocation().toASCIIString(), sourcesInfo.relativePaths,
+                                Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
                                     new File(sourcesInfo.localFolderPath), passwdAuth.getUserName(), new String(passwdAuth.getPassword()), true);
                             } else {
-                                Subversion.checkoutRepositoryFolder(feature.getLocation().toASCIIString(), sourcesInfo.relativePaths,
+                                Subversion.checkoutRepositoryFolder(feature.getLocation(), sourcesInfo.relativePaths,
                                     new File(sourcesInfo.localFolderPath), true);
                             }
 
@@ -113,16 +122,16 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
                         }
                     }
                 });
-            } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) { // XXX service or name
+            } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
 
                             if (passwdAuth != null) {
-                                Mercurial.cloneRepository(feature.getLocation().toASCIIString(), new File(sourcesInfo.localFolderPath),
+                                Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
                                     "", "", "", passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
                             } else {
-                                Mercurial.cloneRepository(feature.getLocation().toASCIIString(), new File(sourcesInfo.localFolderPath),
+                                Mercurial.cloneRepository(feature.getLocation(), new File(sourcesInfo.localFolderPath),
                                     "", "", "");
                             }
 
@@ -135,6 +144,28 @@ public final class GetSourcesFromKenaiAction implements ActionListener {
             // XXX store the project in preferrences, it will be shown as first for next Get From Kenai
         }
 
+    }
+
+    private void tryExternalCheckout(String url) {
+        try {
+            if (KenaiService.Names.SUBVERSION.equals(prjAndFeature.externalScmType)) {
+                Subversion.openCheckoutWizard(url);
+                return;
+            } else if (SourceHandleImpl.SCM_TYPE_CVS.equals(prjAndFeature.externalScmType)) {
+                CVS.openCheckoutWizard(url);
+                return;
+            } else if (KenaiService.Names.MERCURIAL.equals(prjAndFeature.externalScmType))  {
+                Mercurial.openCloneWizard(url);
+                return;
+            }
+        } catch (MalformedURLException malformedURLException) {
+            Logger.getLogger(GetSourcesFromKenaiAction.class.getName()).log(Level.INFO, "Cannot checkout external repository " + url, malformedURLException);
+        }
+        JOptionPane.showMessageDialog(
+                WindowManager.getDefault().getMainWindow(),
+                NbBundle.getMessage(GetSourcesFromKenaiAction.class, "MSG_ScmNotRecognized", url),
+                NbBundle.getMessage(GetSourcesFromKenaiAction.class, "MSG_ScmNotRecognizedTitle"),
+                JOptionPane.INFORMATION_MESSAGE);
     }
     
 }

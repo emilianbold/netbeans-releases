@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -73,6 +74,7 @@ import org.netbeans.modules.css.editor.CssPropertyValue;
 import org.netbeans.modules.css.editor.LexerUtils;
 import org.netbeans.modules.css.editor.Property;
 import org.netbeans.modules.css.editor.PropertyModel;
+import org.netbeans.modules.css.editor.model.HtmlTags;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
@@ -152,8 +154,16 @@ public class CssCompletion implements CodeCompletionHandler {
         //possible values there
         //
         if (node.kind() == CssParserTreeConstants.JJTSTYLESHEETRULELIST) {
+            List<CompletionProposal> all = new ArrayList<CompletionProposal>();
             //complete at keywords without prefix
-            return wrapRAWValues(AT_RULES, CompletionItemKind.VALUE, caretOffset);
+            all.addAll(wrapRAWValues(AT_RULES, CompletionItemKind.VALUE, caretOffset).getItems());
+            //complete html selector names
+            all.addAll(completeHtmlSelectors(prefix, caretOffset));
+            return new DefaultCompletionResult(all, false);
+            
+        } else if(node.kind() == CssParserTreeConstants.JJTMEDIARULE) {
+            return new DefaultCompletionResult(completeHtmlSelectors(prefix, caretOffset), false);
+            
         } else if (node.kind() == CssParserTreeConstants.JJTSKIP) {
             //complete at keywords with prefix - parse tree broken
             SimpleNode parent = (SimpleNode) node.jjtGetParent();
@@ -331,9 +341,39 @@ public class CssCompletion implements CodeCompletionHandler {
                     false);
 
 
+        } else if (node.kind() == CssParserTreeConstants.JJTELEMENTNAME) {
+            //complete selector's element name
+            List<CompletionProposal> proposals = completeHtmlSelectors(prefix, snapshot.getOriginalOffset(node.startOffset()));
+            if(proposals.size() > 0) {
+                return new DefaultCompletionResult(proposals, false);
+            }
+        } else if(node.kind() == CssParserTreeConstants.JJTSELECTORLIST || 
+                node.kind() == CssParserTreeConstants.JJTCOMBINATOR ||
+                node.kind() == CssParserTreeConstants.JJTSELECTOR) {
+            //complete selector list without prefix in selector list e.g. BODY, | { ... }
+//            assert prefix.length() == 0;
+
+            List<CompletionProposal> proposals = completeHtmlSelectors(prefix, caretOffset);
+            if(proposals.size() > 0) {
+                return new DefaultCompletionResult(proposals, false);
+            }
         }
 
         return CodeCompletionResult.NONE;
+    }
+
+    private List<CompletionProposal> completeHtmlSelectors(String prefix, int offset) {
+        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(20);
+        for (String tagName : HtmlTags.getTags()) {
+            if (tagName.startsWith(prefix.toLowerCase(Locale.ENGLISH))) {
+                proposals.add(new SelectorCompletionItem(new CssElement(tagName),
+                        tagName,
+                        CompletionItemKind.VALUE,
+                        offset));
+            }
+        }
+        return proposals;
+
     }
 
     private CodeCompletionResult wrapRAWValues(Collection<String> props, CompletionItemKind kind, int anchor) {
@@ -616,7 +656,8 @@ public class CssCompletion implements CodeCompletionHandler {
         }
         
     }
-    
+
+    //XXX fix the CssCompletionItem class so the Value and Property normally subclass it!!!!!!!!!
     private class ColorCompletionItem extends ValueCompletionItem {
 
         final byte COLOR_ICON_SIZE = 16; //px
@@ -631,15 +672,17 @@ public class CssCompletion implements CodeCompletionHandler {
             
                 super(element, value, origin, kind, anchorOffset, addSemicolon);
         }
-                
+
         @Override
         public ImageIcon getIcon() {
             BufferedImage i = new BufferedImage(COLOR_ICON_SIZE, COLOR_ICON_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
             Graphics g = i.createGraphics();
             String colorCode = colors().get(getName());
-            
-            if(colorCode == null) {
-                return  null; //unknown colo code
+
+            boolean defaultIcon = colorCode == null;
+            if(defaultIcon) {
+                //unknown color code, we still want a generic icon
+                colorCode = colors().get("white"); //NOI18N
             }
             
             Color transparent = new Color( 0x00ffffff, true );
@@ -658,7 +701,13 @@ public class CssCompletion implements CodeCompletionHandler {
                     COLOR_RECT_SIZE, 
                     COLOR_RECT_SIZE);
             
-            
+            if(defaultIcon) {
+                //draw the X inside the icon
+                g.drawLine(COLOR_ICON_SIZE - COLOR_RECT_SIZE - 1,
+                        COLOR_ICON_SIZE - 2,
+                        COLOR_ICON_SIZE - 1,
+                        COLOR_ICON_SIZE - COLOR_RECT_SIZE - 2);
+            }
             
             return new ImageIcon(i);
         }
@@ -680,6 +729,28 @@ public class CssCompletion implements CodeCompletionHandler {
             return super.getInsertPrefix() + ":"; //NOI18N
         } 
         
+    }
+
+    private class SelectorCompletionItem extends CssCompletionItem {
+
+        private SelectorCompletionItem(CssElement element,
+                String value,
+                CompletionItemKind kind,
+                int anchorOffset) {
+                super(element, value, kind, anchorOffset, false);
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.appendHtml("<b><font color=#007c00>" + getName() + "</font></b>");
+            return formatter.getText();
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return null;
+        }
+
     }
 
     /**

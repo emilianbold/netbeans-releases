@@ -158,7 +158,7 @@ public final class DataTableMetadata {
         sb.append(' ');
         if (columns != null) {
             for (Column column : columns) {
-                sb.append("\n\t");
+                sb.append("\n\t"); //NOI18N
                 sb.append(column);
             }
         }
@@ -170,10 +170,11 @@ public final class DataTableMetadata {
      */
     public static final class Column {
 
-        String name;
-        Class columnClass;
-        String uname;
-        String expression;
+        final String name;
+        final Class columnClass;
+        final String shortUName;
+        final String longUName;;
+        final String expression;
 
         /**
          * Creates new column
@@ -188,13 +189,27 @@ public final class DataTableMetadata {
          * Creates new column
          * @param name column name
          * @param columnClass column class
-         * @param uname displayed name
+         * @param shortName displayed name
          * @param expression expression which is used to calculate column value, for examle there can be "column2*column3"
          */
-        public Column(String name, Class columnClass, String uname, String expression) {
+        public Column(String name, Class columnClass, String shortName, String expression) {
+            this(name, columnClass, shortName, expression, shortName);
+
+        }
+
+        /**
+         * Creates new column
+         * @param name column name
+         * @param columnClass column class
+         * @param shortName displayed name
+         * @param longName long  name, can be used as a tooltip
+         * @param expression expression which is used to calculate column value, for examle there can be "column2*column3"
+         */
+        public Column(String name, Class columnClass, String shortName, String longName, String expression) {
             this.name = name;
             this.columnClass = columnClass;
-            this.uname = uname;
+            this.shortUName = shortName;
+            this.longUName = longName;
             this.expression = expression;
         }
 
@@ -215,11 +230,19 @@ public final class DataTableMetadata {
         }
 
         /**
+         * Long column displayed name, in terms of UI this is a tooltip
+         * @return  long column displayed name
+         */
+        public String getColumnLongUName(){
+            return longUName;
+        }
+
+        /**
          * Column displayed (user) name
          * @return column name
          */
         public String getColumnUName() {
-            return uname;
+            return shortUName;
         }
 
         /**
@@ -232,7 +255,7 @@ public final class DataTableMetadata {
 
         @Override
         public String toString() {
-            return name + " : (" + getColumnClass().getName() + ")";
+            return name + " : (" + getColumnClass().getName() + ")"; //NOI18N
         }
     }
 

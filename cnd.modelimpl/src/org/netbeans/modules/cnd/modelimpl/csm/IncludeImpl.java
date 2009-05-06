@@ -71,7 +71,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
         this.name = FileNameCache.getManager().getString(name);
         this.system = system;
         this.includeFileUID = UIDCsmConverter.fileToUID(includeFile);
-        assert (includeFileUID != null || includeFile == null);
+        assert (includeFileUID != null || includeFile == null) : "got " + includeFileUID + " for " + includeFile;
     }
     
     public CsmFile getIncludeFile() {

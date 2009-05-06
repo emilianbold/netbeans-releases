@@ -153,6 +153,9 @@ public final class MenuWarmUpTask implements Runnable {
         }
 
         public void run() {
+            if (Boolean.getBoolean("netbeans.indexing.noFileRefresh") == true) { // NOI18N
+                return; // no file refresh
+            }
             long now = System.currentTimeMillis();
             FileUtil.refreshAll();
             synchronized (rp) {

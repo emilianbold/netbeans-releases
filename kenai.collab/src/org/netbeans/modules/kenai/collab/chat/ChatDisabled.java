@@ -51,14 +51,14 @@ import org.openide.util.NbBundle;
 public final class ChatDisabled extends AbstractAction {
 
     public ChatDisabled() {
-        super(NbBundle.getMessage(WhoIsOnlineDisabled.class, "CTL_ChatAction"), new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/chat.gif")));
+        super(NbBundle.getMessage(WhoIsOnlineDisabled.class, "CTL_ChatAction"), new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/chat.png")));
     }
 
     public void actionPerformed(ActionEvent e) {
-        ChatTopComponent.openAction(ChatTopComponent.getDefault(), "", "", false).actionPerformed(e); // NOI18N
+        ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(e); // NOI18N
     }
     @Override
     public boolean isEnabled() {
-        return Boolean.parseBoolean(System.getProperty(("kenai.chat.enabled"), "false"));
+        return System.getProperty(("kenai.com.url"), "https://kenai.com").endsWith("testkenai.com"); //NII18N
     }
 }

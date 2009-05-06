@@ -45,9 +45,7 @@ import java.awt.CardLayout;
 import javax.swing.Action;
 import javax.swing.table.TableColumn;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
-import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.image.ComponentColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
@@ -132,6 +130,9 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private boolean extClustersLoaded;
     private AbstractNode realRoot;
     private AbstractNode waitRoot;
+
+    public static final String WAIT_ICON_PATH =
+            "org/netbeans/modules/apisupport/project/suite/resources/wait.png"; // NOI18N
 
     /**
      * Creates new form SuiteCustomizerLibraries
@@ -326,6 +327,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         public WaitNode() {
             super(Children.LEAF);
             setDisplayName(CustomizerComponentFactory.WAIT_VALUE);
+            setIconBaseWithExtension(WAIT_ICON_PATH);
         }
     }
 
@@ -357,7 +359,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 Children.SortedArray modules = new Children.SortedArray();
                 modules.setComparator(MODULES_COMPARATOR);
                 // enablement for pre-6.7 modules, for cluster path it gets resolved in load cluster.path section below
-                boolean enabled = newPlaf || SingleModuleProperties.clusterMatch(enabledClusters, clusterDirectory.getName());
+                boolean enabled = (newPlaf && enabledClusters.isEmpty()) || SingleModuleProperties.clusterMatch(enabledClusters, clusterDirectory.getName());
                 ClusterInfo ci = ClusterInfo.create(clusterDirectory, true, enabled);
                 cluster = new ClusterNode(ci, modules);
                 clusterToNode.put(clusterDirectory, cluster);
@@ -396,6 +398,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 }
                 extClustersLoaded = true;
             }
+        } else {
+            extClustersLoaded = true;   // so that doUpdateDependencyWarnings is called even with empty cluster.path
         }
         libChildren.setMergedKeys();
     }
@@ -406,6 +410,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
     
     private void refreshPlatforms() {
+        Logger logger = Logger.getLogger(SuiteCustomizerLibraries.class.getName());
+        logger.log(Level.FINE, "refreshPlatforms --> " + getProperties().getActivePlatform().getLabel());
         platformValue.setModel(new PlatformComponentFactory.NbPlatformListModel(getProperties().getActivePlatform())); // refresh
         platformValue.requestFocus();
     }
@@ -417,8 +423,13 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         Set<String> disabledModules = new TreeSet<String>();
         List<ClusterInfo> clusterPath = new ArrayList<ClusterInfo>();
 
-        boolean oldPlaf = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() < NbPlatform.HARNESS_VERSION_67;
+        boolean oldPlaf = getProperties().getActivePlatform().getHarnessVersion() < NbPlatform.HARNESS_VERSION_67;
 
+        assert refreshTask != null;
+        if (! refreshTask.isFinished()) {
+            // trying to store before nodes are up-to-date, just bail out
+            return;
+        }
         for (ClusterNode e : libChildren.platformNodes) {
             if (e.isEnabled()) {
                 if (oldPlaf)
@@ -668,6 +679,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         if (evt.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
             manager.setRootContext(waitRoot);
             store();    // restore the same enablement of clusters for new platform
+            Logger logger = Logger.getLogger(SuiteCustomizerLibraries.class.getName());
+            logger.log(Level.FINE, "platformValueItemStateChanged, setting plaf -->" + ((NbPlatform) platformValue.getSelectedItem()).getLabel());
             getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
             updateJavaPlatformEnabled();
         }
@@ -1004,10 +1017,16 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             super(Children.LEAF, enabled);
             this.project = prj;
             NbModuleProvider nbmp = prj.getLookup().lookup(NbModuleProvider.class);
-            if (nbmp == null)
-                throw new IllegalArgumentException("Project must be NbModuleProject");
-            if (nbmp.getModuleType() != NbModuleProvider.SUITE_COMPONENT)
-                throw new IllegalArgumentException("Project must be suite component project");
+            if (nbmp == null) {
+                String msg = NbBundle.getMessage(SuiteCustomizerLibraries.class,
+                        "MSG_NotANBMProject", FileUtil.getFileDisplayName(prj.getProjectDirectory()));
+                throw new IllegalArgumentException(msg);
+            }
+            if (nbmp.getModuleType() != NbModuleProvider.SUITE_COMPONENT) {
+                String msg = NbBundle.getMessage(SuiteCustomizerLibraries.class,
+                        "MSG_NotASuiteComponentProject", FileUtil.getFileDisplayName(prj.getProjectDirectory()));
+                throw new IllegalArgumentException(msg);
+            }
             final String cnb = nbmp.getCodeNameBase();
             setName(cnb);
             setDisplayName(ProjectUtils.getInformation(prj).getDisplayName());
@@ -1547,62 +1566,64 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     
     private Set<UniverseModule> universe;
     private /* #71791 */ synchronized void doUpdateDependencyWarnings() {
-        if (universe == null) {
-            try {
-                Set<NbModuleProject> suiteModules = 
+        try {
+            if (universe == null) {
+                Set<NbModuleProject> suiteModules =
                         new HashSet<NbModuleProject>(getProperties().getSubModules());
                 libChildren.getProjectModules(suiteModules);
                 universe = loadUniverseModules(platformModules, suiteModules, extraBinaryModules);
-            } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                return; // any warnings would probably be wrong anyway
             }
-        }
-        
-        Set<File> enabledClusters = new TreeSet<File>();
-        Set<String> disabledModules = new TreeSet<String>();
-        enabledClusters.add(ClusterUtils.getClusterDirectory(getProperties().getProject()));
-        
-        for (Node cluster : libChildren.getNodes()) {
-            if (cluster instanceof ClusterNode) {
-                ClusterNode e = (ClusterNode) cluster;
-                if (e.isEnabled()) {
-                    enabledClusters.add(e.getClusterInfo().getClusterDir());
-                    for (Node module : e.getChildren().getNodes()) {
-                        if (module instanceof Enabled) {
-                            Enabled m = (Enabled) module;
-                            if (!m.isEnabled()) {
-                                disabledModules.add(m.getName());
+
+            Set<File> enabledClusters = new TreeSet<File>();
+            Set<String> disabledModules = new TreeSet<String>();
+            enabledClusters.add(ClusterUtils.getClusterDirectory(getProperties().getProject()));
+
+            for (Node cluster : libChildren.getNodes()) {
+                if (cluster instanceof ClusterNode) {
+                    ClusterNode e = (ClusterNode) cluster;
+                    if (e.isEnabled()) {
+                        enabledClusters.add(e.getClusterInfo().getClusterDir());
+                        for (Node module : e.getChildren().getNodes()) {
+                            if (module instanceof Enabled) {
+                                Enabled m = (Enabled) module;
+                                if (!m.isEnabled()) {
+                                    disabledModules.add(m.getName());
+                                }
                             }
                         }
                     }
                 }
             }
+
+            final FixInfo fi = findWarning(universe, enabledClusters, disabledModules);
+
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        CardLayout cl = (CardLayout) resolveButtonPanel.getLayout();
+                        if (!fi.isEmpty()) {
+                            String key = fi.warning[0];
+                            String[] args = new String[fi.warning.length - 1];
+                            System.arraycopy(fi.warning, 1, args, 0, args.length);
+                            category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
+                            resolveFixInfo = fi;
+                            resolveButton.setEnabled(fi.fixable);
+                            cl.last(resolveButtonPanel);
+                        } else {
+                            category.setErrorMessage(null);
+                            cl.first(resolveButtonPanel);
+                        }
+                    } finally {
+                        manager.setRootContext(realRoot);
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, "MSG_ErrorParsingMetadata", e.getLocalizedMessage()));
         }
         
-        final FixInfo fi = findWarning(universe, enabledClusters, disabledModules);
-        
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    CardLayout cl = (CardLayout) resolveButtonPanel.getLayout();
-                    if (!fi.isEmpty()) {
-                        String key = fi.warning[0];
-                        String[] args = new String[fi.warning.length - 1];
-                        System.arraycopy(fi.warning, 1, args, 0, args.length);
-                        category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
-                        resolveFixInfo = fi;
-                        resolveButton.setEnabled(fi.fixable);
-                        cl.last(resolveButtonPanel);
-                    } else {
-                        category.setErrorMessage(null);
-                        cl.first(resolveButtonPanel);
-                    }
-                } finally {
-                    manager.setRootContext(realRoot);
-                }
-            }
-        });
         
     }
 

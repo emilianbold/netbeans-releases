@@ -49,26 +49,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.AlternativePath;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolDescriptor;
-import org.netbeans.modules.cnd.api.remote.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -176,22 +181,32 @@ public class CompilerSetManager {
         }
 
         if (no_compilers) {
-            DialogDescriptor dialogDescriptor = new DialogDescriptor(
-                    new NoCompilersPanel(),
-                    getString("NO_COMPILERS_FOUND_TITLE"),
-                    true,
-                    new Object[]{DialogDescriptor.OK_OPTION},
-                    DialogDescriptor.OK_OPTION,
-                    DialogDescriptor.BOTTOM_ALIGN,
-                    null,
-                    null);
-            DialogDisplayer.getDefault().notify(dialogDescriptor);
+            // workaround to fix IZ#164028: Full IDE freeze when opening GizmoDemo project on Linux
+            // we postpone dialog displayer until EDT is free to process
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    RequestProcessor.getDefault().post(new NamedRunnable("Postponed No Compilers Found Notification") { // NOI18N
+                        public void runImpl() {
+                            DialogDescriptor dialogDescriptor = new DialogDescriptor(
+                                    new NoCompilersPanel(),
+                                    getString("NO_COMPILERS_FOUND_TITLE"),
+                                    true,
+                                    new Object[]{DialogDescriptor.OK_OPTION},
+                                    DialogDescriptor.OK_OPTION,
+                                    DialogDescriptor.BOTTOM_ALIGN,
+                                    null,
+                                    null);
+                            DialogDisplayer.getDefault().notify(dialogDescriptor);
+                        }
+                    });
+                }
+            });
         }
         return csm;
     }
 
     public static CompilerSetManager getDefault() {
-        return getDefault(ExecutionEnvironmentFactory.getLocalExecutionEnvironment());
+        return getDefault(ExecutionEnvironmentFactory.getLocal());
     }
 
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
@@ -318,10 +333,41 @@ public class CompilerSetManager {
         this(env, true);
     }
 
-    private CompilerSetManager(ExecutionEnvironment env, boolean runCompilerSetDataLoader) {
+    private CompilerSetManager(ExecutionEnvironment env, final boolean runCompilerSetDataLoader) {
         executionEnvironment = env;
         state = State.STATE_PENDING;
-        init(runCompilerSetDataLoader);
+        if (executionEnvironment.isLocal()) {
+            platform = computeLocalPlatform();
+            initCompilerSets(Path.getPath());
+            state = State.STATE_COMPLETE;
+        } else {
+            final AtomicReference<Thread> threadRef = new AtomicReference<Thread>();
+            final String progressMessage = NbBundle.getMessage(getClass(), "PROGRESS_TEXT", env.getDisplayName());
+            final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
+                    progressMessage,
+                    new Cancellable() {
+                        public boolean cancel() {
+                            Thread thread = threadRef.get();
+                            if (thread != null) {
+                                thread.interrupt();
+                            }
+                            return true;
+                        }
+
+            });
+            log.fine("CSM.init: initializing remote compiler set for: " + toString());
+            progressHandle.start();
+            RequestProcessor.getDefault().post(new NamedRunnable(progressMessage) {
+                protected @Override void runImpl() {
+                    threadRef.set(Thread.currentThread());
+                    try {
+                        initRemoteCompilerSets(false, runCompilerSetDataLoader);
+                    } finally {
+                        progressHandle.finish();
+                    }
+                }
+            });
+        }
     }
 
     private CompilerSetManager(ExecutionEnvironment env, List<CompilerSet> sets, int platform) {
@@ -334,17 +380,6 @@ public class CompilerSetManager {
             add(CompilerSet.createEmptyCompilerSet(platform));
         } else {
             this.state = State.STATE_COMPLETE;
-        }
-    }
-
-    private void init(boolean runCompilerSetDataLoader) {
-        if (executionEnvironment.isLocal()) {
-            platform = computeLocalPlatform();
-            initCompilerSets(Path.getPath());
-            state = State.STATE_COMPLETE;
-        } else {
-            log.fine("CSM.init: initializing remote compiler set for: " + toString());
-            initRemoteCompilerSets(false, runCompilerSetDataLoader);
         }
     }
 
@@ -387,7 +422,10 @@ public class CompilerSetManager {
             if (executionEnvironment.isLocal()) {
                 platform = computeLocalPlatform();
             } else {
-                waitForCompletion();
+                //waitForCompletion();
+                if (isPending()) {
+                    log.warning("calling getPlatform() on uninitializad " + getClass().getSimpleName());
+                }
             }
         }
         return platform == -1 ? PlatformTypes.PLATFORM_NONE : platform;
@@ -410,15 +448,6 @@ public class CompilerSetManager {
         }
     }
 
-    private void waitForCompletion() {
-        while (isPending()) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-            }
-        }
-    }
-
     public static int computeLocalPlatform() {
         String os = System.getProperty("os.name"); // NOI18N
 
@@ -436,7 +465,10 @@ public class CompilerSetManager {
     }
 
     public CompilerSetManager deepCopy() {
-        waitForCompletion(); // in case its a remote connection...
+        //waitForCompletion();
+        if (isPending()) {
+            log.warning("calling deepCopy() on uninitializad " + getClass().getSimpleName());
+        }
         List<CompilerSet> setsCopy = new ArrayList<CompilerSet>();
         for (CompilerSet set : getCompilerSets()) {
             setsCopy.add(set.createCopy());
@@ -542,8 +574,8 @@ public class CompilerSetManager {
     }
 
     public List<CompilerSet> findRemoteCompilerSets(String path) {
-        final CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
-        String[] arData = provider.getCompilerSetData(executionEnvironment, path);
+        final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
+        String[] arData = provider.getCompilerSetData(path);
         List<CompilerSet> css = new ArrayList<CompilerSet>();
         if (arData != null) {
             for (String data : arData) {
@@ -635,11 +667,9 @@ public class CompilerSetManager {
         if (remoteInitialization != null) {
             return;
         }
-        final CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
-        ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-        assert registry != null;
+        final CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
         assert provider != null;
-        ServerRecord record = registry.get(executionEnvironment);
+        ServerRecord record = ServerList.get(executionEnvironment);
         assert record != null;
 
         log.fine("CSM.initRemoteCompilerSets for " + executionEnvironment + " [" + state + "]");
@@ -659,12 +689,11 @@ public class CompilerSetManager {
                     public void run() {
                         try {
                             CompilerSetReporter.report("CSM_ConfHost");//NOI18N
-                            provider.init(executionEnvironment); //NOI18N
                             platform = provider.getPlatform();
                             CompilerSetReporter.report("CSM_ValPlatf", true, PlatformTypes.toString(platform)); //NOI18N
                             CompilerSetReporter.report("CSM_LFTC"); //NOI18N
                             log.fine("CSM.initRemoteCompileSets: platform = " + platform);
-                            getPreferences().putInt(CSM + ExecutionEnvironmentFactory.getHostKey(executionEnvironment) +
+                            getPreferences().putInt(CSM + ExecutionEnvironmentFactory.toUniqueID(executionEnvironment) +
                                     SET_PLATFORM, platform);
                             while (provider.hasMoreCompilerSets()) {
                                 String data = provider.getNextCompilerSetData();
@@ -710,7 +739,7 @@ public class CompilerSetManager {
     }
 
     public void finishInitialization() {
-        CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
+        CompilerSetProvider provider = CompilerSetProviderFactory.createNew(executionEnvironment);
         List<CompilerSet> setsCopy = new ArrayList<CompilerSet>(sets);
         Runnable compilerSetDataLoader = provider.createCompilerSetDataLoader(setsCopy);
         CndUtils.assertFalse(compilerSetDataLoader == null);
@@ -1098,7 +1127,10 @@ public class CompilerSetManager {
     }
 
     public CompilerSet getCompilerSet(String name, String dname) {
-        waitForCompletion();
+        //waitForCompletion();
+        if (isPending()) {
+            log.warning("calling getCompilerSet() on uninitializad " + getClass().getSimpleName());
+        }
         for (CompilerSet cs : sets) {
             if (cs.getName().equals(name) && cs.getDisplayName().equals(dname)) {
                 return cs;
@@ -1108,7 +1140,10 @@ public class CompilerSetManager {
     }
 
     public CompilerSet getCompilerSet(int idx) {
-        waitForCompletion();
+        //waitForCompletion();
+        if (isPending()) {
+            log.warning("calling getCompilerSet() on uninitializad " + getClass().getSimpleName());
+        }
         if (idx >= 0 && idx < sets.size()) {
             return sets.get(idx);
         }
@@ -1160,16 +1195,11 @@ public class CompilerSetManager {
 
     /** TODO: deprecate and remove */
     public static String getDefaultDevelopmentHost() {
-        return ExecutionEnvironmentFactory.getHostKey(getDefaultExecutionEnvironment());
+        return ExecutionEnvironmentFactory.toUniqueID(getDefaultExecutionEnvironment());
     }
 
     public static ExecutionEnvironment getDefaultExecutionEnvironment() {
-        ServerList registry = Lookup.getDefault().lookup(ServerList.class);
-        if (registry == null) {
-            return ExecutionEnvironmentFactory.getLocalExecutionEnvironment();
-        } else {
-            return registry.getDefaultRecord().getExecutionEnvironment();
-        }
+        return ServerList.getDefaultRecord().getExecutionEnvironment();
     }
 
     /**
@@ -1204,7 +1234,7 @@ public class CompilerSetManager {
     public void saveToDisk() {
         if (!sets.isEmpty() && getPlatform() != PlatformTypes.PLATFORM_GENERIC) {
             getPreferences().putDouble(CSM + VERSION, csm_version);
-            String executionEnvironmentKey = ExecutionEnvironmentFactory.getHostKey(executionEnvironment);
+            String executionEnvironmentKey = ExecutionEnvironmentFactory.toUniqueID(executionEnvironment);
             getPreferences().putInt(CSM + executionEnvironmentKey + NO_SETS, sets.size());
             getPreferences().putInt(CSM + executionEnvironmentKey + SET_PLATFORM, getPlatform());
             int setCount = 0;
@@ -1235,7 +1265,7 @@ public class CompilerSetManager {
         if (version == 1.0 && env.isLocal()) {
             return restoreFromDisk10();
         }
-        String executionEnvironmentKey = ExecutionEnvironmentFactory.getHostKey(env);
+        String executionEnvironmentKey = ExecutionEnvironmentFactory.toUniqueID(env);
         int noSets = getPreferences().getInt(CSM + executionEnvironmentKey + NO_SETS, -1);
         if (noSets < 0) {
             return null;
@@ -1332,16 +1362,16 @@ public class CompilerSetManager {
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavor.toFlavor(toolFlavorName, PlatformTypes.getDefaultPlatform());
                 }
-                Tool tool = getCompilerProvider().createCompiler(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(),
+                Tool tool = getCompilerProvider().createCompiler(ExecutionEnvironmentFactory.getLocal(),
                         toolFlavor, toolKind, "", toolDisplayName, toolPath); //NOI18N
                 tool.setName(toolName);
                 cs.addTool(tool);
             }
-            completeCompilerSet(ExecutionEnvironmentFactory.getLocalExecutionEnvironment(), cs, css);
+            completeCompilerSet(ExecutionEnvironmentFactory.getLocal(), cs, css);
             css.add(cs);
         }
         CompilerSetManager csm = new CompilerSetManager(
-                ExecutionEnvironmentFactory.getLocalExecutionEnvironment(),
+                ExecutionEnvironmentFactory.getLocal(),
                 css, computeLocalPlatform());
         return csm;
     }

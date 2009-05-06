@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -51,6 +51,7 @@ import java.util.*;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.windows.TopComponent;
@@ -113,7 +114,9 @@ public class SearchHistoryAction extends ContextAction {
 
     private static void outputSearchContextTab(VCSContext context, String title, boolean bRootOnly) {
         File root = HgUtils.getRootFile(context);
-        OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
+        String loggerId = (root != null) ? new HgURL(root).toHgCommandUrlStringWithoutUserInfo()
+                                               : null;
+        OutputLogger logger = OutputLogger.getLogger(loggerId);
         logger.outputInRed(
                 NbBundle.getMessage(SearchHistoryAction.class,
                 title));
@@ -239,22 +242,6 @@ public class SearchHistoryAction extends ContextAction {
         Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
         
         return nodes != null ? VCSContext.forNodes(nodes): VCSContext.EMPTY;
-    }
-
-    /**
-     * Opens search panel in the context of the given repository URL.
-     * 
-     * @param repositoryUrl URL to search
-     * @param localRoot local working copy root that corresponds to the repository URL 
-     * @param revision revision to search for
-     */ 
-    public static void openSearch(String repositoryUrl, File localRoot, long revision) {
-        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repositoryUrl, localRoot, revision);
-        String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", repositoryUrl); // NOI18N
-        tc.setDisplayName(tcTitle);
-        tc.open();
-        tc.requestActive();
-        tc.search();
     }
 
 }

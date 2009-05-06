@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
-import java.io.InterruptedIOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import org.netbeans.modules.dlight.perfan.util.TasksCachedProcessor;
@@ -60,6 +59,8 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.management.spi.PathMapper;
+import org.netbeans.modules.dlight.management.spi.PathMapperProvider;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionImpl;
 import org.netbeans.modules.dlight.perfan.storage.impl.FunctionStatistic;
@@ -70,6 +71,7 @@ import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 
 /**
@@ -96,7 +98,9 @@ import org.openide.util.Lookup;
 class SSStackDataProvider implements StackDataProvider {
 
     private static final Logger log = DLightLogger.getLogger(SSStackDataProvider.class);
-    private static Pattern linesCommandPattern = Pattern.compile("^([a-zA-Z_][^,]*), line ([0-9]+) in \"(.*)\""); // NOI18N
+    private static Pattern fullInfoPattern = Pattern.compile("^(.*), line ([0-9]+) in \"(.*)\""); // NOI18N
+    private static Pattern noLineInfoPattern = Pattern.compile("^<Function: (.*), instructions from source file (.*)>"); // NOI18N
+    private static Pattern noDebugInfoPattern = Pattern.compile("^<Function: (.*), instructions without line numbers>"); // NOI18N
     private final Computable<HotSpotFunctionsFetcherParams, List<FunctionCall>> hotSpotFunctionsFetcher =
             new TasksCachedProcessor<HotSpotFunctionsFetcherParams, List<FunctionCall>>(new HotSpotFunctionsFetcher(), true);
     private final List<FunctionMetric> metricsList = Arrays.asList(
@@ -104,6 +108,8 @@ class SSStackDataProvider implements StackDataProvider {
             TimeMetric.UserFuncTimeInclusive,
             TimeMetric.SyncWaitCallInclusive,
             TimeMetric.SyncWaitTimeInclusive,
+            TimeMetric.SyncWaitCallExclusive,
+            TimeMetric.SyncWaitTimeExclusive,
             MemoryMetric.LeakBytesMetric,
             MemoryMetric.LeaksCountMetric);
     private PerfanDataStorage storage;
@@ -227,12 +233,19 @@ class SSStackDataProvider implements StackDataProvider {
             FunctionCallImpl functionCallImpl = (FunctionCallImpl) functionCall;
             if (functionCallImpl.hasOffset()) {
                 if (!functionCallImpl.hasSourceFileDefined()) {
-                    FunctionStatistic fStatistic = storage.getFunctionStatistic(functionCall.getFunction().getName());
+                    FunctionStatistic fStatistic = storage.getFunctionStatistic(functionCall);
                     if (fStatistic != null) {
                         functionCallImpl.setSourceFile(fStatistic.getSourceFile());
                     }
                 }
                 if (functionCallImpl.hasSourceFileDefined()) {
+                    PathMapperProvider provider = Lookup.getDefault().lookup(PathMapperProvider.class);
+                    if (provider != null) {
+                        PathMapper pathMapper = provider.getPathMapper(ExecutionEnvironmentFactory.fromUniqueID(storage.getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY)));
+                        if (pathMapper != null) {
+                            return new SourceFileInfo(pathMapper.getLocalPath(functionCallImpl.getSourceFile()), (int) functionCallImpl.getOffset(), 0);
+                        }
+                    }
                     return new SourceFileInfo(functionCallImpl.getSourceFile(), (int) functionCallImpl.getOffset(), 0);
                 }
             }
@@ -358,20 +371,30 @@ class SSStackDataProvider implements StackDataProvider {
                     //parse
                     if ("lines".equals(taskArguments.command)) { // NOI18N
                         //if name.startsWith< will skip
-                        if (name.startsWith("<")) { // NOI18N
-                            continue;
-                        }
-                        Matcher match = linesCommandPattern.matcher(name);
+                        Matcher match;
+
+                        match = fullInfoPattern.matcher(name);
                         if (match.matches()) {
                             name = match.group(1);
                             lineNumber = Integer.valueOf(match.group(2));
                             fileName = match.group(3);
+                        } else {
+                            match = noLineInfoPattern.matcher(name);
+                            if (match.matches()) {
+                                name = match.group(1);
+                                fileName = match.group(2);
+                            } else {
+                                match = noDebugInfoPattern.matcher(name);
+                                if (match.matches()) {
+                                    name = match.group(1);
+                                } else {
+                                    continue;
+                                }
+                            }
                         }
-
                     }
-
-
                 }
+                
                 Function f = new FunctionImpl(name, name.hashCode());
 
                 Map<FunctionMetric, Object> metricsValues =

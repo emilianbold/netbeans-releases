@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import javax.swing.text.Document;
@@ -251,7 +252,15 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         if (!includePaths.isEmpty()) {
             buf.append(title).append('\n');
             for (String path : includePaths) {
-                buf.append(path).append('\n');
+                File f = new File(path);
+                if (f.exists() && f.isDirectory()) {
+                    buf.append(path);
+                } else {
+                    buf.append("<font color='red'>");  // NOI18N
+                    buf.append(path);
+                    buf.append("</font>");  // NOI18N
+                }
+                buf.append('\n');
             }
         }
     }

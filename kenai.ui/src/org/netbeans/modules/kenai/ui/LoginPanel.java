@@ -107,7 +107,7 @@ public class LoginPanel extends javax.swing.JPanel {
         errorProgress = new javax.swing.JPanel();
         progressBar = new javax.swing.JProgressBar();
         error = new javax.swing.JLabel();
-        lblKenaiLogo = new javax.swing.JLabel();
+        lblKenaiLogoCenter = new javax.swing.JLabel();
         lblUserName = new javax.swing.JLabel();
         username = new javax.swing.JTextField();
         lblPassword = new javax.swing.JLabel();
@@ -116,6 +116,8 @@ public class LoginPanel extends javax.swing.JPanel {
         password = new javax.swing.JPasswordField();
         forgotPassword = new LinkButton(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"), new URLDisplayerAction("",forgetPasswordUrl));
         signUp = new LinkButton(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"), new URLDisplayerAction("",registerUrl));
+        lblKenaiLogoLeft = new javax.swing.JLabel();
+        lblKenaiLogoRight = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
@@ -127,15 +129,16 @@ public class LoginPanel extends javax.swing.JPanel {
         error.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/error.png"))); // NOI18N
         errorProgress.add(error, "card3");
 
-        lblKenaiLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai.png"))); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(lblKenaiLogo, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblKenaiLogo.text")); // NOI18N
-        lblKenaiLogo.setMinimumSize(new java.awt.Dimension(0, 50));
+        lblKenaiLogoCenter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai_center.png"))); // NOI18N
+        lblKenaiLogoCenter.setBorder(null);
+        lblKenaiLogoCenter.setMinimumSize(new java.awt.Dimension(0, 50));
 
         lblUserName.setLabelFor(username);
         org.openide.awt.Mnemonics.setLocalizedText(lblUserName, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblUserName.text")); // NOI18N
 
         username.setText(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.username.text")); // NOI18N
 
+        lblPassword.setLabelFor(password);
         org.openide.awt.Mnemonics.setLocalizedText(lblPassword, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblPassword.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(chkRememberMe, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.chkRememberMe.text")); // NOI18N
@@ -148,11 +151,22 @@ public class LoginPanel extends javax.swing.JPanel {
             }
         });
 
+        lblKenaiLogoLeft.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai_left.png"))); // NOI18N
+        lblKenaiLogoLeft.setBorder(null);
+
+        lblKenaiLogoRight.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai_right.png"))); // NOI18N
+        lblKenaiLogoRight.setBorder(null);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(lblKenaiLogo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(lblKenaiLogoLeft)
+                .add(0, 0, 0)
+                .add(lblKenaiLogoCenter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                .add(0, 0, 0)
+                .add(lblKenaiLogoRight))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -176,7 +190,14 @@ public class LoginPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(lblKenaiLogo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lblKenaiLogoCenter, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(layout.createSequentialGroup()
+                        .add(0, 0, 0)
+                        .add(lblKenaiLogoLeft))
+                    .add(layout.createSequentialGroup()
+                        .add(0, 0, 0)
+                        .add(lblKenaiLogoRight)))
                 .add(16, 16, 16)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblUserName)
@@ -196,6 +217,13 @@ public class LoginPanel extends javax.swing.JPanel {
                 .add(18, 18, 18)
                 .add(errorProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        lblUserName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblUserName.AccessibleContext.accessibleDescription")); // NOI18N
+        lblPassword.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblPassword.AccessibleContext.accessibleDescription")); // NOI18N
+        chkRememberMe.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.chkRememberMe.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -210,7 +238,9 @@ public class LoginPanel extends javax.swing.JPanel {
     javax.swing.JLabel error;
     javax.swing.JPanel errorProgress;
     javax.swing.JButton forgotPassword;
-    javax.swing.JLabel lblKenaiLogo;
+    javax.swing.JLabel lblKenaiLogoCenter;
+    javax.swing.JLabel lblKenaiLogoLeft;
+    javax.swing.JLabel lblKenaiLogoRight;
     javax.swing.JLabel lblNoAccount;
     javax.swing.JLabel lblPassword;
     javax.swing.JLabel lblUserName;

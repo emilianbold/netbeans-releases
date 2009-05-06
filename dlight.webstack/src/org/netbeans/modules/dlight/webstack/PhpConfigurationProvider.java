@@ -53,6 +53,7 @@ import org.netbeans.modules.dlight.indicators.BarIndicatorConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -64,15 +65,15 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
   }
 
   public DLightToolConfiguration create() {
-    final String toolName = "Php D-Light Tool";
+    final String toolName = getMessage("PhpTool.Name"); // NOI18N
     final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
     List<Column> indicatorColumns = Arrays.asList(
-            new Column("utime", Double.class, "User Time", null),
-            new Column("stime", Double.class, "System Time", null),
-            new Column("wtime", Double.class, "Wait Time", null));
+            new Column("utime", Double.class, getMessage("Column.UserTime"), null), // NOI18N
+            new Column("stime", Double.class, getMessage("Column.SystemTime"), null), // NOI18N
+            new Column("wtime", Double.class, getMessage("Column.WaitTime"), null)); // NOI18N
 
-    final DataTableMetadata dbTableMetadata = new DataTableMetadata("prstat", indicatorColumns);
-    CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration("/bin/prstat", "-mv -p `pgrep -x mysqld` -c 1", new MyCLIOParser(), Arrays.asList(dbTableMetadata));
+    final DataTableMetadata dbTableMetadata = new DataTableMetadata("prstat", indicatorColumns); // NOI18N
+    CLIODCConfiguration clioCollectorConfiguration = new CLIODCConfiguration("/bin/prstat", "-mv -p `pgrep -x mysqld` -c 1", new MyCLIOParser(), Arrays.asList(dbTableMetadata)); // NOI18N
     toolConfiguration.addIndicatorDataProviderConfiguration(clioCollectorConfiguration);
 
 
@@ -81,20 +82,20 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
     toolConfiguration.addIndicatorConfiguration(cpuIndicator);
 
     List<Column> phpColumns = Arrays.asList(
-            new Column("kind", Integer.class, "Kind", null),
-            new Column("timestamp", Long.class, "Timestamp", null),
-            new Column("function_name", String.class, "FunctionName", null),
-            new Column("source_file", String.class, "PHP script", null),
-            new Column("line_number", Integer.class, "Line Number", null),
-            new Column("class_name", String.class, "Class", null));
+            new Column("kind", Integer.class, getMessage("Column.Kind"), null), // NOI18N
+            new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
+            new Column("function_name", String.class, getMessage("Column.FunctionName"), null), // NOI18N
+            new Column("source_file", String.class, getMessage("Column.SourceFile"), null), // NOI18N
+            new Column("line_number", Integer.class, getMessage("Column.LineNumber"), null), // NOI18N
+            new Column("class_name", String.class, getMessage("Column.ClassName"), null)); // NOI18N
 
 /// "`pgrep -x mysqld`"
-    final DataTableMetadata phpDatatableMetadata = new DataTableMetadata("php", phpColumns);
+    final DataTableMetadata phpDatatableMetadata = new DataTableMetadata("php", phpColumns); // NOI18N
     DTDCConfiguration dcConfiguration = new DTDCConfiguration(Util.copyResource(PhpConfigurationProvider.class,
-            "org/netbeans/modules/dlight/webstack/resources/script.d"), Arrays.asList(phpDatatableMetadata));
-    dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner"));
+            "org/netbeans/modules/dlight/webstack/resources/script.d"), Arrays.asList(phpDatatableMetadata)); // NOI18N
+    dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner")); // NOI18N
     toolConfiguration.addDataCollectorConfiguration(dcConfiguration);
-    cpuIndicator.setVisualizerConfiguration(new TableVisualizerConfiguration(phpDatatableMetadata));
+    cpuIndicator.addVisualizerConfiguration(new TableVisualizerConfiguration(phpDatatableMetadata));
 
     return toolConfiguration;
   }
@@ -102,9 +103,9 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
   class MyCLIOParser implements CLIOParser {
 
     private final List<String> colnames = Arrays.asList(new String[]{
-              "utime",
-              "stime",
-              "wtime"
+              "utime", // NOI18N
+              "stime", // NOI18N
+              "wtime" // NOI18N
             });
     Double utime, stime, wtime;
 
@@ -113,8 +114,8 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
         return null;
       }
       String l = line.trim();
-      l = l.replaceAll(",", ".");
-      String[] tokens = l.split("[ \t]+");
+      l = l.replaceAll(",", "."); // NOI18N
+      String[] tokens = l.split("[ \t]+"); // NOI18N
 
       if (tokens.length != 15) {
         return null;
@@ -130,5 +131,9 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 
       return new DataRow(colnames, Arrays.asList(new Double[]{utime, stime, wtime}));
     }
+  }
+
+  private static String getMessage(String name) {
+      return NbBundle.getMessage(PhpConfigurationProvider.class, name);
   }
 }

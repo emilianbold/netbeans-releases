@@ -29,7 +29,7 @@
 
 
 tmptouch: tmptouch.c
-	$(CC) -g tmptouch.c -o tmptouch
+	gcc -g tmptouch.c -o tmptouch
 
 clean:
 	rm -f tmptouch.o tmptouch

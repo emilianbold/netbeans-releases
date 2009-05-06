@@ -66,7 +66,7 @@ public class FileImplOffsetsTest extends TraceModelTestBase {
         File testFile = getDataFile(source);
         assertTrue("File not found "+testFile.getAbsolutePath(),testFile.exists());        
         super.performModelTest(testFile, System.out, System.err);
-        FileImpl file = getProject().getFile(testFile);
+        FileImpl file = getProject().getFile(testFile, true);
         assertNotNull("csm file not found for " + testFile.getAbsolutePath(), file);
         checkFileOffsetsConverting(file);
     }

@@ -44,11 +44,10 @@ package org.netbeans.modules.java.source.usages;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.Convert;
 import com.sun.tools.javac.util.Name;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
+
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -74,6 +73,7 @@ import org.netbeans.modules.classfile.Method;
  * @author Tomas Zezula
  */
 public class ClassFileUtil {
+    private static Logger log = Logger.getLogger(ClassFileUtil.class.getName());
     
     private static final Set<ElementKind> TYPE_DECLS = EnumSet.of(ElementKind.CLASS, ElementKind.INTERFACE, ElementKind.ENUM, ElementKind.ANNOTATION_TYPE);
     
@@ -169,12 +169,16 @@ public class ClassFileUtil {
     }        
     
     public static String[] createExecutableDescriptor (final ExecutableElement ee) {
+        if (log.isLoggable(Level.FINE))
+            log.log(Level.FINE, "Calling createExecutableDescriptor: ExecutableElement=" + ee); // NOI18N
         assert ee != null;
         final ElementKind kind = ee.getKind();
         final String[] result = (kind == ElementKind.STATIC_INIT || kind == ElementKind.INSTANCE_INIT) ? new String[2] : new String[3];
         final Element enclosingType = ee.getEnclosingElement();
 	assert enclosingType instanceof TypeElement;
-        result[0] = encodeClassNameOrArray ((TypeElement)enclosingType);        
+        result[0] = encodeClassNameOrArray ((TypeElement)enclosingType);
+        if (log.isLoggable(Level.FINE))
+            log.log(Level.FINE, "Result of encodeClassNameOrArray = " + result[0]);    // NOI18N
         if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
             final StringBuilder retType = new StringBuilder ();
             if (kind == ElementKind.METHOD) {
@@ -203,6 +207,8 @@ public class ClassFileUtil {
         else {
             throw new IllegalArgumentException ();
         }
+        if (log.isLoggable(Level.FINE))
+            log.log(Level.FINE, "Result of createExecutableDescriptor=" + Arrays.toString(result)); // NOI18N
         return result;
     }
     

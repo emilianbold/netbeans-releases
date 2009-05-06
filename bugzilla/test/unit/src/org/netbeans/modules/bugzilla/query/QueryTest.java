@@ -103,7 +103,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
         String id1 = TestUtil.createIssue(getRepository(), summary);
 
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
-        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, getRepository(), p, ts);
+        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, getRepository(), p, ts, false);
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
 
         nl.reset();
@@ -140,7 +140,7 @@ public class QueryTest extends NbTestCase implements TestConstants {
 
         // query for issue1
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary1);
-        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, getRepository(), p, ts);
+        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, getRepository(), p, ts, false);
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
 
         Issue[] issues = q.getIssues();

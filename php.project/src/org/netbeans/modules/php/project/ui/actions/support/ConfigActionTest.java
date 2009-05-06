@@ -127,9 +127,8 @@ class ConfigActionTest extends ConfigAction {
         }
         PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
         if (phpUnit == null || !phpUnit.supportedVersionFound()) {
-            int[] version = phpUnit.getVersion();
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(version)),
+                    NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit)),
                     NotifyDescriptor.WARNING_MESSAGE));
             return;
         }
@@ -304,8 +303,8 @@ class ConfigActionTest extends ConfigAction {
             try {
                 PhpUnitCoverageLogParser.parse(new BufferedReader(new FileReader(PhpUnit.COVERAGE_LOG)), coverage);
             } catch (FileNotFoundException ex) {
-                LOGGER.warning(String.format("In order to show code coverage, file %s must exist."
-                        + "Report this issue please in http://www.netbeans.org/issues/.", PhpUnit.COVERAGE_LOG));
+                LOGGER.info(String.format("File %s not found. If there are no errors in PHPUnit output (verify in Output window), "
+                        + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.COVERAGE_LOG));
                 return;
             }
             coverageProvider.setCoverage(coverage);
@@ -407,7 +406,7 @@ class ConfigActionTest extends ConfigAction {
                     defaultProcessor.reset();
                 }
                 public void close() throws IOException {
-                    String msg = NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit.getVersion()));
+                    String msg = NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit));
                     char[] separator = new char[msg.length()];
                     Arrays.fill(separator, '='); // NOI18N
                     defaultProcessor.processInput("\n".toCharArray()); // NOI18N

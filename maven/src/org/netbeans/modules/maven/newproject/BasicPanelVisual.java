@@ -61,11 +61,13 @@ import javax.swing.table.TableModel;
 import javax.swing.text.Document;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.embedder.MavenEmbedder;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -82,6 +84,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -524,7 +527,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         return true;
     }
 
-    private boolean containsMultiByte (String text, WizardDescriptor wd) {
+    static boolean containsMultiByte (String text, WizardDescriptor wd) {
         char[] textChars = text.toCharArray();
         for (int i = 0; i < textChars.length; i++) {
             if ((int)textChars[i] > 255) {
@@ -706,13 +709,19 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             
             repos = Collections.singletonList(EmbedderFactory.createRemoteRepository(online, arch.getRepository(), "custom-repo"));//NOI18N
         }
-                    AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(BasicPanelVisual.class, "Handle_Download"), 
-                            new ProgressContributor[] {
-                                AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
-                            null, null);
+        AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(BasicPanelVisual.class, "Handle_Download"),
+                new ProgressContributor[] {
+                    AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
+                null, null);
         ProgressTransferListener.setAggregateHandle(hndl);
         try {
             hndl.start();
+            try {
+                WagonManager wagon = (WagonManager) online.getPlexusContainer().lookup(WagonManager.class);
+                wagon.setDownloadMonitor(new ProgressTransferListener());
+            } catch (ComponentLookupException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             online.resolve(pom, repos, online.getLocalRepository());
             online.resolve(art, repos, online.getLocalRepository());
         } finally {

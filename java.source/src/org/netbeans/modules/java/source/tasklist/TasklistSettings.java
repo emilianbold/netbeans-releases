@@ -41,7 +41,8 @@
 package org.netbeans.modules.java.source.tasklist;
 
 import java.util.prefs.Preferences;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.util.NbPreferences;
 
 /**
@@ -69,7 +70,8 @@ public class TasklistSettings {
         if (isTasklistEnabled() != enabled) {
             getPreferencesNode().putBoolean(KEY_ENABLED, enabled);
             if (enabled) {
-                RepositoryUpdater.getDefault().rebuildAll(true);
+// XXX:                RepositoryUpdater.getDefault().rebuildAll(true);
+                IndexingManager.getDefault().refreshAllIndices(JavaIndex.NAME);
             }
             
             ErrorAnnotator an = ErrorAnnotator.getAnnotator();
@@ -106,7 +108,8 @@ public class TasklistSettings {
         if (isDependencyTrackingEnabled() != enabled) {
             getPreferencesNode().putBoolean(KEY_DEPENDENCY_TRACKING, enabled);
             if (enabled) {
-                RepositoryUpdater.getDefault().rebuildAll(true);
+// XXX:                RepositoryUpdater.getDefault().rebuildAll(true);
+                IndexingManager.getDefault().refreshAllIndices(JavaIndex.NAME);
             }
             
             ErrorAnnotator an = ErrorAnnotator.getAnnotator();

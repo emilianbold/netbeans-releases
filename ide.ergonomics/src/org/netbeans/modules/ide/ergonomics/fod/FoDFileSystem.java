@@ -41,15 +41,21 @@ package org.netbeans.modules.ide.ergonomics.fod;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.project.ProjectFactory;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.SAXException;
@@ -60,11 +66,14 @@ import org.xml.sax.SAXException;
  */
 @ServiceProvider(service=FileSystem.class)
 public class FoDFileSystem extends MultiFileSystem 
-implements Runnable, ChangeListener {
+implements Runnable, ChangeListener, LookupListener {
     private static FoDFileSystem INSTANCE;
     final static Logger LOG = Logger.getLogger (FoDFileSystem.class.getPackage().getName());
     private static RequestProcessor RP = new RequestProcessor("Ergonomics"); // NOI18N
     private RequestProcessor.Task refresh = RP.create(this, true);
+    private Lookup.Result<ProjectFactory> factories;
+    private Lookup.Result<?> ants;
+    private boolean forcedRefresh;
 
     public FoDFileSystem() {
         assert INSTANCE == null;
@@ -82,8 +91,13 @@ implements Runnable, ChangeListener {
         }
         return INSTANCE;
     }
-    
+
     public void refresh() {
+        refresh.schedule(0);
+        refresh.waitFinished();
+    }
+    public void refreshForce() {
+        forcedRefresh = true;
         refresh.schedule(0);
         refresh.waitFinished();
     }
@@ -96,7 +110,11 @@ implements Runnable, ChangeListener {
     private FileSystem getDefaultLayer() {
         if (def == null) {
             try {
-                def = new XMLFileSystem(FoDFileSystem.class.getResource("default.xml"));
+                if (FeatureInfo.doParseXML()) {
+                    def = new XMLFileSystem(FoDFileSystem.class.getResource("default.xml"));
+                    return def;
+                }
+                def = FileUtil.createMemoryFileSystem();
             } catch (SAXException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -110,19 +128,29 @@ implements Runnable, ChangeListener {
         LOG.fine("collecting layers"); // NOI18N
         List<FileSystem> delegate = new ArrayList<FileSystem>();
         for (FeatureInfo info : FeatureManager.features()) {
-            if (!info.isEnabled() && info.isPresent()) {
+            if (!info.isPresent()) {
+                continue;
+            }
+            if (!info.isEnabled()) {
                 LOG.finest("adding feature " + info.clusterName); // NOI18N
                 delegate.add(info.getXMLFileSystem());
             } else {
                 empty = false;
             }
         }
-        if (empty) {
+        if (empty && noAdditionalProjects()) {
             LOG.fine("adding default layer"); // NOI18N
             delegate.add(0, getDefaultLayer());
         }
-        
-        LOG.fine("delegating to " + delegate.size() + " layers"); // NOI18N
+        if (forcedRefresh) {
+            forcedRefresh = false;
+            LOG.log(Level.INFO, "Forced refresh. Setting delegates to empty"); // NOI18N
+            setDelegates();
+            LOG.log(Level.INFO, "New delegates count: {0}", delegate.size()); // NOI18N
+            LOG.log(Level.INFO, "{0}", delegate); // NOI18N
+        }
+        LOG.log(Level.FINE, "delegating to {0} layers", delegate.size()); // NOI18N
+        LOG.log(Level.FINEST, "{0}", delegate); // NOI18N
         setDelegates(delegate.toArray(new FileSystem[0]));
         LOG.fine("done");
         FeatureManager.dumpModules();
@@ -154,4 +182,28 @@ implements Runnable, ChangeListener {
         refresh.schedule(500);
     }
 
+    public void resultChanged(LookupEvent ev) {
+        refresh.schedule(0);
+    }
+
+    private boolean noAdditionalProjects() {
+        if (factories == null) {
+            factories = Lookup.getDefault().lookupResult(ProjectFactory.class);
+            factories.addLookupListener(this);
+            
+            ants = Lookup.getDefault().lookupResult(AntBasedProjectType.class);
+            ants.addLookupListener(this);
+        }
+
+        for (ProjectFactory pf : factories.allInstances()) {
+            if (pf.getClass().getName().contains("AntBasedProjectFactorySingleton")) { // NOI18N
+                continue;
+            }
+            if (pf.getClass().getName().startsWith("org.netbeans.modules.ide.ergonomics")) { // NOI18N
+                continue;
+            }
+            return false;
+        }
+        return ants.allItems().isEmpty();
+    }
 }

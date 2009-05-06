@@ -86,10 +86,12 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiLicense;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -100,9 +102,6 @@ import org.openide.util.RequestProcessor;
  * TODO:
  * - all text from bundles
  * - all possible error states and messages
- * - check project name against AJAX API
- * - fix regexp
- * - check for isUnique(prjName)
  *
  * @author Milan Kubec
  */
@@ -122,6 +121,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     private List<KenaiLicense> licensesList = null;
 
     private String prjNameCheckMessage = null;
+
+    private boolean licensesLoaded = true;
 
     public NameAndLicenseWizardPanelGUI(NameAndLicenseWizardPanel pnl) {
 
@@ -173,7 +174,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         folderTosShareTextField.getDocument().addDocumentListener(firingDocListener);
 
         setupLicensesListModel();
-
+        setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
     }
 
     private void setAutoCommit(boolean autoCommit) {
@@ -205,10 +206,12 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                         model.addElement(license.getDisplayName());
                         licenseList.add(license);
                     }
+                    licensesLoaded = true;
                 } else {
                     // XXX this item needs to be selected
                     model.addElement(NbBundle.getMessage(NameAndLicenseWizardPanel.class,
                             "NameAndLicenseWizardPanelGUI.noLicensesError"));
+                    licensesLoaded = false;
                 }
                 if (!licenseList.isEmpty()) {
                     setLicenses(licenseList);
@@ -291,10 +294,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         additionalDescription = new JLabel();
         autoCommit = new JCheckBox();
 
-        setPreferredSize(new Dimension(700, 450));
         setLayout(new GridBagLayout());
-
-        loggedInLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loggedInLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loggedInLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -302,7 +303,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(0, 0, 5, 0);
         add(loggedInLabel, gridBagConstraints);
 
-        usernameLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.notLoggedIn")); // NOI18N
+        loggedInLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loggedInLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.notLoggedIn"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -312,7 +314,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(0, 4, 5, 0);
         add(usernameLabel, gridBagConstraints);
 
-        loginButton.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loginButton.text")); // NOI18N
+        usernameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.usernameLabel.AccessibleContext.accessibleName")); // NOI18N
+        usernameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.usernameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(loginButton, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loginButton.text"));
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 loginButtonActionPerformed(evt);
@@ -325,7 +329,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(0, 0, 5, 0);
         add(loginButton, gridBagConstraints);
 
-        projectNameLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameLabel.text")); // NOI18N
+        loginButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loginButton.AccessibleContext.accessibleDescription")); // NOI18N
+        projectNameLabel.setLabelFor(projectNameTextField);
+        Mnemonics.setLocalizedText(projectNameLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -333,6 +339,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(0, 0, 0, 4);
         add(projectNameLabel, gridBagConstraints);
 
+        projectNameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
         projectNameTextField.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameTextField.text")); // NOI18N
         projectNameTextField.addFocusListener(new FocusAdapter() {
             public void focusLost(FocusEvent evt) {
@@ -346,7 +353,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         add(projectNameTextField, gridBagConstraints);
 
-        kenaiURLPreviewLabel.setText(PRJ_NAME_PREVIEW_PREFIX + "...");
+        projectNameTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(kenaiURLPreviewLabel, PRJ_NAME_PREVIEW_PREFIX + "...");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -356,7 +365,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(0, 6, 16, 0);
         add(kenaiURLPreviewLabel, gridBagConstraints);
 
-        projectTitleLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectTitleLabel.text")); // NOI18N
+        kenaiURLPreviewLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.kenaiURLPreviewLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectTitleLabel.setLabelFor(projectTitleTextField);
+        Mnemonics.setLocalizedText(projectTitleLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectTitleLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -364,6 +375,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(0, 0, 0, 5);
         add(projectTitleLabel, gridBagConstraints);
 
+        projectTitleLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectTitleLabel.AccessibleContext.accessibleDescription")); // NOI18N
         projectTitleTextField.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectTitleTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -373,7 +385,10 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(projectTitleTextField, gridBagConstraints);
 
-        projectDescLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectDescLabel.text")); // NOI18N
+        projectTitleTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectTitleTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectTitleTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectTitleTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        projectDescLabel.setLabelFor(projectDescTextField);
+        Mnemonics.setLocalizedText(projectDescLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectDescLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -381,6 +396,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(4, 0, 0, 4);
         add(projectDescLabel, gridBagConstraints);
 
+        projectDescLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectDescLabel.AccessibleContext.accessibleDescription")); // NOI18N
         projectDescTextField.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectDescTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -391,7 +407,10 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(4, 0, 0, 0);
         add(projectDescTextField, gridBagConstraints);
 
-        projectLicenseLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectLicenseLabel.text")); // NOI18N
+        projectDescTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectDescTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectDescTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectDescTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        projectLicenseLabel.setLabelFor(projectLicenseComboBox);
+        Mnemonics.setLocalizedText(projectLicenseLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectLicenseLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -399,6 +418,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(4, 0, 0, 4);
         add(projectLicenseLabel, gridBagConstraints);
 
+        projectLicenseLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectLicenseLabel.AccessibleContext.accessibleDescription")); // NOI18N
         projectLicenseComboBox.setEnabled(false);
         projectLicenseComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -423,7 +443,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(4, 0, 0, 0);
         add(projectLicenseComboBox, gridBagConstraints);
 
-        multiLicensesLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.multiLicensesLabel.text")); // NOI18N
+        projectLicenseComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectLicenseComboBox.AccessibleContext.accessibleName")); // NOI18N
+        projectLicenseComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectLicenseComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(multiLicensesLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.multiLicensesLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
@@ -433,7 +455,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(0, 6, 0, 0);
         add(multiLicensesLabel, gridBagConstraints);
 
-        proxyConfigButton.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.proxyConfigButton.text")); // NOI18N
+        multiLicensesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.multiLicensesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(proxyConfigButton, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.proxyConfigButton.text"));
         proxyConfigButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 proxyConfigButtonActionPerformed(evt);
@@ -447,20 +470,25 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.weighty = 1.0;
         add(proxyConfigButton, gridBagConstraints);
 
-        lowercaseLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.lowercaseLabel.text")); // NOI18N
+        proxyConfigButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.proxyConfigButton.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(lowercaseLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.lowercaseLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(lowercaseLabel, gridBagConstraints);
 
-        folderToShareLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.folderToShareLabel.text")); // NOI18N
+        lowercaseLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.lowercaseLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        folderToShareLabel.setLabelFor(folderTosShareTextField);
+        Mnemonics.setLocalizedText(folderToShareLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.folderToShareLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 20, 0);
         add(folderToShareLabel, gridBagConstraints);
+
+        folderToShareLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.folderToShareLabel.AccessibleContext.accessibleDescription")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -470,7 +498,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(0, 0, 20, 0);
         add(folderTosShareTextField, gridBagConstraints);
 
-        browse.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "GetSourcesFromKenaiPanel.browseLocalButton.text")); // NOI18N
+        folderTosShareTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.folderTosShareTextField.AccessibleContext.accessibleName")); // NOI18N
+        folderTosShareTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.folderTosShareTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(browse, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "GetSourcesFromKenaiPanel.browseLocalButton.text"));
         browse.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 browseActionPerformed(evt);
@@ -483,7 +513,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(0, 5, 20, 0);
         add(browse, gridBagConstraints);
 
-        specifyLabel.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.specifyLabel.text")); // NOI18N
+        browse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.browse.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(specifyLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.specifyLabel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -492,8 +523,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 10, 0);
         add(specifyLabel, gridBagConstraints);
-
-        additionalDescription.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.additionalDescription.text")); // NOI18N
+        Mnemonics.setLocalizedText(additionalDescription, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.additionalDescription.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -502,8 +532,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(20, 0, 10, 0);
         add(additionalDescription, gridBagConstraints);
 
+        additionalDescription.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.additionalDescription.AccessibleContext.accessibleDescription")); // NOI18N
         autoCommit.setSelected(true);
-        autoCommit.setText(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.autoCommit.text")); // NOI18N
+        Mnemonics.setLocalizedText(autoCommit, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.autoCommit.text"));
         autoCommit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 autoCommitActionPerformed(evt);
@@ -516,6 +547,10 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(10, 0, 0, 0);
         add(autoCommit, gridBagConstraints);
+
+        autoCommit.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.autoCommit.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void loginButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
@@ -554,7 +589,11 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                 try {
                     prjNameCheckMessage = KenaiProject.checkName(getProjectName());
                 } catch (KenaiException ex) {
-                    Exceptions.printStackTrace(ex);
+                    String msg = ex.getAsString();
+                    if (msg==null) {
+                        msg = ex.getLocalizedMessage();
+                    }
+                    prjNameCheckMessage = msg;
                 }
                 panel.fireChangeEvent();
             }
@@ -667,6 +706,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             return "Project Description must to be shorter than 500 characters.";
         } else if (prjNameCheckMessage!=null) {
             return prjNameCheckMessage;
+        } else if (!licensesLoaded) {
+            return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
+                    "NameAndLicenseWizardPanelGUI.noLicensesErrMsg");
         }
         return null;
     }
@@ -775,7 +817,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_PRJ_LICENSE, getProjectLicense());
 
         if (panel.isFinishPanel()) {
-            settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES, "issues");
+            settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES, KenaiService.Names.BUGZILLA);
             //settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES_URL, "nevim");
             settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_LOCAL, getFolderToShare());
             settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_NAME, SourceAndIssuesWizardPanelGUI.SVN_DEFAULT_NAME);
@@ -787,6 +829,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                     getProjectName(), 
                     SourceAndIssuesWizardPanelGUI.SVN_DEFAULT_NAME));
             settings.putProperty(NewKenaiProjectWizardIterator.PROP_AUTO_COMMIT, Boolean.toString(isAutoCommit()));
+            settings.putProperty(NewKenaiProjectWizardIterator.PROP_CREATE_CHAT, true);
         }
     }
 

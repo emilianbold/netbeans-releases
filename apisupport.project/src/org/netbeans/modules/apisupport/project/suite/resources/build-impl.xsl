@@ -83,7 +83,7 @@ made subject to such option by the copyright holder.
             <sproject:property name="harness.dir" value="nbplatform.${{nbplatform.active}}.harness.dir"/>
             <sproject:property name="nbplatform.active.dir" value="nbplatform.${{nbplatform.active}}.netbeans.dest.dir"/>
             <sproject:evalprops property="cluster.path.evaluated" value="${{cluster.path}}"/>
-            <fail message="You must specify at least path to 'platform' cluster in $${{cluster.path}} property.">
+            <fail message="Path to 'platform' cluster missing in $${{cluster.path}} property or using corrupt Netbeans Platform (missing harness).">
                 <condition>
                     <not>
                         <contains string="${{cluster.path.evaluated}}" substring="platform"/>

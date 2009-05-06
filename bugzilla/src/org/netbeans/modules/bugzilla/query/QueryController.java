@@ -106,7 +106,7 @@ import org.openide.util.RequestProcessor.Task;
 public class QueryController extends BugtrackingController implements DocumentListener, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
     protected QueryPanel panel;
 
-    private static final String CHANGED_NOW = "Now";
+    private static final String CHANGED_NOW = "Now";                            // NOI18N
 
     private final ComboParameter summaryParameter;
     private final ComboParameter commentsParameter;
@@ -122,18 +122,22 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private final ListParameter severityParameter;
 
     private final Map<String, QueryParameter> parameters;
-
-    private static int counter;
-    private RequestProcessor rp = new RequestProcessor("Bugzilla query - " + counter++, 1, true);  // NOI18N
+    
+    private RequestProcessor rp = new RequestProcessor("Bugzilla query", 1, true);  // NOI18N
     private Task task;
 
     private final BugzillaRepository repository;
-    private BugzillaQuery query;
+    protected BugzillaQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss, EEE MMM d yyyy"); // NOI18N
-    private NotifyListener notifyListener;
+    private QueryTask searchTask;
+    private QueryTask refreshTask;
 
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters) {
+        this(repository, query, urlParameters, false);
+    }
+
+    public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, boolean urlDef) {
         this.repository = repository;
         this.query = query;
         
@@ -204,9 +208,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(query.isSaved()) {
             setAsSaved();
         }
-        notifyListener = new NotifyListener();
-        query.addNotifyListener(notifyListener);
-        postPopulate(urlParameters);
+        if(urlDef) {
+            panel.switchQueryFields(false);
+            panel.urlTextField.setText(urlParameters);
+        } else {            
+            postPopulate(urlParameters);
+        }
     }
 
     @Override
@@ -215,8 +222,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(autoRefresh) {
             scheduleForRefresh();
         }
-        if(query.isSaved() && !query.wasRun()) {
-            onRefresh();
+        if(query.isSaved()) {
+            setIssueCount(query.getSize()); // XXX this probably won't work
+                                            // if the query is alredy open and
+                                            // a refresh is invoked on kenai
+            if(!query.wasRun()) {
+                onRefresh();
+            }
         }
     }
 
@@ -255,7 +267,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     @Override
-    public HelpCtx getHelpContext() {
+    public HelpCtx getHelpCtx() {
         return new HelpCtx(org.netbeans.modules.bugzilla.query.BugzillaQuery.class);
     }
 
@@ -270,11 +282,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     public String getUrlParameters() {
-        StringBuffer sb = new StringBuffer();
-        for (QueryParameter p : parameters.values()) {
-            sb.append(p.get());
+        if(panel.urlPanel.isVisible()) {
+            return panel.urlTextField.getText();
+        } else {
+            StringBuffer sb = new StringBuffer();
+            for (QueryParameter p : parameters.values()) {
+                sb.append(p.get());
+            }
+            return sb.toString();
         }
-        return sb.toString();
     }
 
     private void postPopulate(final String urlParameters) {
@@ -493,7 +509,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 boolean firstTime = false;
                 if(!query.isSaved()) {
                     firstTime = true;
-                    name = getName();
+                    name = getSaveName();
                     if(name == null) {
                         return;
                     }
@@ -505,13 +521,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
        });
     }
 
-    private String getName() {
+    private String getSaveName() {
         String name = null;
         if(BugzillaUtil.show(
                 panel.savePanel,
                 NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),    // NOI18N
                 NbBundle.getMessage(QueryController.class, "LBL_Save"),         // NOI18N
-                new HelpCtx("org.netbeans.modules.bugzilla.query.savePanel"))) { // NOI18N
+                new HelpCtx("org.netbeans.modules.bugzilla.query.savePanel")))  // NOI18N
+        {
             name = panel.queryNameTextField.getText();
             if(name == null || name.trim().equals("")) { // NOI18N
                 return null;
@@ -520,7 +537,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             for (Query q : queries) {
                 if(q.getDisplayName().equals(name)) {
                     panel.saveErrorLabel.setVisible(true);
-                    name = getName();                    
+                    name = getSaveName();
                     panel.saveErrorLabel.setVisible(false);
                     break;
                 }
@@ -652,20 +669,23 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onSearch() {
-        post(new Runnable() {
-            public void run() {
-                try {
-                    String lastChageFrom = panel.changedFromTextField.getText().trim();
-                    if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
-                        BugzillaConfig.getInstance().setLastChangeFrom(lastChageFrom);
+        if(searchTask == null) {
+            searchTask = new QueryTask() {
+                public void executeQuery() {
+                    try {
+                        // XXX isn't persistent and should be merged with refresh
+                        String lastChageFrom = panel.changedFromTextField.getText().trim();
+                        if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
+                            BugzillaConfig.getInstance().setLastChangeFrom(lastChageFrom);
+                        }
+                        refreshIntern(false);
+                    } finally {
+                        
                     }
-                    refreshIntern(false);
-                } finally {
-                    panel.setQueryRunning(false);
-                    task = null;
                 }
-            }
-        });
+            };
+        }
+        post(searchTask);
     }
 
     public void autoRefresh() {
@@ -677,18 +697,21 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onRefresh(final boolean auto) {
-        post(new Runnable() {
-            public void run() {
-                panel.setQueryRunning(true);
-                try {
-                    refreshIntern(auto);
-                } finally {
-                    panel.setQueryRunning(false);
-                    task = null;
+        if(refreshTask == null) {            
+            refreshTask = new QueryTask() {
+                public void executeQuery() {
+                    panel.setQueryRunning(true);
+                    try {
+                        refreshIntern(auto);
+                    } finally {
+                        panel.setQueryRunning(false);
+                        task = null;
+                    }
                 }
-            }
-        });        
-    }
+            };
+        }
+        post(refreshTask);
+        }
 
     private void refreshIntern(boolean autoRefresh) {
         if (panel.urlPanel.isVisible()) {
@@ -698,6 +721,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
         } else {
             query.refresh(getUrlParameters(), autoRefresh);
         }
+    }
+
+    private void post(Runnable r) {
+        if(task != null) {
+            task.cancel();
+        }
+        task = rp.create(r);
+        task.schedule(0);
     }
 
     private void onModify() {
@@ -737,51 +768,28 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void onAutoRefresh() {
         final boolean autoRefresh = panel.refreshCheckBox.isSelected();
         BugzillaConfig.getInstance().setQueryAutoRefresh(query.getDisplayName(), autoRefresh);
-        BugtrackingUtil.logAutoRefreshEvent(BugzillaConnector.getConnectorName(), autoRefresh);
+        logAutoRefreshEvent(autoRefresh);
         if(autoRefresh) {
             scheduleForRefresh();
         } else {
             repository.stopRefreshing(query);
         }
     }
-    
+
+    protected void logAutoRefreshEvent(boolean autoRefresh) {
+        BugtrackingUtil.logAutoRefreshEvent(
+            BugzillaConnector.getConnectorName(),
+            query.getDisplayName(),
+            false,
+            autoRefresh
+        );
+    }
+
     private void remove() {
         if (task != null) {
             task.cancel();
         }
         query.remove();
-    }
-
-    private synchronized void post(Runnable r) {
-        if(task != null) {
-            task.cancel();
-        }
-        enableFields(false);        
-        task = rp.create(r);
-
-        Cancellable c = new Cancellable() {
-            public boolean cancel() {
-                if(task != null) {
-                    task.cancel();
-                }
-                return true;
-            }
-        };
-
-        ProgressHandle handle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(
-                    QueryController.class,
-                    "MSG_SearchingQuery",                                       // NOI18N
-                    new Object[] {
-                        query.getDisplayName() != null ?
-                            query.getDisplayName() :
-                            repository.getDisplayName()}),
-                c);
-        panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
-        notifyListener.setProgressHandle(handle);
-        handle.start();
-        
-        task.schedule(0);
     }
 
     private void populateProductDetails(String... products) {
@@ -857,46 +865,93 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    private class NotifyListener implements QueryNotifyListener {
-        private int counter;
+    private void setIssueCount(final int count) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                panel.tableSummaryLabel.setText(
+                        NbBundle.getMessage(
+                            QueryController.class,
+                            NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
+                            new Object[] { count }
+                        )
+                );
+            }
+        });
+    }
+
+    boolean isUrlDefined() {
+        return panel.urlTextField.isVisible();
+    }
+
+    private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
+        private int counter;
 
-        void setProgressHandle(ProgressHandle handle) {
-            this.handle = handle;
-        }
-        
-        public void notifyData(final Issue issue) {
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    panel.showNoContentPanel(false);
-                    if(query.contains(issue)) {
-                        panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {++counter})); // NOI18N // XXX
-                    }
-                }
-            });
+        public QueryTask() {
+            query.addNotifyListener(this);
         }
 
-        public void started() {
-            counter = 0;
+        private void startQuery() {
+            enableFields(false);
+            handle = ProgressHandleFactory.createHandle(
+                    NbBundle.getMessage(
+                        QueryController.class,
+                        "MSG_SearchingQuery",                                       // NOI18N
+                        new Object[] {
+                            query.getDisplayName() != null ?
+                                query.getDisplayName() :
+                                repository.getDisplayName()}),
+                    this);
+            panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
+            handle.start();
         }
 
-        public void finished() {
+        private void finnishQuery() {
+            task = null;
             if(handle != null) {
                 handle.finish();
                 handle = null;
             }
-            final int size = query.getSize();
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    enableFields(true);
+                    panel.setQueryRunning(false);
                     panel.setLastRefresh(getLastRefresh());
-                    panel.showNoContentPanel(false);
-                    if(size == 0) {
-                        panel.tableSummaryLabel.setText(NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {0})); // NOI18N // XXX
-                    }
+                    panel.showNoContentPanel(false);                    
+                    enableFields(true);
                 }
             });
         }
+
+        public abstract void executeQuery();
+
+        public void run() {
+            startQuery();
+            try {
+                executeQuery();
+            } finally {
+                finnishQuery();
+            }
+        }
+
+        public boolean cancel() {
+            if(task != null) {
+                task.cancel();
+            }
+            finnishQuery();
+            return true;
+        }
+
+        public void notifyData(final Issue issue) {
+            setIssueCount(++counter);
+        }
+
+        public void started() {
+            counter = 0;
+            setIssueCount(counter);
+        }
+
+        public void finished() { }
+
     }
 
 }

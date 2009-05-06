@@ -54,18 +54,18 @@ import java.util.Set;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jruby.nb.ast.CallNode;
-import org.jruby.nb.ast.ClassNode;
-import org.jruby.nb.ast.Colon2Node;
-import org.jruby.nb.ast.FCallNode;
-import org.jruby.nb.ast.ListNode;
-import org.jruby.nb.ast.MethodDefNode;
-import org.jruby.nb.ast.Node;
-import org.jruby.nb.ast.NodeType;
-import org.jruby.nb.ast.SClassNode;
-import org.jruby.nb.ast.SelfNode;
-import org.jruby.nb.ast.StrNode;
-import org.jruby.nb.ast.types.INameNode;
+import org.jrubyparser.ast.CallNode;
+import org.jrubyparser.ast.ClassNode;
+import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.FCallNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.MethodDefNode;
+import org.jrubyparser.ast.Node;
+import org.jrubyparser.ast.NodeType;
+import org.jrubyparser.ast.SClassNode;
+import org.jrubyparser.ast.SelfNode;
+import org.jrubyparser.ast.StrNode;
+import org.jrubyparser.ast.INameNode;
 import org.jruby.util.ByteList;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
@@ -699,7 +699,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
         
         private void scanMigration(Node node, Map<String,List<String>> items, String currentTable) {
-            if (node.nodeId == NodeType.FCALLNODE) {
+            if (node.getNodeType() == NodeType.FCALLNODE) {
                 // create_table etc.
                 String name = AstUtilities.getCallName(node);
                 if ("create_table".equals(name)) { // NOI18N
@@ -707,17 +707,17 @@ public class RubyIndexer extends EmbeddingIndexer {
                     List childNodes = node.childNodes();
                     if (childNodes.size() > 0) {
                         Node child = (Node)childNodes.get(0);
-                        if (child.nodeId == NodeType.ARRAYNODE) {
+                        if (child.getNodeType() == NodeType.ARRAYNODE) {
                             List grandChildren = child.childNodes();
                             if (grandChildren.size() > 0) {
                                 Node grandChild = (Node)grandChildren.get(0);
-                                if (grandChild.nodeId == NodeType.SYMBOLNODE || 
-                                        grandChild.nodeId == NodeType.STRNODE) {
+                                if (grandChild.getNodeType() == NodeType.SYMBOLNODE || 
+                                        grandChild.getNodeType() == NodeType.STRNODE) {
                                     String tableName = getString(grandChild);
                                     items.put(tableName, new ArrayList<String>());
                                     if (childNodes.size() > 1) {
                                         Node n = (Node) childNodes.get(1);
-                                        if (n.nodeId == NodeType.ITERNODE) {
+                                        if (n.getNodeType() == NodeType.ITERNODE) {
                                             scanMigration(n, items, tableName);
                                         }
                                     }
@@ -784,14 +784,14 @@ public class RubyIndexer extends EmbeddingIndexer {
                     
                     return;
                 }
-            } else if (node.nodeId == NodeType.CALLNODE && currentTable != null) {
+            } else if (node.getNodeType() == NodeType.CALLNODE && currentTable != null) {
                 // t.column, applying to an outer table
                 String name = AstUtilities.getCallName(node);
                 if ("column".equals(name)) {  // NOI18N
                     List childNodes = node.childNodes();
                     if (childNodes.size() >= 2) {
                         Node child = (Node)childNodes.get(0);
-                        if (child.nodeId != NodeType.DVARNODE) {
+                        if (child.getNodeType() != NodeType.DVARNODE) {
                             // Not a call on the block var corresponding to the table 
                             // Later, validate more closely that we're making a call
                             // on the actual block variable passed in from the create_table call!
@@ -824,7 +824,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                     List childNodes = node.childNodes();
                     if (childNodes.size() >= 1) {
                         Node child = (Node)childNodes.get(0);
-                        if (child.nodeId != NodeType.DVARNODE) {
+                        if (child.getNodeType() != NodeType.DVARNODE) {
                             // Not a call on the block var corresponding to the table 
                             // Later, validate more closely that we're making a call
                             // on the actual block variable passed in from the create_table call!
@@ -850,7 +850,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                         List childNodes = node.childNodes();
                         if (childNodes.size() >= 2) {
                             Node child = (Node)childNodes.get(0);
-                            if (child.nodeId != NodeType.DVARNODE) {
+                            if (child.getNodeType() != NodeType.DVARNODE) {
                                 // Not a call on the block var corresponding to the table 
                                 // Later, validate more closely that we're making a call
                                 // on the actual block variable passed in from the create_table call!
@@ -860,7 +860,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                             child = (Node)childNodes.get(1);
                             List<Node> args = child.childNodes();
                             for (Node n : args) {
-                                if (n.nodeId == NodeType.SYMBOLNODE || n.nodeId == NodeType.STRNODE) {
+                                if (n.getNodeType() == NodeType.SYMBOLNODE || n.getNodeType() == NodeType.STRNODE) {
                                     String columnName = getString(n);
                                     
                                     List<String> list = items.get(currentTable);
@@ -894,7 +894,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
 
         private String getString(Node node) {
-            if (node.nodeId == NodeType.STRNODE) {
+            if (node.getNodeType() == NodeType.STRNODE) {
                 return ((StrNode)node).getValue().toString();
             } else {
                 return ((INameNode)node).getName();
@@ -958,7 +958,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                             // but I can't handle these anyway
                         
                             if (n instanceof StrNode) {
-                                ByteList require = ((StrNode)n).getValue();
+                                String require = ((StrNode)n).getValue();
 
                                 if ((require != null) && (require.length() > 0)) {
                                     requires.add(require.toString());
@@ -1570,6 +1570,7 @@ public class RubyIndexer extends EmbeddingIndexer {
     }
     
     static boolean isPreindexing() {
-        return PREINDEXING || preindexingTest;
+        return true;
+//        return PREINDEXING || preindexingTest;
     }
 }
