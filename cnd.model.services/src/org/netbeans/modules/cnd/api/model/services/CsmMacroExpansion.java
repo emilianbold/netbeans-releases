@@ -215,6 +215,17 @@ public final class CsmMacroExpansion {
     }
 
     /**
+     * Returns usages of token on offset
+     *
+     * @param expandedDoc - document
+     * @param offset - offset
+     * @return array of usages
+     */
+    public static int[][] getUsages(Document expandedDoc, int offset) {
+        return getMacroExpansionDocProvider().getUsages(expandedDoc, offset);
+    }
+
+    /**
      * Expands document on specified position and shows Macro Expansion View panel.
      *
      * @param doc - document
@@ -263,6 +274,10 @@ public final class CsmMacroExpansion {
 
         public int getPrevMacroExpansionStartOffset(Document expandedDoc, int expandedOffset) {
             return expandedOffset;
+        }
+
+        public int[][] getUsages(Document expandedDoc, int offset) {
+            return null;
         }
     }
 

@@ -369,6 +369,11 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                                 if (paramValue != null) {
                                     // found param, so expand it and skip current token
                                     List<APTToken> expandedValue = expandParamValue(paramValue, callback, expandPPExpression);
+                                    List<APTToken> expandedValueWrapper = new ArrayList<APTToken>();
+                                    for (APTToken t : expandedValue) {
+                                        expandedValueWrapper.add(new APTMacroParamExpansion(t, token));
+                                    }
+                                    expandedValue = expandedValueWrapper;
                                     if (expandedValue.size() > MACRO_EXPANDING_THREASHOLD) {
                                         if (DebugUtils.STANDALONE) {
                                             System.err.printf(

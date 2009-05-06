@@ -138,4 +138,13 @@ public interface CsmMacroExpansionDocProvider {
      * @return offset of the next macro expansion
      */
     public int getPrevMacroExpansionStartOffset(Document expandedDoc, int expandedOffset);
+
+    /**
+     * Returns usages of token on offset
+     *
+     * @param expandedDoc - document
+     * @param offset - offset
+     * @return array of usages
+     */
+    public int[][] getUsages(Document expandedDoc, int offset);
 }
