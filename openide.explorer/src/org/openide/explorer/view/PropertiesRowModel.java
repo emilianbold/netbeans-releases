@@ -40,12 +40,17 @@
  */
 package org.openide.explorer.view;
 
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.WeakHashMap;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.event.TableModelEvent;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -54,6 +59,10 @@ import org.netbeans.swing.outline.RowModel;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.WeakListeners;
 
 /**
@@ -88,6 +97,74 @@ class PropertiesRowModel implements RowModel {
             }
         }
     };
+
+    OutlineTooltipUpdater otu = new OutlineTooltipUpdater();
+    
+    NodeListener nl = new NodeListener() {
+
+        public void childrenAdded(NodeMemberEvent ev) {}
+
+        public void childrenRemoved(NodeMemberEvent ev) {}
+
+        public void childrenReordered(NodeReorderEvent ev) {}
+
+        public void nodeDestroyed(NodeEvent ev) {}
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (Node.PROP_SHORT_DESCRIPTION.equals(evt.getPropertyName())) {
+                int row = rowForNode((Node)evt.getSource());
+                otu.fireToolTipChanged(outline, row);
+            }
+            pcl.propertyChange(evt);
+        }
+    };
+
+    private static class OutlineTooltipUpdater implements MouseMotionListener, MouseListener {
+
+        private MouseEvent lastMouseMovedEvent = null;
+        
+        public void fireToolTipChanged(final Outline outline, final int row) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (lastMouseMovedEvent != null) {
+                        int r = outline.rowAtPoint(lastMouseMovedEvent.getPoint());
+                        if (r == row) {
+                            ToolTipManager.sharedInstance().mouseMoved(lastMouseMovedEvent);
+                        }
+                    }
+                }
+            });
+        }
+
+        public void mouseDragged(MouseEvent e) {
+            lastMouseMovedEvent = null;
+        }
+
+        public void mouseMoved(MouseEvent e) {
+            lastMouseMovedEvent = e;
+        }
+
+        public void mouseClicked(MouseEvent e) {
+            lastMouseMovedEvent = null;
+        }
+
+        public void mousePressed(MouseEvent e) {
+            lastMouseMovedEvent = null;
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            lastMouseMovedEvent = null;
+        }
+
+        public void mouseEntered(MouseEvent e) {
+            lastMouseMovedEvent = null;
+        }
+
+        public void mouseExited(MouseEvent e) {
+            lastMouseMovedEvent = null;
+        }
+        
+    }
     
     /** Creates a new instance of PropertiesRowModel */
     public PropertiesRowModel() {
@@ -95,7 +172,13 @@ class PropertiesRowModel implements RowModel {
     }
     
     public void setOutline(Outline outline) {
+        if (this.outline != null) {
+            this.outline.removeMouseListener(otu);
+            this.outline.removeMouseMotionListener(otu);
+        }
         this.outline = outline;
+        outline.addMouseListener(otu);
+        outline.addMouseMotionListener(otu);
     }
     
     private int rowForNode(Node n) {
@@ -158,6 +241,8 @@ class PropertiesRowModel implements RowModel {
             PropertyChangeListener p = WeakListeners.propertyChange(pcl, n);
             nodesListenersCache.put(n, p);
             n.addPropertyChangeListener(p);
+            NodeListener l = WeakListeners.create(NodeListener.class, nl, n);
+            n.addNodeListener(l);
         }
         Node.Property theRealProperty = getPropertyFor(n, prop[column]);
         return theRealProperty;
