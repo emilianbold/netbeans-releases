@@ -45,6 +45,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import javax.swing.AbstractButton;
+import javax.swing.JComponent;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
@@ -126,6 +127,7 @@ public class TreeListUI extends BasicListUI {
             return false;
         Rectangle rect = list.getCellBounds(index, index);
         renComponent.setBounds(0,0,rect.width, rect.height);
+        renComponent.doLayout();
         Point p3 = rect.getLocation();
 
         Point p2 = new Point( p.x - p3.x, p.y - p3.y );

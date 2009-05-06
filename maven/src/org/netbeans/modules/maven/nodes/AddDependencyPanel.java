@@ -222,6 +222,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             tabPane.setEnabledAt(1, false);
         }
         pnlOpenProjects.add(new OpenListPanel(this, prj), BorderLayout.CENTER);
+
     }
 
     public JButton getOkButton() {
@@ -386,10 +387,10 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     .add(lblVersion))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(coordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
-                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+                    .add(txtArtifactId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
+                    .add(txtGroupId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, coordPanelLayout.createSequentialGroup()
-                        .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
+                        .add(txtVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lblScope)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -415,6 +416,11 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     .add(txtVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(43, 43, 43))
         );
+
+        txtGroupId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.txtGroupId.AccessibleContext.accessibleDescription")); // NOI18N
+        txtArtifactId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.txtArtifactId.AccessibleContext.accessibleDescription")); // NOI18N
+        txtVersion.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.txtVersion.AccessibleContext.accessibleDescription")); // NOI18N
+        comScope.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.comScope.AccessibleContext.accessibleDescription")); // NOI18N
 
         searchPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -458,11 +464,11 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, searchPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE))
+                        .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE))
                     .add(searchPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(resultsLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 265, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 297, Short.MAX_VALUE)
                         .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(searchPanelLayout.createSequentialGroup()
                         .add(12, 12, 12)
@@ -472,7 +478,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                             .add(searchPanelLayout.createSequentialGroup()
                                 .add(jLabel1)
                                 .add(14, 14, 14))
-                            .add(searchField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE))))
+                            .add(searchField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         searchPanelLayout.setVerticalGroup(
@@ -489,9 +495,12 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(resultsLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                .add(resultsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        searchField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.searchField.AccessibleContext.accessibleDescription")); // NOI18N
+        resultsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.resultsLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         tabPane.addTab(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.searchPanel.TabConstraints.tabTitle", new Object[] {}), searchPanel); // NOI18N
 
@@ -511,7 +520,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             .add(pnlDepManLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(pnlDepManLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
+                    .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
                     .add(artifactsLabel))
                 .addContainerGap())
         );
@@ -521,7 +530,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 .addContainerGap()
                 .add(artifactsLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
+                .add(artifactPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -538,7 +547,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             .add(pnlOpenLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(pnlOpenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(pnlOpenProjects, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
+                    .add(pnlOpenProjects, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
                     .add(jLabel3))
                 .addContainerGap())
         );
@@ -548,7 +557,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 .addContainerGap()
                 .add(jLabel3)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(pnlOpenProjects, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
+                .add(pnlOpenProjects, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -568,6 +577,8 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(tabPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
         );
+
+        tabPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.tabPane.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void searchPanelComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_searchPanelComponentShown
@@ -771,6 +782,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
             defSearchC = depPanel.searchField.getForeground();
             manager.addPropertyChangeListener(this);
             depPanel.resultsLabel.setLabelFor(btv);
+            btv.getAccessibleContext().setAccessibleDescription(depPanel.resultsLabel.getAccessibleContext().getAccessibleDescription());
         }
 
         /** delayed change of query text */
