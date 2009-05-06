@@ -59,7 +59,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.util.MapFormat;
 
 /**
@@ -90,7 +90,7 @@ public class AnnotationScannerTest extends PersistenceTestCase {
         TestUtilities.copyStringToFileObject(srcFO, "Item.java",
                 "@javax.persistence.Entity()" +
                 "public class Item { }");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final Set<String> types = new HashSet<String>();
@@ -125,7 +125,7 @@ public class AnnotationScannerTest extends PersistenceTestCase {
             TestUtilities.copyStringToFileObject(srcFO, name + ".java", contents);
         }
         long startTime = System.nanoTime();
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         long compilationDoneTime = System.nanoTime();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
@@ -172,7 +172,7 @@ public class AnnotationScannerTest extends PersistenceTestCase {
                 "   private void setYourDataSource(DataSource ds) {" +
                 "   }" +
                 "}");
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         return ClasspathInfo.create(srcFO);
     }
     

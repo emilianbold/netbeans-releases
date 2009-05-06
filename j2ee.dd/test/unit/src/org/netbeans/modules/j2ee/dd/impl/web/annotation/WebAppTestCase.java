@@ -52,7 +52,7 @@ import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -72,7 +72,7 @@ public class WebAppTestCase extends JavaSourceTestCase {
     }
 
     protected MetadataModel<WebAppMetadata> createModel(MetadataUnit metadataUnit) throws IOException, InterruptedException {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         return WebAppMetadataModelFactory.createMetadataModel(metadataUnit, true);
     }
 
