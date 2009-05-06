@@ -70,6 +70,7 @@ import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -97,6 +98,8 @@ public class NbJiraIssue extends Issue {
     static final String LABEL_NAME_STATUS       = "jira.issue.status";      // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "jira.issue.resolution";  // NOI18N
     static final String LABEL_NAME_SUMMARY      = "jira.issue.summary";     // NOI18N
+
+    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
 
     /**
      * Issue wasn't seen yet
@@ -171,6 +174,9 @@ public class NbJiraIssue extends Issue {
     }
 
     private Map<String, String> attributes;
+    private Map<String, TaskOperation> availableOperations;
+
+    private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
     
     /**
      * Defines columns for a view table.
@@ -188,6 +194,7 @@ public class NbJiraIssue extends Issue {
         assert !taskData.isPartial();
         this.taskData = taskData;
         attributes = null; // reset
+        availableOperations = null;
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 ((JiraIssueNode)getNode()).fireDataChanged();
@@ -243,7 +250,7 @@ public class NbJiraIssue extends Issue {
 
     Comment[] getComments() {
         return null; // XXX
-    }
+        }
 
     Attachment[] getAttachments() {
         return null; // XXX
@@ -294,14 +301,105 @@ public class NbJiraIssue extends Issue {
         return true;
     }
 
+    /**
+     * Tries to update the taskdata and set issue to Resolved:resolution.
+     * <strong>Do not forget to submit the issue</strong>
+     * @param resolution
+     * @param comment can be null, in such case no comment will be set
+     * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
+     * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
+     */
     public void resolve(Resolution resolution, String comment) throws JiraException {
-//        issue.setResolution(resolution);
-////		issue.setFixVersions(new Version[0]); // XXX set version
-//        String resolveOperationId = Jira.getInstance().getResolveOperation(repository.getTaskRepository(), getKey());
-//        if(resolveOperationId == null) {
-//            Jira.LOG.severe("Can't resolve issue '" + getKey() + "'");
-//        }
-//        Jira.getInstance().getClient(repository.getTaskRepository()).advanceIssueWorkflow(issue, resolveOperationId, comment, new NullProgressMonitor());
+        if (Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.fine(getClass().getName() + ": resolve issue " + getKey() + ": " + resolution.getName());    //NOI18N
+        }
+        TaskAttribute rta = taskData.getRoot();
+
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        TaskOperation operation = null;
+        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+            String operationLabel = entry.getValue().getLabel();
+            if (Jira.LOG.isLoggable(Level.FINEST)) {
+                Jira.LOG.finest(getClass().getName() + ": resolving issue " + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")");
+            }
+            if (JiraUtils.isResolveOperation(operationLabel)) {
+                operation = entry.getValue();
+                break;
+            }
+        }
+        if (operation == null) {
+            throw new IllegalStateException("Resolve operation not permitted"); //NOI18N
+        } else {
+            setOperation(operation);
+        }
+
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
+        ta.setValue(resolution.getId());
+        addComment(comment);
+    }
+
+    /**
+     * Tries to update the taskdata and set issue to Open.
+     * <strong>Do not forget to submit the issue</strong>
+     * @param comment can be null, in such case no comment will be set
+     * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
+     * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
+     */
+    void reopen(String comment) {
+        if (Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.fine(getClass().getName() + ": reopening issue");                           //NOI18N
+        }
+        TaskAttribute rta = taskData.getRoot();
+
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        TaskOperation operation = null;
+        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+            String operationLabel = entry.getValue().getLabel();
+            if (Jira.LOG.isLoggable(Level.FINEST)) {
+                Jira.LOG.finest(getClass().getName() + ": reopening issue " + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")");
+            }
+            if (JiraUtils.isReopenOperation(operationLabel)) {
+                operation = entry.getValue();
+                break;
+            }
+        }
+        if (operation == null) {
+            throw new IllegalStateException("Reopen operation not permitted"); //NOI18N
+        } else {
+            setOperation(operation);
+        }
+
+        addComment(comment);
+    }
+
+    /**
+     * Updates task data and sets the operation field
+     * @param operationId id of requested operation
+     * @throws java.lang.IllegalArgumentException if the operation is not permitted for this issue
+     */
+
+    public void setOperation (String operationId) {
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        TaskOperation operation = null;
+        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+            String operationLabel = entry.getValue().getLabel().toLowerCase();
+            if (Jira.LOG.isLoggable(Level.FINEST)) {
+                Jira.LOG.finest(getClass().getName() + ": setOperation: operation " + operationLabel + "(" + entry.getValue().getOperationId() + ") is available");
+            }
+            if (entry.getValue().getOperationId().equals(operationId)) {
+                operation = entry.getValue();
+                break;
+            }
+        }
+        if (operation == null) {
+            throw new IllegalArgumentException("Operation with id " + operationId + " is not permitted"); //NOI18N
+        }
+        setOperation(operation);
+    }
+
+    private void setOperation (TaskOperation operation) {
+        TaskAttribute ta = taskData.getRoot().getMappedAttribute(TaskAttribute.OPERATION);
+        ta.setValue(operation.getOperationId());
     }
 
     public void resolveFixed(String val) {
@@ -345,10 +443,10 @@ public class NbJiraIssue extends Issue {
         return node;
     }
 
-    @Override
+            @Override
     public void addComment(String comment, boolean closeAsFixed) {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
+            }
 
     @Override
     public void attachPatch(File file, String description) {
@@ -610,6 +708,26 @@ public class NbJiraIssue extends Issue {
             seenAtributes = new HashMap<String, String>();
         }
         return seenAtributes;
+    }
+
+    /**
+     * Returns available operations for this issue
+     * @return
+     */
+    public Map<String, TaskOperation> getAvailableOperations () {
+        if (availableOperations == null) {
+            HashMap<String, TaskOperation> operations = new HashMap<String, TaskOperation>(5);
+            List<TaskAttribute> allOperations = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_OPERATION);
+            for (TaskAttribute operation : allOperations) {
+                // the test must be here, 'operation' (applying writable action) is also among allOperations
+                if (operation.getId().startsWith(TaskAttribute.PREFIX_OPERATION)) {
+                    operations.put(operation.getId().substring(TaskAttribute.PREFIX_OPERATION.length()), TaskOperation.createFrom(operation));
+                }
+            }
+            availableOperations = operations;
+        }
+
+        return availableOperations;
     }
 
     private class Controller extends BugtrackingController {
