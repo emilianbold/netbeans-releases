@@ -221,11 +221,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                                 new OpenPomAction(nbproject));
                         addReport(report);
                     } else if (art.getFile() == null || !art.getFile().exists()) {
-                        File f = art.getFile();
-                        if (f == null || MavenFileOwnerQueryImpl.getInstance().getOwner(f.toURI()) == null) {
-                            //#160440 don't consider missing jar files that have a project associated as missing
-                            missingJars.add(art);
-                        }
+                        missingJars.add(art);
                     }
                 }
                 if (missingJars.size() > 0) {
