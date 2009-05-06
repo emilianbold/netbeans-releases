@@ -89,7 +89,8 @@ public class NbJiraIssueTest extends NbTestCase {
         }
         // need this to initialize cache -> server defined status values & co
         //getClient().getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
-        config = JiraConfiguration.create(getRepository());
+        config = getRepository().getConfiguration();
+        config.refreshDetails(new NullProgressMonitor());
         JiraTestUtil.cleanProject(getRepositoryConnector(), getRepository().getTaskRepository(), getClient(), config.getProjectByKey(TEST_PROJECT));
     }
 
