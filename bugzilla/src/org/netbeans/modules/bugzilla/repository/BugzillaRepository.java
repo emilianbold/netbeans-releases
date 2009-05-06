@@ -125,7 +125,8 @@ public class BugzillaRepository extends Repository {
 
     @Override
     public Query createQuery() {
-        if(getConfiguration() == null) {
+        BugzillaConfiguration conf = getConfiguration();
+        if(conf == null || !conf.isValid()) {
             // invalid connection data?
             return null;
         }
@@ -135,7 +136,8 @@ public class BugzillaRepository extends Repository {
 
     @Override
     public Issue createIssue() {
-        if(getConfiguration() == null) {
+        BugzillaConfiguration conf = getConfiguration();
+        if(conf == null || !conf.isValid()) {
             // invalid connection data?
             return null;
         }
@@ -411,27 +413,16 @@ public class BugzillaRepository extends Repository {
         return bc;
     }
 
-    protected BugzillaConfiguration createConfiguration() {
-        RepositoryConfiguration rc = getRepositoryConfiguration();
-        if(rc != null) {
-            return new BugzillaConfiguration(rc);
-        }
-        return null;
+    public synchronized void refreshConfiguration() {
+        BugzillaConfiguration conf = new BugzillaConfiguration();
+        conf.initialize(this, true);
+        bc = conf;
     }
 
-    protected RepositoryConfiguration getRepositoryConfiguration() {
-        final RepositoryConfiguration[] rc = new RepositoryConfiguration[1];
-        BugzillaCommand cmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                rc[0] = Bugzilla.getInstance().getRepositoryConfiguration(BugzillaRepository.this);
-            }
-        };
-        getExecutor().execute(cmd);
-        if(!cmd.hasFailed()) {
-            return rc[0];
-        }
-        return null;
+    protected BugzillaConfiguration createConfiguration() {
+        BugzillaConfiguration conf = new BugzillaConfiguration();
+        conf.initialize(this, false);
+        return conf;
     }
 
     private void setupIssueRefreshTask() {

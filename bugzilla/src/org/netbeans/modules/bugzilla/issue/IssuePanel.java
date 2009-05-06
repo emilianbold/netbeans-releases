@@ -433,7 +433,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private void initCombos() {
         BugzillaRepository repository = issue.getRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null) {
+        if(bc == null || !bc.isValid()) {
             // XXX nice error msg?
             return;
         }
@@ -458,7 +458,7 @@ public class IssuePanel extends javax.swing.JPanel {
         // Close-Resolved -> Reopened+Resolved+(Close with higher index)
         BugzillaRepository repository = issue.getRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null) {
+        if(bc == null || !bc.isValid()) {
             // XXX nice error msg?
             return;
         }
@@ -1324,7 +1324,7 @@ public class IssuePanel extends javax.swing.JPanel {
         // Reload componentCombo, versionCombo and targetMilestoneCombo
         BugzillaRepository repository = issue.getRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null) {
+        if(bc == null || !bc.isValid()) {
             // XXX nice error msg?
             return;
         }

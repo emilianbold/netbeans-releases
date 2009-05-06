@@ -158,6 +158,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.modifyButton.addActionListener(this);
         panel.seenButton.addActionListener(this);
         panel.removeButton.addActionListener(this);
+        panel.refreshConfigurationButton.addActionListener(this);
         panel.changedFromTextField.addFocusListener(this);
 
         panel.idTextField.addActionListener(this);
@@ -212,7 +213,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             panel.switchQueryFields(false);
             panel.urlTextField.setText(urlParameters);
         } else {            
-            postPopulate(urlParameters);
+            postPopulate(urlParameters, false);
         }
     }
 
@@ -293,7 +294,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    private void postPopulate(final String urlParameters) {
+    private void postPopulate(final String urlParameters, final boolean forceRefresh) {
         enableFields(false);
 
         final Task[] t = new Task[1];
@@ -313,6 +314,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 handle.start();
                 try {
+                    if(forceRefresh) {
+                        repository.refreshConfiguration();
+                    }
                     populate(urlParameters);
                 } finally {
                     enableFields(true);
@@ -323,7 +327,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
     }
 
-    public void populate(final String urlParameters) {
+    protected void populate(final String urlParameters) {
         if(Bugzilla.LOG.isLoggable(Level.FINE)) {
             Bugzilla.LOG.fine("Starting populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
@@ -332,7 +336,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 @Override
                 public void execute() throws CoreException, IOException, MalformedURLException {
                     BugzillaConfiguration bc = repository.getConfiguration();
-                    if(bc == null) {
+                    if(bc == null || !bc.isValid()) {
                         // XXX nice errro msg?
                         return;
                     }
@@ -457,6 +461,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onRemove();
         } else if (e.getSource() == panel.refreshCheckBox) {
             onAutoRefresh();
+        } else if (e.getSource() == panel.refreshConfigurationButton) {
+            onRefreshConfiguration();
         } else if (e.getSource() == panel.idTextField) {
             if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
@@ -785,6 +791,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         );
     }
 
+
+    private void onRefreshConfiguration() {
+        postPopulate(getUrlParameters(), true);
+    }
+    
     private void remove() {
         if (task != null) {
             task.cancel();
@@ -794,7 +805,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void populateProductDetails(String... products) {
         BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null) {
+        if(bc == null || !bc.isValid()) {
             // XXX nice errro msg?
             return;
         }

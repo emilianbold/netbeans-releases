@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla;
 
+import java.io.File;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClientManager;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
@@ -51,6 +52,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.openide.util.RequestProcessor;
 
@@ -74,6 +76,7 @@ public class Bugzilla {
 
     private Bugzilla() {
         bcp = new BugzillaCorePlugin();
+        BugzillaCorePlugin.setConfigurationCacheFile(new File(BugtrackingRuntime.getInstance().getCacheStore(), "bugzillaconfiguration"));
         brc = new BugzillaRepositoryConnector();
         clientManager = getRepositoryConnector().getClientManager();
         try {
@@ -97,9 +100,11 @@ public class Bugzilla {
         return brc;
     }
 
-    public RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository) throws CoreException, MalformedURLException {
+    public RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository, boolean forceRefresh) throws CoreException, MalformedURLException {
         getClient(repository); // XXX mylyn 3.1.1 workaround. initialize the client, otherwise the configuration will be downloaded twice
-        return BugzillaCorePlugin.getRepositoryConfiguration(repository.getTaskRepository(), false, new NullProgressMonitor());
+        RepositoryConfiguration rc = BugzillaCorePlugin.getRepositoryConfiguration(repository.getTaskRepository(), forceRefresh, new NullProgressMonitor());
+        BugzillaCorePlugin.writeRepositoryConfigFile();  // XXX call bcp.stop on netbeans shutdown
+        return rc;
     }
 
     /**

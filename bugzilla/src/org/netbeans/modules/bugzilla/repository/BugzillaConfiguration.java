@@ -39,20 +39,46 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.List;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
+import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class BugzillaConfiguration {
+
+    // XXX no need to hold this. its cached in bugzillacoreplugin - get it from there.
     private RepositoryConfiguration rc;
 
-    protected BugzillaConfiguration(RepositoryConfiguration rc) {
-        this.rc = rc;
+    public synchronized void initialize(BugzillaRepository repository, boolean forceRefresh) {
+        this.rc = getRepositoryConfiguration(repository, forceRefresh);
+    }
+
+    protected RepositoryConfiguration getRepositoryConfiguration(final BugzillaRepository repository, final boolean forceRefresh) {
+        final RepositoryConfiguration[] conf = new RepositoryConfiguration[1];
+        BugzillaCommand cmd = new BugzillaCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+                conf[0] = Bugzilla.getInstance().getRepositoryConfiguration(repository, forceRefresh);
+            }
+        };
+        repository.getExecutor().execute(cmd);
+        if(!cmd.hasFailed()) {
+            return conf[0];
+        }
+        return null;
+    }
+
+    public boolean isValid() {
+        return rc != null;
     }
 
     /**
@@ -231,4 +257,5 @@ public class BugzillaConfiguration {
             return rc.getTargetMilestones(product);
         }
     }
+
 }
