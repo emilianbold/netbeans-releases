@@ -56,6 +56,9 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 /**
  * ProcDataProvider engine for Solaris.
  *
+ * Thread count is determined as number of files in <code>/proc/pid/lwp</code>.
+ * Thread count from /proc/pid/prusage is not what we want as it never decreases.
+ *
  * @author Alexey Vladykin
  */
 public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
@@ -80,7 +83,7 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
     }
 
     public String getCommand(int pid) {
-        return "while od -v -t x4 -N 64 /proc/" + pid + "/usage; do sleep 1; done"; // NOI18N
+        return "while od -v -t x4 -N 64 /proc/" + pid + "/usage && ls /proc/" + pid + "/lwp | wc -l; do sleep 1; done"; // NOI18N
     }
 
     public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
@@ -89,7 +92,6 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
 
     private class SolarisProcLineProcessor implements LineProcessor {
 
-        private int threads;
         private double prevTime;
         private double currTime;
         private double prevUsrTime;
@@ -111,7 +113,7 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
                 if ("0000000".equals(firstToken)) { // NOI18N
                     prevTime = currTime;
                     tokenizer.nextToken();
-                    threads = (int) parseHex(tokenizer.nextToken());
+                    tokenizer.nextToken();
                     long seconds = parseHex(tokenizer.nextToken());
                     long nanos = parseHex(tokenizer.nextToken());
                     currTime = time(seconds, nanos);
@@ -127,6 +129,8 @@ public class ProcDataProviderSolaris implements ProcDataProvider.Engine {
                     long sysSeconds = parseHex(tokenizer.nextToken());
                     long sysNanos = parseHex(tokenizer.nextToken());
                     currSysTime = time(sysSeconds, sysNanos);
+                } else if (firstToken.length() < 7 && !tokenizer.hasMoreTokens()) {
+                    int threads = Integer.parseInt(firstToken);
                     if (0 < prevTime) {
                         double deltaTime = (currTime - prevTime) * cpuCount;
                         float usrPercent = percent(currUsrTime - prevUsrTime, deltaTime);
