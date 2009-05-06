@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.jira.issue;
 
 import org.eclipse.core.runtime.CoreException;
@@ -65,34 +64,34 @@ public class NbJiraIssueTest extends NbTestCase {
 
     private static JiraRepository repository;
     protected static final String TEST_PROJECT = "NBJIRAISSUEDEV";
-    protected static final String REPO_PASSWD  = "unittest";
-    protected static final String REPO_URL     = "http://kenai-test.czech.sun.com:8090";
-    protected static final String REPO_USER    = "unittest";
+    protected static final String REPO_PASSWD = "unittest";
+    protected static final String REPO_URL = "http://kenai-test.czech.sun.com:8090";
+    protected static final String REPO_USER = "unittest";
     private JiraConfiguration config;
     private TaskRepository taskRepository;
 
-   public enum JiraIssueResolutionStatus {
+    public enum JiraIssueResolutionStatus {
+
         FIXED("Fixed"),
         WONTFIX("Won't Fix"),
         DUPLICATE("Duplicate"),
         INCOMPLETE("Incomplete"),
         CANNOTREPRODUCE("Cannot Reproduce");
-
         public final String statusName;
 
-        private JiraIssueResolutionStatus (String name) {
+        private JiraIssueResolutionStatus(String name) {
             this.statusName = name;
         }
     }
 
-   public enum JiraIssueStatus {
+    public enum JiraIssueStatus {
+
         RESOLVED("Resolved"),
         OPEN("Open"),
         REOPENED("Reopened");
-
         public final String statusName;
 
-        private JiraIssueStatus (String name) {
+        private JiraIssueStatus(String name) {
             this.statusName = name;
         }
     }
@@ -104,10 +103,10 @@ public class NbJiraIssueTest extends NbTestCase {
     @Override
     protected Level logLevel() {
         return Level.ALL;
-    }   
-    
+    }
+
     @Override
-    protected void setUp() throws Exception {    
+    protected void setUp() throws Exception {
         JiraCorePlugin jcp = new JiraCorePlugin();
         try {
             jcp.start(null);
@@ -118,14 +117,14 @@ public class NbJiraIssueTest extends NbTestCase {
         //getClient().getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
         config = getRepository().getConfiguration();
         config.refreshDetails(new NullProgressMonitor());
-//        JiraTestUtil.cleanProject(getRepositoryConnector(), getRepository().getTaskRepository(), getClient(), config.getProjectByKey(TEST_PROJECT));
+        JiraTestUtil.cleanProject(getRepositoryConnector(), getRepository().getTaskRepository(), getClient(), config.getProjectByKey(TEST_PROJECT));
     }
 
     @Override
-    protected void tearDown() throws Exception {        
+    protected void tearDown() throws Exception {
     }
 
-    public void testIssueCreate () throws JiraException, CoreException {
+    public void testIssueCreate() throws JiraException, CoreException {
         assertNotNull(createIssue());
     }
 
@@ -141,16 +140,42 @@ public class NbJiraIssueTest extends NbTestCase {
      * <li>Resolve issue - cannot reproduce</li>
      * </ul>
      */
-    public void testIssueCloseAndReopen () throws CoreException, JiraException {
+    public void testIssueCloseAndReopen() throws CoreException, JiraException {
+        // TODO incomplete
         NbJiraIssue issue = createIssue();
         assertNotNull(issue);
         resolveIssue(issue, JiraIssueResolutionStatus.FIXED);
         reopenIssue(issue);
         resolveIssue(issue, JiraIssueResolutionStatus.WONTFIX);
     }
+    
+    public void testAddComments() throws CoreException {
+        int commentCount = 0;
 
-    private NbJiraIssue createIssue () throws CoreException {
-        NbJiraIssue issue = (NbJiraIssue)getRepository().createIssue();
+        NbJiraIssue issue = createIssue();
+        assertNotNull(issue);
+        NbJiraIssue.Comment[] comments = issue.getComments();
+        assertNotNull(comments);
+        assertEquals(commentCount++, comments.length);
+
+        addComment(issue);
+        comments = issue.getComments();
+        assertNotNull(comments);
+        assertEquals(commentCount++, comments.length);
+
+        addComment(issue);
+        comments = issue.getComments();
+        assertNotNull(comments);
+        assertEquals(commentCount++, comments.length);
+
+        addComment(issue);
+        comments = issue.getComments();
+        assertNotNull(comments);
+        assertEquals(commentCount++, comments.length);
+    }
+
+    private NbJiraIssue createIssue() throws CoreException {
+        NbJiraIssue issue = (NbJiraIssue) getRepository().createIssue();
 
         JiraRepositoryConnector rc = Jira.getInstance().getRepositoryConnector();
         Project p = config.getProjectByKey(TEST_PROJECT);
@@ -160,7 +185,7 @@ public class NbJiraIssueTest extends NbTestCase {
 
         final TaskData data = issue.getTaskData();
         issue.setFieldValue(NbJiraIssue.IssueField.PROJECT, p.getKey());
-        assertTrue(rc.getTaskDataHandler().initializeTaskData(getRepository().getTaskRepository(), data,  rc.getTaskMapping(data), new NullProgressMonitor()));
+        assertTrue(rc.getTaskDataHandler().initializeTaskData(getRepository().getTaskRepository(), data, rc.getTaskMapping(data), new NullProgressMonitor()));
         issue.setFieldValue(NbJiraIssue.IssueField.TYPE, "1");
         issue.setFieldValue(NbJiraIssue.IssueField.SUMMARY, summary);
         issue.setFieldValue(NbJiraIssue.IssueField.DESCRIPTION, description);
@@ -205,6 +230,26 @@ public class NbJiraIssueTest extends NbTestCase {
         assertNull(issue.getResolution());
     }
 
+    private void addComment(NbJiraIssue issue) {
+        String comment = "Comment for " + issue.getID() + " - " + System.currentTimeMillis();
+        String id = issue.getID();
+        String who = getRepository().getUsername();
+        int commentsCount = issue.getComments().length;
+
+        issue.addComment(comment);
+        issue.submitAndRefresh();
+
+        issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
+        assertNotNull(issue.getKey());
+        assertFalse("".equals(issue.getKey()));
+        NbJiraIssue.Comment[] comments = issue.getComments();
+        assertNotNull(comments);
+        assertTrue(comments.length > 0);
+        assertEquals(comment, comments[comments.length - 1].getText());
+        assertEquals(config.getUser(who).getFullName(), comments[comments.length - 1].getWho());
+        assertEquals(commentsCount + 1, comments[comments.length - 1].getNumber().intValue());
+    }
+
     private JiraClient getClient() {
         return JiraTestUtil.getClient();
     }
@@ -218,14 +263,14 @@ public class NbJiraIssueTest extends NbTestCase {
     }
 
     private JiraRepository getRepository() {
-        if(repository == null) {
+        if (repository == null) {
             repository = new JiraRepository("jira", REPO_URL, REPO_USER, REPO_PASSWD, null, null);
         }
         return repository;
     }
 
     private TaskRepository getTaskRepository() {
-        if(taskRepository == null) {
+        if (taskRepository == null) {
             taskRepository = new TaskRepository("jira", JiraTestUtil.REPO_URL);
             AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD);
             taskRepository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
@@ -237,7 +282,9 @@ public class NbJiraIssueTest extends NbTestCase {
     private Resolution getResolutionByName(String name) {
         Resolution[] resolutions = config.getResolutions();
         for (Resolution r : resolutions) {
-            if(r.getName().equals(name)) return r;
+            if (r.getName().equals(name)) {
+                return r;
+            }
         }
         throw new IllegalStateException("Unknown type: " + name);
     }

@@ -46,6 +46,8 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.jira.core.model.Resolution;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.jira.Jira;
@@ -154,5 +156,20 @@ public class JiraUtils {
             return ma.getValue();
         }
         return null;
+    }
+
+    /**
+     * Returns a resolution instance for given resolutionName
+     * @param repository 
+     * @param resolutionName
+     * @return
+     * @throws IllegalStateException if there is no such resolution available
+     */
+    public static Resolution getResolutionByName(JiraRepository repository, String resolutionName) {
+        Resolution[] resolutions = repository.getConfiguration().getResolutions();
+        for (Resolution r : resolutions) {
+            if(r.getName().equals(resolutionName)) return r;
+        }
+        throw new IllegalStateException("Unknown resolution type: " + resolutionName); //NOI18N
     }
 }

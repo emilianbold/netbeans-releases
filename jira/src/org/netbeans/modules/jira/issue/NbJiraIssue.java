@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,7 +61,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
 import org.eclipse.mylyn.internal.jira.core.model.Attachment;
-import org.eclipse.mylyn.internal.jira.core.model.Comment;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
@@ -80,6 +80,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -100,6 +101,8 @@ public class NbJiraIssue extends Issue {
     static final String LABEL_NAME_SUMMARY      = "jira.issue.summary";     // NOI18N
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
+
+    private static final String FIXED = "Fixed";                        //NOI18N
 
     /**
      * Issue wasn't seen yet
@@ -249,24 +252,19 @@ public class NbJiraIssue extends Issue {
     }
 
     Comment[] getComments() {
-        return null; // XXX
+        List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_COMMENT);
+        if (attrs == null) {
+            return new Comment[0];
         }
+        List<Comment> comments = new ArrayList<Comment>(attrs.size());
+        for (TaskAttribute taskAttribute : attrs) {
+            comments.add(new Comment(taskAttribute));
+        }
+        return comments.toArray(new Comment[comments.size()]);
+    }
 
     Attachment[] getAttachments() {
         return null; // XXX
-    }
-
-    public void addComment(String comment) {
-//        try {
-//            Jira.getInstance().getClient(repository.getTaskRepository()).addCommentToIssue(issue, comment, new NullProgressMonitor());
-//        } catch (JiraException ex) {
-//            Jira.LOG.log(Level.SEVERE, null, ex);
-//        }
-    }
-
-    void addAttachment(File f) throws JiraException {
-        // XXX
-//        Jira.getInstance().getClient(repository.getTaskRepository()).addAttachment(issue, "attachment", f.getName(), f, "text/plain", new NullProgressMonitor());
     }
 
     /**
@@ -320,7 +318,7 @@ public class NbJiraIssue extends Issue {
         for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
             String operationLabel = entry.getValue().getLabel();
             if (Jira.LOG.isLoggable(Level.FINEST)) {
-                Jira.LOG.finest(getClass().getName() + ": resolving issue " + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")");
+                Jira.LOG.finest(getClass().getName() + ": resolving issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
             }
             if (JiraUtils.isResolveOperation(operationLabel)) {
                 operation = entry.getValue();
@@ -347,7 +345,7 @@ public class NbJiraIssue extends Issue {
      */
     void reopen(String comment) {
         if (Jira.LOG.isLoggable(Level.FINE)) {
-            Jira.LOG.fine(getClass().getName() + ": reopening issue");                           //NOI18N
+            Jira.LOG.fine(getClass().getName() + ": reopening issue" + getKey()); //NOI18N
         }
         TaskAttribute rta = taskData.getRoot();
 
@@ -356,7 +354,7 @@ public class NbJiraIssue extends Issue {
         for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
             String operationLabel = entry.getValue().getLabel();
             if (Jira.LOG.isLoggable(Level.FINEST)) {
-                Jira.LOG.finest(getClass().getName() + ": reopening issue " + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")");
+                Jira.LOG.finest(getClass().getName() + ": reopening issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
             }
             if (JiraUtils.isReopenOperation(operationLabel)) {
                 operation = entry.getValue();
@@ -368,7 +366,6 @@ public class NbJiraIssue extends Issue {
         } else {
             setOperation(operation);
         }
-
         addComment(comment);
     }
 
@@ -443,10 +440,48 @@ public class NbJiraIssue extends Issue {
         return node;
     }
 
-            @Override
-    public void addComment(String comment, boolean closeAsFixed) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    // XXX carefull - implicit double refresh
+    public void addComment(String comment, boolean close) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        if (Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.fine(getClass().getName() + ": adding comment to issue: " + getKey());    //NOI18N
+        }
+        if(comment == null && !close) {
+            return;
+        }
+        refresh();
+
+        // resolved attrs
+        if(close) {
+            try {
+                resolve(JiraUtils.getResolutionByName(repository, FIXED), comment); // XXX constant, what about setting in options?
+            } catch (JiraException ex) {
+                Jira.LOG.log(Level.SEVERE, null, ex);
             }
+        }
+
+        JiraCommand submitCmd = new JiraCommand() {
+            public void execute() throws CoreException, IOException {
+                submitAndRefresh();
+            }
+        };
+        repository.getExecutor().execute(submitCmd);
+    }
+
+    /**
+     * Add comment to isseue.
+     * <strong>Do not forget to submit</strong>
+     * @param comment
+     */
+    public void addComment(String comment) {
+        if(comment != null) {
+            if (Jira.LOG.isLoggable(Level.FINE)) {
+                Jira.LOG.fine(getClass().getName() + ": adding comment to issue " + getKey());    //NOI18N
+            }
+            TaskAttribute ta = taskData.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
+            ta.setValue(comment);
+        }
+    }
 
     @Override
     public void attachPatch(File file, String description) {
@@ -771,6 +806,45 @@ public class NbJiraIssue extends Issue {
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(org.netbeans.modules.jira.issue.NbJiraIssue.class);
+        }
+    }
+
+    public static final class Comment {
+        private final Date when;
+        private final String who;
+        private final Long number;
+        private final String text;
+
+        public Comment(TaskAttribute a) {
+            when = a.getTaskData().getAttributeMapper().getDateValue(a.getMappedAttribute(TaskAttribute.COMMENT_DATE));
+            TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
+            String author = null;
+            if(authorAttr != null) {
+                TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
+                author = nameAttr != null ? nameAttr.getValue() : null;
+            }
+            if ( ((author == null) || author.trim().equals("")) && authorAttr != null )  { //NOI18N
+                author = authorAttr.getValue();
+            }
+            who = author;
+            number = a.getTaskData().getAttributeMapper().getLongValue(a.getMappedAttribute(TaskAttribute.COMMENT_NUMBER));
+            text = JiraUtils.getMappedValue(a, TaskAttribute.COMMENT_TEXT);
+        }
+
+        public Long getNumber() {
+            return number;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public Date getWhen() {
+            return when;
+        }
+
+        public String getWho() {
+            return who;
         }
     }
 }
