@@ -275,7 +275,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         Project prj = null;
         boolean foundButBroken = false;
         try {
-            prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(projLoc));
+            prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(FileUtil.normalizeFile(destFolder)));
         } catch (IOException ex) {
             foundButBroken = true;
         } catch (IllegalArgumentException ex) {
