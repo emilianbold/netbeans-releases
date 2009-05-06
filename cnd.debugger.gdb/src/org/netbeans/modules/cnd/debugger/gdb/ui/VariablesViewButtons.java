@@ -66,7 +66,7 @@ public class VariablesViewButtons {
         }
         showAutosToggle = createToggleButton(
                 SHOW_AUTOS,
-                "org/netbeans/modules/debugger/resources/editor/PC.gif",
+                "org/netbeans/modules/cnd/debugger/gdb/resources/autos.png",
                 NbBundle.getMessage (VariablesViewButtons.class, "Hint_Show_Autos")
             );
         showAutosToggle.addActionListener(new ShowAutosActionListener(showAutosToggle));
