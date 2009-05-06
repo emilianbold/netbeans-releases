@@ -70,4 +70,10 @@ public class LinkTestCase extends NbTestCase {
         resolved = LinkSupport.getOriginalFile(file.getFile());
         assertEquals("C:\\util\\cygwin\\bin\\gcc-3.exe", resolved);
     }
+
+    public void testCygwinLink() throws Exception {
+        URL file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/g++.txt");
+        String resolved = LinkSupport.getOriginalFile(file.getFile());
+        assertEquals("/etc/alternatives/g++", resolved);
+    }
 }

@@ -142,20 +142,12 @@ public class ModulesActivator {
         if (enableHandle == null) {
             enableHandle = ProgressHandleFactory.createHandle (
                     getBundle ("ModulesActivator_Enable",
-                    presentUpdateElements (finder.getVisibleUpdateElements (modules4enable))));
+                    ModulesInstaller.presentUpdateElements(finder.getVisibleUpdateElements (modules4enable))));
             }
         progressMonitor.onEnable(enableHandle);
         enableSupport.doOperation (enableHandle);
     }
     
-    public static String presentUpdateElements (Collection<UpdateElement> elems) {
-        String res = "";
-        for (UpdateElement el : new LinkedList<UpdateElement> (elems)) {
-            res += res.length () == 0 ? el.getDisplayName () : ", " + el.getDisplayName (); // NOI18N
-        }
-        return res;
-    }
-
     private static String getBundle (String key, Object... params) {
         return NbBundle.getMessage (ModulesActivator.class, key, params);
     }

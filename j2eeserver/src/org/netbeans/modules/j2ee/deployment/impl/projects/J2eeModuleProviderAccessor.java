@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,40 +37,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby;
 
-import java.util.List;
-import org.netbeans.modules.csl.api.CompletionProposal;
+package org.netbeans.modules.j2ee.deployment.impl.projects;
 
-abstract class RubyBaseCompleter {
+import org.netbeans.modules.j2ee.deployment.config.ConfigSupportImpl;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.openide.util.Exceptions;
 
-    protected final List<? super CompletionProposal> proposals;
-    final CompletionRequest request;
-    final boolean caseSensitive;
-    final int anchor;
+/**
+ * Utility class for accessing some of the non-public methods of the J2eeModuleProvider.
+ *
+ * @author Petr Hejl
+ */
+public abstract class J2eeModuleProviderAccessor {
 
-    protected RubyBaseCompleter(
-            final List<? super CompletionProposal> proposals,
-            final CompletionRequest request,
-            final int anchor,
-            final boolean caseSensitive) {
-        this.proposals = proposals;
-        this.request = request;
-        this.caseSensitive = caseSensitive;
-        this.anchor = anchor;
+    private static volatile J2eeModuleProviderAccessor accessor;
+
+    public static void setDefault(J2eeModuleProviderAccessor accessor) {
+        if (J2eeModuleProviderAccessor.accessor != null) {
+            throw new IllegalStateException("Already initialized accessor"); // NOI18N
+        }
+        J2eeModuleProviderAccessor.accessor = accessor;
     }
 
-    RubyIndex getIndex() {
-        return request.index;
+    public static J2eeModuleProviderAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
+        }
+
+        Class c = J2eeModuleProvider.class;
+        try {
+            Class.forName(c.getName(), true, J2eeModuleProviderAccessor.class.getClassLoader());
+        } catch (ClassNotFoundException cnf) {
+            Exceptions.printStackTrace(cnf);
+        }
+
+        return accessor;
     }
 
-    void propose(final CompletionProposal proposal) {
-        proposals.add(proposal);
-    }
-
+    public abstract ConfigSupportImpl getConfigSupportImpl(J2eeModuleProvider impl);
 }

@@ -99,11 +99,11 @@ made subject to such option by the copyright holder.
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">sourcepath</xsl:attribute>
-                        <xsl:attribute name="default">/does/not/exist</xsl:attribute>
+                        <xsl:attribute name="default">${empty.dir}</xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">gensrcdir</xsl:attribute>
-                        <xsl:attribute name="default">/does/not/exist</xsl:attribute>
+                        <xsl:attribute name="default">${empty.dir}</xsl:attribute>
                     </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
@@ -115,6 +115,8 @@ made subject to such option by the copyright holder.
                             <xsl:attribute name="classpath">${javac.classpath}</xsl:attribute>
                             <xsl:attribute name="classname">org.codehaus.groovy.ant.Groovyc</xsl:attribute>
                         </taskdef>
+                        <property name="empty.dir" location="${{build.dir}}/empty"/><!-- #157692 -->
+                        <mkdir dir="${{empty.dir}}"/>
                         <groovyc>
                             <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
                             <xsl:attribute name="sourcepath">@{sourcepath}</xsl:attribute>

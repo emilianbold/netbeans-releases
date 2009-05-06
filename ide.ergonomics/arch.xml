@@ -630,6 +630,13 @@ Microsystems, Inc. All Rights Reserved.
       by enhanced UI logger that track what the user is going.
       </api>
     </li>
+    <li>
+        <api name="org.netbeans.modules.ide.ergonomics.noparse" category="private" group="property" type="export">
+        To measure how much overhead ergonomics adds to regular start, one
+        can disable XML parsing and by setting this property to true:
+        -Dorg.netbeans.modules.ide.ergonomics.noparse=true
+        </api>
+    </li>
   </ul>
  </answer>
 

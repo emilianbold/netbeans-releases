@@ -41,14 +41,13 @@
 
 package org.netbeans.core;
 
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.startup.StartLog;
-import org.openide.filesystems.*;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataFolder;
-import org.openide.cookies.InstanceCookie;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
  * This class controls "warm-up" initialization after IDE startup (some time
@@ -62,7 +61,6 @@ import org.openide.util.RequestProcessor;
 
 class WarmUpSupport implements Runnable {
 
-    private static final String WARMUP_FOLDER = "WarmUp"; // NOI18N
     private static final int WARMUP_DELAY = 1500; // 1.5 sec after main window is shown
     
     static boolean finished = false;    // usefull for testability
@@ -76,41 +74,24 @@ class WarmUpSupport implements Runnable {
     // -------
 
     public void run() {
-        boolean willLog = err.isLoggable(Level.FINE) || StartLog.willLog();
-        if (willLog){
-            err.fine("Warmup starting..."); // NOI18N
-            StartLog.logStart("Warmup"); // NOI18N
-        }
+        err.fine("Warmup starting..."); // NOI18N
+        StartLog.logStart("Warmup"); // NOI18N
 
-        FileObject fo = FileUtil.getConfigFile(WARMUP_FOLDER);
-        DataObject[] warmObjects =
-            fo != null ? DataFolder.findFolder(fo).getChildren() : new DataObject[0];
+        Collection<? extends Lookup.Item<Runnable>> warmObjects =
+            Lookups.forPath("WarmUp").lookupResult(Runnable.class).allItems(); // NOI18N
+        err.log(Level.FINE, "Found {0} warm up task(s)", warmObjects.size()); // NOI18N
 
-        if (willLog) {
-            err.log(Level.FINE, "Found {0} warm up task(s)", warmObjects.length); // NOI18N
-        }
-
-        for (int i = 0; i < warmObjects.length; i++) {
+        for (Lookup.Item<Runnable> warmer : warmObjects) {
             try {
-                InstanceCookie ic = warmObjects[i].getCookie(InstanceCookie.class);
-                Object warmer = ic.instanceCreate();
-
-                if (warmer instanceof Runnable) {
-                    ((Runnable) warmer).run();
-                }
-                if (willLog) {
-                    StartLog.logProgress("Warmup task executed " + // NOI18N
-                                         ic.instanceName());
-                }
-            }
-            catch (Exception ex) {
+                Runnable r = warmer.getInstance();
+                r.run();
+                StartLog.logProgress("Warmup task executed " + warmer.getId()); // NOI18N
+            } catch (Exception ex) {
                 Logger.getLogger(WarmUpSupport.class.getName()).log(Level.WARNING, null, ex);
             }
         }
-        if (willLog){
-            err.fine("Warmup done."); // NOI18N
-            StartLog.logEnd("Warmup"); // NOI18N
-        }
+        err.fine("Warmup done."); // NOI18N
+        StartLog.logEnd("Warmup"); // NOI18N
         
         finished = true;
     }
