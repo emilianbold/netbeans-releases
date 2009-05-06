@@ -56,13 +56,12 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class EditorOptionsPanelController extends OptionsPanelController
-        implements PreviewProvider {
+public class EditorOptionsPanelController extends OptionsPanelController implements PreviewProvider {
 
     private JEditorPane previewPane;
     private final EditorPropertySheet panel;
     private final CodeStyle.Language language;
-    private static final boolean TRACE = false;
+    private static final boolean TRACE = true;
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
@@ -77,17 +76,17 @@ public class EditorOptionsPanelController extends OptionsPanelController
     public void update() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.update()");} // NOI18N
         changed = false;
-	panel.load();
+        panel.load();
     }
     
     public void applyChanges() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.applyChanges()");} // NOI18N
-	panel.store();
+        panel.store();
     }
     
     public void cancel() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.cancel()");} // NOI18N
-	panel.cancel();
+        panel.cancel();
     }
     
     public boolean isValid() {
@@ -97,7 +96,7 @@ public class EditorOptionsPanelController extends OptionsPanelController
     
     public boolean isChanged() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.isChanged()");} // NOI18N
-	return changed;
+        return changed;
     }
 
     public HelpCtx getHelpCtx() {
@@ -109,19 +108,19 @@ public class EditorOptionsPanelController extends OptionsPanelController
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
-	pcs.addPropertyChangeListener(l);
+        pcs.addPropertyChangeListener(l);
     }
     
     public void removePropertyChangeListener(PropertyChangeListener l) {
-	pcs.removePropertyChangeListener(l);
+        pcs.removePropertyChangeListener(l);
     }
         
     void changed() {
-	if (!changed) {
-	    changed = true;
-	    pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
-	}
-	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+        if (!changed) {
+            changed = true;
+            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+        }
+        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
     public JComponent getPreviewComponent() {
