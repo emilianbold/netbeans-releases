@@ -183,4 +183,11 @@ public class ImageUtilitiesTest extends TestCase {
         assertEquals("Should be same instance", icon, icon2);
         assertEquals("Should be same instance", image, image2);
     }
+
+    public void testLoadingNonExisting() {
+        Image image = ImageUtilities.loadImage("org/openide/util/nonexisting.png", false);
+        Icon icon = ImageUtilities.loadImageIcon("org/openide/util/nonexisting.png", false);
+        assertNull(image);
+        assertNull(icon);
+    }
 }

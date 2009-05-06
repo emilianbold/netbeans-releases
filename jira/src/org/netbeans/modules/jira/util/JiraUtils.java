@@ -78,27 +78,53 @@ public class JiraUtils {
 
     // XXX merge with bugzilla
     /**
-     * Returns TaskData for the given issue id or null if an error occured
+     * Returns TaskData for the given issue key or null if an error occured
      * @param repository
-     * @param id
+     * @param key
      * @return
      */
-    public static TaskData getTaskData(final JiraRepository repository, final String id) {
-        return getTaskData(repository, id, true);
+    public static TaskData getTaskDataByKey(final JiraRepository repository, final String key) {
+        return getTaskDataByKey(repository, key, true);
     }
 
+    /**
+     * Returns TaskData for the given issue key or null if an error occured
+     * @param repository
+     * @param key
+     * @return
+     */
+    public static TaskData getTaskDataByKey(final JiraRepository repository, final String key, boolean handleExceptions) {
+        final TaskData[] taskData = new TaskData[1];
+        JiraCommand cmd = new JiraCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+                taskData[0] = Jira.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), key, new NullProgressMonitor());
+            }
+        };
+        repository.getExecutor().execute(cmd, handleExceptions);
+        if(cmd.hasFailed() && Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.log(Level.FINE, cmd.getErrorMessage());
+        }
+        return taskData[0];
+    }
+
+    // XXX merge with bugzilla
     /**
      * Returns TaskData for the given issue id or null if an error occured
      * @param repository
      * @param id
      * @return
      */
-    public static TaskData getTaskData(final JiraRepository repository, final String id, boolean handleExceptions) {
+    public static TaskData getTaskDataById(final JiraRepository repository, final String id) {
+        return getTaskDataById(repository, id, true);
+    }
+
+    public static TaskData getTaskDataById(final JiraRepository repository, final String id, boolean handleExceptions) {
         final TaskData[] taskData = new TaskData[1];
         JiraCommand cmd = new JiraCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
-                taskData[0] = Jira.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
+                taskData[0] = Jira.getInstance().getRepositoryConnector().getTaskDataHandler().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
             }
         };
         repository.getExecutor().execute(cmd, handleExceptions);

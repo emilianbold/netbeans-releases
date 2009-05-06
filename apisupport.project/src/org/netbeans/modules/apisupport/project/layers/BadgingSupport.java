@@ -225,9 +225,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                     return toStringOf(o);
                 }
             }
-        } catch (IOException e) {
-            // ignore, OK
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             // ignore, OK
         }
         // OK, probably a developed module, so take a guess.

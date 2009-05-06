@@ -63,15 +63,20 @@ import org.openide.util.NbBundle;
  * @author  Radim Kubacki
  */
 public final class DiagnosticTask implements Runnable {
+    private static boolean executed;
 
     public DiagnosticTask() {}
     
     /** Performs DnD pre-heat.
      */
     public void run() {
+        if (executed) {
+            return;
+        }
         String diagInfo = logParams();
         Logger.getLogger(DiagnosticTask.class.getName()).info(diagInfo);
         logEnv();
+        executed = true;
     }
     
     private void logEnv() {
