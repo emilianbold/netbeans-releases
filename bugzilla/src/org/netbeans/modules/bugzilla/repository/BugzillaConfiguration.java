@@ -55,7 +55,8 @@ import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
  */
 public class BugzillaConfiguration {
 
-    // XXX no need to hold this. its cached in bugzillacoreplugin - get it from there.
+    // XXX simplify this. no need to hold this.
+    // its cached in bugzillacoreplugin - get it from there.
     private RepositoryConfiguration rc;
 
     public synchronized void initialize(BugzillaRepository repository, boolean forceRefresh) {
