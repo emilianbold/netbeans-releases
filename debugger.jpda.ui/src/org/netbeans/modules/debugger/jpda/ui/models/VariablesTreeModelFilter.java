@@ -99,8 +99,8 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     private LinkedList evaluationQueue = new LinkedList();
 
-    private VariablesPreferenceChangeListener prefListener;
     private Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(VariablesViewButtons.PREFERENCES_NAME);
+    private VariablesPreferenceChangeListener prefListener = new ViewPreferenceChangeListener();
     
     public VariablesTreeModelFilter (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
