@@ -72,7 +72,10 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     private static final Logger log = Logger.getLogger("gdb.logger.watches"); // NOI18N
     
     private boolean requestType = true;
+    private boolean requestResolvedType = true;
     private boolean requestValue = true;
+
+    private String resolvedType;
     
     /** Creates a new instance of GdbWatchVariable */
     public GdbWatchVariable(Watch watch) {
@@ -112,6 +115,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
                     }
                     requestType = true;
                     requestValue = true;
+                    requestResolvedType = true;
         } else if (ev.getPropertyName().equals(GdbDebugger.PROP_VALUE_CHANGED)) {
             super.propertyChange(ev);
         }
@@ -141,6 +145,15 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
             requestType = false;
         }
         return type;
+    }
+
+    @Override
+    protected String getResolvedType() {
+        if (requestResolvedType) {
+            resolvedType = super.getResolvedType();
+            requestResolvedType = false;
+        }
+        return resolvedType;
     }
     
     @Override
