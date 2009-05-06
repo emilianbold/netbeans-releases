@@ -57,7 +57,6 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import org.xml.sax.SAXException;
 
@@ -75,7 +74,6 @@ implements Runnable, ChangeListener, LookupListener {
     private Lookup.Result<ProjectFactory> factories;
     private Lookup.Result<?> ants;
     private boolean forcedRefresh;
-    private boolean warmUp;
 
     public FoDFileSystem() {
         assert INSTANCE == null;
@@ -125,18 +123,6 @@ implements Runnable, ChangeListener, LookupListener {
     }
     
     public void run() {
-        if (RP.isRequestProcessorThread()) {
-            refreshInRP();
-        } else {
-            LOG.fine("Warmup starting..."); // NOI18N
-            for (Runnable r : Lookups.forPath("WarmUp").lookupAll(Runnable.class)) {
-                r.run();
-            }
-            LOG.fine("Warmup done."); // NOI18N
-        }
-    }
-
-    private void refreshInRP() {
         boolean empty = true;
 
         LOG.fine("collecting layers"); // NOI18N
@@ -168,10 +154,6 @@ implements Runnable, ChangeListener, LookupListener {
         setDelegates(delegate.toArray(new FileSystem[0]));
         LOG.fine("done");
         FeatureManager.dumpModules();
-        if (warmUp) {
-            warmUp = false;
-            RequestProcessor.getDefault().post(this);
-        }
     }
 
     public FeatureInfo whichProvides(FileObject template) {
@@ -197,13 +179,11 @@ implements Runnable, ChangeListener, LookupListener {
     }
 
     public void stateChanged(ChangeEvent e) {
-        warmUp = true;
         refresh.schedule(500);
     }
 
     public void resultChanged(LookupEvent ev) {
-        warmUp = true;
-        refresh.schedule(500);
+        refresh.schedule(0);
     }
 
     private boolean noAdditionalProjects() {
