@@ -76,7 +76,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     @Override
     protected boolean isOpenTagNameToken(Token<HTMLTokenId> token) {
         return token.id() == HTMLTokenId.TAG_OPEN ||
-                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().toUpperCase().startsWith("<!DOCTYPE"));
+                (token.id() == HTMLTokenId.DECLARATION && token.text().toString().toUpperCase().startsWith("<!"));
     }
 
     @Override

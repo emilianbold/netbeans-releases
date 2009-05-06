@@ -120,25 +120,27 @@ public final class Utils {
 
     public static String computeModuleID(J2eeModule module, File dir, String fallbackExt) {
         String moduleID = null;
-        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getModuleType());
-        if(j2eeModuleHelper != null) {
-            RootInterface rootDD = j2eeModuleHelper.getStandardRootDD(module);
-            if(rootDD != null) {
-                try {
-                    moduleID = rootDD.getDisplayName(null);
-                } catch (VersionNotSupportedException ex) {
-                    // ignore, handle as null below.
-                }
+        FileObject fo = null;
+        try {
+            fo = module.getContentDirectory();
+            if (null != fo) {
+                moduleID = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fo)).getName();
             }
+        } catch (IOException ex) {
+            Logger.getLogger("glassfish-eecommon").log(Level.FINER, null, ex);
         }
 
         if (null == moduleID || moduleID.trim().length() < 1) {
-            FileObject fo = null;
-            try {
-                fo = module.getContentDirectory();
-                moduleID = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fo)).getName();
-            } catch (IOException ex) {
-                Logger.getLogger("glassfish-eecommon").log(Level.FINER, null, ex);
+            J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getModuleType());
+            if(j2eeModuleHelper != null) {
+                RootInterface rootDD = j2eeModuleHelper.getStandardRootDD(module);
+                if(rootDD != null) {
+                    try {
+                        moduleID = rootDD.getDisplayName(null);
+                    } catch (VersionNotSupportedException ex) {
+                        // ignore, handle as null below.
+                    }
+                }
             }
         }
         if (null == moduleID || moduleID.trim().length() < 1) {
