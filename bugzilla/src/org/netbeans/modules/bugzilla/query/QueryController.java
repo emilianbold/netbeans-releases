@@ -306,7 +306,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         };
 
-        final String msgPopulating = NbBundle.getMessage(QueryController.class, "MSG_Populating");    // NOI18N
+        final String msgPopulating = NbBundle.getMessage(QueryController.class, "MSG_Populating", new Object[]{repository.getDisplayName()});    // NOI18N
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating, c);
         panel.showRetrievingProgress(true, msgPopulating, !query.isSaved());
         t[0] = rp.post(new Runnable() {
