@@ -166,7 +166,31 @@ public final class OpenProjects {
      * @since org.netbeans.modules.projectuiapi/0 1.2
      */
     public void open (Project[] projects, boolean openSubprojects) {
-        trampoline.openAPI (projects,openSubprojects);
+        trampoline.openAPI (projects,openSubprojects, false);
+    }
+
+    /**
+     * Opens given projects.
+     * Acquires {@link org.netbeans.api.project.ProjectManager#mutex()} in write mode.
+     * <p class="nonnormative">
+     * This method is designed for uses such as a logical view's Libraries node to open a dependent
+     * project. It can also be used by other project GUI components which need to open certain
+     * project(s), e.g. code generation wizards.
+     * This should not be used for opening a newly created project; rather,
+     * {@link org.openide.WizardDescriptor.InstantiatingIterator#instantiate}
+     * should return the project directory.
+     * This should also not be used to provide a GUI to open subprojects;
+     * {@link CommonProjectActions#openSubprojectsAction} should be used instead.
+     * </p>
+     * @param projects to be opened. If some of the projects are already opened
+     * these projects are ignored. If the list contain duplicates, the duplicated
+     * projects are opened just once.
+     * @param openSubprojects if true subprojects are also opened
+     * @param showProgress show progress dialog during the open
+     * @since 1.35
+     */
+    public void open (Project[] projects, boolean openSubprojects, boolean showProgress) {
+        trampoline.openAPI (projects,openSubprojects, showProgress);
     }
 
     /** Finds out if the project is opened.
