@@ -64,9 +64,9 @@ public final class UIUtilities {
                 }
             }
         });
-         Font font = UIManager.getFont("Label.font");
-        String bodyRule = "body { font-family: " + font.getFamily() + "; " +
-                "font-size: " + font.getSize() + "pt; }";
+         Font font = UIManager.getFont("Label.font");//NOI18N
+        String bodyRule = "body { font-family: " + font.getFamily() + "; " +//NOI18N
+                "font-size: " + font.getSize() + "pt; }";//NOI18N
         ((HTMLDocument)editorPane.getDocument()).getStyleSheet().addRule(bodyRule);
         editorPane.setOpaque(false);
         editorPane.setEditable(false);
@@ -84,9 +84,9 @@ public final class UIUtilities {
                 }
             }
         });
-         Font font = UIManager.getFont("Label.font");
-        String bodyRule = "body { font-family: " + font.getFamily() + "; " +
-                "font-size: " + font.getSize() + "pt; color: " + Integer.toHexString( color.getRGB() & 0x00ffffff )+ "; }";
+         Font font = UIManager.getFont("Label.font");//NOI18N
+        String bodyRule = "body { font-family: " + font.getFamily() + "; " + //NOI18N
+                "font-size: " + font.getSize() + "pt; color: " + Integer.toHexString( color.getRGB() & 0x00ffffff )+ "; }"; //NOI18N
         ((HTMLDocument)editorPane.getDocument()).getStyleSheet().addRule(bodyRule);
         editorPane.setOpaque(false);
         editorPane.setEditable(false);
