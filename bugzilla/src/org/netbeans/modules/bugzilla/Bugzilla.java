@@ -104,9 +104,6 @@ public class Bugzilla {
     }
 
     public BugzillaRepositoryConnector getRepositoryConnector() {
-        if(brc == null) {
-            
-        }
         return brc;
     }
 
