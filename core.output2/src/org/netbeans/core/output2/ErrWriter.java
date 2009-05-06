@@ -76,7 +76,9 @@ class ErrWriter extends OutputWriter {
         closed = false;
         synchronized (wrapped) {
             wrapped.println (s, l, important);
-            ((AbstractLines) wrapped.getLines()).markErr();
+            if (!wrapped.checkError()) {
+                ((AbstractLines) wrapped.getLines()).markErr();
+            }
         }
     }
     
