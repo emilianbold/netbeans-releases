@@ -61,7 +61,7 @@ public class EditorOptionsPanelController extends OptionsPanelController impleme
     private JEditorPane previewPane;
     private final EditorPropertySheet panel;
     private final CodeStyle.Language language;
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
