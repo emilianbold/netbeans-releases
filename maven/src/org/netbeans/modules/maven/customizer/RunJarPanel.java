@@ -285,14 +285,14 @@ public class RunJarPanel extends javax.swing.JPanel {
             if (oldWorkDir == null) {
                 oldWorkDir = debug.getProperties().getProperty(RUN_WORKDIR);
             }
-            if (oldWorkDir == null) {
+            if (oldWorkDir == null && profile != null) {
                 oldWorkDir = profile.getProperties().getProperty(RUN_WORKDIR);
             }
             String params = run.getProperties().getProperty(RUN_PARAMS);
             if (params == null) {
                 params = debug.getProperties().getProperty(RUN_PARAMS);
             }
-            if (params == null) {
+            if (params == null && profile != null) {
                 params = profile.getProperties().getProperty(RUN_PARAMS);
             }
             if (params != null) {
