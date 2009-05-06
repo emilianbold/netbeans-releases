@@ -2153,7 +2153,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return super.toString() +
             ", mimeType = '" + mimeType + "'" + //NOI18N
             ", kitClass = " + deprecatedKitClass + // NOI18N
-            ", length = " + getLength(); // NOI18N
+            ", length = " + getLength() + // NOI18N
+            ", file=" + getProperty(StreamDescriptionProperty); //NOI18N
     }
 
     /** Detailed debug info about the document */
