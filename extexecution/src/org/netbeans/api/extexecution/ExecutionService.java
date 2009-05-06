@@ -290,7 +290,7 @@ public final class ExecutionService {
                     LOGGER.log(Level.FINE, null, ex);
                     interrupted = true;
                 } catch (Throwable t) {
-                    LOGGER.log(Level.WARNING, null, t);
+                    LOGGER.log(Level.INFO, null, t);
                     throw new WrappedException(t);
                 } finally {
                     try {
