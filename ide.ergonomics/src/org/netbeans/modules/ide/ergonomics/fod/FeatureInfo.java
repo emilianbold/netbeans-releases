@@ -222,7 +222,7 @@ public final class FeatureInfo {
                                     toRet = 2;
                                 }
                             } catch (XPathExpressionException ex) {
-                                Exceptions.printStackTrace(ex);
+                                FeatureProjectFactory.LOG.log(Level.INFO, "Cannot parse " + data, ex);
                             }
                         } else {
                             toRet = 1;
