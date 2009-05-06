@@ -46,24 +46,17 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.ListCellRenderer;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
@@ -71,36 +64,34 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
+ * Renderer for list item to show found Kenai project
  * 
- * 
- * @author Milan
+ * @author Milan Kubec
  */
-public class KenaiProjectsListRenderer extends javax.swing.JPanel implements ListCellRenderer {
+public class KenaiProjectsListRenderer extends javax.swing.JPanel {
+
     private URL url;
 
-    public KenaiProjectsListRenderer() {
+    public KenaiProjectsListRenderer(JList jlist, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        
         initComponents();
-    }
-
-    private class URLDisplayer implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            new URLDisplayerAction("", url).actionPerformed(e);
-        }
-    }
-
-    public Component getListCellRendererComponent(JList jlist, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
         KenaiSearchPanel.KenaiProjectSearchInfo searchInfo = (KenaiSearchPanel.KenaiProjectSearchInfo) value;
 
-        projectNameLabel.setText("<html><b>" + searchInfo.kenaiProject.getDisplayName() + " (" + searchInfo.kenaiProject.getName() + ")</b></html>");
+        projectNameLabel.setText("<html><b>" + searchInfo.kenaiProject.getDisplayName() +
+                " (" + searchInfo.kenaiProject.getName() + ")</b></html>"); // NOI18N
         if (searchInfo.kenaiFeature != null) {
             repoPathLabel.setText(searchInfo.kenaiFeature.getLocation());
-            repoTypeLabel.setText("(" + searchInfo.kenaiFeature.getService() + ")");
+            repoTypeLabel.setText("(" + searchInfo.kenaiFeature.getService() + ")"); // NOI18N
         }
         try {
-            projectDescLabel.setText(searchInfo.kenaiProject.getDescription());//highlighthPattern(searchInfo.kenaiProject.getDescription(), searchInfo.searchPattern));
+            String description = searchInfo.kenaiProject.getDescription();
+            description = description.replaceAll("\n+", " "); // NOI18N
+            description = description.replaceAll("\t+", " "); // NOI18N
+            projectDescLabel.setText(description);
             projectDescLabel.setRows(searchInfo.kenaiProject.getDescription().length()/100 + 1);
-            tagsLabel.setText("Tags: " + searchInfo.kenaiProject.getTags());
+            tagsLabel.setText(NbBundle.getMessage(KenaiProjectsListRenderer.class, "KenaiProjectsListRenderer.tagsLabel.text") + " " +
+                    searchInfo.kenaiProject.getTags());
         } catch (KenaiException kenaiException) {
             Exceptions.printStackTrace(kenaiException);
         }
@@ -121,23 +112,13 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel implements Lis
         }
 
         this.url=searchInfo.kenaiProject.getWebLocation();
-
-        Graphics2D g2d = (Graphics2D) new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).getGraphics();
-        FontMetrics fm = g2d.getFontMetrics(new JLabel().getFont());
-
-        //descPane.setText(getSubstrWithElipsis(kenaiProject.kenaiProject.getDescription(), fm, getWidth(), 5.0f, g2d));
-        //descArea.setText("<html>" + kenaiProject.kenaiProject.getDescription() + "</html>");
-        return this;
+        
     }
 
-    private String highlighthPattern(String txt, String ptrn) {
-        Pattern pattern = Pattern.compile(ptrn);
-        Matcher matcher = pattern.matcher(txt);
-        return "<html>" + matcher.replaceAll(makeBold(ptrn)) + "</html>";
-    }
-
-    private String makeBold(String txt) {
-        return "<b>" + txt + "</b>";
+    private class URLDisplayer implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            new URLDisplayerAction("", url).actionPerformed(e); // NOI18N
+        }
     }
 
     /** This method is called from within the constructor to
@@ -190,13 +171,13 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel implements Lis
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(8, 6, 0, 0);
+        gridBagConstraints.insets = new Insets(8, 6, 0, 14);
         add(projectDescLabel, gridBagConstraints);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = GridBagConstraints.SOUTHEAST;
-        gridBagConstraints.insets = new Insets(0, 0, 6, 4);
+        gridBagConstraints.insets = new Insets(0, 0, 6, 6);
         add(detailsButton, gridBagConstraints);
 
         repoPanel.setLayout(new GridBagLayout());
@@ -242,37 +223,5 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel implements Lis
     private JLabel repoTypeLabel;
     private JLabel tagsLabel;
     // End of variables declaration//GEN-END:variables
-
-    private String getSubstrWithElipsis(String text, FontMetrics fm, int reqWidth, float charWidth, Graphics2D context) {
-
-        int textCharLen = text.length();
-        int mIndex = textCharLen;
-
-        int textPixWidth = (int) fm.getStringBounds(text, 0, mIndex, context).getWidth();
-
-        // text is already smaller than required width
-        if (reqWidth > textPixWidth) {
-            return text;
-        }
-
-        // find longest possible substring that would fit into the required
-        // width by binary division over text length
-        while (Math.abs(reqWidth - textPixWidth) > charWidth) {
-
-            textCharLen = textCharLen == 1 ? 1 : textCharLen / 2;
-
-            if (reqWidth - textPixWidth < 0) {
-                mIndex = mIndex - textCharLen;
-            } else {
-                mIndex = mIndex + textCharLen;
-            }
-
-            textPixWidth = (int) fm.getStringBounds(text, 0, mIndex, context).getWidth();
-
-        }
-
-        return text.substring(0, mIndex) + "...";
-
-    }
 
 }

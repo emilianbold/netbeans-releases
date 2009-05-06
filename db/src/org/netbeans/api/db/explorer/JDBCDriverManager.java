@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,6 +53,7 @@ import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -65,12 +66,12 @@ public final class JDBCDriverManager {
      */
     private static JDBCDriverManager DEFAULT = null;
     
-    private Lookup.Result result = getLookupResult();
+    private Lookup.Result<JDBCDriver> result = getLookupResult();
     
     /**
      * The list of listeners.
      */
-    private List/*<JDBCDriverListener>*/ listeners = new ArrayList(1);
+    private WeakSet<JDBCDriverListener> listeners = new WeakSet<JDBCDriverListener> ();
     
     /**
      * 
@@ -108,8 +109,8 @@ public final class JDBCDriverManager {
      * @return a non-null array of JDBCDriver instances.
      */
     public JDBCDriver[] getDrivers() {
-        Collection drivers = result.allInstances();
-        return (JDBCDriver[])drivers.toArray(new JDBCDriver[drivers.size()]);
+        Collection<? extends JDBCDriver> drivers = result.allInstances();
+        return drivers.toArray (new JDBCDriver[drivers.size ()]);
     }
     
     /**
@@ -125,14 +126,14 @@ public final class JDBCDriverManager {
         if (drvClass == null) {
             throw new NullPointerException();
         }
-        LinkedList result = new LinkedList();
+        LinkedList<JDBCDriver> res = new LinkedList<JDBCDriver>();
         JDBCDriver[] drvs = getDrivers();
         for (int i = 0; i < drvs.length; i++) {
             if (drvClass.equals(drvs[i].getClassName())) {
-                result.add(drvs[i]);
+                res.add(drvs[i]);
             }
         }
-        return (JDBCDriver[])result.toArray(new JDBCDriver[result.size()]);
+        return res.toArray (new JDBCDriver[res.size ()]);
     }
 
     /**
@@ -224,10 +225,10 @@ public final class JDBCDriverManager {
     }
     
     private void fireListeners() {
-        List/*<JDBCDriverListener>*/ listenersCopy;
+        List<JDBCDriverListener> listenersCopy;
         
         synchronized (listeners) {
-            listenersCopy = new ArrayList(listeners);
+            listenersCopy = new ArrayList<JDBCDriverListener>(listeners);
         }
         
         for (Iterator i= listenersCopy.iterator(); i.hasNext();) {
@@ -236,7 +237,7 @@ public final class JDBCDriverManager {
         }
     }
     
-    private synchronized Lookup.Result getLookupResult() {
+    private synchronized Lookup.Result<JDBCDriver> getLookupResult() {
         return Lookups.forPath(JDBCDriverConvertor.DRIVERS_PATH).lookupResult(JDBCDriver.class);
     }
 }
