@@ -48,6 +48,7 @@ import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
@@ -108,9 +109,18 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         if (ep == null) {
             return;
         }
+
+        final int offset = NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn();
         
-        String expression = getIdentifier(doc, ep, NbDocument.findLineOffset(doc, 
-                lp.getLine().getLineNumber()) + lp.getColumn());
+        String expression;
+
+        int[] span = CsmMacroExpansion.getMacroExpansionSpan(doc, offset, true);
+        if (span != null && span[0] != span[1]) {
+            // macro expansion
+            expression = CsmMacroExpansion.expand(doc, span[0], span[1]);
+        } else {
+            expression = getIdentifier(doc, ep,offset);
+        }
         
         if (expression == null) {
             return;

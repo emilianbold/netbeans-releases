@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -90,6 +91,7 @@ import org.xml.sax.SAXException;
  */
 @ServiceProvider(service=ProjectFactory.class, position=30000)
 public class FeatureProjectFactory implements ProjectFactory, PropertyChangeListener {
+    static final Logger LOG = Logger.getLogger("org.netbeans.modules.ide.ergonomics.projects"); // NOI18N
 
     public FeatureProjectFactory() {
         OpenProjects.getDefault().addPropertyChangeListener(this);
@@ -173,7 +175,7 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
                     content = new String(arr, 0, len, "UTF-8");
                 }
             } catch (IOException ex) {
-                FoDFileSystem.LOG.log(Level.FINEST, "exception while reading " + prj, ex); // NOI18N
+                LOG.log(Level.FINEST, "exception while reading " + prj, ex); // NOI18N
                 len = -1;
             } finally {
                 if (is != null) {
@@ -184,7 +186,7 @@ public class FeatureProjectFactory implements ProjectFactory, PropertyChangeList
                     }
                 }
             }
-            FoDFileSystem.LOG.log(Level.FINEST, "    read {0} bytes", len); // NOI18N
+            LOG.log(Level.FINEST, "    read {0} bytes", len); // NOI18N
             if (len == -1) {
                 return null;
             }

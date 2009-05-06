@@ -68,8 +68,8 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
         return OpenProjectList.getDefault().getOpenProjects();
     }
 
-    public void openAPI (Project[] projects, boolean openRequiredProjects) {
-        OpenProjectList.getDefault().open (projects, openRequiredProjects);
+    public void openAPI (Project[] projects, boolean openRequiredProjects, boolean showProgress) {
+        OpenProjectList.getDefault().open (projects, openRequiredProjects, showProgress);
     }
 
     public void closeAPI(Project[] projects) {

@@ -104,6 +104,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="open-with-progress">
+            <api name="general"/>
+            <summary>OpenProjects.open() supports visual progress</summary>
+            <version major="1" minor="35"/>
+            <date day="6" month="5" year="2009"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                <p>
+                  <code>OpenProjects.open</code> has now new overloaded
+                  variant that supports visual indication of the open progress.
+                </p>
+            </description>
+            <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
+            <issue number="162588"/>
+        </change>
         <change id="isProjectOpen">
             <api name="general"/>
             <summary>Utility method OpenProjects.isProjectOpen</summary>
