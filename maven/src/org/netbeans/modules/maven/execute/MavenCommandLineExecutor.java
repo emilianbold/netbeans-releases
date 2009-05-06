@@ -216,7 +216,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     private static String quoteSpaces(String val, String quote) {
         if (val.indexOf(' ') != -1) { //NOI18N
             if (Utilities.isWindows()) {
-                return quote + val.replace("\\", "/") + quote; //NOI18N
+                return quote + val + quote; //NOI18N
             }
         }
         return val;
@@ -248,8 +248,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         if (mavenHome != null) {
             File bin = new File(mavenHome, "bin" + File.separator + ex);//NOI18N
             if (bin.exists()) {
-                toRet.add(quoteSpaces(bin.getAbsolutePath(), quote));
-            } else {
+                    toRet.add(quoteSpaces(bin.getAbsolutePath(), quote));
+                } else {
                 toRet.add(ex);
             }
         } else {
