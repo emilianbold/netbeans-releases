@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -22,8 +22,9 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,24 +39,54 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.ppoints;
+package org.openide.actions;
 
-import org.netbeans.api.project.Project;
-
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
- * Abstract superclass for all Profiling Points defined globally for profiling session
  *
- * @author Jiri Sedlacek
+ * @author Jaroslav Tulach
  */
-public abstract class GlobalProfilingPoint extends ProfilingPoint {
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
+public class SaveAllActionGCTest extends NbTestCase {
 
-    GlobalProfilingPoint(String name, Project project, ProfilingPointFactory factory) {
-        super(name, project, factory);
+    public SaveAllActionGCTest (String testName) {
+        super (testName);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
+    @Override
+    protected boolean runInEQ () {
+        return true;
+    }
 
-    abstract void hit(long hitValue);
+    public void testIssue162686() throws IOException {
+        SaveAllAction a = SaveAllAction.get(SaveAllAction.class);
+        assertNotNull("Action found", a);
+        assertFalse("Nothing is modified", a.isEnabled());
+
+        FileObject fo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), "Folder/JR.txt");
+        DataObject obj = DataObject.find(fo);
+
+        assertFalse("Nothing is modified2", a.isEnabled());
+        obj.setModified(true);
+        assertTrue("SaveAll enabled now", a.isEnabled());
+        obj.setModified(false);
+        assertFalse("SaveAll disabled now", a.isEnabled());
+
+
+        WeakReference<?> ref = new WeakReference<Object>(a);
+        a = null;
+        assertGC("The action can be GCed", ref);
+
+        a = SaveAllAction.get(SaveAllAction.class);
+        assertNotNull("But we can always create new one", a);
+        assertFalse("It is disbabled initially", a.isEnabled());
+
+        obj.setModified(true);
+        assertTrue("But enables as soon an object is modified", a.isEnabled());
+    }
 }

@@ -157,7 +157,7 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
 
     private void openProject(Project p) {
         Project[] projects = new Project[]{p};
-        OpenProjects.getDefault().open(projects, false);
+        OpenProjects.getDefault().open(projects, false, true);
         ProjectUtilities.selectAndExpandProject(p);
     }
 

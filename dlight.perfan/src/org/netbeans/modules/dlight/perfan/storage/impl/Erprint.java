@@ -217,14 +217,14 @@ final class Erprint {
     }
 
     FunctionStatistic getFunctionStatistic(String functionName) throws IOException {
-        String[] stat = exec("fsingle " + functionName + " 1"); // NOI18N
+        String[] stat = exec("fsingle \"" + functionName + "\" 1"); // NOI18N
         return new FunctionStatistic(stat);
     }
 
     FunctionStatistic getFunctionStatistic(FunctionCall functionCall) throws IOException {
         synchronized (this) {
             String functionName = functionCall.getFunction().getName();
-            String[] stat = exec("fsingle " + functionName); // NOI18N
+            String[] stat = exec("fsingle \"" + functionName + "\""); // NOI18N
 
             if (stat != null && stat.length > 0 && choiceMarker.equals(stat[0])) { // NOI18N
                 String choice = "1"; // NOI18N

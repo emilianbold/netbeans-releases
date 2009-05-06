@@ -41,16 +41,23 @@ package org.netbeans.modules.jira.issue;
 
 import java.awt.Font;
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
 import org.eclipse.mylyn.internal.jira.core.model.Attachment;
 import org.eclipse.mylyn.internal.jira.core.model.Comment;
@@ -59,6 +66,7 @@ import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
+import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -68,7 +76,9 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -252,16 +262,35 @@ public class NbJiraIssue extends Issue {
 //        Jira.getInstance().getClient(repository.getTaskRepository()).addAttachment(issue, "attachment", f.getName(), f, "text/plain", new NullProgressMonitor());
     }
 
+    /**
+     * Reloads the task data
+     * @return true if successfully refreshed
+     */
     public boolean refresh() {
-//        try {
-//            issue = Jira.getInstance().getClient(repository.getTaskRepository()).getIssueByKey(issue.getKey(), new NullProgressMonitor());
-//        } catch (JiraException ex) {
-//            Jira.LOG.log(Level.SEVERE, null, ex);
-//            return false;
-//        }
-//        if(controller != null) {
-//            controller.refreshViewData();
-//        }
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        return refresh(getID(), false);
+    }
+
+    /**
+     * Reloads the task data and refreshes the issue cache
+     * @param id id of the issue, NOT IT'S KEY
+     * @return true if successfully refreshed
+     */
+    public boolean refresh(String id, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        try {
+            TaskData td = JiraUtils.getTaskDataById(repository, id);
+            if(td == null) {
+                return false;
+            }
+            String key = getID(td); // XXX cache is currently build on KEYS, not on IDs, MUST BE CHANGED LATER
+            getRepository().getIssueCache().setIssueData(key, td, this); // XXX
+            if (controller != null) {
+                controller.refreshViewData();
+            }
+        } catch (IOException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        }
         return true;
     }
 
@@ -390,9 +419,9 @@ public class NbJiraIssue extends Issue {
     }
 
     /**
-     * Returns the id from the given taskData or null if taskData.isNew()
+     * Returns the key from the given taskData or null if taskData.isNew()
      * @param taskData
-     * @return id or null
+     * @return key or null
      */
     public static String getID(TaskData taskData) {
         if(taskData.isNew()) {
@@ -482,6 +511,69 @@ public class NbJiraIssue extends Issue {
             a = new TaskAttribute(taskData.getRoot(), f.key);
         }
         a.setValues(ccs);
+    }
+
+    TaskData getTaskData() {
+        return taskData;
+    }
+
+    boolean submitAndRefresh() {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+
+        final boolean wasNew = taskData.isNew();
+        final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
+        final RepositoryResponse[] rr = new RepositoryResponse[1];
+        if (Jira.LOG.isLoggable(Level.FINEST)) {
+            Jira.LOG.finest("submitAndRefresh: id: " + getID() + ", new: " + wasNew);
+        }
+        JiraCommand submitCmd = new JiraCommand() {
+            public void execute() throws CoreException {
+                // submit
+                if (Jira.LOG.isLoggable(Level.FINEST)) {
+                    Jira.LOG.finest("submitAndRefresh, submitCmd: id: " + getID() + ", new: " + wasNew);
+                }
+                Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
+                rr[0] = Jira.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), taskData,
+                        attrs, new NullProgressMonitor());
+                // XXX evaluate rr
+            }
+        };
+        repository.getExecutor().execute(submitCmd);
+        if(submitCmd.hasFailed()) {
+            return false;
+        }
+        
+        JiraCommand refreshCmd = new JiraCommand() {
+            public void execute() throws CoreException {
+                if (Jira.LOG.isLoggable(Level.FINEST)) {
+                    Jira.LOG.finest("submitAndRefresh, refreshCmd: id: " + getID() + ", new: " + wasNew);
+                }
+                if (!wasNew) {
+                    refresh();
+                } else {
+                    refresh(rr[0].getTaskId(), true);
+                }
+            }
+        };
+        repository.getExecutor().execute(refreshCmd);
+        if(refreshCmd.hasFailed()) {
+            return false;
+        }
+
+        // it was the user who made the changes, so preserve the seen status if seen already
+        if (wasSeenAlready) {
+            try {
+                repository.getIssueCache().setSeen(getID(), true);
+                // it was the user who made the changes, so preserve the seen status if seen already
+            } catch (IOException ex) {
+                Jira.LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+        if(wasNew) {
+            // a new issue was created -> refresh all queries
+            repository.refreshAllQueries();
+        }
+        return true;
     }
 
     /**

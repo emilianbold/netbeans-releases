@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,11 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -36,26 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.profiler.ppoints;
-
-import org.netbeans.api.project.Project;
-
-
-/**
- * Abstract superclass for all Profiling Points defined globally for profiling session
  *
- * @author Jiri Sedlacek
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-public abstract class GlobalProfilingPoint extends ProfilingPoint {
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
 
-    GlobalProfilingPoint(String name, Project project, ProfilingPointFactory factory) {
-        super(name, project, factory);
+package org.netbeans.modules.ide.ergonomics.fod;
+
+import java.util.logging.Level;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
+
+/** Special ergonomics warm up extension that listens on changes in set of
+ * enabled features and re-runs the warm up to make newly added features
+ * ready for use.
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+@ServiceProvider(service=Runnable.class, path="WarmUp")
+public final class WarmUp implements Runnable, ChangeListener {
+    private static RequestProcessor RP = new RequestProcessor("FoD Warm Up"); // NOI18N
+    private RequestProcessor.Task task;
+
+    public void run() {
+        FoDFileSystem.LOG.log(Level.FINE, "FoD Warmup Init {0}", task); // NOI18N
+        if (task == null) {
+            task = RP.create(this);
+            FeatureManager.getInstance().addChangeListener(this);
+        }
+        if (RP.isRequestProcessorThread()) {
+            FoDFileSystem.LOG.fine("Warmup starting..."); // NOI18N
+            for (Runnable r : Lookups.forPath("WarmUp").lookupAll(Runnable.class)) { // NOI18N
+                if (r == this) {
+                    continue;
+                }
+                r.run();
+            }
+            FoDFileSystem.LOG.fine("Warmup done."); // NOI18N
+        }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    abstract void hit(long hitValue);
+    public void stateChanged(ChangeEvent e) {
+        // schedule warm up
+        task.schedule(5000);
+    }
 }
