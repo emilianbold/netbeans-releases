@@ -113,8 +113,11 @@ public class ElementDescription {
 
 	@Override
         public String visitType(TypeElement e, Boolean p) {
-            if (e.getQualifiedName() == null || e.getSimpleName() == null) {
-                return NbBundle.getMessage(ElementDescription.class, "NAME_AnonynmousInner");
+            if (   e.getQualifiedName() == null
+                || e.getQualifiedName().length() == 0
+                || e.getSimpleName() == null
+                || e.getSimpleName().length() == 0) {
+                return NbBundle.getMessage(ElementDescription.class, "NAME_AnonynmousInner") + e.getEnclosingElement().accept(this, true);
             }
             
             return p ? e.getQualifiedName().toString() : e.getSimpleName().toString();
