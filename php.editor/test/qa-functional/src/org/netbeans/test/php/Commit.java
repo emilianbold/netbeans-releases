@@ -691,7 +691,7 @@ public class Commit extends GeneralPHP
         "<?",
         false,
         false,
-        5,
+        6,
         2
       );
 
