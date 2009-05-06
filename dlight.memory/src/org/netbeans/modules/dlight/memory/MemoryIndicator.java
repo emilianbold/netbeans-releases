@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -54,6 +55,7 @@ import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.util.UIUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -124,11 +126,7 @@ public class MemoryIndicator extends Indicator<MemoryIndicatorConfiguration> {
                 }
             });
         } else {
-            final JLabel label = new JLabel(
-                    "<html><center>" // NOI18N
-                    + getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()) // NOI18N
-                    + "</center></html>"); // NOI18N
-            label.setForeground(GraphConfig.TEXT_COLOR);
+            final JEditorPane label = UIUtilities.createJEditorPane(getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()), true, GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {
                 public void run() {
                     panel.getPanel().setOverlay(label);
