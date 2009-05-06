@@ -45,6 +45,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -54,6 +55,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -82,7 +84,7 @@ public class Bugzilla {
         try {
             bcp.start(null);
         } catch (Exception ex) {
-            throw new RuntimeException(ex); // XXX thisiscrap
+            LOG.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -91,6 +93,14 @@ public class Bugzilla {
             instance = new Bugzilla();
         }
         return instance;
+    }
+
+    void shutdown() {
+        try {
+            bcp.stop(null);
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     public BugzillaRepositoryConnector getRepositoryConnector() {
@@ -103,7 +113,6 @@ public class Bugzilla {
     public RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository, boolean forceRefresh) throws CoreException, MalformedURLException {
         getClient(repository); // XXX mylyn 3.1.1 workaround. initialize the client, otherwise the configuration will be downloaded twice
         RepositoryConfiguration rc = BugzillaCorePlugin.getRepositoryConfiguration(repository.getTaskRepository(), forceRefresh, new NullProgressMonitor());
-        BugzillaCorePlugin.writeRepositoryConfigFile();  // XXX call bcp.stop on netbeans shutdown
         return rc;
     }
 
