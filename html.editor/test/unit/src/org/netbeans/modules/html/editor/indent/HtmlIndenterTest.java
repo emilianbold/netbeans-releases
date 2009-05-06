@@ -170,6 +170,11 @@ public class HtmlIndenterTest extends TestBase2 {
         format(
             "</body>",
             "</body>", null);
+
+        // #164326
+        format(
+            "<!DOCTYP html>",
+            "<!DOCTYP html>", null);
     }
 
     public void testFormattingHTML() throws Exception {
