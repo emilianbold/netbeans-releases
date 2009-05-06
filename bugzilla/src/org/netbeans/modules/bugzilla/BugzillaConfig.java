@@ -102,7 +102,9 @@ public class BugzillaConfig {
     }
 
     public void putQuery(BugzillaRepository repository, BugzillaQuery query) {
-        getPreferences().put(getQueryKey(repository.getDisplayName(), query.getDisplayName()), query.getUrlParameters() + DELIMITER + query.getLastRefresh());
+        getPreferences().put(
+                getQueryKey(repository.getDisplayName(), query.getDisplayName()),
+                query.getUrlParameters() + DELIMITER + query.getLastRefresh() + DELIMITER + query.isUrlDefined());
     }
 
     public void removeQuery(BugzillaRepository repository, BugzillaQuery query) {
@@ -115,10 +117,11 @@ public class BugzillaConfig {
             return null;
         }
         String[] values = value.split(DELIMITER);
-        assert values.length == 2;
+        assert values.length >= 2;
         String urlParams = values[0];
         long lastRefresh = Long.parseLong(values[1]);
-        return new BugzillaQuery(queryName, repository, urlParams, lastRefresh);
+        boolean urlDef = values.length > 2 ? Boolean.parseBoolean(values[2]) : false;
+        return new BugzillaQuery(queryName, repository, urlParams, lastRefresh, urlDef);
     }
 
     public String getUrlParams(BugzillaRepository repository, String queryName) {
@@ -127,7 +130,7 @@ public class BugzillaConfig {
             return null;
         }
         String[] values = value.split(DELIMITER);
-        assert values.length == 2;
+        assert values.length >= 2;
         return values[0];
     }
 

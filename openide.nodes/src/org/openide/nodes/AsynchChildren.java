@@ -131,7 +131,13 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
         }
         return result;
     }
-    
+
+    @Override
+    public Node findChild(String name) {
+        Node[] result = getNodes(true);
+        return super.findChild(name);
+    }
+
     @SuppressWarnings("unchecked") // Union2<T,Node> undesirable since refresh could not use raw keys list
     protected Node[] createNodes(Object key) {
         if (ChildFactory.isWaitNode(key)) {

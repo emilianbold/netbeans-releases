@@ -506,7 +506,16 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         }
         StringBuilder tokensRightMerged = new StringBuilder();
         for (APTToken token : tokensRight) {
-            tokensRightMerged.append(token.getTextID());
+            if (APTUtils.isEOF(token)) {
+                // incomplete macro body text
+                if (DebugUtils.STANDALONE) {
+                    System.err.printf("no token after ##"); // NOI18N
+                } else {
+                    APTUtils.LOG.log(Level.SEVERE, "no token after ##"); // NOI18N
+                }
+            } else {
+                tokensRightMerged.append(token.getTextID());
+            }
         }
         List<APTToken> valRight = paramsMap.get(CharSequenceKey.create(tokensRightMerged));
         String rightText;

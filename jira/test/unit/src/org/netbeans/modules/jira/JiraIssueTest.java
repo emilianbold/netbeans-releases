@@ -83,6 +83,8 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 
 /**
  *
@@ -107,14 +109,50 @@ public class JiraIssueTest extends NbTestCase {
         } catch (Exception ex) {
             throw ex;
         }
+        BugtrackingManager.getInstance();
+        BugtrackingRuntime.getInstance().init();
         // need this to initialize cache -> server defined status values & co
-//        getClient().getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
+        getClient().getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
         JiraTestUtil.cleanProject(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()));
     }
 
     @Override
     protected void tearDown() throws Exception {        
     }
+
+//    XXX not proprly supported in mylyn
+//    public void testQuickSearch() throws Throwable {
+//        try {
+//
+//            // create
+//            RepositoryResponse rr = JiraTestUtil.createIssue(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()), "Kaputt", "Alles Kaputt!", "Bug");
+//            assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
+//            assertNotNull(JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()));
+//            TaskData data1 = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId());
+//
+//            rr = JiraTestUtil.createIssue(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), getClient(), JiraTestUtil.getProject(getClient()), "Kaputt", "Alles Kaputt!", "Bug");
+//            assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
+//            assertNotNull(JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()));
+//            TaskData data2 = JiraTestUtil.getTaskData(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId());
+//
+//            TextFilter tf = new TextFilter("Kaputt");
+//            JiraTestUtil.TestTaskDataCollector tdc = JiraTestUtil.list(getRepositoryConnector(), JiraTestUtil.getTaskRepository(), tf);
+//
+//            assertEquals(2, tdc.data.size());
+//            TaskData data = null;
+//            for (TaskData d : tdc.data) {
+//                if(d.getTaskId().equals(data1.getTaskId())) {
+//                    data = d;
+//                    break;
+//                }
+//            }
+//            assertNotNull(data);
+//
+//
+//        } catch (Exception exception) {
+//            JiraTestUtil.handleException(exception);
+//        }
+//    }
 
     public void testJiraTaskData() throws Throwable {
         try {

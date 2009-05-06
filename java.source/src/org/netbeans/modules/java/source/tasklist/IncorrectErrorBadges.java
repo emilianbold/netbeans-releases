@@ -51,7 +51,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.openide.filesystems.FileObject;
@@ -126,7 +125,7 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
                     public void run() {
                         factory.rescheduleImpl(file);
                     }
-                }, 2 * RepositoryUpdater.getDelay());
+                }, 2 * IndexingController.getDefault().getFileLocksDelay());
                 
                 return ;
             }

@@ -262,9 +262,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             } else {
                 int spaceIndex = codeName.indexOf(' ');
                 int index = (spaceIndex != -1) ? spaceIndex : codeName.length();
-                if(index!=-1) {
-                    releaseVersion = codeName.substring(end + 1, index).trim();
-                }
+                releaseVersion = codeName.substring(end + 1, index).trim();
             }
             if (end != -1) {
                 codeName = codeName.substring (0, end);

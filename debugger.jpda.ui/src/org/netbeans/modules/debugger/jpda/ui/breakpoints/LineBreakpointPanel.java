@@ -54,6 +54,7 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ui.Controller;
 
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -83,26 +84,23 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
     private boolean                     createBreakpoint = false;
     
     
-    /* Uncomment this after line breakpoint is added into New Breakpoint... dialog.
     private static LineBreakpoint createBreakpoint () {
-        LineBreakpoint mb = LineBreakpoint.create (
-            EditorContextBridge.getContext().getMostRecentURL (),
-            EditorContextBridge.getContext().getMostRecentLineNumber ()
+        LineBreakpoint lb = LineBreakpoint.create (
+            EditorContextDispatcher.getDefault().getMostRecentURLAsString(),
+            EditorContextDispatcher.getDefault().getMostRecentLineNumber()
         );
-        mb.setPrintText (
+        lb.setPrintText (
             NbBundle.getBundle (LineBreakpointPanel.class).getString 
                 ("CTL_Line_Breakpoint_Print_Text")
         );
-        return mb;
+        return lb;
     }
     
     
-    /** Creates new form LineBreakpointPanel *
     public LineBreakpointPanel () {
         this (createBreakpoint ());
         createBreakpoint = true;
     }
-     */
     
     /** Creates new form LineBreakpointPanel */
     public LineBreakpointPanel (LineBreakpoint b) {

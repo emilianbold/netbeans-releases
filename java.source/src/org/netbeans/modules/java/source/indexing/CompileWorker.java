@@ -73,7 +73,7 @@ abstract class CompileWorker {
         if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
             try {
                 File file = new File(indexable.getURL().toURI().getPath());
-                return new CompileTuple(FileObjects.fileFileObject(file, root, null), indexable);
+                return new CompileTuple(FileObjects.fileFileObject(file, root, null, javaContext.encoding), indexable);
             } catch (Exception ex) {}
         }
         FileObject fo = URLMapper.findFileObject(indexable.getURL());

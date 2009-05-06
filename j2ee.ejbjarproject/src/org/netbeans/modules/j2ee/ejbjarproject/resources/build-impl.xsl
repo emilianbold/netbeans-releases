@@ -360,7 +360,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">gensrcdir</xsl:attribute>
-                        <xsl:attribute name="default">/does/not/exist</xsl:attribute>
+                        <xsl:attribute name="default">${empty.dir}</xsl:attribute>
                     </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
@@ -368,8 +368,11 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     </element>
                     <sequential>
                         <property name="javac.compilerargs" value=""/>
+                        <property name="empty.dir" location="${{build.dir}}/empty"/><!-- #157692 -->
+                        <mkdir dir="${{empty.dir}}"/>
                         <javac>
                             <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
+                            <!-- XXX #137060 likely needs to be fixed here -->
                             <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
                             <xsl:attribute name="debug">@{debug}</xsl:attribute>
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>

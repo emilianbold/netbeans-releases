@@ -50,6 +50,11 @@ public interface ServiceInfoDataStorage {
     static final String HOST_NAME = "service.storage.hostname";//NOI18N
     static final String USER_NAME = "service.storage.username";//NOI18N
     static final String PORT = "service.storage.port";//NOI18N
+    static final String TOOL_NAMES  = "service.storage.tools";//NOI18N
+    static final String COLLECTOR_NAMES  = "service.storage.collector.names";//NOI18N
+    static final String IDP_NAMES  = "service.storage.idp.names";//NOI18N
+    static final String DELIMITER  = ":";//NOI18N
+    static final String CONFIFURATION_NAME  = "service.storage.configuration.name";//NOI18N
     
     Map<String, String> getInfo();
     String getValue(String name);

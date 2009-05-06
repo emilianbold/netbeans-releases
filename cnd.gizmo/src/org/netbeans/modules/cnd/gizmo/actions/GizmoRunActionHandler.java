@@ -112,6 +112,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
 
         targetConf.putInfo(ServiceInfoDataStorage.EXECUTION_ENV_KEY, ExecutionEnvironmentFactory.toUniqueID(execEnv));
+        targetConf.putInfo(GizmoServiceInfo.PLATFORM, pae.getConfiguration().getPlatform().getName());
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath());//NOI18N
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, runDirectory + File.separator + pae.getExecutable());
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
@@ -147,7 +148,6 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
         if (options instanceof GizmoConfigurationOptions) {
             ((GizmoConfigurationOptions) options).configure(pae.getProject());
-            targetConf.putInfo("idps", ((GizmoConfigurationOptions) options).getDLightIndicatorDPStrings());//NOI18N
         }
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);

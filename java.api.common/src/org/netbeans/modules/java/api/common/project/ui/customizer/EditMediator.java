@@ -48,15 +48,19 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.jar.JarFile;
 import java.util.prefs.Preferences;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -67,6 +71,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.libraries.LibraryChooser.Filter;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.FileChooser;
@@ -261,10 +266,34 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                     Exceptions.printStackTrace(ex);
                     return;
                 }
+
+                // check corrupted jar/zip files
+                File base = FileUtil.toFile(helper.getProjectDirectory());
+                List<String> newPaths = new ArrayList<String> ();
+                for (String path : filePaths) {
+                    File fl = PropertyUtils.resolveFile(base, path);
+                    FileObject fo = FileUtil.toFileObject(fl);
+                    assert fo != null : fl;
+                    if (FileUtil.isArchiveFile (fo))
+                        try {
+                            new JarFile (fl);
+                        } catch (IOException ex) {
+                            JOptionPane.showMessageDialog (
+                                SwingUtilities.getWindowAncestor (list.getComponent ()),
+                                NbBundle.getMessage (EditMediator.class, "LBL_Corrupted_JAR", fl),
+                                    NbBundle.getMessage (EditMediator.class, "LBL_Corrupted_JAR_title"),
+                                    JOptionPane.WARNING_MESSAGE
+                            );
+                            continue;
+                        }
+                    newPaths.add (path);
+                }
+                filePaths = newPaths.toArray (new String [newPaths.size ()]);
+
                 // value of PATH_IN_DEPLOYMENT depends on whether file or folder is being added.
                 // do not override value set by callback.initAdditionalProperties if includeNewFilesInDeployment
                 int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), 
-                        filePaths, FileUtil.toFile(helper.getProjectDirectory()), 
+                        filePaths, base,
                         chooser.getSelectedPathVariables(), callback);
                 list.setSelectedIndices( newSelection );
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());

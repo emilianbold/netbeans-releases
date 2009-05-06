@@ -83,10 +83,6 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     private boolean createMacroAndIncludes;
     private final EvalCallback evalCallback;
 
-    public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler) {
-        this(base, apt, file, preprocHandler, null);
-    }
-
     public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, EvalCallback evalCallback) {
         super(base, apt, file, preprocHandler);
         this.createMacroAndIncludes = false;

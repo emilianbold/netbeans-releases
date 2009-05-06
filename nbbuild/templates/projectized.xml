@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 
     <import file="../default.xml"/>
     <import file="common.xml"/>
-
+    
     <target name="common-init" depends="default.init"/>
     <target name="init" depends="basic-init,files-init,build-init,-javac-init,-init-proxy"/>
     
