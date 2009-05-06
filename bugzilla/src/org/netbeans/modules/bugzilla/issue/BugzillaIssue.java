@@ -688,7 +688,7 @@ public class BugzillaIssue extends Issue {
         final boolean wasNew = data.isNew();
         final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
         final RepositoryResponse[] rr = new RepositoryResponse[1];
-        BugzillaCommand submitCmd = new BugzillaCommand() {
+        final BugzillaCommand submitCmd = new BugzillaCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
                 // submit
@@ -704,7 +704,10 @@ public class BugzillaIssue extends Issue {
                 if (!wasNew) {
                     refresh();
                 } else {
-                    refresh(rr[0].getTaskId(), true);
+                    if(!submitCmd.hasFailed()) {
+                        assert rr[0] != null;
+                        refresh(rr[0].getTaskId(), true);
+                    }
                 }
             }
         };
