@@ -35,6 +35,9 @@
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
   <SubComponents>
     <Container class="javax.swing.JScrollPane" name="scrollPane">
+      <Properties>
+        <Property name="verticalScrollBarPolicy" type="int" value="22"/>
+      </Properties>
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>
@@ -52,7 +55,7 @@
               <Connection code="getListSelMode()" type="code"/>
             </Property>
             <Property name="cellRenderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="new KenaiProjectsListRenderer()" type="code"/>
+              <Connection code="new KenaiProjectsListRenderer2()" type="code"/>
             </Property>
           </Properties>
           <AccessibilityProperties>

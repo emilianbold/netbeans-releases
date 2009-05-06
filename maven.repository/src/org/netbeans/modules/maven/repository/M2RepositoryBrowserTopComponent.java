@@ -95,12 +95,6 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
         map.put("delete", ExplorerUtils.actionDelete(manager, true)); //NOI18N
         associateLookup(ExplorerUtils.createLookup(manager, map));
         pnlBrowse.add(btv, BorderLayout.CENTER);
-        btnIndex.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/repository/refreshRepo.png", false)); //NOI18N
-        btnAddRepo.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/repository/AddRepo.png", false)); //NOI18N
-        btnFind.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/repository/FindInRepo.png", false)); //NOI18N
-        btnIndex.setText(null);
-        btnAddRepo.setText(null);
-        btnFind.setText(null);
 
 //        RepositoryUtil.getDefaultRepositoryIndexer().addIndexChangeListener(new ChangeListener() {
 //
@@ -172,7 +166,7 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
 
         jToolBar1.setFloatable(false);
 
-        btnIndex.setText("Index");
+        btnIndex.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/maven/repository/refreshRepo.png"))); // NOI18N
         btnIndex.setToolTipText(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "LBL_REPO_Update_Indexes")); // NOI18N
         btnIndex.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -181,9 +175,8 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
         });
         jToolBar1.add(btnIndex);
 
-        btnAddRepo.setText("Add Repo");
+        btnAddRepo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/maven/repository/AddRepo.png"))); // NOI18N
         btnAddRepo.setToolTipText(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "LBL_Add_Repo", new Object[] {})); // NOI18N
-        btnAddRepo.setFocusable(false);
         btnAddRepo.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnAddRepo.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         btnAddRepo.addActionListener(new java.awt.event.ActionListener() {
@@ -193,9 +186,8 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
         });
         jToolBar1.add(btnAddRepo);
 
-        btnFind.setText("Find");
+        btnFind.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/maven/repository/FindInRepo.png"))); // NOI18N
         btnFind.setToolTipText(org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "LBL_REPO_Find")); // NOI18N
-        btnFind.setFocusable(false);
         btnFind.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnFind.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         btnFind.addActionListener(new java.awt.event.ActionListener() {
@@ -227,6 +219,7 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
 
 private void btnAddRepoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddRepoActionPerformed
     final RepositoryRegisterUI rrui = new RepositoryRegisterUI();
+    rrui.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "LBL_Add_Repo"));
     DialogDescriptor dd = new DialogDescriptor(rrui, NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "LBL_Add_Repo"));
     dd.setClosingOptions(new Object[]{
                 rrui.getButton(),
