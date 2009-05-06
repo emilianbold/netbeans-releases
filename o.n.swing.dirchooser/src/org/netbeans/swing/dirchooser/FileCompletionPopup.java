@@ -47,7 +47,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
@@ -59,13 +58,11 @@ import java.io.File;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -144,6 +141,7 @@ public class FileCompletionPopup extends JPopupMenu implements KeyListener {
     }
     
     private class FocusHandler extends FocusAdapter {
+        @Override
         public void focusLost(FocusEvent e) {
             if (!e.isTemporary()) {
                 setVisible(false);
@@ -181,12 +179,16 @@ public class FileCompletionPopup extends JPopupMenu implements KeyListener {
             }
         }
         
+        @Override
         public void mouseClicked(MouseEvent e) {
             Point p = e.getPoint();
             int index = list.locationToIndex(p);
             list.setSelectedIndex(index);
             setVisible(false);
             File file = (File)list.getSelectedValue();
+            if (file == null) {
+                return;
+            }
             if(file.equals(chooser.getCurrentDirectory())) {
                 chooser.firePropertyChange(JFileChooser.DIRECTORY_CHANGED_PROPERTY, false, true);
             } else {
