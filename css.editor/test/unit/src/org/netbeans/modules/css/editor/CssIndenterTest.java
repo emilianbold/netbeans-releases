@@ -219,6 +219,11 @@ public class CssIndenterTest extends TestBase {
         insertNewline(
                 "@media Screen { h1{\n                ^}\n}",
                 "@media Screen { h1{\n                \n                ^}\n}", null);
+
+        // #164493
+        insertNewline(
+                "@media page {\n    @media {^}\n}\n",
+                "@media page {\n    @media {\n        ^\n    }\n}\n", null);
     }
 
 }
