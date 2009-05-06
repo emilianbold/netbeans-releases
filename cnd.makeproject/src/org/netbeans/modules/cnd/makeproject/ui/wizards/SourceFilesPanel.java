@@ -54,6 +54,7 @@ import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.SourceFileFilter;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.util.NbBundle;
 
 public class SourceFilesPanel extends javax.swing.JPanel {
@@ -78,6 +79,14 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     public void setSeed(String baseDir, String wd) {
         this.baseDir = baseDir;
         this.wd = wd;
+    }
+
+    public void setFoldersFilter(String regex) {
+        ignoreFoldersTextField.setText(regex);
+    }
+
+    public String getFoldersFilter() {
+        return ignoreFoldersTextField.getText();
     }
 
     public void initFocus() {
@@ -240,6 +249,11 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         buttonPanel = new javax.swing.JPanel();
         addButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
+        ignoreFolderPanel = new javax.swing.JPanel();
+        ignoreFoldersLabel = new javax.swing.JLabel();
+        ignoreFoldersTextField = new javax.swing.JTextField();
+        ignoreFoldersDefaultButton = new javax.swing.JButton();
+        seeAlsoLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -302,6 +316,52 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(buttonPanel, gridBagConstraints);
+
+        ignoreFolderPanel.setLayout(new java.awt.GridBagLayout());
+
+        ignoreFoldersLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("SourceFilesPanel.ignoreFoldersLabel.mn").charAt(0));
+        ignoreFoldersLabel.setLabelFor(ignoreFoldersTextField);
+        ignoreFoldersLabel.setText(org.openide.util.NbBundle.getMessage(SourceFilesPanel.class, "SourceFilesPanel.ignoreFoldersLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        ignoreFolderPanel.add(ignoreFoldersLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        ignoreFolderPanel.add(ignoreFoldersTextField, gridBagConstraints);
+
+        ignoreFoldersDefaultButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("SourceFilesPanel.ignoreFoldersDefaultButton.mn").charAt(0));
+        ignoreFoldersDefaultButton.setText(org.openide.util.NbBundle.getMessage(SourceFilesPanel.class, "SourceFilesPanel.ignoreFoldersDefaultButton.text")); // NOI18N
+        ignoreFoldersDefaultButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ignoreFoldersDefaultButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        ignoreFolderPanel.add(ignoreFoldersDefaultButton, gridBagConstraints);
+
+        seeAlsoLabel.setText(org.openide.util.NbBundle.getMessage(SourceFilesPanel.class, "SourceFilesPanel.seeAlsoLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        ignoreFolderPanel.add(seeAlsoLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(ignoreFolderPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
@@ -346,12 +406,23 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         data.add(new FolderEntry(fileChooser.getSelectedFile(), IpeUtils.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath())));
         refresh();
     }//GEN-LAST:event_addButtonActionPerformed
+
+    private void ignoreFoldersDefaultButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreFoldersDefaultButtonActionPerformed
+        // TODO add your handling code here:
+        ignoreFoldersTextField.setText(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN);
+}//GEN-LAST:event_ignoreFoldersDefaultButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JButton deleteButton;
+    private javax.swing.JPanel ignoreFolderPanel;
+    private javax.swing.JButton ignoreFoldersDefaultButton;
+    private javax.swing.JLabel ignoreFoldersLabel;
+    private javax.swing.JTextField ignoreFoldersTextField;
     private javax.swing.JList list;
     private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JLabel seeAlsoLabel;
     private javax.swing.JLabel sourceFilesLabel;
     // End of variables declaration//GEN-END:variables
 
