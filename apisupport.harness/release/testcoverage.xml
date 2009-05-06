@@ -79,8 +79,10 @@ Test coverage tasks can be currently run only with default java platform, that i
 with property nbjdk.active unset or set to 'default' and with property nbjdk.home
 unset.
 
-For NB.org module, run from command line:
-ant -Dnbjdk.home.defaulted=true -Dpermit.jdk6.builds=true display-coverage-report
+For NB.org module, specify properties:
+nbjdk.home.defaulted=true
+permit.jdk6.builds=true
+when running the target.
 
 Current java platform setup is:
   nbjdk.active:         ${nbjdk.active.print}

@@ -852,7 +852,7 @@ public final class SearchBar extends JPanel {
                 findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, blockSearchVisible);
                 findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, blockSearchStartPos);
                 int be = getBlockEndOffset();
-                if (be < 0){
+                if (be < 0 || be != blockSearchEndPos){
                     findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, doc.createPosition(blockSearchEndPos));
                 }else{
                     blockSearchEndPos = be;
