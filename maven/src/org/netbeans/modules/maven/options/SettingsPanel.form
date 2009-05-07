@@ -63,9 +63,9 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="cbSnapshots" min="-2" max="-2" attributes="0"/>
-                          <Component id="comIndex" min="-2" pref="391" max="-2" attributes="0"/>
+                          <Component id="comIndex" pref="415" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="30" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnIndex" linkSize="1" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="btnGoals" alignment="0" min="-2" max="-2" attributes="0"/>
