@@ -1238,17 +1238,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
     } // End of Work class
 
-    private static final class FileListWork extends Work {
+    /* test */ static final class FileListWork extends Work {
 
         private final URL root;
-        private final Collection<FileObject> files;
+        private final Collection<FileObject> files = new HashSet<FileObject>();
 
         public FileListWork (URL root, boolean followUpJob, boolean checkEditor) {
             super(followUpJob, checkEditor, false);
 
             assert root != null;
             this.root = root;
-            this.files = null;
         }
 
         public FileListWork (URL root, Collection<FileObject> files, boolean followUpJob, boolean checkEditor) {
@@ -1257,7 +1256,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             assert root != null;
             assert files != null && files.size() > 0;
             this.root = root;
-            this.files = new HashSet<FileObject>();
             this.files.addAll(files);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("FileListWork@" + Integer.toHexString(System.identityHashCode(this)) + ": root=" + root + ", file=" + files); //NOI18N
@@ -1275,7 +1273,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
                 try {
-                    final Crawler crawler = files == null ?
+                    final Crawler crawler = files.isEmpty() ?
                         new FileObjectCrawler(rootFo, false, null) : // rescan the whole root (no timestamp check)
                         new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), false, null); // rescan selected files (no timestamp check)
 

@@ -266,30 +266,37 @@ final class RDocAnalyzer {
         return result;
     }
 
+    private static String validName(String type) {
+        if (RubyUtils.isValidConstantName(type)) {
+            return type;
+        }
+        return null;
+    }
+
     static String resolveType(String typeInComment) {
         if ("".equals(typeInComment.trim()) || !Character.isLetter(typeInComment.charAt(0))) {
             return null;
         }
         if (typeInComment.startsWith("an_")) {
-            return RubyUtils.underlinedNameToCamel(typeInComment.substring(3));
+            return validName(RubyUtils.underlinedNameToCamel(typeInComment.substring(3)));
         }
         if (typeInComment.startsWith("a_")) {
-            return RubyUtils.underlinedNameToCamel(typeInComment.substring(2));
+            return validName(RubyUtils.underlinedNameToCamel(typeInComment.substring(2)));
         }
         if (typeInComment.startsWith("an") 
                 && typeInComment.length() > 2 
                 && Character.isUpperCase(typeInComment.charAt(2))) {
-            return typeInComment.substring(2);
+            return validName(typeInComment.substring(2));
         }
         if (typeInComment.startsWith("a") 
                 && typeInComment.length() > 1 
                 && Character.isUpperCase(typeInComment.charAt(1))) {
-            return typeInComment.substring(1);
+            return validName(typeInComment.substring(1));
         }
         if (Character.isUpperCase(typeInComment.charAt(0))) {
-            return typeInComment;
+            return validName(typeInComment);
         }
-        return RubyUtils.underlinedNameToCamel(typeInComment);
+        return validName(RubyUtils.underlinedNameToCamel(typeInComment));
     }
 
     private static abstract class TypeCommentAnalyzer {
@@ -330,6 +337,7 @@ final class RDocAnalyzer {
             putType("enumerator", "Enumeration"); // NOI18N
             putType("enumeration", "Enumeration"); // NOI18N
             putType("io", "IO"); // NOI18N
+            putType("ios", "IO"); // NOI18N
             putType("proc", "Proc"); // NOI18N
             putType("str", "String"); // NOI18N
             putType("base_name", "String"); // NOI18N
@@ -337,6 +345,7 @@ final class RDocAnalyzer {
             putType("bignum", "Bignum"); // NOI18N
             putType("boolean", "TrueClass"); // NOI18N
             putType("bool", "TrueClass"); // NOI18N
+            putType("buffer", "String"); // NOI18N
             putType("binding", "Binding"); // NOI18N
             putType("exception", "Exception");
             putType("no_method_error", "NoMethodError");
@@ -363,6 +372,7 @@ final class RDocAnalyzer {
             putType("num", "Numeric"); // NOI18N
             putType("obj", "Object"); // NOI18N
             putType("other_big", "Bignum"); // NOI18N
+            putType("outbuf", "String"); // NOI18N
             putType("prc", "Proc"); // NOI18N
             putType("range", "Range"); // NOI18N
             putType("regexp", "Regexp"); // NOI18N
@@ -379,7 +389,13 @@ final class RDocAnalyzer {
             putType("thread", "Thread"); // NOI18N
             putType("thr", "Thread"); // NOI18N
             putType("time", "Time"); // NOI18N
+            // TODO: should return both Class and Module
+            COMMENT_TYPE_TO_REAL_TYPE.put("class_or_module", "Class"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("e", "Enumeration"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("old_seed", "Numeric"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("old_seed", "Numeric"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("true", "TrueClass"); // NOI18N
+            COMMENT_TYPE_TO_REAL_TYPE.put("false", "FalseClass"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("path", "String"); // NOI18N
             COMMENT_TYPE_TO_REAL_TYPE.put("$_", "String"); // NOI18N
             putType("unbound_method", "UnboundMethod"); // NOI18N
@@ -400,8 +416,21 @@ final class RDocAnalyzer {
     
     private static final class CustomClassNameAnalyzer extends TypeCommentAnalyzer {
 
+        /**
+         * Exceptions for which we don't want to create a type.
+         */
+        // TODO: create an own type for self that the method TI infrastructure could 
+        // use and return the receiver in these cases.
+        private static final String[] EXCEPTIONS = {"Self", "Key", "Value", "Detail", "Result"};
+
         protected String doGetType(String typeInComment) {
-            return resolveType(typeInComment);
+            String result = resolveType(typeInComment);
+            for (String each : EXCEPTIONS) {
+                if (each.equals(result)) {
+                    return null;
+                }
+            }
+            return result;
         }
     }
 

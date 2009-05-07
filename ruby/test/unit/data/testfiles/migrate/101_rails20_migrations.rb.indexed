@@ -8,6 +8,7 @@ Searchable Keys:
   fqn : Rails20Migrations
   method : down|STATIC|
   method : up|STATIC|
+  require : 101_rails20_migrations
 
 Not Searchable Keys:
   attrs : |CLASS|

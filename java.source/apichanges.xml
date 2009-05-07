@@ -105,9 +105,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="TreeMaker.Method">
+             <api name="general"/>
+             <summary>Added new Method allowing creating varargs methods.</summary>
+             <version major="0" minor="44"/>
+             <date day="7" month="5" year="2009"/>
+             <author login="moonko"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Addint <code>TreeMake.Method(..., boolean isVarArg)</code> to allow creation of methods with variable lenght of arguments. 
+             </description>
+            <class package="org.netbeans.api.java.source" name="TreeMaker"/>
+            <class package="org.netbeans.modules.java.source.builder" name="TreeFactory"/>
+        </change>
         <change id="Comment.create">
              <api name="general"/>
-             <summary>Migrated to the parsing.api</summary>
+             <summary>Changed Comment API</summary>
              <version major="0" minor="43"/>
              <date day="31" month="3" year="2009"/>
              <author login="moonko"/>
