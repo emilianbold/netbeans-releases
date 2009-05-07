@@ -58,6 +58,7 @@ import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.util.UIUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -172,11 +173,7 @@ import org.openide.util.NbBundle;
                 }
             });
         } else {
-            final JLabel label = new JLabel(
-                    "<html><center>" // NOI18N
-                    + getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()) // NOI18N
-                    + "</center></html>"); // NOI18N
-            label.setForeground(GraphConfig.TEXT_COLOR);
+            final JEditorPane label= UIUtilities.createJEditorPane(getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()), false, GraphConfig.TEXT_COLOR);
             UIThread.invoke(new Runnable() {
                 public void run() {
                     panel.getPanel().setOverlay(label);

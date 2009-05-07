@@ -43,10 +43,12 @@ import java.awt.event.ActionListener;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
+import org.netbeans.modules.dlight.util.UIUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,7 +57,7 @@ import org.openide.util.NbBundle;
 public class RepairPanel extends JPanel {
 
     private static final int MARGIN = 2;
-    private final JLabel label;
+    private final JEditorPane label;
     private JButton button;
 
     public RepairPanel(ValidationStatus status, ActionListener action) {
@@ -65,11 +67,7 @@ public class RepairPanel extends JPanel {
         //String text = NbBundle.getMessage(RepairPanel.class, "RepairPanel.Label.Text");
         String text = status == null ?  NbBundle.getMessage(RepairPanel.class, "RepairPanel.Label.Text") : status.getReason();
       
-        label = new JLabel("<html><center>" + text + "</center></html>");//NOI18N
-        label.setAlignmentX(0.5f);
-        label.setHorizontalAlignment(SwingConstants.CENTER);
-        label.setVerticalAlignment(SwingConstants.TOP);
-        label.setForeground(GraphConfig.TEXT_COLOR);
+        label = UIUtilities.createJEditorPane(text, false, GraphConfig.TEXT_COLOR);
         if (!status.isKnown()){
             label.setToolTipText(NbBundle.getMessage(RepairPanel.class, "RepairPanel.Label.Tooltip", text));//NOI18N
         }else{
