@@ -60,6 +60,7 @@ import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.Version;
+import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.openide.util.NbBundle;
 
@@ -69,6 +70,7 @@ import org.openide.util.NbBundle;
  */
 public class IssuePanel extends javax.swing.JPanel {
     private NbJiraIssue issue;
+    private CommentsPanel commentsPanel;
 
     public IssuePanel() {
         initComponents();
@@ -84,6 +86,7 @@ public class IssuePanel extends javax.swing.JPanel {
         initStatusCombo();
         initResolutionCombo();
         initHeaderLabel();
+        initCommentsPanel();
 
         reloadForm();
     }
@@ -185,6 +188,19 @@ public class IssuePanel extends javax.swing.JPanel {
         headerLabel.setFont(font.deriveFont((float)(font.getSize()*1.7)));
     }
 
+    private void initCommentsPanel() {
+        commentsPanel = new CommentsPanel();
+        commentsPanel.setNewCommentHandler(new CommentsPanel.NewCommentHandler() {
+            public void append(String text) {
+                addCommentArea.append(text);
+                addCommentArea.requestFocus();
+                scrollRectToVisible(addCommentScrollPane.getBounds());
+            }
+        });
+        GroupLayout layout = (GroupLayout)getLayout();
+        layout.replace(dummyCommentPanel, commentsPanel);
+    }
+
     private void reloadForm() {
         ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
         JiraConfiguration config = issue.getRepository().getConfiguration();
@@ -229,6 +245,7 @@ public class IssuePanel extends javax.swing.JPanel {
         reloadField(originalEstimateField, workBySeconds(originalEstimateTxt));
         reloadField(remainingEstimateField, workBySeconds(issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE)));
         reloadField(timeSpentField, workBySeconds(issue.getFieldValue(NbJiraIssue.IssueField.ACTUAL)));
+        commentsPanel.setIssue(issue);
     }
 
     private void reloadField(JComponent fieldComponent, Object fieldValue) {
