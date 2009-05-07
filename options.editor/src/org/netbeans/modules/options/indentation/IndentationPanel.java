@@ -353,13 +353,13 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         cbExpandTabsToSpaces.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         lNumberOfSpacesPerIndent.setLabelFor(sNumberOfSpacesPerIndent);
-        lNumberOfSpacesPerIndent.setText("Number of Spaces per Indent:");
+        org.openide.awt.Mnemonics.setLocalizedText(lNumberOfSpacesPerIndent, "Number of Spaces per &Indent:");
 
         lTabSize.setLabelFor(sTabSize);
-        lTabSize.setText("Tab Size:");
+        org.openide.awt.Mnemonics.setLocalizedText(lTabSize, "&Tab Size:");
 
         lRightMargin.setLabelFor(sRightMargin);
-        lRightMargin.setText("Right Margin:");
+        org.openide.awt.Mnemonics.setLocalizedText(lRightMargin, "Right &Margin:");
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -369,13 +369,13 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel1Layout.createSequentialGroup()
-                        .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
+                        .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
                         .add(54, 54, 54))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                         .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
-                            .add(lRightMargin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE))
+                            .add(lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                            .add(lRightMargin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
@@ -406,6 +406,10 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         );
 
         jPanel1Layout.linkSize(new java.awt.Component[] {sNumberOfSpacesPerIndent, sRightMargin, sTabSize}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
+        sNumberOfSpacesPerIndent.getAccessibleContext().setAccessibleDescription("Number of Spaces per Indent");
+        sTabSize.getAccessibleContext().setAccessibleDescription("Tab Size");
+        sRightMargin.getAccessibleContext().setAccessibleDescription("Right Margin");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

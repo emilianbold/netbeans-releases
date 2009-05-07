@@ -66,7 +66,6 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.FocusManager;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -290,7 +289,7 @@ final class QueryTopComponent extends TopComponent
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(queriesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(queriesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 562, Short.MAX_VALUE))
                     .add(findIssuesLabel))
                 .addContainerGap())
         );
@@ -310,6 +309,9 @@ final class QueryTopComponent extends TopComponent
                     .add(queriesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
+
+        repositoryComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryTopComponent.class, "QueryTopComponent.repositoryComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        newButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryTopComponent.class, "QueryTopComponent.newButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -762,6 +764,7 @@ final class QueryTopComponent extends TopComponent
         public QueryButton(final Repository repo, final Query query) {
             super();
             setText(query.getDisplayName());
+            getAccessibleContext().setAccessibleDescription(query.getTooltip());
             this.setAction(new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     QueryAction.openQuery(query, repo);

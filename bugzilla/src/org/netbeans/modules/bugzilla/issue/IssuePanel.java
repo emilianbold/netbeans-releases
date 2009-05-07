@@ -39,16 +39,10 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
@@ -72,7 +66,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -129,10 +122,7 @@ public class IssuePanel extends javax.swing.JPanel {
         attachDocumentListeners();
 
         // A11Y - Issues 163597 and 163598
-        Set<AWTKeyStroke> set = addCommentArea.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
-        set = new HashSet<AWTKeyStroke>(set);
-        set.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
-        addCommentArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
+        BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
 
         // Comments panel
         commentsPanel = new CommentsPanel();
@@ -149,7 +139,7 @@ public class IssuePanel extends javax.swing.JPanel {
         layout.replace(dummyAttachmentsPanel, attachmentsPanel);
         attachmentsLabel.setLabelFor(attachmentsPanel);
 
-        issue163946Hack(scrollPane1);
+        BugtrackingUtil.issue163946Hack(scrollPane1);
     }
 
     void reloadFormInAWT(final boolean force) {
@@ -433,7 +423,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private void initCombos() {
         BugzillaRepository repository = issue.getRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null) {
+        if(bc == null || !bc.isValid()) {
             // XXX nice error msg?
             return;
         }
@@ -458,7 +448,7 @@ public class IssuePanel extends javax.swing.JPanel {
         // Close-Resolved -> Reopened+Resolved+(Close with higher index)
         BugzillaRepository repository = issue.getRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null) {
+        if(bc == null || !bc.isValid()) {
             // XXX nice error msg?
             return;
         }
@@ -674,23 +664,6 @@ public class IssuePanel extends javax.swing.JPanel {
         if(issue != null) {
             issue.closed();
         }
-    }
-
-    private static void issue163946Hack(final JScrollPane scrollPane) {
-        MouseWheelListener listener = new MouseWheelListener() {
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                if (scrollPane.getVerticalScrollBar().isShowing()) {
-                    if (e.getSource() != scrollPane) {
-                        e.setSource(scrollPane);
-                        scrollPane.dispatchEvent(e);
-                    }
-                } else {
-                    scrollPane.getParent().dispatchEvent(e);
-                }
-            }
-        };
-        scrollPane.addMouseWheelListener(listener);
-        scrollPane.getViewport().getView().addMouseWheelListener(listener);
     }
 
     /** This method is called from within the constructor to
@@ -1324,7 +1297,7 @@ public class IssuePanel extends javax.swing.JPanel {
         // Reload componentCombo, versionCombo and targetMilestoneCombo
         BugzillaRepository repository = issue.getRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null) {
+        if(bc == null || !bc.isValid()) {
             // XXX nice error msg?
             return;
         }

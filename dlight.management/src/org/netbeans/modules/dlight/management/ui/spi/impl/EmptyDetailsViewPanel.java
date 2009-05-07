@@ -38,7 +38,8 @@
  */
 package org.netbeans.modules.dlight.management.ui.spi.impl;
 
-import java.awt.Component;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -51,9 +52,11 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.Validateable;
@@ -65,6 +68,7 @@ import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.util.UIUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -97,8 +101,8 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
             JPanel p = new JPanel();
             p.setBorder(new EmptyBorder(10, 10, 10, 10));
             p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-            p.add(new JLabel("<html><body><center>" + NbBundle.getMessage(EmptyDetailsViewPanel.class, "NoCollectorsFound") + "</center></body></html>", SwingConstants.CENTER));//NOI18N
-//                p.add(label);
+            JEditorPane editorPane = UIUtilities.createJEditorPane(NbBundle.getMessage(EmptyDetailsViewPanel.class, "NoCollectorsFound"), true);//NOI18N
+            p.add(editorPane);
             repairPanel.add(p);
 
         } else {
@@ -110,8 +114,7 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
                     JPanel p = new JPanel();
                     p.setBorder(new EmptyBorder(10, 10, 10, 10));
                     p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-                    JLabel label = new JLabel(NbBundle.getMessage(EmptyDetailsViewPanel.class, "Validating"));//NOI18N
-                    label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+                    JEditorPane label = UIUtilities.createJEditorPane(NbBundle.getMessage(EmptyDetailsViewPanel.class, "Validating") , true);//NOI18N
                     p.add(label);
                     repairPanel.add(p);
                     panelsList.add(p);
@@ -124,8 +127,7 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
                     JPanel p = new JPanel();
                     p.setBorder(new EmptyBorder(10, 10, 10, 10));
                     p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-                    JLabel label = new JLabel(c.getValidationStatus().getReason());
-                    label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+                    JEditorPane label = UIUtilities.createJEditorPane(c.getValidationStatus().getReason(), false);//NOI18N
                     p.add(label);
                     p.add(Box.createVerticalStrut(10));
                     JButton repairButton = new JButton(NbBundle.getMessage(EmptyDetailsViewPanel.class, "Repair"));//NOI18N
@@ -147,20 +149,17 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
                     p.setBorder(new EmptyBorder(10, 10, 10, 10));
                     p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
                     if (!status.isKnown()) {
-                        p.add(new JLabel("<html><body><center>" + status.getReason() + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+                        p.add(UIUtilities.createJEditorPane(status.getReason(), false));//NOI18N
                     } else if (status.isValid()) {
                         String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");//NOI18N
                         if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
                             message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");//NOI18N
                         }
-                        p.add(new JLabel("<html><body><center>" + message + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+                        p.add(UIUtilities.createJEditorPane(message, true));
                     } else if (status.isInvalid()) {
-                        p.add(new JLabel("<html><body><center>" + status.getReason() + "</center></body></html>", SwingConstants.CENTER));//NOI18N
-
+                        JEditorPane editorPane = UIUtilities.createJEditorPane(status.getReason(), false);//NOI18N
+                        p.add(editorPane);
                     }
-//                JLabel label = new JLabel(c.getValidationStatus().getReason());
-//                label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-//                p.add(label);
                     repairPanel.add(p);
                     panelsList.add(p);
                     panels.put(c, panelsList.indexOf(p));
@@ -177,6 +176,8 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
             }
         }
     }
+
+  
 
     private void repair(final DataCollector<?> c) {
         final ValidateableSupport<DLightTarget> support = new ValidateableSupport<DLightTarget>(c);
@@ -203,7 +204,7 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
         p.removeAll();
         ValidationStatus status = v.getValidationStatus();
         if (!status.isKnown()) {
-            p.add(new JLabel("<html><body><center>" + status.getReason() + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+            p.add(UIUtilities.createJEditorPane(status.getReason(), false));//NOI18N
             p.repaint();
             repaint();
             return;
@@ -213,13 +214,13 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
             if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
                 message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");//NOI18N
             }
-            p.add(new JLabel("<html><body><center>" + message + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+            p.add(UIUtilities.createJEditorPane(message, true));
             p.repaint();
             repaint();
             return;
         }
         if (status.isInvalid()) {
-            p.add(new JLabel("<html><body><center>" + status.getReason() + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+            p.add(UIUtilities.createJEditorPane(status.getReason(), false));
             p.repaint();
             repaint();
             return;
@@ -235,15 +236,15 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
             p.removeAll();
             ValidationStatus status = v.getValidationStatus();
             if (!status.isKnown()) {
-                p.add(new JLabel("<html><body><center>" + status.getReason() + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+                p.add(UIUtilities.createJEditorPane(status.getReason(), false));
             } else if (status.isValid()) {
                 String message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "NextRun");//NOI18N
                 if (!configuration.getConfigurationOptions(false).areCollectorsTurnedOn()) {
                     message = NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled");//NOI18N
                 }
-                p.add(new JLabel("<html><body><center>" + message + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+                p.add(UIUtilities.createJEditorPane(message, true));
             } else if (status.isInvalid()) {
-                p.add(new JLabel("<html><body><center>" + status.getReason() + "</center></body></html>", SwingConstants.CENTER));//NOI18N
+                p.add(UIUtilities.createJEditorPane(status.getReason(), false));//NOI18N
             }
             p.repaint();
         }

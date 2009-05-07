@@ -42,15 +42,12 @@ package org.netbeans.modules.css.gsf;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.css.gsf.CssSemanticAnalyzer;
-import org.netbeans.modules.css.gsf.CssStructureScanner;
-import org.netbeans.modules.css.gsf.CssCommentHandler;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 
@@ -117,4 +114,16 @@ public class CssLanguage extends DefaultLanguageConfig {
     public KeystrokeHandler getKeystrokeHandler() {
         return new CssBracketCompleter();
     }
+
+    @Override
+    public boolean hasHintsProvider() {
+        return true;
+    }
+
+    @Override
+    public HintsProvider getHintsProvider() {
+        return new CssHintsProvider();
+    }
+
+
 }

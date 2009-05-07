@@ -401,6 +401,7 @@ public class RewriteOccasionalStatements extends GeneratorTest {
     }
 
 
+/*  This issue has been waived for yet.
     @Test
     public void test159941() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
@@ -453,6 +454,7 @@ public class RewriteOccasionalStatements extends GeneratorTest {
         System.out.println(res);
         assertEquals(golden, res);
     }
+*/
 
 
     class SimpleScanner extends TreeScanner<Void, Void> {

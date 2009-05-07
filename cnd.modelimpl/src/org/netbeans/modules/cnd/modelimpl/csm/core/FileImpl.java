@@ -334,6 +334,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return getProjectImpl(true) == null ? null : getProjectImpl(true).getPreprocHandler(fileBuffer.getFile());
     }
 
+    public APTPreprocHandler getPreprocHandler(int offset) {
+        FileContainer.StatePair bestStatePair = getContextPreprocStatePair(offset, offset);
+        return getPreprocHandler(bestStatePair);
+    }
+
     private APTPreprocHandler getPreprocHandler(FileContainer.StatePair statePair) {
         return getProjectImpl(true) == null ? null : getProjectImpl(true).getPreprocHandler(fileBuffer.getFile(), statePair);
     }

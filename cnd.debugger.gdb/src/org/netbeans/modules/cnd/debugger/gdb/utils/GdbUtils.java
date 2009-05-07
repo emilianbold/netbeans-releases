@@ -539,7 +539,7 @@ public class GdbUtils {
     }
     
     /** Find the end of a string by looking for a non-escaped double quote */
-    private static int findEndOfString(String s, int idx) {
+    public static int findEndOfString(String s, int idx) {
         int len = s.length();
 
         for (;idx < len;idx++) {

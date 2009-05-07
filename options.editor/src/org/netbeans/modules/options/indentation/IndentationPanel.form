@@ -56,14 +56,14 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="cbExpandTabsToSpaces" pref="223" max="32767" attributes="1"/>
+                          <Component id="cbExpandTabsToSpaces" pref="225" max="32767" attributes="1"/>
                           <EmptySpace min="-2" pref="54" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="lNumberOfSpacesPerIndent" pref="223" max="32767" attributes="2"/>
-                              <Component id="lRightMargin" alignment="0" pref="223" max="32767" attributes="0"/>
-                              <Component id="lTabSize" alignment="1" pref="223" max="32767" attributes="1"/>
+                              <Component id="lNumberOfSpacesPerIndent" pref="233" max="32767" attributes="2"/>
+                              <Component id="lRightMargin" alignment="0" pref="233" max="32767" attributes="0"/>
+                              <Component id="lTabSize" alignment="1" pref="233" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="1" attributes="0">
@@ -121,13 +121,17 @@
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="sNumberOfSpacesPerIndent"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Number of Spaces per Indent:"/>
+            <Property name="text" type="java.lang.String" value="Number of Spaces per &amp;Indent:"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledLabel()"/>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
         </Component>
         <Component class="javax.swing.JSpinner" name="sNumberOfSpacesPerIndent">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Number of Spaces per Indent"/>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledSpinner()"/>
           </AuxValues>
@@ -137,13 +141,17 @@
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="sTabSize"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Tab Size:"/>
+            <Property name="text" type="java.lang.String" value="&amp;Tab Size:"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledLabel()"/>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
         </Component>
         <Component class="javax.swing.JSpinner" name="sTabSize">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Tab Size"/>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledSpinner()"/>
           </AuxValues>
@@ -153,13 +161,17 @@
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="sRightMargin"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Right Margin:"/>
+            <Property name="text" type="java.lang.String" value="Right &amp;Margin:"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledLabel()"/>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
         </Component>
         <Component class="javax.swing.JSpinner" name="sRightMargin">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Right Margin"/>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledSpinner()"/>
           </AuxValues>

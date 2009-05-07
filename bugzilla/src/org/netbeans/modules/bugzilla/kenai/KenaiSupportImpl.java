@@ -118,6 +118,7 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
                     repositories.add(repo);
                 }
 
+                repo.getConfiguration(); // force repo configuration init before controler populate
                 return repo;
             }
         } catch (KenaiException kenaiException) {

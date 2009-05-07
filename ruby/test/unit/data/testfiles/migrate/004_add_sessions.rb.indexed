@@ -17,7 +17,6 @@ Not Searchable Keys:
 Document 1
 Searchable Keys:
   dbtable : sessions
-  require : 004_add_sessions
 
 Not Searchable Keys:
   dbcolumn : data;text

@@ -123,7 +123,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
+        return TopComponent.PERSISTENCE_ALWAYS;
     }
 
     @Override

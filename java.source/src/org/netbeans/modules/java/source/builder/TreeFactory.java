@@ -75,6 +75,9 @@ import static com.sun.tools.javac.code.Flags.*;
 
 /**
  * Factory for creating new com.sun.source.tree instances.
+ * 
+ * @author Rastislav Komara (<a href="mailto:moonko@netbeans.org">RKo</a>)
+ * @since 0.44.0
  */
 public class TreeFactory {
     Names names;
@@ -396,12 +399,35 @@ public class TreeFactory {
                              List<? extends ExpressionTree> throwsList,
                              BlockTree body,
                              ExpressionTree defaultValue) {
+        return Method(modifiers, name, returnType, typeParameters, parameters, throwsList, body, defaultValue, false);
+    }
+    
+    public MethodTree Method(ModifiersTree modifiers,
+                             CharSequence name,
+                             Tree returnType,
+                             List<? extends TypeParameterTree> typeParameters,
+                             List<? extends VariableTree> parameters,
+                             List<? extends ExpressionTree> throwsList,
+                             BlockTree body,
+                             ExpressionTree defaultValue,
+                             boolean isVarArgs) {
         ListBuffer<JCTypeParameter> typarams = new ListBuffer<JCTypeParameter>();
         for (TypeParameterTree t : typeParameters)
             typarams.append((JCTypeParameter)t);
-        ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
-        for (VariableTree t : parameters)
-            params.append((JCVariableDecl)t);
+        ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();        
+        if (!parameters.isEmpty() && isVarArgs) {
+            JCVariableDecl variableDecl = (JCVariableDecl) parameters.get(parameters.size()-1);
+            if (variableDecl.getKind() != Kind.ARRAY_TYPE) {                
+                variableDecl.mods = make.Modifiers(variableDecl.mods.flags | Flags.VARARGS);                
+            } else {
+                throw new IllegalArgumentException("Last parameter isn't array. Can't set varargs flag.");
+            }
+        } else if (parameters.isEmpty() && isVarArgs) {
+            throw new IllegalArgumentException("Can't set varargs flag on empty parameter list.");
+        }
+        for (VariableTree t : parameters) {
+            params.append((JCVariableDecl) t);
+        }
         ListBuffer<JCExpression> throwz = new ListBuffer<JCExpression>();
         for (ExpressionTree t : throwsList)
             throwz.append((JCExpression)t);

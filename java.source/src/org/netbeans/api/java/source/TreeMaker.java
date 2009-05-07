@@ -95,6 +95,9 @@ import static org.netbeans.modules.java.source.save.PositionEstimator.*;
  *
  * @author Tom Ball
  * @author Pavel Flaska
+ * @author Rastislav Komara (<a href="mailto:moonko@netbeans.org">RKo</a>)
+ * 
+ * @since 0.44.0
  */
 public final class TreeMaker {
     
@@ -622,7 +625,33 @@ public final class TreeMaker {
                       List<? extends ExpressionTree> throwsList,
                       BlockTree body,
                       ExpressionTree defaultValue) {
-        return delegate.Method(modifiers, name, returnType, typeParameters, parameters, throwsList, body, defaultValue);
+        return Method(modifiers, name, returnType, typeParameters, parameters, throwsList, body, defaultValue, false);
+    }
+    
+    /**
+     * Creates a new MethodTree.
+     *
+     * @param modifiers the modifiers of this method.
+     * @param name the name of the method.
+     * @param returnType the return type for this method.
+     * @param typeParameters the list of generic type parameters, or an empty list.
+     * @param parameters the list of parameters, or an empty list.
+     * @param throwsList the list of throws clauses, or an empty list.
+     * @param body the method's code block.
+     * @param defaultValue the default value, used by annotation types.
+     * @param isVarArg true if this method has variable number of  parameters.
+     * @see com.sun.source.tree.MethodTree
+     */
+    public MethodTree Method(ModifiersTree modifiers,
+                      CharSequence name,
+                      Tree returnType,
+                      List<? extends TypeParameterTree> typeParameters,
+                      List<? extends VariableTree> parameters,
+                      List<? extends ExpressionTree> throwsList,
+                      BlockTree body,
+                      ExpressionTree defaultValue,
+                      boolean isVarArg) {
+        return delegate.Method(modifiers, name, returnType, typeParameters, parameters, throwsList, body, defaultValue, isVarArg);
     }
     
     /**

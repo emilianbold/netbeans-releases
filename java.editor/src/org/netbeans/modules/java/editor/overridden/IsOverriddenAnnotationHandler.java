@@ -107,7 +107,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
 
     private FileObject file;
     
-    IsOverriddenAnnotationHandler(FileObject file) {
+    public IsOverriddenAnnotationHandler(FileObject file) {
         this.file = file;
         Logger.getLogger("TIMER").log(Level.FINE, "IsOverriddenAnnotationHandler", new Object[] {file, this}); //NOI18N
     }
@@ -222,7 +222,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
         return null;
     }
     
-    List<IsOverriddenAnnotation> process(CompilationInfo info, final StyledDocument doc) {
+    public List<IsOverriddenAnnotation> process(CompilationInfo info, final StyledDocument doc) {
         IsOverriddenVisitor v;
         
         synchronized (this) {

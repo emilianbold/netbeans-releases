@@ -57,6 +57,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.modules.cnd.api.execution.LinkSupport;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -267,7 +268,8 @@ import org.xml.sax.helpers.DefaultHandler;
             return true;
         }
         pattern = Pattern.compile(c.getVersionPattern());
-        String s = getCommandOutput(path, path + "/" + c.getNames()[0] + " " + flag, true); // NOI18N
+        String command = LinkSupport.resolveWindowsLinkik(file.getAbsolutePath());
+        String s = getCommandOutput(path, command + " " + flag, true); // NOI18N
         boolean res = pattern.matcher(s).find();
         if (TRACE && !res) {
             System.err.println("No match for pattern [" + c.getVersionPattern() + "]:");
