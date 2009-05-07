@@ -94,8 +94,6 @@ public final class RubyIndex {
 
     private static final Logger LOGGGER = Logger.getLogger(RubyIndex.class.getName());
 
-    //private static final Logger LOGGER = Logger.getLogger(RubyIndex.class.getName());
-    
     public static final String UNKNOWN_CLASS = "<Unknown>"; // NOI18N
     public static final String OBJECT        = "Object"; // NOI18N
     private static final String CLASS        = "Class"; // NOI18N
@@ -1673,54 +1671,55 @@ public final class RubyIndex {
         return getPreindexUrl(url, null);
     }
     static String getPreindexUrl(String url, FileObject context) {
-        if (RubyIndexer.isPreindexing()) {
-            Iterator<RubyPlatform> it = null;
-            if (context != null && context.isValid()) {
-                Project project = FileOwnerQuery.getOwner(context);
-                if (project != null) {
-                    RubyPlatform platform = RubyPlatform.platformFor(project);
-                    if (platform != null) {
-                        it = Collections.singleton(platform).iterator();
-                    }
-                }
-            }
-            if (it == null) {
-                it = RubyPlatformManager.platformIterator();
-            }
-            while (it.hasNext()) {
-                RubyPlatform platform = it.next();
-                String s = getGemHomeURL(platform);
-                
-                if (s != null && url.startsWith(s)) {
-                    return GEM_URL + url.substring(s.length());
-                }
-
-                s = platform.getHomeUrl();
-
-                if (url.startsWith(s)) {
-                    url = RUBYHOME_URL + url.substring(s.length());
-
-                    return url;
-                }
-            }
-        } else {
+        // no preindexing in parsing api
+//        if (RubyIndexer.isPreindexing()) {
+//            Iterator<RubyPlatform> it = null;
+//            if (context != null && context.isValid()) {
+//                Project project = FileOwnerQuery.getOwner(context);
+//                if (project != null) {
+//                    RubyPlatform platform = RubyPlatform.platformFor(project);
+//                    if (platform != null) {
+//                        it = Collections.singleton(platform).iterator();
+//                    }
+//                }
+//            }
+//            if (it == null) {
+//                it = RubyPlatformManager.platformIterator();
+//            }
+//            while (it.hasNext()) {
+//                RubyPlatform platform = it.next();
+//                String s = getGemHomeURL(platform);
+//
+//                if (s != null && url.startsWith(s)) {
+//                    return GEM_URL + url.substring(s.length());
+//                }
+//
+//                s = platform.getHomeUrl();
+//
+//                if (url.startsWith(s)) {
+//                    url = RUBYHOME_URL + url.substring(s.length());
+//
+//                    return url;
+//                }
+//            }
+//        } else {
             // FIXME: use right platform
-            RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-            if (platform != null) {
-                String s = getGemHomeURL(platform);
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        if (platform != null) {
+            String s = getGemHomeURL(platform);
 
-                if (s != null && url.startsWith(s)) {
-                    return GEM_URL + url.substring(s.length());
-                }
+            if (s != null && url.startsWith(s)) {
+                return GEM_URL + url.substring(s.length());
+            }
 
-                s = platform.getHomeUrl();
+            s = platform.getHomeUrl();
 
-                if (url.startsWith(s)) {
-                    url = RUBYHOME_URL + url.substring(s.length());
-                    return url;
-                }
+            if (url.startsWith(s)) {
+                url = RUBYHOME_URL + url.substring(s.length());
+                return url;
             }
         }
+//        }
 
         String s = getClusterUrl();
 
