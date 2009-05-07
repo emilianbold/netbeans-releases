@@ -60,6 +60,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -77,6 +79,7 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -99,6 +102,8 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
     public final static String MACRO_EXPANSION_OFFSET_TRANSFORMER = "macro-expansion-offset-transformer"; // NOI18N
     public final static String MACRO_EXPANSION_MACRO_TABLE = "macro-expansion-macro-table"; // NOI18N
+
+    public final static String MACRO_EXPANSION_STOP_ON_OFFSET_PARSE_FILE_WALKER_CACHE = "macro-expansion-stop-on-offset-parse-file-walker-cache"; // NOI18N
 
     public synchronized int expand(final Document inDoc, final int startOffset, final int endOffset, final Document outDoc) {
         if (inDoc == null || outDoc == null) {
@@ -415,8 +420,24 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return code;
         }
         ProjectBase base = (ProjectBase) project;
-        StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler);
-        walker.visit();
+
+        StopOnOffsetParseFileWalkerCache cache;
+        Object obj = doc.getProperty(MACRO_EXPANSION_STOP_ON_OFFSET_PARSE_FILE_WALKER_CACHE);
+        if(obj == null) {
+            synchronized(doc) {
+                cache = new StopOnOffsetParseFileWalkerCache(doc);
+                doc.putProperty(MACRO_EXPANSION_STOP_ON_OFFSET_PARSE_FILE_WALKER_CACHE, cache);
+            }
+        } else {
+            cache = (StopOnOffsetParseFileWalkerCache) obj;
+        }
+        synchronized(cache) {
+            if(cache.getVersion() != DocumentUtilities.getDocumentVersion(doc)) {
+                cache.cleanCache();
+            }
+            StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler, cache);
+            walker.visit();
+        }
         TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code);
         if (ts != null) {
             if (handler != null) {
@@ -1188,10 +1209,12 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     private static class StopOnOffsetParseFileWalker extends APTParseFileWalker {
 
         private final int stopOffset;
+        private final StopOnOffsetParseFileWalkerCache cache;
 
-        public StopOnOffsetParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, int offset, APTPreprocHandler preprocHandler) {
+        public StopOnOffsetParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, int offset, APTPreprocHandler preprocHandler, StopOnOffsetParseFileWalkerCache cache) {
             super(base, apt, file, preprocHandler, null);
             stopOffset = offset;
+            this.cache = cache;
         }
 
         @Override
@@ -1200,9 +1223,64 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                 stop();
                 return false;
             }
+            State cached = cache.getState(node);
+            if(cached != null) {
+                getPreprocHandler().setState(cached);
+                return true;
+            }
             boolean ret = super.onAPT(node, wasInBranch);
+            if(ret) {
+                cache.addNode(node, getPreprocHandler().getState());
+            }
             return ret;
         }
+    }
 
+    private static class StopOnOffsetParseFileWalkerCache implements DocumentListener {
+
+        private final Map<APT, State> cache = new HashMap<APT, State>();
+        private final long version;
+        private int lastOffset;
+
+        public StopOnOffsetParseFileWalkerCache(Document doc) {
+            version = DocumentUtilities.getDocumentVersion(doc);
+            doc.addDocumentListener(this);
+        }
+
+        public void cleanCache() {
+            lastOffset = 0;
+            cache.clear();
+        }
+
+        public void addNode(APT node, State state) {
+            lastOffset = lastOffset > node.getEndOffset() ? lastOffset : node.getEndOffset();
+            cache.put(node, state);
+        }
+
+        public State getState(APT node) {
+            return cache.get(node);
+        }
+
+        public long getVersion() {
+            return version;
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            if(lastOffset <= e.getOffset()) {
+                cleanCache();
+            }
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            if(lastOffset <= e.getOffset()) {
+                cleanCache();
+            }
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            if(lastOffset <= e.getOffset()) {
+                cleanCache();
+            }
+        }
     }
 }
