@@ -78,6 +78,7 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
         result.add(new SuiteErrorOutputHandler());
         result.add(new ShouldaTestStartedHandler());
         result.add(new ShouldaTestFailedHandler());
+        result.add(new ShouldaTestErrorHandler());
         result.add(new TestStartedHandler());
         result.add(new TestFailedHandler());
         result.add(new TestErrorHandler());
@@ -174,8 +175,13 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         private List<String> output;
 
+
         public TestErrorHandler() {
-            super("%TEST_ERROR%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+            this("%TEST_ERROR%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+        }
+
+        public TestErrorHandler(String regex) {
+            super(regex); //NOI18N
         }
 
         @Override
@@ -263,6 +269,17 @@ public class TestUnitHandlerFactory implements TestHandlerFactory {
 
         public ShouldaTestFinishedHandler() {
             super("%TEST_FINISHED%\\stime=(.+)\\stest:\\s(.*)\\.\\s\\((.+)\\)"); //NOI18N
+        }
+
+    }
+
+    /**
+     * Support for Shoulda tests -- see #150613
+     */
+    static class ShouldaTestErrorHandler extends TestErrorHandler {
+
+        public ShouldaTestErrorHandler() {
+            super("%TEST_ERROR%\\stime=(.+)\\stestname=test:\\s(.+)\\.\\s\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
     }
