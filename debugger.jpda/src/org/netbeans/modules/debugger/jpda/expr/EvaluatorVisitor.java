@@ -2341,7 +2341,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (expr == null) {
                     Assert2.error(arg0, "fieldOnNull", fieldName);
                 }
-                throw new IllegalArgumentException("Wrong expression value: "+expr);
+                Assert2.error(arg0, "invalidMemberReference", arg0.toString());
             case CLASS:
             case INTERFACE:
             case ENUM:
