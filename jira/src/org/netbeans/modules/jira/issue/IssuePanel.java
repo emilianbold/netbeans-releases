@@ -271,6 +271,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
         // Comments
         commentsPanel.setIssue(issue);
+        BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
     }
 
     private void reloadField(JComponent fieldComponent, Object fieldValue) {
