@@ -380,6 +380,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        peopleComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.peopleComboBox.AccessibleContext.accessibleName")); // NOI18N
+        peopleTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.peopleTextField.AccessibleContext.accessibleName")); // NOI18N
+
         byDetailsPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         productLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
@@ -617,6 +620,10 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                     .add(keywordsButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        summaryTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.summaryTextField.AccessibleContext.accessibleName")); // NOI18N
+        commentTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.commentTextField.AccessibleContext.accessibleName")); // NOI18N
+        keywordsTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.keywordsTextField.AccessibleContext.accessibleName")); // NOI18N
 
         jLabel3.setLabelFor(queryNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel3.text")); // NOI18N
