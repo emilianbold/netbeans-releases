@@ -41,10 +41,16 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.SwingUtilities;
+import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.text.NbDocument;
 
 /**
  * Represents one stack frame.
@@ -68,6 +74,9 @@ public class CallStackFrame {
     
     private LocalVariable[] cachedLocalVariables = null;
     private Collection<GdbVariable> arguments = null;
+    private StyledDocument document = null;
+    private int offset = -1;
+
     //private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public CallStackFrame(GdbDebugger debugger, String func, String file, String fullname, String lnum, String address, int frameNumber, String from) {
@@ -188,6 +197,28 @@ public class CallStackFrame {
 
     public void setArguments(Collection<GdbVariable> arguments) {
         this.arguments = arguments;
+    }
+
+    public StyledDocument getDocument() {
+        if (document == null) {
+            if (fullname != null && fullname.length() > 0) {
+                File docFile = new File(fullname);
+                if (docFile.exists()) {
+                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(docFile));
+                    document = (StyledDocument) CsmUtilities.getDocument(fo);
+                }
+            }
+        }
+        return document;
+    }
+
+    public int getOffset() {
+        if (offset < 0) {
+            if (getDocument() != null) {
+                offset = NbDocument.findLineOffset(document, lineNumber);
+            }
+        }
+        return offset;
     }
     
     /**

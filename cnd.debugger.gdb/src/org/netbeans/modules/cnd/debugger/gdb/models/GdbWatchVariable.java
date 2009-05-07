@@ -43,10 +43,19 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
+import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.text.NbDocument;
 
 /**
  * The variable type used in Gdb watches.
@@ -163,7 +172,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
             String t = getDebugger().requestWhatis(watch.getExpression());
             if (t != null && t.length() > 0) {
                 type = t;
-                value = getDebugger().evaluate(watch.getExpression());
+                value = getDebugger().evaluate(checkMacro(watch.getExpression()));
             } else {
                 type = ""; // NOI18N
                 value = ""; // NOI18N
@@ -173,6 +182,20 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
             setModifiedValue(value);
             request = false;
         }
+    }
+
+    private String checkMacro(String expr) {
+        CallStackFrame csf = getDebugger().getCurrentCallStackFrame();
+        if (csf != null) {
+            Document doc = csf.getDocument();
+            if (doc != null) {
+                int offset = csf.getOffset();
+                if (offset >= 0) {
+                    return CsmMacroExpansion.expand(doc, offset, expr);
+                }
+            }
+        }
+        return expr;
     }
     
     @Override
