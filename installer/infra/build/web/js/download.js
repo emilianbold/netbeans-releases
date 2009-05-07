@@ -34,23 +34,22 @@
  * copyright holder.
  */
 
-var PROPERTY_NONE      = 0;
-var PROPERTY_JAVASE    = 1;
-var PROPERTY_JAVA      = 2;
-var PROPERTY_RUBY      = 4;
-var PROPERTY_CPP       = 8;
-var PROPERTY_PHP       = 16;
-var PROPERTY_ALL       = 32;
-var PROPERTY_HIDDEN    = 128;
+var PRODUCT_INFOS = new Array();
 
-var BUNDLE_PROPERTIES = new Array() ;
+var BUNDLES = new Array();
 
-BUNDLE_PROPERTIES[0] = PROPERTY_JAVASE;
-BUNDLE_PROPERTIES[1] = PROPERTY_JAVA;
-BUNDLE_PROPERTIES[2] = PROPERTY_RUBY;
-BUNDLE_PROPERTIES[3] = PROPERTY_CPP;
-BUNDLE_PROPERTIES[4] = PROPERTY_PHP;
-BUNDLE_PROPERTIES[5] = PROPERTY_ALL;
+var product_uids           = new Array();
+var product_versions       = new Array();
+var product_display_names  = new Array();
+var product_notes          = new Array();
+var product_descriptions   = new Array();
+var product_download_sizes = new Array();
+var product_platforms      = new Array();
+
+var group_products         = new Array();
+var group_display_names    = new Array();
+var group_descriptions     = new Array();
+
 
 var INFO_ICON   = getImagesLocation() + "info_icon.gif";
 var INFO_ICON_H = getImagesLocation() + "info_icon_h.gif";
@@ -145,9 +144,15 @@ function write_components() {
         }
 
         for (var j = 0; j < group_products[i].length; j++) {
-		var index = group_products[i][j];
-
-		if (product_properties[index] & PROPERTY_HIDDEN) {
+		var uid = group_products[i][j];
+                var index = "";
+                for(var k=0;k<product_uids.length;k++) { 
+                   if (product_uids[k] == uid) {
+                      index = k;
+                      break;
+                   }
+                }
+		if (is_product_hidden(uid)) {
 		    continue;
 		}
             
@@ -171,6 +176,47 @@ function write_components() {
 		document.write('</tr>');
         }
     }
+}
+
+function parseList(list) {
+   var obj = new Array();
+   var idx = -1;
+   var rest = list;
+   while (rest!="") {
+      idx = rest.indexOf(", ");
+      if(idx !=-1) {
+         obj[obj.length] = rest.substring(0, idx);
+         rest = rest.substring(idx + 2, rest.length);
+      } else {
+        obj[obj.length] = rest; 
+        rest = "";
+      }   
+   }
+ 
+   return obj;
+}
+
+function add_product_info(uid, version, name, note, description, size, platforms) {
+    product_uids[product_uids.length] = uid;
+    product_versions[product_versions.length] = version;
+    product_display_names[product_display_names.length] = name;
+    product_notes[product_notes.length] = note;
+    product_descriptions[product_descriptions.length] = description;
+    product_download_sizes[product_download_sizes.length] = size;
+    product_platforms[product_platforms.length] = parseList(platforms);    
+}
+
+function add_group_info(products, name, description) {
+    group_products[group_products.length] = parseList(products);
+    group_display_names[group_display_names.length] = name;
+    group_descriptions[group_descriptions.length] = description;    
+}
+
+function add_bundle_info(uid, products) {
+    var index = BUNDLES.length;
+    BUNDLES[index] = new Object;
+    BUNDLES[index].uid = uid;
+    BUNDLES[index].products = parseList(products);
 }
 
 function getHeader(community) {
@@ -368,6 +414,30 @@ function select_language() {
     last_selected_lang = select.selectedIndex;
 }
 
+
+
+function is_product_hidden(product_uid) {
+    return is_product_in_bundle(product_uid, "hidden");
+}
+function is_product_in_bundle(product_uid, bundle_uid) {
+    var hidden = false;
+    var bundle;
+    for(var k=0; k < BUNDLES.length; k++ ) {
+       if(BUNDLES[k].uid == bundle_uid) {  
+           bundle = BUNDLES[k];
+           break;
+       }
+    }
+
+    for(var k=0;k<bundle.products.length;k++) { 
+       if(product_uid == bundle.products[k]) {
+                return true;
+        }
+    }
+    return false;
+}
+
+
 function update() {
     var langselect = document.getElementById("language_select");
     if(langselect.options[langselect.selectedIndex].value == MORE_LANG_ID) {
@@ -392,7 +462,7 @@ function update() {
     // update the "checks" and generate error messages, if any
     var product_messages = new Array();
     for (var i = 0; i < product_uids.length; i++) {
-        if (product_properties[i] & PROPERTY_HIDDEN) {
+        if (is_product_hidden(product_uids[i])) {
             continue;
         }
         
@@ -403,9 +473,10 @@ function update() {
 	     product_messages[i] = product_display_names[i];
         }
 		
-        for(var k=0;k<BUNDLE_PROPERTIES.length;k++) {
+        for(var k=0;k<BUNDLE_IDS.length;k++) {
                 var id = BUNDLE_IDS[k];
-                if (product_properties[i] & BUNDLE_PROPERTIES[k]) {    
+
+                if(is_product_in_bundle(product_uids[i], BUNDLE_IDS[k])) {
                     if (product_messages[i] == null) {
                         document.getElementById("product_" + i + "_" + id).innerHTML = IMAGE_CHECKED_WHITE;
                     } else {
@@ -498,8 +569,8 @@ function update() {
             continue;
         }
 
-        for(var k=0;k<BUNDLE_PROPERTIES.length;k++) {
-	    if (product_properties[i] & BUNDLE_PROPERTIES[k]) {
+        for(var k=0;k<BUNDLE_IDS.length;k++) {
+	    if (is_product_in_bundle(product_uids[i], BUNDLE_IDS[k])) {
                 sizes[k] += new Number(product_download_sizes[i]);
             }
              
@@ -510,15 +581,6 @@ function update() {
         sizes[k]   = Math.ceil(sizes[k] / 1024.0);
     }
     
-    if(platform == "zip") {       
-        sizes[0]  =  71;
-        sizes[1]  = 149;
-        sizes[2]  =  60;
-        sizes[3]  =  36;
-        sizes[4]  =  37;
-        sizes[5]  = 191;
-    } 
-
     if(platform.indexOf("macosx")!=-1) {
 	platform = "macosx";
     }
@@ -555,10 +617,14 @@ function is_compatible(index, platform) {
     if ( platform == "zip" ) {
          for (var i = 0; i < group_products.length; i++) {
           for (var j = 0; j < group_products[i].length; j++) {
-              var idx = group_products[i][j];
-              if((idx==index) && (i == 0) ) {
-                   return true;
-              } 
+	      var uid = group_products[i][j];
+              for(var k=0;k<product_uids.length;k++) { 
+                 if (product_uids[k] == uid) {
+                    if((k==index) && (i == 0) ) {//runtimes are not available in zip
+                        return true;
+                    } 
+                 }
+              }              
           }
         }
     } else {

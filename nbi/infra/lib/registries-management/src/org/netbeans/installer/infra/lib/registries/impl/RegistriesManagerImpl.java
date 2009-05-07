@@ -766,59 +766,22 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 
                 productMapping.put(i, productUids.size() - 1);
             }
-            
-            out.append("product_uids = new Array();").append("\n");
-            for (int i = 0; i < productUids.size(); i++) {
-                out.append("    product_uids[" + i + "] = \"" + productUids.get(i) + "\";").append("\n");
-            }
-            out.append("\n");
-            
-            out.append("product_versions = new Array();").append("\n");
-            for (int i = 0; i < productVersions.size(); i++) {
-                out.append("    product_versions[" + i + "] = \"" + productVersions.get(i) + "\";").append("\n");
-            }
-            out.append("\n");
-            
-            out.append("product_display_names = new Array();").append("\n");
-            for (int i = 0; i < productDisplayNames.size(); i++) {
-                out.append("    product_display_names[" + i + "] = \"" + productDisplayNames.get(i) + "\";").append("\n");
-            }
-            out.append("\n");
-            
-            out.append("product_notes = new Array();").append("\n");
-            for (int i = 0; i < productNotes.size(); i++) {
-                out.append("    product_notes[" + i + "] = \"" + productNotes.get(i) + "\";").append("\n");
-            }
-            out.append("\n");
-            
-            out.append("product_descriptions = new Array();").append("\n");
-            for (int i = 0; i < productDescriptions.size(); i++) {
-                out.append("    product_descriptions[" + i + "] = \"" + productDescriptions.get(i) + "\";").append("\n");
-            }
-            out.append("\n");
-            
-            out.append("product_download_sizes = new Array();").append("\n");
-            for (int i = 0; i < productDownloadSizes.size(); i++) {
-                out.append("    product_download_sizes[" + i + "] = " + productDownloadSizes.get(i) + ";").append("\n");
-            }
-            out.append("\n");
 
-            
-            out.append("product_platforms = new Array();").append("\n");
-            for (int i = 0; i < productPlatforms.size(); i++) {
-                out.append("    product_platforms[" + i + "] = new Array();").append("\n");
-                for (int j = 0; j < productPlatforms.get(i).size(); j++) {
-                    out.append("        product_platforms[" + i + "][" + j + "] = \"" + productPlatforms.get(i).get(j) + "\";").append("\n");
-                }
+            for(int i = 0; i < productUids.size(); i++) {
+                out.append("add_product_info(\n");
+                out.append("                 \""+ productUids.get(i) + "\",\n");
+                out.append("                 \"" + productVersions.get(i) + "\",\n");
+                out.append("                 \"" + productDisplayNames.get(i) + "\",\n");
+                out.append("                 \"" + productNotes.get(i) + "\",\n");
+                out.append("                 \"" + productDescriptions.get(i) + "\",\n");
+                out.append("                 " + productDownloadSizes.get(i) + ",\n");
+                //out.append("                 " + productProperties.get(i) + "),\n");
+                out.append("                 \"" + StringUtils.asString(productPlatforms.get(i)) + "\");\n");
+                out.append("\n");
             }
-            out.append("\n");
             
-            out.append("product_properties = new Array();").append("\n");
-            for (int i = 0; i < productProperties.size(); i++) {
-                out.append("    product_properties[" + i + "] = " + productProperties.get(i) + ";").append("\n");
-            }
-            out.append("\n");
             
+            // groups
             for (int i = 0; i < productUids.size(); i++) {
                 defaultGroupProducts.add(Integer.valueOf(i));
             }
@@ -846,26 +809,25 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 groupDescriptions.add(0, "");
             }
             
-            out.append("group_products = new Array();").append("\n");
+            out.append("\n");
             for (int i = 0; i < groupProducts.size(); i++) {
-                out.append("    group_products[" + i + "] = new Array();").append("\n");
-                for (int j = 0; j < groupProducts.get(i).size(); j++) {
-                    out.append("        group_products[" + i + "][" + j + "] = " + groupProducts.get(i).get(j) + ";").append("\n");
+                List <String> uids = new LinkedList<String>();
+                for(int j=0;j<groupProducts.get(i).size();j++) {
+                    uids.add(productUids.get(groupProducts.get(i).get(j)));
                 }
+                out.append("add_group_info(");
+                out.append("               \"" + StringUtils.asString(uids) + "\",\n");
+                out.append("               \"" + groupDisplayNames.get(i) + "\",\n");
+                out.append("               \"" + groupDescriptions.get(i) + "\");\n");
+                out.append("\n");
             }
             out.append("\n");
-            
-            out.append("group_display_names = new Array();").append("\n");
-            for (int i = 0; i < groupDisplayNames.size(); i++) {
-                out.append("    group_display_names[" + i + "] = \"" + groupDisplayNames.get(i) + "\";").append("\n");
-            }
-            out.append("\n");
-            
-            out.append("group_descriptions = new Array();").append("\n");
-            for (int i = 0; i < groupDescriptions.size(); i++) {
-                out.append("    group_descriptions[" + i + "] = \"" + groupDescriptions.get(i) + "\";").append("\n");
-            }
-            out.append("\n");
+
+            for(Pair <List<String>,String> pair : bundles) {
+                List <String> uids = pair.getFirst();
+                String bundleId = pair.getSecond();
+                out.append("add_bundle_info(\"" + bundleId + "\", \"" + StringUtils.asString(uids) + "\");\n");
+             }
             
             return out.toString();
         } catch (IOException e) {

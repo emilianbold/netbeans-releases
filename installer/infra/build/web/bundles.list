@@ -1,9 +1,9 @@
 #UID=<list of products separated by comma-space>
-JAVASE=nb-base, nb-javase
-JAVA=nb-base, nb-javase, nb-webcommon, nb-javaee, nb-groovy, nb-javame, nb-ergonomics, glassfish, glassfish-mod, tomcat
-RUBY=nb-base, nb-webcommon, nb-ruby, glassfish-mod
-CPP=nb-base, nb-cnd
-PHP=nb-base, nb-webcommon, nb-php
-ALL=nb-base, nb-webcommon, nb-javase, nb-javaee, nb-javame, nb-cnd, nb-ruby, nb-groovy, nb-php, nb-ergonomics, glassfish, glassfish-mod, openesb, tomcat
-HIDDEN=openesb, nb-base, nb-webcommon, nb-ergonomics
+javase=nb-base, nb-javase
+java=nb-base, nb-javase, nb-webcommon, nb-javaee, nb-groovy, nb-javame, nb-ergonomics, glassfish, glassfish-mod, tomcat
+ruby=nb-base, nb-webcommon, nb-ruby, glassfish-mod
+cpp=nb-base, nb-cnd
+php=nb-base, nb-webcommon, nb-php
+all=nb-base, nb-webcommon, nb-javase, nb-javaee, nb-javame, nb-cnd, nb-ruby, nb-groovy, nb-php, nb-ergonomics, glassfish, glassfish-mod, openesb, tomcat
+hidden=openesb, nb-base, nb-webcommon, nb-ergonomics
 
