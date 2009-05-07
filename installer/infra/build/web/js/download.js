@@ -35,12 +35,12 @@
  */
 
 var PROPERTY_NONE      = 0;
-var PROPERTY_ALL       = 1;
+var PROPERTY_JAVASE    = 1;
 var PROPERTY_JAVA      = 2;
-var PROPERTY_JAVASE    = 8;
-var PROPERTY_RUBY      = 16;
-var PROPERTY_CPP       = 32;
-var PROPERTY_PHP       = 64;
+var PROPERTY_RUBY      = 4;
+var PROPERTY_CPP       = 8;
+var PROPERTY_PHP       = 16;
+var PROPERTY_ALL       = 32;
 var PROPERTY_HIDDEN    = 128;
 
 var BUNDLE_PROPERTIES = new Array() ;
