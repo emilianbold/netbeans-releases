@@ -91,6 +91,7 @@ public class CreateId implements Fix {
     public ChangeInfo implement(){
         PickOrCreateFieldPanel pnlPickOrCreateField = new PickOrCreateFieldPanel();
         pnlPickOrCreateField.setAvailableFields(getAvailableFields());
+        pnlPickOrCreateField.setFileObject(fileObject);
         
         DialogDescriptor ddesc = new DialogDescriptor(pnlPickOrCreateField,
                 NbBundle.getMessage(CreateId.class, "LBL_AddIDAnnotationDlgTitle"));

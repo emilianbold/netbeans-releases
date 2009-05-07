@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.jpa.verification.fixes;
 
 import java.awt.Color;
 import java.util.Set;
+import javax.lang.model.element.TypeElement;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.border.Border;
@@ -50,9 +51,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-//import org.netbeans.modules.j2ee.common.FQNSearch;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.modules.j2ee.persistence.dd.JavaPersistenceQLKeywords;
 import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -67,6 +71,7 @@ class PickOrCreateFieldPanel extends javax.swing.JPanel {
     private FieldNameValidator nameValidator = null;
     private Border brdrBlack = BorderFactory.createLineBorder(Color.BLACK);
     private DialogDescriptor dlgDescriptor = null;
+    private FileObject fileObject;
     
     /** Creates new form ProvideIDAnnotationPanel */
     public PickOrCreateFieldPanel() {
@@ -76,7 +81,7 @@ class PickOrCreateFieldPanel extends javax.swing.JPanel {
             public void stateChanged(ChangeEvent e) {
                 boolean pickUpExisting = radioPickUpExistingField.isSelected();
                 lstExistingFields.setEnabled(pickUpExisting);
-                //btnFindType.setEnabled(!radioPickUpExistingField.isSelected());
+                btnFindType.setEnabled(!radioPickUpExistingField.isSelected());
                 txtNewFieldName.setEnabled(!radioPickUpExistingField.isSelected());
                 txtType.setEnabled(!radioPickUpExistingField.isSelected());
             }
@@ -98,11 +103,9 @@ class PickOrCreateFieldPanel extends javax.swing.JPanel {
             
             private void update(){
                 NameStatus nameStatus = NameStatus.VALID;
-                
                 if (nameValidator != null){
                     nameStatus = nameValidator.checkName(getNewIdName());
                 }
-                
                 setFieldNameStatus(nameStatus);
             }
         });
@@ -244,7 +247,11 @@ class PickOrCreateFieldPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     private void btnFindTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFindTypeActionPerformed
-       // FQNSearch.showFastOpen(txtType);
+        ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(fileObject), null);
+        if (type != null) {
+            String fqn = type.getQualifiedName().toString();
+            txtType.setText(fqn);
+        }
     }//GEN-LAST:event_btnFindTypeActionPerformed
     
     
@@ -262,7 +269,11 @@ class PickOrCreateFieldPanel extends javax.swing.JPanel {
     private javax.swing.JTextField txtNewFieldName;
     private javax.swing.JTextField txtType;
     // End of variables declaration//GEN-END:variables
-    
+
+    public void setFileObject(FileObject fo) {
+        this.fileObject = fo;
+    }
+
     public void setAvailableFields(Object availableFields[]){
         this.availableFields = availableFields;
         mdlAvailableFields.removeAllElements();
