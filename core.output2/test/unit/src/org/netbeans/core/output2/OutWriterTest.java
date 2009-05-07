@@ -248,36 +248,30 @@ public class OutWriterTest extends NbTestCase {
 
     }
 
-    // mkleint TODO temporary disable. 
-//    public void testAddChangeListener() {
-//        System.out.println("testAddChangeListener");
-//        OutWriter ow = new OutWriter ();
-//        
-//        CL cl = new CL();
-//        try {
-//            ow.getLines().addChangeListener(cl);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            fail ("Caught exception " + e);
-//        }
-//        
-//        
-//        String first = "This is the first string";
-//        String second = "This is the second string, ain't it?";
-//        String third = "This is the third string";
-//        
-//        ow.println(first);
-//        
-//        ow.println (second);
-//        
-//        ow.println (third);
-//        
-//        ow.flush();        
-//        
-//        cl.assertChanged();
-//        
-//    }
-    
+    public void testAddChangeListener() {
+        System.out.println("testAddChangeListener");
+        OutWriter ow = new OutWriter ();
+
+        CL cl = new CL();
+        try {
+            ow.getLines().addChangeListener(cl);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail ("Caught exception " + e);
+        }
+
+        String first = "This is the first string";
+        String second = "This is the second string, ain't it?";
+        String third = "This is the third string";
+        
+        ow.println(first);
+        ow.println (second);
+        ow.println (third);
+        ow.flush();        
+
+        cl.assertChanged();
+    }
+
     public void testMultilineText() {
         System.out.println("testMultilineText");
         OutWriter ow = new OutWriter ();
