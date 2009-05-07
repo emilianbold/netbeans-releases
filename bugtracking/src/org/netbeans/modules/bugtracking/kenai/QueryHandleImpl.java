@@ -64,7 +64,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
     private String stringValue;
     private boolean needsRefresh;
 
-    public QueryHandleImpl(Query query, boolean needsRefresh) {
+    QueryHandleImpl(Query query, boolean needsRefresh) {
         this.query = query;
         this.needsRefresh = needsRefresh;
         changeSupport = new PropertyChangeSupport(query);
@@ -72,7 +72,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
         registerIssues();
     }
 
-    public Query getQuery() {
+    Query getQuery() {
         return query;
     }
 
