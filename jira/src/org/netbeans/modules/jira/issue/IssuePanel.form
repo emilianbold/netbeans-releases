@@ -61,9 +61,15 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="assigneeField" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="dueField" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="updatedField" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="createdField" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="dueField" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="updatedField" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="createdField" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace pref="23" max="32767" attributes="0"/>
+                                      <Component id="actionPanel" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
                           </Group>
                       </Group>
@@ -99,7 +105,6 @@
                       </Group>
                   </Group>
                   <Component id="headerLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="refreshButton" alignment="1" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="summaryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -110,23 +115,23 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="environmentScrollPane" pref="327" max="32767" attributes="0"/>
-                          <Component id="summaryField" alignment="0" pref="327" max="32767" attributes="0"/>
-                          <Component id="addCommentScrollPane" alignment="0" pref="327" max="32767" attributes="0"/>
+                          <Component id="environmentScrollPane" pref="362" max="32767" attributes="0"/>
+                          <Component id="summaryField" alignment="0" pref="362" max="32767" attributes="0"/>
+                          <Component id="addCommentScrollPane" alignment="0" pref="362" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="submitButton" linkSize="3" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="cancelButton" linkSize="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="dummyAttachmentPanel" alignment="0" pref="327" max="32767" attributes="0"/>
-                          <Component id="dummySubtaskPanel" alignment="0" pref="327" max="32767" attributes="0"/>
+                          <Component id="dummyAttachmentPanel" alignment="0" pref="362" max="32767" attributes="0"/>
+                          <Component id="dummySubtaskPanel" alignment="0" pref="362" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
-          <Component id="separator" alignment="0" pref="422" max="32767" attributes="0"/>
-          <Component id="dummyCommentPanel" alignment="0" pref="422" max="32767" attributes="0"/>
+          <Component id="separator" alignment="0" pref="457" max="32767" attributes="0"/>
+          <Component id="dummyCommentPanel" alignment="0" pref="457" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -134,7 +139,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Component id="headerLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -197,9 +202,9 @@
                           <Component id="timeSpentField" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="refreshButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="actionPanel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="attachmentLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="dummyAttachmentPanel" min="-2" max="-2" attributes="0"/>
@@ -232,19 +237,12 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="separator" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="dummyCommentPanel" max="32767" attributes="0"/>
+              <Component id="dummyCommentPanel" pref="22" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.refreshButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JLabel" name="headerLabel">
     </Component>
     <Component class="javax.swing.JLabel" name="projectLabel">
@@ -556,6 +554,110 @@
     <Container class="javax.swing.JPanel" name="dummyAttachmentPanel">
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+    </Container>
+    <Container class="javax.swing.JPanel" name="actionPanel">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="f5" green="ec" red="e9" type="rgb"/>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="actionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="acceptIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="resolveIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="createSubtaskButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="convertToSubtaskButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="logWorkButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="refreshButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="32767" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="actionLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="acceptIssueButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="resolveIssueButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="createSubtaskButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
+                  <Component id="convertToSubtaskButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="logWorkButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JLabel" name="actionLabel">
+          <Properties>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+              <FontInfo relative="true">
+                <Font bold="true" component="actionLabel" property="font" relativeSize="true" size="0"/>
+              </FontInfo>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.actionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="acceptIssueButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.acceptIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="resolveIssueButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.resolveIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="createSubtaskButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.createSubtaskButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="convertToSubtaskButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.convertToSubtaskButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="logWorkButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.logWorkButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.refreshButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+      </SubComponents>
     </Container>
   </SubComponents>
 </Form>

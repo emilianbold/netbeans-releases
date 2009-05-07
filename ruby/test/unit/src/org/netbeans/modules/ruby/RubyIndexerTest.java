@@ -56,6 +56,14 @@ public class RubyIndexerTest extends RubyTestBase {
     }
 
     @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        RubyIndexer.preindexingTest = true;
+        RubyIndexer.skipTypeInferenceForTests = true;
+    }
+
+
+    @Override
     protected String prettyPrintValue(String key, String value) {
         if (value == null) {
             return value;

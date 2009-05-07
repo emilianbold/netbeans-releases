@@ -85,7 +85,7 @@ final class GizmoIndicatorsTopComponent extends TopComponent {
         this.dock = dock;
         setSession(null);
         setName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
-        //setToolTipText(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "HINT_DLightIndicatorsTopComponent"));
+        setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent"));//NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         if (dock) {
             if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")) { // NOI18N
@@ -129,9 +129,11 @@ final class GizmoIndicatorsTopComponent extends TopComponent {
         List<Indicator> indicators = null;
         if (session != null) {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
+            setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
             indicators = session.getIndicators();
         } else {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
+            setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
             IndicatorComponentEmptyContentProvider emptyContent = Lookup.getDefault().lookup(IndicatorComponentEmptyContentProvider.class);
             if (emptyContent != null) {
                 indicators = emptyContent.getEmptyContent();

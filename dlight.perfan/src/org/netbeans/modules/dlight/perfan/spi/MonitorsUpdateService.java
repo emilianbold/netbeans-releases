@@ -209,7 +209,7 @@ public class MonitorsUpdateService {
                             }
                         }
                     } catch (Throwable ex) {
-                        log.log(Level.FINEST, "Exception while updateIndicators in MonitorUpdateService", ex);
+                        log.log(Level.FINEST, "Exception while updateIndicators in MonitorUpdateService: " + ex.toString());
                     } finally {
                         ssdc.updateIndicators(newData);
                     }

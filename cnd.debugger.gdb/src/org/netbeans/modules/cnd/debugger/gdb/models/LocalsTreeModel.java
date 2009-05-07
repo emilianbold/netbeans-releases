@@ -48,6 +48,9 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -56,6 +59,9 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
+import org.netbeans.modules.cnd.debugger.gdb.ui.VariablesViewButtons;
+import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /*
@@ -69,12 +75,16 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     private Listener listener;
     private final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+
+    private Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(VariablesViewButtons.PREFERENCES_NAME);
+    private VariablesPreferenceChangeListener prefListener = new VariablesPreferenceChangeListener();
         
     public LocalsTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
         if (debugger != null) {
             debugger.addPropertyChangeListener(GdbDebugger.PROP_LOCALS_REFRESH, this);
         }
+        preferences.addPreferenceChangeListener(prefListener);
     }    
     
     public Object getRoot() {
@@ -96,8 +106,12 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     }
     
     public Object[] getChildrenImpl(Object o, int from, int to) throws UnknownTypeException {
-        if (o.equals(ROOT)) {            
-            return getLocalVariables(from, to);
+        if (o.equals(ROOT)) {
+            if (VariablesViewButtons.isShowAutos()) {
+                return getAutos(from, to);
+            } else {
+                return getLocalVariables(from, to);
+            }
         } else if (o instanceof AbstractVariable) {
             AbstractVariable abstractVariable = (AbstractVariable) o;
             return abstractVariable.getFields(from, to);
@@ -204,6 +218,14 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             return callStackFrame.getLocalVariables();
         } // synchronized
     }
+
+    private Object[] getAutos(int from, int to) {
+        synchronized (debugger.LOCK) {
+            return new LocalVariable[] {
+                new AbstractVariable("Auto1", "value1"), // NOI18N
+                new AbstractVariable("Auto2", "value2")}; // NOI18N
+        } // synchronized
+    }
     
     GdbDebugger getDebugger() {
         return debugger;
@@ -288,5 +310,25 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
 //                });
             }
         }
+    }
+
+    private class VariablesPreferenceChangeListener implements PreferenceChangeListener {
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String key = evt.getKey();
+            if (VariablesViewButtons.SHOW_AUTOS.equals(key)) {
+                refresh();
+            }
+        }
+
+        private void refresh() {
+            try {
+                fireTableValueChanged(ROOT, null);
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                Exceptions.printStackTrace(t);
+            }
+        }
+
     }
 }

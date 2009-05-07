@@ -81,7 +81,7 @@ public class VariablesTableModel implements TableModel, Constants {
                 return "";
         } else if (columnID.equals(LOCALS_TO_STRING_COLUMN_ID) || columnID.equals(WATCH_TO_STRING_COLUMN_ID)) {
             if (row instanceof Variable) {
-                return ((Variable) row).getValue();
+                return ValuePresenter.getValue((Variable) row);
             }
         } else if (columnID.equals(LOCALS_TYPE_COLUMN_ID) || columnID.equals(WATCH_TYPE_COLUMN_ID)) {
             if (row instanceof Variable) {
@@ -89,7 +89,7 @@ public class VariablesTableModel implements TableModel, Constants {
             }
         } else if ( columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
             if (row instanceof Variable) {
-                return ((Variable) row).getValue();
+                return ValuePresenter.getValue((Variable) row);
             }
         }
         if (row instanceof JToolTip) {

@@ -8,6 +8,7 @@ Searchable Keys:
   fqn : CreateProductsRenamed
   method : down|STATIC|
   method : up|STATIC|
+  require : 001_create_products_renamed
 
 Not Searchable Keys:
   attrs : |DOCUMENTED|;1429

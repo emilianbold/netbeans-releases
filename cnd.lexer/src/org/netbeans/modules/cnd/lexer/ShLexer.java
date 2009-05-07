@@ -486,11 +486,10 @@ class ShLexer implements Lexer<ShTokenId> {
     private LexerRestartInfo<ShTokenId> info;
     private boolean afterSeparator;
 
-    ShLexer (LexerRestartInfo<ShTokenId> info) {
+    ShLexer(LexerRestartInfo<ShTokenId> info) {
         this.info = info;
-        Object state = info.state();
-        if (state instanceof Boolean) {
-            afterSeparator = (Boolean) state;
+        if (info.state() instanceof Integer) {
+            afterSeparator = false;
         } else {
             afterSeparator = true;
         }
@@ -652,7 +651,7 @@ class ShLexer implements Lexer<ShTokenId> {
     }
 
     public Object state() {
-        return afterSeparator;
+        return afterSeparator? null : Integer.valueOf(1);
     }
 
     public void release() {
