@@ -129,14 +129,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return tinfo;
     }
 
-    protected void resetVariable() {
-        tinfo = null;
-        type = "";
-        value = "";
-        emptyFields();
-    }
-
-    private void emptyFields() {
+    protected void emptyFields() {
         int i, k = fields.length;
         for (i=0; i < k; i++) {
             Field field = fields[i];
@@ -182,10 +175,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return type;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
     /**
      * Returns string representation of type of this variable.
      *
@@ -203,6 +192,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
     }
 
+    protected String getResolvedType() {
+        return getTypeInfo().getResolvedType(this);
+    }
+
     /**
      * Sets string representation of value of this variable. In this case we ignore the
      * request because we only allow setting values on leaves.
@@ -215,7 +208,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             return;
         }
         String msg = null;
-        String rt = getTypeInfo().getResolvedType(this);
+        String rt = getResolvedType();
         int pos;
 
         if (getDebugger() != null) {
@@ -379,7 +372,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     private String setValueEnum(String value) {
         int pos1, pos2;
 
-        String info = getTypeInfo().getResolvedType(this);
+        String info = getResolvedType();
         pos1 = info.indexOf('{');
         pos2 = info.indexOf('}');
         if (pos1 > 0 && pos2 > 0) {
@@ -448,7 +441,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * @return true if the field should have a turner and false if it shouldn't
      */
     private boolean mightHaveFields() {
-        String rt = getTypeInfo().getResolvedType(this);
+        String rt = getResolvedType();
         if (rt != null && rt.length() > 0) {
             if (GdbUtils.isArray(rt) && !isCharString(rt)) {
                 return true;
@@ -580,7 +573,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     }
 
     private void createChildren() {
-        String resolvedType = getTypeInfo().getResolvedType(this);
+        String resolvedType = getResolvedType();
         String t = null;
         String v = null;
 
