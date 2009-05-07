@@ -75,7 +75,10 @@ public class CsmFileTaskFactoryManager {
         });
         
         factories = Lookup.getDefault().lookupResult(CsmFileTaskFactory.class);
-        Logger.getLogger(CsmFileTaskFactoryManager.class.getName()).log(Level.FINE, "CsmFileTaskFactoryManager: " + factories.allInstances().size() + " factories were found.");
+        Logger logger = Logger.getLogger(CsmFileTaskFactoryManager.class.getName());
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("CsmFileTaskFactoryManager: " + factories.allInstances().size() + " factories were found.");
+        }
         factories.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent ev) {
                 updateTask.schedule(0);
