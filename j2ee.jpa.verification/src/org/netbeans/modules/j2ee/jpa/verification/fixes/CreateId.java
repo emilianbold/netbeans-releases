@@ -70,6 +70,7 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -95,6 +96,7 @@ public class CreateId implements Fix {
         
         DialogDescriptor ddesc = new DialogDescriptor(pnlPickOrCreateField,
                 NbBundle.getMessage(CreateId.class, "LBL_AddIDAnnotationDlgTitle"));
+        ddesc.createNotificationLineSupport();
         
         Dialog dlg = DialogDisplayer.getDefault().createDialog(ddesc);
         
