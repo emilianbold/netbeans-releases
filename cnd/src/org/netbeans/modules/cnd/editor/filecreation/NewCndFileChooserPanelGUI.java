@@ -72,12 +72,15 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
     private final String defaultExtension;
     private String expectedExtension;
     private final MIMEExtensions es;
-    
+    private final boolean fileWithoutExtension;
+
     /** Creates new form NewCndFileChooserPanelGUI */
     NewCndFileChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, MIMEExtensions es, String defaultExt) {
         super(project, folders);
         
         this.es = es;
+        this.fileWithoutExtension = "".equals(defaultExt);
+        
         initComponents();
         initMnemonics();
         
@@ -233,8 +236,11 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
     }
         
     protected void updateCreatedFile() {
-        
-        cbSetAsDefault.setEnabled(!es.getDefaultExtension().equals(getTargetExtension())); 
+        if (fileWithoutExtension && getTargetExtension().length() == 0 || es.getDefaultExtension().equals(getTargetExtension())) {
+            cbSetAsDefault.setEnabled(false);
+        } else {
+            cbSetAsDefault.setEnabled(true);
+        }
         
         FileObject root = ((SourceGroup)locationComboBox.getSelectedItem()).getRootFolder();
             
