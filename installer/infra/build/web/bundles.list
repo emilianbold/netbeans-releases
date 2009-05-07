@@ -2,8 +2,8 @@
 JAVASE=nb-base, nb-javase
 JAVA=nb-base, nb-javase, nb-webcommon, nb-javaee, nb-groovy, nb-javame, nb-ergonomics, glassfish, glassfish-mod, tomcat
 RUBY=nb-base, nb-webcommon, nb-ruby, glassfish-mod
-CND=nb-base, nb-cnd
+CPP=nb-base, nb-cnd
 PHP=nb-base, nb-webcommon, nb-php
-FULL=nb-base, nb-webcommon, nb-javase, nb-javaee, nb-javame, nb-cnd, nb-ruby, nb-groovy, nb-php, nb-ergonomics, glassfish, glassfish-mod, openesb, tomcat
+ALL=nb-base, nb-webcommon, nb-javase, nb-javaee, nb-javame, nb-cnd, nb-ruby, nb-groovy, nb-php, nb-ergonomics, glassfish, glassfish-mod, openesb, tomcat
 HIDDEN=openesb, nb-base, nb-webcommon, nb-ergonomics
 
