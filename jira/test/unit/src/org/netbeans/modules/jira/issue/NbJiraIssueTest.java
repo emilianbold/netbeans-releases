@@ -38,6 +38,10 @@
  */
 package org.netbeans.modules.jira.issue;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.jira.*;
 import java.util.logging.Level;
@@ -55,6 +59,8 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -69,6 +75,7 @@ public class NbJiraIssueTest extends NbTestCase {
     protected static final String REPO_USER = "unittest";
     private JiraConfiguration config;
     private TaskRepository taskRepository;
+    private static final String ATTACHMENTS_FOLDER = "attachments";     //NOI18N
 
     public enum JiraIssueResolutionStatus {
 
@@ -174,6 +181,18 @@ public class NbJiraIssueTest extends NbTestCase {
         assertEquals(commentCount++, comments.length);
     }
 
+    public void testAddAttachments () throws IOException, CoreException {
+        NbJiraIssue issue = createIssue();
+        issue.submitAndRefresh();
+        
+        File attachmentsDir = new File(getDataDir(), ATTACHMENTS_FOLDER);
+        File[] attachmentFiles = attachmentsDir.listFiles();
+        int attachNumber = 1;
+        for (File attachmentFile : attachmentFiles) {
+            addAttachment(issue, attachmentFile, attachNumber++);
+        }
+    }
+
     private NbJiraIssue createIssue() throws CoreException {
         NbJiraIssue issue = (NbJiraIssue) getRepository().createIssue();
 
@@ -204,6 +223,59 @@ public class NbJiraIssueTest extends NbTestCase {
         assertEquals(JiraIssueStatus.OPEN.statusName, issue.getStatus().getName());
 
         return issue;
+    }
+
+    private void addAttachment (NbJiraIssue issue, File attachmentFile, int attachmentCount) throws IOException {
+        String key = issue.getID();
+        String comment = "Comment for the attachment: " + attachmentFile.getName();
+        String description = "Description for the attachment: " + attachmentFile.getName();
+        String author = getRepository().getUsername();
+        FileObject fo = FileUtil.toFileObject(attachmentFile);
+        String contentType = fo.getMIMEType();
+        long size = fo.getSize();
+        issue.addAttachment(attachmentFile, comment, description, null, attachmentFile.getName().endsWith(".patch"));
+
+        issue = (NbJiraIssue) repository.getIssue(key);
+        assertNotNull(issue);
+        NbJiraIssue.Attachment[] attachments = issue.getAttachments();
+        assertNotNull(attachments);
+        assertEquals(attachmentCount, attachments.length);
+
+        NbJiraIssue.Attachment attachment = attachments[0];
+        for (NbJiraIssue.Attachment att : attachments) {
+            if (Long.parseLong(att.getId()) > Long.parseLong(attachment.getId())) {
+                attachment = att;
+            }
+        }
+        assertEquals(config.getUser(author).getFullName(), attachment.getAuthor());
+        assertEquals(size, Integer.parseInt(attachment.getSize()));
+        assertEquals(fo.getNameExt(), attachment.getDesc());
+        assertNotNull(attachment.getDate());
+        assertEquals(fo.getNameExt(), attachment.getFilename());
+        assertNotNull(attachment.getUrl());
+        assertTrue(attachment.getUrl().startsWith(repository.getUrl()));
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream((int)size);
+        attachment.getAttachementData(bos);
+        assertEquals((int)size, bos.size());
+        compare(attachmentFile, bos);
+    }
+
+    private static void compare (File file, ByteArrayOutputStream baos) throws IOException {
+        FileInputStream fis = new FileInputStream(file);
+        ByteArrayOutputStream originalBaos = new ByteArrayOutputStream(baos.size());
+        int len;
+        byte[] buff = new byte[1024];
+        while ((len = fis.read(buff)) != -1) {
+            originalBaos.write(buff, 0, len);
+        }
+        int size = originalBaos.size();
+        assertEquals(size, baos.size());
+        byte[] originalCont = originalBaos.toByteArray();
+        byte[] cont = baos.toByteArray();
+        for (int i = 0; i < originalCont.length; ++i) {
+            assertEquals(originalCont[i], cont[i]);
+        }
     }
 
     private void resolveIssue(NbJiraIssue issue, JiraIssueResolutionStatus resolution) throws JiraException {

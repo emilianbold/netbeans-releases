@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,69 +34,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.hooks.spi;
+package org.netbeans.modules.versioning.util;
 
-import java.io.File;
-import java.util.Date;
-import java.util.List;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
+import java.awt.Dimension;
+import javax.swing.JPanel;
 
 /**
+ * Panel whose maximum height is equal to the preferred height.
+ * The effect of this is that if it is put to a panel layed out vertically by
+ * a {@code BoxLayout}, its height remains unchanged when the panel is
+ * being vertically resized.
  *
- * @author Tomas Stupka
+ * @author Marian Petras
  */
-public class SvnHookContext {
+public class VerticallyNonResizingPanel extends JPanel {
 
-    private final File[] files;
-    private final String msg;
-    private final List<LogEntry> logEntries;
-    private String warning;
-
-    public SvnHookContext(File[] files, String msg, List<LogEntry> logEntries) {
-        this.files = files;
-        this.msg = msg;
-        this.logEntries = logEntries;
+    @Override
+    public Dimension getMaximumSize() {
+        Dimension origPref = super.getPreferredSize();
+        Dimension origMax = super.getMaximumSize();
+        return new Dimension(origMax.width, origPref.height);
     }
 
-    public File[] getFiles() {
-        return files;
-    }
-
-    public String getMessage() {
-        return msg;
-    }
-
-    public List<LogEntry> getLogEntries() {
-        return logEntries;
-    }
-
-    public String getWarning() {
-        return warning;                                                              // NOI18N
-    }
-
-    public void setWarning(String warning) {
-        this.warning = warning;
-    }
-
-    public static class LogEntry {
-        private final ISVNLogMessage logEntry;
-        public LogEntry(ISVNLogMessage logEntry) {
-            this.logEntry = logEntry;
-        }
-        public String getAuthor() {
-            return logEntry.getAuthor();
-        }
-        public long getRevision() {
-            return logEntry.getRevision().getNumber();
-        }
-        public Date getDate() {
-            return logEntry.getDate();
-        }
-        public String getMessage() {
-            return logEntry.getMessage();
-        }
-    }
 }
