@@ -129,10 +129,17 @@ public class EditorOptionsPanelController extends OptionsPanelController impleme
             previewPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(EditorOptionsPanelController.class, "AN_Preview")); //NOI18N
             previewPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditorOptionsPanelController.class, "AD_Preview")); //NOI18N
             previewPane.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
-            if (language == CodeStyle.Language.C) {
-                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.C_MIME_TYPE));
-            } else { // header or C++
-                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.CPLUSPLUS_MIME_TYPE));
+            switch (language){
+                case C:
+                    previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.C_MIME_TYPE));
+                    break;
+                case HEADER:
+                    previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.HEADER_MIME_TYPE));
+                    break;
+                case CPP:
+                default:
+                    previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.CPLUSPLUS_MIME_TYPE));
+                    break;
             }
             previewPane.setEditable(false);
         }
@@ -149,6 +156,10 @@ public class EditorOptionsPanelController extends OptionsPanelController impleme
 
     public static OptionsPanelController getCCController() {
         return new EditorOptionsPanelController(CodeStyle.Language.CPP);
+    }
+
+    public static OptionsPanelController getHController() {
+        return new EditorOptionsPanelController(CodeStyle.Language.HEADER);
     }
 
 }
