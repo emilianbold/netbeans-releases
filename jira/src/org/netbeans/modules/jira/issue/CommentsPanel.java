@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.issue;
+package org.netbeans.modules.jira.issue;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -46,8 +46,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -59,7 +57,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.event.MouseInputListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -72,10 +69,9 @@ import javax.swing.text.StyledDocument;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.util.IssueFinder;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
-import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.jira.Jira;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -84,11 +80,10 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class CommentsPanel extends JPanel {
-    private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
     private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
-    private BugzillaIssue issue;
+    private NbJiraIssue issue;
     private MouseAdapter listener;
     private NewCommentHandler newCommentHandler;
 
@@ -109,13 +104,13 @@ public class CommentsPanel extends JPanel {
                         }
                     }
                 } catch(Exception ex) {
-                    Bugzilla.LOG.log(Level.SEVERE, null, ex);
+                    Jira.LOG.log(Level.SEVERE, null, ex);
                 }
             }
         };
     }
 
-    public void setIssue(BugzillaIssue issue) {
+    public void setIssue(NbJiraIssue issue) {
         removeAll();
         this.issue = issue;
         GroupLayout layout = new GroupLayout(this);
@@ -128,15 +123,17 @@ public class CommentsPanel extends JPanel {
         verticalGroup.addContainerGap();
         layout.setVerticalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(verticalGroup));
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT);
-        String creationTxt = issue.getFieldValue(BugzillaIssue.IssueField.CREATION);
+        String creationTxt = issue.getFieldValue(NbJiraIssue.IssueField.CREATION);
         try {
-            Date creation = dateTimeFormat.parse(creationTxt);
-            creationTxt = format.format(creation);
-        } catch (ParseException pex) {
-            Bugzilla.LOG.log(Level.INFO, null, pex);
+            long millis = Long.parseLong(creationTxt);
+            creationTxt = format.format(new Date(millis));
+        } catch (NumberFormatException nfex) {
+            Jira.LOG.log(Level.INFO, null, nfex);
         }
-        addSection(layout, issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION), issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME), creationTxt, horizontalGroup, verticalGroup, true);
-        for (BugzillaIssue.Comment comment : issue.getComments()) {
+        String description = issue.getFieldValue(NbJiraIssue.IssueField.DESCRIPTION);
+        String reporter = issue.getRepository().getConfiguration().getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
+        addSection(layout, description, reporter, creationTxt, horizontalGroup, verticalGroup, true);
+        for (NbJiraIssue.Comment comment : issue.getComments()) {
             String when = format.format(comment.getWhen());
             addSection(layout, comment.getText(), comment.getWho(), when, horizontalGroup, verticalGroup, false);
         }
@@ -202,8 +199,9 @@ public class CommentsPanel extends JPanel {
         textPane.setText(comment);
         StackTraceSupport.addHyperlinks(textPane);
 
+        // PENDING
         // Issues/bugs
-        int[] pos = IssueFinder.getIssueSpans(comment);
+        int[] pos = new int[0];//IssueFinder.getIssueSpans(comment);
         if (pos.length > 0) {
             Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
             Style hlStyle = doc.addStyle("bugBlue", defStyle); // NOI18N
@@ -260,11 +258,10 @@ public class CommentsPanel extends JPanel {
     }
 
     private class IssueAction {
-        void openIssue(String text) {
-            final String issueNo = IssueFinder.getIssueNumber(text);
+        void openIssue(final String key) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    Issue is = issue.getRepository().getIssue(issueNo);
+                    Issue is = issue.getRepository().getIssue(key);
                     if (is != null) {
                         is.open();
                     }
