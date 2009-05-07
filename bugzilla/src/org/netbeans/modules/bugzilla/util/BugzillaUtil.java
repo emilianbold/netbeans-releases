@@ -125,7 +125,7 @@ public class BugzillaUtil {
         KeywordsPanel kp;
         try {
             BugzillaConfiguration bc = repository.getConfiguration();
-            if(bc == null) {
+            if(bc == null || !bc.isValid()) {
                 // XXX is there something else we could do at this point?
                 return keywordsString;
             }

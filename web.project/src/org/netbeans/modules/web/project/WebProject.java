@@ -482,7 +482,7 @@ public final class WebProject implements Project, AntProjectListener {
             helper.createAuxiliaryProperties(),
             spp,
             new ProjectWebModuleProvider (),
-            new WebProjectEjbJarProvider(this), // TODO: dongmei: register it only for Java EE 6 web project
+            //new WebProjectEjbJarProvider(this), // TODO: dongmei: register it only for Java EE 6 web project
             new ProjectWebServicesSupportProvider(),
             webModule, //implements J2eeModuleProvider
             enterpriseResourceSupport,

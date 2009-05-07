@@ -758,7 +758,7 @@ public class PathRegistryTest extends NbTestCase {
             return new Project[0];
         }
 
-        public void openAPI(Project[] projects, boolean openRequiredProjects) {
+        public void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
 
         }
 
