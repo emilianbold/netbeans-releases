@@ -103,7 +103,7 @@ made subject to such option by the copyright holder.
                             <sp:OnlySignEntireHeadersAndBody/>
                             <sp:AlgorithmSuite>
                                 <wsp:Policy>
-                                        <sp:Basic128Sha256/>
+                                        <sp:Basic128/>
                                     </wsp:Policy>
                             </sp:AlgorithmSuite>
                     </wsp:Policy>
