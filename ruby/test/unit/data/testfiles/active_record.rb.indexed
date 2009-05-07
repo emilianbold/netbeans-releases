@@ -19,7 +19,6 @@ Searchable Keys:
   class : Migration
   class-ig : migration
   fqn : ActiveRecord::Migration
-  require : active_record
 
 Not Searchable Keys:
   attrs : |CLASS|

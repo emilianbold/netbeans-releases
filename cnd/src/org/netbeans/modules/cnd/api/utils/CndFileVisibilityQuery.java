@@ -42,39 +42,37 @@ package org.netbeans.modules.cnd.api.utils;
 import java.io.File;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbPreferences;
 
-public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2 {
+public class CndFileVisibilityQuery  implements VisibilityQueryImplementation2, ChangeListener {
 
     private final ChangeSupport cs = new ChangeSupport(this);
 
     private static CndFileVisibilityQuery INSTANCE = new CndFileVisibilityQuery();
 
-    /**
-     * Keep it synchronized with IgnoredFilesPreferences.PROP_IGNORED_FILES
-     */
-    private static final String PROP_CND_ACCEPTED_FILES = "CNDAcceptedFiles"; // NOI18N
     private Pattern acceptedFilesPattern = null;
 
     /** Default instance for lookup. */
     private CndFileVisibilityQuery() {
+        MIMEExtensions.get(MIMENames.C_MIME_TYPE).addChangeListener(this);
+        MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).addChangeListener(this);
+        MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).addChangeListener(this);
     }
 
     public static CndFileVisibilityQuery getDefault(){
         return INSTANCE;
     }
 
-
-    private Preferences getPreferences() {
-        return NbPreferences.forModule(getClass());
+    public void stateChanged(ChangeEvent e) {
+        acceptedFilesPattern = null; // This will reset filter
+        cs.fireChange();
     }
 
     public boolean isVisible(FileObject file) {

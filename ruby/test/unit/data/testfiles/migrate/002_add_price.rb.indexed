@@ -17,7 +17,6 @@ Not Searchable Keys:
 Document 1
 Searchable Keys:
   dbtable : products
-  require : 002_add_price
 
 Not Searchable Keys:
   dbcolumn : price;decimal

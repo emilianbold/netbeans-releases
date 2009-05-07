@@ -39,6 +39,10 @@
 
 package org.netbeans.modules.bugtracking.util;
 
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,7 +52,18 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JPopupMenu;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
@@ -61,6 +76,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * Finds stacktraces in texts.
@@ -394,6 +410,161 @@ public class StackTraceSupport {
 
    static private FileObject search(String path) {
        return GlobalPathRegistry.getDefault().findResource(path);
+    }
+
+    private final static String STACKTRACE_ATTRIBUTE = "stacktrace"; // NOI18N
+    public static void addHyperlinks(JTextPane textPane) {
+        StyledDocument doc = textPane.getStyledDocument();
+        String comment = textPane.getText();
+        List<StackTracePosition> stacktraces = find(comment);
+        if (!stacktraces.isEmpty()) {
+            Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+            Style hlStyle = doc.addStyle("regularBlue", defStyle); // NOI18N
+            hlStyle.addAttribute(STACKTRACE_ATTRIBUTE, new StackTraceAction());
+            StyleConstants.setForeground(hlStyle, Color.BLUE);
+            StyleConstants.setUnderline(hlStyle, true);
+
+            int last = 0;
+            textPane.setText(""); // NOI18N
+            for (StackTraceSupport.StackTracePosition stp : stacktraces) {
+                int start = stp.getStartOffset();
+                int end = stp.getEndOffset();
+
+                if (last < start) {
+                    try {
+                        doc.insertString(doc.getLength(), comment.substring(last, start), defStyle);
+                    } catch (BadLocationException ex) {
+                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+                last = start;
+
+                // for each line skip leading whitespaces (look bad underlined)
+                boolean inStackTrace = (comment.charAt(start) > ' ');
+                for (int i = start; i < end; i++) {
+                    char ch = comment.charAt(i);
+                    if ((inStackTrace && ch == '\n') || (!inStackTrace && ch > ' ')) {
+                        try {
+                            doc.insertString(doc.getLength(), comment.substring(last, i), inStackTrace ? hlStyle : defStyle);
+                        } catch (BadLocationException ex) {
+                            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                        }
+                        inStackTrace = !inStackTrace;
+                        last = i;
+                    }
+                }
+
+                if (last < end) {
+                    try {
+                        doc.insertString(doc.getLength(), comment.substring(last, end), inStackTrace ? hlStyle : defStyle);
+                    } catch (BadLocationException ex) {
+                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+                last = end;
+            }
+            try {
+                doc.insertString(doc.getLength(), comment.substring(last), defStyle);
+            } catch (BadLocationException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+        textPane.addMouseListener(getHyperlinkListener());
+        textPane.addMouseMotionListener(getHyperlinkListener());
+    }
+
+    private static MouseInputAdapter hyperlinkListener;
+    private static MouseInputAdapter getHyperlinkListener() {
+        if (hyperlinkListener == null) {
+            hyperlinkListener = new MouseInputAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        if (SwingUtilities.isLeftMouseButton(e)) {
+                            Element elem = element(e);
+                            AttributeSet as = elem.getAttributes();
+                            StackTraceAction stacktraceAction = (StackTraceAction) as.getAttribute(STACKTRACE_ATTRIBUTE);
+                            if (stacktraceAction != null) {
+                                try {
+                                    StackTraceAction.openStackTrace(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()), false);
+                                } catch(Exception ex) {
+                                    BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        }
+                    } catch(Exception ex) {
+                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    showMenu(e);
+                }
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    showMenu(e);
+                }
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    JTextPane pane = (JTextPane)e.getSource();
+                    StyledDocument doc = pane.getStyledDocument();
+                    Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
+                    AttributeSet as = elem.getAttributes();
+                    if (StyleConstants.isUnderline(as)) {
+                        pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                    } else {
+                        pane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                    }
+                }
+                private Element element(MouseEvent e) {
+                    JTextPane pane = (JTextPane)e.getSource();
+                    StyledDocument doc = pane.getStyledDocument();
+                    return doc.getCharacterElement(pane.viewToModel(e.getPoint()));
+                }
+                private void showMenu(MouseEvent e) {
+                    if (e.isPopupTrigger()) {
+                        try {
+                            Element elem = element(e);
+                            String stackFrame = elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset());
+                            JPopupMenu menu = new JPopupMenu();
+                            menu.add(new StackTraceAction(stackFrame, false));
+                            menu.add(new StackTraceAction(stackFrame, true));
+                            menu.show((JTextPane)e.getSource(), e.getX(), e.getY());
+                        } catch(Exception ex) {
+                            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }
+            };
+        }
+        return hyperlinkListener;
+    }
+
+    static class StackTraceAction extends AbstractAction {
+        private String stackFrame;
+        private boolean showHistory;
+
+        StackTraceAction() {
+        }
+
+        StackTraceAction(String stackFrame, boolean showHistory) {
+            this.stackFrame = stackFrame;
+            this.showHistory = showHistory;
+            String name = NbBundle.getMessage(StackTraceAction.class, showHistory ? "StackTraceSupport.StackTraceAction.showHistory" : "StackTraceSupport.StackTraceAction.open"); // NOI18N
+            putValue(Action.NAME, name);
+        }
+
+        static void openStackTrace(String text, boolean showHistory) {
+            if (showHistory) {
+                findAndShowHistory(text);
+            } else {
+                findAndOpen(text);
+            }
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            openStackTrace(stackFrame, showHistory);
+        }
     }
 
 }
