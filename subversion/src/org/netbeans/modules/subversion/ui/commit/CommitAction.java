@@ -642,7 +642,7 @@ public class CommitAction extends ContextAction {
 
             List<ISVNLogMessage> logs = new ArrayList<ISVNLogMessage>();
             List<File> hookFiles = new ArrayList<File>();
-            boolean modifyMessage = false;
+            boolean needLogEntries = false;
             if(hooks.size() > 0) {
                 for (List<File> l : managedTrees) {
                     hookFiles.addAll(l);
@@ -653,7 +653,7 @@ public class CommitAction extends ContextAction {
                         // XXX handle returned context
                         context = hook.beforeCommit(context);
                         if(context != null) {
-                            modifyMessage = true;
+                            needLogEntries = context.getLogEntries() != null;
                             message = context.getMessage();
                         }
                     } catch (IOException ex) {
@@ -680,7 +680,7 @@ public class CommitAction extends ContextAction {
                     if(support.isCanceled()) {
                         return;
                     }
-                    if(modifyMessage && hooks.size() > 0 && files.length > 0) {
+                    if(needLogEntries && hooks.size() > 0 && files.length > 0) {
                         addLogMessage(client, logs, files[0], revision);
                     }
                     if(support.isCanceled()) {
@@ -696,7 +696,7 @@ public class CommitAction extends ContextAction {
                     if(support.isCanceled()) {
                         return;
                     }
-                    if(modifyMessage && hooks.size() > 0 && files.length > 0) {
+                    if(needLogEntries && hooks.size() > 0 && files.length > 0) {
                         addLogMessage(client, logs, files[0], revision);
                     }
                     if(support.isCanceled()) {
@@ -737,9 +737,9 @@ public class CommitAction extends ContextAction {
         if(hooks.size() == 0) {
             return;
         }
-        SvnHookContext.LogEntry[] entries = new SvnHookContext.LogEntry[logs.size()];
+        List<SvnHookContext.LogEntry> entries = new ArrayList<SvnHookContext.LogEntry>(logs.size());
         for (int i = 0; i < logs.size(); i++) {
-            entries[i] = new SvnHookContext.LogEntry(logs.get(i));
+            entries.add(new SvnHookContext.LogEntry(logs.get(i)));
         }
         SvnHookContext context = new SvnHookContext(files.toArray(new File[files.size()]), message, entries);
         for (SvnHook hook : hooks) {

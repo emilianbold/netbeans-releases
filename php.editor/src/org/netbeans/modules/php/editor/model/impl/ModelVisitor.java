@@ -129,7 +129,17 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         //var2TypeName = new HashMap<String, String>();
         occurencesBuilder = new OccurenceBuilder(offset);
         markerBuilder = new CodeMarkerBuilder(offset);
-        this.modelBuilder = new ModelBuilder(this.fileScope, occurencesBuilder.getOffset());
+        this.modelBuilder = new ModelBuilder(this.fileScope);
+        this.info = info;
+    }
+
+    public ModelVisitor(ParserResult info, ModelElement elemnt) {
+        this.fileScope = new FileScopeImpl(info);
+        varTypeComments = new HashMap<String, List<PhpDocTypeTagInfo>>();
+        //var2TypeName = new HashMap<String, String>();
+        occurencesBuilder = new OccurenceBuilder(elemnt);
+        markerBuilder = new CodeMarkerBuilder(-1);
+        this.modelBuilder = new ModelBuilder(this.fileScope);
         this.info = info;
     }
 
@@ -430,18 +440,20 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 if (type instanceof ClassScope) {
                     ClassScope cls = (ClassScope) type;
                     String fldName = CodeUtils.extractVariableName(fieldAccess.getField());
-                    //TODO: wrap up this $ handling not to care about it ever
-                    if (!fldName.startsWith("$")) {//NOI18N
-                        fldName = "$" + fldName;//NOI18N
-                    }
-                    FieldElementImpl field = (FieldElementImpl) ModelUtils.getFirst(cls.findDeclaredFields(fldName, PHPIndex.ANY_ATTR));
-                    if (field != null) {
-                        //List<? extends FieldAssignmentImpl> assignments = field.getAssignments();
-                        String typeName = VariousUtils.extractVariableTypeFromAssignment(node, 
-                                Collections.<String,AssignmentImpl>emptyMap());
-                        ASTNodeInfo<FieldAccess> fieldInfo = ASTNodeInfo.create(fieldAccess);
-                        FieldAssignmentImpl fa = new FieldAssignmentImpl((FieldElementImpl) field, scope, scope.getBlockRange(), fieldInfo.getRange(), typeName);
-                        field.addElement(fa);
+                    if (fldName != null ) {
+                        //TODO: wrap up this $ handling not to care about it ever
+                        if (!fldName.startsWith("$")) {//NOI18N
+                            fldName = "$" + fldName;//NOI18N
+                        }
+                        FieldElementImpl field = (FieldElementImpl) ModelUtils.getFirst(cls.findDeclaredFields(fldName, PHPIndex.ANY_ATTR));
+                        if (field != null) {
+                            //List<? extends FieldAssignmentImpl> assignments = field.getAssignments();
+                            String typeName = VariousUtils.extractVariableTypeFromAssignment(node,
+                                    Collections.<String,AssignmentImpl>emptyMap());
+                            ASTNodeInfo<FieldAccess> fieldInfo = ASTNodeInfo.create(fieldAccess);
+                            FieldAssignmentImpl fa = new FieldAssignmentImpl((FieldElementImpl) field, scope, scope.getBlockRange(), fieldInfo.getRange(), typeName);
+                            field.addElement(fa);
+                        }
                     }
                 }
             }
@@ -686,7 +698,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @CheckForNull
     public Occurence getOccurence(int offset) {
-        return findStrictOccurence((FileScopeImpl) getModelScope(), offset, null);
+        return findStrictOccurence((FileScopeImpl) getModelScope(), offset);
+    }
+
+    @CheckForNull
+    public Occurence getOccurence(ModelElement element) {
+        return findStrictOccurence((FileScopeImpl) getModelScope(), element);
     }
 
     public VariableScope getNearestVariableScope(int offset) {
@@ -762,18 +779,31 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
     }
 
-    private Occurence findStrictOccurence(FileScopeImpl scope, int offset,
-            Occurence atOffset) {
+    private Occurence findStrictOccurence(FileScopeImpl scope, int offset) {
+        Occurence retval = null;
         buildOccurences();
         //FileObject fileObject = scope.getFileObject();
         List<Occurence> occurences = scope.getOccurences();
         for (Occurence occ : occurences) {
             assert occ != null;
             if (occ.getOccurenceRange().containsInclusive(offset)) {
-                atOffset = occ;
+                retval = occ;
             }
         }
-        return atOffset;
+        return retval;
+    }
+    private Occurence findStrictOccurence(FileScopeImpl scope, ModelElement element) {
+        Occurence retval = null;
+        buildOccurences();
+        //FileObject fileObject = scope.getFileObject();
+        List<Occurence> occurences = scope.getOccurences();
+        for (Occurence occ : occurences) {
+            assert occ != null;
+            if (occ.getDeclaration().equals(element)) {
+                retval = occ;
+            }
+        }
+        return retval;
     }
 
     private VariableScope findNearestVarScope(Scope scope, int offset, VariableScope atOffset) {

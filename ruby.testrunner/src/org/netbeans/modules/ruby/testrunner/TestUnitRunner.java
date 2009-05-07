@@ -67,7 +67,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
-import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.rubyproject.RubyTestingSettings;
 
 /**

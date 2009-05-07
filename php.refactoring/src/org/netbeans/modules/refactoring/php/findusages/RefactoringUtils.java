@@ -118,10 +118,10 @@ public class RefactoringUtils {
         return source;
     }
 
-    public static CloneableEditorSupport findCloneableEditorSupport(WhereUsedSupport.ResultElement result) {
+    public static CloneableEditorSupport findCloneableEditorSupport(FileObject fo) {
         DataObject dob = null;
         try {
-            dob = DataObject.find(result.getFileObject());
+            dob = DataObject.find(fo);
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }

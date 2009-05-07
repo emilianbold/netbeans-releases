@@ -98,7 +98,7 @@ public class HgHookImpl extends HgHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "hg beforeCommit start for " + file);                // NOI18N
 
-        if(panel.addIssueCheckBox1.isSelected()) {
+        if(panel.addIssueCheckBox.isSelected()) {
             String msg = context.getMessage();
 
             Format format = VCSHooksConfig.getInstance().getHgIssueFormat();
@@ -125,7 +125,7 @@ public class HgHookImpl extends HgHook {
             
             context = new HgHookContext(context.getFiles(), msg, context.getLogEntries());
             return context;
-        }   
+        }
         return super.beforeCommit(context);
     }
 

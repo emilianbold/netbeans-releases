@@ -186,11 +186,13 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 }
             }
 
-            HighlightsSequence hs = getHighlightsBag(doc).getHighlights(0, doc.getLength() - 1);
-            while (hs.moveNext()) {
-                if (lastPosition >= hs.getStartOffset() && lastPosition <= hs.getEndOffset()) {
-                    // cursor is still in the marked area, so previous result is valid
-                    return;
+            if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) == null) {
+                HighlightsSequence hs = getHighlightsBag(doc).getHighlights(0, doc.getLength() - 1);
+                while (hs.moveNext()) {
+                    if (lastPosition >= hs.getStartOffset() && lastPosition <= hs.getEndOffset()) {
+                        // cursor is still in the marked area, so previous result is valid
+                        return;
+                    }
                 }
             }
 
@@ -204,10 +206,21 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 obag.clear();
 
                 for (CsmReference csmReference : out) {
-                    int startOffset = getDocumentOffset(doc, csmReference.getStartOffset());
-                    int endOffset = getDocumentOffset(doc, csmReference.getEndOffset());
-                    if (startOffset < doc.getLength() && endOffset > 0) {
-                        obag.addHighlight((startOffset > 0) ? startOffset : 0, (endOffset < doc.getLength()) ? endOffset : doc.getLength(), defaultColors);
+                    int usages[][] = CsmMacroExpansion.getUsages(doc, csmReference.getStartOffset());
+                    if (usages != null) {
+                        for (int i = 0; i < usages.length; i++) {
+                            int startOffset = usages[i][0];
+                            int endOffset = usages[i][1];
+                            if (startOffset < doc.getLength() && endOffset > 0) {
+                                obag.addHighlight((startOffset > 0) ? startOffset : 0, (endOffset < doc.getLength()) ? endOffset : doc.getLength(), defaultColors);
+                            }
+                        }
+                    } else {
+                        int startOffset = getDocumentOffset(doc, csmReference.getStartOffset());
+                        int endOffset = getDocumentOffset(doc, csmReference.getEndOffset());
+                        if (startOffset < doc.getLength() && endOffset > 0) {
+                            obag.addHighlight((startOffset > 0) ? startOffset : 0, (endOffset < doc.getLength()) ? endOffset : doc.getLength(), defaultColors);
+                        }
                     }
                 }
 

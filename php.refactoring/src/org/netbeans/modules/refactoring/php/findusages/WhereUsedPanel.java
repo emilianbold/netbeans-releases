@@ -47,13 +47,13 @@ import java.awt.event.ItemEvent;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.AttributedElement;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
 import javax.swing.JPanel;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.ClassMemberElement;
-import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport.Kind;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.PhpKind;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.openide.util.NbPreferences;
 
 /**
@@ -99,10 +99,10 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
     
     private void setupPanels() {
-        AttributedElement elem = usage.getAttributeElement();
+        ModelElement elem = usage.getModelElement();
         assert elem != null;
         String name = usage.getName();
-        String clsName = (elem.isClassMember()) ? ((ClassMemberElement) elem).getClassName() : null;
+        String clsName = elem.getInScope() instanceof TypeScope ? elem.getInScope().getName() : null;
         String bKey = bundleKeyForLabel();
         final Set<Modifier> modifiers = usage.getModifiers();
         final String lblText;
@@ -117,7 +117,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         c_subclasses.setVisible(false);
         m_overriders.setVisible(false);
         label.setText(lblText);
-        if (usage.getKind() == Kind.METHOD) {
+        if (usage.getKind() == PhpKind.METHOD) {
             add(methodsPanel, BorderLayout.CENTER);
             methodsPanel.setVisible(true);
             m_usages.setVisible(!modifiers.contains(Modifier.STATIC));
@@ -130,7 +130,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 m_isBaseClass.setVisible(false);
                 m_isBaseClass.setSelected(false);
             }
-        } else if (usage.getKind() == Kind.CLASS) {
+        } else if (usage.getKind() == PhpKind.CLASS) {
             add(classesPanel, BorderLayout.CENTER);            
             classesPanel.setVisible(true);
         } else {

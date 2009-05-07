@@ -45,7 +45,6 @@ import java.util.Set;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport.ResultElement;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport.Results;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -82,12 +81,9 @@ public class PhpWhereUsedQueryPlugin extends ProgressProviderAdapter implements 
             }
 
             Results results = usages.getResults();
-            Collection<FileObject> files = results.getFiles();
-            for (FileObject fileObject : files) {
-                Collection<ResultElement> resultElements = results.getResultElements(fileObject);
-                for (ResultElement resultElem : resultElements) {
-                    elementsBag.add(refactoring, WhereUsedElement.create(resultElem));
-                }
+            Collection<WhereUsedElement> resultElements = results.getResultElements();
+            for (WhereUsedElement whereUsedElement : resultElements) {
+                elementsBag.add(refactoring, whereUsedElement);
             }
             fireProgressListenerStop();
         } 

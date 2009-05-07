@@ -376,4 +376,28 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("FooTest", matcher.group(3));
     }
 
+    public void testIssue164587ShouldaTestFinished() {
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.ShouldaTestFinishedHandler();
+        String output = "%TEST_FINISHED% time=0.006234 test: Account should be valid. (AccountTest)";
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(3, matcher.groupCount());
+        assertEquals("0.006234", matcher.group(1));
+        assertEquals("Account should be valid", matcher.group(2));
+        assertEquals("AccountTest", matcher.group(3));
+    }
+
+    public void testIssue164587ShouldaTestError() {
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.ShouldaTestErrorHandler();
+        String output = "%TEST_ERROR% time=0.00404 testname=test: Account should be valid. (AccountTest) " +
+                "message=MissingSourceFile: no such file to load -- sqlite3 " +
+                "location=/usr/local/lib/site_ruby/1.8/rubygems/custom_require.rb:31:in `gem_original_require'%BR%";
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(5, matcher.groupCount());
+        assertEquals("0.00404", matcher.group(1));
+        assertEquals("Account should be valid", matcher.group(2));
+        assertEquals("AccountTest", matcher.group(3));
+    }
+
 }

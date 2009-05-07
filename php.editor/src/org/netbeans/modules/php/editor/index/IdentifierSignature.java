@@ -314,6 +314,10 @@ public class IdentifierSignature {
         results.put(name,new IdentifierSignature(name));
     }
 
+    public static void add(String name, Map<String,IdentifierSignature> results) {
+        results.put(name,new IdentifierSignature(name));
+    }
+
     private static Identifier get(Variable var) {
         Expression expr = var.getName();
         if (expr instanceof Identifier) {

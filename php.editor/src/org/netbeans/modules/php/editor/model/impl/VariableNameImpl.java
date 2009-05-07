@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
@@ -134,7 +135,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         if (inScope instanceof MethodScope ) {
             String methodName = representsThis() ? "" : inScope.getName();//NOI18N
             inScope = inScope.getInScope();
-            return (inScope != null && !isGloballyVisible()) ? inScope.getName()+methodName+getName() : methodName+getName();
+            return (inScope != null && !isGloballyVisible()) ? inScope.getName()+methodName+getName() : getName();
         }
         return (inScope != null && !isGloballyVisible()) ? inScope.getName()+getName() : getName();
     }
@@ -150,7 +151,11 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     }
 
     public boolean isGloballyVisible() {
-        return globallyVisible;
+        String name = getName();
+        if (name.startsWith("$")) {
+            name = name.substring(1);
+        }
+        return globallyVisible || PredefinedSymbols.SUPERGLOBALS.contains(name);
     }
 
     /**
