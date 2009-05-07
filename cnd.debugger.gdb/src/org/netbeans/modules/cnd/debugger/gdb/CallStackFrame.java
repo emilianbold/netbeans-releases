@@ -213,10 +213,8 @@ public class CallStackFrame {
     }
 
     public int getOffset() {
-        if (offset < 0) {
-            if (getDocument() != null) {
-                offset = NbDocument.findLineOffset(document, lineNumber);
-            }
+        if (offset < 0 && lineNumber >= 0 && getDocument() != null) {
+            offset = NbDocument.findLineOffset(document, lineNumber-1);
         }
         return offset;
     }

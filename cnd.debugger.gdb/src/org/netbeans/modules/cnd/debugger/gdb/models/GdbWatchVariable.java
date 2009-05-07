@@ -169,10 +169,11 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
 
     private synchronized void checkValues() {
         if (request) {
-            String t = getDebugger().requestWhatis(watch.getExpression());
+            String expr = expandMacro(getDebugger(), watch.getExpression());
+            String t = getDebugger().requestWhatis(expr);
             if (t != null && t.length() > 0) {
                 type = t;
-                value = getDebugger().evaluate(checkMacro(watch.getExpression()));
+                value = getDebugger().evaluate(expr);
             } else {
                 type = ""; // NOI18N
                 value = ""; // NOI18N
@@ -184,8 +185,8 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         }
     }
 
-    private String checkMacro(String expr) {
-        CallStackFrame csf = getDebugger().getCurrentCallStackFrame();
+    public static String expandMacro(GdbDebugger debugger, String expr) {
+        CallStackFrame csf = debugger.getCurrentCallStackFrame();
         if (csf != null) {
             Document doc = csf.getDocument();
             if (doc != null) {
