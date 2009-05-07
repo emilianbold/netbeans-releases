@@ -106,9 +106,16 @@ public class NbWagonManager extends DefaultWagonManager {
             try {
                 super.getArtifact(artifact, remoteRepositories);
             } catch (TransferFailedException exc) {
+                if (NbArtifactResolver.isParentPomArtifact(artifact)) { //#163919
+                    throw exc;
+                }
+
                 //ignore, we will just pretend it didn't happen.
                 artifact.setResolved(true);
             } catch (ResourceDoesNotExistException exc) {
+                if (NbArtifactResolver.isParentPomArtifact(artifact)) { //#163919
+                    throw exc;
+                }
                 //ignore, we will just pretend it didn't happen.
                 artifact.setResolved(true);
             }
@@ -211,5 +218,5 @@ public class NbWagonManager extends DefaultWagonManager {
         }
 
     }
-    
+
 }
