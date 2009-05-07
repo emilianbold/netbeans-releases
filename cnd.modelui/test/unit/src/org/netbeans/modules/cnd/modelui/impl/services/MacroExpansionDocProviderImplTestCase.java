@@ -81,6 +81,10 @@ public class MacroExpansionDocProviderImplTestCase extends TraceModelTestBase {
         performTest("file1.cc", 5, 13, 5, 21); // NOI18N
     }
 
+    public void testCodeExpansion() throws Exception {
+        performTest("file1.cc", 10, 13, "CONSTANT + 1"); // NOI18N
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // general staff
     @Override
@@ -137,6 +141,26 @@ public class MacroExpansionDocProviderImplTestCase extends TraceModelTestBase {
             assertNotNull(res);
 
             streamOut.println(res);
+         } else if (params.length == 3) {
+            // Test expansion of code in specified context
+
+            CsmMacroExpansionDocProvider mp = new MacroExpansionDocProviderImpl();
+
+            String objectSource = currentFile.getName().toString();
+
+            int line = (Integer) params[0];
+            int column = (Integer) params[1];
+
+            String code = (String) params[2];
+
+            BaseDocument doc = getBaseDocument(getDataFile(objectSource));
+            assertNotNull(doc);
+            int offset = CndCoreTestUtils.getDocumentOffset(doc, line, column);
+
+            String res = mp.expand(doc, offset, code);
+            assertNotNull(res);
+
+            streamOut.println(res);
         } else {
             assert true; // Bad test params
         }
@@ -154,6 +178,10 @@ public class MacroExpansionDocProviderImplTestCase extends TraceModelTestBase {
 
     private void performTest(String source, int startLine, int startColumn, int endLine, int endColumn) throws Exception {
         super.performTest(source, getName(), null, startLine, startColumn, endLine, endColumn);
+    }
+
+    private void performTest(String source, int line, int column, String code) throws Exception {
+        super.performTest(source, getName(), null, line, column, code);
     }
 
     @Override
