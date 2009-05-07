@@ -88,7 +88,6 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
 import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
@@ -923,7 +922,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
 
         @Override
-        public SystemAction[] getActions() {
+        public SystemAction[] getActions(boolean context) {
             return NO_ACTIONS;
         }
 
@@ -1565,60 +1564,63 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     };
     
     private Set<UniverseModule> universe;
-    private /* #71791 */ synchronized void doUpdateDependencyWarnings() {
+    private final Object lock = new Object();
+
+    private void doUpdateDependencyWarnings() {
         try {
-            if (universe == null) {
-                Set<NbModuleProject> suiteModules =
-                        new HashSet<NbModuleProject>(getProperties().getSubModules());
-                libChildren.getProjectModules(suiteModules);
-                universe = loadUniverseModules(platformModules, suiteModules, extraBinaryModules);
-            }
+            synchronized(lock) /* #71791, #163158 */ {
+                if (universe == null) {
+                    Set<NbModuleProject> suiteModules =
+                            new HashSet<NbModuleProject>(getProperties().getSubModules());
+                    libChildren.getProjectModules(suiteModules);
+                    universe = loadUniverseModules(platformModules, suiteModules, extraBinaryModules);
+                }
 
-            Set<File> enabledClusters = new TreeSet<File>();
-            Set<String> disabledModules = new TreeSet<String>();
-            enabledClusters.add(ClusterUtils.getClusterDirectory(getProperties().getProject()));
+                Set<File> enabledClusters = new TreeSet<File>();
+                Set<String> disabledModules = new TreeSet<String>();
+                enabledClusters.add(ClusterUtils.getClusterDirectory(getProperties().getProject()));
 
-            for (Node cluster : libChildren.getNodes()) {
-                if (cluster instanceof ClusterNode) {
-                    ClusterNode e = (ClusterNode) cluster;
-                    if (e.isEnabled()) {
-                        enabledClusters.add(e.getClusterInfo().getClusterDir());
-                        for (Node module : e.getChildren().getNodes()) {
-                            if (module instanceof Enabled) {
-                                Enabled m = (Enabled) module;
-                                if (!m.isEnabled()) {
-                                    disabledModules.add(m.getName());
+                for (Node cluster : libChildren.getNodes()) {
+                    if (cluster instanceof ClusterNode) {
+                        ClusterNode e = (ClusterNode) cluster;
+                        if (e.isEnabled()) {
+                            enabledClusters.add(e.getClusterInfo().getClusterDir());
+                            for (Node module : e.getChildren().getNodes()) {
+                                if (module instanceof Enabled) {
+                                    Enabled m = (Enabled) module;
+                                    if (!m.isEnabled()) {
+                                        disabledModules.add(m.getName());
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            final FixInfo fi = findWarning(universe, enabledClusters, disabledModules);
+                final FixInfo fi = findWarning(universe, enabledClusters, disabledModules);
 
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    try {
-                        CardLayout cl = (CardLayout) resolveButtonPanel.getLayout();
-                        if (!fi.isEmpty()) {
-                            String key = fi.warning[0];
-                            String[] args = new String[fi.warning.length - 1];
-                            System.arraycopy(fi.warning, 1, args, 0, args.length);
-                            category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
-                            resolveFixInfo = fi;
-                            resolveButton.setEnabled(fi.fixable);
-                            cl.last(resolveButtonPanel);
-                        } else {
-                            category.setErrorMessage(null);
-                            cl.first(resolveButtonPanel);
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            CardLayout cl = (CardLayout) resolveButtonPanel.getLayout();
+                            if (!fi.isEmpty()) {
+                                String key = fi.warning[0];
+                                String[] args = new String[fi.warning.length - 1];
+                                System.arraycopy(fi.warning, 1, args, 0, args.length);
+                                category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
+                                resolveFixInfo = fi;
+                                resolveButton.setEnabled(fi.fixable);
+                                cl.last(resolveButtonPanel);
+                            } else {
+                                category.setErrorMessage(null);
+                                cl.first(resolveButtonPanel);
+                            }
+                        } finally {
+                            manager.setRootContext(realRoot);
                         }
-                    } finally {
-                        manager.setRootContext(realRoot);
                     }
-                }
-            });
-
+                });
+            }
         } catch (Exception e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
             category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, "MSG_ErrorParsingMetadata", e.getLocalizedMessage()));
