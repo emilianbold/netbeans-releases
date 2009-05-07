@@ -51,6 +51,8 @@
  */
 package org.netbeans.modules.cnd.modelui.impl.services;
 
+import antlr.ANTLRLexer;
+import antlr.InputBuffer;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import java.util.ArrayList;
@@ -70,6 +72,8 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -377,7 +381,34 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
         return null;
     }
-    
+
+    public String expand(Document doc, int offset, String code) {
+        if (doc == null) {
+            return code;
+        }
+        final CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        if (file == null) {
+            return code;
+        }
+        TokenStream ts = new ANTLRLexer(new InputBuffer(code.toCharArray()));
+        APTPreprocHandler handler = ((FileImpl)file).getPreprocHandler(offset);
+        if (handler != null) {
+            ts = new APTMacroExpandedStream(ts, handler.getMacroMap());
+            StringBuilder sb = new StringBuilder(""); // NOI18N
+            try {
+                APTToken t = (APTToken) ts.nextToken();
+                while (t != null && !APTUtils.isEOF(t)) {
+                    sb.append(t.getText());
+                    t = (APTToken) ts.nextToken();
+                }
+            } catch (TokenStreamException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return sb.toString();
+        }
+        return code;
+    }
+
     private String expandInterval(Document doc, TransformationTable tt, int startOffset, int endOffset) {
         if (tt.intervals.isEmpty()) {
             return null;
