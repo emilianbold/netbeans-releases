@@ -36,38 +36,35 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.kenai.ui;
 
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.JPanel;
 import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
-public final class OpenKenaiProjectAction implements ActionListener {
+/**
+ * DialogDescriptor used for Kenai search window to allow to enable/disable OK button
+ *
+ * @author Milan Kubec
+ */
+public class KenaiDialogDescriptor extends DialogDescriptor implements PropertyChangeListener {
 
-    private String dialogTitle = NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectWindowTitle");
-
-    public void actionPerformed(ActionEvent e) {
-
-        KenaiSearchPanel openPanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.OPEN, true);
-        DialogDescriptor dialogDesc = new KenaiDialogDescriptor(openPanel, dialogTitle, true, null);
-
-        Object option = DialogDisplayer.getDefault().notify(dialogDesc);
-
-        if (NotifyDescriptor.OK_OPTION.equals(option)) {
-            KenaiProject selProjects[] = openPanel.getSelectedProjects();
-            if (null != selProjects && selProjects.length > 0) {
-                for (KenaiProject prj : selProjects) {
-                    Dashboard.getDefault().addProject(new ProjectHandleImpl(prj), false);
-                }
-                KenaiTopComponent.findInstance().open();
-                KenaiTopComponent.findInstance().requestActive();
-            }
-        }
-
+    public static final String PROP_SELECTION_VALID = "selectionValid";
+    
+    public KenaiDialogDescriptor(JPanel p, String s, boolean b, ActionListener l) {
+        super(p, s, b, l);
+        p.addPropertyChangeListener(this);
     }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        Boolean valid = null;
+        if (PROP_SELECTION_VALID.equals(evt.getPropertyName())) {
+            valid = (Boolean) evt.getNewValue();
+        }
+        setValid(valid != null ? valid.booleanValue() : false);
+    }
+
 }
