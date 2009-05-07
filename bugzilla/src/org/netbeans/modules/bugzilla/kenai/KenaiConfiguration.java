@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
  *
@@ -51,12 +52,13 @@ import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
  */
 public class KenaiConfiguration extends BugzillaConfiguration {
     private List<String> products;
+    private BugzillaRepository repository;
 
-    protected KenaiConfiguration(RepositoryConfiguration rc) {
-        super(rc);
-    }
+    /** one instance for all kenai repositories */
+    private static RepositoryConfiguration rc;
 
-    void setProducts(String product) {
+    public KenaiConfiguration(BugzillaRepository repository, String product) {
+        this.repository = repository;
         // XXX check if product exists
         ArrayList<String> l = new ArrayList<String>();
         l.add(product);
@@ -65,7 +67,39 @@ public class KenaiConfiguration extends BugzillaConfiguration {
 
     @Override
     public List<String> getProducts() {
+        ensureProduct();
         return products;
+    }
+
+    @Override
+    public List<String> getComponents(String product) {
+        ensureProduct();
+        return super.getComponents(product);
+    }
+
+    @Override
+    public List<String> getVersions(String product) {
+        ensureProduct();
+        return super.getVersions(product);
+    }
+
+    private synchronized void ensureProduct() {
+        List<String> knownProducts = super.getProducts();
+        for (String knownProduct : products) {
+            if(!knownProducts.contains(knownProduct)) {
+                rc = null;
+                initialize(repository, true);
+                break;
+            }
+        }
+    }
+
+    @Override
+    protected RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository, boolean forceRefresh) {
+        if(rc == null) {
+            rc = super.getRepositoryConfiguration(repository, forceRefresh);
+        }
+        return rc;
     }
 
 }
