@@ -1196,10 +1196,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
         @Override
         protected boolean onAPT(APT node, boolean wasInBranch) {
-            boolean ret = super.onAPT(node, wasInBranch);
-            if(node.getEndOffset() > stopOffset) {
+            if(node.getEndOffset() >= stopOffset) {
                 stop();
+                return false;
             }
+            boolean ret = super.onAPT(node, wasInBranch);
             return ret;
         }
 
