@@ -64,6 +64,7 @@ import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
@@ -160,7 +161,7 @@ public class AttributedNodes extends DefaultVisitor {
         return a;
     }
 
-    public Map<ASTNode, AttributedElement> findDirectSubclasses(AttributedElement elemToBeFound) {
+    public Map<ASTNode, AttributedElement> findDirectSubclasses(ModelElement elemToBeFound) {
         Map<ASTNode, AttributedElement> results = new HashMap<ASTNode, AttributedElement>();
         for (Entry<ASTNode, AttributedElement> entry : node2Element.entrySet()) {
             AttributedElement elem = entry.getValue();
@@ -168,20 +169,6 @@ public class AttributedNodes extends DefaultVisitor {
             if (WhereUsedSupport.matchDirectSubclass(elemToBeFound, node, elem)) {
                 if (!WhereUsedSupport.isAlreadyInResults(node, results.keySet())) {
                     results.put(node, elem);
-                }
-            }
-        }
-        return results;
-    }
-
-    public Map<ASTNode, AttributedElement> findUsages(AttributedElement elemToBeFound) {
-        Map<ASTNode, AttributedElement> results = new HashMap<ASTNode, AttributedElement>();
-        for (Entry<ASTNode, AttributedElement> entry : node2Element.entrySet()) {
-            AttributedElement value = entry.getValue();
-            ASTNode node = entry.getKey();
-            if (WhereUsedSupport.match(elemToBeFound, value)) {
-                if (!WhereUsedSupport.isAlreadyInResults(node, results.keySet())) {
-                    results.put(node, value);
                 }
             }
         }

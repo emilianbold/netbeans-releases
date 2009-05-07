@@ -38,47 +38,42 @@
  */
 package org.netbeans.modules.refactoring.php.findusages;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
-import org.netbeans.editor.BaseDocument;
+import java.util.TreeSet;
+import javax.swing.Icon;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.core.UiUtils;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.FindUsageSupport;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.model.OccurencesSupport;
+import org.netbeans.modules.php.editor.model.PhpKind;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.AttributedElement;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.ClassElement;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.ClassMemberElement;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Union2;
 
 /**
  *
@@ -89,37 +84,28 @@ public final class WhereUsedSupport {
     private ASTNode node;
     private FileObject fo;
     private int offset;
-    private Kind kind;
-    private AttributedElement aElement;
-    private AttributedNodes semiAttribs;
+    private PhpKind kind;
+    private ModelElement modelElement;
     private Results results;
     private Set<Modifier> modifier;
-    private PHPIndex idx;
+    private FindUsageSupport usageSupport;
 
-    public static enum Kind {
-
-        CLASS, METHOD, FIELD, VARIABLE,
-        CONSTANT, FUNCTION, CLASS_CONSTANT
-    }
-
-    private WhereUsedSupport(PHPIndex idx,AttributedElement aElement, ASTNode node, FileObject fo) {
-        this(idx, aElement, node.getStartOffset(), fo, null);
+    private WhereUsedSupport(PHPIndex idx,ModelElement aElement, ASTNode node, FileObject fo) {
+        this(idx, aElement, node.getStartOffset(), fo);
         this.node = node;
     }
 
-    private WhereUsedSupport(PHPIndex idx, AttributedElement aElement, int offset, FileObject fo,
-            AttributedNodes semiAttribs) {
+    private WhereUsedSupport(PHPIndex idx, ModelElement aElement, int offset, FileObject fo) {
         this.fo = fo;
         this.offset = offset;
-        this.semiAttribs = semiAttribs;
-        this.aElement = aElement;
-        this.idx =idx;
-        kind = getWhereUsedKind(aElement);
+        this.modelElement = aElement;
+        this.usageSupport =FindUsageSupport.getInstance(idx, aElement);
+        kind = aElement.getPhpKind();
         this.results = new Results();
     }
 
     public String getName() {
-        return aElement.getName();
+        return modelElement.getName();
     }
 
     public ASTNode getASTNode() {
@@ -134,32 +120,16 @@ public final class WhereUsedSupport {
         return offset;
     }
 
-    public Kind getKind() {
+    public PhpKind getKind() {
         return kind;
     }
 
     public ElementKind getElementKind() {
-        switch (getKind()) {
-            case CLASS:
-                return ElementKind.CLASS;
-            case CONSTANT:
-                return ElementKind.CONSTANT;
-            case FUNCTION:
-                return ElementKind.METHOD;
-            case VARIABLE:
-                return ElementKind.VARIABLE;
-            case METHOD:
-                return ElementKind.METHOD;
-            case FIELD:
-                return ElementKind.FIELD;
-            case CLASS_CONSTANT:
-                return ElementKind.CONSTANT;
-        }
-        throw new IllegalStateException();
+        return modelElement.getPHPElement().getKind();
     }
 
     public Set<Modifier> getModifiers() {
-        AttributedElement attributeElement = getAttributeElement();
+        ModelElement attributeElement = getModelElement();
         return getModifiers(attributeElement);
     }
 
@@ -167,49 +137,7 @@ public final class WhereUsedSupport {
         return results;
     }
 
-    private WhereUsedSupport.ResultElement createResult(AttributedElement element, ASTNode node, FileObject fo) {
-        return new WhereUsedSupport.ResultElement(node, fo, element);
-    }
-
-    public static WhereUsedSupport getInstance(final ParserResult info, final int offset) {
-        List<ASTNode> path = RefactoringUtils.underCaret(info, offset);
-        AttributedNodes attribs = AttributedNodes.getInstance(info);
-        AttributedElement el = null;
-        Collections.reverse(path);
-        boolean isSelf = false;
-        for (ASTNode leaf : path) {
-            if (leaf instanceof StaticConstantAccess) {
-                StaticConstantAccess constantAccess = (StaticConstantAccess) leaf;
-                Identifier className = constantAccess.getClassName();
-                Identifier constant = constantAccess.getConstant();
-                leaf = (constant.getStartOffset() < offset) ? leaf : className;
-            } else if (leaf instanceof StaticFieldAccess) {
-                StaticFieldAccess fieldAccess = (StaticFieldAccess) leaf;
-                Identifier className = fieldAccess.getClassName();
-                Variable field = fieldAccess.getField();
-                leaf = (field.getStartOffset() < offset) ? leaf : className;
-            } else if (leaf instanceof ArrayAccess) {
-                ArrayAccess arrayAccess = (ArrayAccess) leaf;
-                leaf = arrayAccess.getIndex();
-            }
-            el = attribs.getElement(leaf);
-            if (el != null) {
-                break;
-            }
-        }
-        return (el != null) ? new WhereUsedSupport(PHPIndex.get(info),
-                el, offset, info.getSnapshot().getSource().getFileObject(), attribs) : null;
-    }
-
-    public void collectUsages(final FileObject fileObject) {
-        collectUsages(fileObject, false);
-    }
-
-    public void collectDirectSubclasses(final FileObject fileObject) {
-        collectUsages(fileObject, true);
-    }
-
-    private  void collectUsages(final FileObject fileObject, final boolean directSubclasses) {
+    void collectDirectSubclasses(final FileObject fileObject) {
         try {
             ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
 
@@ -218,10 +146,9 @@ public final class WhereUsedSupport {
                     ParserResult parameter = (ParserResult) resultIterator.getParserResult();
                     AttributedNodes a = AttributedNodes.getInstance(parameter);
                     Map<ASTNode, AttributedElement> findOccurences = null;
-                    findOccurences = (directSubclasses) ?  a.findDirectSubclasses(aElement) :
-                        a.findUsages(aElement);
-                    if (findOccurences.size() > 0) {
-                        results.addEntry(fileObject, findOccurences);
+                    findOccurences = a.findDirectSubclasses(modelElement);
+                    for (Entry<ASTNode, AttributedElement> entry : findOccurences.entrySet()) {
+                       results.addEntry(fileObject, entry);
                     }
                 }
             });
@@ -230,81 +157,44 @@ public final class WhereUsedSupport {
         }
     }
 
-    private static IndexedElement getIndexElement(final AttributedElement el) {
-        IndexedElement tmpElement = null;
-        if (el != null) {
-            List<Union2<ASTNode, IndexedElement>> writes = el.getWrites();
-            for (Union2<ASTNode, IndexedElement> union2 : writes) {
-                if (union2.hasSecond()) {
-                    tmpElement = union2.second();
-                    break;
-                }
-            }
+    void collectUsages(FileObject fileObject) {
+        Collection<Occurence> occurences = usageSupport.occurences(fileObject);
+        for (Occurence occurence : occurences) {
+            results.addEntry(fileObject, occurence);
         }
-        return tmpElement;
     }
 
-    public Set<FileObject> getRelevantFiles() {
-        Set<FileObject> relevantFiles = new LinkedHashSet<FileObject>();
-        SemiAttrsProviderTask attribsTask = new SemiAttrsProviderTask();
-        final IndexedElement indexedElement = getIndexElement(aElement);
-
-        if (indexedElement != null) {
-            boolean declInOtherFile = !fo.equals(indexedElement.getFileObject());
-            if (declInOtherFile) {
-                relevantFiles.add(indexedElement.getFileObject());
-                try {
-                    ParserManager.parse(Collections.singleton(Source.create(indexedElement.getFileObject())), attribsTask);
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-
-                semiAttribs = attribsTask.get();
-            }
-        }
-
-        boolean globalScope = semiAttribs.hasGlobalVisibility(aElement);
-        if (globalScope) {
-            relevantFiles.addAll(getAllFiles());
-        } else {
-            if (indexedElement != null) {
-                relevantFiles.add(indexedElement.getFileObject());
-            } else {
-                relevantFiles.add(fo);
-            }
-        }
-        return relevantFiles;
+    public static WhereUsedSupport getInstance(final ParserResult info, final int offset) {
+        Model model = ModelFactory.getModel(info);
+        OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
+        Occurence occurence = occurencesSupport.getOccurence();
+        return (occurence != null && occurence.getAllDeclarations().size() == 1) ? new WhereUsedSupport(PHPIndex.get(info),
+                occurence.getDeclaration(), offset, info.getSnapshot().getSource().getFileObject()) : null;
     }
 
-    private Set<? extends FileObject> getAllFiles() {
-        Set<FileObject> retval = new LinkedHashSet<FileObject>();
-        retval.add(fo);
-        retval.addAll(idx.filesWithIdentifiers(this.getName()));
-        return retval;
+    public ModelElement getModelElement() {
+        return modelElement;
     }
 
-    public AttributedElement getAttributeElement() {
-        return aElement;
+    Set<FileObject> getRelevantFiles() {
+        return usageSupport.inFiles();
     }
 
-    private Set<Modifier> getModifiers(AttributedElement attributeElement) {
+    private Set<Modifier> getModifiers(ModelElement mElement) {
         if (modifier == null) {
             Set<Modifier> retval = Collections.emptySet();
-            if (attributeElement != null && attributeElement.isClassMember()) {
-                ClassMemberElement element = (ClassMemberElement) attributeElement;
-                if (element.getModifier() >= 0) {
-                    retval = new HashSet<Modifier>();
-                    if (element.isPrivate()) {
-                        retval.add(Modifier.PRIVATE);
-                    } else if (element.isProtected()) {
-                        retval.add(Modifier.PROTECTED);
-                    }
-                    if (element.isPublic()) {
-                        retval.add(Modifier.PUBLIC);
-                    }
-                    if (element.isStatic()) {
-                        retval.add(Modifier.STATIC);
-                    }
+            if (mElement != null && mElement.getInScope() instanceof TypeScope) {
+                retval = new HashSet<Modifier>();
+                if (mElement.getPhpModifiers().isPrivate()) {
+                    retval.add(Modifier.PRIVATE);
+                } else if (mElement.getPhpModifiers().isProtected()) {
+                    retval.add(Modifier.PROTECTED);
+                }
+                if (mElement.getPhpModifiers().isPublic()) {
+                    retval.add(Modifier.PUBLIC);
+                }
+                if (mElement.getPhpModifiers().isStatic()) {
+                    retval.add(Modifier.STATIC);
                 }
             }
            modifier = retval;
@@ -324,169 +214,77 @@ public final class WhereUsedSupport {
         return false;
     }
 
-    public static boolean matchDirectSubclass(AttributedElement elemToBeFound, ASTNode node, AttributedElement elem) {
+    public static boolean matchDirectSubclass(ModelElement elemToBeFound, ASTNode node, AttributedElement elem) {
         boolean retval = false;
         if (elem != null && elem instanceof ClassElement && node instanceof ClassDeclaration) {
             ClassElement superClass = ((ClassElement) elem).getSuperClass();
-            if (superClass != null && superClass.equals(elemToBeFound)) {
+            if (superClass != null && superClass.getName().equals(elemToBeFound.getName())) {
                 retval = true;
             }
         }
         return retval;
     }
 
-    public static boolean match(AttributedElement elemToBeFound, AttributedElement elem) {
-        boolean retval = elemToBeFound != null && elem != null && elemToBeFound.getName().equals(elem.getName());
-        if (retval) {
-            WhereUsedSupport.Kind valueKind = WhereUsedSupport.getWhereUsedKind(elem);
-            WhereUsedSupport.Kind elKind = WhereUsedSupport.getWhereUsedKind(elemToBeFound);
-            retval = (valueKind == elKind) && elemToBeFound.getScopeName().equals(elem.getScopeName());
-        }
-        return retval;
-    }
-
-    public static WhereUsedSupport.Kind getWhereUsedKind(AttributedElement aElement) {
-        Kind retval = null;
-        switch (aElement.getKind()) {
-            case IFACE:
-            case CLASS:
-                retval = Kind.CLASS;
-                break;
-            case CONST:
-                retval = (aElement.isClassMember()) ? Kind.CLASS_CONSTANT : Kind.CONSTANT;
-                break;
-            case FUNC:
-                retval = (aElement.isClassMember()) ? Kind.METHOD : Kind.FUNCTION;
-                break;
-            case VARIABLE:
-                retval = (aElement.isClassMember()) ? Kind.FIELD : Kind.VARIABLE;
-                break;
-        }
-        return retval;
-    }
-
     public class Results {
-
-        private Map<FileObject, Map<ASTNode, AttributedElement>> data =
-                new LinkedHashMap<FileObject, Map<ASTNode, AttributedElement>>();
+        Collection<WhereUsedElement> elements = new TreeSet<WhereUsedElement>(new Comparator<WhereUsedElement>() {
+            public int compare(WhereUsedElement o1, WhereUsedElement o2) {
+                String path1 = o1.getParentFile().getPath();
+                String path2 = o2.getParentFile().getPath();
+                int retval = path1.compareTo(path2);
+                if (retval == 0) {
+                    int offset1 = o1.getPosition().getBegin().getOffset();
+                    int offset2 = o2.getPosition().getBegin().getOffset();
+                    retval =  offset1 < offset2 ? -1 : 1;
+                }
+                return retval;
+            }
+        });
 
         private Results() {
         }
-
-        public Collection<FileObject> getFiles() {
-            return data.keySet();
+        private void addEntry(FileObject fo, Occurence occurence) {
+            ModelElement decl = occurence.getDeclaration();
+            Icon icon = UiUtils.getElementIcon(WhereUsedSupport.this.getElementKind(), decl.getPHPElement().getModifiers());
+            elements.add(WhereUsedElement.create(decl.getName(), fo, occurence.getOccurenceRange(), icon));
         }
-
-        public Collection<ResultElement> getResultElements(FileObject fo) {
-            ArrayList<ResultElement> retval = new ArrayList<ResultElement>();
-            Map<ASTNode, AttributedElement> values = data.get(fo);
-            for (Entry<ASTNode, AttributedElement> entry : values.entrySet()) {
-                retval.add(createResult(entry.getValue(), entry.getKey(), fo));
+        private void addEntry(FileObject fo, Entry<ASTNode, AttributedElement> entry) {
+            AttributedElement element = entry.getValue();
+            ASTNode node = entry.getKey();
+            if (node instanceof ClassDeclaration) {
+                node = ((ClassDeclaration)node).getName();
             }
-            return retval;
+            OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+            Icon icon = UiUtils.getElementIcon(WhereUsedSupport.this.getElementKind(), getModifiers(element));
+            elements.add(WhereUsedElement.create(element.getName(), fo, range, icon));
+        }
+        public Collection<WhereUsedElement> getResultElements() {
+            return elements;
         }
 
-        private void addEntry(FileObject fo, Map<ASTNode, AttributedElement> map) {
-            for (Entry<ASTNode, AttributedElement> entry : map.entrySet()) {
-                addEntry(fo, entry.getKey(), entry.getValue());
-            }
-        }
-
-        private void addEntry(FileObject fo, ASTNode node, AttributedElement elem) {
-            Map<ASTNode, AttributedElement> map = data.get(fo);
-            if (map == null) {
-                map = new TreeMap<ASTNode, AttributedElement>(new Comparator<ASTNode>() {
-
-                    public int compare(ASTNode o1, ASTNode o2) {
-                        return Integer.valueOf(o1.getStartOffset()).compareTo(o2.getStartOffset());
+        private Set<Modifier> getModifiers(AttributedElement attributeElement) {
+            if (modifier == null) {
+                Set<Modifier> retval = Collections.emptySet();
+                if (attributeElement != null && attributeElement.isClassMember()) {
+                    ClassMemberElement element = (ClassMemberElement) attributeElement;
+                    if (element.getModifier() >= 0) {
+                        retval = new HashSet<Modifier>();
+                        if (element.isPrivate()) {
+                            retval.add(Modifier.PRIVATE);
+                        } else if (element.isProtected()) {
+                            retval.add(Modifier.PROTECTED);
+                        }
+                        if (element.isPublic()) {
+                            retval.add(Modifier.PUBLIC);
+                        }
+                        if (element.isStatic()) {
+                            retval.add(Modifier.STATIC);
+                        }
                     }
-                });
-                data.put(fo, map);
-            }
-            map.put(node, elem);
-            WhereUsedSupport.this.modifier = null;
-        }
-    }
-
-    public class ResultElement {
-
-        private ASTNode node;
-        private FileObject fo;
-        private AttributedElement aElement;
-        private BaseDocument doc;
-
-        private ResultElement(ASTNode node, FileObject fo, AttributedElement aElement) {
-            this.node = node;
-            this.fo = fo;
-            this.aElement = aElement;
-        }
-
-        public String getName() {
-            return WhereUsedSupport.this.getName();
-        }
-
-        public ASTNode getASTNode() {
-            return node;
-        }
-
-        public FileObject getFileObject() {
-            return fo;
-        }
-
-        public int getOffset() {
-            return offset;
-        }
-
-        public Kind getKind() {
-            return kind;
-        }
-
-        public ElementKind getElementKind() {
-            return WhereUsedSupport.this.getElementKind();
-        }
-
-        public Set<Modifier> getModifiers() {
-            return WhereUsedSupport.this.getModifiers(aElement);
-        }
-
-        public BaseDocument getDocument() {
-            if (doc == null) {
-                FileObject fo = getFileObject();
-                try {
-                    DataObject od = DataObject.find(fo);
-                    EditorCookie ec = od.getCookie(EditorCookie.class);
-
-                    if (ec != null) {
-                        doc = (BaseDocument) ec.openDocument();
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
+                modifier = retval;
             }
-            return doc;
-        }
-    }
-
-    private class SemiAttrsProviderTask extends UserTask {
-
-        private final List<AttributedNodes> attResult;
-
-        public SemiAttrsProviderTask() {
-            this.attResult = new ArrayList<AttributedNodes>();
+            return modifier;
         }
 
-        public void cancel() {
-        }
-
-        public AttributedNodes get() {
-            return (attResult.size() > 0) ? attResult.get(0) : null;
-        }
-
-        @Override
-        public void run(ResultIterator resultIterator) throws Exception {
-            ParserResult parameter = (ParserResult)resultIterator.getParserResult();
-            AttributedNodes a = semiAttribs.getInstance(parameter);
-            attResult.add(a);
-        }
     }
 }

@@ -41,32 +41,20 @@
 package org.netbeans.modules.refactoring.php.findusages;
 
 
-import java.util.List;
+import java.io.IOException;
 import javax.swing.Icon;
 import javax.swing.text.Position.Bias;
 
-import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.core.UiUtils;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.php.ui.tree.ElementGripFactory;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
@@ -141,64 +129,8 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
 
         return null;
     }
-    
-    private static OffsetRange getRange(ASTNode node, String name) {        
-        ASTNode rangeNode = node;
-        while(true) {
-            if (rangeNode instanceof ClassDeclaration) {
-                rangeNode = ((ClassDeclaration) rangeNode).getName();
-            } else if (rangeNode instanceof FunctionDeclaration) {
-                rangeNode = ((FunctionDeclaration) rangeNode).getFunctionName();
-            } else if (rangeNode instanceof FunctionInvocation) {
-                rangeNode = ((FunctionInvocation) rangeNode).getFunctionName();
-            } else if (rangeNode instanceof ClassConstantDeclaration) {
-                final List<Identifier> names = ((ClassConstantDeclaration) rangeNode).getNames();
-                for (Identifier id : names) {
-                    if (name.equals(id.getName())) {
-                        rangeNode = id;
-                        break;
-                    }
-                }
-                rangeNode = names.get(0);
-            } else if (rangeNode instanceof StaticConstantAccess) {
-                rangeNode = ((StaticConstantAccess) rangeNode).getConstant();
-            } else if (rangeNode instanceof MethodDeclaration) {
-                rangeNode = ((MethodDeclaration) rangeNode).getFunction().getFunctionName();
-            } else if (rangeNode instanceof FieldAccess) {
-                rangeNode = ((FieldAccess) rangeNode).getField();
-            } else if (rangeNode instanceof FieldsDeclaration) {
-                final List<SingleFieldDeclaration> fields = ((FieldsDeclaration) rangeNode).getFields();
-                for (SingleFieldDeclaration fDeclaration : fields) {
-                    if (name.equals(extractVariableName(fDeclaration.getName()))) {
-                        rangeNode = fDeclaration;
-                        break;
-                    }
-                }
-                rangeNode = fields.get(0).getName();
-            } else if (rangeNode instanceof ClassInstanceCreation) {
-                rangeNode = ((ClassInstanceCreation) rangeNode).getClassName();
-            } else if (rangeNode instanceof StaticFieldAccess) {
-                rangeNode = ((StaticFieldAccess) rangeNode).getField();
-            } else if (rangeNode instanceof ArrayAccess) {
-                rangeNode = ((ArrayAccess) rangeNode).getName();
-            } else {
-                break;
-            }
-        }
-        return new OffsetRange(rangeNode.getStartOffset(), rangeNode.getEndOffset());
-    }
-    
-    public static WhereUsedElement create(WhereUsedSupport.ResultElement result) {
-        ASTNode node = result.getASTNode();
-        OffsetRange range = getRange(node, result.getName());
-        assert range != null && range != OffsetRange.NONE;
-        Icon icon = UiUtils.getElementIcon(result.getElementKind(), result.getModifiers());
-        return create(result, range, icon);
-    }
-    
-    public static WhereUsedElement create(WhereUsedSupport.ResultElement result, OffsetRange range, Icon icon) {
-        String name = result.getName();
-        FileObject fo = result.getFileObject();
+
+    public static WhereUsedElement create(String name, FileObject fo,  OffsetRange range, Icon icon) {
         int start = range.getStart();
         int end = range.getEnd();
         
@@ -207,7 +139,15 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         String content = null;
         
         try {
-            BaseDocument bdoc = result.getDocument();
+            BaseDocument bdoc = null;
+            DataObject od = DataObject.find(fo);
+            EditorCookie ec = od.getCookie(EditorCookie.class);
+
+            if (ec != null) {
+                bdoc = (BaseDocument) ec.openDocument();
+            } else {
+                return null;
+            }
             // I should be able to just call tree.getInfo().getText() to get cached
             // copy - but since I'm playing fast and loose with compilationinfos
             // for for example find subclasses (using a singly dummy FileInfo) I need
@@ -261,7 +201,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         sb.append("</b>"); // NOI18N
         sb.append(RefactoringUtils.getHtml(content.subSequence(end, en).toString()));
 
-        CloneableEditorSupport ces = RefactoringUtils.findCloneableEditorSupport(result);
+        CloneableEditorSupport ces = RefactoringUtils.findCloneableEditorSupport(fo);
         PositionRef ref1 = ces.createPositionRef(start, Bias.Forward);
         PositionRef ref2 = ces.createPositionRef(end, Bias.Forward);
         PositionBounds bounds = new PositionBounds(ref1, ref2);

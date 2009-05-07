@@ -70,6 +70,7 @@ public class CssGSFParser extends Parser {
 
     private final CssParser PARSER = new CssParser();
     private CssParserResult lastResult = null;
+    private static final String PARSE_ERROR_KEY = "parse_error";
 
     //string which is substituted instead of any 
     //templating language in case of css embedding
@@ -137,7 +138,7 @@ public class CssGSFParser extends Parser {
         Token lastSuccessToken = pe.currentToken;
         if (lastSuccessToken == null) {
             //The pe was created in response to a TokenManagerError
-            return new DefaultError(pe.getMessage(), pe.getMessage(), null, fo,
+            return new DefaultError(PARSE_ERROR_KEY, pe.getMessage(), pe.getMessage(), fo,
                     0, 0, Severity.ERROR);
         }
         Token errorToken = lastSuccessToken.next;
@@ -145,7 +146,7 @@ public class CssGSFParser extends Parser {
 
         if (!(containsGeneratedCode(lastSuccessToken.image) || containsGeneratedCode(errorToken.image))) {
             String errorMessage = buildErrorMessage(pe);
-            return new DefaultError(errorMessage, errorMessage, null, fo,
+            return new DefaultError(PARSE_ERROR_KEY, errorMessage, errorMessage, fo,
                     from, from, Severity.ERROR);
         }
         return null;
