@@ -47,7 +47,6 @@ import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JDialogOperator;
@@ -79,18 +78,11 @@ public class NodeUtils {
     }
 
     /** Close "Confirm Object Deletion" dialog. **/
-    public static void closeConfirmDialog() {
+    public static void closeConfirmDeleteDialog() {
         // "Confirm Object Deletion"
         String confirmTitle = Bundle.getString("org.openide.explorer.Bundle",
                                                "MSG_ConfirmDeleteObjectTitle"); // NOI18N
         new JDialogOperator(confirmTitle).close();
-    }
-
-    /** Close "Safe Delete" dialog. **/
-    public static void closeSafeDeleteDialog() {
-        // "Safe Delete"
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
-        new NbDialogOperator(safeDeleteTitle).close();
     }
     
     /** Close "Rename" dialog. **/
@@ -103,27 +95,17 @@ public class NodeUtils {
     public static void closeProperties(String objectName) {
         new PropertySheetOperator(objectName).close();
     }
-    
+
     /** Perform delete action and confirm refactoring dialog. */
-    public static void performSafeDelete(Node node) {
-        //TODO: fix this
+    public static void performDelete(Node node) {
+
         new DeleteAction().performAPI(node);
-        // "Safe Delete"
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle",
-                                                             "LBL_SafeDel"); // NOI18N
-        // wait for Safe Delete dialog
-        NbDialogOperator safeDeleteOper = new NbDialogOperator(safeDeleteTitle);
-        try {
-            // wait only 5 seconds
-            safeDeleteOper.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 5000);
-            safeDeleteOper.ok();
-        } catch (TimeoutExpiredException e) {
-            // It is "classpath scanning in progress" dialog, wait until it dismiss,
-            // and then wait for regular Safe Delete dialog
-            safeDeleteOper.waitClosed();
-            safeDeleteOper = new NbDialogOperator(safeDeleteTitle);
-            safeDeleteOper.ok();
-        }
-        safeDeleteOper.waitClosed();
+        // "Confirm Object Deletion"
+        String deleteTitle = Bundle.getString("org.openide.explorer.Bundle",
+                                               "MSG_ConfirmDeleteObjectTitle"); // NOI18N
+
+        NbDialogOperator deleteOper = new NbDialogOperator(deleteTitle);
+        deleteOper.yes();
     }
+
 }

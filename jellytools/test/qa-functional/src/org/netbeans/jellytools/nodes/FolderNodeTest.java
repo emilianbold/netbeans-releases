@@ -53,6 +53,7 @@ import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.testutils.JavaNodeUtils;
 
 /** Test of org.netbeans.jellytools.nodes.FolderNode
  *
@@ -206,7 +207,7 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
         sample2Node.copy();
         sample1Node.paste();
         FolderNode sample21Node = new FolderNode(sample1Node, "sample2_1");  // NOI18N
-        Utils.performSafeDelete(sample21Node);
+        JavaNodeUtils.performSafeDelete(sample21Node);
     }
     
     /** Test cut. */
@@ -214,7 +215,7 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
         Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         FolderNode folderNode = new FolderNode(new SourcePackagesNode("SampleProject"), "sample1"); // NOI18N
         folderNode.cut();
-        Utils.testClipboard(clipboard1);
+        JavaNodeUtils.testClipboard(clipboard1);
     }
     
     /** Test copy. */
@@ -222,28 +223,28 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
         final Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         FolderNode folderNode = new FolderNode(new SourcePackagesNode("SampleProject"), "sample1"); // NOI18N
         folderNode.copy();
-        Utils.testClipboard(clipboard1);
+        JavaNodeUtils.testClipboard(clipboard1);
     }
     
     /** Test delete. */
     public void testDelete() {
         FolderNode folderNode = new FolderNode(new SourcePackagesNode("SampleProject"), "sample1"); // NOI18N
         folderNode.delete();
-        Utils.closeSafeDeleteDialog();
+        JavaNodeUtils.closeSafeDeleteDialog();
     }
     
     /** Test rename */
     public void testRename() {
         FolderNode sample1Node = new FolderNode(new FilesTabOperator().getProjectNode("SampleProject"), "nbproject"); // NOI18N
         sample1Node.rename();
-        Utils.closeRenameDialog();
+        JavaNodeUtils.closeRenameDialog();
     }
     
     /** Test properties */
     public void testProperties() {
         FolderNode sample1Node = new FolderNode(new FilesTabOperator().getProjectNode("SampleProject"), "src|sample1"); // NOI18N
         sample1Node.properties();
-        Utils.closeProperties("sample1"); //NOI18N
+        JavaNodeUtils.closeProperties("sample1"); //NOI18N
     }
     
     /** Test newFile */

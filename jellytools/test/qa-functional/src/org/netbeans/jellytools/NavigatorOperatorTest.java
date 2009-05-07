@@ -39,13 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.jellytools.modules.web;
+package org.netbeans.jellytools;
+
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.web.NavigatorOperator;
+import org.netbeans.jellytools.nodes.JavaProjectRootNode;
+import org.netbeans.jellytools.nodes.Node;
 
 
 /**
@@ -64,24 +65,22 @@ public class NavigatorOperatorTest extends JellyTestCase {
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
-    public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new NewWebProjectTest("createSampleWebProject"));
-        suite.addTest(new NavigatorOperatorTest("testOperator"));
-        return suite;
-         */
+    public static Test suite() {        
         return createModuleTest(NavigatorOperatorTest.class, "testOperator");
     }
     
     public void setUp() throws Exception {
         System.out.println("### "+getName()+" ###");
-        new NewWebProjectTest("").createSampleWebProject();
+        openDataProjects("SampleProject");
+        Node lrNode = new Node(new JavaProjectsTabOperator().getJavaProjectRootNode("SampleProject"),
+                "Source Packages|sample1|SampleClass1.java");
+
+        new OpenAction().perform(lrNode);
     }
     
     /** Invokes and verifies the dialog. */
     public void testOperator() {
-        new EditorOperator("index.jsp").setVisible(true);
+        new EditorOperator("SampleClass1.java").setVisible(true);
         // test INVOKE
         NavigatorOperator operator = NavigatorOperator.invokeNavigator();
         assertNotNull(operator);

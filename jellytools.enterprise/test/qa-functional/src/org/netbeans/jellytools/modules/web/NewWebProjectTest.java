@@ -91,7 +91,9 @@ public class NewWebProjectTest extends J2eeTestCase {
     public void setUp() {
         System.out.println("### "+getName()+" ###");
     }
-            
+
+    //TODO: fix this test
+    // a web server registered in IDE required
     public void createSampleWebProject() throws Exception {
         //getGlassFishV2Node();
         String prjName = "SampleWebApplication";

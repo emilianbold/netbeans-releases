@@ -49,7 +49,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.SaveAsTemplateOperator;
-import org.netbeans.jellytools.testutils.NodeUtils;
+import org.netbeans.jellytools.testutils.JavaNodeUtils;
 
 /** Test of org.netbeans.jellytools.nodes.JavaNode
  *
@@ -123,26 +123,26 @@ public class JavaNodeTest extends JellyTestCase {
     public void testCut() {
         Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         javaNode.cut();
-        NodeUtils.testClipboard(clipboard1);
+        JavaNodeUtils.testClipboard(clipboard1);
     }
     
     /** Test copy */
     public void testCopy() {
         Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         javaNode.copy();
-        NodeUtils.testClipboard(clipboard1);
+        JavaNodeUtils.testClipboard(clipboard1);
     }
     
     /** Test delete */
     public void testDelete() {
         javaNode.delete();
-        NodeUtils.closeSafeDeleteDialog();
+        JavaNodeUtils.closeSafeDeleteDialog();
     }
     
     /** Test properties */
     public void testProperties() {
         javaNode.properties();
-        NodeUtils.closeProperties("SampleClass1.java"); // NOI18N
+        JavaNodeUtils.closeProperties("SampleClass1.java"); // NOI18N
     }
     
     /** Test saveAsTemplate */

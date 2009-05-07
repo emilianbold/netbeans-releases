@@ -64,6 +64,7 @@
                 <package>org.netbeans.jellytools.modules.freeform.nodes</package>
                 <package>org.netbeans.jellytools.modules.java.editor</package>
                 <package>org.netbeans.jellytools.nodes</package>
+                <package>org.netbeans.jellytools.testutils</package>
             </public-packages>
         </data>
     </configuration>

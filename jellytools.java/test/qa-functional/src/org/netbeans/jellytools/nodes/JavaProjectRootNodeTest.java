@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,32 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.jellytools.nodes;
 
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.FindInFilesOperator;
+import org.netbeans.jellytools.JavaProjectsTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 
-/** Test of org.netbeans.jellytools.nodes.ProjectRootNodeTest
+/**
+ *  Test of JavaProjectRootNode. Mostly copied/moved from ProjectRootNodeTest,
+ *  but did not extend ProjectRootNodeTest, because a test library dependency on 
+ *  jellytools module would be neccessary.
  *
+ * @author Vojtech.Sigler@sun.com
  */
-public class ProjectRootNodeTest extends JellyTestCase {
+public class JavaProjectRootNodeTest extends JellyTestCase
+{
 
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
-    public ProjectRootNodeTest(String testName) {
+    public JavaProjectRootNodeTest(String testName) {
         super(testName);
     }
     
     /** method used for explicit testsuite definition */
     public static Test suite() {        
-        return createModuleTest(ProjectRootNodeTest.class, 
+        return createModuleTest(JavaProjectRootNodeTest.class,
                 "testVerifyPopup", "testFind",
                 "testBuildProject", "testCleanProject",
                 "testProperties");
@@ -75,14 +80,14 @@ public class ProjectRootNodeTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
-    private static ProjectRootNode projectRootNode;
+    private static JavaProjectRootNode projectRootNode;
     
     /** Find node. */
     protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
         openDataProjects("SampleProject");
         if(projectRootNode == null) {
-            projectRootNode = ProjectsTabOperator.invoke().getProjectRootNode("SampleProject"); // NOI18N
+            projectRootNode = JavaProjectsTabOperator.invoke().getJavaProjectRootNode("SampleProject"); // NOI18N
         }
     }
     
@@ -97,10 +102,33 @@ public class ProjectRootNodeTest extends JellyTestCase {
         new FindInFilesOperator().close();
     }
     
+    /** Test buildProject */
+    public void testBuildProject() {
+        MainWindowOperator.StatusTextTracer statusTextTracer = MainWindowOperator.getDefault().getStatusTextTracer();
+        statusTextTracer.start();
+        projectRootNode.buildProject();
+        // wait status text "Building SampleProject (jar)"
+        statusTextTracer.waitText("jar", true); // NOI18N
+        // wait status text "Finished building SampleProject (jar).
+        statusTextTracer.waitText("jar", true); // NOI18N
+        statusTextTracer.stop();
+    }
+    
+    /** Test cleanProject*/
+    public void testCleanProject() {
+        MainWindowOperator.StatusTextTracer statusTextTracer = MainWindowOperator.getDefault().getStatusTextTracer();
+        statusTextTracer.start();
+        projectRootNode.cleanProject();
+        // wait status text "Building SampleProject (clean)"
+        statusTextTracer.waitText("clean", true); // NOI18N
+        // wait status text "Finished building SampleProject (clean).
+        statusTextTracer.waitText("clean", true); // NOI18N
+        statusTextTracer.stop();
+    }
+    
     /** Test properties */
     public void testProperties() {
         projectRootNode.properties();
         new NbDialogOperator("SampleProject").close(); //NOI18N
     }
-    
 }
