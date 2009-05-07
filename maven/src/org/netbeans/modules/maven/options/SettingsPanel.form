@@ -27,77 +27,65 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="lblCommandLine" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="lblOptions" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="lblEmbeddedVersion" alignment="0" pref="579" max="32767" attributes="0"/>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Component id="txtCommandLine" pref="473" max="32767" attributes="0"/>
-                                      <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                                      <Component id="btnCommandLine" linkSize="1" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Component id="lblExternalVersion" alignment="0" pref="579" max="32767" attributes="0"/>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="comSource" alignment="0" pref="473" max="32767" attributes="1"/>
-                                          <Component id="txtLocalRepository" alignment="0" pref="473" max="32767" attributes="1"/>
-                                          <Component id="txtOptions" alignment="1" pref="473" max="32767" attributes="0"/>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="cbSkipTests" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Component id="comBinaries" alignment="0" pref="473" max="32767" attributes="1"/>
-                                          <Component id="comJavadoc" alignment="0" pref="473" max="32767" attributes="1"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="btnLocalRepository" linkSize="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="btnOptions" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                              </Group>
-                          </Group>
+                          <Component id="lblCommandLine" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblOptions" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lblEmbeddedVersion" alignment="0" pref="579" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="lblIndex" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="comIndex" pref="479" max="32767" attributes="0"/>
-                                  <Component id="cbSnapshots" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="txtCommandLine" pref="473" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                              <Component id="btnCommandLine" linkSize="1" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="lblExternalVersion" alignment="0" pref="579" max="32767" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="comSource" alignment="0" pref="473" max="32767" attributes="1"/>
+                                  <Component id="txtLocalRepository" alignment="0" pref="473" max="32767" attributes="1"/>
+                                  <Component id="txtOptions" alignment="1" pref="473" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="cbSkipTests" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="comBinaries" alignment="0" pref="473" max="32767" attributes="1"/>
+                                  <Component id="comJavadoc" alignment="0" pref="473" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="btnIndex" linkSize="1" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="btnLocalRepository" linkSize="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="btnOptions" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
                           </Group>
                       </Group>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="lblIndex" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="btnGoals" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="498" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lblLocalRepository" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="lblJavadoc" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="lblBinaries" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="lblSource" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jLabel3" alignment="0" pref="650" max="32767" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="106" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="comIndex" pref="479" max="32767" attributes="0"/>
+                          <Component id="cbSnapshots" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="btnIndex" linkSize="1" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="btnGoals" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblLocalRepository" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lblJavadoc" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblBinaries" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblSource" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel3" alignment="0" pref="638" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="106" max="-2" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -148,7 +136,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jLabel3" min="-2" pref="44" max="-2" attributes="0"/>
-              <EmptySpace pref="117" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
               <Component id="btnGoals" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
