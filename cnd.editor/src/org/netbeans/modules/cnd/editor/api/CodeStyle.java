@@ -59,10 +59,12 @@ public final class CodeStyle {
     private static CodeStyle INSTANCE_CPP;
     private Language language;
     private Preferences preferences;
+    private final boolean useOverrideOptions;
 
-    private CodeStyle(Language language, Preferences preferences) {
+    private CodeStyle(Language language, Preferences preferences, boolean useOverrideOptions) {
         this.language = language;
         this.preferences = preferences;
+        this.useOverrideOptions = useOverrideOptions;
     }
 
     public synchronized static CodeStyle getDefault(Language language) {
@@ -105,24 +107,40 @@ public final class CodeStyle {
     }
 
     private static CodeStyle create(Language language) {
-        return new CodeStyle(language, EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language)));
+        return new CodeStyle(language, EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language)), true);
     }
 
     // General indents ------------------------------------------------
     
+    private boolean isOverideTabIndents(){
+        if (useOverrideOptions) {
+            return EditorOptions.getOverideTabIndents(language);
+        }
+        return true;
+    }
+
     public int indentSize() {
-        return getOption(EditorOptions.indentSize,
-                         EditorOptions.indentSizeDefault);
+        if (isOverideTabIndents()){
+            return getOption(EditorOptions.indentSize,
+                             EditorOptions.indentSizeDefault);
+        }
+        return EditorOptions.getGlobalIndentSize();
     }
 
     public boolean expandTabToSpaces() {
-        return getOption(EditorOptions.expandTabToSpaces,
-                         EditorOptions.expandTabToSpacesDefault);
+        if (isOverideTabIndents()){
+            return getOption(EditorOptions.expandTabToSpaces,
+                             EditorOptions.expandTabToSpacesDefault);
+        }
+        return EditorOptions.getGlobalExpandTabs();
     }
 
     public int getTabSize() {
-        return getOption(EditorOptions.tabSize,
-                         EditorOptions.tabSizeDefault);
+        if (isOverideTabIndents()){
+            return getOption(EditorOptions.tabSize,
+                             EditorOptions.tabSizeDefault);
+        }
+        return EditorOptions.getGlobalTabSize();
     }
 
     public int getFormatStatementContinuationIndent() {
@@ -521,8 +539,8 @@ public final class CodeStyle {
 
     // Communication with non public packages ----------------------------------
     private static class FactoryImpl implements EditorOptions.CodeStyleFactory {
-        public CodeStyle create(Language language, Preferences preferences) {
-            return new CodeStyle(language, preferences);
+        public CodeStyle create(Language language, Preferences preferences, boolean useOverrideOptions) {
+            return new CodeStyle(language, preferences, useOverrideOptions);
         }
         public Preferences getPreferences(CodeStyle codeStyle) {
             return codeStyle.getPreferences();

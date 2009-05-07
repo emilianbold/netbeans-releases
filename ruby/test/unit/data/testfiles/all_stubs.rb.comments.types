@@ -5,7 +5,7 @@
   ==> [Array]
 
 #  stub => $_
-  ==> []
+  ==> [String]
 
 #  stub => 0
   ==> [Fixnum]
@@ -65,7 +65,7 @@
   ==> [Fixnum]
 
 #  stub => 123 Maple, Anytown NC
-  ==> [Anytown NC]
+  ==> []
 
 #  stub => [[1,3,5],[1,3,6],[1,4,5],[1,4,6],
   ==> [Fixnum]
@@ -140,7 +140,7 @@
   ==> [IO]
 
 #  stub => anObject
-  ==> []
+  ==> [Object]
 
 #  stub => a_proc
   ==> [Proc]
@@ -167,16 +167,16 @@
   ==> [Binding]
 
 #  stub => bool
-  ==> []
+  ==> [TrueClass]
 
 #  stub => boolean
-  ==> []
+  ==> [TrueClass]
 
 #  stub => class
   ==> [Class]
 
 #  stub => class_or_module
-  ==> []
+  ==> [Class]
 
 #  stub => [cur_limit, max_limit]
   ==> [Array]
@@ -188,7 +188,7 @@
   ==> [Dir]
 
 #  stub => e
-  ==> []
+  ==> [Enumeration]
 
 #  stub => exception
   ==> [Exception]
@@ -278,7 +278,7 @@
   ==> [IO]
 
 #  stub => Joe Smith
-  ==> [Joe Smith]
+  ==> []
 
 #  stub => key
   ==> []
@@ -326,7 +326,7 @@
   ==> [String]
 
 #  stub => no_method_error
-  ==> []
+  ==> [NoMethodError]
 
 #  stub => num
   ==> [Numeric]
@@ -362,16 +362,16 @@
   ==> [Object, NilClass]
 
 #  stub => old_seed
-  ==> []
+  ==> [Numeric]
 
 #  stub => $_ or nil
-  ==> [NilClass]
+  ==> [String, NilClass]
 
 #  stub => other_big
   ==> [Bignum]
 
 #  stub => outbuf
-  ==> []
+  ==> [String]
 
 #  stub => [ [pid1,status1], ...]
   ==> [Array]
@@ -443,10 +443,10 @@
   ==> [Symbol]
 
 #  stub => system_call_error_subclass
-  ==> []
+  ==> [SystemCallErrorSubclass]
 
 #  stub => system_exit
-  ==> []
+  ==> [SystemExit]
 
 #  stub => thgrp
   ==> [ThreadGroup]

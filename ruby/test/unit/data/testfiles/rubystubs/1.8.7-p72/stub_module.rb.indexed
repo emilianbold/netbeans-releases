@@ -19,7 +19,7 @@ Searchable Keys:
   method : attr_reader(symbol);01;;NilClass;
   method : attr_writer(symbol);01;;NilClass;
   method : autoload(name,filename);01;;NilClass;
-  method : autoload?(name);01;;String|NilClass;
+  method : autoload?(name);01;;TrueClass|FalseClass;
   method : class_eval(string,filename,lineno);c1;;Object;
   method : class_eval(string,filename,lineno);c1;;Object;
   method : class_exec(arg);41;var;Object;

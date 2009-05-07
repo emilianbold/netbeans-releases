@@ -250,7 +250,7 @@ public class TypeInfo {
      * @param info The string to check
      * @return The index (if found) or -1
      */
-    private int getSuperclassColon(String info) {
+    private static int getSuperclassColon(String info) {
         char lastc = 0;
         char nextc;
         char ch;
@@ -268,7 +268,7 @@ public class TypeInfo {
         return -1;
     }
     
-    private Map<String, Object>  addSuperclassEntries(Map<String, Object> m, String info) {
+    private static Map<String, Object>  addSuperclassEntries(Map<String, Object> m, String info) {
         char c;
         int pos;
         int start = 0;
@@ -306,7 +306,7 @@ public class TypeInfo {
         return m;
     }
         
-    private Map<String, Object> parseFields(Map<String, Object> m, String name, String info) {
+    private static Map<String, Object> parseFields(Map<String, Object> m, String name, String info) {
         if (info != null) {
             if (m.get(NAME) == null) { // NOI18N
                 m.put( NAME, name); // NOI18N
@@ -342,7 +342,7 @@ public class TypeInfo {
         return m;
     }
     
-    private String shortenType(String type) {
+    private static String shortenType(String type) {
         if (type.startsWith("class ")) { // NOI18N
             return type.charAt(6) == '{' ? "class {...}" : type.substring(6); // NOI18N
         } else if (type.startsWith("struct ")) { // NOI18N
@@ -361,7 +361,7 @@ public class TypeInfo {
      * @param info The string to check for a non-anonymous class/struct/union definition
      * @returns True for a non-anonymous class/struct/union definition
      */
-    private boolean isNonAnonymousCSUDef(String[] field) {
+    private static boolean isNonAnonymousCSUDef(String[] field) {
         String info = field[0];
         if (!field[1].startsWith(ANONYMOUS_PREFIX) && // NOI18N
                 (info.startsWith("class {") || info.startsWith("struct {") || info.startsWith("union {"))) { // NOI18N
