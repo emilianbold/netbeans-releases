@@ -71,8 +71,8 @@ public class MethodCreationTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-//        suite.addTestSuite(MethodCreationTest.class);
-        suite.addTest(new MethodCreationTest("testAddFirst"));
+        suite.addTestSuite(MethodCreationTest.class);
+//        suite.addTest(new MethodCreationTest("testAddFirst"));
 //        suite.addTest(new MethodCreationTest(""));
 //        suite.addTest(new MethodCreationTest(""));
 //        suite.addTest(new MethodCreationTest(""));
@@ -106,9 +106,8 @@ public class MethodCreationTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n\n" +
             "import java.util.*;\n\n" +
             "public class Test {\n\n" +
-            "public <T> void taragui(List menta, T carqueja, int dulce, boolean compuesta,\n" +
-            "                        boolean logrando) throws IOException {\n" +
-            "}\n" +
+            "    public <T> void taragui(List menta, T carqueja, int dulce, boolean compuesta, boolean logrando) throws IOException {\n" +
+            "    }\n" +
             "}\n";
 
         process(
@@ -134,6 +133,70 @@ public class MethodCreationTest extends GeneratorTestMDRCompat {
                                 Collections.<ExpressionTree>singletonList(make.Identifier("IOException")), // throws
                                 make.Block(Collections.<StatementTree>emptyList(), false),
                                 null // default value - not applicable
+                        ); 
+                        ClassTree copy = make.addClassMember(
+                            node, newMethod
+                        );
+                        this.copy.rewrite(node, copy);
+                    }
+                    return null;
+                }
+            }
+        
+        );
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /*
+     * create the method:
+     *
+     * public <T> void taragui(List menta, Object carqueja, int dulce, boolean compuesta) throws IOException {
+     * }
+     */
+    public void testAddFirstWithVarArgs() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.*;\n\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.*;\n\n" +
+            "public class Test {\n\n" +
+            "    public <T> void taragui(List menta, T carqueja, int dulce, boolean compuesta, String... strs) throws IOException {\n" +
+            "    }\n" +
+            "}\n";
+
+        process(
+            new Transformer<Void, Object>() {
+            
+                @Override
+                public Void visitClass(ClassTree node, Object p) {
+                    super.visitClass(node, p);
+                    if ("Test".contentEquals(node.getSimpleName())) {
+                        List<VariableTree> parametersList = new ArrayList<VariableTree>(5);
+                        ModifiersTree mods = make.Modifiers(EnumSet.noneOf(Modifier.class));
+                        parametersList.add(make.Variable(mods, "menta", make.Identifier("List"), null));
+                        parametersList.add(make.Variable(mods, "carqueja", make.Identifier("T"), null));
+                        parametersList.add(make.Variable(mods, "dulce", make.PrimitiveType(TypeKind.INT), null));
+                        parametersList.add(make.Variable(mods, "compuesta", make.PrimitiveType(TypeKind.BOOLEAN), null));
+//                        mods = make.Modifiers(EnumSet.noneOf(Modifier.class));
+                        parametersList.add(make.Variable(mods, "strs", make.ArrayType(make.Identifier("String")), null));                        
+//                        parametersList.add(make.Variable(mods, "logrando", make.PrimitiveType(TypeKind.BOOLEAN), null));
+                        MethodTree newMethod = make.Method(
+                                make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)), // modifiers - public
+                                "taragui",  // name - targui
+                                make.PrimitiveType(TypeKind.VOID), // return type - void
+                                Collections.<TypeParameterTree>singletonList(make.TypeParameter("T", Collections.<ExpressionTree>emptyList())), // type parameter - <T>
+                                parametersList, // parameters
+                                Collections.<ExpressionTree>singletonList(make.Identifier("IOException")), // throws
+                                make.Block(Collections.<StatementTree>emptyList(), false),
+                                null, // default value - not applicable
+                                true
                         ); 
                         ClassTree copy = make.addClassMember(
                             node, newMethod
