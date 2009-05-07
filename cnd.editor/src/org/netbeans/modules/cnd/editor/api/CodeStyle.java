@@ -56,6 +56,7 @@ public final class CodeStyle {
     }
 
     private static CodeStyle INSTANCE_C;
+    private static CodeStyle INSTANCE_H;
     private static CodeStyle INSTANCE_CPP;
     private Language language;
     private Preferences preferences;
@@ -75,6 +76,12 @@ public final class CodeStyle {
                     setSimplePreferences(language, INSTANCE_C);
                 }
                 return INSTANCE_C;
+            case HEADER:
+                if (INSTANCE_H == null) {
+                    INSTANCE_H = create(language);
+                    setSimplePreferences(language, INSTANCE_H);
+                }
+                return INSTANCE_H;
             case CPP:
             default:
                 if (INSTANCE_CPP == null) {
@@ -101,6 +108,8 @@ public final class CodeStyle {
         } else {
             if (mimeType.equals(MIMENames.C_MIME_TYPE)) {
                 return getDefault(Language.C);
+            } else if (mimeType.equals(MIMENames.HEADER_MIME_TYPE)) {
+                return getDefault(Language.HEADER);
             }
         }
         return getDefault(Language.CPP);
@@ -504,10 +513,16 @@ public final class CodeStyle {
         this.preferences = preferences;
     }
 
+    @Override
+    public String toString() {
+        return "Code style for language "+language+". Preferences "+preferences; // NOI18N
+    }
+
     // Nested classes ----------------------------------------------------------
     public enum Language {
         C,
-        CPP;
+        CPP,
+        HEADER;
         
         @Override
         public String toString() {

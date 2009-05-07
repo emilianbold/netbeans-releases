@@ -41,10 +41,13 @@ package org.netbeans.modules.cnd.editor.options;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -60,7 +63,7 @@ import org.openide.util.NbPreferences;
  *
  * @author Alexander Simon
  */
-public class EditorOptions {   
+public class EditorOptions {
     public static CodeStyleFactory codeStyleFactory;
     static {
         Class c = CodeStyle.class;
@@ -73,6 +76,8 @@ public class EditorOptions {
 
     private EditorOptions() {
     }
+
+    private static boolean TRACE = true;
     //indents
     /**
      * How many spaces should be added to the statement that continues
@@ -84,7 +89,7 @@ public class EditorOptions {
     public static final String constructorListContinuationIndent = "constructorListContinuationIndent"; // NOI18N 
     public static final int constructorListContinuationIndentDefault = 0;
 
-    public static final String overrideTabIndents = "overrideTabIndents"; // NOI18N
+    public static final String overrideTabIndents = "overrideTabIndents"; //NOI18N
     public static final boolean overrideTabIndentsDefault = true;
 
     public static final String indentSize = "indentSize"; // NOI18N
@@ -557,6 +562,8 @@ public class EditorOptions {
         switch(language){
             case C:
                 return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("C_Style", DEFAULT_PROFILE); // NOI18N
+            case HEADER:
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("H_Style", DEFAULT_PROFILE); // NOI18N
             case CPP:
             default:
                 return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("CPP_Style", DEFAULT_PROFILE); // NOI18N
@@ -567,6 +574,9 @@ public class EditorOptions {
         switch(language){
             case C:
                 NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("C_Style", style); // NOI18N
+                break;
+            case HEADER:
+                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("H_Style", style); // NOI18N
                 break;
             case CPP:
             default:
@@ -588,6 +598,8 @@ public class EditorOptions {
         switch(language){
             case C:
                 return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get(style+"_Style_Name", style); // NOI18N
+            case HEADER:
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get(style+"_Style_Name", style); // NOI18N
             case CPP:
             default:
                 return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get(style+"_Style_Name", style); // NOI18N
@@ -598,6 +610,8 @@ public class EditorOptions {
         switch(language){
             case C:
                 return NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").node(profileId); // NOI18N
+            case HEADER:
+                return NbPreferences.forModule(CodeStyle.class).node("H_CodeStyles").node(profileId); // NOI18N
             case CPP:
             default:
                 return NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").node(profileId); // NOI18N
@@ -617,6 +631,9 @@ public class EditorOptions {
             case C:
                 styles = NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").get("List_Of_Styles", def.toString()); // NOI18N
                 break;
+            case HEADER:
+                styles = NbPreferences.forModule(CodeStyle.class).node("H_CodeStyles").get("List_Of_Styles", def.toString()); // NOI18N
+                break;
             case CPP:
             default:
                 styles = NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").get("List_Of_Styles", def.toString()); // NOI18N
@@ -634,6 +651,9 @@ public class EditorOptions {
         switch(language){
             case C:
                 NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").put("List_Of_Styles", list); // NOI18N
+                break;
+            case HEADER:
+                NbPreferences.forModule(CodeStyle.class).node("H_CodeStyles").put("List_Of_Styles", list); // NOI18N
                 break;
             case CPP:
             default:
@@ -687,10 +707,17 @@ public class EditorOptions {
 
     public static boolean getOverideTabIndents(CodeStyle.Language language) {
         Preferences p;
-        if (CodeStyle.Language.C == language) {
-            p = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
-        } else {
-            p = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
+        switch (language){
+            case C:
+                p = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
+                break;
+            case HEADER:
+                p = MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class);
+                break;
+            case CPP:
+            default:
+                p = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
+                break;
         }
         if (p != null) {
             return p.getBoolean(overrideTabIndents, overrideTabIndentsDefault);
@@ -699,26 +726,62 @@ public class EditorOptions {
     }
 
     public static void setOverideTabIndents(CodeStyle.Language language, boolean override) {
-        Preferences p;
-        if (CodeStyle.Language.C == language) {
-            p = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
-        } else {
-            p = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
+        switch (language){
+            case C:
+                setOverideTabIndents(MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class), override);
+                break;
+            case HEADER:
+                setOverideTabIndents(MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class), override);
+                break;
+            case CPP:
+            default:
+                setOverideTabIndents(MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class), override);
+                break;
         }
+    }
+
+    private static void setOverideTabIndents(Preferences p, boolean override){
         if (p != null) {
             p.putBoolean(overrideTabIndents, override);
         }
     }
 
     public static void updateSimplePreferences(CodeStyle.Language language, CodeStyle codeStyle) {
-        Preferences p;
-        if (CodeStyle.Language.C == language) {
-            p = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
-        } else {
-            p = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
+        switch (language){
+            case C:
+                updateSimplePreferences(MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class), codeStyle);
+                break;
+            case HEADER:
+                updateSimplePreferences(MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class), codeStyle);
+                break;
+            case CPP:
+            default:
+                updateSimplePreferences(MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class), codeStyle);
+                break;
         }
+    }
+
+    private static Set<String> set = new HashSet<String>();
+    private static void updateSimplePreferences(Preferences p, CodeStyle codeStyle) {
         if (p != null) {
-            if (p.getBoolean(overrideTabIndents, overrideTabIndentsDefault)){
+            if (TRACE) {
+                if (!set.contains(p.absolutePath())) {
+                    set.add(p.absolutePath());
+                    p.addPreferenceChangeListener(new PreferenceChangeListener() {
+                        public void preferenceChange(PreferenceChangeEvent evt) {
+                            System.err.println("Changed "+evt.getKey()+"="+evt.getNewValue()+" in preferences "+evt.getNode().absolutePath());
+                        }
+                    });
+                }
+            }
+            if (p.getBoolean(overrideTabIndents, overrideTabIndentsDefault)) {
+                if (TRACE) {
+                    System.err.println("Set language "+codeStyle+" preferences from CND storage");
+                    System.err.println(SimpleValueNames.TAB_SIZE+"="+codeStyle.getTabSize());
+                    System.err.println(SimpleValueNames.SPACES_PER_TAB+"="+codeStyle.getTabSize());
+                    System.err.println(SimpleValueNames.EXPAND_TABS+"="+codeStyle.expandTabToSpaces());
+                    System.err.println(SimpleValueNames.INDENT_SHIFT_WIDTH+"="+codeStyle.indentSize());
+                }
                 p.putInt(SimpleValueNames.TAB_SIZE, codeStyle.getTabSize());
                 p.putInt(SimpleValueNames.SPACES_PER_TAB, codeStyle.getTabSize());
                 p.putBoolean(SimpleValueNames.EXPAND_TABS, codeStyle.expandTabToSpaces());
@@ -726,10 +789,17 @@ public class EditorOptions {
             } else {
                 Preferences global = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
                 if (global != null) {
-                    p.putInt(SimpleValueNames.TAB_SIZE, global.getInt(SimpleValueNames.TAB_SIZE, tabSizeDefault));
-                    p.putInt(SimpleValueNames.SPACES_PER_TAB, global.getInt(SimpleValueNames.SPACES_PER_TAB, tabSizeDefault));
-                    p.putBoolean(SimpleValueNames.EXPAND_TABS, global.getBoolean(SimpleValueNames.EXPAND_TABS, expandTabToSpacesDefault));
-                    p.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, global.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, indentSizeDefault));
+                    if (TRACE) {
+                        System.err.println("Set language "+codeStyle+" preferences from Global storage");
+                        System.err.println(SimpleValueNames.TAB_SIZE+"="+global.getInt(SimpleValueNames.TAB_SIZE, tabSizeDefault));
+                        System.err.println(SimpleValueNames.SPACES_PER_TAB+"="+global.getInt(SimpleValueNames.SPACES_PER_TAB, tabSizeDefault));
+                        System.err.println(SimpleValueNames.EXPAND_TABS+"="+global.getBoolean(SimpleValueNames.EXPAND_TABS, expandTabToSpacesDefault));
+                        System.err.println(SimpleValueNames.INDENT_SHIFT_WIDTH+"="+global.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, indentSizeDefault));
+                    }
+                    p.remove(SimpleValueNames.TAB_SIZE);
+                    p.remove(SimpleValueNames.SPACES_PER_TAB);
+                    p.remove(SimpleValueNames.EXPAND_TABS);
+                    p.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
                 }
             }
         }
