@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -71,6 +72,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -356,10 +358,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         
         if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot(fo);
-
             if (root != null) {
                 scheduleWork(new FileListWork(root, Collections.singleton(fo), false, false), false);
                 processed = true;
+            } else {
+                root = getOwningBinaryRoot(fo);
+                if (root != null) {
+                    scheduleWork(new BinaryWork(root), false);
+                    processed = true;
+                }
             }
         }
 
@@ -387,6 +394,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             if (root != null) {
                 scheduleWork(new FileListWork(root, Collections.singleton(fo), false, false), false);
                 processed = true;
+            } else {
+                root = getOwningBinaryRoot(fo);
+                if (root != null) {
+                    scheduleWork(new BinaryWork(root), false);
+                    processed = true;
+                }
             }
         }
 
@@ -401,16 +414,26 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return;
         }
 
-        final FileObject fo = fe.getFile();
-        final URL root = getOwningSourceRoot (fo);
         boolean processed = false;
+        final FileObject fo = fe.getFile();
+        URL root = null;
 
-        if (root != null &&  VisibilityQuery.getDefault().isVisible(fo) && fo.isData()
-            /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
-            String relativePath = FileUtil.getRelativePath(URLMapper.findFileObject(root), fo);
-            assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
-            scheduleWork(new DeleteWork(root, Collections.singleton(relativePath)), false);
-            processed = true;
+        if (fo != null && VisibilityQuery.getDefault().isVisible(fo)) {
+            root = getOwningSourceRoot (fo);
+            if (root != null) {
+                if (fo.isData() /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
+                    String relativePath = FileUtil.getRelativePath(URLMapper.findFileObject(root), fo);
+                    assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
+                    scheduleWork(new DeleteWork(root, Collections.singleton(relativePath)), false);
+                    processed = true;
+                }
+            } else {
+                root = getOwningBinaryRoot(fo);
+                if (root != null) {
+                    scheduleWork(new BinaryWork(root), false);
+                    processed = true;
+                }
+            }
         }
         
         if (LOGGER.isLoggable(Level.FINE)) {
@@ -450,6 +473,22 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }).schedule(FILE_LOCKS_DELAY);
             }
             processed = true;
+        } else {
+            URL binaryRoot = getOwningBinaryRoot(newFile);
+            if (binaryRoot != null) {
+                final File parentFile = FileUtil.toFile(newFile.getParent());
+                if (parentFile != null) {
+                    try {
+                        URL oldBinaryRoot = new File (parentFile, oldNameExt).toURI().toURL();
+                        scheduleWork(new BinaryWork(oldBinaryRoot), false);
+                    } catch (MalformedURLException mue) {
+                        LOGGER.log(Level.WARNING, null, mue);
+                    }
+                }
+
+                scheduleWork(new BinaryWork(binaryRoot), false);
+                processed = true;
+            }
         }
 
         if (LOGGER.isLoggable(Level.FINE)) {
@@ -734,6 +773,38 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         return null;
     }
 
+    private URL getOwningBinaryRoot(final FileObject fo) {
+        if (fo == null) {
+            return null;
+        }
+        String foPath;
+        try {
+            foPath = fo.getURL().getPath();
+        } catch (FileStateInvalidException fsie) {
+            LOGGER.log(Level.WARNING, null, fsie);
+            return null;
+        }
+
+        List<URL> clone = new ArrayList<URL>(this.scannedBinaries);
+        for (URL root : clone) {
+            URL fileURL = FileUtil.getArchiveFile(root);
+            boolean archive = true;
+            if (fileURL == null) {
+                fileURL = root;
+                archive = false;
+            }
+            String filePath = fileURL.getPath();
+            if (filePath.equals(foPath)) {
+                return root;
+            }
+            if (!archive && foPath.startsWith(filePath)) {
+                return root;
+            }
+        }
+
+        return null;
+    }
+
     private boolean authorize(FileEvent event) {
         Collection<? extends IndexingActivityInterceptor> interceptors = indexingActivityInterceptors.allInstances();
         for(IndexingActivityInterceptor i : interceptors) {
@@ -984,6 +1055,48 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
         }
 
+        protected final void indexBinary(URL root) throws IOException {
+            LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
+
+            List<Context> transactionContexts = new LinkedList<Context>();
+            try {
+                final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+//                String mimeType = ""; //NOI18N
+//
+//                final FileObject rootFo = URLMapper.findFileObject(root);
+//                if (rootFo != null) {
+//                    final File archiveOrDir = FileUtil.archiveOrDirForURL(root);
+//                    final FileObject archiveOrDirFo = archiveOrDir == null ? null : FileUtil.toFileObject(archiveOrDir);
+//                    if (archiveOrDirFo != null && archiveOrDirFo.isData()) {
+//                        mimeType = archiveOrDirFo.getMIMEType();
+//                    }
+//                }
+
+                final Collection<? extends BinaryIndexerFactory> factories = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(BinaryIndexerFactory.class);
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.fine("Using BinaryIndexerFactories: " + factories); //NOI18N
+                }
+
+                for(BinaryIndexerFactory f : factories) {
+                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false);
+                    transactionContexts.add(ctx);
+
+                    final BinaryIndexer indexer = f.createIndexer();
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Indexing binary " + root + " using " + indexer); //NOI18N
+                    }
+                    SPIAccessor.getInstance().index(indexer, ctx);
+                }
+            } finally {
+                for(Context ctx : transactionContexts) {
+                    IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx);
+                    if (support != null) {
+                        SupportAccessor.getInstance().store(support);
+                    }
+                }
+            }
+        }
+
         private void indexEmbedding(final FileObject cache, final URL rootURL, Iterable<? extends Indexable> files, final List<Context> transactionContexts, int scannedFilesCount, int totalFilesCount) throws IOException {
             // XXX: Replace with multi source when done
             for (final Indexable dirty : files) {
@@ -1192,6 +1305,25 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return false;
         }
     } // End of FileListWork
+
+    private static final class BinaryWork extends Work {
+
+        private final URL root;
+
+        public BinaryWork(URL root) {
+            super(false, false, true);
+            this.root = root;
+        }
+
+        @Override
+        protected void getDone() {
+            try {
+                indexBinary(root);
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, null, ioe);
+            }
+        }
+    }
 
     private static final class DeleteWork extends Work {
 
@@ -1523,7 +1655,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 final long tmStart = System.currentTimeMillis();
                 try {
                     updateProgress(binary);
-                    scanBinary (binary);
+                    indexBinary (binary);
                     ctx.scannedBinaries.add(binary);
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
@@ -1538,48 +1670,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
             LOGGER.fine(String.format("Complete indexing of binary roots took: %d ms", complete)); //NOI18N
             TEST_LOGGER.log(Level.FINEST, "scanBinary", ctx.newBinariesToScan);       //NOI18N
-        }
-
-        private void scanBinary(URL root) throws IOException {
-            LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
-
-            List<Context> transactionContexts = new LinkedList<Context>();
-            try {
-                final FileObject rootFo = URLMapper.findFileObject(root);
-                if (rootFo != null) {
-                    final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                    String mimeType = ""; //NOI18N
-
-                    final File archiveOrDir = FileUtil.archiveOrDirForURL(root);
-                    final FileObject archiveOrDirFo = archiveOrDir == null ? null : FileUtil.toFileObject(archiveOrDir);
-                    if (archiveOrDirFo != null && archiveOrDirFo.isData()) {
-                        mimeType = archiveOrDirFo.getMIMEType();
-                    }
-
-                    final Collection<? extends BinaryIndexerFactory> factories = MimeLookup.getLookup(mimeType).lookupAll(BinaryIndexerFactory.class);
-                    if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.fine("Using CustomIndexerFactories(" + mimeType + "): " + factories); //NOI18N
-                    }
-
-                    for(BinaryIndexerFactory f : factories) {
-                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false);
-                        transactionContexts.add(ctx);
-
-                        final BinaryIndexer indexer = f.createIndexer();
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine("Indexing binary " + root + " using " + indexer); //NOI18N
-                        }
-                        SPIAccessor.getInstance().index(indexer, ctx);
-                    }
-                }
-            } finally {
-                for(Context ctx : transactionContexts) {
-                    IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx);
-                    if (support != null) {
-                        SupportAccessor.getInstance().store(support);
-                    }
-                }
-            }
         }
 
         private void scanSources  (final DependenciesContext ctx) {
