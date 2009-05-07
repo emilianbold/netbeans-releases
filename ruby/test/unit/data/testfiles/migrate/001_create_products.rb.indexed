@@ -17,7 +17,6 @@ Not Searchable Keys:
 Document 1
 Searchable Keys:
   dbtable : products
-  require : 001_create_products
 
 Not Searchable Keys:
   dbcolumn : description;text

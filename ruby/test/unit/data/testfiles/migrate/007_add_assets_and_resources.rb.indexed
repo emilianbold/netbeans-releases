@@ -8,6 +8,7 @@ Searchable Keys:
   fqn : AddAssetsAndResources
   method : down|STATIC|
   method : up|STATIC|
+  require : 007_add_assets_and_resources
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -19,6 +20,7 @@ Searchable Keys:
   class-ig : oldtemplate
   extends : ActiveRecord::Base
   fqn : AddAssetsAndResources::OldTemplate
+  require : 007_add_assets_and_resources
 
 Not Searchable Keys:
   attrs : |CLASS|
@@ -31,6 +33,7 @@ Searchable Keys:
   class-ig : template
   extends : ActiveRecord::Base
   fqn : AddAssetsAndResources::Template
+  require : 007_add_assets_and_resources
 
 Not Searchable Keys:
   attrs : |CLASS|
