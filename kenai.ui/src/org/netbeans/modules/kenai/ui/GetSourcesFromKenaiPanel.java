@@ -61,7 +61,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -116,6 +115,18 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
         updatePanelUI();
         updateRepoPath();
+
+        Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
+                    if (Kenai.getDefault().getPasswordAuthentication() != null) {
+                        loginButton.setEnabled(false);
+                    } else {
+                        loginButton.setEnabled(true);
+                    }
+                }
+            }
+        });
 
     }
 
@@ -366,7 +377,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         KenaiSearchPanel browsePanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.BROWSE, false);
         String title = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                 "GetSourcesFromKenaiPanel.BrowseKenaiProjectsTitle");
-        DialogDescriptor dialogDesc = new DialogDescriptor(browsePanel, title, true, null);
+        DialogDescriptor dialogDesc = new KenaiDialogDescriptor(browsePanel, title, true, null);
 
         Object option = DialogDisplayer.getDefault().notify(dialogDesc);
 
@@ -595,8 +606,10 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
         if (passwdAuth != null) {
             setUsername(passwdAuth.getUserName());
+            loginButton.setEnabled(false);
         } else {
             setUsername(null);
+            loginButton.setEnabled(true);
         }
     }
 

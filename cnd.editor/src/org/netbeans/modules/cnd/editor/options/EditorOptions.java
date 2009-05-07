@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
@@ -83,13 +84,19 @@ public class EditorOptions {
     public static final String constructorListContinuationIndent = "constructorListContinuationIndent"; // NOI18N 
     public static final int constructorListContinuationIndentDefault = 0;
 
-    public static final String indentSize = "indentSize"; // NOI18N 
+    public static final String overrideTabIndents = "overrideTabIndents"; // NOI18N
+    public static final boolean overrideTabIndentsDefault = true;
+
+    public static final String indentSize = "indentSize"; // NOI18N
+    //public static final String indentSize = SimpleValueNames.INDENT_SHIFT_WIDTH;
     public static final int indentSizeDefault = 4;
 
-    public static final String expandTabToSpaces = "expandTabToSpaces"; // NOI18N 
+    public static final String expandTabToSpaces = "expandTabToSpaces"; // NOI18N
+    //public static final String expandTabToSpaces = SimpleValueNames.EXPAND_TABS;
     public static final boolean expandTabToSpacesDefault = true;
 
-    public static final String tabSize = "tabSize"; // NOI18N 
+    public static final String tabSize = "tabSize"; // NOI18N
+    //public static final String tabSize = SimpleValueNames.TAB_SIZE;
     public static final int tabSizeDefault = 8;
 
     /**
@@ -635,9 +642,9 @@ public class EditorOptions {
         }
     }
 
-    public static CodeStyle createCodeStyle(CodeStyle.Language language, Preferences p) {
+    public static CodeStyle createCodeStyle(CodeStyle.Language language, Preferences p, boolean useOverrideOption) {
         CodeStyle.getDefault(language);
-        return codeStyleFactory.create(language, p);
+        return codeStyleFactory.create(language, p, useOverrideOption);
     }
 
     public static Preferences getPreferences(CodeStyle codeStyle){
@@ -678,6 +685,31 @@ public class EditorOptions {
         codeStyleFactory.setPreferences(codeStyle, preferences);
     }
 
+    public static boolean getOverideTabIndents(CodeStyle.Language language) {
+        Preferences p;
+        if (CodeStyle.Language.C == language) {
+            p = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
+        } else {
+            p = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
+        }
+        if (p != null) {
+            return p.getBoolean(overrideTabIndents, overrideTabIndentsDefault);
+        }
+        return overrideTabIndentsDefault;
+    }
+
+    public static void setOverideTabIndents(CodeStyle.Language language, boolean override) {
+        Preferences p;
+        if (CodeStyle.Language.C == language) {
+            p = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
+        } else {
+            p = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
+        }
+        if (p != null) {
+            p.putBoolean(overrideTabIndents, override);
+        }
+    }
+
     public static void updateSimplePreferences(CodeStyle.Language language, CodeStyle codeStyle) {
         Preferences p;
         if (CodeStyle.Language.C == language) {
@@ -686,13 +718,49 @@ public class EditorOptions {
             p = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
         }
         if (p != null) {
-            p.putInt(SimpleValueNames.TAB_SIZE, codeStyle.getTabSize());
-            p.putBoolean(SimpleValueNames.EXPAND_TABS, codeStyle.expandTabToSpaces());
+            if (p.getBoolean(overrideTabIndents, overrideTabIndentsDefault)){
+                p.putInt(SimpleValueNames.TAB_SIZE, codeStyle.getTabSize());
+                p.putInt(SimpleValueNames.SPACES_PER_TAB, codeStyle.getTabSize());
+                p.putBoolean(SimpleValueNames.EXPAND_TABS, codeStyle.expandTabToSpaces());
+                p.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, codeStyle.indentSize());
+            } else {
+                Preferences global = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+                if (global != null) {
+                    p.putInt(SimpleValueNames.TAB_SIZE, global.getInt(SimpleValueNames.TAB_SIZE, tabSizeDefault));
+                    p.putInt(SimpleValueNames.SPACES_PER_TAB, global.getInt(SimpleValueNames.SPACES_PER_TAB, tabSizeDefault));
+                    p.putBoolean(SimpleValueNames.EXPAND_TABS, global.getBoolean(SimpleValueNames.EXPAND_TABS, expandTabToSpacesDefault));
+                    p.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, global.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, indentSizeDefault));
+                }
+            }
         }
     }
 
+    public static int getGlobalTabSize(){
+        Preferences global = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        if (global != null) {
+            return global.getInt(SimpleValueNames.TAB_SIZE, tabSizeDefault);
+        }
+        return tabSizeDefault;
+    }
+
+    public static boolean getGlobalExpandTabs(){
+        Preferences global = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        if (global != null) {
+            return global.getBoolean(SimpleValueNames.EXPAND_TABS, expandTabToSpacesDefault);
+        }
+        return expandTabToSpacesDefault;
+    }
+
+    public static int getGlobalIndentSize(){
+        Preferences global = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        if (global != null) {
+            return global.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, indentSizeDefault);
+        }
+        return indentSizeDefault;
+    }
+
     public static interface CodeStyleFactory {
-        CodeStyle create(CodeStyle.Language language, Preferences preferences);
+        CodeStyle create(CodeStyle.Language language, Preferences preferences, boolean useOverrideOption);
         Preferences getPreferences(CodeStyle codeStyle);
         void setPreferences(CodeStyle codeStyle, Preferences preferences);
     }

@@ -37,23 +37,57 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.ui;
+package org.netbeans.modules.cnd.debugger.gdb.models;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
+import org.netbeans.modules.cnd.debugger.gdb.Variable;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
-public final class AutosAction extends AbstractAction {
-    public AutosAction() {
-        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
-        super(NbBundle.getMessage(RegistersAction.class, "CTL_AutosAction"));
-        //putValue(SMALL_ICON, ImageUtilities.loadImageIcon(RegistersTopComponent.ICON_PATH, true));
+/**
+ *
+ * @author Egor Ushakov
+ */
+public class ValuePresenter {
+    private ValuePresenter() {
     }
 
-    public void actionPerformed(ActionEvent evt) {
-        TopComponent win = AutosTopComponent.findInstance();
-        win.open();
-        win.requestActive();
+    private static Presenter[] presenters = new Presenter[]{new StdStringPresenter()};
+
+    public static String getValue(Variable var) {
+        for (Presenter vp : presenters) {
+            if (vp.accepts(var)) {
+                return vp.present(var);
+            }
+        }
+        return var.getValue();
+    }
+
+    private static interface Presenter {
+        boolean accepts(Variable var);
+        String present(Variable var);
+    }
+
+    private static class StdStringPresenter implements Presenter {
+        private static final String VALUE_PREFIX = "_M_p"; // NOI18N
+        private static final String TYPE_NAME = "string"; // NOI18N
+
+        public boolean accepts(Variable var) {
+            String type = var.getType();
+            String value = var.getValue();
+            return TYPE_NAME.equals(type) && value != null && value.contains(VALUE_PREFIX);
+        }
+
+        public String present(Variable var) {
+            String value = var.getValue();
+            int pos = value.indexOf(VALUE_PREFIX);
+            assert pos > 0;
+            pos = value.indexOf('"', pos);
+            if (pos > 0) {
+                int end = GdbUtils.findEndOfString(value, pos+1);
+                if (end != -1) {
+                    return value.substring(pos, end+1);
+                }
+            }
+            return value;
+        }
     }
 }

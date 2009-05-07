@@ -55,6 +55,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
@@ -99,22 +101,20 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * TODO:
- * - all text from bundles
- * - all possible error states and messages
  *
  * @author Milan Kubec
  */
 public class NameAndLicenseWizardPanelGUI extends JPanel {
-    private RequestProcessor errorChecker = new RequestProcessor("Error Checker");
+    
+    private RequestProcessor errorChecker = new RequestProcessor("Error Checker"); // NOI18N
 
     private WizardDescriptor settings;
 
     private NameAndLicenseWizardPanel panel;
     private Pattern prjNamePattern;
 
-    private static final String PRJ_NAME_REGEXP = "[a-z]{1}[a-z0-9-]+";
-    private static final String PRJ_NAME_PREVIEW_PREFIX = "http://kenai.com/projects/";
+    private static final String PRJ_NAME_REGEXP = "[a-z]{1}[a-z0-9-]+"; // NOI18N
+    private static final String PRJ_NAME_PREVIEW_PREFIX = "http://kenai.com/projects/"; // NOI18N
 
     private static final String EMPTY_ELEMENT = "";
 
@@ -175,6 +175,19 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         setupLicensesListModel();
         setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
+
+        Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
+                    if (Kenai.getDefault().getPasswordAuthentication() != null) {
+                        loginButton.setEnabled(false);
+                    } else {
+                        loginButton.setEnabled(true);
+                    }
+                }
+            }
+        });
+
     }
 
     private void setAutoCommit(boolean autoCommit) {
@@ -839,8 +852,10 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
         if (passwdAuth != null) {
             setUsername(passwdAuth.getUserName());
+            loginButton.setEnabled(false);
         } else {
             setUsername(null);
+            loginButton.setEnabled(true);
         }
     }
 
