@@ -160,7 +160,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     //#158083 more caching to satisfy the classloading gods..
     private List<? extends IndexCreator> CREATORS;
-    private List<? extends IndexCreator> getIndexCreators() {
+    private List<? extends IndexCreator> getLocalRepoIndexCreators() {
         if (CREATORS == null) {
             CREATORS = Arrays.asList(
                 new MinimalArtifactInfoIndexCreator(),
@@ -274,7 +274,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             loc,
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
                             info.isRemoteDownloadable() ? info.getIndexUpdateUrl() : null, // index update url
-                            getIndexCreators());
+                            info.isLocal() ? getLocalRepoIndexCreators() : indexer.FULL_INDEX);
                 } catch (IOException ex) {
                     LOGGER.info("Found a broken index at " + loc.getAbsolutePath()); //NOI18N
                     LOGGER.log(Level.FINE, "Caused by ", ex); //NOI18N
@@ -287,7 +287,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             loc,
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
                             info.isRemoteDownloadable() ? info.getIndexUpdateUrl() : null, // index update url
-                            getIndexCreators());
+                            info.isLocal() ? getLocalRepoIndexCreators() : indexer.FULL_INDEX);
                 }
                 if (index) {
                     indexLoadedRepo(info, true);
@@ -998,9 +998,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         public ArtifactRepository repository = EmbedderFactory.getOnlineEmbedder().getLocalRepository();
 
-        public boolean updateArtifactInfo(IndexingContext ctx, Document d, ArtifactInfo artifactInfo) {
-            return false;
-        }
 
         public void updateDocument(ArtifactInfo context, Document doc) {
             ArtifactInfo ai = context;
