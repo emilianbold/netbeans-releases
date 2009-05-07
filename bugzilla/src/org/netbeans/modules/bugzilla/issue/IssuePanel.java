@@ -39,14 +39,10 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
@@ -129,10 +125,7 @@ public class IssuePanel extends javax.swing.JPanel {
         attachDocumentListeners();
 
         // A11Y - Issues 163597 and 163598
-        Set<AWTKeyStroke> set = addCommentArea.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
-        set = new HashSet<AWTKeyStroke>(set);
-        set.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
-        addCommentArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
+        BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
 
         // Comments panel
         commentsPanel = new CommentsPanel();
