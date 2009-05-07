@@ -142,7 +142,7 @@ public class IssuePanel extends javax.swing.JPanel {
         layout.replace(dummyAttachmentsPanel, attachmentsPanel);
         attachmentsLabel.setLabelFor(attachmentsPanel);
 
-        issue163946Hack(scrollPane1);
+        BugtrackingUtil.issue163946Hack(scrollPane1);
     }
 
     void reloadFormInAWT(final boolean force) {
@@ -667,23 +667,6 @@ public class IssuePanel extends javax.swing.JPanel {
         if(issue != null) {
             issue.closed();
         }
-    }
-
-    private static void issue163946Hack(final JScrollPane scrollPane) {
-        MouseWheelListener listener = new MouseWheelListener() {
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                if (scrollPane.getVerticalScrollBar().isShowing()) {
-                    if (e.getSource() != scrollPane) {
-                        e.setSource(scrollPane);
-                        scrollPane.dispatchEvent(e);
-                    }
-                } else {
-                    scrollPane.getParent().dispatchEvent(e);
-                }
-            }
-        };
-        scrollPane.addMouseWheelListener(listener);
-        scrollPane.getViewport().getView().addMouseWheelListener(listener);
     }
 
     /** This method is called from within the constructor to

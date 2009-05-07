@@ -49,6 +49,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.io.File;
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -515,6 +517,23 @@ public class BugtrackingUtil {
         set = new HashSet<AWTKeyStroke>(set);
         set.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
         component.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
+    }
+
+    public static void issue163946Hack(final JScrollPane scrollPane) {
+        MouseWheelListener listener = new MouseWheelListener() {
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (scrollPane.getVerticalScrollBar().isShowing()) {
+                    if (e.getSource() != scrollPane) {
+                        e.setSource(scrollPane);
+                        scrollPane.dispatchEvent(e);
+                    }
+                } else {
+                    scrollPane.getParent().dispatchEvent(e);
+                }
+            }
+        };
+        scrollPane.addMouseWheelListener(listener);
+        scrollPane.getViewport().getView().addMouseWheelListener(listener);
     }
     
 }
