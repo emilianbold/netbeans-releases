@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.editor.macros.storage.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.util.Collections;
 import java.util.Iterator;
@@ -51,6 +52,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -62,9 +65,9 @@ import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
 import org.netbeans.modules.editor.macros.storage.ui.MacrosModel.Macro;
 import org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.InputLine;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -374,15 +377,21 @@ public class MacrosPanel extends JPanel {
     }
 
     private MacrosModel.Macro addMacro() {
-        InputLine descriptor = new InputLine(loc("CTL_Enter_macro_name"), loc("CTL_New_macro_dialog_title")); //NOI18N
-        if (DialogDisplayer.getDefault().notify(descriptor) == InputLine.OK_OPTION) {
-            String macroName = descriptor.getInputText().trim();
-            String err = model.validateMacroName(macroName);
-            if (err == null) {
-                return model.createMacro(MimePath.EMPTY, macroName);
-            } else {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(err, NotifyDescriptor.ERROR_MESSAGE));
+        final MacrosNamePanel panel=new MacrosNamePanel();
+        final DialogDescriptor descriptor = new DialogDescriptor(panel, loc("CTL_New_macro_dialog_title"));//NO18N
+        panel.setChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+                String name=panel.getNameValue().trim();
+                String err = model.validateMacroName(name);
+                descriptor.setValid(err==null);
+                panel.setErrorMessage(err);
             }
+        });
+
+        if (DialogDisplayer.getDefault().notify(descriptor)==DialogDescriptor.OK_OPTION) {
+            String macroName = panel.getNameValue().trim();
+            return model.createMacro(MimePath.EMPTY, macroName);
         }
         return null;
     }
