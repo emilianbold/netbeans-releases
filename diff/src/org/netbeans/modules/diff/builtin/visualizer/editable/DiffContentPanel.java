@@ -55,13 +55,15 @@ import javax.accessibility.AccessibleContext;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Represents left and/or right side of the main split pane.
  *
  * @author Maros Sandor
  */
-class DiffContentPanel extends JPanel implements HighlightsContainer {
+class DiffContentPanel extends JPanel implements HighlightsContainer,Lookup.Provider {
 
     private final EditableDiffView master;
     private final boolean isFirst;
@@ -237,6 +239,10 @@ class DiffContentPanel extends JPanel implements HighlightsContainer {
                 add(c);
             }
         }
+    }
+
+    public Lookup getLookup() {
+        return Lookups.singleton(getActionMap());
     }
 
     /**
