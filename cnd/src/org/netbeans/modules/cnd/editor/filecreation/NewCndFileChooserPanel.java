@@ -55,11 +55,13 @@ public class NewCndFileChooserPanel extends CndPanel {
 
     private final MIMEExtensions es;
     private final String defaultExt;
-    
+    private final boolean fileWithoutExtension;
+
     NewCndFileChooserPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, MIMEExtensions es, String defaultExt) {
         super(project, folders, bottomPanel);
         this.es = es;
         this.defaultExt = defaultExt;
+        this.fileWithoutExtension = "".equals(defaultExt);
     }
 
     public Component getComponent() {
@@ -72,10 +74,12 @@ public class NewCndFileChooserPanel extends CndPanel {
 
     @Override
     protected void doStoreSettings(WizardDescriptor settings) {
-        if (((NewCndFileChooserPanelGUI)gui).useTargetExtensionAsDefault()) {
-            es.setDefaultExtension(getTargetExtension());
-        } else {
-            es.addExtension(getTargetExtension());
+        if (getTargetExtension().length() > 0) {
+            if (((NewCndFileChooserPanelGUI)gui).useTargetExtensionAsDefault()) {
+                es.setDefaultExtension(getTargetExtension());
+            } else {
+                es.addExtension(getTargetExtension());
+            }
         }
     }
 
@@ -91,14 +95,14 @@ public class NewCndFileChooserPanel extends CndPanel {
         }
         
         String documentName = gui.getTargetName();
-        
-        if (getTargetExtension().length() == 0 || documentName.charAt(0) == '.') {
+
+        if ((!fileWithoutExtension && getTargetExtension().length() == 0) || documentName.charAt(0) == '.') {
             // ignore invalid filenames
             setErrorMessage(NbBundle.getMessage(NewCndFileChooserPanel.class, "MSG_Invalid_File_Name"));
             return false;
         }
 
-        if (!es.getValues().contains(getTargetExtension())) {
+        if (!fileWithoutExtension && !es.getValues().contains(getTargetExtension())) {
             //MSG_new_extension_introduced
             String msg = NbBundle.getMessage(NewCndFileChooserPanel.class, "MSG_new_extension_introduced", getTargetExtension()); // NOI18N
 
