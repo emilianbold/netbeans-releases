@@ -46,13 +46,12 @@ import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Query;
@@ -104,7 +103,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             } 
         }
         
-        List<QueryHandle> queries = getQueryHandles(repo);
+        List<QueryHandle> queries = getQueryHandles(repo, true);
 
         ProjectHandleListener pl;
         synchronized(projectListeners) {
@@ -122,7 +121,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         return Collections.unmodifiableList(queries);
     }
 
-    List<QueryHandle> getQueryHandles(Repository repo) {
+    private List<QueryHandle> getQueryHandles(Repository repo, boolean newQueriesNeedRefresh) {
         Query[] queries = repo.getQueries();
         if(queries == null || queries.length == 0) {
             // XXX is this possible - at least preset queries
@@ -147,7 +146,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
             QueryHandle qh = m.get(q.getDisplayName());
             if(qh == null) {
-                qh = new QueryHandleImpl(q);
+                qh = new QueryHandleImpl(q, newQueriesNeedRefresh);
                 m.put(q.getDisplayName(), qh);
             }
             ret.add(qh);
@@ -159,7 +158,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     public List<QueryResultHandle> getQueryResults(QueryHandle query) {
         if(query instanceof QueryHandleImpl) {
             QueryHandleImpl qh = (QueryHandleImpl) query;
-            qh.refreshIfFirstTime();
+            qh.refreshIfNeeded();
             return Collections.unmodifiableList(qh.getQueryResults());
         } else {
             return Collections.emptyList();
@@ -357,7 +356,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
-                fireQueriesChanged(ph, getQueryHandles(repo));
+                fireQueriesChanged(ph, getQueryHandles(repo, false));
             }
         }
     }

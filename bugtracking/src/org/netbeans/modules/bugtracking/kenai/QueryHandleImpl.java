@@ -61,11 +61,12 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
     private final Query query;
     private final PropertyChangeSupport changeSupport;
     private Issue[] issues = new Issue[0];
-    private boolean firstTime = true;
     private String stringValue;
+    private boolean needsRefresh;
 
-    public QueryHandleImpl(Query query) {
+    public QueryHandleImpl(Query query, boolean needsRefresh) {
         this.query = query;
+        this.needsRefresh = needsRefresh;
         changeSupport = new PropertyChangeSupport(query);
         query.addPropertyChangeListener(WeakListeners.propertyChange(this, query));
         registerIssues();
@@ -103,7 +104,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
         } 
     }
 
-    public List<QueryResultHandle> getQueryResults() {
+    List<QueryResultHandle> getQueryResults() {
         List<QueryResultHandle> ret = new ArrayList<QueryResultHandle>();
         QueryResultHandle qh = QueryResultHandleImpl.forStatus(query, Issue.ISSUE_STATUS_ALL);
         if(qh != null) {
@@ -120,10 +121,10 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
         return ret;
     }
 
-    public void refreshIfFirstTime() {
-        if(firstTime) {
-            firstTime = false;
+    void refreshIfNeeded() {
+        if(needsRefresh) {
             query.refresh();
+            needsRefresh = false;
         }
     }
 
