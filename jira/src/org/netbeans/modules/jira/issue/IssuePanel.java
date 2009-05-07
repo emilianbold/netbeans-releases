@@ -67,6 +67,7 @@ import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.jdesktop.layout.GroupLayout;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.openide.util.NbBundle;
 
@@ -88,6 +89,8 @@ public class IssuePanel extends javax.swing.JPanel {
         originalEstimateField.setBackground(getBackground());
         remainingEstimateField.setBackground(getBackground());
         timeSpentField.setBackground(getBackground());
+        BugtrackingUtil.fixFocusTraversalKeys(environmentArea);
+        BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
     }
 
     void setIssue(NbJiraIssue issue) {
