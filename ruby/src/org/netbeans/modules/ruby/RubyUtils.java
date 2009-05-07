@@ -34,10 +34,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.filesystems.FileObject;
@@ -50,6 +53,8 @@ import org.openide.util.NbBundle;
 public class RubyUtils {
     
     public static final String RUBY_MIME_TYPE = RubyInstallation.RUBY_MIME_TYPE; // NOI18N
+
+    private static final Logger LOGGER = Logger.getLogger(RubyUtils.class.getName());
 
     private RubyUtils() {
     }
@@ -928,6 +933,23 @@ public class RubyUtils {
     }
 
     static boolean isRubyStubsURL(String url) {
-        return url != null && url.indexOf("rubystubs") != -1; // NOI18N
+        return url != null && url.indexOf(RubyPlatform.RUBYSTUBS) != -1; // NOI18N
     }
+
+    /**
+     * Checks whether the given file is part of the platform (incl. gems)
+     * rather than a source file in a project.
+     * @param fileObject
+     * @return
+     */
+    static boolean isPlatformFile(FileObject fileObject) {
+        Project owner = FileOwnerQuery.getOwner(fileObject);
+        if (owner == null) {
+            return true;
+        }
+        // needed for the dev ide since the bundled jruby is under nbbuild (a free form project)
+        RubyPlatformProvider platformProvider = owner.getLookup().lookup(RubyPlatformProvider.class);
+        return platformProvider == null;
+    }
+
 }

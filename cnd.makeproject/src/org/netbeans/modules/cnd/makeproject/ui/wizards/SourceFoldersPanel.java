@@ -86,7 +86,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
     void store(WizardDescriptor wizardDescriptor) {
         wizardDescriptor.putProperty("sourceFolders", sourceFilesPanel.getListData().iterator()); // NOI18N
         wizardDescriptor.putProperty("sourceFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getListData())); // NOI18N
-        wizardDescriptor.putProperty("sourceFoldersFilter", sourceFilesPanel.getFoldersFilter());
+        wizardDescriptor.putProperty("sourceFoldersFilter", sourceFilesPanel.getFoldersFilter()); // NOI18N
     }
     
     boolean valid(WizardDescriptor settings) {

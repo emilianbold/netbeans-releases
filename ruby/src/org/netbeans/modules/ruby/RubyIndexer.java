@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +65,7 @@ import org.jrubyparser.ast.SClassNode;
 import org.jrubyparser.ast.SelfNode;
 import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.INameNode;
-import org.jruby.util.ByteList;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -86,8 +85,6 @@ import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.ModuleElement;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 /**
@@ -111,6 +108,7 @@ public class RubyIndexer extends EmbeddingIndexer {
 
     // for unit tests
     static boolean preindexingTest = false;
+    static boolean skipTypeInferenceForTests = false;
 
     private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
@@ -348,6 +346,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         private int docMode;
         private final List<IndexDocument> documents;
         private String url;
+        private final boolean platform;
 
         private TreeAnalyzer(RubyParseResult result, IndexingSupport support, Indexable indexable) {
             this.result = result;
@@ -355,6 +354,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             this.support = support;
             this.indexable = indexable;
             this.documents = new ArrayList<IndexDocument>();
+            this.platform = RubyUtils.isPlatformFile(file);
         }
 
         private String getRequireString(Set<String> requireSet) {
@@ -441,6 +441,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                     return;
                 } else if ("active_record.rb".equals(fileName)) { // NOI18N
                     handleRailsBase("ActiveRecord"); // NOI18N
+//                    handleRailsClass("ActiveRecord", "ActiveRecord" + "::Migration", "Migration", "migration");
                     // HACK
                     handleMigrations();
                     return;
@@ -1070,7 +1071,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         
         private boolean shouldIndexTopLevel() {
             // Don't index top level methods in the libraries
-            if (/*!file.isPlatform() && */!isPreindexing()) {
+            if (!platform || preindexingTest) {
                 String name = file.getNameExt();
                 // Don't index spec methods or test methods
                 if (!name.endsWith("_spec.rb") && !name.endsWith("_test.rb")) {
@@ -1091,7 +1092,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                 int flags = 0;
 
                 boolean nodoc = false;
-                if (/*file.isPlatform() || */isPreindexing()) {
+                if (platform) {
                     // Should we skip this class? This is true for :nodoc: marked
                     // classes for example. We do NOT want to skip all children;
                     // in ActiveRecord for example we have this:
@@ -1377,8 +1378,10 @@ public class RubyIndexer extends EmbeddingIndexer {
                 sb.append(IndexedElement.flagToSecondChar(flags));
                 signature = sb.toString();
             }
-            
-            if (/*file.isPlatform() || */isPreindexing()) {
+
+            //XXX: this will skip TI for tests as it did in GSF where
+            // platform was always false.
+            if (platform && !skipTypeInferenceForTests) {
                 Node root = AstUtilities.getRoot(result);
                 signature = RubyIndexerHelper.getMethodSignature(
                         child, root, flags, signature, file, result.getSnapshot());
@@ -1477,7 +1480,7 @@ public class RubyIndexer extends EmbeddingIndexer {
 
         private void indexGlobal(AstElement child, IndexDocument document/*, boolean nodoc*/) {
             // Don't index globals in the libraries
-            if (/*!file.isPlatform() && */!isPreindexing()) {
+            if (!platform || preindexingTest) {
 
                 String signature = child.getName();
 //            int flags = getModifiersFlag(child.getModifiers());
@@ -1533,7 +1536,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             String folder = (file.getParent() != null) && file.getParent().getParent() != null ?
                 file.getParent().getParent().getNameExt() : "";
 
-            if (folder.equals("rubystubs") && file.getName().startsWith("stub_")) {
+            if (folder.equals(RubyPlatform.RUBYSTUBS) && file.getName().startsWith("stub_")) {
                 return;
             }
 
@@ -1549,28 +1552,30 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
     }
 
-    private static FileObject preindexedDb;
 
     
-    /** For testing only */
-    public static void setPreindexedDb(FileObject preindexedDb) {
-        RubyIndexer.preindexedDb = preindexedDb;
-    }
-    
-    public FileObject getPreindexedDb() {
-        if (preindexedDb == null) {
-            File preindexed = InstalledFileLocator.getDefault().locate(
-                    "preindexed", "org.netbeans.modules.ruby", false); // NOI18N
-            if (preindexed == null || !preindexed.isDirectory()) {
-                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
-            }
-            preindexedDb = FileUtil.toFileObject(preindexed);
-        }
-        return preindexedDb;
-    }
-    
-    static boolean isPreindexing() {
-        return true;
-//        return PREINDEXING || preindexingTest;
-    }
+// no preindexing in parsing API
+//
+//    private static FileObject preindexedDb;
+//    /** For testing only */
+//    public static void setPreindexedDb(FileObject preindexedDb) {
+//        RubyIndexer.preindexedDb = preindexedDb;
+//    }
+//
+//    public FileObject getPreindexedDb() {
+//        if (preindexedDb == null) {
+//            File preindexed = InstalledFileLocator.getDefault().locate(
+//                    "preindexed", "org.netbeans.modules.ruby", false); // NOI18N
+//            if (preindexed == null || !preindexed.isDirectory()) {
+//                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
+//            }
+//            preindexedDb = FileUtil.toFileObject(preindexed);
+//        }
+//        return preindexedDb;
+//    }
+//
+//    static boolean isPreindexing() {
+//        // part of a platform
+//        return false;
+//    }
 }

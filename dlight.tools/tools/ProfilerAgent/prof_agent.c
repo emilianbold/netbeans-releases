@@ -362,7 +362,7 @@ int reporter(void* arg) {
                 struct mallinfo mi = mall_hndl();
                 struct memmsg membuf = {
                     MEMMSG,
-                    mi.uordblks
+                    mi.uordblks + mi.hblkhd
                 };
                 msgsnd(msqid, &membuf, sizeof (membuf) - sizeof (membuf.type), IPC_NOWAIT);
             }
