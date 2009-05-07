@@ -631,6 +631,19 @@ public class RepositoryUpdaterTest extends NbTestCase {
         out.close();
     }
 
+    public void testFileListWork164622() throws FileStateInvalidException {
+        RepositoryUpdater.FileListWork flw1 = new RepositoryUpdater.FileListWork(srcRootWithFiles1.getURL(), false, false);
+        RepositoryUpdater.FileListWork flw2 = new RepositoryUpdater.FileListWork(srcRootWithFiles1.getURL(), false, false);
+        assertTrue("The flw2 job was not absorbed", flw1.absorb(flw2));
+
+        FileObject [] children = srcRootWithFiles1.getChildren();
+        assertTrue(children.length > 0);
+        RepositoryUpdater.FileListWork flw3 = new RepositoryUpdater.FileListWork(srcRootWithFiles1.getURL(), Collections.singleton(children[0]), false, false);
+        assertTrue("The flw3 job was not absorbed", flw1.absorb(flw3));
+
+        RepositoryUpdater.FileListWork flw4 = new RepositoryUpdater.FileListWork(srcRoot1.getURL(), false, false);
+        assertFalse("The flw4 job should not have been absorbed", flw1.absorb(flw4));
+    }
 
     public static class TestHandler extends Handler {
 
