@@ -48,7 +48,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author Vladimir Kvashin
  */
-/*package-local*/ class ScpSyncWorker extends BaseSync implements RemoteSyncWorker {
+/*package-local*/ class ScpSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 
     public ScpSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
         super(localDir, executionEnvironment, out, err);

@@ -48,14 +48,14 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * A common base class for RemoteSyncWorker implementations
  * @author Vladimir Kvashin
  */
-/*package-local*/ abstract class BaseSync implements RemoteSyncWorker {
+/*package-local*/ abstract class BaseSyncWorker implements RemoteSyncWorker {
 
     protected final File localDir;
     protected final ExecutionEnvironment executionEnvironment;
     protected final PrintWriter out;
     protected final PrintWriter err;
 
-    public BaseSync(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
+    public BaseSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
         this.localDir = localDir;
         this.executionEnvironment = executionEnvironment;
         this.out = out;
