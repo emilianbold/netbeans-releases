@@ -74,7 +74,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
-import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.rubyproject.RubyTestingSettings;
 
 

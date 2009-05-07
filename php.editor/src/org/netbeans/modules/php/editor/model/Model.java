@@ -42,6 +42,7 @@ package org.netbeans.modules.php.editor.model;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.openide.util.Parameters;
 
 /**
  * @author Radek Matous
@@ -89,6 +90,14 @@ public final class Model {
             modelVisitor.scan(Utils.getRoot(info));
         }
 
+        return modelVisitor;
+    }
+    ModelVisitor getModelVisitor(ModelElement element) {
+        Parameters.notNull("element", element);
+        if (modelVisitor == null) {
+            modelVisitor = new ModelVisitor(info, element);
+            modelVisitor.scan(Utils.getRoot(info));
+        }
         return modelVisitor;
     }
 }

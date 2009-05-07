@@ -260,8 +260,8 @@ public class CommitAction extends ContextAction {
                 }
             }
         };
-        panel.barPanel.add(support.getProgressComponent(), BorderLayout.CENTER);
-        panel.barPanel.setVisible(true);
+        panel.progressPanel.add(support.getProgressComponent());
+        panel.progressPanel.setVisible(true);
         support.start(rp);
     }
 
