@@ -116,6 +116,18 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         updatePanelUI();
         updateRepoPath();
 
+        Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
+                    if (Kenai.getDefault().getPasswordAuthentication() != null) {
+                        loginButton.setEnabled(false);
+                    } else {
+                        loginButton.setEnabled(true);
+                    }
+                }
+            }
+        });
+
     }
 
     public GetSourcesFromKenaiPanel() {
@@ -594,8 +606,10 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
         if (passwdAuth != null) {
             setUsername(passwdAuth.getUserName());
+            loginButton.setEnabled(false);
         } else {
             setUsername(null);
+            loginButton.setEnabled(true);
         }
     }
 
