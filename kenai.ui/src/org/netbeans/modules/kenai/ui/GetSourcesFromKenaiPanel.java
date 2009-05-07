@@ -61,7 +61,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -366,7 +365,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         KenaiSearchPanel browsePanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.BROWSE, false);
         String title = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                 "GetSourcesFromKenaiPanel.BrowseKenaiProjectsTitle");
-        DialogDescriptor dialogDesc = new DialogDescriptor(browsePanel, title, true, null);
+        DialogDescriptor dialogDesc = new KenaiDialogDescriptor(browsePanel, title, true, null);
 
         Object option = DialogDisplayer.getDefault().notify(dialogDesc);
 
