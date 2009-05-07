@@ -182,6 +182,8 @@ public class EvaluationException2 extends RuntimeException {
             msgParams = new String[] { params[0].toString() };
         else if (reason.equals("fieldOnNull"))
             msgParams = new String[] { params[0].toString() };
+        else if (reason.equals("cannotApplyOperator"))
+            msgParams = new String[] { params[0].toString() };
         else if (reason.equals("invalidMemberReference"))
             msgParams = new String[] { params[0].toString() };
         else if (reason.equals("arrayIsNull"))
