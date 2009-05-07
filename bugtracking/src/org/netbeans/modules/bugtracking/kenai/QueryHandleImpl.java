@@ -62,6 +62,7 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
     private final PropertyChangeSupport changeSupport;
     private Issue[] issues = new Issue[0];
     private boolean firstTime = true;
+    private String stringValue;
 
     public QueryHandleImpl(Query query) {
         this.query = query;
@@ -131,6 +132,40 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
         for (Issue issue : issues) {
             issue.addPropertyChangeListener(WeakListeners.propertyChange(this, issue));
         }
+    }
+
+    @Override
+    public String toString() {
+        if(stringValue == null) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("[");                                                     // NOI18N
+            sb.append(query.getRepository().getDisplayName());
+            sb.append(",");                                                     // NOI18N
+            sb.append(query.getDisplayName());
+            sb.append("]");                                                     // NOI18N
+            stringValue = sb.toString();
+        }
+        return stringValue;
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final QueryHandleImpl other = (QueryHandleImpl) obj;
+        if ((this.stringValue == null) ? (other.stringValue != null) : !this.stringValue.equals(other.stringValue)) {
+            return false;
+        }
+        return true;
     }
 
 }
