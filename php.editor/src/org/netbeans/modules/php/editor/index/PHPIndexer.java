@@ -63,6 +63,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
+import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
@@ -263,6 +264,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         }
     } // End of TreeAnalyzer class
 
+
     private static class IndexerVisitor extends DefaultTreePathVisitor {
         private final IndexingSupport support;
         private final Indexable indexable;
@@ -296,6 +298,14 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 identifierDocument.addPair(FIELD_IDENTIFIER, idSign.getSignature(), true, true);
             }
             identifiers.clear();
+        }
+
+        @Override
+        public void visit(Scalar node) {
+            if (node.getScalarType() == Scalar.Type.STRING && !NavUtils.isQuoted(node.getStringValue())) {
+                IdentifierSignature.add(node.getStringValue(), identifiers);
+            }
+            super.visit(node);
         }
 
         @Override
@@ -350,7 +360,6 @@ public final class PHPIndexer extends EmbeddingIndexer {
             super.visit(node);
         }
     } // End of IndexerVisitor class
-
     private static void indexClass(ClassDeclaration classDeclaration, IndexDocument document, Program root) {
         StringBuilder classSignature = new StringBuilder();
         String className = classDeclaration.getName().getName();

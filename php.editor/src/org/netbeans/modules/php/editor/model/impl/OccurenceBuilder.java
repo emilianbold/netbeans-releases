@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.Scope;
@@ -126,7 +127,12 @@ class OccurenceBuilder {
     private HashMap<ASTNodeInfo<FieldAccess>, Scope> fieldInvocations;
     private int offset;
     private ASTNodeInfo currentNodeInfo;
+    private ModelElement element;
 
+    OccurenceBuilder(ModelElement element) {
+        this(-1);
+        this.element = element;
+    }
     OccurenceBuilder(int offset) {
         this.offset = offset;
         this.constInvocations = new HashMap<ASTNodeInfo<Scalar>, Scope>();
@@ -736,83 +742,108 @@ class OccurenceBuilder {
     }
 
     void build(FileScopeImpl fileScope) {
-        if (currentNodeInfo != null) {
-            ASTNodeInfo.Kind kind = currentNodeInfo.getKind();
-            String name = currentNodeInfo.getName();
-            currentNodeInfo =
-                    null;
-            if (name != null && name.trim().length() > 0) {
-                switch (kind) {
-                    case FUNCTION:
-                        buildFunctionInvocations(name, fileScope);
-                        buildFunctionDeclarations(name, fileScope);
-                        break;
-
-                    case VARIABLE:
-                        buildVariables(name, fileScope);
-                        buildDocTagsForVars(name, fileScope);
-                        break;
-
-                    case STATIC_METHOD:
-                        buildStaticMethodInvocations(name, fileScope);
-                        buildMethodDeclarations(name, fileScope);
-                        break;
-
-                    case FIELD:
-                    case STATIC_FIELD:
-                        buildFieldDeclarations(name, fileScope);
-                        buildFieldInvocations(name, fileScope);
-                        buildStaticFieldInvocations(name, fileScope);
-                        buildDocTagsForFields(name, fileScope);
-                        break;
-
-                    case CONSTANT:
-                        buildConstantInvocations(name, fileScope);
-                        buildConstantDeclarations(name, fileScope);
-                        break;
-
-                    case CLASS_CONSTANT:
-                    case STATIC_CLASS_CONSTANT:
-                        buildStaticConstantInvocations(name, fileScope);
-                        buildStaticConstantDeclarations(name, fileScope);
-                        break;
-
-                    case CLASS_INSTANCE_CREATION:
-                    case CLASS:
-                    case IFACE:
-                        buildClassNames(name, fileScope);
-                        buildClassIDs(name, fileScope);
-                        buildClassDeclarations(name, fileScope);
-                        buildDocTagsForClasses(name, fileScope);
-                        buildClassInstanceCreation(name, fileScope);
-                        buildInterfaceIDs(name, fileScope);
-                        buildInterfaceDeclarations(name, fileScope);
-                        break;
-                    case METHOD:
-                        buildMethodInvocations(name, fileScope);
-                        buildMethodDeclarations(name, fileScope);
-                        break;
-                    case INCLUDE:
-                        buildIncludes(name, fileScope);
-                        break;
-                    default:
-                        throw new IllegalStateException();
-
-                }
-            } 
+        ASTNodeInfo.Kind kind = currentNodeInfo != null ? currentNodeInfo.getKind() : null;
+        String name = currentNodeInfo != null ? currentNodeInfo.getName() : null;
+        currentNodeInfo = null;
+        if (kind == null && element != null) {
+            switch(element.getPhpKind()) {
+                case CLASS:
+                    kind = Kind.CLASS;break;
+                case CLASS_CONSTANT:
+                    kind = Kind.CLASS_CONSTANT;break;
+                case CONSTANT:
+                    kind = Kind.CONSTANT;break;
+                case FIELD:
+                    kind = Kind.FIELD;break;
+                case FUNCTION:
+                    kind = Kind.FUNCTION;break;
+                case IFACE:
+                    kind = Kind.IFACE;break;
+                case INCLUDE:
+                    kind = Kind.INCLUDE;break;
+                case METHOD:
+                    boolean isStatic = element.getPhpModifiers().isStatic();
+                    kind = isStatic ? Kind.STATIC_METHOD : Kind.METHOD;break;
+                case VARIABLE:
+                    kind = Kind.VARIABLE;break;
+            }
         }
+        if (name == null && element != null) {
+            name = element.getName();
+        }
+        if (name != null && name.trim().length() > 0 && kind != null) {
+            switch (kind) {
+                case FUNCTION:
+                    buildFunctionInvocations(name, fileScope);
+                    buildFunctionDeclarations(name, fileScope);
+                    break;
+
+                case VARIABLE:
+                    buildVariables(name, fileScope);
+                    buildDocTagsForVars(name, fileScope);
+                    break;
+
+                case STATIC_METHOD:
+                    buildStaticMethodInvocations(name, fileScope);
+                    buildMethodDeclarations(name, fileScope);
+                    break;
+
+                case FIELD:
+                case STATIC_FIELD:
+                    buildFieldDeclarations(name, fileScope);
+                    buildFieldInvocations(name, fileScope);
+                    buildStaticFieldInvocations(name, fileScope);
+                    buildDocTagsForFields(name, fileScope);
+                    break;
+
+                case CONSTANT:
+                    buildConstantInvocations(name, fileScope);
+                    buildConstantDeclarations(name, fileScope);
+                    break;
+
+                case CLASS_CONSTANT:
+                case STATIC_CLASS_CONSTANT:
+                    buildStaticConstantInvocations(name, fileScope);
+                    buildStaticConstantDeclarations(name, fileScope);
+                    break;
+
+                case CLASS_INSTANCE_CREATION:
+                case CLASS:
+                case IFACE:
+                    buildClassNames(name, fileScope);
+                    buildClassIDs(name, fileScope);
+                    buildClassDeclarations(name, fileScope);
+                    buildDocTagsForClasses(name, fileScope);
+                    buildClassInstanceCreation(name, fileScope);
+                    buildInterfaceIDs(name, fileScope);
+                    buildInterfaceDeclarations(name, fileScope);
+                    break;
+                case METHOD:
+                    buildMethodInvocations(name, fileScope);
+                    buildMethodDeclarations(name, fileScope);
+                    break;
+                case INCLUDE:
+                    buildIncludes(name, fileScope);
+                    break;
+                default:
+                    throw new IllegalStateException();
+
+            }
+        }
+
     }
 
     private boolean canBePrepared(ASTNode node, ModelElement scope) {
-        return getOffset() >= 0 && scope != null && node != null;
+        return (getOffset() >= 0 || element != null) && scope != null && node != null;
     }
 
     private void setOccurenceAsCurrent(ASTNodeInfo nodeInfo) {
-        OffsetRange range = nodeInfo.getRange();
-        if (range.containsInclusive(getOffset())) {
-            currentNodeInfo = nodeInfo;
+        if (element == null) {
+            OffsetRange range = nodeInfo.getRange();
+            if (range.containsInclusive(getOffset())) {
+                currentNodeInfo = nodeInfo;
+           }
         }
-
     }
 
     private static Collection<? extends TypeScope> getClassName(VariableScope scp, VariableBase varBase) {
