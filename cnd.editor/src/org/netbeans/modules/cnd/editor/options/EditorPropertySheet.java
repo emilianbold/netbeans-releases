@@ -51,10 +51,11 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Set;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -62,11 +63,13 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
-import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertySheet;
@@ -84,7 +87,6 @@ import org.openide.util.NbBundle;
 public class EditorPropertySheet extends javax.swing.JPanel
         implements ActionListener, PropertyChangeListener, PreferenceChangeListener {
 
-    private static final boolean USE_NEW_FORMATTER = true;
     private static final boolean TRACE = false;
 
     private final EditorOptionsPanelController topController;
@@ -327,10 +329,6 @@ public class EditorPropertySheet extends javax.swing.JPanel
         set.put(new BooleanNodeProp(language, preferences, EditorOptions.addLeadingStarInComment));
         sheet.put(set);
 
-        if (TRACE && lastSheetPreferences != null) {
-            //Because NPE in PropertySheet in 586 line: Arrays.asList(nodes)
-            Logger.getLogger(PropertySheet.class.getName()).setLevel(Level.FINE);
-        }
         final DummyNode[] dummyNodes = new DummyNode[1];
         dummyNodes[0] = new DummyNode(sheet, "Sheet"); // NOI18N
         holder.setNodes(dummyNodes);
@@ -535,29 +533,104 @@ public class EditorPropertySheet extends javax.swing.JPanel
     private void refreshPreview(JEditorPane pane, Preferences p) {
         pane.setText(getPreviewText());
         BaseDocument bd = (BaseDocument) pane.getDocument();
-        if (USE_NEW_FORMATTER) {
-            CodeStyle codeStyle = EditorOptions.createCodeStyle(language, p, false);
+        CodeStyle codeStyle = EditorOptions.createCodeStyle(language, p, false);
+        Object[] oldValues = setEditorProperties(p);
+        try {
+            if (TRACE) {
+                System.err.println("Refreshing preview"); // NOI18N
+                System.err.println("          tabSize=" + IndentUtils.tabSize(bd)+"/"+codeStyle.getTabSize()); // NOI18N
+                System.err.println("       expandTabs=" + IndentUtils.isExpandTabs(bd)+"/"+codeStyle.expandTabToSpaces()); // NOI18N
+                System.err.println("  indentLevelSize=" + IndentUtils.indentLevelSize(bd)+"/"+codeStyle.indentSize()); // NOI18N
+
+            }
+            new Reformatter(bd, codeStyle).reformat();
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            restoreEditorProperties(oldValues);
+        }
+    }
+
+    private Object[] setEditorProperties(Preferences p){
+        Preferences def = null;
+        Object oldValues[] = null;
+        switch (language){
+            case C:
+                def = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
+                break;
+            case HEADER:
+                def = MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class);
+                break;
+            case CPP:
+            default:
+                def = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
+                break;
+        }
+        if (def != null) {
+            Set<String> keys = new HashSet<String>();
             try {
-                new Reformatter(bd, codeStyle).reformat();
-            } catch (BadLocationException ex) {
+                for (String key : def.keys()) {
+                    keys.add(key);
+                }
+            } catch (BackingStoreException ex) {
                 Exceptions.printStackTrace(ex);
             }
-        } else {
-            CodeStyle codeStyle = CodeStyle.getDefault(language);
-            Preferences oldPreferences = EditorOptions.getPreferences(codeStyle);
-            EditorOptions.setPreferences(codeStyle, p);
-            Reformat reformat = Reformat.get(bd);
-            reformat.lock();
-            try {
-                reformat.reformat(0, bd.getLength());
-                String x = bd.getText(0, bd.getLength());
-                pane.setText(x);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                EditorOptions.setPreferences(codeStyle, oldPreferences);
-                reformat.unlock();
-            }            
+            oldValues = new Object[]{null, null, null, null};
+            if (keys.contains(SimpleValueNames.TAB_SIZE)) {
+                oldValues[0] = Integer.valueOf(def.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
+            }
+            def.putInt(SimpleValueNames.TAB_SIZE, p.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
+            if (keys.contains(SimpleValueNames.SPACES_PER_TAB)) {
+                oldValues[1] = Integer.valueOf(def.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
+            }
+            def.putInt(SimpleValueNames.SPACES_PER_TAB, p.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
+            if (keys.contains(SimpleValueNames.EXPAND_TABS)) {
+                oldValues[2] = Boolean.valueOf(def.getBoolean(EditorOptions.expandTabToSpaces, EditorOptions.expandTabToSpacesDefault));
+            }
+            def.putBoolean(SimpleValueNames.EXPAND_TABS, p.getBoolean(EditorOptions.expandTabToSpaces, EditorOptions.expandTabToSpacesDefault));
+            if (keys.contains(SimpleValueNames.INDENT_SHIFT_WIDTH)) {
+                oldValues[3] = Integer.valueOf(def.getInt(EditorOptions.indentSize, EditorOptions.indentSizeDefault));
+            }
+            def.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, p.getInt(EditorOptions.indentSize, EditorOptions.indentSizeDefault));
+        }
+        return oldValues;
+    }
+
+    private void restoreEditorProperties(Object[] oldValues){
+        Preferences def = null;
+        switch (language){
+            case C:
+                def = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
+                break;
+            case HEADER:
+                def = MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class);
+                break;
+            case CPP:
+            default:
+                def = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
+                break;
+        }
+        if (def != null && oldValues != null) {
+            if (oldValues[0] == null) {
+                def.remove(SimpleValueNames.TAB_SIZE);
+            } else {
+                def.putInt(SimpleValueNames.TAB_SIZE, ((Integer)oldValues[0]).intValue());
+            }
+            if (oldValues[1] == null) {
+                def.remove(SimpleValueNames.SPACES_PER_TAB);
+            } else {
+                def.putInt(SimpleValueNames.SPACES_PER_TAB, ((Integer)oldValues[1]).intValue());
+            }
+            if (oldValues[2] == null) {
+                def.remove(SimpleValueNames.EXPAND_TABS);
+            } else {
+                def.putBoolean(SimpleValueNames.EXPAND_TABS, ((Boolean)oldValues[2]).booleanValue());
+            }
+            if (oldValues[3] == null) {
+                def.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
+            } else {
+                def.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, ((Integer)oldValues[3]).intValue());
+            }
         }
     }
 
