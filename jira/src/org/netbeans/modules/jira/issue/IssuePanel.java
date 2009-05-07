@@ -38,8 +38,12 @@
  */
 package org.netbeans.modules.jira.issue;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -51,7 +55,9 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.ListModel;
 import javax.swing.text.JTextComponent;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
@@ -69,6 +75,9 @@ import org.openide.util.NbBundle;
  * @author Jan Stola
  */
 public class IssuePanel extends javax.swing.JPanel {
+    private static final Color ORIGINAL_ESTIMATE_COLOR = new Color(137, 175, 215);
+    private static final Color REMAINING_ESTIMATE_COLOR = new Color(236, 142, 0);
+    private static final Color TIME_SPENT_COLOR = new Color(81, 168, 37);
     private NbJiraIssue issue;
     private CommentsPanel commentsPanel;
 
@@ -76,6 +85,9 @@ public class IssuePanel extends javax.swing.JPanel {
         initComponents();
         createdField.setBackground(getBackground());
         updatedField.setBackground(getBackground());
+        originalEstimateField.setBackground(getBackground());
+        remainingEstimateField.setBackground(getBackground());
+        timeSpentField.setBackground(getBackground());
     }
 
     void setIssue(NbJiraIssue issue) {
@@ -231,20 +243,25 @@ public class IssuePanel extends javax.swing.JPanel {
         reloadField(environmentArea, issue.getFieldValue(NbJiraIssue.IssueField.ENVIRONMENT));
         reloadField(updatedField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true));
         reloadField(dueField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE), false));
+
+        // Work-log
         String originalEstimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.INITIAL_ESTIMATE);
-        if (originalEstimateTxt.trim().length() == 0) {
-            // Derive original estimate from remaining estimate and time spent
-            String estimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE);
-            String timeSpentTxt = issue.getFieldValue(NbJiraIssue.IssueField.ACTUAL);
-            try {
-                int estimate = Integer.parseInt(estimateTxt);
-                int timeSpent = Integer.parseInt(timeSpentTxt);
-                originalEstimateTxt = Integer.toString(estimate + timeSpent);
-            } catch (NumberFormatException nfex) {}
+        int originalEstimate = toInt(originalEstimateTxt);
+        int remainintEstimate = toInt(issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE));
+        int timeSpent = toInt(issue.getFieldValue(NbJiraIssue.IssueField.ACTUAL));
+        if ((originalEstimate == 0) && (remainintEstimate + timeSpent > 0)) {
+            // originalEstimate is sometimes 0 (incorrectly)
+            originalEstimate = remainintEstimate + timeSpent;
         }
-        reloadField(originalEstimateField, workBySeconds(originalEstimateTxt));
-        reloadField(remainingEstimateField, workBySeconds(issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE)));
-        reloadField(timeSpentField, workBySeconds(issue.getFieldValue(NbJiraIssue.IssueField.ACTUAL)));
+        reloadField(originalEstimateField, workBySeconds(originalEstimate, false));
+        reloadField(remainingEstimateField, workBySeconds(remainintEstimate, true));
+        reloadField(timeSpentField, workBySeconds(timeSpent, false));
+        int scale = Math.max(originalEstimate, timeSpent);
+        setupWorkLogPanel(originalEstimatePanel, ORIGINAL_ESTIMATE_COLOR, Color.lightGray, originalEstimate, scale-originalEstimate);
+        setupWorkLogPanel(remainingEstimatePanel, Color.lightGray, REMAINING_ESTIMATE_COLOR, timeSpent, scale-timeSpent);
+        setupWorkLogPanel(timeSpentPanel, TIME_SPENT_COLOR, Color.lightGray, timeSpent, scale-timeSpent);
+
+        // Comments
         commentsPanel.setIssue(issue);
     }
 
@@ -265,6 +282,28 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
             }
         }
+    }
+
+    private void setupWorkLogPanel(JPanel panel, Color color1,  Color color2, int val1, int val2) {
+        panel.setLayout(new GridBagLayout());
+
+        JLabel label1 = new JLabel();
+        label1.setOpaque(true);
+        label1.setBackground(color1);
+        label1.setPreferredSize(new Dimension(0,10));
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = val1;
+        panel.add(label1, c);
+
+        JLabel label2 = new JLabel();
+        label2.setOpaque(true);
+        label2.setBackground(color2);
+        label2.setPreferredSize(new Dimension(0,10));
+        c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = val2;
+        panel.add(label2, c);
     }
 
     private List<org.eclipse.mylyn.internal.jira.core.model.Component> componentsByIds(String projectId, List<String> componentIds) {
@@ -298,30 +337,37 @@ public class IssuePanel extends javax.swing.JPanel {
         return ""; // NOI18N
     }
 
-    private String workBySeconds(String text) {
+    private int toInt(String text) {
         if (text.trim().length() > 0) {
             try {
-                int seconds = Integer.parseInt(text);
-                int minutes = seconds/60;
-                int hours = minutes/60;
-                minutes = minutes%60;
-                JiraConfiguration config = issue.getRepository().getConfiguration();
-                int days = hours/config.getWorkHoursPerDay();
-                hours = hours%config.getWorkHoursPerDay();
-                int weeks = days/config.getWorkDaysPerWeek();
-                days = days%config.getWorkDaysPerWeek();
-                String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.workLog"); // NOI18N
-                String work = MessageFormat.format(format, weeks, days, hours, minutes);
-                // Removing trailing space
-                if (work.length() > 0 && work.charAt(work.length()-1) == ' ') {
-                    work = work.substring(0, work.length()-1);
-                }
-                return work;
+                return Integer.parseInt(text);
             } catch (NumberFormatException nfex) {
                 nfex.printStackTrace();
             }
         }
-        return ""; // NOI18N
+        return 0;
+    }
+
+    private String workBySeconds(int seconds, boolean remainingEstimate) {
+        ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
+        if (seconds == 0) {
+            return bundle.getString(remainingEstimate ? "IssuePanel.emptyWorkLog1" : "IssuePanel.emptyWorkLog2"); // NOI18N
+        }
+        int minutes = seconds/60;
+        int hours = minutes/60;
+        minutes = minutes%60;
+        JiraConfiguration config = issue.getRepository().getConfiguration();
+        int days = hours/config.getWorkHoursPerDay();
+        hours = hours%config.getWorkHoursPerDay();
+        int weeks = days/config.getWorkDaysPerWeek();
+        days = days%config.getWorkDaysPerWeek();
+        String format = bundle.getString("IssuePanel.workLog"); // NOI18N
+        String work = MessageFormat.format(format, weeks, days, hours, minutes);
+        // Removing trailing space and comma
+        if (work.length() > 0 && work.charAt(work.length()-1) == ' ') {
+            work = work.substring(0, work.length()-2);
+        }
+        return work;
     }
 
     /** This method is called from within the constructor to
@@ -391,6 +437,9 @@ public class IssuePanel extends javax.swing.JPanel {
         convertToSubtaskButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         logWorkButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        originalEstimatePanel = new javax.swing.JPanel();
+        remainingEstimatePanel = new javax.swing.JPanel();
+        timeSpentPanel = new javax.swing.JPanel();
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
@@ -457,15 +506,18 @@ public class IssuePanel extends javax.swing.JPanel {
 
         originalEstimateLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.originalEstimateLabel.text")); // NOI18N
 
-        originalEstimateField.setColumns(20);
+        originalEstimateField.setEditable(false);
+        originalEstimateField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         remainingEstimateLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.remainingEstimateLabel.text")); // NOI18N
 
-        remainingEstimateField.setColumns(20);
+        remainingEstimateField.setEditable(false);
+        remainingEstimateField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         timeSpentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.timeSpentLabel.text")); // NOI18N
 
-        timeSpentField.setColumns(20);
+        timeSpentField.setEditable(false);
+        timeSpentField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         attachmentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachmentLabel.text")); // NOI18N
 
@@ -486,6 +538,10 @@ public class IssuePanel extends javax.swing.JPanel {
         submitButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
 
         cancelButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.cancelButton.text")); // NOI18N
+
+        dummySubtaskPanel.setOpaque(false);
+
+        dummyAttachmentPanel.setOpaque(false);
 
         actionPanel.setBackground(new java.awt.Color(233, 236, 245));
 
@@ -540,6 +596,12 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        originalEstimatePanel.setOpaque(false);
+
+        remainingEstimatePanel.setOpaque(false);
+
+        timeSpentPanel.setOpaque(false);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -578,12 +640,12 @@ public class IssuePanel extends javax.swing.JPanel {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(assigneeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(layout.createSequentialGroup()
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                             .add(dueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                             .add(updatedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                             .add(createdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 23, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .add(actionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -596,8 +658,7 @@ public class IssuePanel extends javax.swing.JPanel {
                         .add(18, 18, 18)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(fixVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(fixVersionLabel))
-                        .add(147, 147, 147))
+                            .add(fixVersionLabel)))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(remainingEstimateLabel)
@@ -605,9 +666,18 @@ public class IssuePanel extends javax.swing.JPanel {
                             .add(originalEstimateLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(originalEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(timeSpentField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(remainingEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .add(layout.createSequentialGroup()
+                                .add(timeSpentField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(timeSpentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .add(layout.createSequentialGroup()
+                                .add(remainingEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(remainingEstimatePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .add(layout.createSequentialGroup()
+                                .add(originalEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(originalEstimatePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                     .add(headerLabel)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -618,21 +688,23 @@ public class IssuePanel extends javax.swing.JPanel {
                             .add(subtaskLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(environmentScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
-                            .add(summaryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
-                            .add(addCommentScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+                            .add(environmentScrollPane)
+                            .add(summaryField)
+                            .add(addCommentScrollPane)
                             .add(layout.createSequentialGroup()
                                 .add(submitButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(cancelButton))
-                            .add(dummyAttachmentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
-                            .add(dummySubtaskPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE))))
+                            .add(dummyAttachmentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(dummySubtaskPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
-            .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
-            .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
+            .add(separator)
+            .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         layout.linkSize(new java.awt.Component[] {affectsVersionScrollPane, componentScrollPane, fixVersionScrollPane}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        layout.linkSize(new java.awt.Component[] {originalEstimateField, remainingEstimateField, timeSpentField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.linkSize(new java.awt.Component[] {issueTypeCombo, priorityCombo, projectCombo, resolutionCombo, statusCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
@@ -682,21 +754,27 @@ public class IssuePanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(componentScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(affectsVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(fixVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(originalEstimateLabel)
-                            .add(originalEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(remainingEstimateLabel)
-                            .add(remainingEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(timeSpentLabel)
-                            .add(timeSpentField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .add(fixVersionScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(actionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(originalEstimateLabel)
+                        .add(originalEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(originalEstimatePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(remainingEstimateLabel)
+                        .add(remainingEstimateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(remainingEstimatePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(timeSpentLabel)
+                        .add(timeSpentField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(timeSpentPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(attachmentLabel)
                     .add(dummyAttachmentPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -723,8 +801,15 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE))
+                .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        layout.linkSize(new java.awt.Component[] {remainingEstimateField, remainingEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
+        layout.linkSize(new java.awt.Component[] {timeSpentField, timeSpentPanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
+        layout.linkSize(new java.awt.Component[] {originalEstimateField, originalEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
     }// </editor-fold>//GEN-END:initComponents
 
     private void projectComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectComboActionPerformed
@@ -791,6 +876,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private org.netbeans.modules.bugtracking.util.LinkButton logWorkButton;
     private javax.swing.JTextField originalEstimateField;
     private javax.swing.JLabel originalEstimateLabel;
+    private javax.swing.JPanel originalEstimatePanel;
     private javax.swing.JComboBox priorityCombo;
     private javax.swing.JLabel priorityLabel;
     private javax.swing.JComboBox projectCombo;
@@ -798,6 +884,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private org.netbeans.modules.bugtracking.util.LinkButton refreshButton;
     private javax.swing.JTextField remainingEstimateField;
     private javax.swing.JLabel remainingEstimateLabel;
+    private javax.swing.JPanel remainingEstimatePanel;
     private javax.swing.JComboBox resolutionCombo;
     private javax.swing.JLabel resolutionLabel;
     private org.netbeans.modules.bugtracking.util.LinkButton resolveIssueButton;
@@ -810,6 +897,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel summaryLabel;
     private javax.swing.JTextField timeSpentField;
     private javax.swing.JLabel timeSpentLabel;
+    private javax.swing.JPanel timeSpentPanel;
     private javax.swing.JTextField updatedField;
     private javax.swing.JLabel updatedLabel;
     // End of variables declaration//GEN-END:variables
