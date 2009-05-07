@@ -428,6 +428,13 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         boolean isInProgress = evalTask != null;
         searchingSep.setVisible(isInProgress);
         searchingLabel.setVisible(isInProgress);
+        if (comboBar instanceof QuickSearchComboBar) {
+            if (isInProgress) {
+                ((QuickSearchComboBar) comboBar).startProgressAnimation();
+            } else {
+                ((QuickSearchComboBar) comboBar).stopProgressAnimation();
+            }
+        }
         shouldBeVisible = shouldBeVisible || isInProgress;
 
         boolean searchedNotEmpty = searchedText != null && searchedText.trim().length() > 0;
