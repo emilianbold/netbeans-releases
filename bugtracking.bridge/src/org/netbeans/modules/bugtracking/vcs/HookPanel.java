@@ -78,7 +78,7 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
         void store() {
             addComment = addCommentCheckBox.isSelected();
             addRevisionInfo = addRevisionCheckBox.isSelected();
-            addIssueInfo = addIssueCheckBox1.isSelected();
+            addIssueInfo = addIssueCheckBox.isSelected();
             resolve = resolveCheckBox.isSelected();
             commit = commitRadioButton.isSelected();
 
@@ -90,7 +90,7 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
         void restore() {
             addCommentCheckBox.setSelected(addComment);
             addRevisionCheckBox.setSelected(addRevisionInfo);
-            addIssueCheckBox1.setSelected(addIssueInfo);
+            addIssueCheckBox.setSelected(addIssueInfo);
             resolveCheckBox.setSelected(resolve);
             commitRadioButton.setSelected(commit);
         }
@@ -154,7 +154,7 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
 
         addCommentCheckBox.setEnabled(enableUpdateFields);
         addRevisionCheckBox.setEnabled(enableUpdateFields);
-        addIssueCheckBox1.setEnabled(enableUpdateFields);
+        addIssueCheckBox.setEnabled(enableUpdateFields);
         resolveCheckBox.setEnabled(enableUpdateFields);
         pushRadioButton.setEnabled(enableUpdateFields);
         commitRadioButton.setEnabled(enableUpdateFields);
@@ -236,8 +236,8 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
-            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
+            .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 561, Short.MAX_VALUE)
+            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 561, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -247,11 +247,11 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
                 .add(jLabel2))
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(addIssueCheckBox1, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.addIssueCheckBox1.text")); // NOI18N
-        addIssueCheckBox1.setNextFocusableComponent(commitRadioButton);
-        addIssueCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(addIssueCheckBox, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.addIssueCheckBox.text")); // NOI18N
+        addIssueCheckBox.setNextFocusableComponent(commitRadioButton);
+        addIssueCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addIssueCheckBox1ActionPerformed(evt);
+                addIssueCheckBoxActionPerformed(evt);
             }
         });
 
@@ -268,7 +268,7 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(resolveCheckBox)
                             .add(addCommentCheckBox))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 240, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 250, Short.MAX_VALUE)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(commitRadioButton)
                             .add(pushRadioButton)))
@@ -276,11 +276,11 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
                         .add(addRevisionCheckBox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(changeRevisionFormatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 213, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 222, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .add(125, 125, 125))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(addIssueCheckBox1)
+                .add(addIssueCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(changeIssueFormatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(316, Short.MAX_VALUE))
@@ -291,7 +291,7 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
                 .add(5, 5, 5)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, repositoryComboBox, 0, 502, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, repositoryComboBox, 0, 561, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jButton2)
                 .addContainerGap())
@@ -323,7 +323,7 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
                         .add(pushRadioButton)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(addIssueCheckBox1)
+                    .add(addIssueCheckBox)
                     .add(changeIssueFormatButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
@@ -335,7 +335,7 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
         repositoryComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.repositoryComboBox.AccessibleContext.accessibleDescription")); // NOI18N
         jButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.jButton2.AccessibleContext.accessibleDescription")); // NOI18N
         changeRevisionFormatButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.changeRevisionFormatButton.AccessibleContext.accessibleDescription")); // NOI18N
-        addIssueCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.addIssueCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+        addIssueCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.addIssueCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
         changeIssueFormatButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.changeIssueFormatButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
@@ -372,14 +372,14 @@ public class HookPanel extends javax.swing.JPanel implements ItemListener, Prope
         // TODO add your handling code here:
     }//GEN-LAST:event_resolveCheckBoxActionPerformed
 
-    private void addIssueCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIssueCheckBox1ActionPerformed
+    private void addIssueCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIssueCheckBoxActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_addIssueCheckBox1ActionPerformed
+    }//GEN-LAST:event_addIssueCheckBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JCheckBox addCommentCheckBox = new javax.swing.JCheckBox();
-    final javax.swing.JCheckBox addIssueCheckBox1 = new javax.swing.JCheckBox();
+    final javax.swing.JCheckBox addIssueCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JCheckBox addRevisionCheckBox = new javax.swing.JCheckBox();
     private javax.swing.ButtonGroup buttonGroup1;
     final org.netbeans.modules.bugtracking.util.LinkButton changeIssueFormatButton = new org.netbeans.modules.bugtracking.util.LinkButton();
