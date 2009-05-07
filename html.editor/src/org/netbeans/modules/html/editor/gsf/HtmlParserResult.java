@@ -165,11 +165,11 @@ public class HtmlParserResult extends ParserResult {
                                     }
                                 }
                             }
-
+                            String msg = NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"); //NOI18N
                             Error error =
                                     DefaultError.createDefaultError("unmatched_tag",//NOI18N
-                                    NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"),//NOI18N
-                                    null,
+                                    msg,
+                                    msg,
                                     getSnapshot().getSource().getFileObject(),
                                     node.startOffset(),
                                     node.endOffset(),
@@ -189,7 +189,7 @@ public class HtmlParserResult extends ParserResult {
                                 Error error =
                                         DefaultError.createDefaultError("tag_error", //NOI18N
                                         desc.getText(),
-                                        null,
+                                        desc.getText(),
                                         getSnapshot().getSource().getFileObject(),
                                         desc.getFrom(),
                                         desc.getTo(),
