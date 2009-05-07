@@ -41,6 +41,7 @@ package org.netbeans.modules.jira.issue;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -67,9 +68,12 @@ import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.jdesktop.layout.GroupLayout;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -81,6 +85,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private static final Color TIME_SPENT_COLOR = new Color(81, 168, 37);
     private NbJiraIssue issue;
     private CommentsPanel commentsPanel;
+    private boolean submitting;
 
     public IssuePanel() {
         initComponents();
@@ -108,7 +113,7 @@ public class IssuePanel extends javax.swing.JPanel {
         initHeaderLabel();
         initCommentsPanel();
 
-        reloadForm();
+        reloadForm(true);
     }
 
     private void initRenderers() {
@@ -221,7 +226,7 @@ public class IssuePanel extends javax.swing.JPanel {
         layout.replace(dummyCommentPanel, commentsPanel);
     }
 
-    private void reloadForm() {
+    private void reloadForm(boolean force) {
         ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
         JiraConfiguration config = issue.getRepository().getConfiguration();
         String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
@@ -377,6 +382,21 @@ public class IssuePanel extends javax.swing.JPanel {
             work = work.substring(0, work.length()-2);
         }
         return work;
+    }
+
+    void reloadFormInAWT(final boolean force) {
+        if (submitting) {
+            return;
+        }
+        if (EventQueue.isDispatchThread()) {
+            reloadForm(force);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    reloadForm(force);
+                }
+            });
+        }
     }
 
     /** This method is called from within the constructor to
@@ -568,6 +588,11 @@ public class IssuePanel extends javax.swing.JPanel {
         logWorkButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.logWorkButton.text")); // NOI18N
 
         refreshButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.text")); // NOI18N
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout actionPanelLayout = new org.jdesktop.layout.GroupLayout(actionPanel);
         actionPanel.setLayout(actionPanelLayout);
@@ -846,6 +871,21 @@ public class IssuePanel extends javax.swing.JPanel {
         affectsVersionList.setModel(versionModel);
         fixVersionList.setModel(versionModel);
     }//GEN-LAST:event_projectComboActionPerformed
+
+    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+        String refreshMessageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshMessage"); // NOI18N
+        String refreshMessage = MessageFormat.format(refreshMessageFormat, issue.getKey());
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(refreshMessage);
+        handle.start();
+        handle.switchToIndeterminate();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                issue.refresh();
+                handle.finish();
+                reloadFormInAWT(true);
+            }
+        });
+    }//GEN-LAST:event_refreshButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.netbeans.modules.bugtracking.util.LinkButton acceptIssueButton;
