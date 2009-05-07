@@ -1190,7 +1190,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         private final int stopOffset;
 
         public StopOnOffsetParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, int offset, APTPreprocHandler preprocHandler) {
-            super(base, apt, file, preprocHandler, null);
+            super(base, apt, file, preprocHandler, false, null);
             stopOffset = offset;
         }
 

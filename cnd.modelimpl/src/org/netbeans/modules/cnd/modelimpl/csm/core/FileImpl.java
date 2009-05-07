@@ -777,7 +777,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return null;
         }
         FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, pcBuilder);
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder);
         outPcState.set(pcBuilder.build());
         if(filtered) {
             return walker.getFilteredTokenStream(getLanguageFilter(ppState));
@@ -947,7 +947,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         try {
             APTFile aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
-            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, null);
+            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, false, null);
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
             parser.setErrorDelegate(delegate);
             parser.setLazyCompound(false);
@@ -1033,7 +1033,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             // We gather conditional state here as well, because sources are not included anywhere
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
-            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, pcBuilder);
+            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder);
             walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
