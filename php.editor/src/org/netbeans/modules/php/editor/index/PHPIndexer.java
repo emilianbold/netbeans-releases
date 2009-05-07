@@ -68,6 +68,7 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -621,6 +622,24 @@ public final class PHPIndexer extends EmbeddingIndexer {
         signature.append(offset + ";"); //NOI18N
         signature.append(defaultArgs + ";");
         String type = functionDeclaration != null ? getReturnTypeFromPHPDoc(functionDeclaration, root) : null;
+        if (type == null) {
+            final String typeArray[] = new String[1];
+            DefaultVisitor defaultVisitor = new DefaultVisitor() {
+                @Override
+                public void visit(ReturnStatement node) {
+                    Expression expression = node.getExpression();
+                    if (expression instanceof ClassInstanceCreation) {
+                        ClassInstanceCreation instanceCreation = (ClassInstanceCreation)expression;
+                        typeArray[0] = CodeUtils.extractClassName(instanceCreation.getClassName());
+                    }
+                }
+            };
+
+            defaultVisitor.scan(functionDeclaration);
+            if (typeArray[0] != null) {
+                type = typeArray[0];
+            }
+        }
         if (type != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(type)) {
             signature.append(type);
         }
