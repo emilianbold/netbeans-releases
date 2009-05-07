@@ -968,7 +968,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             return new Project[0];
         }
 
-        public @Override void openAPI(Project[] projects, boolean openRequiredProjects) {
+        public @Override void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
 
         }
 
