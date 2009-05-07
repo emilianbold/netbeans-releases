@@ -77,6 +77,8 @@ import org.openide.text.NbDocument;
  */
 public class GdbWatchVariable extends AbstractVariable implements PropertyChangeListener {
     
+    private static boolean disableMacros = Boolean.getBoolean("gdb.macros.disable");
+
     private final Watch watch;
     private static final Logger log = Logger.getLogger("gdb.logger.watches"); // NOI18N
     
@@ -169,7 +171,10 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
 
     private synchronized void checkValues() {
         if (request) {
-            String expr = expandMacro(getDebugger(), watch.getExpression());
+            String expr = watch.getExpression();
+            if (!disableMacros) {
+                expr = expandMacro(getDebugger(), expr);
+            }
             String t = getDebugger().requestWhatis(expr);
             if (t != null && t.length() > 0) {
                 type = t;
