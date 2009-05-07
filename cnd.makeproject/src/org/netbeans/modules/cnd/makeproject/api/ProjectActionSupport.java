@@ -354,9 +354,9 @@ public class ProjectActionSupport {
 //                        runDirectory = MakeActionProvider.REMOTE_BASE_PATH + "/" + projectName;
                 } else {
                     PathMap mapper = HostInfoProvider.getMapper(conf.getDevelopmentHost().getExecutionEnvironment());
-                    if (!mapper.isRemote(basedir, true)) {
+                    if (!mapper.checkRemotePath(basedir, true)) {
 //                        mapper.showUI();
-//                        if (!mapper.isRemote(basedir)) {
+//                        if (!mapper.checkRemotePath(basedir)) {
 //                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
 //                                    NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
                         return false;
