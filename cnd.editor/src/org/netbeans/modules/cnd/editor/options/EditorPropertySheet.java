@@ -62,6 +62,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
@@ -360,7 +361,6 @@ public class EditorPropertySheet extends javax.swing.JPanel
             Preferences toSave = EditorOptions.getPreferences(language, style);
             if (style.equals(defaultStyles)){
                 EditorOptions.setPreferences(CodeStyle.getDefault(language), toSave);
-                EditorOptions.updateSimplePreferences(language, CodeStyle.getDefault(language));
             }
             for(String key : EditorOptions.keys()){
                 Object o = EditorOptions.getDefault(language, style, key);
@@ -386,6 +386,9 @@ public class EditorPropertySheet extends javax.swing.JPanel
                         toSave.remove(key);
                     }
                 }
+            }
+            if (style.equals(defaultStyles)){
+                EditorOptions.updateSimplePreferences(language, CodeStyle.getDefault(language));
             }
         }
         EditorOptions.setAllStyles(language, buf.toString());
@@ -460,11 +463,16 @@ public class EditorPropertySheet extends javax.swing.JPanel
             PreviewPreferences p = new PreviewPreferences(category.preferences,
                     category.preferences.getLanguage(), category.preferences.getStyleId());
             p.makeAllKeys(category.preferences);
+            p.putBoolean(EditorOptions.overrideTabIndents, overrideGlobalOptions.isSelected());
             if (!overrideGlobalOptions.isSelected()){
                 p.putInt(EditorOptions.indentSize, EditorOptions.getGlobalIndentSize());
                 p.putBoolean(EditorOptions.expandTabToSpaces, EditorOptions.getGlobalExpandTabs());
                 p.putInt(EditorOptions.tabSize, EditorOptions.getGlobalTabSize());
-            }
+           }
+            p.putInt(SimpleValueNames.TAB_SIZE, p.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
+            p.putInt(SimpleValueNames.SPACES_PER_TAB, p.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
+            p.putBoolean(SimpleValueNames.EXPAND_TABS, p.getBoolean(EditorOptions.expandTabToSpaces, EditorOptions.expandTabToSpacesDefault));
+            p.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, p.getInt(EditorOptions.indentSize, EditorOptions.indentSizeDefault));
             previewPane.setIgnoreRepaint(true);
             refreshPreview(previewPane, p);
             previewPane.setIgnoreRepaint(false);
@@ -475,10 +483,17 @@ public class EditorPropertySheet extends javax.swing.JPanel
 
     private String getPreviewText(){
         String suffix;
-        if (CodeStyle.Language.C.equals(language)){
-            suffix = ".c"; // NOI18N
-        } else {
-            suffix = ".cpp"; // NOI18N
+        switch (language){
+            case C:
+                suffix = ".c"; // NOI18N
+                break;
+            case HEADER:
+                suffix = ".cpp"; // NOI18N
+                break;
+            case CPP:
+            default:
+                suffix = ".cpp"; // NOI18N
+                break;
         }
         if (lastChangedproperty != null) {
             if (lastChangedproperty.startsWith("space")) { // NOI18N
