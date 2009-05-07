@@ -109,6 +109,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
+ * TODO:
+ * - test that modifying .zip/.jar triggeres rescan of this binary
  *
  * @author Tomas Zezula
  */
@@ -144,7 +146,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
     private URL[] embeddedFiles;
 
     private final BinIndexerFactory binIndexerFactory = new BinIndexerFactory();
-    private final BinIndexerFactory jarIndexerFactory = new BinIndexerFactory();
+// Binary indexer have to be registered for MimePath.EMPTY, no mime-type specific binary indexers
+//    private final BinIndexerFactory jarIndexerFactory = new BinIndexerFactory();
     private final FooIndexerFactory indexerFactory = new FooIndexerFactory();
     private final EmbIndexerFactory eindexerFactory = new EmbIndexerFactory();
 
@@ -164,7 +167,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         MockServices.setServices(FooPathRecognizer.class, EmbPathRecognizer.class, SFBQImpl.class, OpenProject.class);
         MockMimeLookup.setInstances(MimePath.EMPTY, binIndexerFactory);
-        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
+//        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
         MockMimeLookup.setInstances(MimePath.get(EMIME), eindexerFactory, new EmbParserFactory());
         Set<String> mt = new HashSet<String>();
@@ -483,12 +486,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
         logger.addHandler(handler);
 
         binIndexerFactory.indexer.setExpectedRoots(bootRoot2.getURL(), bootRoot3.getURL());
-        jarIndexerFactory.indexer.setExpectedRoots(bootRoot3.getURL());
+//        jarIndexerFactory.indexer.setExpectedRoots(bootRoot3.getURL());
         ClassPath cp = ClassPathSupport.createClassPath(new FileObject[] {bootRoot2, bootRoot3});
         GlobalPathRegistry.getDefault().register(PLATFORM,new ClassPath[] {cp});
         assertTrue(handler.await());
         assertEquals(2, handler.getBinaries().size());
-        assertEquals(1, jarIndexerFactory.indexer.getCount());
+//        assertEquals(1, jarIndexerFactory.indexer.getCount());
         assertEquals(2, binIndexerFactory.indexer.getCount());
     }
 
