@@ -158,8 +158,8 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.indexer.spi.ui</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/nexus-indexer-1.2.2-shaded.jar</runtime-relative-path>
-                <binary-origin>external/nexus-indexer-1.2.2-shaded.jar</binary-origin>
+                <runtime-relative-path>ext/nexus-indexer-2.0.0-shaded.jar</runtime-relative-path>
+                <binary-origin>external/nexus-indexer-2.0.0-shaded.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
