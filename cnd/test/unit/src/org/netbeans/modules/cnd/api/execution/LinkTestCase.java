@@ -63,17 +63,45 @@ public class LinkTestCase extends NbTestCase {
     }
 
     public void testLink() throws Exception {
-        URL file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/gcc.exe.lnk.data");
+        URL file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/gcc.exe.lnk.data"); // NOI18N
         String resolved = LinkSupport.getOriginalFile(file.getFile());
-        assertEquals("C:\\util\\cygwin\\etc\\alternatives\\gcc", resolved);
-        file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/gcc.lnk.data");
+        assertEquals("C:\\util\\cygwin\\etc\\alternatives\\gcc", resolved); // NOI18N
+        file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/gcc.lnk.data"); // NOI18N
         resolved = LinkSupport.getOriginalFile(file.getFile());
-        assertEquals("C:\\util\\cygwin\\bin\\gcc-3.exe", resolved);
+        assertEquals("C:\\util\\cygwin\\bin\\gcc-3.exe", resolved); // NOI18N
     }
 
     public void testCygwinLink() throws Exception {
-        URL file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/g++.txt");
+        URL file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/g++.data"); // NOI18N
         String resolved = LinkSupport.getOriginalFile(file.getFile());
         assertEquals("/etc/alternatives/g++", resolved);
+    }
+
+    public void testCygwinLink2() throws Exception {
+        URL file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/c++.exe.data"); // NOI18N
+        String resolved = LinkSupport.getOriginalFile(file.getFile());
+        String expected = file.getFile();
+        int i = expected.lastIndexOf("\\"); // NOI18N
+        if (i < 0) {
+            i = expected.lastIndexOf("/"); // NOI18N
+        }
+        if (i > 0) {
+            expected = expected.substring(0, i + 1) + "g++.exe";// NOI18N
+        }
+        assertEquals(expected, resolved);
+    }
+
+    public void testCygwinLink3() throws Exception {
+        URL file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/f77.exe.data");// NOI18N
+        String resolved = LinkSupport.getOriginalFile(file.getFile());
+        String expected = file.getFile();
+        int i = expected.lastIndexOf("\\"); // NOI18N
+        if (i < 0) {
+            i = expected.lastIndexOf("/"); // NOI18N
+        }
+        if (i > 0) {
+            expected = expected.substring(0, i + 1) + "g77.exe";// NOI18N
+        }
+        assertEquals(expected, resolved);
     }
 }

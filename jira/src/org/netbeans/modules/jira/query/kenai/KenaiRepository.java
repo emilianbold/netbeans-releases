@@ -43,10 +43,12 @@ import java.awt.Image;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.List;
+import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.filter.CurrentUserFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
+import org.eclipse.mylyn.internal.jira.core.model.filter.StatusFilter;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
@@ -116,6 +118,7 @@ public class KenaiRepository extends JiraRepository {
                     FilterDefinition fd = new FilterDefinition();
                     fd.setAssignedToFilter(new CurrentUserFilter());
                     fd.setProjectFilter(new ProjectFilter(p));
+                    fd.setStatusFilter(new StatusFilter(getOpenStatuses()));
                     myIssues =
                         new KenaiQuery(
                             NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
@@ -137,6 +140,7 @@ public class KenaiRepository extends JiraRepository {
             if(p != null) {
                 FilterDefinition fd = new FilterDefinition();
                 fd.setProjectFilter(new ProjectFilter(p));
+                fd.setStatusFilter(new StatusFilter(getOpenStatuses()));
                 allIssues =
                     new KenaiQuery(
                         NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), // NOI18N
@@ -151,6 +155,23 @@ public class KenaiRepository extends JiraRepository {
         }
         if(allIssues != null) queries.add(allIssues);
         return queries.toArray(new Query[queries.size()]);
+    }
+
+    private JiraStatus[] getOpenStatuses() {
+        JiraStatus[] statuses = getConfiguration().getStatuses();
+        if(statuses == null || statuses.length == 0) {
+            return new JiraStatus[0];
+        }
+        List<JiraStatus> ret = new ArrayList<JiraStatus>();
+        for (JiraStatus s : statuses) {
+            if("Open".equals(s.getName()) ||                                    // NOI18N
+               "Reopened".equals(s.getName()) ||                                // NOI18N
+               "In Progress".equals(s.getName()))                               // NOI18N
+            {
+                ret.add(s);
+            }
+        }
+        return ret.toArray(new JiraStatus[ret.size()]);
     }
 
     @Override

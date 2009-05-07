@@ -55,7 +55,6 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -89,6 +88,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -208,7 +208,22 @@ public class IssuePanel extends javax.swing.JPanel {
         for (String keyword : kws) {
             keywords.add(keyword.toUpperCase());
         }
+        boolean showQAContact = !(issue.getRepository() instanceof KenaiRepository);
+        if (qaContactLabel.isVisible() != showQAContact) {
+            GroupLayout layout = (GroupLayout)getLayout();
+            JLabel temp = new JLabel();
+            swap(layout, ccLabel, qaContactLabel, temp);
+            swap(layout, ccField, qaContactField, temp);
+            qaContactLabel.setVisible(showQAContact);
+            qaContactField.setVisible(showQAContact);
+        }
         reloadForm(true);
+    }
+
+    private static void swap(GroupLayout layout, JComponent comp1, JComponent comp2, JComponent temp) {
+        layout.replace(comp1, temp);
+        layout.replace(comp2, comp1);
+        layout.replace(temp, comp2);
     }
 
     private int oldCommentCount;
@@ -418,7 +433,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private void initCombos() {
         BugzillaRepository repository = issue.getRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null) {
+        if(bc == null || !bc.isValid()) {
             // XXX nice error msg?
             return;
         }
@@ -443,7 +458,7 @@ public class IssuePanel extends javax.swing.JPanel {
         // Close-Resolved -> Reopened+Resolved+(Close with higher index)
         BugzillaRepository repository = issue.getRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null) {
+        if(bc == null || !bc.isValid()) {
             // XXX nice error msg?
             return;
         }
@@ -1309,7 +1324,7 @@ public class IssuePanel extends javax.swing.JPanel {
         // Reload componentCombo, versionCombo and targetMilestoneCombo
         BugzillaRepository repository = issue.getRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
-        if(bc == null) {
+        if(bc == null || !bc.isValid()) {
             // XXX nice error msg?
             return;
         }

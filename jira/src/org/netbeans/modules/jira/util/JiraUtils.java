@@ -46,6 +46,9 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.internal.jira.core.model.Resolution;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.commands.JiraCommand;
@@ -78,27 +81,27 @@ public class JiraUtils {
 
     // XXX merge with bugzilla
     /**
-     * Returns TaskData for the given issue id or null if an error occured
+     * Returns TaskData for the given issue key or null if an error occured
      * @param repository
-     * @param id
+     * @param key
      * @return
      */
-    public static TaskData getTaskData(final JiraRepository repository, final String id) {
-        return getTaskData(repository, id, true);
+    public static TaskData getTaskDataByKey(final JiraRepository repository, final String key) {
+        return getTaskDataByKey(repository, key, true);
     }
 
     /**
-     * Returns TaskData for the given issue id or null if an error occured
+     * Returns TaskData for the given issue key or null if an error occured
      * @param repository
-     * @param id
+     * @param key
      * @return
      */
-    public static TaskData getTaskData(final JiraRepository repository, final String id, boolean handleExceptions) {
+    public static TaskData getTaskDataByKey(final JiraRepository repository, final String key, boolean handleExceptions) {
         final TaskData[] taskData = new TaskData[1];
         JiraCommand cmd = new JiraCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
-                taskData[0] = Jira.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
+                taskData[0] = Jira.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), key, new NullProgressMonitor());
             }
         };
         repository.getExecutor().execute(cmd, handleExceptions);
@@ -106,5 +109,67 @@ public class JiraUtils {
             Jira.LOG.log(Level.FINE, cmd.getErrorMessage());
         }
         return taskData[0];
+    }
+
+    // XXX merge with bugzilla
+    /**
+     * Returns TaskData for the given issue id or null if an error occured
+     * @param repository
+     * @param id
+     * @return
+     */
+    public static TaskData getTaskDataById(final JiraRepository repository, final String id) {
+        return getTaskDataById(repository, id, true);
+    }
+
+    public static TaskData getTaskDataById(final JiraRepository repository, final String id, boolean handleExceptions) {
+        final TaskData[] taskData = new TaskData[1];
+        JiraCommand cmd = new JiraCommand() {
+            @Override
+            public void execute() throws CoreException, IOException, MalformedURLException {
+                taskData[0] = Jira.getInstance().getRepositoryConnector().getTaskDataHandler().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
+            }
+        };
+        repository.getExecutor().execute(cmd, handleExceptions);
+        if(cmd.hasFailed() && Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.log(Level.FINE, cmd.getErrorMessage());
+        }
+        return taskData[0];
+    }
+
+    /**
+     * Determines if the operation could be a resolve operation
+     * @param operationLabel operation name
+     * @return
+     */
+    public static boolean isResolveOperation(String operationLabel) {
+        return "resolve issue".equals(operationLabel.toLowerCase());    //NOI18N
+    }
+
+    public static boolean isReopenOperation(String operationLabel) {
+        return "reopen issue".equals(operationLabel.toLowerCase());    //NOI18N
+    }
+
+    public static String getMappedValue(TaskAttribute a, String key) {
+        TaskAttribute ma = a.getMappedAttribute(key);
+        if (ma != null) {
+            return ma.getValue();
+        }
+        return null;
+    }
+
+    /**
+     * Returns a resolution instance for given resolutionName
+     * @param repository 
+     * @param resolutionName
+     * @return
+     * @throws IllegalStateException if there is no such resolution available
+     */
+    public static Resolution getResolutionByName(JiraRepository repository, String resolutionName) {
+        Resolution[] resolutions = repository.getConfiguration().getResolutions();
+        for (Resolution r : resolutions) {
+            if(r.getName().equals(resolutionName)) return r;
+        }
+        throw new IllegalStateException("Unknown resolution type: " + resolutionName); //NOI18N
     }
 }

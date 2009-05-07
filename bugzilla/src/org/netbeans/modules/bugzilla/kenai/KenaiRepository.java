@@ -68,9 +68,6 @@ public class KenaiRepository extends BugzillaRepository {
     private KenaiQuery allIssues;
     private String host;
 
-    /** one instance for all kenai repositories */
-    private static RepositoryConfiguration rc;
-
     public KenaiRepository(String repoName, String url, String host, String urlParam, String product) {
         super(repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
         this.urlParam = urlParam;
@@ -156,15 +153,9 @@ public class KenaiRepository extends BugzillaRepository {
 
     @Override
     protected BugzillaConfiguration createConfiguration() {
-        if(rc == null) {
-            rc = getRepositoryConfiguration();
-        }
-        if(rc != null) {
-            KenaiConfiguration kc = new KenaiConfiguration(rc);
-            kc.setProducts(product);
-            return kc;
-        }
-        return null;
+        KenaiConfiguration kc = new KenaiConfiguration(this, product);
+        kc.initialize(this, false);
+        return kc;
     }
 
     protected void setCredentials(String user, String password) {

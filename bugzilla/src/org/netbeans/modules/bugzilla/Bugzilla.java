@@ -39,17 +39,23 @@
 
 package org.netbeans.modules.bugzilla;
 
+import java.io.File;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClientManager;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
+import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -67,13 +73,18 @@ public class Bugzilla {
     public static Logger LOG = Logger.getLogger("org.netbeans.modules.bugzilla.Bugzilla"); // NOI18N
 
     private RequestProcessor rp;
+    private BugzillaCorePlugin bcp;
+    private BugzillaClientManager clientManager;
 
     private Bugzilla() {
-        BugzillaCorePlugin bcp = new BugzillaCorePlugin();
+        bcp = new BugzillaCorePlugin();
+        BugzillaCorePlugin.setConfigurationCacheFile(new File(BugtrackingRuntime.getInstance().getCacheStore(), "bugzillaconfiguration"));
+        brc = new BugzillaRepositoryConnector();
+        clientManager = getRepositoryConnector().getClientManager();
         try {
             bcp.start(null);
         } catch (Exception ex) {
-            throw new RuntimeException(ex); // XXX thisiscrap
+            LOG.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -84,11 +95,22 @@ public class Bugzilla {
         return instance;
     }
 
-    public BugzillaRepositoryConnector getRepositoryConnector() {
-        if(brc == null) {
-            brc = new BugzillaRepositoryConnector();
+    void shutdown() {
+        try {
+            bcp.stop(null);
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, null, ex);
         }
+    }
+
+    public BugzillaRepositoryConnector getRepositoryConnector() {
         return brc;
+    }
+
+    public RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository, boolean forceRefresh) throws CoreException, MalformedURLException {
+        getClient(repository); // XXX mylyn 3.1.1 workaround. initialize the client, otherwise the configuration will be downloaded twice
+        RepositoryConfiguration rc = BugzillaCorePlugin.getRepositoryConfiguration(repository.getTaskRepository(), forceRefresh, new NullProgressMonitor());
+        return rc;
     }
 
     /**
@@ -99,7 +121,7 @@ public class Bugzilla {
      * @throws org.eclipse.core.runtime.CoreException
      */
     public BugzillaClient getClient(BugzillaRepository repository) throws MalformedURLException, CoreException {
-        return getRepositoryConnector().getClientManager().getClient(repository.getTaskRepository(), new NullProgressMonitor());
+        return clientManager.getClient(repository.getTaskRepository(), new NullProgressMonitor());
     }
 
     /**

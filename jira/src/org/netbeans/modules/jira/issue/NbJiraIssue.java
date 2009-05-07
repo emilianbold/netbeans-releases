@@ -41,34 +41,46 @@ package org.netbeans.modules.jira.issue;
 
 import java.awt.Font;
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.JiraAttribute;
 import org.eclipse.mylyn.internal.jira.core.model.Attachment;
-import org.eclipse.mylyn.internal.jira.core.model.Comment;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
+import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.spi.IssueNode;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Query.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.util.JiraUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -87,6 +99,10 @@ public class NbJiraIssue extends Issue {
     static final String LABEL_NAME_STATUS       = "jira.issue.status";      // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "jira.issue.resolution";  // NOI18N
     static final String LABEL_NAME_SUMMARY      = "jira.issue.summary";     // NOI18N
+
+    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
+
+    private static final String FIXED = "Fixed";                        //NOI18N
 
     /**
      * Issue wasn't seen yet
@@ -161,6 +177,9 @@ public class NbJiraIssue extends Issue {
     }
 
     private Map<String, String> attributes;
+    private Map<String, TaskOperation> availableOperations;
+
+    private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT);
     
     /**
      * Defines columns for a view table.
@@ -178,6 +197,7 @@ public class NbJiraIssue extends Issue {
         assert !taskData.isPartial();
         this.taskData = taskData;
         attributes = null; // reset
+        availableOperations = null;
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 ((JiraIssueNode)getNode()).fireDataChanged();
@@ -232,47 +252,151 @@ public class NbJiraIssue extends Issue {
     }
 
     Comment[] getComments() {
-        return null; // XXX
+        List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_COMMENT);
+        if (attrs == null) {
+            return new Comment[0];
+        }
+        List<Comment> comments = new ArrayList<Comment>(attrs.size());
+        for (TaskAttribute taskAttribute : attrs) {
+            comments.add(new Comment(taskAttribute));
+        }
+        return comments.toArray(new Comment[comments.size()]);
     }
 
     Attachment[] getAttachments() {
         return null; // XXX
     }
 
-    public void addComment(String comment) {
-//        try {
-//            Jira.getInstance().getClient(repository.getTaskRepository()).addCommentToIssue(issue, comment, new NullProgressMonitor());
-//        } catch (JiraException ex) {
-//            Jira.LOG.log(Level.SEVERE, null, ex);
-//        }
-    }
-
-    void addAttachment(File f) throws JiraException {
-        // XXX
-//        Jira.getInstance().getClient(repository.getTaskRepository()).addAttachment(issue, "attachment", f.getName(), f, "text/plain", new NullProgressMonitor());
-    }
-
+    /**
+     * Reloads the task data
+     * @return true if successfully refreshed
+     */
     public boolean refresh() {
-//        try {
-//            issue = Jira.getInstance().getClient(repository.getTaskRepository()).getIssueByKey(issue.getKey(), new NullProgressMonitor());
-//        } catch (JiraException ex) {
-//            Jira.LOG.log(Level.SEVERE, null, ex);
-//            return false;
-//        }
-//        if(controller != null) {
-//            controller.refreshViewData();
-//        }
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        return refresh(getID(), false);
+    }
+
+    /**
+     * Reloads the task data and refreshes the issue cache
+     * @param id id of the issue, NOT IT'S KEY
+     * @return true if successfully refreshed
+     */
+    public boolean refresh(String id, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        try {
+            TaskData td = JiraUtils.getTaskDataById(repository, id);
+            if(td == null) {
+                return false;
+            }
+            String key = getID(td); // XXX cache is currently build on KEYS, not on IDs, MUST BE CHANGED LATER
+            getRepository().getIssueCache().setIssueData(key, td, this); // XXX
+            if (controller != null) {
+                controller.refreshViewData();
+            }
+        } catch (IOException ex) {
+            Jira.LOG.log(Level.SEVERE, null, ex);
+        }
         return true;
     }
 
+    /**
+     * Tries to update the taskdata and set issue to Resolved:resolution.
+     * <strong>Do not forget to submit the issue</strong>
+     * @param resolution
+     * @param comment can be null, in such case no comment will be set
+     * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
+     * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
+     */
     public void resolve(Resolution resolution, String comment) throws JiraException {
-//        issue.setResolution(resolution);
-////		issue.setFixVersions(new Version[0]); // XXX set version
-//        String resolveOperationId = Jira.getInstance().getResolveOperation(repository.getTaskRepository(), getKey());
-//        if(resolveOperationId == null) {
-//            Jira.LOG.severe("Can't resolve issue '" + getKey() + "'");
-//        }
-//        Jira.getInstance().getClient(repository.getTaskRepository()).advanceIssueWorkflow(issue, resolveOperationId, comment, new NullProgressMonitor());
+        if (Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.fine(getClass().getName() + ": resolve issue " + getKey() + ": " + resolution.getName());    //NOI18N
+        }
+        TaskAttribute rta = taskData.getRoot();
+
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        TaskOperation operation = null;
+        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+            String operationLabel = entry.getValue().getLabel();
+            if (Jira.LOG.isLoggable(Level.FINEST)) {
+                Jira.LOG.finest(getClass().getName() + ": resolving issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+            }
+            if (JiraUtils.isResolveOperation(operationLabel)) {
+                operation = entry.getValue();
+                break;
+            }
+        }
+        if (operation == null) {
+            throw new IllegalStateException("Resolve operation not permitted"); //NOI18N
+        } else {
+            setOperation(operation);
+        }
+
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
+        ta.setValue(resolution.getId());
+        addComment(comment);
+    }
+
+    /**
+     * Tries to update the taskdata and set issue to Open.
+     * <strong>Do not forget to submit the issue</strong>
+     * @param comment can be null, in such case no comment will be set
+     * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
+     * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
+     */
+    void reopen(String comment) {
+        if (Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.fine(getClass().getName() + ": reopening issue" + getKey()); //NOI18N
+        }
+        TaskAttribute rta = taskData.getRoot();
+
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        TaskOperation operation = null;
+        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+            String operationLabel = entry.getValue().getLabel();
+            if (Jira.LOG.isLoggable(Level.FINEST)) {
+                Jira.LOG.finest(getClass().getName() + ": reopening issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+            }
+            if (JiraUtils.isReopenOperation(operationLabel)) {
+                operation = entry.getValue();
+                break;
+            }
+        }
+        if (operation == null) {
+            throw new IllegalStateException("Reopen operation not permitted"); //NOI18N
+        } else {
+            setOperation(operation);
+        }
+        addComment(comment);
+    }
+
+    /**
+     * Updates task data and sets the operation field
+     * @param operationId id of requested operation
+     * @throws java.lang.IllegalArgumentException if the operation is not permitted for this issue
+     */
+
+    public void setOperation (String operationId) {
+        Map<String, TaskOperation> operations = getAvailableOperations();
+        TaskOperation operation = null;
+        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+            String operationLabel = entry.getValue().getLabel().toLowerCase();
+            if (Jira.LOG.isLoggable(Level.FINEST)) {
+                Jira.LOG.finest(getClass().getName() + ": setOperation: operation " + operationLabel + "(" + entry.getValue().getOperationId() + ") is available");
+            }
+            if (entry.getValue().getOperationId().equals(operationId)) {
+                operation = entry.getValue();
+                break;
+            }
+        }
+        if (operation == null) {
+            throw new IllegalArgumentException("Operation with id " + operationId + " is not permitted"); //NOI18N
+        }
+        setOperation(operation);
+    }
+
+    private void setOperation (TaskOperation operation) {
+        TaskAttribute ta = taskData.getRoot().getMappedAttribute(TaskAttribute.OPERATION);
+        ta.setValue(operation.getOperationId());
     }
 
     public void resolveFixed(String val) {
@@ -316,9 +440,47 @@ public class NbJiraIssue extends Issue {
         return node;
     }
 
-    @Override
-    public void addComment(String comment, boolean closeAsFixed) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    // XXX carefull - implicit double refresh
+    public void addComment(String comment, boolean close) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        if (Jira.LOG.isLoggable(Level.FINE)) {
+            Jira.LOG.fine(getClass().getName() + ": adding comment to issue: " + getKey());    //NOI18N
+        }
+        if(comment == null && !close) {
+            return;
+        }
+        refresh();
+
+        // resolved attrs
+        if(close) {
+            try {
+                resolve(JiraUtils.getResolutionByName(repository, FIXED), comment); // XXX constant, what about setting in options?
+            } catch (JiraException ex) {
+                Jira.LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+
+        JiraCommand submitCmd = new JiraCommand() {
+            public void execute() throws CoreException, IOException {
+                submitAndRefresh();
+            }
+        };
+        repository.getExecutor().execute(submitCmd);
+    }
+
+    /**
+     * Add comment to isseue.
+     * <strong>Do not forget to submit</strong>
+     * @param comment
+     */
+    public void addComment(String comment) {
+        if(comment != null) {
+            if (Jira.LOG.isLoggable(Level.FINE)) {
+                Jira.LOG.fine(getClass().getName() + ": adding comment to issue " + getKey());    //NOI18N
+            }
+            TaskAttribute ta = taskData.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
+            ta.setValue(comment);
+        }
     }
 
     @Override
@@ -390,9 +552,9 @@ public class NbJiraIssue extends Issue {
     }
 
     /**
-     * Returns the id from the given taskData or null if taskData.isNew()
+     * Returns the key from the given taskData or null if taskData.isNew()
      * @param taskData
-     * @return id or null
+     * @return key or null
      */
     public static String getID(TaskData taskData) {
         if(taskData.isNew()) {
@@ -484,6 +646,69 @@ public class NbJiraIssue extends Issue {
         a.setValues(ccs);
     }
 
+    TaskData getTaskData() {
+        return taskData;
+    }
+
+    boolean submitAndRefresh() {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+
+        final boolean wasNew = taskData.isNew();
+        final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
+        final RepositoryResponse[] rr = new RepositoryResponse[1];
+        if (Jira.LOG.isLoggable(Level.FINEST)) {
+            Jira.LOG.finest("submitAndRefresh: id: " + getID() + ", new: " + wasNew);
+        }
+        JiraCommand submitCmd = new JiraCommand() {
+            public void execute() throws CoreException {
+                // submit
+                if (Jira.LOG.isLoggable(Level.FINEST)) {
+                    Jira.LOG.finest("submitAndRefresh, submitCmd: id: " + getID() + ", new: " + wasNew);
+                }
+                Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
+                rr[0] = Jira.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), taskData,
+                        attrs, new NullProgressMonitor());
+                // XXX evaluate rr
+            }
+        };
+        repository.getExecutor().execute(submitCmd);
+        if(submitCmd.hasFailed()) {
+            return false;
+        }
+        
+        JiraCommand refreshCmd = new JiraCommand() {
+            public void execute() throws CoreException {
+                if (Jira.LOG.isLoggable(Level.FINEST)) {
+                    Jira.LOG.finest("submitAndRefresh, refreshCmd: id: " + getID() + ", new: " + wasNew);
+                }
+                if (!wasNew) {
+                    refresh();
+                } else {
+                    refresh(rr[0].getTaskId(), true);
+                }
+            }
+        };
+        repository.getExecutor().execute(refreshCmd);
+        if(refreshCmd.hasFailed()) {
+            return false;
+        }
+
+        // it was the user who made the changes, so preserve the seen status if seen already
+        if (wasSeenAlready) {
+            try {
+                repository.getIssueCache().setSeen(getID(), true);
+                // it was the user who made the changes, so preserve the seen status if seen already
+            } catch (IOException ex) {
+                Jira.LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+        if(wasNew) {
+            // a new issue was created -> refresh all queries
+            repository.refreshAllQueries();
+        }
+        return true;
+    }
+
     /**
      * Returns a status value for the given field<br>
      * <ul>
@@ -518,6 +743,26 @@ public class NbJiraIssue extends Issue {
             seenAtributes = new HashMap<String, String>();
         }
         return seenAtributes;
+    }
+
+    /**
+     * Returns available operations for this issue
+     * @return
+     */
+    public Map<String, TaskOperation> getAvailableOperations () {
+        if (availableOperations == null) {
+            HashMap<String, TaskOperation> operations = new HashMap<String, TaskOperation>(5);
+            List<TaskAttribute> allOperations = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_OPERATION);
+            for (TaskAttribute operation : allOperations) {
+                // the test must be here, 'operation' (applying writable action) is also among allOperations
+                if (operation.getId().startsWith(TaskAttribute.PREFIX_OPERATION)) {
+                    operations.put(operation.getId().substring(TaskAttribute.PREFIX_OPERATION.length()), TaskOperation.createFrom(operation));
+                }
+            }
+            availableOperations = operations;
+        }
+
+        return availableOperations;
     }
 
     private class Controller extends BugtrackingController {
@@ -561,6 +806,45 @@ public class NbJiraIssue extends Issue {
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(org.netbeans.modules.jira.issue.NbJiraIssue.class);
+        }
+    }
+
+    public static final class Comment {
+        private final Date when;
+        private final String who;
+        private final Long number;
+        private final String text;
+
+        public Comment(TaskAttribute a) {
+            when = a.getTaskData().getAttributeMapper().getDateValue(a.getMappedAttribute(TaskAttribute.COMMENT_DATE));
+            TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
+            String author = null;
+            if(authorAttr != null) {
+                TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
+                author = nameAttr != null ? nameAttr.getValue() : null;
+            }
+            if ( ((author == null) || author.trim().equals("")) && authorAttr != null )  { //NOI18N
+                author = authorAttr.getValue();
+            }
+            who = author;
+            number = a.getTaskData().getAttributeMapper().getLongValue(a.getMappedAttribute(TaskAttribute.COMMENT_NUMBER));
+            text = JiraUtils.getMappedValue(a, TaskAttribute.COMMENT_TEXT);
+        }
+
+        public Long getNumber() {
+            return number;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public Date getWhen() {
+            return when;
+        }
+
+        public String getWho() {
+            return who;
         }
     }
 }
