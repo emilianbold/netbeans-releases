@@ -91,6 +91,11 @@ public class IssuePanel extends javax.swing.JPanel {
         timeSpentField.setBackground(getBackground());
         BugtrackingUtil.fixFocusTraversalKeys(environmentArea);
         BugtrackingUtil.fixFocusTraversalKeys(addCommentArea);
+        BugtrackingUtil.issue163946Hack(componentScrollPane);
+        BugtrackingUtil.issue163946Hack(affectsVersionScrollPane);
+        BugtrackingUtil.issue163946Hack(fixVersionScrollPane);
+        BugtrackingUtil.issue163946Hack(environmentScrollPane);
+        BugtrackingUtil.issue163946Hack(addCommentScrollPane);
     }
 
     void setIssue(NbJiraIssue issue) {
