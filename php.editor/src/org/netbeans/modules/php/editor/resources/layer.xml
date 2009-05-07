@@ -214,8 +214,8 @@
                         <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignmentRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-ImplementAbstractMethods.instance"/>
-                        <file name="org-netbeans-modules-php-editor-verification-IntroduceHint.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-AssignVariableHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-IntroduceHint.instance"/>
                     </folder>
                     <folder name="experimental">
                         <attr name="position" intvalue="100"/>

@@ -406,11 +406,12 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.php.dbgp</friend>
-                <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.php.prado</friend>
+                <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
                 <package>org.netbeans.modules.php.editor.index</package>
                 <package>org.netbeans.modules.php.editor.lexer</package>
+                <package>org.netbeans.modules.php.editor.model</package>
                 <package>org.netbeans.modules.php.editor.parser</package>
                 <package>org.netbeans.modules.php.editor.parser.astnodes</package>
                 <package>org.netbeans.modules.php.editor.parser.astnodes.visitors</package>

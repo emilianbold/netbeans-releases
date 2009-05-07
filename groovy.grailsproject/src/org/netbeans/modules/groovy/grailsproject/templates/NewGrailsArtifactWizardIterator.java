@@ -43,6 +43,8 @@ package org.netbeans.modules.groovy.grailsproject.templates;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -52,6 +54,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -59,6 +63,7 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -175,8 +180,20 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
             ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
             String displayName = inf.getDisplayName() + " (" + serverCommand + ")"; // NOI18N
 
-            Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
+            final Callable<Process> grailsCallable = ExecutionSupport.getInstance().createSimpleCommand(
                     serverCommand, GrailsProjectConfig.forProject(project), artifactName);
+            final DialogLineProcessor dialogProcessor = new DialogLineProcessor();
+
+            // This is bit hacky, we prepared line processor listening for overwrite
+            // question - dialog needs to get OutputStream to put the answer to.
+            // This could need a change if the wizard task could rerun.
+            Callable<Process> callable = new Callable<Process>() {
+                public Process call() throws Exception {
+                    Process process = grailsCallable.call();
+                    dialogProcessor.setWriter(new OutputStreamWriter(process.getOutputStream()));
+                    return process;
+                }
+            };
 
             // we need a special descriptor here
             ExecutionDescriptor descriptor = new ExecutionDescriptor()
@@ -186,6 +203,12 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
                     return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressLineProcessor(handle, 100, 9)));
                 }
             });
+            descriptor = descriptor.errProcessorFactory(new InputProcessorFactory() {
+                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                    return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(dialogProcessor));
+                }
+            });
+
             descriptor = descriptor.postExecution(new RefreshProjectRunnable(project));
 
             ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
@@ -321,5 +344,55 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
             packageName = packageName.replaceAll("/", "."); // NOI18N
         }
         return packageName;
+    }
+
+    private static class DialogLineProcessor implements LineProcessor {
+
+        private static final Pattern OVERWRITE_PATTERN =
+                Pattern.compile("^.*\\s([^\\s]+\\.groovy) already exists\\. Overwrite\\? \\[y/n\\]$"); // NOI18N
+
+        private Writer writer;
+
+        public void processLine(String line) {
+            Writer answerWriter = null;
+            synchronized (this) {
+                answerWriter = writer;
+            }
+
+            if (answerWriter != null) {
+                Matcher matcher = OVERWRITE_PATTERN.matcher(line);
+                if (matcher.matches()) {
+                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(
+                            NbBundle.getMessage(NewGrailsArtifactWizardIterator.class, "MSG_overwrite_file", matcher.group(1)),
+                            NotifyDescriptor.YES_NO_OPTION);
+
+                    try {
+                        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
+                            answerWriter.write("y\n"); // NOI18N
+                        } else {
+                            answerWriter.write("n\n"); // NOI18N
+                        }
+                        answerWriter.flush();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+
+        public void setWriter(Writer writer) {
+            synchronized (this) {
+                this.writer = writer;
+            }
+        }
+
+        public void close() {
+            // noop
+        }
+
+        public void reset() {
+            // noop
+        }
+
     }
 }
