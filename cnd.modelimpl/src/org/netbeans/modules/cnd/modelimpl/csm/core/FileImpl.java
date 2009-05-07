@@ -111,6 +111,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private static final boolean logState = Boolean.getBoolean("parser.log.state");
 //    private static final boolean logEmptyTokenStream = Boolean.getBoolean("parser.log.empty");
     private static final boolean emptyAstStatictics = Boolean.getBoolean("parser.empty.ast.statistics");
+
     public static enum FileType {
         UNDEFINED_FILE,
         SOURCE_FILE,
@@ -194,10 +195,18 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         PARTIAL,
         /** The file is modified and needs to be reparsed */
         MODIFIED,
+    }
+
+    private static enum ParsingState {
+        /** The file is not in parsing phase */
+        NOT_BEING_PARSED,
+        /** The file is modified during parsing */
+        MODIFIED_WHILE_BEING_PARSED,
         /** The file is now being parsed */
         BEING_PARSED
     }
     private volatile State state;
+    private volatile ParsingState parsingState;
     private FileType fileType = FileType.UNDEFINED_FILE;
     private final Object stateLock = new Object();
     private final Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
@@ -229,6 +238,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, FileType fileType, NativeFileItem nativeFileItem) {
         state = State.INITIAL;
+        parsingState = ParsingState.NOT_BEING_PARSED;
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
@@ -386,9 +396,17 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
                     }
                     state = State.MODIFIED;
+                    _markModifiedIfBeingParsed();
                 }
                 this.fileBuffer.addChangeListener(fileBufferChangeListener);
             }
+        }
+    }
+
+    /** must be called only changeStateLock */
+    private void _markModifiedIfBeingParsed() {
+        if (parsingState == ParsingState.BEING_PARSED) {
+            parsingState = ParsingState.MODIFIED_WHILE_BEING_PARSED;
         }
     }
 
@@ -407,79 +425,88 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         long time;
         synchronized (stateLock) {
-            if (reportParse || logState || TraceFlags.DEBUG) {
-                if (traceFile(getAbsolutePath())) {
-                    System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s dummy=%s\n", getAbsolutePath(), fileType, handlers.size(), state, wasDummy); // NOI18N
-                    int i = 0;
-                    for (APTPreprocHandler aPTPreprocHandler : handlers) {
-                        logParse("EnsureParsed handler " + (i++), aPTPreprocHandler); // NOI18N
+            try {
+                State curState;
+                synchronized (changeStateLock) {
+                    curState = state;
+                    parsingState = ParsingState.BEING_PARSED;
+                }
+                if (reportParse || logState || TraceFlags.DEBUG) {
+                    if (traceFile(getAbsolutePath())) {
+                        System.err.printf("#ensureParsed %s is %s, has %d handlers, state %s dummy=%s\n", getAbsolutePath(), fileType, handlers.size(), curState, wasDummy); // NOI18N
+                        int i = 0;
+                        for (APTPreprocHandler aPTPreprocHandler : handlers) {
+                            logParse("EnsureParsed handler " + (i++), aPTPreprocHandler); // NOI18N
+                        }
                     }
                 }
-            }
-            switch (state) {
-                case PARSED: // even if it was parsed, but there was entry in queue with handler => need additional parse
-                case INITIAL:
-                case PARTIAL:
-                    if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && state == State.PARSED) {
-                        System.err.printf("additional parse with PARSED state for %s\n", getAbsolutePath()); // NOI18N
-                    }
-                    state = State.BEING_PARSED;
-                    time = System.currentTimeMillis();
-                    try {
-                        for (APTPreprocHandler preprocHandler : handlers) {
-                            _parse(preprocHandler);
-                            if (state == State.MODIFIED) {
-                                break; // does not make sense parsing old data
-                            }
+                switch (curState) {
+                    case PARSED: // even if it was parsed, but there was entry in queue with handler => need additional parse
+                    case INITIAL:
+                    case PARTIAL:
+                        if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && curState == State.PARSED) {
+                            System.err.printf("additional parse with PARSED state for %s\n", getAbsolutePath()); // NOI18N
                         }
-                    } finally {
-                        postParse();
-                        synchronized (changeStateLock) {
-                            if (state == State.BEING_PARSED) {
-                                state = State.PARSED;
-                            }  // if not, someone marked it with new state
-                        }
-                        stateLock.notifyAll();
-                        lastParseTime = (int)(System.currentTimeMillis() - time);
-                        //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
-                    }
-                    if (TraceFlags.DUMP_PARSE_RESULTS) {
-                        new CsmTracer().dumpModel(this);
-                    }
-                    break;
-                case MODIFIED:
-                    state = State.BEING_PARSED;
-                    boolean first = true;
-                    time = System.currentTimeMillis();
-                    try {
-                        for (APTPreprocHandler preprocHandler : handlers) {
-                            if (first) {
-                                _reparse(preprocHandler);
-                                first = false;
-                            } else {
+                        time = System.currentTimeMillis();
+                        try {
+                            for (APTPreprocHandler preprocHandler : handlers) {
                                 _parse(preprocHandler);
+                                if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
+                                    break; // does not make sense parsing old data
+                                }
                             }
-                            if (state == State.MODIFIED) {
-                                break; // does not make sense parsing old data
+                        } finally {
+                            postParse();
+                            synchronized (changeStateLock) {
+                                if (parsingState == ParsingState.BEING_PARSED) {
+                                    state = State.PARSED;
+                                }  // if not, someone marked it with new state
                             }
+                            stateLock.notifyAll();
+                            lastParseTime = (int)(System.currentTimeMillis() - time);
+                            //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                         }
-                    } finally {
-                        synchronized (changeStateLock) {
-                            if (state == State.BEING_PARSED) {
-                                state = State.PARSED;
-                            } // if not, someone marked it with new state
+                        if (TraceFlags.DUMP_PARSE_RESULTS) {
+                            new CsmTracer().dumpModel(this);
                         }
-                        postParse();
-                        stateLock.notifyAll();
-                        lastParseTime = (int)(System.currentTimeMillis() - time);
-                        //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
-                    }
-                    if (TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS) {
-                        new CsmTracer().dumpModel(this);
-                    }
-                    break;
-                default:
-                    System.err.println("unexpected state in ensureParsed " + state); // NOI18N
+                        break;
+                    case MODIFIED:
+                        boolean first = true;
+                        time = System.currentTimeMillis();
+                        try {
+                            for (APTPreprocHandler preprocHandler : handlers) {
+                                if (first) {
+                                    _reparse(preprocHandler);
+                                    first = false;
+                                } else {
+                                    _parse(preprocHandler);
+                                }
+                                if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
+                                    break; // does not make sense parsing old data
+                                }
+                            }
+                        } finally {
+                            synchronized (changeStateLock) {
+                                if (parsingState == ParsingState.BEING_PARSED) {
+                                    state = State.PARSED;
+                                } // if not, someone marked it with new state
+                            }
+                            postParse();
+                            stateLock.notifyAll();
+                            lastParseTime = (int)(System.currentTimeMillis() - time);
+                            //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
+                        }
+                        if (TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS) {
+                            new CsmTracer().dumpModel(this);
+                        }
+                        break;
+                    default:
+                        System.err.println("unexpected state in ensureParsed " + curState); // NOI18N
+                }
+            } finally {
+                synchronized (changeStateLock) {
+                    parsingState = ParsingState.NOT_BEING_PARSED;
+                }
             }
         }
     }
@@ -537,6 +564,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         System.err.printf("#validate changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
                     }
                     state = State.MODIFIED;
+                    _markModifiedIfBeingParsed();
                     return false;
                 }
             }
@@ -552,6 +580,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     System.err.printf("#markReparseNeeded changing to MODIFIED %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
                 }
                 state = State.MODIFIED;
+                _markModifiedIfBeingParsed();
             }
             if (invalidateCache) {
                 synchronized (tokStreamLock) {
@@ -568,7 +597,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 System.err.printf("#markMoreParseNeeded %s is %s with current state %s\n", getAbsolutePath(), fileType, state); // NOI18N
             }
             switch (state) {
-                case BEING_PARSED:
                 case PARSED:
                     state = State.PARTIAL;
                     break;
@@ -1078,7 +1106,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             errorCount = parser.getErrorCount();
             ast = parser.getAST();
-            if (state == State.MODIFIED) {
+            if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
                 ast = null;
                 if (TraceFlags.TRACE_CACHE) {
                     System.err.println("CACHE: not save cache for file modified during parsing" + getAbsolutePath());
@@ -1621,7 +1649,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public boolean isParsingOrParsed() {
         synchronized (changeStateLock) {
-            return state == State.PARSED || state == State.BEING_PARSED;
+            return state == State.PARSED || parsingState != ParsingState.NOT_BEING_PARSED;
         }
     }
 
@@ -1785,6 +1813,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         lastParsed = input.readLong();
         lastParseTime = input.readInt();
         state = State.values()[input.readByte()];
+        parsingState = ParsingState.NOT_BEING_PARSED;
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input);
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input);
     }
