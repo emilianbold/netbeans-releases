@@ -268,7 +268,7 @@ import org.xml.sax.helpers.DefaultHandler;
             return true;
         }
         pattern = Pattern.compile(c.getVersionPattern());
-        String command = LinkSupport.resolveWindowsLinkik(file.getAbsolutePath());
+        String command = LinkSupport.resolveWindowsLink(file.getAbsolutePath());
         String s = getCommandOutput(path, command + " " + flag, true); // NOI18N
         boolean res = pattern.matcher(s).find();
         if (TRACE && !res) {
