@@ -164,9 +164,11 @@ public class NbWagonManager extends DefaultWagonManager {
         if (cont) {
             LOG.fine("               downloading2=" + artifact);
             super.getArtifact(artifact, repository, forceUpdateCheck);
-            synchronized (letGoes) {
-                letGoes.remove(artifact);
-            }
+            //#163919 - is called from getArtifact(Artifact, List, boolean)
+            // if parent pom looked up in multiple repos, we shall not remove the letgo..
+//            synchronized (letGoes) {
+//                letGoes.remove(artifact);
+//            }
         } else {
             artifact.setResolved(true);
         }
@@ -180,7 +182,7 @@ public class NbWagonManager extends DefaultWagonManager {
     {
         boolean cont;
         synchronized (letGoes) {
-            cont = letGoes2.contains(artifact.getGroupId() + ":" + artifact.getArtifactId())
+           cont = letGoes2.contains(artifact.getGroupId() + ":" + artifact.getArtifactId())
                     || letGoes.contains(artifact);
         }
         if (cont) {
