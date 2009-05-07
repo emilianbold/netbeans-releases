@@ -567,6 +567,11 @@ public class IssuePanel extends javax.swing.JPanel {
         submitButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
 
         cancelButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.cancelButton.text")); // NOI18N
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
 
         dummySubtaskPanel.setOpaque(false);
 
@@ -886,6 +891,10 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
     }//GEN-LAST:event_refreshButtonActionPerformed
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        reloadForm(true);
+    }//GEN-LAST:event_cancelButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.netbeans.modules.bugtracking.util.LinkButton acceptIssueButton;
