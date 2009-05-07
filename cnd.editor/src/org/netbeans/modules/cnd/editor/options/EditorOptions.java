@@ -77,7 +77,7 @@ public class EditorOptions {
     private EditorOptions() {
     }
 
-    private static boolean TRACE = true;
+    private static boolean TRACE = false;
     //indents
     /**
      * How many spaces should be added to the statement that continues
