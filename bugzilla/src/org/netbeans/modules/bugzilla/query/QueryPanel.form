@@ -718,9 +718,9 @@
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="summaryComboBox" alignment="0" min="-2" max="-2" attributes="3"/>
-                      <Component id="keywordsComboBox" alignment="0" min="-2" max="-2" attributes="2"/>
-                      <Component id="commentComboBox" min="-2" max="-2" attributes="3"/>
+                      <Component id="summaryComboBox" linkSize="4" alignment="0" min="-2" max="-2" attributes="3"/>
+                      <Component id="keywordsComboBox" linkSize="4" alignment="0" min="-2" max="-2" attributes="2"/>
+                      <Component id="commentComboBox" linkSize="4" min="-2" max="-2" attributes="3"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">

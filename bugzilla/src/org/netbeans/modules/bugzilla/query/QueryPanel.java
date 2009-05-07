@@ -593,6 +593,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .add(keywordsButton)
                 .addContainerGap(38, Short.MAX_VALUE))
         );
+
+        byTextPanelLayout.linkSize(new java.awt.Component[] {commentComboBox, keywordsComboBox, summaryComboBox}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         byTextPanelLayout.setVerticalGroup(
             byTextPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(byTextPanelLayout.createSequentialGroup()
