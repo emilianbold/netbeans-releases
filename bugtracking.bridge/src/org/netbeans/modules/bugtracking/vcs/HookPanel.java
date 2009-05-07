@@ -60,12 +60,13 @@ import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class HookPanel extends javax.swing.JPanel implements ItemListener, PropertyChangeListener {
+public class HookPanel extends VerticallyNonResizingPanel implements ItemListener, PropertyChangeListener {
     private QuickSearchComboBar qs;
     private Repository selectedRepository;
 
