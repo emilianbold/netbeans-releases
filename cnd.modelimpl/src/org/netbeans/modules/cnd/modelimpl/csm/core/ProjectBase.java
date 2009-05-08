@@ -77,7 +77,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.MyFile;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.FileEntry;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.StatePair;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
@@ -1134,7 +1134,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         state = createPreprocHandler(nativeFile).getState();
         File file = nativeFile.getFile();
         FileContainer fileContainer = getFileContainer();
-        FileContainer.Entry entry = fileContainer.getEntry(file);
+        FileContainer.FileEntry entry = fileContainer.getEntry(file);
         synchronized (entry.getLock()) {
             entry.invalidateStates();
             entry.setState(state, FilePreprocessorConditionState.PARSING);
@@ -1209,7 +1209,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
 
             if (triggerParsingActivity) {
-                FileContainer.Entry
+                FileContainer.FileEntry
                 entry = getFileContainer().getEntry(csmFile.getBuffer().getFile());
                 if (entry == null) {
                     entryNotFoundMessage(file);
@@ -1372,7 +1372,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     boolean setParsedPCState(FileImpl csmFile, State ppState, FilePreprocessorConditionState pcState) {
         File file = csmFile.getBuffer().getFile();
-        FileContainer.Entry entry = getFileContainer().getEntry(file);
+        FileContainer.FileEntry entry = getFileContainer().getEntry(file);
         if (entry == null) {
             entryNotFoundMessage(file.getAbsolutePath());
             return false;
@@ -2011,7 +2011,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private static void checkStates(ProjectBase prj, boolean libsAlreadyParsed){
         if (false) {
             System.err.println("Checking states for project "+prj.getName());
-            for(Map.Entry<CharSequence, MyFile> entry : prj.getFileContainer().getFileStorage().entrySet()){
+            for(Map.Entry<CharSequence, FileEntry> entry : prj.getFileContainer().getFileStorage().entrySet()){
                 for(StatePair pair : entry.getValue().getStatePairs()){
                     if (!pair.state.isValid()){
                         System.err.println("Invalid state for file "+entry.getKey());
