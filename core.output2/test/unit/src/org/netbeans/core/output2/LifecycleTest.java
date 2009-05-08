@@ -43,21 +43,23 @@ package org.netbeans.core.output2;
 
 import java.awt.BorderLayout;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import junit.framework.TestCase;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOContainer;
+import org.openide.windows.OutputWriter;
 
 /**
  *
  * @author tim
  */
-public class LifecycleTest extends TestCase {
+public class LifecycleTest extends NbTestCase {
 
     public LifecycleTest(String testName) {
         super(testName);
@@ -134,8 +136,8 @@ public class LifecycleTest extends TestCase {
         } catch (Exception e) {
             fail (e.getMessage());
         }
-    }    
-    
+    }
+
     public void testGetErr() throws Exception {
         System.out.println("testGetOut");
         ErrWriter err = io.writer().err();
@@ -148,7 +150,7 @@ public class LifecycleTest extends TestCase {
         err.close();
         assertTrue ("Error output be closed after calling close()", err.isClosed());
     }
-    
+
     public void testClose() throws Exception {
         System.out.println("testClose");
         NbWriter writer = (NbWriter) io.getOut();
@@ -157,41 +159,41 @@ public class LifecycleTest extends TestCase {
 
         writer.reset();
         sleep();
-        
+
         err.println ("hello");
         sleep();
         writer.println ("world");
         sleep();
-        
-//        assertTrue("Text in container not correct:\"" + pane.getTextView().getText() +"\"", 
+
+//        assertTrue("Text in container not correct:\"" + pane.getTextView().getText() +"\"",
 //            pane.getTextView().getText().equals ("hello\nworld\n\n\n"));
-        
+
         assertFalse ("Err should not be closed", err.isClosed());
         assertFalse ("Writer should not be closed", writer.isClosed());
 //        assertFalse ("Out should not be closed", out.isClosed());
-        
+
         err.close();
         sleep();
         assertFalse ("Out is open, err is closed, writer should return false from isClosed()", writer.isClosed());
-        
+
         writer.close();
         sleep();
         assertTrue ("Out should be closed after calling close() on it", out.isClosed());
         assertTrue ("Out and err are closed, but writer says it is not", writer.isClosed());
-        
+
         assertTrue ("Output's storage is not closed", writer.out().getStorage().isClosed());
-        
+
         writer.reset();
         sleep();
 
         assertTrue ("After reset, err should be closed", err.isClosed());
         assertTrue ("After reset, writer should be closed", writer.isClosed());
         assertTrue ("After reset, out should be closed", out.isClosed());
-        
+
         err.println ("goodbye");
         writer.println ("world");
         sleep();
-        
+
         assertFalse ("Err should not be closed", err.isClosed());
         assertFalse ("Writer should not be closed", writer.isClosed());
 //        assertFalse ("Out should not be closed", out.isClosed());
@@ -200,41 +202,41 @@ public class LifecycleTest extends TestCase {
         writer.close();
         sleep();
         assertTrue ("Out should  be closed after calling close() on it", writer.isClosed());
-        
+
         err.close();
         sleep();
         assertTrue ("Out is closed, err is closed, writer should return true from isClosed()", writer.isClosed());
         assertTrue ("Out and err are closed, but writer says it is not", writer.isClosed());
-        
+
         assertTrue ("Output's storage is not closed", writer.out().getStorage().isClosed());
-        
+
         err.println("I should be reopened now");
         sleep();
-        
+
         assertFalse ("Err should be open", err.isClosed());
     }
-    
+
     public void testReset() throws Exception {
         System.out.println("testReset");
         ErrWriter err = (ErrWriter) io.writer().getErr();
         OutWriter out = (OutWriter) io.writer().out();
         NbWriter writer = io.writer();
-        
+
         OutputDocument doc = (OutputDocument) pane.getDocument();
         assertNotNull ("Document should not be null", doc);
-        
+
         err.println ("hello");
         writer.println ("world");
         sleep();
         writer.reset();
         sleep();
-        
+
         assertTrue ("Same writer object should be used after a reset", io.writer() == writer);
         assertTrue ("Same err object should be used after a reset", io.writer().err() == err);
         assertTrue ("Different output should be used afer a reset", out != io.writer().out());
-        
+
         assertNull ("Old document's Lines object not disposed - that means neither was its writer", doc.getLines());
-        
+
         Exception e = null;
         try {
             out.getStorage();
@@ -246,12 +248,12 @@ public class LifecycleTest extends TestCase {
     }
 
     public void testCloseInputOutput() throws Exception {
-        
+
         System.out.println("testCloseInputOutput");
         ErrWriter err = (ErrWriter) io.writer().getErr();
         OutWriter out = (OutWriter) io.writer().out();
         NbWriter writer = io.writer();
-        
+
         err.println ("joy to the world");
         writer.println ("all the boys and girls");
         err.close();
@@ -259,26 +261,26 @@ public class LifecycleTest extends TestCase {
         writer.close();
         sleep();
         io.closeInputOutput();
-        sleep();        
+        sleep();
         assertNull ("Should be no selected tab after closeInputOutput", getSelectedTab());
-    } 
-    
+    }
+
     public void testFilesCleanedUp() throws Exception {
         System.out.println("testFilesCleanedUp");
         NbWriter writer = io.writer();
         ErrWriter err = (ErrWriter) writer.getErr();
         OutWriter out = (OutWriter) writer.out();
-        
+
         err.println ("hello");
         writer.println ("world");
         sleep();
-        
+
         assertTrue ("Output should not have changed - was " + out + " now " + io.writer().out(), io.writer().out() == out);
         FileMapStorage storage = (FileMapStorage) writer.out().getStorage();
         String fname = storage.toString();
         assertTrue ("FileMapStorage should be returning a file name", fname.indexOf("[") == -1);
         assertTrue ("FileMapStorage should be pointing to an existing file", new File(fname).exists());
-        
+
         err.close();
         sleep();
         writer.close();
@@ -290,31 +292,44 @@ public class LifecycleTest extends TestCase {
         sleep();
 //        assertFalse ("FileMapStorage's file should have been deleted", new File(fname).exists());
     }
-    
+
+    public void testFastResets() throws IOException, InterruptedException {
+        System.out.println("testFastResets");
+        OutputWriter out = io.getOut();
+        for (int i = 0; i < 100; i++) {
+            for (int k = 0; k < 10; k++) {
+                out.println(i + " " + k);
+            }
+            Thread.sleep(10);
+            out.close();
+            out.reset();
+        }
+    }
+
     public void testMultipleResetsAreHarmless() throws Exception {
         System.out.println("testMultipleResetsAreHarmless");
         NbWriter writer = io.writer();
         ErrWriter err = (ErrWriter) writer.getErr();
         OutWriter out = (OutWriter) writer.out();
-        
+
         assertTrue ("Before any writes, out should be empty", out.isEmpty());
-        
+
         writer.reset();
         sleep();
         assertTrue ("Reset on an unused writer should not replace its output", writer.out() == out);
-        
+
         writer.reset();
         writer.reset();
         writer.reset();
         sleep();
         assertTrue ("Reset on an unused writer should not replace its output", writer.out() == out);
-        
+
         writer.println ("Now there is data");
         writer.reset();
         sleep();
-        
+
         assertFalse ("Reset on a used writer should replace its underlying output", writer.out() == out);
-        
+
     }
 
     static JComponent getIOWindow() {
