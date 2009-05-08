@@ -497,6 +497,7 @@
 <mapID target="issues_trackers" url="collab/issues_about.html" />
 <mapID target="issues_workingwith" url="collab/issues_working.html" />
 <mapID target="issues_external" url="collab/issues_external.html" />
+<mapID target="issues_quickref" url="collab/issues_quickref.html" />
 
 <!-- Issue tracking csh topics-->
 <mapID target="org.netbeans.modules.bugzilla.repository.RepositoryController" url="collab/csh/issues_create_tracker.html" />
