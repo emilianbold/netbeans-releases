@@ -43,9 +43,28 @@ package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.deep.CsmForStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.completion.csm.CsmContext;
+import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileObject;
@@ -73,6 +92,8 @@ public class CallStackFrame {
     private final String from;
     
     private LocalVariable[] cachedLocalVariables = null;
+    private LocalVariable[] cachedAutos = null;
+
     private Collection<GdbVariable> arguments = null;
     private StyledDocument document = null;
     private int offset = -1;
@@ -247,10 +268,73 @@ public class CallStackFrame {
         }
     }
 
+    public LocalVariable[] getAutos() {
+        if (cachedAutos == null) {
+            CsmFile csmFile = CsmUtilities.getCsmFile(getDocument(), false);
+            if (csmFile == null || !csmFile.isParsed()) {
+                return null;
+            }
+            CsmContext context = CsmOffsetResolver.findContext(csmFile, getOffset(), null);
+            CsmScope scope = context.getLastScope();
+            if (scope != null) {
+                for (CsmScopeElement csmScopeElement : scope.getScopeElements()) {
+                    if (CsmKindUtilities.isOffsetable(csmScopeElement)) {
+                        CsmOffsetable offs = (CsmOffsetable) csmScopeElement;
+                        if (offs.getEndOffset() >= getOffset()) {
+                            final Set<String> autos = new HashSet<String>();
+                            int span[] = getInterestedStatementOffsets(offs);
+                            final int start = span[0];
+                            final int end = span[1];
+                            CsmFileReferences.getDefault().accept(scope, new CsmFileReferences.Visitor() {
+                                public void visit(CsmReferenceContext context) {
+                                    CsmReference reference = context.getReference();
+                                    if (start <= reference.getStartOffset() && reference.getEndOffset() <= end) {
+                                        CsmObject referencedObject = reference.getReferencedObject();
+                                        if (CsmKindUtilities.isVariable(referencedObject) || CsmKindUtilities.isMacro(referencedObject)) {
+                                            autos.add(((CsmNamedElement)referencedObject).getName().toString());
+                                        }
+                                    }
+                                }
+                            });
+                            cachedAutos = new LocalVariable[autos.size()];
+                            int i = 0;
+                            for (String name : autos) {
+                                cachedAutos[i++] = new AbstractVariable(name);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return cachedAutos;
+    }
+
     @Override
     public int hashCode() {
         // currently default hash code and equals are the optimal ones,
         // because CallStackFrames can not be equal if they are not the same object
         return super.hashCode();
+    }
+
+    private static int[] getInterestedStatementOffsets(CsmOffsetable offs) {
+        if (CsmKindUtilities.isStatement(offs)) {
+            switch (((CsmStatement)offs).getKind()) {
+                case IF:
+                    offs = ((CsmIfStatement)offs).getCondition();
+                    break;
+                case SWITCH:
+                    offs = ((CsmSwitchStatement)offs).getCondition();
+                    break;
+                case WHILE:
+                case DO_WHILE:
+                    offs = ((CsmLoopStatement)offs).getCondition();
+                    break;
+                case FOR:
+                    offs = ((CsmForStatement)offs).getCondition();
+                    break;
+            }
+        }
+        return new int[]{offs.getStartOffset(), offs.getEndOffset()};
     }
 }
