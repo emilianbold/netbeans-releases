@@ -387,7 +387,7 @@ public class ReadRegistryTestCase extends NbTestCase {
         assertTrue(f.isGnuCompiler());
     }
 
-    public void testVersionPattern() throws Exception {
+    public void testVersionPatternIntel() throws Exception {
         String output =
                 "Intel(R) C++ Compiler for applications running on IA-32, Version 10.1    Build 20080312 Package ID: w_cc_p_10.1.021\n" +
                 "Copyright (C) 1985-2008 Intel Corporation.  All rights reserved.\n" +
@@ -397,6 +397,15 @@ public class ReadRegistryTestCase extends NbTestCase {
                 "icl: command line error: no files specified; for help type \"icl /help\"\n";
         Pattern pattern = Pattern.compile(".*Intel\\(R\\) C\\+\\+ Compiler");
         assertTrue(pattern.matcher(output).find());
+    }
+
+    public void testVersionPatternCygwin() throws Exception {
+        String output = "  (GCC) 4.3.3\n";
+        Pattern pattern = Pattern.compile(".*\\(GCC\\) 4\\.[3-9]");
+        assertTrue(pattern.matcher(output).find());
+        output = "  (GCC) 4.2.3\n";
+        pattern = Pattern.compile(".*\\(GCC\\) 4\\.[3-9]");
+        assertFalse(pattern.matcher(output).find());
     }
 
     public void testIntelErrorPattern() throws Exception {

@@ -47,12 +47,12 @@ made subject to such option by the copyright holder.
     <drive_letter_prefix stringvalue="/cygdrive/"/>
     <base_folder regestry="hklm\software\cygnus solutions\cygwin\mounts v2\/"  pattern="native.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]cygwin[\\/]bin[\\/]?$"/>
     <c>
-        <version flags="--version" pattern=".*\(GCC\) 4\.3"/>
+        <version flags="--version" pattern=".*\\(GCC\\) 4\\.[3-9]"/>
         <recognizer pattern=".*[\\/].*cygwin.*[\\/]bin[\\/]?$"/>
         <system_include_paths flags="-x c -E -v" parser="GNU" remove_in_path="/bin" remove_in_output=""/>
     </c>
     <cpp>
-        <version flags="--version" pattern=".*\(GCC\) 4\.3"/>
+        <version flags="--version" pattern=".*\\(GCC\\) 4\\.[3-9]"/>
         <recognizer pattern=".*[\\/].*cygwin.*[\\/]bin[\\/]?$"/>
         <system_include_paths flags="-x c++ -E -v" parser="GNU" remove_in_path="/bin" remove_in_output=""/>
     </cpp>
