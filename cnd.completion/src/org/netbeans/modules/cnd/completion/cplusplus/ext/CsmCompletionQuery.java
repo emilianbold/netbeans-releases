@@ -754,8 +754,12 @@ abstract public class CsmCompletionQuery {
             this.instantiateTypes = instantiateTypes;
         }
 
+        private int convertOffset(int pos) {
+            return sup.doc2context(pos);
+        }
+
         private boolean resolve(int varPos, String var, boolean match) {
-            varPos = sup.doc2context(varPos);
+            varPos = convertOffset(varPos);
             return (compResolver.refresh() && compResolver.resolve(varPos, var, match));
         }
 
@@ -2004,7 +2008,8 @@ abstract public class CsmCompletionQuery {
                         break;
                     }
                 }
-                return ip.instantiate(template, params, getFinder().getCsmFile());
+                int contextOffset = exp.getTokenOffset(0);
+                return ip.instantiate(template, params, getFinder().getCsmFile(), contextOffset);
             }
             return null;
         }

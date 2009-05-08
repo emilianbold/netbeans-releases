@@ -123,9 +123,9 @@ public class NestedType extends TypeImpl {
             CsmObject obj;
             if (ip instanceof InstantiationProviderImpl) {
                 Resolver resolver = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), parent);
-                obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), resolver);
+                obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), resolver, getStartOffset());
             } else {
-                obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile());
+                obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), getStartOffset());
             }
             if (CsmKindUtilities.isClassifier(obj)) {
                 classifier = (CsmClassifier) obj;
